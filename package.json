@@ -1,0 +1,22 @@
+{
+  "name": "xauusd-strategy-a",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Deterministic XAUUSD price-action signal system based on SP2L (Strategy A).",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "eslint": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
