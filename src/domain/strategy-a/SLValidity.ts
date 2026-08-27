@@ -9,21 +9,22 @@ export interface SLValidity {
 
 /**
  * Validates geometry only. It does not introduce a fixed pip/point threshold.
- * The entry must remain on the tradable side of the structural invalidation,
- * and the resulting distance must be strictly positive.
+ * Risk validity is checked first so malformed/non-positive risk is reported
+ * deterministically regardless of the other geometry fields.
  */
 export function validateStructureSL(
   entry: EntryTrigger,
   correction: Correction,
   sl: StructureStopLoss,
 ): SLValidity {
+  if (!(sl.riskDistance > 0) || !Number.isFinite(sl.riskDistance)) {
+    return { valid: false, reason: 'NON_POSITIVE_RISK' };
+  }
+
   const onTradableSide = entry.direction === 'BUY'
     ? entry.entryPrice > correction.extremePrice && sl.stopLoss < entry.entryPrice
     : entry.entryPrice < correction.extremePrice && sl.stopLoss > entry.entryPrice;
 
   if (!onTradableSide) return { valid: false, reason: 'ENTRY_ON_WRONG_SIDE' };
-  if (!(sl.riskDistance > 0) || !Number.isFinite(sl.riskDistance)) {
-    return { valid: false, reason: 'NON_POSITIVE_RISK' };
-  }
   return { valid: true, reason: 'VALID' };
 }
