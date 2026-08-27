@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "download:data": "node scripts/download-xauusd.mjs",
-    "audit:data": "node scripts/audit-dataset.mjs"
+    "audit:data": "node scripts/audit-dataset.mjs",
+    "backtest:baseline": "node --experimental-strip-types scripts/run-baseline-backtest.ts"
   },
   "engines": {
     "node": ">=22"
