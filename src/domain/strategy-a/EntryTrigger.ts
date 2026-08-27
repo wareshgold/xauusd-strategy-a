@@ -12,16 +12,37 @@ export interface EntryTrigger {
   readonly reason: 'CORRECTION_EXTREME_RECLAIM';
 }
 
-/** Research-stage trigger: confirmation requires a close back through the correction extreme. */
+/**
+ * Finds the first confirmation candle visible in the supplied candle prefix.
+ * The caller must provide only candles available at the current replay time.
+ */
 export function detectEntryTrigger(candles: readonly Candle[], correction: Correction): EntryTrigger | null {
-  for (let i = correction.correctionExtremeIndex + 1; i < candles.length; i += 1) {
+  const start = correction.correctionExtremeIndex + 1;
+  if (start >= candles.length) return null;
+
+  for (let i = start; i < candles.length; i += 1) {
     const candle = candles[i]!;
     if (correction.direction === 'BULLISH' && candle.close > correction.extremePrice) {
-      return { index: i, timestamp: candle.timestamp, direction: 'BUY', entryPrice: candle.close, triggerLevel: correction.extremePrice, reason: 'CORRECTION_EXTREME_RECLAIM' };
+      return {
+        index: i,
+        timestamp: candle.timestamp,
+        direction: 'BUY',
+        entryPrice: candle.close,
+        triggerLevel: correction.extremePrice,
+        reason: 'CORRECTION_EXTREME_RECLAIM',
+      };
     }
     if (correction.direction === 'BEARISH' && candle.close < correction.extremePrice) {
-      return { index: i, timestamp: candle.timestamp, direction: 'SELL', entryPrice: candle.close, triggerLevel: correction.extremePrice, reason: 'CORRECTION_EXTREME_RECLAIM' };
+      return {
+        index: i,
+        timestamp: candle.timestamp,
+        direction: 'SELL',
+        entryPrice: candle.close,
+        triggerLevel: correction.extremePrice,
+        reason: 'CORRECTION_EXTREME_RECLAIM',
+      };
     }
   }
+
   return null;
 }
