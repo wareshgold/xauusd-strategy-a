@@ -7,7 +7,8 @@ describe('Strategy A context and quality', () => {
 
   it('calculates EMA context without lookahead', () => {
     const ctx = buildEMAContext([100, 102, 104], config);
-    expect(ctx?.ema).toBe(102.99999999999999);
+    // Recursive EMA seeded with the first observed value: 100 -> 101 -> 102.5.
+    expect(ctx?.ema).toBe(102.5);
     expect(ctx?.side).toBe('ABOVE');
   });
 
