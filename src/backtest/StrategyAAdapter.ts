@@ -1,13 +1,12 @@
-import type { Candle } from '../domain/market/Candle.js';
-import { replayCandles, type ReplayEvent } from './ReplayEngine.js';
-import { runBacktest, type BacktestCandidate } from './BacktestEngine.js';
-import type { BacktestResult } from './BacktestTypes.js';
+import type { Candle } from '../domain/market/Candle.ts';
+import { replayCandles, type ReplayEvent } from './ReplayEngine.ts';
+import { runBacktest, type BacktestCandidate } from './BacktestEngine.ts';
+import type { BacktestResult } from './BacktestTypes.ts';
 
 export interface StrategyAReplayState { readonly event: ReplayEvent; readonly candidates: readonly BacktestCandidate[]; }
 export type StrategyADecision = (event: ReplayEvent) => readonly BacktestCandidate[];
 export interface StrategyABacktestRun { readonly result: BacktestResult; readonly states: readonly StrategyAReplayState[]; }
 
-/** Shared decision boundary: the same deterministic decision function can be used by live and historical runners. */
 export function runStrategyABacktest(candles: readonly Candle[], decide: StrategyADecision): StrategyABacktestRun {
   const states: StrategyAReplayState[] = [];
   const candidates: BacktestCandidate[] = [];
