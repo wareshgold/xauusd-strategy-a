@@ -9,7 +9,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "download:data": "node scripts/download-xauusd.mjs"
+    "download:data": "node scripts/download-xauusd.mjs",
+    "audit:data": "node scripts/audit-dataset.mjs"
   },
   "engines": {
     "node": ">=22"
