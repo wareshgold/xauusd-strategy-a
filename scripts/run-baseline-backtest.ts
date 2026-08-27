@@ -66,7 +66,10 @@ const decide: StrategyADecision = (event) => {
 
     const risk = Math.abs(trigger.entryPrice - invalidation.invalidationLevel);
     const reward = Math.abs(projection.tp1 - trigger.entryPrice);
-    if (risk <= 0 || reward <= 0) continue;
+    const targetIsDirectional = trigger.direction === 'BUY'
+      ? projection.tp1 > trigger.entryPrice
+      : projection.tp1 < trigger.entryPrice;
+    if (risk <= 0 || reward <= 0 || !targetIsDirectional) continue;
 
     candidates.push({
       entryIndex: trigger.index,
