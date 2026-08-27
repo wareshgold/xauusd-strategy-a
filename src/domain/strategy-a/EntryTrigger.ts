@@ -13,8 +13,9 @@ export interface EntryTrigger {
 }
 
 /**
- * Finds the first confirmation candle visible in the supplied candle prefix.
- * The caller must provide only candles available at the current replay time.
+ * Finds the first confirmation candle that actually crosses the correction
+ * extreme during the candle itself. The caller must provide only candles
+ * available at the current replay time.
  */
 export function detectEntryTrigger(candles: readonly Candle[], correction: Correction): EntryTrigger | null {
   const start = correction.correctionExtremeIndex + 1;
@@ -22,7 +23,8 @@ export function detectEntryTrigger(candles: readonly Candle[], correction: Corre
 
   for (let i = start; i < candles.length; i += 1) {
     const candle = candles[i]!;
-    if (correction.direction === 'BULLISH' && candle.close > correction.extremePrice) {
+
+    if (correction.direction === 'BULLISH' && candle.open <= correction.extremePrice && candle.high > correction.extremePrice && candle.close > correction.extremePrice) {
       return {
         index: i,
         timestamp: candle.timestamp,
@@ -32,7 +34,8 @@ export function detectEntryTrigger(candles: readonly Candle[], correction: Corre
         reason: 'CORRECTION_EXTREME_RECLAIM',
       };
     }
-    if (correction.direction === 'BEARISH' && candle.close < correction.extremePrice) {
+
+    if (correction.direction === 'BEARISH' && candle.open >= correction.extremePrice && candle.low < correction.extremePrice && candle.close < correction.extremePrice) {
       return {
         index: i,
         timestamp: candle.timestamp,
