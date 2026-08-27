@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-08-27T11:47:30.045Z",
+  "status": "PASS",
+  "datasets": [
+    {
+      "symbol": "XAU/USD",
+      "timeframe": "1min",
+      "source": "twelvedata",
+      "timezone": "UTC",
+      "candleCount": 10000,
+      "firstTimestamp": "2026-08-20 13:05:00",
+      "lastTimestamp": "2026-08-27 11:44:00",
+      "spanMinutes": 9999,
+      "duplicateTimestamps": 0,
+      "invalidOhlcCount": 0,
+      "nonChronologicalCount": 0,
+      "gapCount": 0,
+      "suspiciousGapCount": 0,
+      "largestGapMinutes": 0,
+      "suspiciousGaps": [],
+      "pass": true
+    },
+    {
+      "symbol": "XAU/USD",
+      "timeframe": "5min",
+      "source": "twelvedata",
+      "timezone": "UTC",
+      "candleCount": 10000,
+      "firstTimestamp": "2026-07-23 18:25:00",
+      "lastTimestamp": "2026-08-27 11:40:00",
+      "spanMinutes": 49995,
+      "duplicateTimestamps": 0,
+      "invalidOhlcCount": 0,
+      "nonChronologicalCount": 0,
+      "gapCount": 0,
+      "suspiciousGapCount": 0,
+      "largestGapMinutes": 0,
+      "suspiciousGaps": [],
+      "pass": true
+    }
+  ]
+}
