@@ -12,52 +12,36 @@ function percentile(values, p) {
   const lo = Math.floor(i), hi = Math.ceil(i);
   return lo === hi ? a[lo] : a[lo] + (a[hi] - a[lo]) * (i - lo);
 }
-
-function summarize(report) {
-  const trades = report.trades ?? [];
-  const closed = trades.filter(t => t.rMultiple !== null && Number.isFinite(t.rMultiple));
-  const wins = closed.filter(t => t.rMultiple > 0);
-  const losses = closed.filter(t => t.rMultiple < 0);
-  const rs = closed.map(t => t.rMultiple);
-  const risk = closed.map(t => t.riskDistance).filter(Number.isFinite);
-  const outlierCut = percentile(rs, 0.99);
-  const robust = outlierCut === null ? [] : closed.filter(t => t.rMultiple <= outlierCut);
-  const grossWin = wins.reduce((s,t) => s + t.rMultiple, 0);
-  const grossLoss = Math.abs(losses.reduce((s,t) => s + t.rMultiple, 0));
-  const robustWins = robust.filter(t => t.rMultiple > 0);
-  const robustLosses = robust.filter(t => t.rMultiple < 0);
-  const robustGrossLoss = Math.abs(robustLosses.reduce((s,t) => s + t.rMultiple, 0));
-  const byResult = Object.fromEntries(['TP1','TP2','SL','AMBIGUOUS','OPEN'].map(k => [k, trades.filter(t => t.result === k).length]));
-  const byDirection = Object.fromEntries(['BUY','SELL'].map(k => {
-    const x = closed.filter(t => t.direction === k);
-    return [k, { trades:x.length, winRate:x.length ? x.filter(t => t.rMultiple > 0).length / x.length : 0, averageR:x.length ? x.reduce((s,t)=>s+t.rMultiple,0)/x.length : 0 }];
-  }));
+function stats(trades) {
+  const closed = trades.filter(t => Number.isFinite(t.rMultiple));
+  const wins = closed.filter(t => t.rMultiple > 0), losses = closed.filter(t => t.rMultiple < 0);
+  const gw = wins.reduce((s,t)=>s+t.rMultiple,0), gl = Math.abs(losses.reduce((s,t)=>s+t.rMultiple,0));
+  return { trades:closed.length, winRate:closed.length?wins.length/closed.length:0, averageR:closed.length?closed.reduce((s,t)=>s+t.rMultiple,0)/closed.length:0, profitFactor:gl?gw/gl:null };
+}
+function group(trades, keyFn) {
+  const m = new Map();
+  for (const t of trades) { const k=keyFn(t); if(!m.has(k))m.set(k,[]); m.get(k).push(t); }
+  return Object.fromEntries([...m].map(([k,v])=>[k,stats(v)]));
+}
+function analyze(report) {
+  const trades=report.trades??[], closed=trades.filter(t=>Number.isFinite(t.rMultiple)), rs=closed.map(t=>t.rMultiple), risk=closed.map(t=>t.riskDistance).filter(Number.isFinite);
+  const p99=percentile(rs,.99), robust=closed.filter(t=>t.rMultiple<=p99);
+  const sessions = group(closed,t=>{ const h=Number(String(t.entryTime).slice(11,13)); return h>=7&&h<13?'LONDON_ONLY':h>=13&&h<16?'OVERLAP':h>=16&&h<22?'NEW_YORK_ONLY':'OUTSIDE'; });
   return {
-    timeframe: report.timeframe,
-    candles: report.candles,
-    source: report.source,
-    baselineMetrics: report.metrics,
-    resultCounts: byResult,
-    direction: byDirection,
-    rDistribution: { min:Math.min(...rs), p50:percentile(rs,.5), p90:percentile(rs,.9), p95:percentile(rs,.95), p99:outlierCut, max:Math.max(...rs) },
-    riskDistance: { min:Math.min(...risk), p50:percentile(risk,.5), p05:percentile(risk,.05) },
-    extremeWinners: [...closed].sort((a,b)=>b.rMultiple-a.rMultiple).slice(0,10),
-    extremeLosses: [...closed].sort((a,b)=>a.rMultiple-b.rMultiple).slice(0,10),
-    robustWithoutTop1PercentR: {
-      excludedTrades: closed.length - robust.length,
-      trades: robust.length,
-      winRate: robust.length ? robustWins.length / robust.length : 0,
-      averageR: robust.length ? robust.reduce((s,t)=>s+t.rMultiple,0)/robust.length : 0,
-      profitFactor: robustGrossLoss ? robustWins.reduce((s,t)=>s+t.rMultiple,0)/robustGrossLoss : null,
-    },
-    researchNote: 'Descriptive diagnostic only. No strategy parameters are changed and no outlier rule is proposed as a trading rule.'
+    timeframe:report.timeframe, candles:report.candles, baselineMetrics:report.metrics,
+    resultCounts:Object.fromEntries(['TP1','TP2','SL','AMBIGUOUS','OPEN'].map(k=>[k,trades.filter(t=>t.result===k).length])),
+    byDirection:group(closed,t=>t.direction), bySession:sessions,
+    rDistribution:{min:Math.min(...rs),p50:percentile(rs,.5),p90:percentile(rs,.9),p95:percentile(rs,.95),p99,max:Math.max(...rs)},
+    riskDistance:{min:Math.min(...risk),p01:percentile(risk,.01),p05:percentile(risk,.05),p50:percentile(risk,.5)},
+    extremeWinners:[...closed].sort((a,b)=>b.rMultiple-a.rMultiple).slice(0,15),
+    extremeLosses:[...closed].sort((a,b)=>a.rMultiple-b.rMultiple).slice(0,10),
+    robustWithoutTop1PercentR:{excludedTrades:closed.length-robust.length,...stats(robust)},
+    researchNote:'Diagnostic only; no parameters or trading rules changed.'
   };
 }
-
-await mkdir(OUTPUT, { recursive:true });
-for (const timeframe of ['1min','5min']) {
-  const report = JSON.parse(await readFile(resolve(INPUT, `${timeframe}.json`), 'utf8'));
-  const analysis = summarize(report);
-  await writeFile(resolve(OUTPUT, `${timeframe}.json`), JSON.stringify(analysis, null, 2));
-  console.log(`${timeframe}: trades=${analysis.baselineMetrics.trades} maxR=${analysis.rDistribution.max.toFixed(4)} p99=${analysis.rDistribution.p99.toFixed(4)} robustPF=${analysis.robustWithoutTop1PercentR.profitFactor?.toFixed(4) ?? 'n/a'} robustAvgR=${analysis.robustWithoutTop1PercentR.averageR.toFixed(4)}`);
+await mkdir(OUTPUT,{recursive:true});
+for(const timeframe of ['1min','5min']){
+ const report=JSON.parse(await readFile(resolve(INPUT,`${timeframe}.json`),'utf8'));
+ const a=analyze(report); await writeFile(resolve(OUTPUT,`${timeframe}.json`),JSON.stringify(a,null,2));
+ console.log(`${timeframe}: trades=${a.baselineMetrics.trades} PF=${a.baselineMetrics.profitFactor?.toFixed(4)} robustPF=${a.robustWithoutTop1PercentR.profitFactor?.toFixed(4)??'n/a'} medianR=${a.rDistribution.p50.toFixed(4)} minRisk=${a.riskDistance.min.toFixed(5)}`);
 }
