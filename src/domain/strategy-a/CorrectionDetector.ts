@@ -10,21 +10,41 @@ export interface Correction {
   readonly extremePrice: number;
 }
 
+/**
+ * Finds the first correction extreme visible in the supplied candle prefix.
+ * The caller must provide only candles available at the current replay time.
+ */
 export function detectFirstCorrection(candles: readonly Candle[], spike: SpikeCandidate): Correction | null {
   const start = spike.endIndex + 1;
   if (start >= candles.length) return null;
+
   if (spike.direction === 'BULLISH') {
     for (let i = start; i < candles.length; i += 1) {
       if (candles[i]!.low < spike.startPrice) {
-        return { spikeStartIndex: spike.startIndex, spikeEndIndex: spike.endIndex, correctionStartIndex: start, correctionExtremeIndex: i, direction: spike.direction, extremePrice: candles[i]!.low };
+        return {
+          spikeStartIndex: spike.startIndex,
+          spikeEndIndex: spike.endIndex,
+          correctionStartIndex: start,
+          correctionExtremeIndex: i,
+          direction: spike.direction,
+          extremePrice: candles[i]!.low,
+        };
       }
     }
   } else {
     for (let i = start; i < candles.length; i += 1) {
       if (candles[i]!.high > spike.startPrice) {
-        return { spikeStartIndex: spike.startIndex, spikeEndIndex: spike.endIndex, correctionStartIndex: start, correctionExtremeIndex: i, direction: spike.direction, extremePrice: candles[i]!.high };
+        return {
+          spikeStartIndex: spike.startIndex,
+          spikeEndIndex: spike.endIndex,
+          correctionStartIndex: start,
+          correctionExtremeIndex: i,
+          direction: spike.direction,
+          extremePrice: candles[i]!.high,
+        };
       }
     }
   }
+
   return null;
 }
