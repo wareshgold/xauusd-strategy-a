@@ -12,7 +12,8 @@ describe('market structure', () => {
       candle(4, 16, 9), candle(5, 13, 7), candle(6, 14, 8),
     ];
     const points = detectSwingPoints(candles, { leftBars: 1, rightBars: 1 });
-    expect(points.map((p) => p.kind)).toEqual(['INITIAL', 'INITIAL', 'HH']);
+    // The first confirmed high and low on each side establish INITIAL state.
+    expect(points.map((p) => p.kind)).toEqual(['INITIAL', 'INITIAL', 'HH', 'HL']);
   });
 });
 
