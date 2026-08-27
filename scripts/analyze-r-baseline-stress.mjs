@@ -21,6 +21,10 @@ function avg(trades) {
   return trades.length ? trades.reduce((s, t) => s + t.rMultiple, 0) / trades.length : 0;
 }
 
+function total(trades) {
+  return trades.reduce((s, t) => s + t.rMultiple, 0);
+}
+
 function percentile(values, p) {
   if (!values.length) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -35,18 +39,17 @@ for (const timeframe of ['1min', '5min']) {
   const trades = load(timeframe);
   const rs = trades.map((t) => t.rMultiple);
   const p99 = percentile(rs, 0.99);
-  const largest = [...trades].sort((a, b) => b.rMultiple - a.rMultiple).slice(0, 10);
-  const totalR = rs.reduce((s, r) => s + r, 0);
+  const largest = [...trades].sort((a, b) => b.rMultiple - a.rMultiple);
 
-  console.log(`${timeframe}: trades=${trades.length} rawPF=${pf(trades).toFixed(4)} rawAvgR=${avg(trades).toFixed(4)} totalR=${totalR.toFixed(4)} p99=${p99.toFixed(4)}`);
+  console.log(`${timeframe}: trades=${trades.length} rawPF=${pf(trades).toFixed(4)} rawAvgR=${avg(trades).toFixed(4)} totalR=${total(trades).toFixed(4)} p99=${p99.toFixed(4)}`);
 
   for (const cap of caps) {
     const capped = trades.map((t) => ({ ...t, rMultiple: Math.min(t.rMultiple, cap) }));
-    console.log(`  cap=${cap}R PF=${pf(capped).toFixed(4)} avgR=${avg(capped).toFixed(4)} totalR=${avg(capped) * capped.length .toFixed ? '' : ''}`);
+    console.log(`  cap=${cap}R PF=${pf(capped).toFixed(4)} avgR=${avg(capped).toFixed(4)} totalR=${total(capped).toFixed(4)}`);
   }
 
   const withoutP99 = trades.filter((t) => t.rMultiple <= p99);
-  console.log(`  <=P99 PF=${pf(withoutP99).toFixed(4)} avgR=${avg(withoutP99).toFixed(4)} excluded=${trades.length - withoutP99.length}`);
+  console.log(`  <=P99 PF=${pf(withoutP99).toFixed(4)} avgR=${avg(withoutP99).toFixed(4)} totalR=${total(withoutP99).toFixed(4)} excluded=${trades.length - withoutP99.length}`);
 
   console.log('  top winners:');
   for (const t of largest.slice(0, 5)) {
