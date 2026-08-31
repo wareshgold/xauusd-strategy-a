@@ -24,7 +24,7 @@ function enrich(candles,t){
   const s=sign(t.direction), spike=candles[si];
   const base=medianTR(candles,si,MEDIAN_TR_LOOKBACK);
   const spikeTR=tr(spike);
-  const start=si+1,end=ei-1, n=Math.max(0,end-start+1);
+  const start=si+1,end=ei-1,n=Math.max(0,end-start+1);
   const post=candles.slice(start,end+1);
   if(!post.length)return {...t,postSpikeBars:0,pullbackFraction:null,compressionRatio:null,entryDistanceFromSpikeExtreme:null,postSpikeMaxFavorableTR:null};
   const spikeExtreme=s>0?spike.high:spike.low;
@@ -45,12 +45,12 @@ function enrich(candles,t){
   const hasDeepPullback=pullbackFraction!=null&&pullbackFraction>=0.50;
   const compressed=compressionRatio!=null&&compressionRatio<0.75;
   const delayedReentry=n>=3;
-  return {...t,postSpikeBars:n,pullbackFraction, pullbackBand:pullbackFraction==null?'NA':band(pullbackFraction,RETRACE_BANDS),compressionRatio,compressionBand:compressionRatio==null?'NA':band(compressionRatio,COMP_BANDS),entryDistanceFromSpikeExtreme,postSpikeMaxFavorableTR,postSpikeMaxAdverseTR,hasPullback,hasDeepPullback,compressed,delayedReentry,delayedPullbackCompression:delayedReentry&&hasPullback&&compressed};
+  return {...t,postSpikeBars:n,pullbackFraction,pullbackBand:pullbackFraction==null?'NA':band(pullbackFraction,RETRACE_BANDS),compressionRatio,compressionBand:compressionRatio==null?'NA':band(compressionRatio,COMP_BANDS),entryDistanceFromSpikeExtreme,postSpikeMaxFavorableTR,postSpikeMaxAdverseTR,hasPullback,hasDeepPullback,compressed,delayedReentry,delayedPullbackCompression:delayedReentry&&hasPullback&&compressed};
 }
 
-async function run(tf){
-  const candles=(await load(resolve(ROOT,`data/historical/xauusd-${tf}.json`))).candles;
-  const src=await load(resolve(ROOT,`data/reports/strategy-a-opportunity-window-structural-forensics/${tf}.json`));
+async function run(timeframe){
+  const candles=(await load(resolve(ROOT,`data/historical/xauusd-${timeframe}.json`))).candles;
+  const src=await load(resolve(ROOT,`data/reports/strategy-a-opportunity-window-structural-forensics/${timeframe}.json`));
   const trades=(src.tradeRows||[]).filter(t=>t.opportunityWindow!=='OTHER'&&Number.isFinite(t.rMultiple)).map(t=>enrich(candles,t)).filter(Boolean);
   const oos=trades.slice(Math.floor(trades.length*.5));
   const candidates=[
@@ -69,8 +69,8 @@ async function run(tf){
   const byDirection=['BUY','SELL'].map(d=>{const a=trades.filter(r=>r.direction===d),oo=oos.filter(r=>r.direction===d);return{direction:d,all:summarize(a),oos:summarize(oo),delayedPullbackCompression:summarize(oo.filter(r=>r.delayedPullbackCompression))};});
   const byWindow=[...new Set(trades.map(r=>r.opportunityWindow))].map(w=>{const a=trades.filter(r=>r.opportunityWindow===w),oo=oos.filter(r=>r.opportunityWindow===w);return{window:w,all:summarize(a),oos:summarize(oo),delayedPullbackCompression:summarize(oo.filter(r=>r.delayedPullbackCompression))};});
   const report={strategy:'Strategy A / SP2L',mode:'RESEARCH_OPPORTUNITY_DELAYED_REENTRY_FORENSICS',timeframe,methodology:{scope:'Opportunity Window trades that have a classified pre-entry spike',spike:'existing structural-forensics spikeIndex; no new spike threshold',pullback:'post-spike excursion against spike-direction extreme before entry',compression:'median TR of last up to 5 pre-entry bars divided by preceding 20-bar median TR',delayed:'at least 3 complete bars between spike and entry',lookahead:'all derived features use candles strictly before entry',oos:'chronological second half of Opportunity Window trades',decisionRule:'forensic only; no threshold or trading rule selected from these results',minimumSample:'candidates with very small OOS n are hypothesis-generating only'},coverage:{trades:trades.length,oos:oos.length,spikeKnown:trades.filter(r=>Number.isInteger(r.spikeIndex)).length},overall:{...summarize(trades),maxDD:dd(trades)},oos:{...summarize(oos),maxDD:dd(oos)},byCandidate,byPullback,byCompression,byDirection,byWindow,tradeRows:trades,nextResearchQuestion:'If any delayed re-entry pattern survives OOS with adequate n, validate it on a third untouched chronological holdout and test whether the edge is independent of direction/session.'};
-  await mkdir(REPORT_DIR,{recursive:true});const out=resolve(REPORT_DIR,`${tf}.json`);await writeFile(out,JSON.stringify(report,null,2));
-  console.log(`${tf}: trades=${trades.length} OOS=${oos.length}`);
+  await mkdir(REPORT_DIR,{recursive:true});const out=resolve(REPORT_DIR,`${timeframe}.json`);await writeFile(out,JSON.stringify(report,null,2));
+  console.log(`${timeframe}: trades=${trades.length} OOS=${oos.length}`);
   for(const x of byCandidate)console.log(`  ${x.name}: all n=${x.all.n} PF=${x.all.PF?.toFixed(4)??'n/a'} | OOS n=${x.oos.n} PF=${x.oos.PF?.toFixed(4)??'n/a'} avgR=${x.oos.avgR.toFixed(4)} | complement PF=${x.oosComplement.PF?.toFixed(4)??'n/a'}`);
   console.log('  OOS direction/window candidates:');for(const x of byDirection)console.log(`    ${x.direction}: n=${x.oos.n} PF=${x.oos.PF?.toFixed(4)??'n/a'} delayedPullbackCompression n=${x.delayedPullbackCompression.n} PF=${x.delayedPullbackCompression.PF?.toFixed(4)??'n/a'}`);for(const x of byWindow)console.log(`    ${x.window}: n=${x.oos.n} PF=${x.oos.PF?.toFixed(4)??'n/a'} delayedPullbackCompression n=${x.delayedPullbackCompression.n} PF=${x.delayedPullbackCompression.PF?.toFixed(4)??'n/a'}`);
   console.log(`Report -> ${out}`);
