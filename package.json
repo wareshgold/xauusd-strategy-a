@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "download:data": "node scripts/download-xauusd.mjs",
     "audit:data": "node scripts/audit-dataset.mjs",
-    "backtest:baseline": "node --experimental-strip-types scripts/run-baseline-backtest.ts"
+    "backtest:baseline": "node --experimental-strip-types scripts/run-baseline-backtest.ts",
+    "research:tp1": "node scripts/analyze-tp1-attainment-forensics.mjs"
   },
   "engines": {
     "node": ">=22"
