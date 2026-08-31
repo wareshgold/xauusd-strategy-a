@@ -33,16 +33,10 @@ async function imports() {
   ]);
 }
 
-function finite(x) { return Number.isFinite(Number(x)); }
 function emptyStage() { return { seen: 0, passed: 0, rejected: 0 }; }
 function bump(stage, pass) { stage.seen += 1; if (pass) stage.passed += 1; else stage.rejected += 1; }
-function groupCount(rows, key) {
-  const out = {};
-  for (const r of rows) { const v = r[key] ?? 'UNKNOWN'; out[v] = (out[v] ?? 0) + 1; }
-  return out;
-}
+function groupCount(rows, key) { const out = {}; for (const r of rows) { const v = r[key] ?? 'UNKNOWN'; out[v] = (out[v] ?? 0) + 1; } return out; }
 function outcome(candles, c) {
-  const risk = Math.abs(c.entry - c.stopLoss);
   for (let i = c.entryIndex + 1; i < candles.length; i += 1) {
     const x = candles[i];
     const sl = c.direction === 'BUY' ? x.low <= c.stopLoss : x.high >= c.stopLoss;
@@ -74,90 +68,93 @@ async function run(tf, api) {
     if (!enough) continue;
 
     const breakouts = Breakout.detectBreakout(visible, BREAKOUT_LOOKBACK);
-    const breakout = breakouts.at(-1);
-    bump(stages.breakout, !!breakout);
-    if (!breakout || breakout.index >= index) continue;
+    bump(stages.breakout, breakouts.length > 0);
+    if (!breakouts.length) continue;
 
-    const follow = FT.detectFollowThrough(visible, breakouts, { maxBarsAfterBreakout: FT_MAX_BARS, requireCloseBeyondBrokenLevel: true });
-    const ft = follow.find(e => e.breakoutIndex === breakout.index);
-    bump(stages.followThrough, !!ft);
-    if (!ft) continue;
-
-    const spikes = Spike.detectSpikeCandidates(visible, breakouts, follow, { maxCandles: SPIKE_MAX_CANDLES, minDirectionalFraction: SPIKE_MIN_DIRECTIONAL_FRACTION, maxOverlapFraction: SPIKE_MAX_OVERLAP_FRACTION });
-    const spike = spikes.candidates.find(s => s.breakoutIndex === breakout.index && s.endIndex < index);
-    bump(stages.spike, !!spike);
-    if (!spike) continue;
-
-    const correction = Correction.detectFirstCorrection(visible, spike);
-    const validCorrection = !!correction && correction.correctionExtremeIndex < index;
-    bump(stages.correction, validCorrection);
-    if (!validCorrection) continue;
-
-    const trigger = Trigger.detectEntryTrigger(visible, correction);
-    const validTrigger = !!trigger && trigger.index === index;
-    bump(stages.trigger, validTrigger);
-    if (!validTrigger) continue;
-
-    const projection = Projection.projectLeg2(visible, correction);
-    bump(stages.projection, !!projection);
-    if (!projection) continue;
-
-    const invalidation = Invalidation.getInvalidationRule(correction);
-    bump(stages.invalidation, !!invalidation);
-    if (!invalidation) continue;
-
+    const followThrough = FT.detectFollowThrough(visible, breakouts, { maxBarsAfterBreakout: FT_MAX_BARS, requireCloseBeyondBrokenLevel: true });
+    const spikes = Spike.detectSpikeCandidates(visible, breakouts, followThrough, { maxCandles: SPIKE_MAX_CANDLES, minDirectionalFraction: SPIKE_MIN_DIRECTIONAL_FRACTION, maxOverlapFraction: SPIKE_MAX_OVERLAP_FRACTION });
     const ema = Context.buildEMAContext(visible.map(c => c.close), CONTEXT);
-    const location = Context.buildLocationContext(trigger.entryPrice, CONTEXT);
-    const session = Context.buildSessionContext(trigger.timestamp, CONTEXT);
-    const contextOk = !!ema && !!location && !!session;
-    bump(stages.context, contextOk);
-    if (!contextOk) continue;
+    const locationCache = new Map();
+    const sessionCache = new Map();
 
-    const quality = Quality.scoreSetup(spike, { ema, location, session });
-    bump(stages.quality, !!quality.tradeAllowed);
-    if (!quality.tradeAllowed) continue;
+    for (const breakout of breakouts) {
+      if (breakout.index >= index) continue;
+      const ft = followThrough.find(e => e.breakoutIndex === breakout.index);
+      bump(stages.followThrough, !!ft);
+      if (!ft) continue;
 
-    const risk = Math.abs(trigger.entryPrice - invalidation.invalidationLevel);
-    const reward = Math.abs(projection.tp1 - trigger.entryPrice);
-    const directional = trigger.direction === 'BUY' ? projection.tp1 > trigger.entryPrice : projection.tp1 < trigger.entryPrice;
-    const rrOk = risk > 0 && reward > 0 && directional;
-    bump(stages.riskReward, rrOk);
-    if (!rrOk) continue;
+      const spike = spikes.candidates.find(s => s.breakoutIndex === breakout.index && s.endIndex < index);
+      bump(stages.spike, !!spike);
+      if (!spike) continue;
 
-    const candidate = {
-      entryIndex: trigger.index, entryTime: trigger.timestamp, direction: trigger.direction,
-      entry: trigger.entryPrice, stopLoss: invalidation.invalidationLevel, tp1: projection.tp1,
-      session: session.session, qualityGrade: quality.grade, qualityScore: quality.score,
-      structureScore: spike.structureScore, overlapScore: spike.overlapScore,
-      hasPGAPEvidence: spike.hasPGAPEvidence, nearRoundLevel: location.nearRoundLevel, emaAligned: ema.aligned,
-    };
-    bump(stages.finalCandidate, true);
-    finals.push({ ...candidate, result: outcome(candles, candidate) });
+      const correction = Correction.detectFirstCorrection(visible, spike);
+      const validCorrection = !!correction && correction.correctionExtremeIndex < index;
+      bump(stages.correction, validCorrection);
+      if (!validCorrection) continue;
+
+      const trigger = Trigger.detectEntryTrigger(visible, correction);
+      const validTrigger = !!trigger && trigger.index === index;
+      bump(stages.trigger, validTrigger);
+      if (!validTrigger) continue;
+
+      const projection = Projection.projectLeg2(visible, correction);
+      bump(stages.projection, !!projection);
+      if (!projection) continue;
+
+      const invalidation = Invalidation.getInvalidationRule(correction);
+      bump(stages.invalidation, !!invalidation);
+      if (!invalidation) continue;
+
+      const emaContext = ema;
+      const location = locationCache.get(trigger.entryPrice) ?? Context.buildLocationContext(trigger.entryPrice, CONTEXT);
+      locationCache.set(trigger.entryPrice, location);
+      const session = sessionCache.get(trigger.timestamp) ?? Context.buildSessionContext(trigger.timestamp, CONTEXT);
+      sessionCache.set(trigger.timestamp, session);
+      const contextOk = !!emaContext && !!location && !!session;
+      bump(stages.context, contextOk);
+      if (!contextOk) continue;
+
+      const quality = Quality.scoreSetup(spike, { ema: emaContext, location, session });
+      bump(stages.quality, !!quality.tradeAllowed);
+      if (!quality.tradeAllowed) continue;
+
+      const risk = Math.abs(trigger.entryPrice - invalidation.invalidationLevel);
+      const reward = Math.abs(projection.tp1 - trigger.entryPrice);
+      const directional = trigger.direction === 'BUY' ? projection.tp1 > trigger.entryPrice : projection.tp1 < trigger.entryPrice;
+      const rrOk = risk > 0 && reward > 0 && directional;
+      bump(stages.riskReward, rrOk);
+      if (!rrOk) continue;
+
+      const candidate = {
+        entryIndex: trigger.index, entryTime: trigger.timestamp, direction: trigger.direction,
+        entry: trigger.entryPrice, stopLoss: invalidation.invalidationLevel, tp1: projection.tp1,
+        session: session.session, qualityGrade: quality.grade, qualityScore: quality.score,
+        structureScore: spike.structureScore, overlapScore: spike.overlapScore,
+        hasPGAPEvidence: spike.hasPGAPEvidence, nearRoundLevel: location.nearRoundLevel, emaAligned: emaContext.aligned,
+      };
+      bump(stages.finalCandidate, true);
+      finals.push({ ...candidate, result: outcome(candles, candidate) });
+    }
   }
 
-  const closed = finals.filter(r => r.result === 'TP1' || r.result === 'SL');
+  const unique = new Map();
+  for (const row of finals) if (!unique.has(row.entryIndex)) unique.set(row.entryIndex, row);
+  const finalRows = [...unique.values()];
+  const closed = finalRows.filter(r => r.result === 'TP1' || r.result === 'SL');
   const wins = closed.filter(r => r.result === 'TP1').length;
-  const losses = closed.filter(r => r.result === 'SL').length;
   const report = {
-    strategy: 'Strategy A / SP2L',
-    mode: 'RESEARCH_BASE_STAGE_FUNNEL_FORENSICS_V1',
-    timeframe: tf,
-    replayEvents,
-    methodology: 'Same deterministic baseline pipeline; no strategy-rule changes. Each stage is evaluated only on candles visible at replay time.',
-    stages,
-    finalCandidates: finals.length,
-    resolvedFinalCandidates: closed.length,
+    strategy: 'Strategy A / SP2L', mode: 'RESEARCH_BASE_STAGE_FUNNEL_FORENSICS_V2', timeframe: tf,
+    replayEvents, methodology: 'Baseline-parity replay: every visible breakout is evaluated, then final candidates are deduplicated by entryIndex. No strategy-rule changes.',
+    stages, rawFinalCandidateCount: finals.length, finalCandidates: finalRows.length, resolvedFinalCandidates: closed.length,
     finalWinRate: closed.length ? wins / closed.length : null,
-    finalOutcomeCounts: { TP1: wins, SL: losses, AMBIGUOUS: finals.filter(r => r.result === 'AMBIGUOUS').length, OPEN: finals.filter(r => r.result === 'OPEN').length },
-    finalByDirection: groupCount(finals, 'direction'),
-    finalBySession: groupCount(finals, 'session'),
-    finalByQuality: groupCount(finals, 'qualityGrade'),
-    finalByResult: groupCount(finals, 'result'),
+    finalOutcomeCounts: { TP1: wins, SL: closed.length - wins, AMBIGUOUS: finalRows.filter(r => r.result === 'AMBIGUOUS').length, OPEN: finalRows.filter(r => r.result === 'OPEN').length },
+    finalByDirection: groupCount(finalRows, 'direction'), finalBySession: groupCount(finalRows, 'session'),
+    finalByQuality: groupCount(finalRows, 'qualityGrade'), finalByResult: groupCount(finalRows, 'result'),
   };
   await mkdir(OUT, { recursive: true });
   const out = resolve(OUT, `${tf}.json`);
   await writeFile(out, JSON.stringify(report, null, 2));
-  console.log(`${tf}: events=${replayEvents} finals=${finals.length} resolved=${closed.length} winRate=${closed.length ? (wins / closed.length * 100).toFixed(2) : 'n/a'}%`);
+  console.log(`${tf}: events=${replayEvents} rawFinals=${finals.length} finals=${finalRows.length} resolved=${closed.length} winRate=${closed.length ? (wins / closed.length * 100).toFixed(2) : 'n/a'}%`);
   for (const [name, s] of Object.entries(stages)) console.log(`  ${name}: seen=${s.seen} passed=${s.passed} rejected=${s.rejected}`);
   console.log(`Report -> ${out}`);
 }
