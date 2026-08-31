@@ -15,7 +15,8 @@
     "research:tp1": "node scripts/analyze-tp1-attainment-forensics.mjs",
     "research:tp1-management": "node scripts/analyze-tp1-management-scenarios-global-holdout.mjs",
     "research:tp1-rolling": "node scripts/analyze-tp1-full-exit-rolling-robustness.mjs",
-    "research:base-components": "node scripts/analyze-base-component-contribution-global-holdout.mjs"
+    "research:base-components": "node scripts/analyze-base-component-contribution-global-holdout.mjs",
+    "research:base-funnel": "node scripts/analyze-base-stage-funnel-forensics.mjs"
   },
   "engines": {
     "node": ">=22"
