@@ -13,7 +13,8 @@
     "audit:data": "node scripts/audit-dataset.mjs",
     "backtest:baseline": "node --experimental-strip-types scripts/run-baseline-backtest.ts",
     "research:tp1": "node scripts/analyze-tp1-attainment-forensics.mjs",
-    "research:tp1-management": "node scripts/analyze-tp1-management-scenarios-global-holdout.mjs"
+    "research:tp1-management": "node scripts/analyze-tp1-management-scenarios-global-holdout.mjs",
+    "research:tp1-rolling": "node scripts/analyze-tp1-full-exit-rolling-robustness.mjs"
   },
   "engines": {
     "node": ">=22"
