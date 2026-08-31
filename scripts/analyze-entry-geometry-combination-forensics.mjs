@@ -32,7 +32,7 @@ function classify(rows){
   return rows.map(r=>{const x={...r};for(const [key,cuts,labels] of defs)x[`${key}Bucket`]=bucket(r[key],cuts,labels);return x;});
 }
 function pairStats(rows,a,b){
-  const [ka,la]=a,[kb,lb]=b;
+  const [ka,,la]=a,[kb,,lb]=b;
   const out=[];
   for(const va of la)for(const vb of lb){
     const selected=rows.filter(r=>r[`${ka}Bucket`]===va&&r[`${kb}Bucket`]===vb);
