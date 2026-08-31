@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const ROOT = process.cwd();
 const configs = {
@@ -7,8 +8,11 @@ const configs = {
   '5min': { breakoutLookback: 5, ftMaxBars: 2, spikeMaxCandles: 8, minDirectionalFraction: 0.5, maxOverlapFraction: 0.8 },
 };
 
-async function loadModule(file) { return import(path.resolve(ROOT, file)); }
-const [{ detectBreakout }, { detectFollowThrough }, { detectSpikeCandidates }, { detectFirstCorrection }, { detectEntryTrigger }, { getInvalidationRule }, { projectLeg2 }, { buildEMAContext, buildLocationContext, buildSessionContext, scoreSetup }] = await Promise.all([
+async function loadModule(file) {
+  return import(pathToFileURL(path.resolve(ROOT, file)).href);
+}
+
+const [{ detectBreakout }, { detectFollowThrough }, { detectSpikeCandidates }, { detectFirstCorrection }, { detectEntryTrigger }, { getInvalidationRule }, { projectLeg2 }, { buildEMAContext, buildLocationContext, buildSessionContext }, { scoreSetup }] = await Promise.all([
   loadModule('src/domain/market/BreakoutDetector.ts'),
   loadModule('src/domain/market/FollowThroughDetector.ts'),
   loadModule('src/domain/strategy-a/SpikeDetector.ts'),
@@ -43,8 +47,8 @@ function findSetup(candles, index, cfg) {
     const ema = buildEMAContext(visible.map(c => c.close), CONTEXT);
     if (!ema) continue;
     const location = buildLocationContext(trigger.entryPrice, CONTEXT);
-    const session = buildSessionContext(trigger.timestamp, CONTEXT);
-    const quality = scoreSetup(spike, { ema, location, session });
+    const sessionContext = buildSessionContext(trigger.timestamp, CONTEXT);
+    const quality = scoreSetup(spike, { ema, location, session: sessionContext });
     if (!quality.tradeAllowed) continue;
     const risk = Math.abs(trigger.entryPrice - invalidation.invalidationLevel);
     const reward = Math.abs(projection.tp1 - trigger.entryPrice);
