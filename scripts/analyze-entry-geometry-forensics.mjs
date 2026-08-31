@@ -54,7 +54,37 @@ async function run(timeframe){
   ['compressionRatio',[0.75,1,1.25,Infinity],['LT_75%','75_100%','100_125%','GE_125%']],
   ['stopToImpulse',[0.25,0.5,0.75,1,Infinity],['LT_25%','25_50%','50_75%','75_100%','GE_100%']],
  ];
- const report={strategy:'Strategy A / SP2L',mode:'RESEARCH_ENTRY_GEOMETRY_FORENSICS',timeframe,scope:'All baseline trades; pre-entry price geometry only; chronological second-half OOS; no threshold optimization',methodology:{impulse:'strongest directionally aligned candle in the previous 20 bars, normalized by preceding 60-bar median true range',retracement:'maximum adverse excursion after impulse and before entry, divided by impulse true range',entryLocation:'entry position measured from impulse origin toward impulse extreme',distanceFromExtreme:'remaining distance from entry to impulse extreme divided by impulse range',delay:'bars between selected impulse and entry',compression:'median TR of last up to 5 pre-entry bars divided by median TR of preceding up to 10 pre-entry bars',stopToImpulse:'trade risk distance divided by selected impulse true range',lookahead:'all features use candles strictly before entry',promotionGate:'OOS bucket requires n >= 10, PF >= 1, avgR > 0; diagnostic only'}},coverage:{baselineTrades:baseline.trades.length,classifiedTrades:rows.length},overall:{...summarize(rows),maxDD:dd(rows)},features:{},tradeRows:rows,nextResearchQuestion:'Only investigate geometry features whose OOS bucket is positive with adequate sample; then test compact combinations on untouched chronological thirds.'};
+
+ // Keep report metadata expanded to avoid object-literal syntax mistakes during research edits.
+ const report={
+  strategy:'Strategy A / SP2L',
+  mode:'RESEARCH_ENTRY_GEOMETRY_FORENSICS',
+  timeframe,
+  scope:'All baseline trades; pre-entry price geometry only; chronological second-half OOS; no threshold optimization',
+  methodology:{
+   impulse:'strongest directionally aligned candle in the previous 20 bars, normalized by preceding 60-bar median true range',
+   retracement:'maximum adverse excursion after impulse and before entry, divided by impulse true range',
+   entryLocation:'entry position measured from impulse origin toward impulse extreme',
+   distanceFromExtreme:'remaining distance from entry to impulse extreme divided by impulse range',
+   delay:'bars between selected impulse and entry',
+   compression:'median TR of last up to 5 pre-entry bars divided by median TR of preceding up to 10 pre-entry bars',
+   stopToImpulse:'trade risk distance divided by selected impulse true range',
+   lookahead:'all features use candles strictly before entry',
+   promotionGate:'OOS bucket requires n >= 10, PF >= 1, avgR > 0; diagnostic only'
+  },
+  coverage:{
+   baselineTrades:baseline.trades.length,
+   classifiedTrades:rows.length
+  },
+  overall:{
+   ...summarize(rows),
+   maxDD:dd(rows)
+  },
+  features:{},
+  tradeRows:rows,
+  nextResearchQuestion:'Only investigate geometry features whose OOS bucket is positive with adequate sample; then test compact combinations on untouched chronological thirds.'
+ };
+
  for(const [key,cuts,labels] of defs)report.features[key]={all:byBucket(rows,key,cuts,labels),stability:stability(rows,key,cuts,labels)};
  await mkdir(OUT_DIR,{recursive:true});const out=resolve(OUT_DIR,`${timeframe}.json`);await writeFile(out,JSON.stringify(report,null,2));
  console.log(`${timeframe}: baseline=${baseline.trades.length} classified=${rows.length} PF=${report.overall.PF?.toFixed(4)??'n/a'}`);
