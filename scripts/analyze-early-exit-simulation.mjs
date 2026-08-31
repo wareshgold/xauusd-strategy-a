@@ -1,67 +1,126 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const root = process.cwd();
-const configs = [
-  { tf: '1min', baseline: 'data/reports/strategy-a-baseline/1min.json' },
-  { tf: '5min', baseline: 'data/reports/strategy-a-baseline/5min.json' },
-];
-const horizons = [2, 3, 5];
-const thresholds = [0.25, 0.5, 0.75, 1];
+const ROOT = process.cwd();
+const CONFIGS = ['1min', '5min'];
+const HORIZONS = [2, 3, 5];
+const THRESHOLDS = [0.25, 0.5, 0.75, 1];
 
-function load(p) { return JSON.parse(fs.readFileSync(path.join(root, p), 'utf8')); }
-function finite(n) { return Number.isFinite(n) ? n : 0; }
-function pf(rs) {
-  const wins = rs.filter(r => r > 0).reduce((a,b)=>a+b,0);
-  const losses = -rs.filter(r => r < 0).reduce((a,b)=>a+b,0);
-  return losses === 0 ? Infinity : wins / losses;
-}
-function dd(rs) {
-  let eq=0, peak=0, max=0;
-  for (const r of rs) { eq += r; peak=Math.max(peak,eq); max=Math.max(max,peak-eq); }
-  return max;
-}
-function med(a) { const x=[...a].sort((a,b)=>a-b); if(!x.length)return 0; const m=Math.floor(x.length/2); return x.length%2?x[m]:(x[m-1]+x[m])/2; }
-
-// The baseline report schema is intentionally consumed generically: trade objects must
-// contain entryIndex, rMultiple, result, riskDistance and enough path data to infer
-// adverse excursion. The forensic reports provide per-trade path samples.
-for (const c of configs) {
-  const baseline = load(c.baseline);
-  const forensicPath = `data/reports/strategy-a-trade-forensics/${c.tf}.json`;
-  const forensic = fs.existsSync(path.join(root, forensicPath)) ? load(forensicPath) : null;
-  if (!forensic) throw new Error(`Missing ${forensicPath}; run analyze-trade-forensics first.`);
-
-  const trades = forensic.trades ?? forensic;
-  if (!Array.isArray(trades)) throw new Error(`Unsupported forensic schema for ${c.tf}`);
-
-  const baseRs = trades.map(t => finite(t.rMultiple)).filter((_,i)=>i < baseline.metrics?.trades ?? Infinity);
-  const results = [];
-  for (const h of horizons) for (const threshold of thresholds) {
-    const simulated = [];
-    let earlyExits=0, earlyWins=0, earlyLosses=0;
-    for (const t of trades) {
-      const pathSamples = t.path ?? t.earlyPath ?? t.candles ?? [];
-      let exit = null;
-      for (const s of pathSamples) {
-        const idx = s.horizon ?? s.offset ?? s.candleOffset;
-        const adverse = Math.abs(Math.min(0, finite(s.closeR ?? s.adverseR ?? s.maeR)));
-        if (idx <= h && adverse >= threshold) { exit = -threshold; break; }
-      }
-      const r = exit === null ? finite(t.rMultiple) : exit;
-      simulated.push(r);
-      if (exit !== null) { earlyExits++; if (finite(t.rMultiple)>0) earlyWins++; else earlyLosses++; }
-    }
-    const totalR = simulated.reduce((a,b)=>a+b,0);
-    results.push({ horizon:h, thresholdR:threshold, trades:simulated.length, earlyExits, earlyWins, earlyLosses,
-      winRate: simulated.filter(r=>r>0).length/simulated.length, averageR:totalR/simulated.length,
-      profitFactor:pf(simulated), totalR, maxDrawdownR:dd(simulated), medianR:med(simulated) });
+const load = (p) => JSON.parse(fs.readFileSync(path.resolve(ROOT, p), 'utf8'));
+const sum = (xs) => xs.reduce((a, b) => a + b, 0);
+const pf = (rs) => {
+  const grossWin = sum(rs.filter((r) => r > 0));
+  const grossLoss = -sum(rs.filter((r) => r < 0));
+  return grossLoss === 0 ? Infinity : grossWin / grossLoss;
+};
+const drawdown = (rs) => {
+  let equity = 0, peak = 0, max = 0;
+  for (const r of rs) {
+    equity += r;
+    peak = Math.max(peak, equity);
+    max = Math.max(max, peak - equity);
   }
-  const out = { timeframe:c.tf, baseline: { trades:baseRs.length, totalR:baseRs.reduce((a,b)=>a+b,0), averageR:baseRs.reduce((a,b)=>a+b,0)/baseRs.length, profitFactor:pf(baseRs), maxDrawdownR:dd(baseRs) }, simulations:results,
-    researchNote:'Diagnostic only. This simulation closes a trade at -thresholdR when adverse path reaches the threshold within the selected early horizon; otherwise the original terminal result is retained. No strategy rule changed.' };
-  const outDir=path.join(root,`data/reports/strategy-a-early-exit-simulation`); fs.mkdirSync(outDir,{recursive:true});
-  fs.writeFileSync(path.join(outDir,`${c.tf}.json`),JSON.stringify(out,null,2)+'\n');
-  console.log(`${c.tf}: baseline trades=${baseRs.length}`);
-  for(const r of results) console.log(`  h+${r.horizon} adverse>=${r.thresholdR}R: exits=${r.earlyExits} earlyW/L=${r.earlyWins}/${r.earlyLosses} PF=${Number.isFinite(r.profitFactor)?r.profitFactor.toFixed(4):'Infinity'} avgR=${r.averageR.toFixed(4)} totalR=${r.totalR.toFixed(4)} DD=${r.maxDrawdownR.toFixed(4)}`);
-  console.log(`Report -> ${path.join(outDir,`${c.tf}.json`)}`);
+  return max;
+};
+
+for (const timeframe of CONFIGS) {
+  const baseline = load(`data/reports/strategy-a-baseline/${timeframe}.json`);
+  const earlyPath = load(`data/reports/strategy-a-early-trade-path/${timeframe}.json`);
+  const pathByEntry = new Map(earlyPath.trades.map((t) => [t.entryIndex, t]));
+  const trades = baseline.trades;
+  const baselineRs = trades.map((t) => Number(t.rMultiple)).filter(Number.isFinite);
+  const simulations = [];
+
+  for (const horizon of HORIZONS) {
+    for (const threshold of THRESHOLDS) {
+      const simulated = [];
+      let earlyExits = 0;
+      let earlyWinnerCuts = 0;
+      let earlyLoserCuts = 0;
+      let sameBarExcluded = 0;
+
+      for (const trade of trades) {
+        const forensic = pathByEntry.get(trade.entryIndex);
+        if (!forensic) continue;
+        const terminalBar = Number(trade.barsToExit);
+        let exitR = Number(trade.rMultiple);
+        let triggerHorizon = null;
+
+        // Conservative rule: only an adverse hit strictly before the baseline
+        // terminal bar is actionable. If both happen on the same OHLC bar,
+        // intrabar order is unknowable and we do not invent one.
+        for (const row of forensic.path ?? []) {
+          const h = Number(row.horizon);
+          const adverse = Number(row.maeR);
+          if (h > horizon) break;
+          if (Number.isFinite(terminalBar) && h >= terminalBar) {
+            if (h === terminalBar && adverse >= threshold) sameBarExcluded++;
+            break;
+          }
+          if (adverse >= threshold) {
+            exitR = -threshold;
+            triggerHorizon = h;
+            earlyExits++;
+            if (Number(trade.rMultiple) > 0) earlyWinnerCuts++;
+            else if (Number(trade.rMultiple) < 0) earlyLoserCuts++;
+            break;
+          }
+        }
+        simulated.push({ entryIndex: trade.entryIndex, r: exitR, triggerHorizon });
+      }
+
+      simulated.sort((a, b) => a.entryIndex - b.entryIndex);
+      const rs = simulated.map((x) => x.r);
+      const totalR = sum(rs);
+      simulations.push({
+        horizon,
+        thresholdR: threshold,
+        trades: rs.length,
+        earlyExits,
+        earlyWinnerCuts,
+        earlyLoserCuts,
+        sameBarExcluded,
+        winRate: rs.length ? rs.filter((r) => r > 0).length / rs.length : 0,
+        averageR: rs.length ? totalR / rs.length : 0,
+        profitFactor: pf(rs),
+        totalR,
+        maxDrawdownR: drawdown(rs),
+      });
+    }
+  }
+
+  const baseTotal = sum(baselineRs);
+  const report = {
+    strategy: 'Strategy A / SP2L',
+    mode: 'DIAGNOSTIC_ONLY',
+    timeframe,
+    baseline: {
+      trades: baselineRs.length,
+      totalR: baseTotal,
+      averageR: baseTotal / baselineRs.length,
+      profitFactor: pf(baselineRs),
+      maxDrawdownR: drawdown(baselineRs),
+    },
+    simulations,
+    methodology: {
+      horizons: HORIZONS,
+      thresholdsR: THRESHOLDS,
+      exitRule: 'Close at -thresholdR when MAE reaches threshold within the selected horizon.',
+      sameBarPolicy: 'If adverse threshold and baseline terminal event occur on the same OHLC bar, exclude that trigger because intrabar ordering is unknowable.',
+      ordering: 'Simulated results are evaluated in entryIndex order.',
+    },
+    researchNote: 'Diagnostic only. No strategy parameters or trading rules changed. This is a retrospective path simulation, not a validated production exit rule.',
+  };
+
+  const outDir = path.resolve(ROOT, 'data/reports/strategy-a-early-exit-simulation');
+  fs.mkdirSync(outDir, { recursive: true });
+  const out = path.join(outDir, `${timeframe}.json`);
+  fs.writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
+
+  console.log(`${timeframe}: baseline trades=${baselineRs.length} PF=${pf(baselineRs).toFixed(4)} avgR=${(baseTotal / baselineRs.length).toFixed(4)} totalR=${baseTotal.toFixed(4)}`);
+  for (const r of simulations) {
+    const pfText = Number.isFinite(r.profitFactor) ? r.profitFactor.toFixed(4) : 'Infinity';
+    console.log(`  h+${r.horizon} adverse>=${r.thresholdR}R: exits=${r.earlyExits} winnerCuts=${r.earlyWinnerCuts} loserCuts=${r.earlyLoserCuts} sameBarExcluded=${r.sameBarExcluded} PF=${pfText} avgR=${r.averageR.toFixed(4)} totalR=${r.totalR.toFixed(4)} DD=${r.maxDrawdownR.toFixed(4)}`);
+  }
+  console.log(`Report -> ${out}`);
 }
