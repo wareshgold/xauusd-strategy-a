@@ -1,0 +1,25 @@
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
+const ROOT=resolve(process.cwd());
+const OUT_DIR=resolve(ROOT,'data/reports/strategy-a-entry-geometry-global-holdout-forensics');
+const TIMEFRAMES=['1min','5min'];
+const MIN_N=8;
+const TOP_N=30;
+const defs=[
+ ['impulseScore',[1,1.25,1.5,2,2.5,Infinity],['LT_1.00','1.00_1.25','1.25_1.50','1.50_2.00','2.00_2.50','GE_2.50']],
+ ['retracement',[0.25,0.5,0.75,1,Infinity],['LT_25%','25_50%','50_75%','75_100%','GE_100%']],
+ ['entryLocation',[0.25,0.5,0.75,Infinity],['0_25%','25_50%','50_75%','75_100%']],
+ ['distanceFromExtreme',[0.25,0.5,0.75,Infinity],['0_25%','25_50%','50_75%','75_100%']],
+ ['delayFromImpulse',[3,6,9,13,Infinity],['D0_2','D3_5','D6_8','D9_12','D13_PLUS']],
+ ['impulseBodyFraction',[0.4,0.6,0.8,Infinity],['LT_40%','40_60%','60_80%','GE_80%']],
+ ['compressionRatio',[0.75,1,1.25,Infinity],['LT_75%','75_100%','100_125%','GE_125%']],
+ ['stopToImpulse',[0.25,0.5,0.75,1,Infinity],['LT_25%','25_50%','50_75%','75_100%','GE_100%']],
+];
+function bucket(x,cuts,labels){if(!Number.isFinite(x))return null;for(let i=0;i<cuts.length;i++)if(x<cuts[i])return labels[i];return labels.at(-1);}
+function classify(rows){return rows.map(r=>{const x={...r};for(const [k,c,l] of defs)x[`${k}Bucket`]=bucket(r[k],c,l);return x;});}
+function summary(rows){const a=rows.filter(r=>Number.isFinite(r.rMultiple));const gp=a.filter(r=>r.rMultiple>0).reduce((s,r)=>s+r.rMultiple,0);const gl=a.filter(r=>r.rMultiple<0).reduce((s,r)=>s-r.rMultiple,0);return {n:a.length,wins:a.filter(r=>r.rMultiple>0).length,losses:a.filter(r=>r.rMultiple<0).length,PF:gl?gp/gl:null,avgR:a.length?a.reduce((s,r)=>s+r.rMultiple,0)/a.length:0,totalR:a.reduce((s,r)=>s+r.rMultiple,0)};}
+function globalSplits(rows){const n=rows.length;const a=Math.floor(n/3),b=Math.floor(2*n/3);return {dev:rows.slice(0,a),validation:rows.slice(a,b),holdout:rows.slice(b),boundaries:{devEnd:rows[a-1]?.entryTime??null,validationEnd:rows[b-1]?.entryTime??null,holdoutStart:rows[b]?.entryTime??null}};}
+function candidates(rows){const out=[];for(let i=0;i<defs.length;i++)for(let j=i+1;j<defs.length;j++){const [ka,,la]=defs[i],[kb,,lb]=defs[j];for(const va of la)for(const vb of lb){const selected=rows.filter(r=>r[`${ka}Bucket`]===va&&r[`${kb}Bucket`]===vb);if(selected.length<MIN_N*3)continue;const s=globalSplits(selected);const d=summary(s.dev),v=summary(s.validation),h=summary(s.holdout);const pass=d.n>=MIN_N&&v.n>=MIN_N&&d.PF!=null&&v.PF!=null&&d.PF>=1&&v.PF>=1&&d.avgR>0&&v.avgR>0;out.push({featureA:ka,bucketA:va,featureB:kb,bucketB:vb,dev:d,validation:v,holdout:h,passesDevValidation:pass});}}return out;}
+async function run(tf){const p=resolve(ROOT,`data/reports/strategy-a-entry-geometry-forensics/${tf}.json`);const src=JSON.parse(await readFile(p,'utf8'));const raw=src.tradeRows||[];if(!raw.length)throw new Error(`${tf}: missing tradeRows`);const rows=classify(raw.filter(r=>Number.isFinite(r.rMultiple)).sort((a,b)=>new Date(a.entryTime)-new Date(b.entryTime)));const global=globalSplits(rows);const pairs=candidates(rows);const selected=pairs.filter(x=>x.passesDevValidation&&x.holdout.n>=MIN_N).sort((a,b)=>b.validation.PF-a.validation.PF||b.validation.avgR-a.validation.avgR||b.validation.n-a.validation.n);const report={strategy:'Strategy A / SP2L',mode:'RESEARCH_ENTRY_GEOMETRY_GLOBAL_HOLDOUT_FORENSICS_V1',timeframe,scope:'Pairwise geometry buckets evaluated against one shared chronological DEV/VALIDATION/HOLDOUT partition',methodology:{source:'strategy-a-entry-geometry-forensics tradeRows',search:'all unordered pairs across eight fixed geometry definitions',split:'single global chronological thirds across the complete classified trade universe; the same date boundaries apply to every pair',selectionGate:`DEV and VALIDATION each n >= ${MIN_N}, PF >= 1, avgR > 0`,holdout:'Untouched global third; never used for candidate ranking',warning:'Pairwise multiple-comparison risk remains. Positive HOLDOUT results are exploratory evidence only and require pre-specified follow-up robustness tests.'},globalBoundaries:global.boundaries,globalCounts:{all:rows.length,dev:global.dev.length,validation:global.validation.length,holdout:global.holdout.length},pairTests:pairs.length,devValidationCandidates:selected.length,topCandidates:selected.slice(0,TOP_N),allPairResults:pairs};await mkdir(OUT_DIR,{recursive:true});const out=resolve(OUT_DIR,`${tf}.json`);await writeFile(out,JSON.stringify(report,null,2));console.log(`${tf}: trades=${rows.length} pairTests=${pairs.length} devValidationCandidates=${selected.length}`);for(const c of selected.slice(0,TOP_N))console.log(`  ${c.featureA}=${c.bucketA} + ${c.featureB}=${c.bucketB}: DEV n=${c.dev.n} PF=${c.dev.PF?.toFixed(4)??'n/a'} avgR=${c.dev.avgR.toFixed(4)} | VAL n=${c.validation.n} PF=${c.validation.PF?.toFixed(4)??'n/a'} avgR=${c.validation.avgR.toFixed(4)} | HOLDOUT n=${c.holdout.n} PF=${c.holdout.PF?.toFixed(4)??'n/a'} avgR=${c.holdout.avgR.toFixed(4)} totalR=${c.holdout.totalR.toFixed(4)}`);console.log(`Report -> ${out}`);}
+for(const tf of TIMEFRAMES)await run(tf);
