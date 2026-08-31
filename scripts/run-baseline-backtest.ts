@@ -1,17 +1,17 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { detectBreakout } from '../src/domain/market/BreakoutDetector.ts';
-import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.ts';
-import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.ts';
-import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.ts';
-import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.ts';
-import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.ts';
-import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.ts';
-import { buildEMAContext, buildLocationContext, buildSessionContext, type ContextConfig } from '../src/domain/strategy-a/Context.ts';
-import { scoreSetup } from '../src/domain/strategy-a/QualityScore.ts';
-import { runStrategyABacktest, type StrategyADecision } from '../src/backtest/StrategyAAdapter.ts';
-import type { BacktestCandidate } from '../src/backtest/BacktestEngine.ts';
-import type { HistoricalDataset } from '../src/backtest/HistoricalCandle.ts';
+import { detectBreakout } from '../src/domain/market/BreakoutDetector.js';
+import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.js';
+import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.js';
+import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.js';
+import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
+import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.js';
+import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
+import { buildEMAContext, buildLocationContext, buildSessionContext, type ContextConfig } from '../src/domain/strategy-a/Context.js';
+import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
+import { runStrategyABacktest, type StrategyADecision } from '../src/backtest/StrategyAAdapter.js';
+import type { BacktestCandidate } from '../src/backtest/BacktestEngine.js';
+import type { HistoricalDataset } from '../src/backtest/HistoricalCandle.js';
 
 const ROOT = resolve(process.cwd());
 const OUTPUT = resolve(ROOT, 'data/reports/strategy-a-baseline');
@@ -34,18 +34,9 @@ const CONTEXT: ContextConfig = {
 const decide: StrategyADecision = (event) => {
   const candles = event.visibleCandles;
   if (candles.length < Math.max(BREAKOUT_LOOKBACK + 2, CONTEXT.emaPeriod)) return [];
-
   const breakouts = detectBreakout(candles, BREAKOUT_LOOKBACK);
-  const followThrough = detectFollowThrough(candles, breakouts, {
-    maxBarsAfterBreakout: FT_MAX_BARS,
-    requireCloseBeyondBrokenLevel: true,
-  });
-  const spikes = detectSpikeCandidates(candles, breakouts, followThrough, {
-    maxCandles: SPIKE_MAX_CANDLES,
-    minDirectionalFraction: SPIKE_MIN_DIRECTIONAL_FRACTION,
-    maxOverlapFraction: SPIKE_MAX_OVERLAP_FRACTION,
-  });
-
+  const followThrough = detectFollowThrough(candles, breakouts, { maxBarsAfterBreakout: FT_MAX_BARS, requireCloseBeyondBrokenLevel: true });
+  const spikes = detectSpikeCandidates(candles, breakouts, followThrough, { maxCandles: SPIKE_MAX_CANDLES, minDirectionalFraction: SPIKE_MIN_DIRECTIONAL_FRACTION, maxOverlapFraction: SPIKE_MAX_OVERLAP_FRACTION });
   const candidates: BacktestCandidate[] = [];
   for (const spike of spikes.candidates) {
     if (spike.endIndex >= event.index) continue;
@@ -53,7 +44,6 @@ const decide: StrategyADecision = (event) => {
     if (!correction || correction.correctionExtremeIndex >= event.index) continue;
     const trigger = detectEntryTrigger(candles, correction);
     if (!trigger || trigger.index !== event.index) continue;
-
     const projection = projectLeg2(candles, correction);
     if (!projection) continue;
     const invalidation = getInvalidationRule(correction);
@@ -63,48 +53,29 @@ const decide: StrategyADecision = (event) => {
     const session = buildSessionContext(trigger.timestamp, CONTEXT);
     const quality = scoreSetup(spike, { ema: emaContext, location, session });
     if (!quality.tradeAllowed) continue;
-
     const risk = Math.abs(trigger.entryPrice - invalidation.invalidationLevel);
     const reward = Math.abs(projection.tp1 - trigger.entryPrice);
-    const targetIsDirectional = trigger.direction === 'BUY'
-      ? projection.tp1 > trigger.entryPrice
-      : projection.tp1 < trigger.entryPrice;
+    const targetIsDirectional = trigger.direction === 'BUY' ? projection.tp1 > trigger.entryPrice : projection.tp1 < trigger.entryPrice;
     if (risk <= 0 || reward <= 0 || !targetIsDirectional) continue;
-
     candidates.push({
-      entryIndex: trigger.index,
-      entryTime: trigger.timestamp,
-      direction: trigger.direction,
-      entry: trigger.entryPrice,
-      stopLoss: invalidation.invalidationLevel,
-      tp1: projection.tp1,
+      entryIndex: trigger.index, entryTime: trigger.timestamp, direction: trigger.direction,
+      entry: trigger.entryPrice, stopLoss: invalidation.invalidationLevel, tp1: projection.tp1,
+      session: session.session, qualityGrade: quality.grade, qualityScore: quality.score,
+      structureScore: spike.structureScore, overlapScore: spike.overlapScore,
+      hasPGAPEvidence: spike.hasPGAPEvidence, nearRoundLevel: location.nearRoundLevel, emaAligned: emaContext.aligned,
     });
   }
-
   return candidates.slice(0, 1);
 };
 
 async function loadDataset(timeframe: '1min' | '5min'): Promise<HistoricalDataset> {
-  const path = resolve(ROOT, `data/historical/xauusd-${timeframe}.json`);
-  return JSON.parse(await readFile(path, 'utf8')) as HistoricalDataset;
+  return JSON.parse(await readFile(resolve(ROOT, `data/historical/xauusd-${timeframe}.json`), 'utf8')) as HistoricalDataset;
 }
-
 async function run(timeframe: '1min' | '5min'): Promise<void> {
   const dataset = await loadDataset(timeframe);
   const result = runStrategyABacktest(dataset.candles, decide).result;
-  const report = {
-    strategy: 'Strategy A / SP2L', mode: 'BASELINE', timeframe,
-    symbol: dataset.symbol, source: dataset.source, candles: dataset.candles.length,
-    from: dataset.candles[0]?.timestamp ?? null, to: dataset.candles.at(-1)?.timestamp ?? null,
-    parameters: { breakoutLookback: BREAKOUT_LOOKBACK, followThroughMaxBars: FT_MAX_BARS, spikeMaxCandles: SPIKE_MAX_CANDLES, spikeMinDirectionalFraction: SPIKE_MIN_DIRECTIONAL_FRACTION, spikeMaxOverlapFraction: SPIKE_MAX_OVERLAP_FRACTION, emaPeriod: CONTEXT.emaPeriod, roundStep: CONTEXT.roundStep, roundDistance: CONTEXT.roundDistance },
-    metrics: result.metrics, trades: result.trades,
-  };
-  const out = resolve(OUTPUT, `${timeframe}.json`);
-  await mkdir(OUTPUT, { recursive: true });
-  await writeFile(out, JSON.stringify(report, null, 2));
-  console.log(`${timeframe}: candles=${dataset.candles.length} trades=${result.metrics.trades} winRate=${(result.metrics.winRate * 100).toFixed(2)}% avgR=${result.metrics.averageR.toFixed(4)} PF=${result.metrics.profitFactor?.toFixed(4) ?? 'n/a'} maxDD=${result.metrics.maxDrawdownR.toFixed(4)}R`);
-  console.log(`Report -> ${out}`);
+  const report = { strategy:'Strategy A / SP2L', mode:'BASELINE', timeframe, symbol:dataset.symbol, source:dataset.source, candles:dataset.candles.length, from:dataset.candles[0]?.timestamp??null, to:dataset.candles.at(-1)?.timestamp??null, parameters:{breakoutLookback:BREAKOUT_LOOKBACK,followThroughMaxBars:FT_MAX_BARS,spikeMaxCandles:SPIKE_MAX_CANDLES,spikeMinDirectionalFraction:SPIKE_MIN_DIRECTIONAL_FRACTION,spikeMaxOverlapFraction:SPIKE_MAX_OVERLAP_FRACTION,emaPeriod:CONTEXT.emaPeriod,roundStep:CONTEXT.roundStep,roundDistance:CONTEXT.roundDistance}, metrics:result.metrics, trades:result.trades };
+  const out=resolve(OUTPUT,`${timeframe}.json`); await mkdir(OUTPUT,{recursive:true}); await writeFile(out,JSON.stringify(report,null,2));
+  console.log(`${timeframe}: candles=${dataset.candles.length} trades=${result.metrics.trades} winRate=${(result.metrics.winRate*100).toFixed(2)}% avgR=${result.metrics.averageR.toFixed(4)} PF=${result.metrics.profitFactor?.toFixed(4)??'n/a'} maxDD=${result.metrics.maxDrawdownR.toFixed(4)}R`); console.log(`Report -> ${out}`);
 }
-
-await run('1min');
-await run('5min');
+await run('1min'); await run('5min');
