@@ -37,7 +37,7 @@ function feature(candles,t){
  const recentTR=between.slice(-5).map(tr),olderTR=between.slice(-15,-5).map(tr);
  const compression=recentTR.length&&olderTR.length?median(recentTR)/median(olderTR):null;
  const stopToImpulse=t.riskDistance/impRange;
- return{...t,impulseIndex,impulseScore:best,impulseRange,impulseBodyFraction:bodyFraction,retracement,entryLocation,distanceFromExtreme,delayFromImpulse:delay,compressionRatio:compression,stopToImpulse,preEntryBars:between.length};
+ return{...t,impulseIndex,impulseScore:best,impulseRange:impRange,impulseBodyFraction:bodyFraction,retracement,entryLocation,distanceFromExtreme,delayFromImpulse:delay,compressionRatio:compression,stopToImpulse,preEntryBars:between.length};
 }
 
 async function run(timeframe){
