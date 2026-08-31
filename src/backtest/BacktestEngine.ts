@@ -5,6 +5,8 @@ export interface BacktestCandidate { readonly entryIndex:number; readonly entryT
 
 function evaluate(candidate: BacktestCandidate, candles: readonly Candle[]): BacktestTrade {
   const risk=Math.abs(candidate.entry-candidate.stopLoss); if(risk<=0) throw new Error('Backtest candidate risk must be positive');
+  // A valid signal is not cancelled by elapsed bars, retracement, or early adverse/favorable excursion.
+  // Once entered, it remains active until the first deterministic terminal event: SL, TP1, or TP2.
   for(let i=candidate.entryIndex+1;i<candles.length;i++){
     const c=candles[i]!;
     const sl=candidate.direction==='BUY'?c.low<=candidate.stopLoss:c.high>=candidate.stopLoss;
