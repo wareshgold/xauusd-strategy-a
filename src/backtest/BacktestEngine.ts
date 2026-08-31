@@ -1,12 +1,26 @@
 import type { Candle } from '../domain/market/Candle.js';
 import type { BacktestMetrics, BacktestResult, BacktestTrade } from './BacktestTypes.js';
 
-export interface BacktestCandidate { readonly entryIndex:number; readonly entryTime:string; readonly direction:'BUY'|'SELL'; readonly entry:number; readonly stopLoss:number; readonly tp1:number; readonly tp2?:number; }
+export interface BacktestCandidate {
+  readonly entryIndex:number;
+  readonly entryTime:string;
+  readonly direction:'BUY'|'SELL';
+  readonly entry:number;
+  readonly stopLoss:number;
+  readonly tp1:number;
+  readonly tp2?:number;
+  readonly session?:string;
+  readonly qualityGrade?:'A'|'B'|'C';
+  readonly qualityScore?:number;
+  readonly structureScore?:number;
+  readonly overlapScore?:number;
+  readonly hasPGAPEvidence?:boolean;
+  readonly nearRoundLevel?:boolean;
+  readonly emaAligned?:boolean;
+}
 
 function evaluate(candidate: BacktestCandidate, candles: readonly Candle[]): BacktestTrade {
   const risk=Math.abs(candidate.entry-candidate.stopLoss); if(risk<=0) throw new Error('Backtest candidate risk must be positive');
-  // A valid signal is not cancelled by elapsed bars, retracement, or early adverse/favorable excursion.
-  // Once entered, it remains active until the first deterministic terminal event: SL, TP1, or TP2.
   for(let i=candidate.entryIndex+1;i<candles.length;i++){
     const c=candles[i]!;
     const sl=candidate.direction==='BUY'?c.low<=candidate.stopLoss:c.high>=candidate.stopLoss;
@@ -28,5 +42,7 @@ function calculateMetrics(trades: readonly BacktestTrade[]): BacktestMetrics {
 }
 
 export function runBacktest(candles: readonly Candle[], candidates: readonly BacktestCandidate[]): BacktestResult {
-  return {trades:candidates.filter(c=>c.entryIndex>=0&&c.entryIndex<candles.length).map(c=>evaluate(c,candles)),metrics:calculateMetrics(candidates.filter(c=>c.entryIndex>=0&&c.entryIndex<candles.length).map(c=>evaluate(c,candles)))};
+  const valid=candidates.filter(c=>c.entryIndex>=0&&c.entryIndex<candles.length);
+  const trades=valid.map(c=>evaluate(c,candles));
+  return {trades,metrics:calculateMetrics(trades)};
 }
