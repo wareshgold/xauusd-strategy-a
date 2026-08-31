@@ -120,9 +120,6 @@ async function analyze(timeframe, modules) {
         continue;
       }
       counts.correctionFound += 1;
-      const pgap = modules.collectPGAPObservations(visible, spike);
-      counts.pgapObservations += pgap.length;
-      counts.pgapCandidates += pgap.filter((x) => x.classification === 'CANDIDATE').length;
 
       const trigger = modules.detectEntryTrigger(visible, correction);
       if (!trigger || trigger.index !== eventIndex) continue;
@@ -142,6 +139,11 @@ async function analyze(timeframe, modules) {
       counts.qualityAllowed += 1;
       const invalidation = modules.getInvalidationRule(correction);
       if (!invalidation) continue;
+
+      // PGAP is a research observation only. Evaluate it once per unique
+      // baseline entry instead of once for every replay event, which would
+      // multiply the same historical setup thousands of times.
+      const pgap = modules.collectPGAPObservations(visible, spike);
       const entry = {
         entryIndex: trigger.index,
         entryTime: trigger.timestamp,
@@ -149,7 +151,9 @@ async function analyze(timeframe, modules) {
         spike: { startIndex: spike.startIndex, endIndex: spike.endIndex },
         correction: { startIndex: correction.correctionStartIndex, extremeIndex: correction.correctionExtremeIndex },
         trigger: trigger.reason,
+        pgapObservations: pgap.length,
         pgapCandidates: pgap.filter((x) => x.classification === 'CANDIDATE').length,
+        pgapValidated: 0,
         leg1Size: projection.leg1Size,
         projectionTP1: projection.tp1,
         twoLegValidation: 'NOT_APPLIED_AT_ENTRY',
@@ -162,8 +166,13 @@ async function analyze(timeframe, modules) {
   for (const entry of entries) unique.set(`${entry.entryIndex}:${entry.direction}`, entry);
   const baselineEntries = [...unique.values()];
   counts.baselineEntries = baselineEntries.length;
+
+  // Aggregate PGAP research evidence only across unique baseline entries.
+  counts.pgapObservations = baselineEntries.reduce((sum, entry) => sum + entry.pgapObservations, 0);
+  counts.pgapCandidates = baselineEntries.reduce((sum, entry) => sum + entry.pgapCandidates, 0);
+  counts.pgapValidated = 0;
+
   for (const entry of baselineEntries) {
-    if (entry.pgapCandidates > 0) counts.pgapValidated += 0;
     const ratio = ratioForEntry(candles, entry.entryIndex, entry.direction, entry.leg1Size);
     if (ratio !== null && Number.isFinite(ratio)) {
       counts.postEntryLeg2Observable += 1;
@@ -197,6 +206,7 @@ async function analyze(timeframe, modules) {
       'The baseline creates an entry after correction-extreme reclaim, but does not require a validated P-GAP.',
       'PGAPResearch.ts only records imbalance observations and explicitly does not define a production P-GAP rule.',
       'LegProjection.ts computes a theoretical Leg-2 target from Leg-1 size; it does not validate that a second leg has completed before entry.',
+      'PGAP observations in this report are aggregated once per unique baseline entry; replay-event duplication is intentionally excluded.',
       'The post-entry ratio is diagnostic only: favorable excursion divided by projected Leg-1 size. It must not be used as an entry filter without a separately validated Strategy A rule.',
     ],
     stageFailures,
