@@ -19,6 +19,7 @@
     "research:base-funnel": "node scripts/analyze-base-stage-funnel-forensics.mjs",
     "research:trigger-funnel": "node scripts/analyze-trigger-funnel-forensics.mjs",
     "research:trigger-latency": "node scripts/analyze-trigger-latency-global-holdout.mjs",
+    "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:direction-session-rolling": "node scripts/analyze-direction-session-rolling-robustness.mjs",
     "research:fresh-holdout-late-ny": "node scripts/analyze-fresh-holdout-late-ny.mjs"
   },
