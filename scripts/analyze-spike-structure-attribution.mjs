@@ -1,71 +1,37 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const ROOT = resolve(process.cwd());
-const OUT = resolve(ROOT, 'data/reports/strategy-a-spike-structure-attribution');
-const REOPEN_EXCLUSION_MINUTES = [0, 15, 30, 45, 60];
-const LOOKBACK = 60;
-const TF = [
-  { name: '1min', minutes: 1 },
-  { name: '5min', minutes: 5 },
-];
-
-const mean = a => { const v=a.filter(Number.isFinite); return v.length ? v.reduce((s,x)=>s+x,0)/v.length : null; };
-const median = a => { const v=a.filter(Number.isFinite).sort((a,b)=>a-b); if(!v.length)return null; const m=Math.floor(v.length/2); return v.length%2?v[m]:(v[m-1]+v[m])/2; };
-const quantile = (a,p) => { const v=a.filter(Number.isFinite).sort((a,b)=>a-b); if(!v.length)return null; const x=(v.length-1)*p,l=Math.floor(x),h=Math.ceil(x); return l===h?v[l]:v[l]+(v[h]-v[l])*(x-l); };
-const parse = s => { const d=new Date(s.includes('T') ? s : s.replace(' ','T')+'Z'); return Number.isNaN(d.getTime())?null:d; };
-const tr = (c,p) => Math.max(c.high-c.low,Math.abs(c.high-p),Math.abs(c.low-p));
-const isReopen = d => d?.getUTCDay()===0 && d?.getUTCHours()===22 && d?.getUTCMinutes()===0;
-const key = (v) => v == null ? 'NA' : String(v);
-
-function metrics(rows){
- const rs=rows.map(x=>x.r).filter(Number.isFinite);
- const wins=rs.filter(x=>x>0).length, losses=rs.filter(x=>x<0).length;
- const grossWin=rs.filter(x=>x>0).reduce((s,x)=>s+x,0), grossLoss=-rs.filter(x=>x<0).reduce((s,x)=>s+x,0);
- return {n:rs.length,wins,losses,winRate:rs.length?wins/rs.length:null,avgR:mean(rs),expectancyR:mean(rs),profitFactor:grossLoss?grossWin/grossLoss:null,totalR:rs.reduce((s,x)=>s+x,0)};
-}
-function classify(v){ if(v==null)return 'NA'; if(v<=0)return '0'; if(v===1)return '1'; if(v===2)return '2'; return '3+'; }
-
+const ROOT=resolve(process.cwd());
+const OUT=resolve(ROOT,'data/reports/strategy-a-spike-structure-attribution');
+const LOOKBACK=60, FIXED_SPIKE=2.0, MIN_CELL_N=20, BOOT=5000;
+const TF=['1min','5min'], REOPEN=[0,15,30,45,60];
+const mean=a=>{const v=a.filter(Number.isFinite);return v.length?v.reduce((s,x)=>s+x,0)/v.length:null};
+const median=a=>{const v=a.filter(Number.isFinite).sort((a,b)=>a-b);if(!v.length)return null;const m=Math.floor(v.length/2);return v.length%2?v[m]:(v[m-1]+v[m])/2};
+const q=(a,p)=>{const v=a.filter(Number.isFinite).sort((a,b)=>a-b);if(!v.length)return null;const x=(v.length-1)*p,l=Math.floor(x),h=Math.ceil(x);return l===h?v[l]:v[l]+(v[h]-v[l])*(x-l)};
+const parse=s=>{const d=new Date(s.includes('T')?s:s.replace(' ','T')+'Z');return Number.isNaN(d.getTime())?null:d};
+const tr=(c,p)=>Math.max(c.high-c.low,Math.abs(c.high-p),Math.abs(c.low-p));
+const excluded=(ts,mins)=>{if(!mins)return false;const d=parse(ts);if(!d||d.getUTCDay()!==0)return false;const delta=d.getUTCHours()*60+d.getUTCMinutes()-1320;return delta>=0&&delta<mins};
+const metrics=rows=>{const r=rows.map(x=>x.r).filter(Number.isFinite),w=r.filter(x=>x>0),l=r.filter(x=>x<0);return{n:r.length,wins:w.length,losses:l.length,winRate:r.length?w.length/r.length:null,avgR:mean(r),totalR:r.reduce((s,x)=>s+x,0),profitFactor:l.length?w.reduce((s,x)=>s+x,0)/-l.reduce((s,x)=>s+x,0):null}};
+function boot(a,b){if(a.length<MIN_CELL_N||b.length<MIN_CELL_N)return null;let seed=0x12345678,r=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296};const z=[];for(let k=0;k<BOOT;k++){let x=0,y=0;for(let i=0;i<a.length;i++)x+=a[Math.floor(r()*a.length)];for(let i=0;i<b.length;i++)y+=b[Math.floor(r()*b.length)];z.push(x/a.length-y/b.length)}z.sort((x,y)=>x-y);return{lo:q(z,.025),hi:q(z,.975),iterations:BOOT}}
+function compare(rows){const a=rows.filter(x=>x.spike).map(x=>({r:x.r})),b=rows.filter(x=>!x.spike).map(x=>({r:x.r})),ma=metrics(a),mb=metrics(b);return{spike:ma,nonSpike:mb,deltaR:ma.avgR!=null&&mb.avgR!=null?ma.avgR-mb.avgR:null,bootstrap95:boot(a.map(x=>x.r),b.map(x=>x.r))}}
+function overlap(x){if(!Number.isFinite(x))return'NA';if(x<.25)return'<.25';if(x<.5)return'.25-.5';if(x<.75)return'.5-.75';return'>=.75'}
 async function run(tf){
- const candlesData=JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf.name}.json`),'utf8'));
- const baseline=JSON.parse(await readFile(resolve(ROOT,`data/reports/strategy-a-baseline/${tf.name}.json`),'utf8'));
- const candles=candlesData.candles;
- const indexByTs=new Map(candles.map((c,i)=>[c.timestamp,i]));
- const trv=candles.map((c,i)=>i?tr(c,candles[i-1].close):null);
- const rollingP90=candles.map((_,i)=>i>=LOOKBACK?quantile(trv.slice(i-LOOKBACK,i),.9):null);
- const reopenStarts=[];
- for(let i=0;i<candles.length;i++){const d=parse(candles[i].timestamp);if(isReopen(d))reopenStarts.push(parse(candles[i].timestamp).getTime());}
- function excluded(ts,mins){const t=parse(ts)?.getTime();return Number.isFinite(t)&&reopenStarts.some(x=>t>=x&&t<x+mins*60000);}
- const trades=baseline.trades.map(t=>{
-   const i=t.entryIndex ?? indexByTs.get(t.entryTime);
-   if(i==null || i<LOOKBACK || !Number.isFinite(trv[i-1])) return null;
-   const prior=i-1;
-   const score=rollingP90[prior] ? trv[prior]/rollingP90[prior] : null;
-   return {...t,index:i,priorIndex:prior,priorSpikeScore:score,priorSpike:score!=null&&score>=1};
- }).filter(Boolean);
- const exclusions={};
- for(const mins of REOPEN_EXCLUSION_MINUTES){
-   const eligible=trades.filter(t=>!excluded(t.entryTime,mins));
-   const spike=eligible.filter(t=>t.priorSpike), non=eligible.filter(t=>!t.priorSpike);
-   const base=metrics(eligible.map(t=>({r:t.rMultiple})));
-   const groups={
-     overall:{spike:metrics(spike.map(t=>({r:t.rMultiple}))),nonSpike:metrics(non.map(t=>({r:t.rMultiple})))},
-     structureScore:{}, qualityGrade:{}, session:{}, direction:{}, pgap:{}, emaAligned:{}, overlapBucket:{}
-   };
-   const add=(container,k)=>{const rows=eligible.filter(t=>String(t[k.field])===String(k.value));};
-   for(const v of ['0','1','2','3+']){const g=eligible.filter(t=>classify(t.structureScore)===v);groups.structureScore[v]={spike:metrics(g.filter(t=>t.priorSpike).map(t=>({r:t.rMultiple}))),nonSpike:metrics(g.filter(t=>!t.priorSpike).map(t=>({r:t.rMultiple})))}};
-   for(const v of ['A','B','C','D']){const g=eligible.filter(t=>key(t.qualityGrade)===v);groups.qualityGrade[v]={spike:metrics(g.filter(t=>t.priorSpike).map(t=>({r:t.rMultiple}))),nonSpike:metrics(g.filter(t=>!t.priorSpike).map(t=>({r:t.rMultiple})))}};
-   for(const v of ['LONDON','NEW_YORK','ASIA','OVERLAP','NA']){const g=eligible.filter(t=>key(t.session)===v);groups.session[v]={spike:metrics(g.filter(t=>t.priorSpike).map(t=>({r:t.rMultiple}))),nonSpike:metrics(g.filter(t=>!t.priorSpike).map(t=>({r:t.rMultiple})))}};
-   for(const v of ['BUY','SELL','NA']){const g=eligible.filter(t=>key(t.direction)===v);groups.direction[v]={spike:metrics(g.filter(t=>t.priorSpike).map(t=>({r:t.rMultiple}))),nonSpike:metrics(g.filter(t=>!t.priorSpike).map(t=>({r:t.rMultiple})))}};
-   for(const v of ['true','false','NA']){const g=eligible.filter(t=>key(t.hasPGAPEvidence)===v);groups.pgap[v]={spike:metrics(g.filter(t=>t.priorSpike).map(t=>({r:t.rMultiple}))),nonSpike:metrics(g.filter(t=>!t.priorSpike).map(t=>({r:t.rMultiple})))}};
-   for(const v of ['true','false','NA']){const g=eligible.filter(t=>key(t.emaAligned)===v);groups.emaAligned[v]={spike:metrics(g.filter(t=>t.priorSpike).map(t=>({r:t.rMultiple}))),nonSpike:metrics(g.filter(t=>!t.priorSpike).map(t=>({r:t.rMultiple})))}};
-   for(const [lo,hi,name] of [[-Infinity,.25,'<.25'],[.25,.5,'.25-.5'],[.5,.75,'.5-.75'],[.75,Infinity,'>=.75']]){const g=eligible.filter(t=>Number.isFinite(t.overlapScore)&&t.overlapScore>=lo&&t.overlapScore<hi);groups.overlapBucket[name]={spike:metrics(g.filter(t=>t.priorSpike).map(t=>({r:t.rMultiple}))),nonSpike:metrics(g.filter(t=>!t.priorSpike).map(t=>({r:t.rMultiple})))}};
-   exclusions[String(mins)]={reopenExcluded:trades.length-eligible.length,eligibleTrades:eligible.length,baseline:base,spike:metrics(spike.map(t=>({r:t.rMultiple}))),nonSpike:metrics(non.map(t=>({r:t.rMultiple}))),deltaR:(mean(spike.map(t=>t.rMultiple))??0)-(mean(non.map(t=>t.rMultiple))??0),groups};
- }
- const report={generatedAt:new Date().toISOString(),timeframe:tf.name,definition:'Leakage-safe structural attribution. A prior spike is the immediately preceding candle whose TR is at least the 90th percentile of the preceding 60 candle TR values. Sunday 22:00 UTC reopen impact is tested as sensitivity only. No global/future threshold is used and no production rule is selected.',data:{candles:candles.length,from:candles[0]?.timestamp,to:candles.at(-1)?.timestamp,baselineTrades:baseline.trades.length},sensitivity:exclusions,diagnostics:{tradePriorSpikeCoverage:metrics(trades.filter(t=>t.priorSpike).map(t=>({r:t.rMultiple}))),warning:'This is attribution/diagnostic research. Positive conditional differences do not establish causal independence or OOS validity.'}};
- await mkdir(OUT,{recursive:true});await writeFile(resolve(OUT,`${tf.name}.json`),JSON.stringify(report,null,2)+'\n');
- console.log(`\n${tf.name}: baselineTrades=${baseline.trades.length}`);
- for(const mins of REOPEN_EXCLUSION_MINUTES){const x=exclusions[String(mins)];console.log(`${mins}m eligible=${x.eligibleTrades} spikeN=${x.spike.n} spikeAvgR=${x.spike.avgR?.toFixed(4)} nonN=${x.nonSpike.n} nonAvgR=${x.nonSpike.avgR?.toFixed(4)} deltaR=${x.deltaR.toFixed(4)}`)}
-}
-for(const tf of TF) await run(tf);
-console.log(`Report -> ${OUT}`);
+ const candles=JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf}.json`),'utf8')).candles;
+ const baseline=JSON.parse(await readFile(resolve(ROOT,`data/reports/strategy-a-baseline/${tf}.json`),'utf8'));
+ if(baseline.metrics?.trades!==baseline.trades?.length)throw new Error(`${tf}: baseline mismatch metrics.trades=${baseline.metrics?.trades} trades.length=${baseline.trades?.length}`);
+ const idx=new Map(candles.map((c,i)=>[c.timestamp,i]));const trv=candles.map((c,i)=>i?tr(c,candles[i-1].close):null);
+ const score=candles.map((_,i)=>i>=LOOKBACK?(()=>{const b=median(trv.slice(i-LOOKBACK,i));return b>0?trv[i]/b:null})():null);
+ const trades=baseline.trades.map(t=>{const i=Number.isInteger(t.entryIndex)?t.entryIndex:idx.get(t.entryTime);if(i==null||i<LOOKBACK||!Number.isFinite(t.rMultiple))return null;return{...t,index:i,priorScore:score[i-1]}}).filter(Boolean);
+ const sensitivity={};
+ for(const mins of REOPEN){const eligible=trades.filter(t=>!excluded(t.entryTime,mins));const tagged=eligible.map(t=>({...t,spike:Number.isFinite(t.priorScore)&&t.priorScore>=FIXED_SPIKE,descriptiveSpike:Number.isFinite(t.priorScore)&&t.priorScore>=q(eligible.map(x=>x.priorScore),.9)}));const cut=q(eligible.map(x=>x.priorScore),.9);const groups={structureScore:{},qualityGrade:{},session:{},direction:{},pgap:{},emaAligned:{},overlap:{}};
+  for(const v of ['0','1','2','3+']){const r=tagged.filter(t=>{const x=t.structureScore;if(x==null)return v==='NA';return x<=0?'0':x===1?'1':x===2?'2':'3+'===v});if(r.length>=MIN_CELL_N)groups.structureScore[v]=compare(r)}
+  for(const v of ['A','B','C','D','NA']){const r=tagged.filter(t=>(t.qualityGrade??'NA')===v);if(r.length>=MIN_CELL_N)groups.qualityGrade[v]=compare(r)}
+  for(const v of ['LONDON','NEW_YORK','ASIA','OVERLAP','NA']){const r=tagged.filter(t=>(t.session??'NA')===v);if(r.length>=MIN_CELL_N)groups.session[v]=compare(r)}
+  for(const v of ['BUY','SELL','NA']){const r=tagged.filter(t=>(t.direction??'NA')===v);if(r.length>=MIN_CELL_N)groups.direction[v]=compare(r)}
+  for(const v of ['true','false','NA']){const r=tagged.filter(t=>String(t.hasPGAPEvidence??'NA')===v);if(r.length>=MIN_CELL_N)groups.pgap[v]=compare(r)}
+  for(const v of ['true','false','NA']){const r=tagged.filter(t=>String(t.emaAligned??'NA')===v);if(r.length>=MIN_CELL_N)groups.emaAligned[v]=compare(r)}
+  for(const v of ['<.25','.25-.5','.5-.75','>=.75','NA']){const r=tagged.filter(t=>overlap(t.overlapScore)===v);if(r.length>=MIN_CELL_N)groups.overlap[v]=compare(r)}
+  sensitivity[String(mins)]={reopenExclusionMinutes:mins,eligibleTrades:eligible.length,fixedSpikeThreshold:FIXED_SPIKE,fixedSpikeN:tagged.filter(t=>t.spike).length,nonSpikeN:tagged.filter(t=>!t.spike).length,descriptiveP90Cut:cut,fixedOverall:compare(tagged),descriptiveP90Overall:compare(tagged.map(t=>({...t,spike:t.descriptiveSpike}))),groups};}
+ const report={generatedAt:new Date().toISOString(),timeframe:tf,methodology:{spike:'prior-bar TR / median(previous 60 TR) >= fixed 2.0',descriptiveP90:'P90 is reported only for descriptive comparison and is never promoted',reopen:'Sunday 22:00 UTC, 0/15/30/45/60 minute sensitivity',minimumInteractionCellN:MIN_CELL_N,bootstrapIterations:BOOT},baselineReference:{trades:baseline.trades.length,metricsTrades:baseline.metrics?.trades,averageR:baseline.metrics?.averageR,profitFactor:baseline.metrics?.profitFactor},sensitivities:sensitivity,decisionGate:{status:'RESEARCH_ONLY',rule:'Do not add spike to Strategy A unless fixed-definition interaction remains positive with adequate N and bootstrap CI excludes zero across reopen sensitivities, then survives untouched holdout.'}};
+ await mkdir(OUT,{recursive:true});const out=resolve(OUT,`${tf}.json`);await writeFile(out,JSON.stringify(report,null,2)+'\n');console.log(`\n${tf}: baselineTrades=${baseline.trades.length}`);for(const m of REOPEN){const x=sensitivity[String(m)],b=x.fixedOverall.bootstrap95;console.log(`${m}m fixed2.0 spikeN=${x.fixedSpikeN} spikeAvgR=${x.fixedOverall.spike.avgR?.toFixed(4)??'n/a'} nonN=${x.nonSpikeN} nonAvgR=${x.fixedOverall.nonSpike.avgR?.toFixed(4)??'n/a'} deltaR=${x.fixedOverall.deltaR?.toFixed(4)??'n/a'} CI=[${b?b.lo.toFixed(4):'n/a'},${b?b.hi.toFixed(4):'n/a'}] p90Cut=${x.descriptiveP90Cut?.toFixed(4)??'n/a'}`)}console.log(`Report -> ${out}`)}
+for(const tf of TF)await run(tf);
