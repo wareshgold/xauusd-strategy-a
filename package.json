@@ -17,7 +17,8 @@
     "research:tp1-rolling": "node scripts/analyze-tp1-full-exit-rolling-robustness.mjs",
     "research:base-components": "node scripts/analyze-base-component-contribution-global-holdout.mjs",
     "research:base-funnel": "node scripts/analyze-base-stage-funnel-forensics.mjs",
-    "research:trigger-funnel": "node scripts/analyze-trigger-funnel-forensics.mjs"
+    "research:trigger-funnel": "node scripts/analyze-trigger-funnel-forensics.mjs",
+    "research:trigger-latency": "node scripts/analyze-trigger-latency-global-holdout.mjs"
   },
   "engines": {
     "node": ">=22"
