@@ -1,7 +1,7 @@
-import type { Candle } from '../domain/market/Candle.ts';
-import { replayCandles, type ReplayEvent } from './ReplayEngine.ts';
-import { runBacktest, type BacktestCandidate } from './BacktestEngine.ts';
-import type { BacktestResult } from './BacktestTypes.ts';
+import type { Candle } from '../domain/market/Candle.js';
+import { replayCandles, type ReplayEvent } from './ReplayEngine.js';
+import { runBacktest, type BacktestCandidate } from './BacktestEngine.js';
+import type { BacktestResult } from './BacktestTypes.js';
 
 export interface StrategyAReplayState { readonly event: ReplayEvent; readonly candidates: readonly BacktestCandidate[]; }
 export type StrategyADecision = (event: ReplayEvent) => readonly BacktestCandidate[];
