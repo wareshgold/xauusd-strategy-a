@@ -4,7 +4,7 @@ import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
 import { getInvalidationRule, isInvalidated } from '../src/domain/strategy-a/Invalidation.js';
 import { calculateStructureStopLoss } from '../src/domain/strategy-a/StructureStopLoss.js';
 
-const c = (i:number,o:number,h:number,l:number,cl:number): Candle => ({ timestamp:`2026-01-01T00:${String(i).padStart(2,'0')}:00Z`, timeframe:'1m', open:o, high:h, low:l, close:cl });
+const c = (i:number,o:number,h:number,l:number,cl:number): Candle => ({ timestamp:`2026-01-01T00:${String(i).padStart(2,'0')}:00Z`, open:o, high:h, low:l, close:cl });
 
 const correction = { spikeStartIndex:0, spikeEndIndex:2, correctionStartIndex:3, correctionExtremeIndex:3, direction:'BULLISH' as const, extremePrice:99 };
 
