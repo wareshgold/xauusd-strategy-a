@@ -7,13 +7,13 @@ const TIMEFRAMES = ['1min', '5min'];
 const WINDOW_COUNT = 6;
 const MIN_WINDOW_N = 5;
 const DIRECTIONS = ['BUY', 'SELL'];
-const SESSIONS = ['LONDON', 'NEW_YORK', 'OUTSIDE'];
+const SESSIONS = ['LONDON', 'NEW_YORK_LATE', 'OUTSIDE'];
 
 function session(entryTime) {
   const d = new Date(entryTime);
   const m = d.getUTCHours() * 60 + d.getUTCMinutes();
   if (m >= 420 && m < 960) return 'LONDON';
-  if (m >= 960 && m < 1320) return 'NEW_YORK';
+  if (m >= 960 && m < 1320) return 'NEW_YORK_LATE';
   return 'OUTSIDE';
 }
 
@@ -98,21 +98,21 @@ async function run(timeframe) {
 
   const report = {
     strategy: 'Strategy A / SP2L',
-    mode: 'RESEARCH_DIRECTION_SESSION_ROLLING_ROBUSTNESS_V1',
+    mode: 'RESEARCH_DIRECTION_SESSION_ROLLING_ROBUSTNESS_V2',
     timeframe,
     scope: 'Baseline resolved trades only; diagnostic stability analysis; no production rule changes.',
     methodology: {
       windows: WINDOW_COUNT,
       ordering: 'chronological entryTime',
-      sessionSource: 'UTC entryTime; LONDON 07:00-16:00, NEW_YORK 16:00-22:00, otherwise OUTSIDE.',
+      sessionSource: 'UTC entryTime; LONDON 07:00-16:00, NEW_YORK_LATE 16:00-22:00, otherwise OUTSIDE.',
       minimumWindowN: MIN_WINDOW_N,
       finalWindowRole: 'unseen chronological stability check; not used to define a rule in this report',
       gate: 'A candidate is considered robust only if it remains positive across most eligible rolling windows and the final chronological window; no automatic promotion is performed.',
-      warning: 'Multiple subgroup and window comparisons create selection bias risk. This report is evidence, not proof of a tradable edge.',
+      warning: 'NEW_YORK_LATE is deliberately the non-overlap late-New-York window. It is not the full New York session and must not be conflated with the baseline Context session label.',
     },
     overall: summarize(rows),
     candidates,
-    nextStep: 'Only a candidate with strong rolling stability should proceed to a fresh untouched holdout / day-of-week robustness test before any Strategy A rule change.',
+    nextStep: 'Only a candidate with strong rolling stability should proceed to the fresh untouched holdout / day-of-week robustness test before any Strategy A rule change.',
   };
 
   await mkdir(OUT_DIR, { recursive: true });
