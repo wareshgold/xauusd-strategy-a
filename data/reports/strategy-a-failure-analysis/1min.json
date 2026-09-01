@@ -1,0 +1,580 @@
+{
+  "timeframe": "1min",
+  "candles": 10000,
+  "baselineMetrics": {
+    "trades": 310,
+    "wins": 63,
+    "losses": 247,
+    "winRate": 0.2032258064516129,
+    "averageR": 0.07496391062943528,
+    "expectancyR": 0.07496391062943528,
+    "profitFactor": 1.0940842603041498,
+    "maxDrawdownR": 116.43256075844721,
+    "consecutiveLosses": 19
+  },
+  "resultCounts": {
+    "TP1": 63,
+    "TP2": 0,
+    "SL": 247,
+    "AMBIGUOUS": 15,
+    "OPEN": 1
+  },
+  "byDirection": {
+    "BUY": {
+      "trades": 167,
+      "wins": 35,
+      "losses": 132,
+      "winRate": 0.20958083832335328,
+      "averageR": -0.4016457741450078,
+      "profitFactor": 0.4918572402862401
+    },
+    "SELL": {
+      "trades": 143,
+      "wins": 28,
+      "losses": 115,
+      "winRate": 0.1958041958041958,
+      "averageR": 0.6315640320093792,
+      "profitFactor": 1.7853361441507936
+    }
+  },
+  "bySession": {
+    "OVERLAP": {
+      "trades": 53,
+      "wins": 10,
+      "losses": 43,
+      "winRate": 0.18867924528301888,
+      "averageR": -0.3111756806813769,
+      "profitFactor": 0.6164578819508609
+    },
+    "NEW_YORK_ONLY": {
+      "trades": 104,
+      "wins": 22,
+      "losses": 82,
+      "winRate": 0.21153846153846154,
+      "averageR": 0.9007893416259634,
+      "profitFactor": 2.1424645308426853
+    },
+    "OUTSIDE": {
+      "trades": 100,
+      "wins": 17,
+      "losses": 83,
+      "winRate": 0.17,
+      "averageR": -0.34424580592899084,
+      "profitFactor": 0.5852460169530233
+    },
+    "LONDON_ONLY": {
+      "trades": 53,
+      "wins": 14,
+      "losses": 39,
+      "winRate": 0.2641509433962264,
+      "averageR": -0.3684224068860984,
+      "profitFactor": 0.49932339577017404
+    }
+  },
+  "directionSessionIntersection": {
+    "BUY__LONDON_ONLY": {
+      "raw": {
+        "trades": 30,
+        "wins": 9,
+        "losses": 21,
+        "winRate": 0.3,
+        "averageR": -0.1013334792436256,
+        "profitFactor": 0.8552378867948205
+      },
+      "robustWithoutTop1PercentR": {
+        "excludedTrades": 1,
+        "trades": 29,
+        "wins": 8,
+        "losses": 21,
+        "winRate": 0.27586206896551724,
+        "averageR": -0.3956079182005138,
+        "profitFactor": 0.4536843034373858
+      },
+      "p99R": 6.695393198353471,
+      "minRisk": 0.08316000000013446,
+      "maxR": 8.432625250506131
+    },
+    "BUY__OVERLAP": {
+      "raw": {
+        "trades": 29,
+        "wins": 4,
+        "losses": 25,
+        "winRate": 0.13793103448275862,
+        "averageR": -0.7745876291806681,
+        "profitFactor": 0.10147835015042482
+      },
+      "robustWithoutTop1PercentR": {
+        "excludedTrades": 1,
+        "trades": 28,
+        "wins": 3,
+        "losses": 25,
+        "winRate": 0.10714285714285714,
+        "averageR": -0.8494100745491399,
+        "profitFactor": 0.04866071650496333
+      },
+      "p99R": 1.1145150499891363,
+      "minRisk": 0.018000000000029104,
+      "maxR": 1.320440841136537
+    },
+    "BUY__NEW_YORK_ONLY": {
+      "raw": {
+        "trades": 60,
+        "wins": 13,
+        "losses": 47,
+        "winRate": 0.21666666666666667,
+        "averageR": -0.23688998554197135,
+        "profitFactor": 0.697587252499611
+      },
+      "robustWithoutTop1PercentR": {
+        "excludedTrades": 1,
+        "trades": 59,
+        "wins": 12,
+        "losses": 47,
+        "winRate": 0.2033898305084746,
+        "averageR": -0.5236819867546916,
+        "profitFactor": 0.34261197407389793
+      },
+      "p99R": 10.279441987266528,
+      "minRisk": 0.051679999999578285,
+      "maxR": 16.683838086008517
+    },
+    "BUY__OUTSIDE": {
+      "raw": {
+        "trades": 48,
+        "wins": 9,
+        "losses": 39,
+        "winRate": 0.1875,
+        "averageR": -0.5699666567947891,
+        "profitFactor": 0.2985025762525674
+      },
+      "robustWithoutTop1PercentR": {
+        "excludedTrades": 1,
+        "trades": 47,
+        "wins": 8,
+        "losses": 39,
+        "winRate": 0.1702127659574468,
+        "averageR": -0.6488274373274991,
+        "profitFactor": 0.21807975501557791
+      },
+      "p99R": 2.8768096699849677,
+      "minRisk": 0.06789000000026135,
+      "maxR": 3.1364900282425885
+    },
+    "SELL__LONDON_ONLY": {
+      "raw": {
+        "trades": 23,
+        "wins": 5,
+        "losses": 18,
+        "winRate": 0.21739130434782608,
+        "averageR": -0.7167992690284543,
+        "profitFactor": 0.08408982290808625
+      },
+      "robustWithoutTop1PercentR": {
+        "excludedTrades": 1,
+        "trades": 22,
+        "wins": 4,
+        "losses": 18,
+        "winRate": 0.18181818181818182,
+        "averageR": -0.779834151537229,
+        "profitFactor": 0.04686937034338676
+      },
+      "p99R": 0.6330951460416446,
+      "minRisk": 0.07412999999996828,
+      "maxR": 0.6699681461645906
+    },
+    "SELL__OVERLAP": {
+      "raw": {
+        "trades": 24,
+        "wins": 6,
+        "losses": 18,
+        "winRate": 0.25,
+        "averageR": 0.24878042375526666,
+        "profitFactor": 1.3317072316736889
+      },
+      "robustWithoutTop1PercentR": {
+        "excludedTrades": 1,
+        "trades": 23,
+        "wins": 5,
+        "losses": 18,
+        "winRate": 0.21739130434782608,
+        "averageR": -0.37856351857766024,
+        "profitFactor": 0.5162799484841007
+      },
+      "p99R": 12.04890410659897,
+      "minRisk": 0.024999999999636202,
+      "maxR": 14.677691097412586
+    },
+    "SELL__NEW_YORK_ONLY": {
+      "raw": {
+        "trades": 44,
+        "wins": 9,
+        "losses": 35,
+        "winRate": 0.20454545454545456,
+        "averageR": 2.4521702423095104,
+        "profitFactor": 4.082728304617671
+      },
+      "robustWithoutTop1PercentR": {
+        "excludedTrades": 1,
+        "trades": 43,
+        "wins": 8,
+        "losses": 35,
+        "winRate": 0.18604651162790697,
+        "averageR": -0.4023579477612808,
+        "profitFactor": 0.5056745213218549
+      },
+      "p99R": 73.69895607079583,
+      "minRisk": 0.029509999999390857,
+      "maxR": 125.19688241535353
+    },
+    "SELL__OUTSIDE": {
+      "raw": {
+        "trades": 52,
+        "wins": 8,
+        "losses": 44,
+        "winRate": 0.15384615384615385,
+        "averageR": -0.1358880974374847,
+        "profitFactor": 0.8394049757557
+      },
+      "robustWithoutTop1PercentR": {
+        "excludedTrades": 1,
+        "trades": 51,
+        "wins": 7,
+        "losses": 44,
+        "winRate": 0.13725490196078433,
+        "averageR": -0.5060964217205364,
+        "profitFactor": 0.4133882384602874
+      },
+      "p99R": 15.805141989748705,
+      "minRisk": 0.005849999999554711,
+      "maxR": 18.744736440998153
+    }
+  },
+  "rDistribution": {
+    "min": -1,
+    "p50": -1,
+    "p90": 0.9573583944273399,
+    "p95": 2.520164699446955,
+    "p99": 14.52497321635013,
+    "max": 125.19688241535353
+  },
+  "riskDistance": {
+    "min": 0.005849999999554711,
+    "p01": 0.027080299999524868,
+    "p05": 0.07474200000006022,
+    "p50": 0.9794299999998657
+  },
+  "extremeWinners": [
+    {
+      "entryIndex": 469,
+      "entryTime": "2026-08-20 20:54:00",
+      "direction": "SELL",
+      "entry": 4521.5838,
+      "stopLoss": 4521.61331,
+      "tp1": 4517.8892399999995,
+      "tp2": null,
+      "riskDistance": 0.029509999999390857,
+      "result": "TP1",
+      "rMultiple": 125.19688241535353
+    },
+    {
+      "entryIndex": 9501,
+      "entryTime": "2026-08-27 03:26:00",
+      "direction": "SELL",
+      "entry": 4637.09283,
+      "stopLoss": 4637.55212,
+      "tp1": 4628.483560000001,
+      "tp2": null,
+      "riskDistance": 0.4592900000006921,
+      "result": "TP1",
+      "rMultiple": 18.744736440998153
+    },
+    {
+      "entryIndex": 6095,
+      "entryTime": "2026-08-24 18:40:00",
+      "direction": "BUY",
+      "entry": 4626.91504,
+      "stopLoss": 4626.20281,
+      "tp1": 4638.797769999999,
+      "tp2": null,
+      "riskDistance": 0.7122300000000905,
+      "result": "TP1",
+      "rMultiple": 16.683838086008517
+    },
+    {
+      "entryIndex": 8806,
+      "entryTime": "2026-08-26 15:51:00",
+      "direction": "SELL",
+      "entry": 4606.75073,
+      "stopLoss": 4607.97105,
+      "tp1": 4588.83925,
+      "tp2": null,
+      "riskDistance": 1.2203200000003562,
+      "result": "TP1",
+      "rMultiple": 14.677691097412586
+    },
+    {
+      "entryIndex": 9505,
+      "entryTime": "2026-08-27 03:30:00",
+      "direction": "SELL",
+      "entry": 4635.37155,
+      "stopLoss": 4636.08605,
+      "tp1": 4626.09675,
+      "tp2": null,
+      "riskDistance": 0.7145000000000437,
+      "result": "TP1",
+      "rMultiple": 12.980825752273722
+    },
+    {
+      "entryIndex": 8541,
+      "entryTime": "2026-08-26 11:26:00",
+      "direction": "BUY",
+      "entry": 4617.8267,
+      "stopLoss": 4617.3277,
+      "tp1": 4622.0345800000005,
+      "tp2": null,
+      "riskDistance": 0.4989999999997963,
+      "result": "TP1",
+      "rMultiple": 8.432625250506131
+    },
+    {
+      "entryIndex": 8933,
+      "entryTime": "2026-08-26 17:58:00",
+      "direction": "BUY",
+      "entry": 4596.39383,
+      "stopLoss": 4595.46889,
+      "tp1": 4601.78524,
+      "tp2": null,
+      "riskDistance": 0.9249399999998786,
+      "result": "TP1",
+      "rMultiple": 5.8289294440730055
+    },
+    {
+      "entryIndex": 179,
+      "entryTime": "2026-08-20 16:04:00",
+      "direction": "SELL",
+      "entry": 4522.34812,
+      "stopLoss": 4524.30113,
+      "tp1": 4511.73495,
+      "tp2": null,
+      "riskDistance": 1.9530100000001767,
+      "result": "TP1",
+      "rMultiple": 5.434263009405312
+    },
+    {
+      "entryIndex": 302,
+      "entryTime": "2026-08-20 18:07:00",
+      "direction": "SELL",
+      "entry": 4519.19328,
+      "stopLoss": 4521.20115,
+      "tp1": 4511.64063,
+      "tp2": null,
+      "riskDistance": 2.007869999999457,
+      "result": "TP1",
+      "rMultiple": 3.7615234054010385
+    },
+    {
+      "entryIndex": 5906,
+      "entryTime": "2026-08-24 15:31:00",
+      "direction": "SELL",
+      "entry": 4675.00956,
+      "stopLoss": 4678.80036,
+      "tp1": 4662.69635,
+      "tp2": null,
+      "riskDistance": 3.790799999999763,
+      "result": "TP1",
+      "rMultiple": 3.2481824417012306
+    },
+    {
+      "entryIndex": 7934,
+      "entryTime": "2026-08-26 01:19:00",
+      "direction": "SELL",
+      "entry": 4647.90229,
+      "stopLoss": 4649.80358,
+      "tp1": 4641.7382,
+      "tp2": null,
+      "riskDistance": 1.9012899999997899,
+      "result": "TP1",
+      "rMultiple": 3.242056708866557
+    },
+    {
+      "entryIndex": 7911,
+      "entryTime": "2026-08-26 00:56:00",
+      "direction": "BUY",
+      "entry": 4636.59076,
+      "stopLoss": 4635.21337,
+      "tp1": 4640.91093,
+      "tp2": null,
+      "riskDistance": 1.3773899999996502,
+      "result": "TP1",
+      "rMultiple": 3.1364900282425885
+    },
+    {
+      "entryIndex": 5804,
+      "entryTime": "2026-08-24 13:49:00",
+      "direction": "SELL",
+      "entry": 4675.28654,
+      "stopLoss": 4676.83098,
+      "tp1": 4670.49688,
+      "tp2": null,
+      "riskDistance": 1.5444399999996676,
+      "result": "TP1",
+      "rMultiple": 3.101227629432932
+    },
+    {
+      "entryIndex": 7380,
+      "entryTime": "2026-08-25 16:05:00",
+      "direction": "SELL",
+      "entry": 4648.03871,
+      "stopLoss": 4649.2865,
+      "tp1": 4644.396500000001,
+      "tp2": null,
+      "riskDistance": 1.2477900000003501,
+      "result": "TP1",
+      "rMultiple": 2.918928665879712
+    },
+    {
+      "entryIndex": 7457,
+      "entryTime": "2026-08-25 17:22:00",
+      "direction": "SELL",
+      "entry": 4642.43278,
+      "stopLoss": 4644.08516,
+      "tp1": 4638.03578,
+      "tp2": null,
+      "riskDistance": 1.652379999999539,
+      "result": "TP1",
+      "rMultiple": 2.6610101792572904
+    }
+  ],
+  "extremeLosses": [
+    {
+      "entryIndex": 161,
+      "entryTime": "2026-08-20 15:46:00",
+      "direction": "BUY",
+      "entry": 4515.27087,
+      "stopLoss": 4510.80337,
+      "tp1": 4534.9464,
+      "tp2": null,
+      "riskDistance": 4.467500000000655,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 162,
+      "entryTime": "2026-08-20 15:47:00",
+      "direction": "BUY",
+      "entry": 4517.75807,
+      "stopLoss": 4510.11922,
+      "tp1": 4534.37012,
+      "tp2": null,
+      "riskDistance": 7.638850000000275,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 163,
+      "entryTime": "2026-08-20 15:48:00",
+      "direction": "BUY",
+      "entry": 4519.33543,
+      "stopLoss": 4517.93621,
+      "tp1": 4534.02388,
+      "tp2": null,
+      "riskDistance": 1.3992200000002413,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 205,
+      "entryTime": "2026-08-20 16:30:00",
+      "direction": "BUY",
+      "entry": 4509.27309,
+      "stopLoss": 4505.72227,
+      "tp1": 4514.79312,
+      "tp2": null,
+      "riskDistance": 3.550819999999476,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 213,
+      "entryTime": "2026-08-20 16:38:00",
+      "direction": "SELL",
+      "entry": 4509.52152,
+      "stopLoss": 4512.43175,
+      "tp1": 4506.51985,
+      "tp2": null,
+      "riskDistance": 2.910229999999501,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 265,
+      "entryTime": "2026-08-20 17:30:00",
+      "direction": "BUY",
+      "entry": 4516.43767,
+      "stopLoss": 4514.91626,
+      "tp1": 4522.7653,
+      "tp2": null,
+      "riskDistance": 1.5214100000002873,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 285,
+      "entryTime": "2026-08-20 17:50:00",
+      "direction": "SELL",
+      "entry": 4519.15966,
+      "stopLoss": 4520.31287,
+      "tp1": 4509.16702,
+      "tp2": null,
+      "riskDistance": 1.1532099999994898,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 301,
+      "entryTime": "2026-08-20 18:06:00",
+      "direction": "SELL",
+      "entry": 4521.82758,
+      "stopLoss": 4522.02225,
+      "tp1": 4512.602529999999,
+      "tp2": null,
+      "riskDistance": 0.19466999999986,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 317,
+      "entryTime": "2026-08-20 18:22:00",
+      "direction": "BUY",
+      "entry": 4516.97033,
+      "stopLoss": 4516.56148,
+      "tp1": 4519.277,
+      "tp2": null,
+      "riskDistance": 0.4088499999998021,
+      "result": "SL",
+      "rMultiple": -1
+    },
+    {
+      "entryIndex": 321,
+      "entryTime": "2026-08-20 18:26:00",
+      "direction": "BUY",
+      "entry": 4518.31873,
+      "stopLoss": 4518.26705,
+      "tp1": 4521.530990000001,
+      "tp2": null,
+      "riskDistance": 0.051679999999578285,
+      "result": "SL",
+      "rMultiple": -1
+    }
+  ],
+  "robustWithoutTop1PercentR": {
+    "excludedTrades": 4,
+    "trades": 306,
+    "wins": 59,
+    "losses": 247,
+    "winRate": 0.19281045751633988,
+    "averageR": -0.4969422736753198,
+    "profitFactor": 0.3843549160135713
+  },
+  "researchNote": "Diagnostic only; no parameters or trading rules changed. Direction-session intersections are descriptive hypotheses, not optimized trading rules."
+}

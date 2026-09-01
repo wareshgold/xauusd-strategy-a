@@ -1,0 +1,3716 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_ENTRY_GEOMETRY_COMBINATION_FORENSICS_V2",
+  "timeframe": "1min",
+  "scope": "All baseline trades with geometry features; exhaustive pairwise bucket combinations; chronological three-way split; maximum two features; no production rule changes",
+  "methodology": {
+    "source": "strategy-a-entry-geometry-forensics tradeRows",
+    "search": "all unordered pairs across eight pre-declared geometry features and fixed research buckets",
+    "complexity": "maximum two features; no continuous threshold search",
+    "split": "first third DEV, second third VALIDATION, final third untouched HOLDOUT, chronological by entryTime",
+    "selectionGate": "DEV and VALIDATION each n >= 8, PF >= 1, avgR > 0",
+    "holdout": "Evaluated only after a candidate passes DEV+VALIDATION; never used for candidate ranking or selection",
+    "warning": "Pairwise search has multiple-comparison risk. HOLDOUT results are the only untouched evidence in this run and must not be used to tune thresholds."
+  },
+  "coverage": {
+    "classifiedTrades": 310,
+    "featureFiniteCounts": {
+      "impulseScore": 310,
+      "retracement": 310,
+      "entryLocation": 310,
+      "distanceFromExtreme": 310,
+      "delayFromImpulse": 310,
+      "impulseBodyFraction": 310,
+      "compressionRatio": 215,
+      "stopToImpulse": 310
+    },
+    "pairTests": 99,
+    "candidatesPassingDevValidation": 9
+  },
+  "overall": {
+    "n": 310,
+    "wins": 63,
+    "losses": 247,
+    "PF": 1.0940842603041498,
+    "avgR": 0.07496391062943528,
+    "totalR": 23.238812295124934,
+    "maxDD": 116.43256075844721
+  },
+  "topValidationCandidates": [
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D13_PLUS",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "60_80%",
+      "dev": {
+        "n": 8,
+        "wins": 3,
+        "losses": 5,
+        "PF": 1.9178693832735991,
+        "avgR": 0.5736683645459996,
+        "totalR": 4.5893469163679965,
+        "maxDD": 4
+      },
+      "validation": {
+        "n": 8,
+        "wins": 3,
+        "losses": 5,
+        "PF": 3.6932125922727734,
+        "avgR": 1.6832578701704837,
+        "totalR": 13.46606296136387,
+        "maxDD": 2.87615959228423
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 11,
+        "wins": 2,
+        "losses": 9,
+        "PF": 13.987255245705438,
+        "avgR": 10.62593611012263,
+        "totalR": 116.88529721134894,
+        "maxDD": 6
+      },
+      "validation": {
+        "n": 12,
+        "wins": 3,
+        "losses": 9,
+        "PF": 1.9706425616899719,
+        "avgR": 0.727981921267479,
+        "totalR": 8.735783055209748,
+        "maxDD": 6
+      },
+      "holdout": {
+        "n": 12,
+        "wins": 2,
+        "losses": 10,
+        "PF": 0.8486763438400724,
+        "avgR": -0.12610304679993967,
+        "totalR": -1.513236561599276,
+        "maxDD": 8.945861812105408
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D13_PLUS",
+      "dev": {
+        "n": 15,
+        "wins": 3,
+        "losses": 12,
+        "PF": 10.70577298658695,
+        "avgR": 7.76461838926956,
+        "totalR": 116.4692758390434,
+        "maxDD": 7
+      },
+      "validation": {
+        "n": 15,
+        "wins": 4,
+        "losses": 11,
+        "PF": 1.6608881610423816,
+        "avgR": 0.48465131809774653,
+        "totalR": 7.269769771466198,
+        "maxDD": 6.46601328374355
+      },
+      "holdout": {
+        "n": 16,
+        "wins": 2,
+        "losses": 14,
+        "PF": 0.006905370243064951,
+        "avgR": -0.8689578010373181,
+        "totalR": -13.90332481659709,
+        "maxDD": 13.90332481659709
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 12,
+        "wins": 1,
+        "losses": 11,
+        "PF": 11.38153476503214,
+        "avgR": 9.516406867946127,
+        "totalR": 114.19688241535353,
+        "maxDD": 9
+      },
+      "validation": {
+        "n": 12,
+        "wins": 1,
+        "losses": 11,
+        "PF": 1.5167125532735015,
+        "avgR": 0.4736531738340431,
+        "totalR": 5.683838086008517,
+        "maxDD": 8
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 0,
+        "losses": 13,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -13,
+        "maxDD": 13
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "compressionRatio",
+      "bucketA": "GE_125%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 15,
+        "wins": 1,
+        "losses": 14,
+        "PF": 8.942634458239537,
+        "avgR": 7.413125494356902,
+        "totalR": 111.19688241535353,
+        "maxDD": 14
+      },
+      "validation": {
+        "n": 15,
+        "wins": 2,
+        "losses": 13,
+        "PF": 1.3439623804879384,
+        "avgR": 0.2981007297562131,
+        "totalR": 4.471510946343196,
+        "maxDD": 11.212327139665321
+      },
+      "holdout": {
+        "n": 16,
+        "wins": 1,
+        "losses": 15,
+        "PF": 1.2496490960665436,
+        "avgR": 0.23404602756238457,
+        "totalR": 3.744736440998153,
+        "maxDD": 13
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D13_PLUS",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 22,
+        "wins": 3,
+        "losses": 19,
+        "PF": 6.646255669100557,
+        "avgR": 4.876311714223209,
+        "totalR": 107.2788577129106,
+        "maxDD": 15.606439498438348
+      },
+      "validation": {
+        "n": 23,
+        "wins": 4,
+        "losses": 19,
+        "PF": 1.0545375317214198,
+        "avgR": 0.04505274359595557,
+        "totalR": 1.036213102706978,
+        "maxDD": 9.876159592284232
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 4,
+        "losses": 19,
+        "PF": 1.3376566807000227,
+        "avgR": 0.2789337797087144,
+        "totalR": 6.415476933300432,
+        "maxDD": 10.171070555926994
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "retracement",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 26,
+        "wins": 5,
+        "losses": 21,
+        "PF": 6.17559858641,
+        "avgR": 4.180291165946539,
+        "totalR": 108.68757031461,
+        "maxDD": 13.591287398300594
+      },
+      "validation": {
+        "n": 26,
+        "wins": 5,
+        "losses": 21,
+        "PF": 1.0288574998958147,
+        "avgR": 0.023307980685081144,
+        "totalR": 0.6060074978121097,
+        "maxDD": 8.805003104486259
+      },
+      "holdout": {
+        "n": 27,
+        "wins": 5,
+        "losses": 22,
+        "PF": 0.5425976154638605,
+        "avgR": -0.37269823925166917,
+        "totalR": -10.062852459795067,
+        "maxDD": 11.631967738543787
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 23,
+        "wins": 4,
+        "losses": 19,
+        "PF": 6.689662720363976,
+        "avgR": 4.700156160300676,
+        "totalR": 108.10359168691554,
+        "maxDD": 14.175266025995057
+      },
+      "validation": {
+        "n": 23,
+        "wins": 3,
+        "losses": 20,
+        "PF": 1.0206818156958037,
+        "avgR": 0.017984187561568585,
+        "totalR": 0.41363631391607747,
+        "maxDD": 9.33898982074271
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 3,
+        "losses": 20,
+        "PF": 0.4379060258227014,
+        "avgR": -0.48877736884982487,
+        "totalR": -11.241879483545972,
+        "maxDD": 11.241879483545972
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 23,
+        "wins": 4,
+        "losses": 19,
+        "PF": 6.689662720363976,
+        "avgR": 4.700156160300676,
+        "totalR": 108.10359168691554,
+        "maxDD": 14.175266025995057
+      },
+      "validation": {
+        "n": 23,
+        "wins": 3,
+        "losses": 20,
+        "PF": 1.0206818156958037,
+        "avgR": 0.017984187561568585,
+        "totalR": 0.41363631391607747,
+        "maxDD": 9.33898982074271
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 3,
+        "losses": 20,
+        "PF": 0.4379060258227014,
+        "avgR": -0.48877736884982487,
+        "totalR": -11.241879483545972,
+        "maxDD": 11.241879483545972
+      },
+      "passesValidation": true
+    }
+  ],
+  "allPairResults": [
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.00_1.25",
+      "featureB": "retracement",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 10,
+        "wins": 2,
+        "losses": 8,
+        "PF": 0.6223487122463572,
+        "avgR": -0.3021210302029142,
+        "totalR": -3.021210302029142,
+        "maxDD": 7
+      },
+      "validation": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.1616431447354749,
+        "avgR": -0.7545211697380726,
+        "totalR": -7.545211697380726,
+        "maxDD": 7.545211697380726
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "PF": 5.364927376763554,
+        "avgR": 3.055449163734488,
+        "totalR": 30.55449163734488,
+        "maxDD": 5
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.25_1.50",
+      "featureB": "retracement",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.9845968960436817,
+        "avgR": -0.011980191966025277,
+        "totalR": -0.10782172769422749,
+        "maxDD": 6
+      },
+      "validation": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "PF": 0.6210860466329683,
+        "avgR": -0.26523976735692223,
+        "totalR": -2.6523976735692223,
+        "maxDD": 5.415008412961319
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 2,
+        "losses": 8,
+        "PF": 1.883375239454907,
+        "avgR": 0.7067001915639256,
+        "totalR": 7.067001915639256,
+        "maxDD": 4
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "retracement",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 26,
+        "wins": 5,
+        "losses": 21,
+        "PF": 6.17559858641,
+        "avgR": 4.180291165946539,
+        "totalR": 108.68757031461,
+        "maxDD": 13.591287398300594
+      },
+      "validation": {
+        "n": 26,
+        "wins": 5,
+        "losses": 21,
+        "PF": 1.0288574998958147,
+        "avgR": 0.023307980685081144,
+        "totalR": 0.6060074978121097,
+        "maxDD": 8.805003104486259
+      },
+      "holdout": {
+        "n": 27,
+        "wins": 5,
+        "losses": 22,
+        "PF": 0.5425976154638605,
+        "avgR": -0.37269823925166917,
+        "totalR": -10.062852459795067,
+        "maxDD": 11.631967738543787
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "2.00_2.50",
+      "featureB": "retracement",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 10,
+        "wins": 2,
+        "losses": 8,
+        "PF": 0.18197268118726526,
+        "avgR": -0.6544218550501878,
+        "totalR": -6.544218550501878,
+        "maxDD": 7.4016015005051985
+      },
+      "validation": {
+        "n": 10,
+        "wins": 2,
+        "losses": 8,
+        "PF": 0.5960549916853599,
+        "avgR": -0.323156006651712,
+        "totalR": -3.2315600665171202,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 0,
+        "losses": 11,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -11,
+        "maxDD": 11
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "retracement",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 26,
+        "wins": 4,
+        "losses": 22,
+        "PF": 0.09589163419587422,
+        "avgR": -0.7650147710650295,
+        "totalR": -19.890384047690766,
+        "maxDD": 19.890384047690766
+      },
+      "validation": {
+        "n": 26,
+        "wins": 6,
+        "losses": 20,
+        "PF": 0.3850176820096436,
+        "avgR": -0.47306332153104336,
+        "totalR": -12.299646359807127,
+        "maxDD": 12.299646359807127
+      },
+      "holdout": {
+        "n": 26,
+        "wins": 7,
+        "losses": 19,
+        "PF": 0.3914975149408077,
+        "avgR": -0.4446748929278712,
+        "totalR": -11.561547216124652,
+        "maxDD": 14.166581976323549
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.00_1.25",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 0.4701904256751298,
+        "avgR": -0.4709418438443291,
+        "totalR": -4.2384765945989615,
+        "maxDD": 7
+      },
+      "validation": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 0.18184853782740926,
+        "avgR": -0.7272457441534139,
+        "totalR": -6.545211697380726,
+        "maxDD": 6.545211697380726
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "PF": 5.364927376763554,
+        "avgR": 3.055449163734488,
+        "totalR": 30.55449163734488,
+        "maxDD": 5
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.25_1.50",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.7763232870579017,
+        "avgR": -0.19571712382433604,
+        "totalR": -1.5657369905946883,
+        "maxDD": 6
+      },
+      "validation": {
+        "n": 8,
+        "wins": 3,
+        "losses": 5,
+        "PF": 0.8970153496389403,
+        "avgR": -0.06436540647566236,
+        "totalR": -0.5149232518052989,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 2.2854474197927317,
+        "avgR": 0.9997924376165691,
+        "totalR": 8.998131938549122,
+        "maxDD": 4
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 23,
+        "wins": 4,
+        "losses": 19,
+        "PF": 6.689662720363976,
+        "avgR": 4.700156160300676,
+        "totalR": 108.10359168691554,
+        "maxDD": 14.175266025995057
+      },
+      "validation": {
+        "n": 23,
+        "wins": 3,
+        "losses": 20,
+        "PF": 1.0206818156958037,
+        "avgR": 0.017984187561568585,
+        "totalR": 0.41363631391607747,
+        "maxDD": 9.33898982074271
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 3,
+        "losses": 20,
+        "PF": 0.4379060258227014,
+        "avgR": -0.48877736884982487,
+        "totalR": -11.241879483545972,
+        "maxDD": 11.241879483545972
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "2.00_2.50",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 0.07479981243685016,
+        "avgR": -0.8224001667227998,
+        "totalR": -7.4016015005051985,
+        "maxDD": 7.4016015005051985
+      },
+      "validation": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "PF": 0.6316408169334143,
+        "avgR": -0.2455727887110571,
+        "totalR": -2.2101550983995137,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 0,
+        "losses": 10,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -10,
+        "maxDD": 10
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 22,
+        "wins": 2,
+        "losses": 20,
+        "PF": 0.08190478452474043,
+        "avgR": -0.8346320140684178,
+        "totalR": -18.361904309505192,
+        "maxDD": 18.361904309505192
+      },
+      "validation": {
+        "n": 22,
+        "wins": 5,
+        "losses": 17,
+        "PF": 0.4135138629530651,
+        "avgR": -0.45319383317263146,
+        "totalR": -9.970264329797892,
+        "maxDD": 11.30600945094112
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 6,
+        "losses": 17,
+        "PF": 0.3396526372171877,
+        "avgR": -0.488082833361209,
+        "totalR": -11.225905167307808,
+        "maxDD": 12.166581976323549
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "entryLocation",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.0013659619653943018,
+        "avgR": -0.8987706342311451,
+        "totalR": -8.987706342311451,
+        "maxDD": 8.987706342311451
+      },
+      "validation": {
+        "n": 10,
+        "wins": 4,
+        "losses": 6,
+        "PF": 0.5928999604315176,
+        "avgR": -0.24426002374108946,
+        "totalR": -2.4426002374108946,
+        "maxDD": 5.83960837066463
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 2,
+        "losses": 8,
+        "PF": 0.23265868829674938,
+        "avgR": -0.6138730493626005,
+        "totalR": -6.138730493626005,
+        "maxDD": 6.3311551925318135
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.00_1.25",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 0.4701904256751298,
+        "avgR": -0.4709418438443291,
+        "totalR": -4.2384765945989615,
+        "maxDD": 7
+      },
+      "validation": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 0.18184853782740926,
+        "avgR": -0.7272457441534139,
+        "totalR": -6.545211697380726,
+        "maxDD": 6.545211697380726
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "PF": 5.364927376763554,
+        "avgR": 3.055449163734488,
+        "totalR": 30.55449163734488,
+        "maxDD": 5
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.25_1.50",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.7763232870579017,
+        "avgR": -0.19571712382433604,
+        "totalR": -1.5657369905946883,
+        "maxDD": 6
+      },
+      "validation": {
+        "n": 8,
+        "wins": 3,
+        "losses": 5,
+        "PF": 0.8970153496389403,
+        "avgR": -0.06436540647566236,
+        "totalR": -0.5149232518052989,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 2.2854474197927317,
+        "avgR": 0.9997924376165691,
+        "totalR": 8.998131938549122,
+        "maxDD": 4
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 23,
+        "wins": 4,
+        "losses": 19,
+        "PF": 6.689662720363976,
+        "avgR": 4.700156160300676,
+        "totalR": 108.10359168691554,
+        "maxDD": 14.175266025995057
+      },
+      "validation": {
+        "n": 23,
+        "wins": 3,
+        "losses": 20,
+        "PF": 1.0206818156958037,
+        "avgR": 0.017984187561568585,
+        "totalR": 0.41363631391607747,
+        "maxDD": 9.33898982074271
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 3,
+        "losses": 20,
+        "PF": 0.4379060258227014,
+        "avgR": -0.48877736884982487,
+        "totalR": -11.241879483545972,
+        "maxDD": 11.241879483545972
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "2.00_2.50",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 0.07479981243685016,
+        "avgR": -0.8224001667227998,
+        "totalR": -7.4016015005051985,
+        "maxDD": 7.4016015005051985
+      },
+      "validation": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "PF": 0.6316408169334143,
+        "avgR": -0.2455727887110571,
+        "totalR": -2.2101550983995137,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 0,
+        "losses": 10,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -10,
+        "maxDD": 10
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.0013659619653943018,
+        "avgR": -0.8987706342311451,
+        "totalR": -8.987706342311451,
+        "maxDD": 8.987706342311451
+      },
+      "validation": {
+        "n": 10,
+        "wins": 4,
+        "losses": 6,
+        "PF": 0.5928999604315176,
+        "avgR": -0.24426002374108946,
+        "totalR": -2.4426002374108946,
+        "maxDD": 5.83960837066463
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 2,
+        "losses": 8,
+        "PF": 0.23265868829674938,
+        "avgR": -0.6138730493626005,
+        "totalR": -6.138730493626005,
+        "maxDD": 6.3311551925318135
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 22,
+        "wins": 2,
+        "losses": 20,
+        "PF": 0.08190478452474043,
+        "avgR": -0.8346320140684178,
+        "totalR": -18.361904309505192,
+        "maxDD": 18.361904309505192
+      },
+      "validation": {
+        "n": 22,
+        "wins": 5,
+        "losses": 17,
+        "PF": 0.4135138629530651,
+        "avgR": -0.45319383317263146,
+        "totalR": -9.970264329797892,
+        "maxDD": 11.30600945094112
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 6,
+        "losses": 17,
+        "PF": 0.3396526372171877,
+        "avgR": -0.488082833361209,
+        "totalR": -11.225905167307808,
+        "maxDD": 12.166581976323549
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D13_PLUS",
+      "dev": {
+        "n": 15,
+        "wins": 3,
+        "losses": 12,
+        "PF": 10.70577298658695,
+        "avgR": 7.76461838926956,
+        "totalR": 116.4692758390434,
+        "maxDD": 7
+      },
+      "validation": {
+        "n": 15,
+        "wins": 4,
+        "losses": 11,
+        "PF": 1.6608881610423816,
+        "avgR": 0.48465131809774653,
+        "totalR": 7.269769771466198,
+        "maxDD": 6.46601328374355
+      },
+      "holdout": {
+        "n": 16,
+        "wins": 2,
+        "losses": 14,
+        "PF": 0.006905370243064951,
+        "avgR": -0.8689578010373181,
+        "totalR": -13.90332481659709,
+        "maxDD": 13.90332481659709
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D9_12",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.3429854363963924,
+        "avgR": -0.5748877431531567,
+        "totalR": -4.599101945225254,
+        "maxDD": 7
+      },
+      "validation": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "PF": 0.384785610080929,
+        "avgR": -0.410142926612714,
+        "totalR": -3.691286339514426,
+        "maxDD": 5.329382030009235
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.47173640014937235,
+        "avgR": -0.4108716887727104,
+        "totalR": -3.6978451989543935,
+        "maxDD": 5
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D13_PLUS",
+      "dev": {
+        "n": 13,
+        "wins": 1,
+        "losses": 12,
+        "PF": 0.0010244714740457264,
+        "avgR": -0.9221312571008808,
+        "totalR": -11.987706342311451,
+        "maxDD": 11.987706342311451
+      },
+      "validation": {
+        "n": 13,
+        "wins": 2,
+        "losses": 11,
+        "PF": 0.24490823173262533,
+        "avgR": -0.6389238039185479,
+        "totalR": -8.306009450941122,
+        "maxDD": 8.42984985865689
+      },
+      "holdout": {
+        "n": 14,
+        "wins": 3,
+        "losses": 11,
+        "PF": 0.2868307061774592,
+        "avgR": -0.5603473022891392,
+        "totalR": -7.844862232047949,
+        "maxDD": 8.331155192531813
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 14,
+        "wins": 3,
+        "losses": 11,
+        "PF": 11.679025076276673,
+        "avgR": 8.390662559931672,
+        "totalR": 117.4692758390434,
+        "maxDD": 8
+      },
+      "validation": {
+        "n": 14,
+        "wins": 2,
+        "losses": 12,
+        "PF": 0.2662497412928118,
+        "avgR": -0.6289287931775899,
+        "totalR": -8.805003104486259,
+        "maxDD": 8.805003104486259
+      },
+      "holdout": {
+        "n": 14,
+        "wins": 2,
+        "losses": 12,
+        "PF": 0.008056265283575776,
+        "avgR": -0.8502374868997922,
+        "totalR": -11.90332481659709,
+        "maxDD": 11.90332481659709
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "LT_40%",
+      "dev": {
+        "n": 10,
+        "wins": 4,
+        "losses": 6,
+        "PF": 0.6058544351426344,
+        "avgR": -0.2364873389144194,
+        "totalR": -2.364873389144194,
+        "maxDD": 5.675156522850077
+      },
+      "validation": {
+        "n": 10,
+        "wins": 2,
+        "losses": 8,
+        "PF": 0.27123540523276013,
+        "avgR": -0.5830116758137919,
+        "totalR": -5.830116758137919,
+        "maxDD": 7.494474709321075
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 3,
+        "losses": 8,
+        "PF": 0.17983053494392456,
+        "avgR": -0.5964868836771458,
+        "totalR": -6.561355720448603,
+        "maxDD": 6.7537804193544115
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 13,
+        "wins": 3,
+        "losses": 10,
+        "PF": 0.13900446540679218,
+        "avgR": -0.6623042573793907,
+        "totalR": -8.609955345932079,
+        "maxDD": 8.609955345932079
+      },
+      "validation": {
+        "n": 13,
+        "wins": 3,
+        "losses": 10,
+        "PF": 0.24011597406692453,
+        "avgR": -0.5845261737946734,
+        "totalR": -7.598840259330755,
+        "maxDD": 7.759231888666125
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 4,
+        "losses": 9,
+        "PF": 0.4365105933767308,
+        "avgR": -0.39010805073918636,
+        "totalR": -5.071404659609422,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 11,
+        "wins": 2,
+        "losses": 9,
+        "PF": 13.987255245705438,
+        "avgR": 10.62593611012263,
+        "totalR": 116.88529721134894,
+        "maxDD": 6
+      },
+      "validation": {
+        "n": 12,
+        "wins": 3,
+        "losses": 9,
+        "PF": 1.9706425616899719,
+        "avgR": 0.727981921267479,
+        "totalR": 8.735783055209748,
+        "maxDD": 6
+      },
+      "holdout": {
+        "n": 12,
+        "wins": 2,
+        "losses": 10,
+        "PF": 0.8486763438400724,
+        "avgR": -0.12610304679993967,
+        "totalR": -1.513236561599276,
+        "maxDD": 8.945861812105408
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 10,
+        "wins": 2,
+        "losses": 8,
+        "PF": 0.20476196131185107,
+        "avgR": -0.6361904309505191,
+        "totalR": -6.361904309505191,
+        "maxDD": 7.124612603771826
+      },
+      "validation": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "PF": 0.4973804870562225,
+        "avgR": -0.35183365906064423,
+        "totalR": -3.5183365906064425,
+        "maxDD": 4.42984985865689
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.058566705650201306,
+        "avgR": -0.8472899649148189,
+        "totalR": -8.47289964914819,
+        "maxDD": 8.47289964914819
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "1.50_2.00",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 12,
+        "wins": 1,
+        "losses": 11,
+        "PF": 11.38153476503214,
+        "avgR": 9.516406867946127,
+        "totalR": 114.19688241535353,
+        "maxDD": 9
+      },
+      "validation": {
+        "n": 12,
+        "wins": 1,
+        "losses": 11,
+        "PF": 1.5167125532735015,
+        "avgR": 0.4736531738340431,
+        "totalR": 5.683838086008517,
+        "maxDD": 8
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 0,
+        "losses": 13,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -13,
+        "maxDD": 13
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "impulseScore",
+      "bucketA": "GE_2.50",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 21,
+        "wins": 2,
+        "losses": 19,
+        "PF": 0.12701009012964712,
+        "avgR": -0.789848013692224,
+        "totalR": -16.586808287536705,
+        "maxDD": 16.98770634231145
+      },
+      "validation": {
+        "n": 21,
+        "wins": 2,
+        "losses": 19,
+        "PF": 0.1898291010585188,
+        "avgR": -0.7330117657089592,
+        "totalR": -15.393247079888143,
+        "maxDD": 15.393247079888143
+      },
+      "holdout": {
+        "n": 22,
+        "wins": 3,
+        "losses": 19,
+        "PF": 0.12796159380104025,
+        "avgR": -0.7531240780809199,
+        "totalR": -16.568729717780236,
+        "maxDD": 16.568729717780236
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "50_75%",
+      "featureB": "entryLocation",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "validation": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.4539197080600947,
+        "avgR": -0.42472911595325963,
+        "totalR": -3.8225620435793366,
+        "maxDD": 5.999999999999999
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.3734031613148695,
+        "avgR": -0.4873530967551015,
+        "totalR": -4.386177870795914,
+        "maxDD": 5.3311551925318135
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 73,
+        "wins": 11,
+        "losses": 62,
+        "PF": 2.2705498347742665,
+        "avgR": 1.0790971199452672,
+        "totalR": 78.77408975600451,
+        "maxDD": 45.30699387015078
+      },
+      "validation": {
+        "n": 74,
+        "wins": 14,
+        "losses": 60,
+        "PF": 0.603732256130839,
+        "avgR": -0.321298170704725,
+        "totalR": -23.77606463214965,
+        "maxDD": 30.65876055027286
+      },
+      "holdout": {
+        "n": 74,
+        "wins": 13,
+        "losses": 61,
+        "PF": 1.0944983292443227,
+        "avgR": 0.07789727140410387,
+        "totalR": 5.764398083903686,
+        "maxDD": 20.032620609586616
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "50_75%",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "validation": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.4539197080600947,
+        "avgR": -0.42472911595325963,
+        "totalR": -3.8225620435793366,
+        "maxDD": 5.999999999999999
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.3734031613148695,
+        "avgR": -0.4873530967551015,
+        "totalR": -4.386177870795914,
+        "maxDD": 5.3311551925318135
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 73,
+        "wins": 11,
+        "losses": 62,
+        "PF": 2.2705498347742665,
+        "avgR": 1.0790971199452672,
+        "totalR": 78.77408975600451,
+        "maxDD": 45.30699387015078
+      },
+      "validation": {
+        "n": 74,
+        "wins": 14,
+        "losses": 60,
+        "PF": 0.603732256130839,
+        "avgR": -0.321298170704725,
+        "totalR": -23.77606463214965,
+        "maxDD": 30.65876055027286
+      },
+      "holdout": {
+        "n": 74,
+        "wins": 13,
+        "losses": 61,
+        "PF": 1.0944983292443227,
+        "avgR": 0.07789727140410387,
+        "totalR": 5.764398083903686,
+        "maxDD": 20.032620609586616
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D3_5",
+      "dev": {
+        "n": 12,
+        "wins": 3,
+        "losses": 9,
+        "PF": 0.23783425213494924,
+        "avgR": -0.5716243108987881,
+        "totalR": -6.859491730785457,
+        "maxDD": 9
+      },
+      "validation": {
+        "n": 12,
+        "wins": 4,
+        "losses": 8,
+        "PF": 0.7320003266156097,
+        "avgR": -0.1786664489229269,
+        "totalR": -2.1439973870751228,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 4,
+        "losses": 9,
+        "PF": 0.45307781079197984,
+        "avgR": -0.3786384386824755,
+        "totalR": -4.9222997028721815,
+        "maxDD": 7.753780419354412
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D6_8",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.15268400695003856,
+        "avgR": -0.7414014939187162,
+        "totalR": -5.93121195134973,
+        "maxDD": 5.93121195134973
+      },
+      "validation": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "PF": 1.8489392382939036,
+        "avgR": 0.6367044287204278,
+        "totalR": 5.093635429763422,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "PF": 0.1330762381508526,
+        "avgR": -0.6501928213868606,
+        "totalR": -5.201542571094885,
+        "maxDD": 5.7286429219466966
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D9_12",
+      "dev": {
+        "n": 20,
+        "wins": 3,
+        "losses": 17,
+        "PF": 0.14487233320586806,
+        "avgR": -0.7268585167750122,
+        "totalR": -14.537170335500244,
+        "maxDD": 15.175266025995052
+      },
+      "validation": {
+        "n": 20,
+        "wins": 4,
+        "losses": 16,
+        "PF": 0.2519274187990786,
+        "avgR": -0.5984580649607372,
+        "totalR": -11.969161299214743,
+        "maxDD": 11.969161299214743
+      },
+      "holdout": {
+        "n": 20,
+        "wins": 3,
+        "losses": 17,
+        "PF": 1.0576379940269527,
+        "avgR": 0.048992294922909574,
+        "totalR": 0.9798458984581915,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D13_PLUS",
+      "dev": {
+        "n": 40,
+        "wins": 8,
+        "losses": 32,
+        "PF": 4.384276256865762,
+        "avgR": 2.7074210054926104,
+        "totalR": 108.29684021970442,
+        "maxDD": 18.368222034145333
+      },
+      "validation": {
+        "n": 40,
+        "wins": 6,
+        "losses": 34,
+        "PF": 0.6478857377018791,
+        "avgR": -0.29929712295340277,
+        "totalR": -11.97188491813611,
+        "maxDD": 15.54208473709954
+      },
+      "holdout": {
+        "n": 40,
+        "wins": 6,
+        "losses": 34,
+        "PF": 1.1279349094381463,
+        "avgR": 0.10874467302242438,
+        "totalR": 4.3497869208969755,
+        "maxDD": 22.429913460269493
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "LT_40%",
+      "dev": {
+        "n": 23,
+        "wins": 6,
+        "losses": 17,
+        "PF": 0.23754091434532326,
+        "avgR": -0.5635567154838916,
+        "totalR": -12.961804456129506,
+        "maxDD": 12.961804456129506
+      },
+      "validation": {
+        "n": 23,
+        "wins": 2,
+        "losses": 21,
+        "PF": 0.22706856826108948,
+        "avgR": -0.7057200028920486,
+        "totalR": -16.23156006651712,
+        "maxDD": 16.23156006651712
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 5,
+        "losses": 18,
+        "PF": 1.1513754809713288,
+        "avgR": 0.11846776771669214,
+        "totalR": 2.7247586574839193,
+        "maxDD": 10
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "40_60%",
+      "dev": {
+        "n": 13,
+        "wins": 0,
+        "losses": 13,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -13,
+        "maxDD": 13
+      },
+      "validation": {
+        "n": 13,
+        "wins": 5,
+        "losses": 8,
+        "PF": 0.7754238376895732,
+        "avgR": -0.13820071526795494,
+        "totalR": -1.796609298483414,
+        "maxDD": 4.435450654454295
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 4,
+        "losses": 9,
+        "PF": 0.5112605228106353,
+        "avgR": -0.33835809959263713,
+        "totalR": -4.398655294704283,
+        "maxDD": 6.339332103720025
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "60_80%",
+      "dev": {
+        "n": 14,
+        "wins": 3,
+        "losses": 11,
+        "PF": 0.8717588105789087,
+        "avgR": -0.10076093454514305,
+        "totalR": -1.4106530836320028,
+        "maxDD": 8.606439498438354
+      },
+      "validation": {
+        "n": 14,
+        "wins": 4,
+        "losses": 10,
+        "PF": 2.1567290590796797,
+        "avgR": 0.8262350421997714,
+        "totalR": 11.5672905907968,
+        "maxDD": 6
+      },
+      "holdout": {
+        "n": 15,
+        "wins": 2,
+        "losses": 13,
+        "PF": 0.6532864109757832,
+        "avgR": -0.30048511048765464,
+        "totalR": -4.5072766573148195,
+        "maxDD": 9.93990190782095
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 33,
+        "wins": 6,
+        "losses": 27,
+        "PF": 4.867381943623878,
+        "avgR": 3.164221590237719,
+        "totalR": 104.41931247784473,
+        "maxDD": 16.683251026074032
+      },
+      "validation": {
+        "n": 34,
+        "wins": 7,
+        "losses": 27,
+        "PF": 0.32577724954230036,
+        "avgR": -0.5354121841869969,
+        "totalR": -18.204014262357894,
+        "maxDD": 19.865024441615184
+      },
+      "holdout": {
+        "n": 34,
+        "wins": 6,
+        "losses": 28,
+        "PF": 1.363509541842843,
+        "avgR": 0.2993607991646941,
+        "totalR": 10.1782671715996,
+        "maxDD": 19.601433209566867
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "compressionRatio",
+      "bucketB": "LT_75%",
+      "dev": {
+        "n": 14,
+        "wins": 3,
+        "losses": 11,
+        "PF": 0.38782686833661145,
+        "avgR": -0.4809931748783766,
+        "totalR": -6.733904448297273,
+        "maxDD": 7.31788307599173
+      },
+      "validation": {
+        "n": 15,
+        "wins": 0,
+        "losses": 15,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -15,
+        "maxDD": 15
+      },
+      "holdout": {
+        "n": 15,
+        "wins": 2,
+        "losses": 13,
+        "PF": 2.1275782192066393,
+        "avgR": 0.9772344566457538,
+        "totalR": 14.658516849686308,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "compressionRatio",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "PF": 1.1358495872824996,
+        "avgR": 0.10188719046187483,
+        "totalR": 0.8150975236949987,
+        "maxDD": 5
+      },
+      "validation": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.17937279386134947,
+        "avgR": -0.638265604774506,
+        "totalR": -5.744390442970554,
+        "maxDD": 5.744390442970554
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 0.0053171244385395505,
+        "avgR": -0.8841625560546316,
+        "totalR": -7.957463004491684,
+        "maxDD": 7.957463004491684
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "compressionRatio",
+      "bucketB": "100_125%",
+      "dev": {
+        "n": 11,
+        "wins": 1,
+        "losses": 10,
+        "PF": 0.3761523405401038,
+        "avgR": -0.5671342358726329,
+        "totalR": -6.2384765945989615,
+        "maxDD": 10
+      },
+      "validation": {
+        "n": 11,
+        "wins": 2,
+        "losses": 9,
+        "PF": 0.22132244212854577,
+        "avgR": -0.6370998200766445,
+        "totalR": -7.0080980208430885,
+        "maxDD": 8.46601328374355
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 3,
+        "losses": 8,
+        "PF": 0.5000968626493489,
+        "avgR": -0.3635659180732007,
+        "totalR": -3.9992250988052076,
+        "maxDD": 5
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 30,
+        "wins": 5,
+        "losses": 25,
+        "PF": 5.116678136136216,
+        "avgR": 3.4305651134468467,
+        "totalR": 102.9169534034054,
+        "maxDD": 17.96834380794354
+      },
+      "validation": {
+        "n": 30,
+        "wins": 6,
+        "losses": 24,
+        "PF": 0.9504767602692828,
+        "avgR": -0.03961859178457366,
+        "totalR": -1.1885577535372098,
+        "maxDD": 9.42984985865689
+      },
+      "holdout": {
+        "n": 30,
+        "wins": 5,
+        "losses": 25,
+        "PF": 1.3435011869729478,
+        "avgR": 0.2862509891441231,
+        "totalR": 8.587529674323694,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 37,
+        "wins": 1,
+        "losses": 36,
+        "PF": 3.4776911782042648,
+        "avgR": 2.4107265517663117,
+        "totalR": 89.19688241535353,
+        "maxDD": 34
+      },
+      "validation": {
+        "n": 37,
+        "wins": 2,
+        "losses": 35,
+        "PF": 0.5652875918697556,
+        "avgR": -0.4112144401232041,
+        "totalR": -15.21493428455855,
+        "maxDD": 26
+      },
+      "holdout": {
+        "n": 37,
+        "wins": 2,
+        "losses": 35,
+        "PF": 0.5555244726042097,
+        "avgR": -0.4204498232122341,
+        "totalR": -15.556643458852662,
+        "maxDD": 31.301379899850815
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "25_50%",
+      "dev": {
+        "n": 18,
+        "wins": 3,
+        "losses": 15,
+        "PF": 0.42290987255576323,
+        "avgR": -0.480908439536864,
+        "totalR": -8.656351911663553,
+        "maxDD": 15
+      },
+      "validation": {
+        "n": 19,
+        "wins": 3,
+        "losses": 16,
+        "PF": 0.22979296187286596,
+        "avgR": -0.6485954005281128,
+        "totalR": -12.323312610034144,
+        "maxDD": 12.323312610034144
+      },
+      "holdout": {
+        "n": 19,
+        "wins": 6,
+        "losses": 13,
+        "PF": 3.3576101106082676,
+        "avgR": 1.6131016546267094,
+        "totalR": 30.64893143790748,
+        "maxDD": 4.8207573993941075
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "50_75%",
+      "dev": {
+        "n": 11,
+        "wins": 1,
+        "losses": 10,
+        "PF": 0.03248434771499223,
+        "avgR": -0.8795596838954616,
+        "totalR": -9.675156522850077,
+        "maxDD": 9.675156522850077
+      },
+      "validation": {
+        "n": 11,
+        "wins": 4,
+        "losses": 7,
+        "PF": 0.6043793359186242,
+        "avgR": -0.2517586044154209,
+        "totalR": -2.7693446485696303,
+        "maxDD": 3.3293820300092345
+      },
+      "holdout": {
+        "n": 12,
+        "wins": 4,
+        "losses": 8,
+        "PF": 1.2092347654031395,
+        "avgR": 0.1394898436020929,
+        "totalR": 1.6738781232251148,
+        "maxDD": 4
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "retracement",
+      "bucketA": "GE_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 11,
+        "wins": 6,
+        "losses": 5,
+        "PF": 1.6942342963511408,
+        "avgR": 0.31556104379597305,
+        "totalR": 3.471171481755704,
+        "maxDD": 2
+      },
+      "validation": {
+        "n": 11,
+        "wins": 4,
+        "losses": 7,
+        "PF": 0.4151960752277454,
+        "avgR": -0.37214795212779833,
+        "totalR": -4.093627473405782,
+        "maxDD": 5.341615532360417
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 7,
+        "losses": 4,
+        "PF": 0.7539445904393872,
+        "avgR": -0.08947469438567736,
+        "totalR": -0.984221638242451,
+        "maxDD": 3.5565509938787363
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "75_100%",
+      "dev": {
+        "n": 74,
+        "wins": 11,
+        "losses": 63,
+        "PF": 2.234509361206421,
+        "avgR": 1.0510012129189799,
+        "totalR": 77.77408975600451,
+        "maxDD": 46.30699387015078
+      },
+      "validation": {
+        "n": 74,
+        "wins": 15,
+        "losses": 59,
+        "PF": 0.6379006750451841,
+        "avgR": -0.2887008131396505,
+        "totalR": -21.36386017233414,
+        "maxDD": 30.65876055027286
+      },
+      "holdout": {
+        "n": 74,
+        "wins": 13,
+        "losses": 61,
+        "PF": 1.0944983292443227,
+        "avgR": 0.07789727140410387,
+        "totalR": 5.764398083903686,
+        "maxDD": 20.032620609586616
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "75_100%",
+      "featureB": "distanceFromExtreme",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 21,
+        "wins": 3,
+        "losses": 18,
+        "PF": 0.023955254309159443,
+        "avgR": -0.8366097820207203,
+        "totalR": -17.568805422435126,
+        "maxDD": 17.729197051770498
+      },
+      "validation": {
+        "n": 21,
+        "wins": 4,
+        "losses": 17,
+        "PF": 0.3715256940666733,
+        "avgR": -0.5087649143269788,
+        "totalR": -10.684063200866554,
+        "maxDD": 11.081071334120288
+      },
+      "holdout": {
+        "n": 22,
+        "wins": 5,
+        "losses": 17,
+        "PF": 0.14046114701990253,
+        "avgR": -0.6641891136664388,
+        "totalR": -14.612160500661656,
+        "maxDD": 14.804585199567464
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D3_5",
+      "dev": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.06648872216608903,
+        "avgR": -0.8401601500505198,
+        "totalR": -8.401601500505198,
+        "maxDD": 8.999999999999998
+      },
+      "validation": {
+        "n": 10,
+        "wins": 4,
+        "losses": 6,
+        "PF": 0.9760004354874795,
+        "avgR": -0.014399738707512277,
+        "totalR": -0.14399738707512277,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 3,
+        "losses": 8,
+        "PF": 0.46104868486264344,
+        "avgR": -0.39196459282716845,
+        "totalR": -4.311610521098853,
+        "maxDD": 6.753780419354412
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D9_12",
+      "dev": {
+        "n": 18,
+        "wins": 3,
+        "losses": 15,
+        "PF": 0.1641886442999838,
+        "avgR": -0.6965094630833469,
+        "totalR": -12.537170335500244,
+        "maxDD": 13.175266025995052
+      },
+      "validation": {
+        "n": 19,
+        "wins": 4,
+        "losses": 15,
+        "PF": 0.31816167937400053,
+        "avgR": -0.5382934110205259,
+        "totalR": -10.227574809389992,
+        "maxDD": 10.227574809389992
+      },
+      "holdout": {
+        "n": 19,
+        "wins": 3,
+        "losses": 16,
+        "PF": 1.1237403686536371,
+        "avgR": 0.10420241570832592,
+        "totalR": 1.9798458984581924,
+        "maxDD": 7
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D13_PLUS",
+      "dev": {
+        "n": 36,
+        "wins": 7,
+        "losses": 29,
+        "PF": 4.748719365241723,
+        "avgR": 3.0198017108891655,
+        "totalR": 108.71286159200996,
+        "maxDD": 17.368222034145333
+      },
+      "validation": {
+        "n": 36,
+        "wins": 4,
+        "losses": 32,
+        "PF": 0.6511169968114955,
+        "avgR": -0.3101182250564485,
+        "totalR": -11.164256102032144,
+        "maxDD": 14.54208473709954
+      },
+      "holdout": {
+        "n": 37,
+        "wins": 5,
+        "losses": 32,
+        "PF": 1.1971015601683956,
+        "avgR": 0.17046621419969346,
+        "totalR": 6.307249925388658,
+        "maxDD": 20.47245045577781
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "75_100%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D0_2",
+      "dev": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "validation": {
+        "n": 8,
+        "wins": 3,
+        "losses": 5,
+        "PF": 1.1056527877597535,
+        "avgR": 0.06603299234984605,
+        "totalR": 0.5282639387987684,
+        "maxDD": 3
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.027489242700829804,
+        "avgR": -0.8509469126367739,
+        "totalR": -6.807575301094191,
+        "maxDD": 7
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "LT_40%",
+      "dev": {
+        "n": 18,
+        "wins": 4,
+        "losses": 14,
+        "PF": 0.2547625201468623,
+        "avgR": -0.579629150996885,
+        "totalR": -10.433324717943929,
+        "maxDD": 10.433324717943929
+      },
+      "validation": {
+        "n": 19,
+        "wins": 1,
+        "losses": 18,
+        "PF": 0.08445874954342496,
+        "avgR": -0.8673548688535974,
+        "totalR": -16.47974250821835,
+        "maxDD": 16.47974250821835
+      },
+      "holdout": {
+        "n": 19,
+        "wins": 3,
+        "losses": 16,
+        "PF": 0.9952444173786359,
+        "avgR": -0.004004701154832932,
+        "totalR": -0.07608932194182572,
+        "maxDD": 8.933023019960302
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "40_60%",
+      "dev": {
+        "n": 12,
+        "wins": 0,
+        "losses": 12,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -12,
+        "maxDD": 12
+      },
+      "validation": {
+        "n": 12,
+        "wins": 5,
+        "losses": 7,
+        "PF": 0.8861986716452266,
+        "avgR": -0.06638410820695118,
+        "totalR": -0.7966092984834141,
+        "maxDD": 4.435450654454295
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 3,
+        "losses": 10,
+        "PF": 0.42120338870690455,
+        "avgR": -0.44522816253315034,
+        "totalR": -5.787966112930954,
+        "maxDD": 5.787966112930954
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "60_80%",
+      "dev": {
+        "n": 13,
+        "wins": 3,
+        "losses": 10,
+        "PF": 0.9589346916367996,
+        "avgR": -0.03158869874092329,
+        "totalR": -0.4106530836320028,
+        "maxDD": 7.606439498438353
+      },
+      "validation": {
+        "n": 13,
+        "wins": 4,
+        "losses": 9,
+        "PF": 2.480123398108082,
+        "avgR": 1.024700814074826,
+        "totalR": 13.321110582972738,
+        "maxDD": 6
+      },
+      "holdout": {
+        "n": 14,
+        "wins": 2,
+        "losses": 12,
+        "PF": 0.7077269452237651,
+        "avgR": -0.25051976123677283,
+        "totalR": -3.5072766573148195,
+        "maxDD": 8.93990190782095
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 29,
+        "wins": 4,
+        "losses": 25,
+        "PF": 5.104722702303218,
+        "avgR": 3.5385540537096705,
+        "totalR": 102.61806755758045,
+        "maxDD": 17.267229653768496
+      },
+      "validation": {
+        "n": 30,
+        "wins": 5,
+        "losses": 25,
+        "PF": 0.3036552420557957,
+        "avgR": -0.580287298286837,
+        "totalR": -17.40861894860511,
+        "maxDD": 18.0696291278624
+      },
+      "holdout": {
+        "n": 30,
+        "wins": 5,
+        "losses": 25,
+        "PF": 1.5254292070436515,
+        "avgR": 0.4378576725363762,
+        "totalR": 13.135730176091286,
+        "maxDD": 16.64397020507518
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "75_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "PF": 0.07186576292747833,
+        "avgR": -0.6187561580483477,
+        "totalR": -5.56880542243513,
+        "maxDD": 5.56880542243513
+      },
+      "validation": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.24752145458151129,
+        "avgR": -0.5852610908810468,
+        "totalR": -5.267349817929421,
+        "maxDD": 6
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.24448311471092896,
+        "avgR": -0.5876242441137219,
+        "totalR": -5.288618197023498,
+        "maxDD": 5.288618197023498
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "compressionRatio",
+      "bucketB": "LT_75%",
+      "dev": {
+        "n": 13,
+        "wins": 2,
+        "losses": 11,
+        "PF": 0.1529197203643881,
+        "avgR": -0.7167602366147485,
+        "totalR": -9.31788307599173,
+        "maxDD": 9.31788307599173
+      },
+      "validation": {
+        "n": 13,
+        "wins": 0,
+        "losses": 13,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -13,
+        "maxDD": 13
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 2,
+        "losses": 11,
+        "PF": 2.514410622698755,
+        "avgR": 1.281424373052793,
+        "totalR": 16.658516849686308,
+        "maxDD": 7
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "compressionRatio",
+      "bucketB": "100_125%",
+      "dev": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.4179470450445598,
+        "avgR": -0.5238476594598962,
+        "totalR": -5.2384765945989615,
+        "maxDD": 9
+      },
+      "validation": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.16199058476671788,
+        "avgR": -0.7542084737099539,
+        "totalR": -7.54208473709954,
+        "maxDD": 9
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 3,
+        "losses": 8,
+        "PF": 0.5000968626493489,
+        "avgR": -0.3635659180732007,
+        "totalR": -3.9992250988052076,
+        "maxDD": 5
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 28,
+        "wins": 5,
+        "losses": 23,
+        "PF": 5.561606669713278,
+        "avgR": 3.7470340501216213,
+        "totalR": 104.9169534034054,
+        "maxDD": 15.96834380794354
+      },
+      "validation": {
+        "n": 28,
+        "wins": 5,
+        "losses": 23,
+        "PF": 0.9631764251662264,
+        "avgR": -0.03024793647059974,
+        "totalR": -0.8469422211767927,
+        "maxDD": 9.42984985865689
+      },
+      "holdout": {
+        "n": 28,
+        "wins": 5,
+        "losses": 23,
+        "PF": 1.4603273771445087,
+        "avgR": 0.37812605979727476,
+        "totalR": 10.587529674323694,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 34,
+        "wins": 3,
+        "losses": 31,
+        "PF": 4.184203693696838,
+        "avgR": 2.903244544252999,
+        "totalR": 98.71031450460197,
+        "maxDD": 27.587795540184487
+      },
+      "validation": {
+        "n": 34,
+        "wins": 1,
+        "losses": 33,
+        "PF": 0.5055708510911672,
+        "avgR": -0.47988711511739657,
+        "totalR": -16.316161913991483,
+        "maxDD": 26
+      },
+      "holdout": {
+        "n": 35,
+        "wins": 2,
+        "losses": 33,
+        "PF": 0.5891926224590103,
+        "avgR": -0.3873326702529332,
+        "totalR": -13.556643458852662,
+        "maxDD": 29.301379899850815
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "stopToImpulse",
+      "bucketB": "25_50%",
+      "dev": {
+        "n": 17,
+        "wins": 2,
+        "losses": 15,
+        "PF": 0.41313142024479643,
+        "avgR": -0.517825217431062,
+        "totalR": -8.803028696328054,
+        "maxDD": 15
+      },
+      "validation": {
+        "n": 17,
+        "wins": 3,
+        "losses": 14,
+        "PF": 0.26262052785470397,
+        "avgR": -0.6072536829431849,
+        "totalR": -10.323312610034144,
+        "maxDD": 10.323312610034144
+      },
+      "holdout": {
+        "n": 17,
+        "wins": 5,
+        "losses": 12,
+        "PF": 3.3760367841387406,
+        "avgR": 1.6772024358626405,
+        "totalR": 28.512441409664888,
+        "maxDD": 4.820757399394111
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "stopToImpulse",
+      "bucketB": "50_75%",
+      "dev": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9,
+        "maxDD": 9
+      },
+      "validation": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "PF": 0.5085767687770862,
+        "avgR": -0.3439962618560396,
+        "totalR": -3.439962618560396,
+        "maxDD": 3.439962618560396
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 4,
+        "losses": 6,
+        "PF": 1.6123130205375193,
+        "avgR": 0.3673878123225115,
+        "totalR": 3.6738781232251148,
+        "maxDD": 3
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "0_25%",
+      "featureB": "stopToImpulse",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 8,
+        "wins": 5,
+        "losses": 3,
+        "PF": 2.417968396395295,
+        "avgR": 0.5317381486482357,
+        "totalR": 4.253905189185885,
+        "maxDD": 1
+      },
+      "validation": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.05622292879452101,
+        "avgR": -0.8258049373047941,
+        "totalR": -6.606439498438353,
+        "maxDD": 6.606439498438353
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 5,
+        "losses": 3,
+        "PF": 0.7466711459919808,
+        "avgR": -0.09499832025300718,
+        "totalR": -0.7599865620240575,
+        "maxDD": 2.945861812105407
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "entryLocation",
+      "bucketA": "75_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 12,
+        "wins": 1,
+        "losses": 11,
+        "PF": 0.0011176052444135196,
+        "avgR": -0.9156421951926209,
+        "totalR": -10.987706342311451,
+        "maxDD": 10.987706342311451
+      },
+      "validation": {
+        "n": 12,
+        "wins": 2,
+        "losses": 10,
+        "PF": 0.17326501820705792,
+        "avgR": -0.6889458181607852,
+        "totalR": -8.267349817929421,
+        "maxDD": 10
+      },
+      "holdout": {
+        "n": 12,
+        "wins": 0,
+        "losses": 12,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -12,
+        "maxDD": 12
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "0_25%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D0_2",
+      "dev": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "validation": {
+        "n": 8,
+        "wins": 3,
+        "losses": 5,
+        "PF": 1.1056527877597535,
+        "avgR": 0.06603299234984605,
+        "totalR": 0.5282639387987684,
+        "maxDD": 3
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.027489242700829804,
+        "avgR": -0.8509469126367739,
+        "totalR": -6.807575301094191,
+        "maxDD": 7
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D3_5",
+      "dev": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.06648872216608903,
+        "avgR": -0.8401601500505198,
+        "totalR": -8.401601500505198,
+        "maxDD": 8.999999999999998
+      },
+      "validation": {
+        "n": 10,
+        "wins": 4,
+        "losses": 6,
+        "PF": 0.9760004354874795,
+        "avgR": -0.014399738707512277,
+        "totalR": -0.14399738707512277,
+        "maxDD": 5
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 3,
+        "losses": 8,
+        "PF": 0.46104868486264344,
+        "avgR": -0.39196459282716845,
+        "totalR": -4.311610521098853,
+        "maxDD": 6.753780419354412
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D9_12",
+      "dev": {
+        "n": 18,
+        "wins": 3,
+        "losses": 15,
+        "PF": 0.1641886442999838,
+        "avgR": -0.6965094630833469,
+        "totalR": -12.537170335500244,
+        "maxDD": 13.175266025995052
+      },
+      "validation": {
+        "n": 19,
+        "wins": 4,
+        "losses": 15,
+        "PF": 0.31816167937400053,
+        "avgR": -0.5382934110205259,
+        "totalR": -10.227574809389992,
+        "maxDD": 10.227574809389992
+      },
+      "holdout": {
+        "n": 19,
+        "wins": 3,
+        "losses": 16,
+        "PF": 1.1237403686536371,
+        "avgR": 0.10420241570832592,
+        "totalR": 1.9798458984581924,
+        "maxDD": 7
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "delayFromImpulse",
+      "bucketB": "D13_PLUS",
+      "dev": {
+        "n": 36,
+        "wins": 7,
+        "losses": 29,
+        "PF": 4.748719365241723,
+        "avgR": 3.0198017108891655,
+        "totalR": 108.71286159200996,
+        "maxDD": 17.368222034145333
+      },
+      "validation": {
+        "n": 36,
+        "wins": 4,
+        "losses": 32,
+        "PF": 0.6511169968114955,
+        "avgR": -0.3101182250564485,
+        "totalR": -11.164256102032144,
+        "maxDD": 14.54208473709954
+      },
+      "holdout": {
+        "n": 37,
+        "wins": 5,
+        "losses": 32,
+        "PF": 1.1971015601683956,
+        "avgR": 0.17046621419969346,
+        "totalR": 6.307249925388658,
+        "maxDD": 20.47245045577781
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "0_25%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "PF": 0.07186576292747833,
+        "avgR": -0.6187561580483477,
+        "totalR": -5.56880542243513,
+        "maxDD": 5.56880542243513
+      },
+      "validation": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.24752145458151129,
+        "avgR": -0.5852610908810468,
+        "totalR": -5.267349817929421,
+        "maxDD": 6
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 2,
+        "losses": 7,
+        "PF": 0.24448311471092896,
+        "avgR": -0.5876242441137219,
+        "totalR": -5.288618197023498,
+        "maxDD": 5.288618197023498
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "LT_40%",
+      "dev": {
+        "n": 18,
+        "wins": 4,
+        "losses": 14,
+        "PF": 0.2547625201468623,
+        "avgR": -0.579629150996885,
+        "totalR": -10.433324717943929,
+        "maxDD": 10.433324717943929
+      },
+      "validation": {
+        "n": 19,
+        "wins": 1,
+        "losses": 18,
+        "PF": 0.08445874954342496,
+        "avgR": -0.8673548688535974,
+        "totalR": -16.47974250821835,
+        "maxDD": 16.47974250821835
+      },
+      "holdout": {
+        "n": 19,
+        "wins": 3,
+        "losses": 16,
+        "PF": 0.9952444173786359,
+        "avgR": -0.004004701154832932,
+        "totalR": -0.07608932194182572,
+        "maxDD": 8.933023019960302
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "40_60%",
+      "dev": {
+        "n": 12,
+        "wins": 0,
+        "losses": 12,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -12,
+        "maxDD": 12
+      },
+      "validation": {
+        "n": 12,
+        "wins": 5,
+        "losses": 7,
+        "PF": 0.8861986716452266,
+        "avgR": -0.06638410820695118,
+        "totalR": -0.7966092984834141,
+        "maxDD": 4.435450654454295
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 3,
+        "losses": 10,
+        "PF": 0.42120338870690455,
+        "avgR": -0.44522816253315034,
+        "totalR": -5.787966112930954,
+        "maxDD": 5.787966112930954
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "60_80%",
+      "dev": {
+        "n": 13,
+        "wins": 3,
+        "losses": 10,
+        "PF": 0.9589346916367996,
+        "avgR": -0.03158869874092329,
+        "totalR": -0.4106530836320028,
+        "maxDD": 7.606439498438353
+      },
+      "validation": {
+        "n": 13,
+        "wins": 4,
+        "losses": 9,
+        "PF": 2.480123398108082,
+        "avgR": 1.024700814074826,
+        "totalR": 13.321110582972738,
+        "maxDD": 6
+      },
+      "holdout": {
+        "n": 14,
+        "wins": 2,
+        "losses": 12,
+        "PF": 0.7077269452237651,
+        "avgR": -0.25051976123677283,
+        "totalR": -3.5072766573148195,
+        "maxDD": 8.93990190782095
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 29,
+        "wins": 4,
+        "losses": 25,
+        "PF": 5.104722702303218,
+        "avgR": 3.5385540537096705,
+        "totalR": 102.61806755758045,
+        "maxDD": 17.267229653768496
+      },
+      "validation": {
+        "n": 30,
+        "wins": 5,
+        "losses": 25,
+        "PF": 0.3036552420557957,
+        "avgR": -0.580287298286837,
+        "totalR": -17.40861894860511,
+        "maxDD": 18.0696291278624
+      },
+      "holdout": {
+        "n": 30,
+        "wins": 5,
+        "losses": 25,
+        "PF": 1.5254292070436515,
+        "avgR": 0.4378576725363762,
+        "totalR": 13.135730176091286,
+        "maxDD": 16.64397020507518
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "compressionRatio",
+      "bucketB": "LT_75%",
+      "dev": {
+        "n": 13,
+        "wins": 2,
+        "losses": 11,
+        "PF": 0.1529197203643881,
+        "avgR": -0.7167602366147485,
+        "totalR": -9.31788307599173,
+        "maxDD": 9.31788307599173
+      },
+      "validation": {
+        "n": 13,
+        "wins": 0,
+        "losses": 13,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -13,
+        "maxDD": 13
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 2,
+        "losses": 11,
+        "PF": 2.514410622698755,
+        "avgR": 1.281424373052793,
+        "totalR": 16.658516849686308,
+        "maxDD": 7
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "compressionRatio",
+      "bucketB": "100_125%",
+      "dev": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.4179470450445598,
+        "avgR": -0.5238476594598962,
+        "totalR": -5.2384765945989615,
+        "maxDD": 9
+      },
+      "validation": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "PF": 0.16199058476671788,
+        "avgR": -0.7542084737099539,
+        "totalR": -7.54208473709954,
+        "maxDD": 9
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 3,
+        "losses": 8,
+        "PF": 0.5000968626493489,
+        "avgR": -0.3635659180732007,
+        "totalR": -3.9992250988052076,
+        "maxDD": 5
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 28,
+        "wins": 5,
+        "losses": 23,
+        "PF": 5.561606669713278,
+        "avgR": 3.7470340501216213,
+        "totalR": 104.9169534034054,
+        "maxDD": 15.96834380794354
+      },
+      "validation": {
+        "n": 28,
+        "wins": 5,
+        "losses": 23,
+        "PF": 0.9631764251662264,
+        "avgR": -0.03024793647059974,
+        "totalR": -0.8469422211767927,
+        "maxDD": 9.42984985865689
+      },
+      "holdout": {
+        "n": 28,
+        "wins": 5,
+        "losses": 23,
+        "PF": 1.4603273771445087,
+        "avgR": 0.37812605979727476,
+        "totalR": 10.587529674323694,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "0_25%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 12,
+        "wins": 1,
+        "losses": 11,
+        "PF": 0.0011176052444135196,
+        "avgR": -0.9156421951926209,
+        "totalR": -10.987706342311451,
+        "maxDD": 10.987706342311451
+      },
+      "validation": {
+        "n": 12,
+        "wins": 2,
+        "losses": 10,
+        "PF": 0.17326501820705792,
+        "avgR": -0.6889458181607852,
+        "totalR": -8.267349817929421,
+        "maxDD": 10
+      },
+      "holdout": {
+        "n": 12,
+        "wins": 0,
+        "losses": 12,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -12,
+        "maxDD": 12
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 34,
+        "wins": 3,
+        "losses": 31,
+        "PF": 4.184203693696838,
+        "avgR": 2.903244544252999,
+        "totalR": 98.71031450460197,
+        "maxDD": 27.587795540184487
+      },
+      "validation": {
+        "n": 34,
+        "wins": 1,
+        "losses": 33,
+        "PF": 0.5055708510911672,
+        "avgR": -0.47988711511739657,
+        "totalR": -16.316161913991483,
+        "maxDD": 26
+      },
+      "holdout": {
+        "n": 35,
+        "wins": 2,
+        "losses": 33,
+        "PF": 0.5891926224590103,
+        "avgR": -0.3873326702529332,
+        "totalR": -13.556643458852662,
+        "maxDD": 29.301379899850815
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "25_50%",
+      "dev": {
+        "n": 17,
+        "wins": 2,
+        "losses": 15,
+        "PF": 0.41313142024479643,
+        "avgR": -0.517825217431062,
+        "totalR": -8.803028696328054,
+        "maxDD": 15
+      },
+      "validation": {
+        "n": 17,
+        "wins": 3,
+        "losses": 14,
+        "PF": 0.26262052785470397,
+        "avgR": -0.6072536829431849,
+        "totalR": -10.323312610034144,
+        "maxDD": 10.323312610034144
+      },
+      "holdout": {
+        "n": 17,
+        "wins": 5,
+        "losses": 12,
+        "PF": 3.3760367841387406,
+        "avgR": 1.6772024358626405,
+        "totalR": 28.512441409664888,
+        "maxDD": 4.820757399394111
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "50_75%",
+      "dev": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9,
+        "maxDD": 9
+      },
+      "validation": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "PF": 0.5085767687770862,
+        "avgR": -0.3439962618560396,
+        "totalR": -3.439962618560396,
+        "maxDD": 3.439962618560396
+      },
+      "holdout": {
+        "n": 10,
+        "wins": 4,
+        "losses": 6,
+        "PF": 1.6123130205375193,
+        "avgR": 0.3673878123225115,
+        "totalR": 3.6738781232251148,
+        "maxDD": 3
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "distanceFromExtreme",
+      "bucketA": "75_100%",
+      "featureB": "stopToImpulse",
+      "bucketB": "GE_100%",
+      "dev": {
+        "n": 8,
+        "wins": 5,
+        "losses": 3,
+        "PF": 2.417968396395295,
+        "avgR": 0.5317381486482357,
+        "totalR": 4.253905189185885,
+        "maxDD": 1
+      },
+      "validation": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.05622292879452101,
+        "avgR": -0.8258049373047941,
+        "totalR": -6.606439498438353,
+        "maxDD": 6.606439498438353
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 5,
+        "losses": 3,
+        "PF": 0.7466711459919808,
+        "avgR": -0.09499832025300718,
+        "totalR": -0.7599865620240575,
+        "maxDD": 2.945861812105407
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D3_5",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "LT_40%",
+      "dev": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "PF": 0.1538736627741206,
+        "avgR": -0.6345947529194096,
+        "totalR": -5.076758023355277,
+        "maxDD": 6
+      },
+      "validation": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.21717964168309273,
+        "avgR": -0.6849678135272939,
+        "totalR": -5.479742508218351,
+        "maxDD": 5.479742508218351
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "PF": 0.2077032634409313,
+        "avgR": -0.5942225524193016,
+        "totalR": -4.753780419354412,
+        "maxDD": 4.753780419354412
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D9_12",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.12505534231831053,
+        "avgR": -0.7655765754714783,
+        "totalR": -6.124612603771826,
+        "maxDD": 6.124612603771826
+      },
+      "validation": {
+        "n": 8,
+        "wins": 4,
+        "losses": 4,
+        "PF": 1.0077096751963144,
+        "avgR": 0.0038548375981571903,
+        "totalR": 0.030838700785257522,
+        "maxDD": 2
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D13_PLUS",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "LT_40%",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.19726207346995528,
+        "avgR": -0.7023956857137892,
+        "totalR": -5.6191654857103135,
+        "maxDD": 6
+      },
+      "validation": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D13_PLUS",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "60_80%",
+      "dev": {
+        "n": 8,
+        "wins": 3,
+        "losses": 5,
+        "PF": 1.9178693832735991,
+        "avgR": 0.5736683645459996,
+        "totalR": 4.5893469163679965,
+        "maxDD": 4
+      },
+      "validation": {
+        "n": 8,
+        "wins": 3,
+        "losses": 5,
+        "PF": 3.6932125922727734,
+        "avgR": 1.6832578701704837,
+        "totalR": 13.46606296136387,
+        "maxDD": 2.87615959228423
+      },
+      "holdout": {
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D13_PLUS",
+      "featureB": "impulseBodyFraction",
+      "bucketB": "GE_80%",
+      "dev": {
+        "n": 22,
+        "wins": 5,
+        "losses": 17,
+        "PF": 7.608173673337369,
+        "avgR": 5.106316020306149,
+        "totalR": 112.33895244673528,
+        "maxDD": 9.130323392308128
+      },
+      "validation": {
+        "n": 23,
+        "wins": 2,
+        "losses": 21,
+        "PF": 0.1001969932190267,
+        "avgR": -0.8215592670608887,
+        "totalR": -18.89586314240044,
+        "maxDD": 18.89586314240044
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 7,
+        "losses": 16,
+        "PF": 2.5067302805344163,
+        "avgR": 1.0481601951543764,
+        "totalR": 24.107684488550657,
+        "maxDD": 7.672015892615812
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D9_12",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.12505534231831053,
+        "avgR": -0.7655765754714783,
+        "totalR": -6.124612603771826,
+        "maxDD": 7
+      },
+      "validation": {
+        "n": 9,
+        "wins": 3,
+        "losses": 6,
+        "PF": 0.5896562396704076,
+        "avgR": -0.2735625068863949,
+        "totalR": -2.462062561977554,
+        "maxDD": 3.224770856244189
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9,
+        "maxDD": 9
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D13_PLUS",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 22,
+        "wins": 3,
+        "losses": 19,
+        "PF": 6.646255669100557,
+        "avgR": 4.876311714223209,
+        "totalR": 107.2788577129106,
+        "maxDD": 15.606439498438348
+      },
+      "validation": {
+        "n": 23,
+        "wins": 4,
+        "losses": 19,
+        "PF": 1.0545375317214198,
+        "avgR": 0.04505274359595557,
+        "totalR": 1.036213102706978,
+        "maxDD": 9.876159592284232
+      },
+      "holdout": {
+        "n": 23,
+        "wins": 4,
+        "losses": 19,
+        "PF": 1.3376566807000227,
+        "avgR": 0.2789337797087144,
+        "totalR": 6.415476933300432,
+        "maxDD": 10.171070555926994
+      },
+      "passesValidation": true
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D9_12",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.3429854363963924,
+        "avgR": -0.5748877431531567,
+        "totalR": -4.599101945225254,
+        "maxDD": 7
+      },
+      "validation": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.20174349425935947,
+        "avgR": -0.6984744425230605,
+        "totalR": -5.587795540184484,
+        "maxDD": 5.587795540184484
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9,
+        "maxDD": 9
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "delayFromImpulse",
+      "bucketA": "D13_PLUS",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 24,
+        "wins": 2,
+        "losses": 22,
+        "PF": 5.691326185138276,
+        "avgR": 4.300382336376753,
+        "totalR": 103.20917607304207,
+        "maxDD": 19.987706342311455
+      },
+      "validation": {
+        "n": 25,
+        "wins": 1,
+        "losses": 24,
+        "PF": 0.6951599202503549,
+        "avgR": -0.2926464765596593,
+        "totalR": -7.316161913991483,
+        "maxDD": 17
+      },
+      "holdout": {
+        "n": 25,
+        "wins": 3,
+        "losses": 22,
+        "PF": 0.91959224552191,
+        "avgR": -0.07075882394071925,
+        "totalR": -1.7689705985179813,
+        "maxDD": 17.513707039516135
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseBodyFraction",
+      "bucketA": "GE_80%",
+      "featureB": "compressionRatio",
+      "bucketB": "GE_125%",
+      "dev": {
+        "n": 17,
+        "wins": 4,
+        "losses": 13,
+        "PF": 9.77070722293216,
+        "avgR": 6.7070114057716514,
+        "totalR": 114.01919389811808,
+        "maxDD": 9.866103313230866
+      },
+      "validation": {
+        "n": 17,
+        "wins": 4,
+        "losses": 13,
+        "PF": 0.3948501650333538,
+        "avgR": -0.46276163850390584,
+        "totalR": -7.8669478545664,
+        "maxDD": 9.224770856244188
+      },
+      "holdout": {
+        "n": 17,
+        "wins": 4,
+        "losses": 13,
+        "PF": 1.9349926479859663,
+        "avgR": 0.7149943778716213,
+        "totalR": 12.154904423817563,
+        "maxDD": 7
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseBodyFraction",
+      "bucketA": "LT_40%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 12,
+        "wins": 1,
+        "losses": 11,
+        "PF": 0.21826345952497697,
+        "avgR": -0.7165918287687711,
+        "totalR": -8.599101945225254,
+        "maxDD": 11
+      },
+      "validation": {
+        "n": 13,
+        "wins": 1,
+        "losses": 12,
+        "PF": 0.04212710755657706,
+        "avgR": -0.8841903622554673,
+        "totalR": -11.494474709321075,
+        "maxDD": 11.494474709321075
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 0,
+        "losses": 13,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -13,
+        "maxDD": 13
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseBodyFraction",
+      "bucketA": "60_80%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 10,
+        "wins": 0,
+        "losses": 10,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -10,
+        "maxDD": 10
+      },
+      "validation": {
+        "n": 10,
+        "wins": 3,
+        "losses": 7,
+        "PF": 3.028181453608138,
+        "avgR": 1.4197270175256969,
+        "totalR": 14.197270175256968,
+        "maxDD": 6
+      },
+      "holdout": {
+        "n": 11,
+        "wins": 0,
+        "losses": 11,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -11,
+        "maxDD": 11
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseBodyFraction",
+      "bucketA": "GE_80%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 20,
+        "wins": 2,
+        "losses": 18,
+        "PF": 6.956065337391227,
+        "avgR": 5.3604588036521035,
+        "totalR": 107.20917607304207,
+        "maxDD": 14.987706342311455
+      },
+      "validation": {
+        "n": 20,
+        "wins": 0,
+        "losses": 20,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -20,
+        "maxDD": 20
+      },
+      "holdout": {
+        "n": 20,
+        "wins": 3,
+        "losses": 17,
+        "PF": 1.2045521542981608,
+        "avgR": 0.17386933115343658,
+        "totalR": 3.477386623068732,
+        "maxDD": 15.267349817929421
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "impulseBodyFraction",
+      "bucketA": "GE_80%",
+      "featureB": "stopToImpulse",
+      "bucketB": "25_50%",
+      "dev": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.07176622859302846,
+        "avgR": -0.8122045499811001,
+        "totalR": -6.497636399848801,
+        "maxDD": 6.497636399848801
+      },
+      "validation": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9,
+        "maxDD": 9
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 1.6226032190342152,
+        "avgR": 0.5534250835859691,
+        "totalR": 4.980825752273722,
+        "maxDD": 8
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "compressionRatio",
+      "bucketA": "LT_75%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 9,
+        "wins": 1,
+        "losses": 8,
+        "PF": 0.0015367072110685895,
+        "avgR": -0.8875229269234945,
+        "totalR": -7.987706342311451,
+        "maxDD": 7.987706342311451
+      },
+      "validation": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9,
+        "maxDD": 9
+      },
+      "holdout": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9,
+        "maxDD": 9
+      },
+      "passesValidation": false
+    },
+    {
+      "featureA": "compressionRatio",
+      "bucketA": "GE_125%",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 15,
+        "wins": 1,
+        "losses": 14,
+        "PF": 8.942634458239537,
+        "avgR": 7.413125494356902,
+        "totalR": 111.19688241535353,
+        "maxDD": 14
+      },
+      "validation": {
+        "n": 15,
+        "wins": 2,
+        "losses": 13,
+        "PF": 1.3439623804879384,
+        "avgR": 0.2981007297562131,
+        "totalR": 4.471510946343196,
+        "maxDD": 11.212327139665321
+      },
+      "holdout": {
+        "n": 16,
+        "wins": 1,
+        "losses": 15,
+        "PF": 1.2496490960665436,
+        "avgR": 0.23404602756238457,
+        "totalR": 3.744736440998153,
+        "maxDD": 13
+      },
+      "passesValidation": true
+    }
+  ],
+  "nextResearchQuestion": "Freeze a small pre-specified set from DEV+VALIDATION, then report HOLDOUT robustness by BUY/SELL/session/day before any rule change."
+}

@@ -1,0 +1,697 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_OPPORTUNITY_WINDOW_SEQUENCE_FORENSICS",
+  "timeframe": "1min",
+  "sourceReport": "strategy-a-opportunity-window-structural-forensics/1min.json",
+  "methodology": {
+    "scope": "only pre-entry classified trades inside defined opportunity windows",
+    "combos": "descriptive feature-presence intersections; no new thresholds optimized",
+    "eventLag": "entryIndex minus latest available pre-entry structural event index",
+    "oos": "second half of chronological matched trades",
+    "decisionRule": "no signal quota and no parameter selected from tiny samples"
+  },
+  "overall": {
+    "n": 92,
+    "wins": 20,
+    "losses": 72,
+    "PF": 0.6179424288283958,
+    "avgR": -0.2990015774386468,
+    "totalR": -27.508145124355504,
+    "maxDD": 32.378260920673895
+  },
+  "byCombo": [
+    {
+      "name": "SPIKE+SWEEP",
+      "YES": {
+        "n": 50,
+        "wins": 12,
+        "losses": 38,
+        "PF": 0.30363891758819195,
+        "avgR": -0.5292344226329742,
+        "totalR": -26.46172113164871,
+        "maxDD": 26.46172113164871
+      },
+      "NO": {
+        "n": 42,
+        "wins": 8,
+        "losses": 34,
+        "PF": 0.9692228237439179,
+        "avgR": -0.024914856969209382,
+        "totalR": -1.046423992706794,
+        "maxDD": 11.156740340625511
+      }
+    },
+    {
+      "name": "SWEEP+BOS",
+      "YES": {
+        "n": 41,
+        "wins": 9,
+        "losses": 32,
+        "PF": 0.4084717360403595,
+        "avgR": -0.46168059626118274,
+        "totalR": -18.928904446708493,
+        "maxDD": 18.928904446708493
+      },
+      "NO": {
+        "n": 51,
+        "wins": 11,
+        "losses": 40,
+        "PF": 0.7855189830588248,
+        "avgR": -0.168220405444059,
+        "totalR": -8.57924067764701,
+        "maxDD": 16.756534005605424
+      }
+    },
+    {
+      "name": "BOS+DISPLACEMENT",
+      "YES": {
+        "n": 39,
+        "wins": 8,
+        "losses": 31,
+        "PF": 0.49435425280344936,
+        "avgR": -0.40192354264341207,
+        "totalR": -15.675018163093071,
+        "maxDD": 15.675018163093071
+      },
+      "NO": {
+        "n": 53,
+        "wins": 12,
+        "losses": 41,
+        "PF": 0.7113871472862822,
+        "avgR": -0.22326654643891386,
+        "totalR": -11.833126961262435,
+        "maxDD": 21.51081805867502
+      }
+    },
+    {
+      "name": "DISPLACEMENT+FVG",
+      "YES": {
+        "n": 26,
+        "wins": 6,
+        "losses": 20,
+        "PF": 0.715997893521765,
+        "avgR": -0.21846315882941153,
+        "totalR": -5.6800421295647,
+        "maxDD": 8
+      },
+      "NO": {
+        "n": 66,
+        "wins": 14,
+        "losses": 52,
+        "PF": 0.5802287885617153,
+        "avgR": -0.3307288332544061,
+        "totalR": -21.828102994790804,
+        "maxDD": 30.50579409220339
+      }
+    },
+    {
+      "name": "FVG+RETEST",
+      "YES": {
+        "n": 19,
+        "wins": 6,
+        "losses": 13,
+        "PF": 1.1321973442453743,
+        "avgR": 0.09045081448367713,
+        "totalR": 1.7185654751898656,
+        "maxDD": 4.7405983210544935
+      },
+      "NO": {
+        "n": 73,
+        "wins": 14,
+        "losses": 59,
+        "PF": 0.5046320237365192,
+        "avgR": -0.40036589862390926,
+        "totalR": -29.226710599545378,
+        "maxDD": 35.90440169695796
+      }
+    },
+    {
+      "name": "SWEEP+BOS+DISPLACEMENT",
+      "YES": {
+        "n": 25,
+        "wins": 4,
+        "losses": 21,
+        "PF": 0.18396617498566042,
+        "avgR": -0.6854684130120452,
+        "totalR": -17.13671032530113,
+        "maxDD": 17.13671032530113
+      },
+      "NO": {
+        "n": 67,
+        "wins": 16,
+        "losses": 51,
+        "PF": 0.7966385333518751,
+        "avgR": -0.1547975343142444,
+        "totalR": -10.371434799054375,
+        "maxDD": 18.04912589646696
+      }
+    },
+    {
+      "name": "BOS+DISPLACEMENT+FVG",
+      "YES": {
+        "n": 24,
+        "wins": 5,
+        "losses": 19,
+        "PF": 0.7501568889681897,
+        "avgR": -0.19779246290018318,
+        "totalR": -4.7470191096043965,
+        "maxDD": 8
+      },
+      "NO": {
+        "n": 68,
+        "wins": 15,
+        "losses": 53,
+        "PF": 0.5705447921745075,
+        "avgR": -0.33472244139339863,
+        "totalR": -22.761126014751106,
+        "maxDD": 31.438817112163694
+      }
+    },
+    {
+      "name": "SWEEP+BOS+DISPLACEMENT+FVG_RETEST",
+      "YES": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "PF": 0.06414156630193621,
+        "avgR": -0.7018938252735478,
+        "totalR": -2.8075753010941913,
+        "maxDD": 2.8075753010941913
+      },
+      "NO": {
+        "n": 88,
+        "wins": 19,
+        "losses": 69,
+        "PF": 0.6420207271991114,
+        "avgR": -0.28068829344615126,
+        "totalR": -24.70056982326131,
+        "maxDD": 30.378260920673895
+      }
+    },
+    {
+      "name": "EXPANSION+FVG_RETEST",
+      "YES": {
+        "n": 19,
+        "wins": 6,
+        "losses": 13,
+        "PF": 1.1321973442453743,
+        "avgR": 0.09045081448367713,
+        "totalR": 1.7185654751898656,
+        "maxDD": 4.7405983210544935
+      },
+      "NO": {
+        "n": 73,
+        "wins": 14,
+        "losses": 59,
+        "PF": 0.5046320237365192,
+        "avgR": -0.40036589862390926,
+        "totalR": -29.226710599545378,
+        "maxDD": 35.90440169695796
+      }
+    }
+  ],
+  "byLag": [
+    {
+      "name": "LAG_0",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0
+    },
+    {
+      "name": "LAG_1_2",
+      "n": 28,
+      "wins": 3,
+      "losses": 25,
+      "PF": 0.12682389814351674,
+      "avgR": -0.7796215195147173,
+      "totalR": -21.829402546412084,
+      "maxDD": 21.829402546412084
+    },
+    {
+      "name": "LAG_3_5",
+      "n": 25,
+      "wins": 7,
+      "losses": 18,
+      "PF": 0.7781045067418051,
+      "avgR": -0.1597647551459004,
+      "totalR": -3.9941188786475106,
+      "maxDD": 6.933023019960303
+    },
+    {
+      "name": "LAG_GE6",
+      "n": 39,
+      "wins": 10,
+      "losses": 29,
+      "PF": 0.9419095276104857,
+      "avgR": -0.043195479469126,
+      "totalR": -1.6846236992959138,
+      "maxDD": 14.3623147967085
+    }
+  ],
+  "byLagOOS": [
+    {
+      "name": "LAG_0",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0
+    },
+    {
+      "name": "LAG_1_2",
+      "n": 14,
+      "wins": 1,
+      "losses": 13,
+      "PF": 0.014801899915831434,
+      "avgR": -0.9148268072210136,
+      "totalR": -12.807575301094191
+    },
+    {
+      "name": "LAG_3_5",
+      "n": 14,
+      "wins": 3,
+      "losses": 11,
+      "PF": 0.9947065571637627,
+      "avgR": -0.004159133657043742,
+      "totalR": -0.05822787119861239
+    },
+    {
+      "name": "LAG_GE6",
+      "n": 18,
+      "wins": 5,
+      "losses": 13,
+      "PF": 1.3608930532788475,
+      "avgR": 0.2606449829236122,
+      "totalR": 4.69160969262502
+    }
+  ],
+  "byWindow": [
+    {
+      "window": "LONDON_NY_OVERLAP",
+      "n": 40,
+      "wins": 7,
+      "losses": 33,
+      "PF": 0.6232049382283606,
+      "avgR": -0.3108559259616024,
+      "totalR": -12.434237038464095,
+      "maxDD": 25.11192813587668,
+      "sequenceCombos": [
+        {
+          "name": "SPIKE+SWEEP",
+          "n": 17,
+          "wins": 5,
+          "losses": 12,
+          "PF": 0.21999078520184057,
+          "avgR": -0.5505947398575243,
+          "totalR": -9.360110577577913
+        },
+        {
+          "name": "SWEEP+BOS",
+          "n": 15,
+          "wins": 3,
+          "losses": 12,
+          "PF": 0.3229759186873523,
+          "avgR": -0.541619265050118,
+          "totalR": -8.124288975751771
+        },
+        {
+          "name": "BOS+DISPLACEMENT",
+          "n": 14,
+          "wins": 1,
+          "losses": 13,
+          "PF": 0.0032720765775628,
+          "avgR": -0.925533071749406,
+          "totalR": -12.957463004491684
+        },
+        {
+          "name": "DISPLACEMENT+FVG",
+          "n": 10,
+          "wins": 1,
+          "losses": 9,
+          "PF": 0.007441886671077463,
+          "avgR": -0.8933023019960302,
+          "totalR": -8.933023019960302
+        },
+        {
+          "name": "FVG+RETEST",
+          "n": 8,
+          "wins": 2,
+          "losses": 6,
+          "PF": 0.5525265702901546,
+          "avgR": -0.335605072282384,
+          "totalR": -2.684840578259072
+        },
+        {
+          "name": "SWEEP+BOS+DISPLACEMENT",
+          "n": 8,
+          "wins": 1,
+          "losses": 7,
+          "PF": 0.006076713644045201,
+          "avgR": -0.8696828755614604,
+          "totalR": -6.957463004491683
+        },
+        {
+          "name": "BOS+DISPLACEMENT+FVG",
+          "n": 9,
+          "wins": 0,
+          "losses": 9,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -9
+        },
+        {
+          "name": "SWEEP+BOS+DISPLACEMENT+FVG_RETEST",
+          "n": 1,
+          "wins": 0,
+          "losses": 1,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -1
+        },
+        {
+          "name": "EXPANSION+FVG_RETEST",
+          "n": 8,
+          "wins": 2,
+          "losses": 6,
+          "PF": 0.5525265702901546,
+          "avgR": -0.335605072282384,
+          "totalR": -2.684840578259072
+        }
+      ],
+      "eventLag": {
+        "n": 40,
+        "p50": 4.5,
+        "p90": 11
+      }
+    },
+    {
+      "window": "PRE_NY_BUILD",
+      "n": 29,
+      "wins": 9,
+      "losses": 20,
+      "PF": 0.8895870626425832,
+      "avgR": -0.07614685334994262,
+      "totalR": -2.208258747148336,
+      "maxDD": 13.672902425843853,
+      "sequenceCombos": [
+        {
+          "name": "SPIKE+SWEEP",
+          "n": 18,
+          "wins": 3,
+          "losses": 15,
+          "PF": 0.1842692523114851,
+          "avgR": -0.6797756230737624,
+          "totalR": -12.235961215327723
+        },
+        {
+          "name": "SWEEP+BOS",
+          "n": 15,
+          "wins": 3,
+          "losses": 12,
+          "PF": 0.3651228924102406,
+          "avgR": -0.5079016860718075,
+          "totalR": -7.618525291077113
+        },
+        {
+          "name": "BOS+DISPLACEMENT",
+          "n": 17,
+          "wins": 5,
+          "losses": 12,
+          "PF": 0.9990660427549894,
+          "avgR": -0.0006592639376546253,
+          "totalR": -0.01120748694012863
+        },
+        {
+          "name": "DISPLACEMENT+FVG",
+          "n": 11,
+          "wins": 3,
+          "losses": 8,
+          "PF": 1.3699160702571076,
+          "avgR": 0.26902986927789657,
+          "totalR": 2.9593285620568626
+        },
+        {
+          "name": "FVG+RETEST",
+          "n": 7,
+          "wins": 2,
+          "losses": 5,
+          "PF": 1.9781081026813183,
+          "avgR": 0.6986486447723702,
+          "totalR": 4.890540513406592
+        },
+        {
+          "name": "SWEEP+BOS+DISPLACEMENT",
+          "n": 11,
+          "wins": 1,
+          "losses": 10,
+          "PF": 0.05271003508518117,
+          "avgR": -0.8611726953771079,
+          "totalR": -9.472899649148188
+        },
+        {
+          "name": "BOS+DISPLACEMENT+FVG",
+          "n": 11,
+          "wins": 3,
+          "losses": 8,
+          "PF": 1.3699160702571076,
+          "avgR": 0.26902986927789657,
+          "totalR": 2.9593285620568626
+        },
+        {
+          "name": "SWEEP+BOS+DISPLACEMENT+FVG_RETEST",
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -2
+        },
+        {
+          "name": "EXPANSION+FVG_RETEST",
+          "n": 7,
+          "wins": 2,
+          "losses": 5,
+          "PF": 1.9781081026813183,
+          "avgR": 0.6986486447723702,
+          "totalR": 4.890540513406592
+        }
+      ],
+      "eventLag": {
+        "n": 29,
+        "p50": 5,
+        "p90": 12
+      }
+    },
+    {
+      "window": "NY_OPEN_WINDOW",
+      "n": 13,
+      "wins": 3,
+      "losses": 10,
+      "PF": 0.5941925962351118,
+      "avgR": -0.31215954135760626,
+      "totalR": -4.058074037648882,
+      "maxDD": 6,
+      "sequenceCombos": [
+        {
+          "name": "SPIKE+SWEEP",
+          "n": 11,
+          "wins": 3,
+          "losses": 8,
+          "PF": 0.7427407452938898,
+          "avgR": -0.18709763978626198,
+          "totalR": -2.0580740376488817
+        },
+        {
+          "name": "SWEEP+BOS",
+          "n": 7,
+          "wins": 2,
+          "losses": 5,
+          "PF": 0.9242970242429163,
+          "avgR": -0.05407355411220267,
+          "totalR": -0.3785148787854187
+        },
+        {
+          "name": "BOS+DISPLACEMENT",
+          "n": 4,
+          "wins": 1,
+          "losses": 3,
+          "PF": 1.0337425431443108,
+          "avgR": 0.025306907358233044,
+          "totalR": 0.10122762943293218
+        },
+        {
+          "name": "DISPLACEMENT+FVG",
+          "n": 3,
+          "wins": 1,
+          "losses": 2,
+          "PF": 1.550613814716466,
+          "avgR": 0.36707587647764406,
+          "totalR": 1.1012276294329322
+        },
+        {
+          "name": "FVG+RETEST",
+          "n": 3,
+          "wins": 1,
+          "losses": 2,
+          "PF": 0.6602204205682685,
+          "avgR": -0.22651971962115436,
+          "totalR": -0.6795591588634631
+        },
+        {
+          "name": "SWEEP+BOS+DISPLACEMENT",
+          "n": 3,
+          "wins": 1,
+          "losses": 2,
+          "PF": 1.550613814716466,
+          "avgR": 0.36707587647764406,
+          "totalR": 1.1012276294329322
+        },
+        {
+          "name": "BOS+DISPLACEMENT+FVG",
+          "n": 2,
+          "wins": 1,
+          "losses": 1,
+          "PF": 3.101227629432932,
+          "avgR": 1.050613814716466,
+          "totalR": 2.101227629432932
+        },
+        {
+          "name": "SWEEP+BOS+DISPLACEMENT+FVG_RETEST",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        },
+        {
+          "name": "EXPANSION+FVG_RETEST",
+          "n": 3,
+          "wins": 1,
+          "losses": 2,
+          "PF": 0.6602204205682685,
+          "avgR": -0.22651971962115436,
+          "totalR": -0.6795591588634631
+        }
+      ],
+      "eventLag": {
+        "n": 13,
+        "p50": 2,
+        "p90": 9
+      }
+    },
+    {
+      "window": "LONDON_OPEN_WINDOW",
+      "n": 10,
+      "wins": 1,
+      "losses": 9,
+      "PF": 0.021380522100645404,
+      "avgR": -0.8807575301094192,
+      "totalR": -8.807575301094191,
+      "maxDD": 8.807575301094191,
+      "sequenceCombos": [
+        {
+          "name": "SPIKE+SWEEP",
+          "n": 4,
+          "wins": 1,
+          "losses": 3,
+          "PF": 0.06414156630193621,
+          "avgR": -0.7018938252735478,
+          "totalR": -2.8075753010941913
+        },
+        {
+          "name": "SWEEP+BOS",
+          "n": 4,
+          "wins": 1,
+          "losses": 3,
+          "PF": 0.06414156630193621,
+          "avgR": -0.7018938252735478,
+          "totalR": -2.8075753010941913
+        },
+        {
+          "name": "BOS+DISPLACEMENT",
+          "n": 4,
+          "wins": 1,
+          "losses": 3,
+          "PF": 0.06414156630193621,
+          "avgR": -0.7018938252735478,
+          "totalR": -2.8075753010941913
+        },
+        {
+          "name": "DISPLACEMENT+FVG",
+          "n": 2,
+          "wins": 1,
+          "losses": 1,
+          "PF": 0.19242469890580863,
+          "avgR": -0.4037876505470957,
+          "totalR": -0.8075753010941914
+        },
+        {
+          "name": "FVG+RETEST",
+          "n": 1,
+          "wins": 1,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0.19242469890580863,
+          "totalR": 0.19242469890580863
+        },
+        {
+          "name": "SWEEP+BOS+DISPLACEMENT",
+          "n": 3,
+          "wins": 1,
+          "losses": 2,
+          "PF": 0.09621234945290431,
+          "avgR": -0.6025251003647304,
+          "totalR": -1.8075753010941913
+        },
+        {
+          "name": "BOS+DISPLACEMENT+FVG",
+          "n": 2,
+          "wins": 1,
+          "losses": 1,
+          "PF": 0.19242469890580863,
+          "avgR": -0.4037876505470957,
+          "totalR": -0.8075753010941914
+        },
+        {
+          "name": "SWEEP+BOS+DISPLACEMENT+FVG_RETEST",
+          "n": 1,
+          "wins": 1,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0.19242469890580863,
+          "totalR": 0.19242469890580863
+        },
+        {
+          "name": "EXPANSION+FVG_RETEST",
+          "n": 1,
+          "wins": 1,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0.19242469890580863,
+          "totalR": 0.19242469890580863
+        }
+      ],
+      "eventLag": {
+        "n": 10,
+        "p50": 3.5,
+        "p90": 12
+      }
+    }
+  ],
+  "oos": {
+    "n": 46,
+    "wins": 9,
+    "losses": 37,
+    "PF": 0.7790758519008708,
+    "avgR": -0.17769985825364742,
+    "totalR": -8.174193479667782,
+    "maxDD": 14.610319581957505
+  },
+  "nextResearchQuestion": "Test only compact sequence candidates that show positive OOS with adequate sample size, then validate chronologically on a third holdout; do not optimize to daily trade count."
+}

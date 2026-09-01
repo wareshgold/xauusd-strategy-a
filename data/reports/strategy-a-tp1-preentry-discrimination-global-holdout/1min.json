@@ -1,0 +1,25 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_TP1_PREENTRY_DISCRIMINATION_GLOBAL_HOLDOUT_V1",
+  "timeframe": "1min",
+  "scope": "Pre-entry-only discrimination of TP1-before-SL using features known at signal time. No post-entry MAE/MFE features are used.",
+  "methodology": {
+    "target": "TP1-before-SL",
+    "features": "direction, UTC session, entry geometry buckets when present in baseline trade rows",
+    "split": "one shared chronological thirds partition for every pair",
+    "selectionGate": "DEV and VALIDATION n >= 10, PF >= 1, avgR > 0",
+    "holdout": "untouched during candidate selection",
+    "warning": "Positive holdout results are exploratory until replicated on another unseen period."
+  },
+  "counts": {
+    "trades": 326,
+    "dev": 108,
+    "validation": 108,
+    "holdout": 110
+  },
+  "pairTests": 17,
+  "devValidationCandidates": 0,
+  "robustHoldoutCandidates": 0,
+  "topCandidates": [],
+  "robustHoldout": []
+}

@@ -1,0 +1,1196 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "timeframe": "1min",
+  "sourceReport": "data/reports/strategy-a-pgap-candidate-quality/1min.json",
+  "purpose": "Diagnostic interaction study of heuristic P-GAP candidate ratio with direction and session. No P-GAP rule is activated.",
+  "fullSample": {
+    "baseline": {
+      "trades": 310,
+      "wins": 63,
+      "losses": 247,
+      "winRate": 0.2032258064516129,
+      "avgR": 0.07496391062943528,
+      "totalR": 23.238812295124934,
+      "PF": 1.0940842603041498,
+      "medianR": -1
+    },
+    "byDirection": {
+      "BUY": {
+        "trades": 167,
+        "wins": 35,
+        "losses": 132,
+        "winRate": 0.20958083832335328,
+        "avgR": -0.4016457741450078,
+        "totalR": -67.0748442822163,
+        "PF": 0.4918572402862401,
+        "medianR": -1
+      },
+      "SELL": {
+        "trades": 143,
+        "wins": 28,
+        "losses": 115,
+        "winRate": 0.1958041958041958,
+        "avgR": 0.6315640320093792,
+        "totalR": 90.31365657734122,
+        "PF": 1.7853361441507936,
+        "medianR": -1
+      }
+    },
+    "bySession": {
+      "OVERLAP": {
+        "trades": 53,
+        "wins": 10,
+        "losses": 43,
+        "winRate": 0.18867924528301888,
+        "avgR": -0.3111756806813769,
+        "totalR": -16.492311076112976,
+        "PF": 0.6164578819508609,
+        "medianR": -1
+      },
+      "NEW_YORK_ONLY": {
+        "trades": 104,
+        "wins": 22,
+        "losses": 82,
+        "winRate": 0.21153846153846154,
+        "avgR": 0.9007893416259634,
+        "totalR": 93.68209152910019,
+        "PF": 2.1424645308426853,
+        "medianR": -1
+      },
+      "OUTSIDE": {
+        "trades": 100,
+        "wins": 17,
+        "losses": 83,
+        "winRate": 0.17,
+        "avgR": -0.34424580592899084,
+        "totalR": -34.42458059289908,
+        "PF": 0.5852460169530233,
+        "medianR": -1
+      },
+      "LONDON_ONLY": {
+        "trades": 53,
+        "wins": 14,
+        "losses": 39,
+        "winRate": 0.2641509433962264,
+        "avgR": -0.3684224068860984,
+        "totalR": -19.526387564963215,
+        "PF": 0.49932339577017404,
+        "medianR": -1
+      }
+    },
+    "byDirectionAndSession": {
+      "BUY__OVERLAP": {
+        "trades": 29,
+        "wins": 4,
+        "losses": 25,
+        "winRate": 0.13793103448275862,
+        "avgR": -0.7745876291806681,
+        "totalR": -22.463041246239378,
+        "PF": 0.10147835015042482,
+        "medianR": -1
+      },
+      "SELL__NEW_YORK_ONLY": {
+        "trades": 44,
+        "wins": 9,
+        "losses": 35,
+        "winRate": 0.20454545454545456,
+        "avgR": 2.4521702423095104,
+        "totalR": 107.89549066161845,
+        "PF": 4.082728304617671,
+        "medianR": -1
+      },
+      "BUY__NEW_YORK_ONLY": {
+        "trades": 60,
+        "wins": 13,
+        "losses": 47,
+        "winRate": 0.21666666666666667,
+        "avgR": -0.23688998554197135,
+        "totalR": -14.213399132518282,
+        "PF": 0.697587252499611,
+        "medianR": -1
+      },
+      "BUY__OUTSIDE": {
+        "trades": 48,
+        "wins": 9,
+        "losses": 39,
+        "winRate": 0.1875,
+        "avgR": -0.5699666567947891,
+        "totalR": -27.358399526149874,
+        "PF": 0.2985025762525674,
+        "medianR": -1
+      },
+      "SELL__OUTSIDE": {
+        "trades": 52,
+        "wins": 8,
+        "losses": 44,
+        "winRate": 0.15384615384615385,
+        "avgR": -0.1358880974374847,
+        "totalR": -7.066181066749204,
+        "PF": 0.8394049757557,
+        "medianR": -1
+      },
+      "SELL__LONDON_ONLY": {
+        "trades": 23,
+        "wins": 5,
+        "losses": 18,
+        "winRate": 0.21739130434782608,
+        "avgR": -0.7167992690284543,
+        "totalR": -16.486383187654447,
+        "PF": 0.08408982290808625,
+        "medianR": -1
+      },
+      "BUY__LONDON_ONLY": {
+        "trades": 30,
+        "wins": 9,
+        "losses": 21,
+        "winRate": 0.3,
+        "avgR": -0.1013334792436256,
+        "totalR": -3.040004377308768,
+        "PF": 0.8552378867948205,
+        "medianR": -1
+      },
+      "SELL__OVERLAP": {
+        "trades": 24,
+        "wins": 6,
+        "losses": 18,
+        "winRate": 0.25,
+        "avgR": 0.24878042375526666,
+        "totalR": 5.9707301701264,
+        "PF": 1.3317072316736889,
+        "medianR": -1
+      }
+    },
+    "byDirectionSessionRatio": {
+      "BUY__LONDON_ONLY": {
+        "overall": {
+          "trades": 30,
+          "wins": 9,
+          "losses": 21,
+          "winRate": 0.3,
+          "avgR": -0.1013334792436256,
+          "totalR": -3.040004377308768,
+          "PF": 0.8552378867948205,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.05_0.10": {
+            "trades": 1,
+            "wins": 0,
+            "losses": 1,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -1,
+            "PF": 0,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "winRate": 0.3333333333333333,
+            "avgR": 0.43644191050020503,
+            "totalR": 3.927977194501845,
+            "PF": 1.6546628657503077,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 7,
+            "wins": 1,
+            "losses": 6,
+            "winRate": 0.14285714285714285,
+            "avgR": -0.6553993628834976,
+            "totalR": -4.587795540184484,
+            "PF": 0.23536740996925273,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 13,
+            "wins": 5,
+            "losses": 8,
+            "winRate": 0.38461538461538464,
+            "avgR": -0.10616815627893296,
+            "totalR": -1.3801860316261285,
+            "PF": 0.8274767460467338,
+            "medianR": -1
+          }
+        }
+      },
+      "BUY__OVERLAP": {
+        "overall": {
+          "trades": 29,
+          "wins": 4,
+          "losses": 25,
+          "winRate": 0.13793103448275862,
+          "avgR": -0.7745876291806681,
+          "totalR": -22.463041246239378,
+          "PF": 0.10147835015042482,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.02_0.05": {
+            "trades": 4,
+            "wins": 0,
+            "losses": 4,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -4,
+            "PF": 0,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 11,
+            "wins": 0,
+            "losses": 11,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -11,
+            "PF": 0,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 8,
+            "wins": 1,
+            "losses": 7,
+            "winRate": 0.125,
+            "avgR": -0.8018760516201648,
+            "totalR": -6.415008412961319,
+            "PF": 0.08357022671981156,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 6,
+            "wins": 3,
+            "losses": 3,
+            "winRate": 0.5,
+            "avgR": -0.17467213887967678,
+            "totalR": -1.0480328332780606,
+            "PF": 0.6506557222406464,
+            "medianR": -0.46651150998015145
+          }
+        }
+      },
+      "BUY__NEW_YORK_ONLY": {
+        "overall": {
+          "trades": 60,
+          "wins": 13,
+          "losses": 47,
+          "winRate": 0.21666666666666667,
+          "avgR": -0.23688998554197135,
+          "totalR": -14.213399132518282,
+          "PF": 0.697587252499611,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "LT_0.02": {
+            "trades": 25,
+            "wins": 3,
+            "losses": 22,
+            "winRate": 0.12,
+            "avgR": -0.5036371960218543,
+            "totalR": -12.590929900546358,
+            "PF": 0.42768500452062014,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 17,
+            "wins": 5,
+            "losses": 12,
+            "winRate": 0.29411764705882354,
+            "avgR": 0.5754956336790613,
+            "totalR": 9.783425772544042,
+            "PF": 1.815285481045337,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 10,
+            "wins": 4,
+            "losses": 6,
+            "winRate": 0.4,
+            "avgR": -0.4418188662204516,
+            "totalR": -4.418188662204516,
+            "PF": 0.2636352229659141,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 8,
+            "wins": 1,
+            "losses": 7,
+            "winRate": 0.125,
+            "avgR": -0.8734632927889314,
+            "totalR": -6.987706342311451,
+            "PF": 0.0017562368126498166,
+            "medianR": -1
+          }
+        }
+      },
+      "BUY__OUTSIDE": {
+        "overall": {
+          "trades": 48,
+          "wins": 9,
+          "losses": 39,
+          "winRate": 0.1875,
+          "avgR": -0.5699666567947891,
+          "totalR": -27.358399526149874,
+          "PF": 0.2985025762525674,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "NA": {
+            "trades": 8,
+            "wins": 1,
+            "losses": 7,
+            "winRate": 0.125,
+            "avgR": -0.6669552561021055,
+            "totalR": -5.335642048816844,
+            "PF": 0.23776542159759373,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 20,
+            "wins": 6,
+            "losses": 14,
+            "winRate": 0.3,
+            "avgR": -0.3973460182955148,
+            "totalR": -7.946920365910296,
+            "PF": 0.4323628310064075,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 13,
+            "wins": 2,
+            "losses": 11,
+            "winRate": 0.15384615384615385,
+            "avgR": -0.5442951624171333,
+            "totalR": -7.075837111422732,
+            "PF": 0.3567420807797516,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 7,
+            "wins": 0,
+            "losses": 7,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -7,
+            "PF": 0,
+            "medianR": -1
+          }
+        }
+      },
+      "SELL__LONDON_ONLY": {
+        "overall": {
+          "trades": 23,
+          "wins": 5,
+          "losses": 18,
+          "winRate": 0.21739130434782608,
+          "avgR": -0.7167992690284543,
+          "totalR": -16.486383187654447,
+          "PF": 0.08408982290808625,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.02_0.05": {
+            "trades": 13,
+            "wins": 1,
+            "losses": 12,
+            "winRate": 0.07692307692307693,
+            "avgR": -0.9189124470850314,
+            "totalR": -11.945861812105408,
+            "PF": 0.004511515657882742,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 1,
+            "wins": 0,
+            "losses": 1,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -1,
+            "PF": 0,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 3,
+            "wins": 1,
+            "losses": 2,
+            "winRate": 0.3333333333333333,
+            "avgR": -0.49921213328293357,
+            "totalR": -1.4976363998488007,
+            "PF": 0.2511818000755996,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 4,
+            "wins": 2,
+            "losses": 2,
+            "winRate": 0.5,
+            "avgR": -0.4282132804662076,
+            "totalR": -1.7128531218648304,
+            "PF": 0.14357343906758477,
+            "medianR": -0.45263891038531956
+          },
+          "0.10_0.20": {
+            "trades": 2,
+            "wins": 1,
+            "losses": 1,
+            "winRate": 0.5,
+            "avgR": -0.16501592691770472,
+            "totalR": -0.33003185383540945,
+            "PF": 0.6699681461645906,
+            "medianR": -0.16501592691770472
+          }
+        }
+      },
+      "SELL__OVERLAP": {
+        "overall": {
+          "trades": 24,
+          "wins": 6,
+          "losses": 18,
+          "winRate": 0.25,
+          "avgR": 0.24878042375526666,
+          "totalR": 5.9707301701264,
+          "PF": 1.3317072316736889,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.02_0.05": {
+            "trades": 9,
+            "wins": 3,
+            "losses": 6,
+            "winRate": 0.3333333333333333,
+            "avgR": 0.19224939838042776,
+            "totalR": 1.7302445854238497,
+            "PF": 1.2883740975706415,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 7,
+            "wins": 2,
+            "losses": 5,
+            "winRate": 0.2857142857142857,
+            "avgR": 1.5997069413134621,
+            "totalR": 11.197948589194235,
+            "PF": 3.2395897178388466,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 4,
+            "wins": 1,
+            "losses": 3,
+            "winRate": 0.25,
+            "avgR": -0.7393657511229209,
+            "totalR": -2.9574630044916836,
+            "PF": 0.014178998502772135,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 4,
+            "wins": 0,
+            "losses": 4,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -4,
+            "PF": 0,
+            "medianR": -1
+          }
+        }
+      },
+      "SELL__NEW_YORK_ONLY": {
+        "overall": {
+          "trades": 44,
+          "wins": 9,
+          "losses": 35,
+          "winRate": 0.20454545454545456,
+          "avgR": 2.4521702423095104,
+          "totalR": 107.89549066161845,
+          "PF": 4.082728304617671,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.02_0.05": {
+            "trades": 13,
+            "wins": 3,
+            "losses": 10,
+            "winRate": 0.23076923076923078,
+            "avgR": -0.12205463327199437,
+            "totalR": -1.5867102325359268,
+            "PF": 0.8413289767464074,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 8,
+            "wins": 0,
+            "losses": 8,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -8,
+            "PF": 0,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 10,
+            "wins": 3,
+            "losses": 7,
+            "winRate": 0.3,
+            "avgR": -0.10641064964518503,
+            "totalR": -1.0641064964518503,
+            "PF": 0.8479847862211642,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 13,
+            "wins": 3,
+            "losses": 10,
+            "winRate": 0.23076923076923078,
+            "avgR": 9.118946722354325,
+            "totalR": 118.54630739060623,
+            "PF": 12.854630739060624,
+            "medianR": -1
+          }
+        }
+      },
+      "SELL__OUTSIDE": {
+        "overall": {
+          "trades": 52,
+          "wins": 8,
+          "losses": 44,
+          "winRate": 0.15384615384615385,
+          "avgR": -0.1358880974374847,
+          "totalR": -7.066181066749204,
+          "PF": 0.8394049757557,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.05_0.10": {
+            "trades": 13,
+            "wins": 3,
+            "losses": 10,
+            "winRate": 0.23076923076923078,
+            "avgR": -0.6553103904133022,
+            "totalR": -8.519035075372928,
+            "PF": 0.1480964924627073,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 20,
+            "wins": 2,
+            "losses": 18,
+            "winRate": 0.1,
+            "avgR": -0.7298775830899037,
+            "totalR": -14.597551661798073,
+            "PF": 0.18902490767788482,
+            "medianR": -1
+          },
+          "0.10_0.20": {
+            "trades": 1,
+            "wins": 1,
+            "losses": 0,
+            "winRate": 1,
+            "avgR": 0.3248434771499223,
+            "totalR": 0.3248434771499223,
+            "PF": null,
+            "medianR": 0.3248434771499223
+          },
+          "NA": {
+            "trades": 3,
+            "wins": 0,
+            "losses": 3,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -3,
+            "PF": 0,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 15,
+            "wins": 2,
+            "losses": 13,
+            "winRate": 0.13333333333333333,
+            "avgR": 1.2483708128847917,
+            "totalR": 18.725562193271877,
+            "PF": 2.440427861020914,
+            "medianR": -1
+          }
+        }
+      }
+    }
+  },
+  "oosSecondHalf": {
+    "baseline": {
+      "trades": 155,
+      "wins": 28,
+      "losses": 127,
+      "winRate": 0.18064516129032257,
+      "avgR": -0.26008959707587315,
+      "totalR": -40.31388754676034,
+      "PF": 0.6825678145924382,
+      "medianR": -1
+    },
+    "byDirection": {
+      "SELL": {
+        "trades": 75,
+        "wins": 14,
+        "losses": 61,
+        "winRate": 0.18666666666666668,
+        "avgR": -0.031035974055521286,
+        "totalR": -2.3276980541640966,
+        "PF": 0.9618410155055067,
+        "medianR": -1
+      },
+      "BUY": {
+        "trades": 80,
+        "wins": 14,
+        "losses": 66,
+        "winRate": 0.175,
+        "avgR": -0.4748273686574529,
+        "totalR": -37.98618949259623,
+        "PF": 0.42445167435460246,
+        "medianR": -1
+      }
+    },
+    "bySession": {
+      "NEW_YORK_ONLY": {
+        "trades": 40,
+        "wins": 7,
+        "losses": 33,
+        "winRate": 0.175,
+        "avgR": -0.4602897283120891,
+        "totalR": -18.411589132483563,
+        "PF": 0.4420730565914072,
+        "medianR": -1
+      },
+      "OUTSIDE": {
+        "trades": 63,
+        "wins": 10,
+        "losses": 53,
+        "winRate": 0.15873015873015872,
+        "avgR": -0.15677722701163396,
+        "totalR": -9.87696530173294,
+        "PF": 0.8136421641182464,
+        "medianR": -1
+      },
+      "LONDON_ONLY": {
+        "trades": 23,
+        "wins": 7,
+        "losses": 16,
+        "winRate": 0.30434782608695654,
+        "avgR": -0.13621647941917245,
+        "totalR": -3.132979026640966,
+        "PF": 0.8041888108349396,
+        "medianR": -1
+      },
+      "OVERLAP": {
+        "trades": 29,
+        "wins": 4,
+        "losses": 25,
+        "winRate": 0.13793103448275862,
+        "avgR": -0.3066328995138919,
+        "totalR": -8.892354085902864,
+        "PF": 0.6443058365638855,
+        "medianR": -1
+      }
+    },
+    "byDirectionAndSession": {
+      "SELL__NEW_YORK_ONLY": {
+        "trades": 20,
+        "wins": 4,
+        "losses": 16,
+        "winRate": 0.2,
+        "avgR": -0.43455591276078814,
+        "totalR": -8.691118255215763,
+        "PF": 0.4568051090490149,
+        "medianR": -1
+      },
+      "SELL__OUTSIDE": {
+        "trades": 35,
+        "wins": 5,
+        "losses": 30,
+        "winRate": 0.14285714285714285,
+        "avgR": 0.1800544869171715,
+        "totalR": 6.301907042101002,
+        "PF": 1.2100635680700336,
+        "medianR": -1
+      },
+      "BUY__OUTSIDE": {
+        "trades": 28,
+        "wins": 5,
+        "losses": 23,
+        "winRate": 0.17857142857142858,
+        "avgR": -0.5778168694226408,
+        "totalR": -16.17887234383394,
+        "PF": 0.2965707676593939,
+        "medianR": -1
+      },
+      "BUY__LONDON_ONLY": {
+        "trades": 14,
+        "wins": 4,
+        "losses": 10,
+        "winRate": 0.2857142857142857,
+        "avgR": 0.1804097076663766,
+        "totalR": 2.5257359073292722,
+        "PF": 1.2525735907329272,
+        "medianR": -1
+      },
+      "SELL__LONDON_ONLY": {
+        "trades": 9,
+        "wins": 3,
+        "losses": 6,
+        "winRate": 0.3333333333333333,
+        "avgR": -0.6287461037744708,
+        "totalR": -5.658714933970237,
+        "PF": 0.05688084433829374,
+        "medianR": -1
+      },
+      "BUY__OVERLAP": {
+        "trades": 18,
+        "wins": 2,
+        "losses": 16,
+        "winRate": 0.1111111111111111,
+        "avgR": -0.8118101210457647,
+        "totalR": -14.612582178823764,
+        "PF": 0.08671361382351463,
+        "medianR": -1
+      },
+      "SELL__OVERLAP": {
+        "trades": 11,
+        "wins": 2,
+        "losses": 9,
+        "winRate": 0.18181818181818182,
+        "avgR": 0.5200207357200821,
+        "totalR": 5.7202280929209035,
+        "PF": 1.6355808992134335,
+        "medianR": -1
+      },
+      "BUY__NEW_YORK_ONLY": {
+        "trades": 20,
+        "wins": 3,
+        "losses": 17,
+        "winRate": 0.15,
+        "avgR": -0.4860235438633899,
+        "totalR": -9.720470877267799,
+        "PF": 0.4282075954548353,
+        "medianR": -1
+      }
+    },
+    "byDirectionSessionRatio": {
+      "BUY__LONDON_ONLY": {
+        "overall": {
+          "trades": 14,
+          "wins": 4,
+          "losses": 10,
+          "winRate": 0.2857142857142857,
+          "avgR": 0.1804097076663766,
+          "totalR": 2.5257359073292722,
+          "PF": 1.2525735907329272,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "LT_0.02": {
+            "trades": 8,
+            "wins": 3,
+            "losses": 5,
+            "winRate": 0.375,
+            "avgR": -0.11336116789710748,
+            "totalR": -0.9068893431768599,
+            "PF": 0.818622131364628,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 3,
+            "wins": 0,
+            "losses": 3,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -3,
+            "PF": 0,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 3,
+            "wins": 1,
+            "losses": 2,
+            "winRate": 0.3333333333333333,
+            "avgR": 2.144208416835377,
+            "totalR": 6.432625250506131,
+            "PF": 4.216312625253066,
+            "medianR": -1
+          }
+        }
+      },
+      "BUY__OVERLAP": {
+        "overall": {
+          "trades": 18,
+          "wins": 2,
+          "losses": 16,
+          "winRate": 0.1111111111111111,
+          "avgR": -0.8118101210457647,
+          "totalR": -14.612582178823764,
+          "PF": 0.08671361382351463,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.05_0.10": {
+            "trades": 3,
+            "wins": 2,
+            "losses": 1,
+            "winRate": 0.6666666666666666,
+            "avgR": 0.12913927372541137,
+            "totalR": 0.3874178211762341,
+            "PF": 1.387417821176234,
+            "medianR": 0.06697698003969717
+          },
+          "0.02_0.05": {
+            "trades": 1,
+            "wins": 0,
+            "losses": 1,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -1,
+            "PF": 0,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 9,
+            "wins": 0,
+            "losses": 9,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -9,
+            "PF": 0,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 5,
+            "wins": 0,
+            "losses": 5,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -5,
+            "PF": 0,
+            "medianR": -1
+          }
+        }
+      },
+      "BUY__NEW_YORK_ONLY": {
+        "overall": {
+          "trades": 20,
+          "wins": 3,
+          "losses": 17,
+          "winRate": 0.15,
+          "avgR": -0.4860235438633899,
+          "totalR": -9.720470877267799,
+          "PF": 0.4282075954548353,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.05_0.10": {
+            "trades": 4,
+            "wins": 0,
+            "losses": 4,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -4,
+            "PF": 0,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 7,
+            "wins": 2,
+            "losses": 5,
+            "winRate": 0.2857142857142857,
+            "avgR": 0.2868817206684137,
+            "totalR": 2.008172044678896,
+            "PF": 1.4016344089357793,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 5,
+            "wins": 0,
+            "losses": 5,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -5,
+            "PF": 0,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 4,
+            "wins": 1,
+            "losses": 3,
+            "winRate": 0.25,
+            "avgR": -0.682160730486674,
+            "totalR": -2.728642921946696,
+            "PF": 0.09045235935110126,
+            "medianR": -1
+          }
+        }
+      },
+      "BUY__OUTSIDE": {
+        "overall": {
+          "trades": 28,
+          "wins": 5,
+          "losses": 23,
+          "winRate": 0.17857142857142858,
+          "avgR": -0.5778168694226408,
+          "totalR": -16.17887234383394,
+          "PF": 0.2965707676593939,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "LT_0.02": {
+            "trades": 9,
+            "wins": 2,
+            "losses": 7,
+            "winRate": 0.2222222222222222,
+            "avgR": -0.6408214648438181,
+            "totalR": -5.767393183594363,
+            "PF": 0.17608668805794808,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 12,
+            "wins": 2,
+            "losses": 10,
+            "winRate": 0.16666666666666666,
+            "avgR": -0.5063197592852277,
+            "totalR": -6.075837111422732,
+            "PF": 0.3924162888577268,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 5,
+            "wins": 1,
+            "losses": 4,
+            "winRate": 0.2,
+            "avgR": -0.4671284097633688,
+            "totalR": -2.335642048816844,
+            "PF": 0.416089487795789,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 2,
+            "wins": 0,
+            "losses": 2,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -2,
+            "PF": 0,
+            "medianR": -1
+          }
+        }
+      },
+      "SELL__LONDON_ONLY": {
+        "overall": {
+          "trades": 9,
+          "wins": 3,
+          "losses": 6,
+          "winRate": 0.3333333333333333,
+          "avgR": -0.6287461037744708,
+          "totalR": -5.658714933970237,
+          "PF": 0.05688084433829374,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.05_0.10": {
+            "trades": 3,
+            "wins": 2,
+            "losses": 1,
+            "winRate": 0.6666666666666666,
+            "avgR": -0.23761770728827683,
+            "totalR": -0.7128531218648305,
+            "PF": 0.28714687813516954,
+            "medianR": 0.09472217922936092
+          },
+          "0.10_0.20": {
+            "trades": 1,
+            "wins": 0,
+            "losses": 1,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -1,
+            "PF": 0,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 3,
+            "wins": 1,
+            "losses": 2,
+            "winRate": 0.3333333333333333,
+            "avgR": -0.6486206040351358,
+            "totalR": -1.9458618121054072,
+            "PF": 0.027069093947296452,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 2,
+            "wins": 0,
+            "losses": 2,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -2,
+            "PF": 0,
+            "medianR": -1
+          }
+        }
+      },
+      "SELL__OVERLAP": {
+        "overall": {
+          "trades": 11,
+          "wins": 2,
+          "losses": 9,
+          "winRate": 0.18181818181818182,
+          "avgR": 0.5200207357200821,
+          "totalR": 5.7202280929209035,
+          "PF": 1.6355808992134335,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "LT_0.02": {
+            "trades": 4,
+            "wins": 1,
+            "losses": 3,
+            "winRate": 0.25,
+            "avgR": 2.9194227743531465,
+            "totalR": 11.677691097412586,
+            "PF": 4.892563699137528,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 4,
+            "wins": 0,
+            "losses": 4,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -4,
+            "PF": 0,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 2,
+            "wins": 0,
+            "losses": 2,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -2,
+            "PF": 0,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 1,
+            "wins": 1,
+            "losses": 0,
+            "winRate": 1,
+            "avgR": 0.042536995508316404,
+            "totalR": 0.042536995508316404,
+            "PF": null,
+            "medianR": 0.042536995508316404
+          }
+        }
+      },
+      "SELL__NEW_YORK_ONLY": {
+        "overall": {
+          "trades": 20,
+          "wins": 4,
+          "losses": 16,
+          "winRate": 0.2,
+          "avgR": -0.43455591276078814,
+          "totalR": -8.691118255215763,
+          "PF": 0.4568051090490149,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.05_0.10": {
+            "trades": 7,
+            "wins": 1,
+            "losses": 6,
+            "winRate": 0.14285714285714285,
+            "avgR": -0.4769985458203871,
+            "totalR": -3.3389898207427096,
+            "PF": 0.44350169654288174,
+            "medianR": -1
+          },
+          "0.02_0.05": {
+            "trades": 7,
+            "wins": 2,
+            "losses": 5,
+            "winRate": 0.2857142857142857,
+            "avgR": -0.28871046313446264,
+            "totalR": -2.0209732419412383,
+            "PF": 0.5958053516117523,
+            "medianR": -1
+          },
+          "NA": {
+            "trades": 3,
+            "wins": 0,
+            "losses": 3,
+            "winRate": 0,
+            "avgR": -1,
+            "totalR": -3,
+            "PF": 0,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 3,
+            "wins": 1,
+            "losses": 2,
+            "winRate": 0.3333333333333333,
+            "avgR": -0.11038506417727123,
+            "totalR": -0.3311551925318137,
+            "PF": 0.8344224037340932,
+            "medianR": -1
+          }
+        }
+      },
+      "SELL__OUTSIDE": {
+        "overall": {
+          "trades": 35,
+          "wins": 5,
+          "losses": 30,
+          "winRate": 0.14285714285714285,
+          "avgR": 0.1800544869171715,
+          "totalR": 6.301907042101002,
+          "PF": 1.2100635680700336,
+          "medianR": -1
+        },
+        "byRatioBand": {
+          "0.02_0.05": {
+            "trades": 14,
+            "wins": 1,
+            "losses": 13,
+            "winRate": 0.07142857142857142,
+            "avgR": -0.6969959493666745,
+            "totalR": -9.757943291133444,
+            "PF": 0.24938897760511974,
+            "medianR": -1
+          },
+          "LT_0.02": {
+            "trades": 15,
+            "wins": 2,
+            "losses": 13,
+            "winRate": 0.13333333333333333,
+            "avgR": 1.2483708128847917,
+            "totalR": 18.725562193271877,
+            "PF": 2.440427861020914,
+            "medianR": -1
+          },
+          "0.05_0.10": {
+            "trades": 6,
+            "wins": 2,
+            "losses": 4,
+            "winRate": 0.3333333333333333,
+            "avgR": -0.4442853100062381,
+            "totalR": -2.6657118600374288,
+            "PF": 0.3335720349906428,
+            "medianR": -1
+          }
+        }
+      }
+    }
+  },
+  "researchWarnings": [
+    "P-GAP is still a heuristic candidate definition, not a validated market-structure rule.",
+    "Small segment samples are unstable and must not be promoted to strategy rules.",
+    "The second-half split is an exploratory OOS check, not a formal walk-forward validation.",
+    "This report does not activate, optimize, or modify any trading rule."
+  ]
+}

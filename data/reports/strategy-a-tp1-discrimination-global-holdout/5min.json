@@ -1,0 +1,498 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_TP1_DISCRIMINATION_GLOBAL_HOLDOUT_V1",
+  "timeframe": "5min",
+  "scope": "Discrimination of trades that reach TP1 before SL versus SL-before-TP1 using only direction/session and first 1-5 post-entry candle excursion features. No TP1 or SL rule is changed.",
+  "methodology": {
+    "target": "TP1-before-SL",
+    "observableWindow": "Entry plus H1/H2/H3/H5 post-entry candles; these are diagnostic features, not an entry-time claim.",
+    "split": "global chronological thirds",
+    "selectionGate": "DEV and VALIDATION n >= 10, PF >= 1, avgR > 0",
+    "holdout": "untouched during candidate selection",
+    "warning": "Small subgroups and multiple comparisons make positive holdout results exploratory until replicated on another period."
+  },
+  "counts": {
+    "trades": 232,
+    "dev": 77,
+    "validation": 77,
+    "holdout": 78
+  },
+  "outcomeRates": {
+    "all": {
+      "n": 232,
+      "winRate": 0.25,
+      "PF": 0.7851739916194825,
+      "avgR": -0.1509337903707945,
+      "totalR": -35.01663936602432
+    },
+    "tp1BeforeSl": {
+      "n": 58,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 2.2066096661030286,
+      "totalR": 127.98336063397565
+    },
+    "slBeforeTp1": {
+      "n": 163,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -163
+    }
+  },
+  "pairTests": 138,
+  "devValidationCandidates": 8,
+  "robustHoldoutCandidates": 8,
+  "topCandidates": [
+    {
+      "featureA": "H2_MFE",
+      "bucketA": "GE_100",
+      "featureB": "direction",
+      "bucketB": "BUY",
+      "dev": {
+        "n": 18,
+        "winRate": 0.1111111111111111,
+        "PF": 1.1933030401175828,
+        "avgR": 0.139607751196032,
+        "totalR": 2.512939521528576
+      },
+      "validation": {
+        "n": 18,
+        "winRate": 0.4444444444444444,
+        "PF": 3.669679853302678,
+        "avgR": 1.3348399266513389,
+        "totalR": 24.0271186797241
+      },
+      "holdout": {
+        "n": 19,
+        "winRate": 0.2631578947368421,
+        "PF": 1.3730731349155045,
+        "avgR": 0.2159897096879237,
+        "totalR": 4.10380448407055
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H2_MFE",
+      "bucketA": "GE_100",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 18,
+        "winRate": 0.2777777777777778,
+        "PF": 2.097656384341515,
+        "avgR": 0.7317709228943432,
+        "totalR": 13.171876612098178
+      },
+      "validation": {
+        "n": 18,
+        "winRate": 0.3888888888888889,
+        "PF": 3.3677801642009375,
+        "avgR": 1.1838900821004685,
+        "totalR": 21.310021477808434
+      },
+      "holdout": {
+        "n": 20,
+        "winRate": 0.35,
+        "PF": 2.3388900058672455,
+        "avgR": 0.8033340035203473,
+        "totalR": 16.066680070406946
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H3_MFE",
+      "bucketA": "GE_100",
+      "featureB": "direction",
+      "bucketB": "BUY",
+      "dev": {
+        "n": 20,
+        "winRate": 0.15,
+        "PF": 1.39620369486287,
+        "avgR": 0.27734258640400905,
+        "totalR": 5.546851728080181
+      },
+      "validation": {
+        "n": 20,
+        "winRate": 0.4,
+        "PF": 2.82830841180342,
+        "avgR": 1.005569626491881,
+        "totalR": 20.11139252983762
+      },
+      "holdout": {
+        "n": 21,
+        "winRate": 0.23809523809523808,
+        "PF": 1.161831114159273,
+        "avgR": 0.10018116590812143,
+        "totalR": 2.10380448407055
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H5_MFE",
+      "bucketA": "GE_100",
+      "featureB": "direction",
+      "bucketB": "BUY",
+      "dev": {
+        "n": 23,
+        "winRate": 0.17391304347826086,
+        "PF": 1.312275877229357,
+        "avgR": 0.21723539285520496,
+        "totalR": 4.996414035669714
+      },
+      "validation": {
+        "n": 23,
+        "winRate": 0.391304347826087,
+        "PF": 2.3960971353409195,
+        "avgR": 0.7890983808448676,
+        "totalR": 18.149262759431956
+      },
+      "holdout": {
+        "n": 23,
+        "winRate": 0.2608695652173913,
+        "PF": 1.083721691589971,
+        "avgR": 0.050961029663460666,
+        "totalR": 1.1721036822595954
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H1_MFE",
+      "bucketA": "GE_100",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 13,
+        "winRate": 0.23076923076923078,
+        "PF": 2.6780602123242145,
+        "avgR": 1.1617339931475332,
+        "totalR": 15.102541910917932
+      },
+      "validation": {
+        "n": 13,
+        "winRate": 0.23076923076923078,
+        "PF": 1.9987923170112343,
+        "avgR": 0.6146414258530672,
+        "totalR": 7.990338536089874
+      },
+      "holdout": {
+        "n": 14,
+        "winRate": 0.35714285714285715,
+        "PF": 3.151542686097517,
+        "avgR": 1.2294529634842954,
+        "totalR": 17.212341488780137
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "direction",
+      "bucketA": "SELL",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 17,
+        "winRate": 0.4117647058823529,
+        "PF": 1.29113822697908,
+        "avgR": 0.1541320025183366,
+        "totalR": 2.6202440428117226
+      },
+      "validation": {
+        "n": 17,
+        "winRate": 0.29411764705882354,
+        "PF": 1.576524753189114,
+        "avgR": 0.3730454285341325,
+        "totalR": 6.341772285080252
+      },
+      "holdout": {
+        "n": 19,
+        "winRate": 0.3157894736842105,
+        "PF": 1.0457003574268102,
+        "avgR": 0.0312686656078174,
+        "totalR": 0.5941046465485307
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H5_MFE",
+      "bucketA": "GE_100",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 24,
+        "winRate": 0.375,
+        "PF": 2.8515946291392216,
+        "avgR": 1.0800968669978792,
+        "totalR": 25.922324807949103
+      },
+      "validation": {
+        "n": 24,
+        "winRate": 0.3333333333333333,
+        "PF": 1.4806976340354971,
+        "avgR": 0.28040695318737335,
+        "totalR": 6.72976687649696
+      },
+      "holdout": {
+        "n": 25,
+        "winRate": 0.32,
+        "PF": 1.7584362042872494,
+        "avgR": 0.48539917074383965,
+        "totalR": 12.134979268595991
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H1_MFE",
+      "bucketA": "GE_100",
+      "featureB": "direction",
+      "bucketB": "BUY",
+      "dev": {
+        "n": 13,
+        "winRate": 0.15384615384615385,
+        "PF": 1.7236599468365084,
+        "avgR": 0.5009953478098905,
+        "totalR": 6.512939521528576
+      },
+      "validation": {
+        "n": 13,
+        "winRate": 0.23076923076923078,
+        "PF": 1.0024335880817874,
+        "avgR": 0.001684791748929685,
+        "totalR": 0.021902292736085904
+      },
+      "holdout": {
+        "n": 14,
+        "winRate": 0.2857142857142857,
+        "PF": 2.4793238144023464,
+        "avgR": 0.7396619072011733,
+        "totalR": 10.355266700816426
+      },
+      "passesDevValidation": true
+    }
+  ],
+  "robustHoldout": [
+    {
+      "featureA": "H2_MFE",
+      "bucketA": "GE_100",
+      "featureB": "direction",
+      "bucketB": "BUY",
+      "dev": {
+        "n": 18,
+        "winRate": 0.1111111111111111,
+        "PF": 1.1933030401175828,
+        "avgR": 0.139607751196032,
+        "totalR": 2.512939521528576
+      },
+      "validation": {
+        "n": 18,
+        "winRate": 0.4444444444444444,
+        "PF": 3.669679853302678,
+        "avgR": 1.3348399266513389,
+        "totalR": 24.0271186797241
+      },
+      "holdout": {
+        "n": 19,
+        "winRate": 0.2631578947368421,
+        "PF": 1.3730731349155045,
+        "avgR": 0.2159897096879237,
+        "totalR": 4.10380448407055
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H2_MFE",
+      "bucketA": "GE_100",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 18,
+        "winRate": 0.2777777777777778,
+        "PF": 2.097656384341515,
+        "avgR": 0.7317709228943432,
+        "totalR": 13.171876612098178
+      },
+      "validation": {
+        "n": 18,
+        "winRate": 0.3888888888888889,
+        "PF": 3.3677801642009375,
+        "avgR": 1.1838900821004685,
+        "totalR": 21.310021477808434
+      },
+      "holdout": {
+        "n": 20,
+        "winRate": 0.35,
+        "PF": 2.3388900058672455,
+        "avgR": 0.8033340035203473,
+        "totalR": 16.066680070406946
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H3_MFE",
+      "bucketA": "GE_100",
+      "featureB": "direction",
+      "bucketB": "BUY",
+      "dev": {
+        "n": 20,
+        "winRate": 0.15,
+        "PF": 1.39620369486287,
+        "avgR": 0.27734258640400905,
+        "totalR": 5.546851728080181
+      },
+      "validation": {
+        "n": 20,
+        "winRate": 0.4,
+        "PF": 2.82830841180342,
+        "avgR": 1.005569626491881,
+        "totalR": 20.11139252983762
+      },
+      "holdout": {
+        "n": 21,
+        "winRate": 0.23809523809523808,
+        "PF": 1.161831114159273,
+        "avgR": 0.10018116590812143,
+        "totalR": 2.10380448407055
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H5_MFE",
+      "bucketA": "GE_100",
+      "featureB": "direction",
+      "bucketB": "BUY",
+      "dev": {
+        "n": 23,
+        "winRate": 0.17391304347826086,
+        "PF": 1.312275877229357,
+        "avgR": 0.21723539285520496,
+        "totalR": 4.996414035669714
+      },
+      "validation": {
+        "n": 23,
+        "winRate": 0.391304347826087,
+        "PF": 2.3960971353409195,
+        "avgR": 0.7890983808448676,
+        "totalR": 18.149262759431956
+      },
+      "holdout": {
+        "n": 23,
+        "winRate": 0.2608695652173913,
+        "PF": 1.083721691589971,
+        "avgR": 0.050961029663460666,
+        "totalR": 1.1721036822595954
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H1_MFE",
+      "bucketA": "GE_100",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 13,
+        "winRate": 0.23076923076923078,
+        "PF": 2.6780602123242145,
+        "avgR": 1.1617339931475332,
+        "totalR": 15.102541910917932
+      },
+      "validation": {
+        "n": 13,
+        "winRate": 0.23076923076923078,
+        "PF": 1.9987923170112343,
+        "avgR": 0.6146414258530672,
+        "totalR": 7.990338536089874
+      },
+      "holdout": {
+        "n": 14,
+        "winRate": 0.35714285714285715,
+        "PF": 3.151542686097517,
+        "avgR": 1.2294529634842954,
+        "totalR": 17.212341488780137
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "direction",
+      "bucketA": "SELL",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 17,
+        "winRate": 0.4117647058823529,
+        "PF": 1.29113822697908,
+        "avgR": 0.1541320025183366,
+        "totalR": 2.6202440428117226
+      },
+      "validation": {
+        "n": 17,
+        "winRate": 0.29411764705882354,
+        "PF": 1.576524753189114,
+        "avgR": 0.3730454285341325,
+        "totalR": 6.341772285080252
+      },
+      "holdout": {
+        "n": 19,
+        "winRate": 0.3157894736842105,
+        "PF": 1.0457003574268102,
+        "avgR": 0.0312686656078174,
+        "totalR": 0.5941046465485307
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H5_MFE",
+      "bucketA": "GE_100",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 24,
+        "winRate": 0.375,
+        "PF": 2.8515946291392216,
+        "avgR": 1.0800968669978792,
+        "totalR": 25.922324807949103
+      },
+      "validation": {
+        "n": 24,
+        "winRate": 0.3333333333333333,
+        "PF": 1.4806976340354971,
+        "avgR": 0.28040695318737335,
+        "totalR": 6.72976687649696
+      },
+      "holdout": {
+        "n": 25,
+        "winRate": 0.32,
+        "PF": 1.7584362042872494,
+        "avgR": 0.48539917074383965,
+        "totalR": 12.134979268595991
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "H1_MFE",
+      "bucketA": "GE_100",
+      "featureB": "direction",
+      "bucketB": "BUY",
+      "dev": {
+        "n": 13,
+        "winRate": 0.15384615384615385,
+        "PF": 1.7236599468365084,
+        "avgR": 0.5009953478098905,
+        "totalR": 6.512939521528576
+      },
+      "validation": {
+        "n": 13,
+        "winRate": 0.23076923076923078,
+        "PF": 1.0024335880817874,
+        "avgR": 0.001684791748929685,
+        "totalR": 0.021902292736085904
+      },
+      "holdout": {
+        "n": 14,
+        "winRate": 0.2857142857142857,
+        "PF": 2.4793238144023464,
+        "avgR": 0.7396619072011733,
+        "totalR": 10.355266700816426
+      },
+      "passesDevValidation": true
+    }
+  ]
+}

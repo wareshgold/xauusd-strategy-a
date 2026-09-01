@@ -1,0 +1,724 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_OPPORTUNITY_ENTRY_DELAY_FORENSICS",
+  "timeframe": "1min",
+  "methodology": {
+    "delay": "entryIndex minus latest pre-entry structural event index",
+    "scope": "Opportunity Window trades only",
+    "bands": [
+      "D0_2",
+      "D3_5",
+      "D6_8",
+      "D9_12",
+      "D13_20",
+      "D21_PLUS"
+    ],
+    "oos": "second chronological half of Opportunity Window trades",
+    "confirmations": "descriptive only; no optimization or signal rule change",
+    "important": "delay is a correlation diagnostic until validated on untouched data"
+  },
+  "coverage": {
+    "opportunity": 92,
+    "delayKnown": 92
+  },
+  "overall": {
+    "n": 92,
+    "wins": 20,
+    "losses": 72,
+    "PF": 0.6179424288283958,
+    "avgR": -0.2990015774386468,
+    "totalR": -27.508145124355504,
+    "maxDD": 32.378260920673895
+  },
+  "bands": [
+    {
+      "name": "D0_2",
+      "lo": 0,
+      "hi": 2,
+      "all": {
+        "n": 28,
+        "wins": 3,
+        "losses": 25,
+        "PF": 0.12682389814351674,
+        "avgR": -0.7796215195147173,
+        "totalR": -21.829402546412084,
+        "winRate": 0.10714285714285714,
+        "maxDD": 21.829402546412084
+      },
+      "oos": {
+        "n": 14,
+        "wins": 1,
+        "losses": 13,
+        "PF": 0.014801899915831434,
+        "avgR": -0.9148268072210136,
+        "totalR": -12.807575301094191,
+        "winRate": 0.07142857142857142,
+        "maxDD": 12.807575301094191
+      }
+    },
+    {
+      "name": "D3_5",
+      "lo": 3,
+      "hi": 5,
+      "all": {
+        "n": 25,
+        "wins": 7,
+        "losses": 18,
+        "PF": 0.7781045067418051,
+        "avgR": -0.1597647551459004,
+        "totalR": -3.9941188786475106,
+        "winRate": 0.28,
+        "maxDD": 6.933023019960303
+      },
+      "oos": {
+        "n": 14,
+        "wins": 3,
+        "losses": 11,
+        "PF": 0.9947065571637627,
+        "avgR": -0.004159133657043742,
+        "totalR": -0.05822787119861239,
+        "winRate": 0.21428571428571427,
+        "maxDD": 6.933023019960303
+      }
+    },
+    {
+      "name": "D6_8",
+      "lo": 6,
+      "hi": 8,
+      "all": {
+        "n": 21,
+        "wins": 5,
+        "losses": 16,
+        "PF": 0.4074434464679739,
+        "avgR": -0.4514716598339246,
+        "totalR": -9.480904856512417,
+        "winRate": 0.23809523809523808,
+        "maxDD": 9.480904856512417
+      },
+      "oos": {
+        "n": 12,
+        "wins": 3,
+        "losses": 9,
+        "PF": 0.21000868749962945,
+        "avgR": -0.5924934843752779,
+        "totalR": -7.109921812503336,
+        "winRate": 0.25,
+        "maxDD": 7.430362653639873
+      }
+    },
+    {
+      "name": "D9_12",
+      "lo": 9,
+      "hi": 12,
+      "all": {
+        "n": 18,
+        "wins": 5,
+        "losses": 13,
+        "PF": 1.5997139351705003,
+        "avgR": 0.4331267309564725,
+        "totalR": 7.796281157216505,
+        "winRate": 0.2777777777777778,
+        "maxDD": 5.881409940196081
+      },
+      "oos": {
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "PF": 3.950382876282089,
+        "avgR": 1.9669219175213926,
+        "totalR": 11.801531505128356,
+        "winRate": 0.3333333333333333,
+        "maxDD": 2
+      }
+    },
+    {
+      "name": "D13_20",
+      "lo": 13,
+      "hi": 20,
+      "all": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "oos": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      }
+    },
+    {
+      "name": "D21_PLUS",
+      "lo": 21,
+      "hi": null,
+      "all": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "oos": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      }
+    }
+  ],
+  "confirmationDelay": [
+    {
+      "name": "D0_2",
+      "FVG_RETEST": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "PF": 0.06414156630193621,
+        "avgR": -0.7018938252735478,
+        "totalR": -2.8075753010941913,
+        "winRate": 0.25,
+        "maxDD": 2.8075753010941913
+      },
+      "EXPANSION": {
+        "n": 14,
+        "wins": 1,
+        "losses": 13,
+        "PF": 0.014801899915831434,
+        "avgR": -0.9148268072210136,
+        "totalR": -12.807575301094191,
+        "winRate": 0.07142857142857142,
+        "maxDD": 12.807575301094191
+      },
+      "BOS+DISPLACEMENT": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 0.027489242700829804,
+        "avgR": -0.8509469126367739,
+        "totalR": -6.807575301094191,
+        "winRate": 0.125,
+        "maxDD": 6.807575301094191
+      },
+      "SWEEP+BOS+DISPLACEMENT": {
+        "n": 7,
+        "wins": 1,
+        "losses": 6,
+        "PF": 0.032070783150968105,
+        "avgR": -0.8296536144420273,
+        "totalR": -5.807575301094191,
+        "winRate": 0.14285714285714285,
+        "maxDD": 5.807575301094191
+      }
+    },
+    {
+      "name": "D3_5",
+      "FVG_RETEST": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "PF": 8.499602230545829,
+        "avgR": 2.499867410181943,
+        "totalR": 7.499602230545829,
+        "winRate": 0.6666666666666666,
+        "maxDD": 1
+      },
+      "EXPANSION": {
+        "n": 14,
+        "wins": 3,
+        "losses": 11,
+        "PF": 0.9947065571637627,
+        "avgR": -0.004159133657043742,
+        "totalR": -0.05822787119861239,
+        "winRate": 0.21428571428571427,
+        "maxDD": 6.933023019960303
+      },
+      "BOS+DISPLACEMENT": {
+        "n": 8,
+        "wins": 1,
+        "losses": 7,
+        "PF": 1.2046607500723046,
+        "avgR": 0.1790781563132664,
+        "totalR": 1.4326252505061312,
+        "winRate": 0.125,
+        "maxDD": 4
+      },
+      "SWEEP+BOS+DISPLACEMENT": {
+        "n": 4,
+        "wins": 0,
+        "losses": 4,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -4,
+        "winRate": 0,
+        "maxDD": 4
+      }
+    },
+    {
+      "name": "D6_8",
+      "FVG_RETEST": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "PF": 0.6602204205682685,
+        "avgR": -0.22651971962115436,
+        "totalR": -0.6795591588634631,
+        "winRate": 0.3333333333333333,
+        "maxDD": 1
+      },
+      "EXPANSION": {
+        "n": 11,
+        "wins": 3,
+        "losses": 8,
+        "PF": 0.23625977343708313,
+        "avgR": -0.5554474375003032,
+        "totalR": -6.109921812503336,
+        "winRate": 0.2727272727272727,
+        "maxDD": 6.430362653639873
+      },
+      "BOS+DISPLACEMENT": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "PF": 0.5696373463601281,
+        "avgR": -0.1434542178799573,
+        "totalR": -0.4303626536398719,
+        "winRate": 0.6666666666666666,
+        "maxDD": 1
+      },
+      "SWEEP+BOS+DISPLACEMENT": {
+        "n": 2,
+        "wins": 2,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0.28481867318006404,
+        "totalR": 0.5696373463601281,
+        "winRate": 1,
+        "maxDD": 0
+      }
+    },
+    {
+      "name": "D9_12",
+      "FVG_RETEST": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "winRate": 0,
+        "maxDD": 3
+      },
+      "EXPANSION": {
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "PF": 3.950382876282089,
+        "avgR": 1.9669219175213926,
+        "totalR": 11.801531505128356,
+        "winRate": 0.3333333333333333,
+        "maxDD": 2
+      },
+      "BOS+DISPLACEMENT": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "SWEEP+BOS+DISPLACEMENT": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      }
+    },
+    {
+      "name": "D13_20",
+      "FVG_RETEST": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "EXPANSION": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "BOS+DISPLACEMENT": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "SWEEP+BOS+DISPLACEMENT": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      }
+    },
+    {
+      "name": "D21_PLUS",
+      "FVG_RETEST": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "EXPANSION": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "BOS+DISPLACEMENT": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      },
+      "SWEEP+BOS+DISPLACEMENT": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "winRate": null,
+        "maxDD": 0
+      }
+    }
+  ],
+  "byWindow": [
+    {
+      "window": "LONDON_NY_OVERLAP",
+      "n": 40,
+      "wins": 7,
+      "losses": 33,
+      "PF": 0.6232049382283606,
+      "avgR": -0.3108559259616024,
+      "totalR": -12.434237038464095,
+      "maxDD": 25.11192813587668,
+      "delayP50": 4.5,
+      "bands": [
+        {
+          "name": "D0_2",
+          "n": 11,
+          "wins": 0,
+          "losses": 11,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -11
+        },
+        {
+          "name": "D3_5",
+          "n": 12,
+          "wins": 3,
+          "losses": 9,
+          "PF": 0.13516865695823146,
+          "avgR": -0.6486235072813265,
+          "totalR": -7.783482087375917
+        },
+        {
+          "name": "D6_8",
+          "n": 9,
+          "wins": 3,
+          "losses": 6,
+          "PF": 0.7785923252498724,
+          "avgR": -0.14760511650008512,
+          "totalR": -1.328446048500766
+        },
+        {
+          "name": "D9_12",
+          "n": 8,
+          "wins": 1,
+          "losses": 7,
+          "PF": 2.096813013916084,
+          "avgR": 0.9597113871765732,
+          "totalR": 7.677691097412586
+        },
+        {
+          "name": "D13_20",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        },
+        {
+          "name": "D21_PLUS",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        }
+      ]
+    },
+    {
+      "window": "PRE_NY_BUILD",
+      "n": 29,
+      "wins": 9,
+      "losses": 20,
+      "PF": 0.8895870626425832,
+      "avgR": -0.07614685334994262,
+      "totalR": -2.208258747148336,
+      "maxDD": 13.672902425843853,
+      "delayP50": 5,
+      "bands": [
+        {
+          "name": "D0_2",
+          "n": 7,
+          "wins": 1,
+          "losses": 6,
+          "PF": 0.2429858771500768,
+          "avgR": -0.6488692481570771,
+          "totalR": -4.54208473709954
+        },
+        {
+          "name": "D3_5",
+          "n": 8,
+          "wins": 4,
+          "losses": 4,
+          "PF": 3.1973408021821017,
+          "avgR": 1.0986704010910509,
+          "totalR": 8.789363208728407
+        },
+        {
+          "name": "D6_8",
+          "n": 7,
+          "wins": 1,
+          "losses": 6,
+          "PF": 0.08785005847530196,
+          "avgR": -0.7818428070211698,
+          "totalR": -5.4728996491481885
+        },
+        {
+          "name": "D9_12",
+          "n": 7,
+          "wins": 3,
+          "losses": 4,
+          "PF": 0.7543406075927469,
+          "avgR": -0.14037679566128752,
+          "totalR": -0.9826375696290126
+        },
+        {
+          "name": "D13_20",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        },
+        {
+          "name": "D21_PLUS",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        }
+      ]
+    },
+    {
+      "window": "NY_OPEN_WINDOW",
+      "n": 13,
+      "wins": 3,
+      "losses": 10,
+      "PF": 0.5941925962351118,
+      "avgR": -0.31215954135760626,
+      "totalR": -4.058074037648882,
+      "maxDD": 6,
+      "delayP50": 2,
+      "bands": [
+        {
+          "name": "D0_2",
+          "n": 7,
+          "wins": 1,
+          "losses": 6,
+          "PF": 0.25337624863027486,
+          "avgR": -0.6399632154597644,
+          "totalR": -4.479742508218351
+        },
+        {
+          "name": "D3_5",
+          "n": 1,
+          "wins": 0,
+          "losses": 1,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -1
+        },
+        {
+          "name": "D6_8",
+          "n": 4,
+          "wins": 1,
+          "losses": 3,
+          "PF": 0.4401469470455123,
+          "avgR": -0.41988978971586577,
+          "totalR": -1.679559158863463
+        },
+        {
+          "name": "D9_12",
+          "n": 1,
+          "wins": 1,
+          "losses": 0,
+          "PF": null,
+          "avgR": 3.101227629432932,
+          "totalR": 3.101227629432932
+        },
+        {
+          "name": "D13_20",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        },
+        {
+          "name": "D21_PLUS",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        }
+      ]
+    },
+    {
+      "window": "LONDON_OPEN_WINDOW",
+      "n": 10,
+      "wins": 1,
+      "losses": 9,
+      "PF": 0.021380522100645404,
+      "avgR": -0.8807575301094192,
+      "totalR": -8.807575301094191,
+      "maxDD": 8.807575301094191,
+      "delayP50": 3.5,
+      "bands": [
+        {
+          "name": "D0_2",
+          "n": 3,
+          "wins": 1,
+          "losses": 2,
+          "PF": 0.09621234945290431,
+          "avgR": -0.6025251003647304,
+          "totalR": -1.8075753010941913
+        },
+        {
+          "name": "D3_5",
+          "n": 4,
+          "wins": 0,
+          "losses": 4,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -4
+        },
+        {
+          "name": "D6_8",
+          "n": 1,
+          "wins": 0,
+          "losses": 1,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -1
+        },
+        {
+          "name": "D9_12",
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -2
+        },
+        {
+          "name": "D13_20",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        },
+        {
+          "name": "D21_PLUS",
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "PF": null,
+          "avgR": 0,
+          "totalR": 0
+        }
+      ]
+    }
+  ],
+  "oos": {
+    "n": 46,
+    "wins": 9,
+    "losses": 37,
+    "PF": 0.7790758519008708,
+    "avgR": -0.17769985825364742,
+    "totalR": -8.174193479667782,
+    "maxDD": 14.610319581957505
+  }
+}

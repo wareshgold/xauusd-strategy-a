@@ -1,0 +1,975 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_DIRECTION_SESSION_ROLLING_ROBUSTNESS_V1",
+  "timeframe": "5min",
+  "scope": "Baseline resolved trades only; diagnostic stability analysis; no production rule changes.",
+  "methodology": {
+    "windows": 6,
+    "ordering": "chronological entryTime",
+    "sessionSource": "UTC entryTime; LONDON 07:00-16:00, NEW_YORK 16:00-22:00, otherwise OUTSIDE.",
+    "minimumWindowN": 5,
+    "finalWindowRole": "unseen chronological stability check; not used to define a rule in this report",
+    "gate": "A candidate is considered robust only if it remains positive across most eligible rolling windows and the final chronological window; no automatic promotion is performed.",
+    "warning": "Multiple subgroup and window comparisons create selection bias risk. This report is evidence, not proof of a tradable edge."
+  },
+  "overall": {
+    "n": 221,
+    "wins": 58,
+    "losses": 163,
+    "winRate": 0.26244343891402716,
+    "PF": 0.7851739916194825,
+    "avgR": -0.15844633197296074,
+    "totalR": -35.01663936602432
+  },
+  "candidates": [
+    {
+      "label": "BUY + LONDON",
+      "overall": {
+        "n": 57,
+        "wins": 13,
+        "losses": 44,
+        "winRate": 0.22807017543859648,
+        "PF": 0.6060173210500762,
+        "avgR": -0.3041269802420464,
+        "totalR": -17.335237873796643
+      },
+      "windows": [
+        {
+          "window": 1,
+          "from": "2026-07-24 13:10:00",
+          "to": "2026-07-31 13:00:00",
+          "n": 9,
+          "wins": 0,
+          "losses": 9,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -9
+        },
+        {
+          "window": 2,
+          "from": "2026-07-31 13:20:00",
+          "to": "2026-08-06 13:00:00",
+          "n": 9,
+          "wins": 1,
+          "losses": 8,
+          "winRate": 0.1111111111111111,
+          "PF": 0.03614200825246304,
+          "avgR": -0.8567626593311439,
+          "totalR": -7.710863933980296
+        },
+        {
+          "window": 3,
+          "from": "2026-08-06 13:10:00",
+          "to": "2026-08-13 11:50:00",
+          "n": 9,
+          "wins": 1,
+          "losses": 8,
+          "winRate": 0.1111111111111111,
+          "PF": 0.5042390258189506,
+          "avgR": -0.4406764214942661,
+          "totalR": -3.966087793448395
+        },
+        {
+          "window": 4,
+          "from": "2026-08-13 13:40:00",
+          "to": "2026-08-18 11:10:00",
+          "n": 9,
+          "wins": 5,
+          "losses": 4,
+          "winRate": 0.5555555555555556,
+          "PF": 4.435014986148644,
+          "avgR": 1.5266733271771753,
+          "totalR": 13.740059944594577
+        },
+        {
+          "window": 5,
+          "from": "2026-08-18 11:15:00",
+          "to": "2026-08-21 12:25:00",
+          "n": 9,
+          "wins": 2,
+          "losses": 7,
+          "winRate": 0.2222222222222222,
+          "PF": 0.2340855565677824,
+          "avgR": -0.5957112337806136,
+          "totalR": -5.361401104025523
+        },
+        {
+          "window": 6,
+          "from": "2026-08-21 12:45:00",
+          "to": "2026-08-26 16:45:00",
+          "n": 12,
+          "wins": 4,
+          "losses": 8,
+          "winRate": 0.3333333333333333,
+          "PF": 0.3703818766328736,
+          "avgR": -0.4197454155780842,
+          "totalR": -5.03694498693701
+        }
+      ],
+      "stability": {
+        "eligibleWindows": 6,
+        "positiveWindows": 1,
+        "positiveWindowRate": 0.16666666666666666,
+        "finalWindowPositive": false,
+        "allEligibleWindowsPositive": false
+      },
+      "byWeekday": {
+        "SUN": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        },
+        "MON": {
+          "n": 13,
+          "wins": 3,
+          "losses": 10,
+          "winRate": 0.23076923076923078,
+          "PF": 0.6881793800872664,
+          "avgR": -0.23986201531748735,
+          "totalR": -3.1182061991273358
+        },
+        "TUE": {
+          "n": 13,
+          "wins": 1,
+          "losses": 12,
+          "winRate": 0.07692307692307693,
+          "PF": 0.22245807161089015,
+          "avgR": -0.7177310108207168,
+          "totalR": -9.330503140669318
+        },
+        "WED": {
+          "n": 10,
+          "wins": 2,
+          "losses": 8,
+          "winRate": 0.2,
+          "PF": 0.171980479244587,
+          "avgR": -0.6624156166043303,
+          "totalR": -6.624156166043304
+        },
+        "THU": {
+          "n": 12,
+          "wins": 6,
+          "losses": 6,
+          "winRate": 0.5,
+          "PF": 1.5470844424709644,
+          "avgR": 0.27354222123548216,
+          "totalR": 3.282506654825786
+        },
+        "FRI": {
+          "n": 9,
+          "wins": 1,
+          "losses": 8,
+          "winRate": 0.1111111111111111,
+          "PF": 0.8068901221521906,
+          "avgR": -0.17165322475360836,
+          "totalR": -1.5448790227824754
+        },
+        "SAT": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "BUY + NEW_YORK",
+      "overall": {
+        "n": 44,
+        "wins": 13,
+        "losses": 31,
+        "winRate": 0.29545454545454547,
+        "PF": 1.425167059339258,
+        "avgR": 0.29954951907993166,
+        "totalR": 13.180178839516993
+      },
+      "windows": [
+        {
+          "window": 1,
+          "from": "2026-07-24 20:00:00",
+          "to": "2026-07-30 00:55:00",
+          "n": 7,
+          "wins": 1,
+          "losses": 6,
+          "winRate": 0.14285714285714285,
+          "PF": 2.39393833822351,
+          "avgR": 1.1948042899058657,
+          "totalR": 8.36363002934106
+        },
+        {
+          "window": 2,
+          "from": "2026-07-30 20:55:00",
+          "to": "2026-07-31 21:05:00",
+          "n": 7,
+          "wins": 2,
+          "losses": 5,
+          "winRate": 0.2857142857142857,
+          "PF": 0.5197743599554097,
+          "avgR": -0.3430183143175645,
+          "totalR": -2.4011282002229515
+        },
+        {
+          "window": 3,
+          "from": "2026-08-02 22:00:00",
+          "to": "2026-08-11 23:00:00",
+          "n": 7,
+          "wins": 1,
+          "losses": 6,
+          "winRate": 0.14285714285714285,
+          "PF": 0.006311704932388705,
+          "avgR": -0.8517328243436669,
+          "totalR": -5.962129770405668
+        },
+        {
+          "window": 4,
+          "from": "2026-08-12 22:30:00",
+          "to": "2026-08-18 23:35:00",
+          "n": 7,
+          "wins": 5,
+          "losses": 2,
+          "winRate": 0.7142857142857143,
+          "PF": 13.09385373992001,
+          "avgR": 3.455386782834289,
+          "totalR": 24.18770747984002
+        },
+        {
+          "window": 5,
+          "from": "2026-08-19 00:20:00",
+          "to": "2026-08-21 20:40:00",
+          "n": 7,
+          "wins": 1,
+          "losses": 6,
+          "winRate": 0.14285714285714285,
+          "PF": 0.04611283259576349,
+          "avgR": -0.8176175720607741,
+          "totalR": -5.723323004425419
+        },
+        {
+          "window": 6,
+          "from": "2026-08-23 22:00:00",
+          "to": "2026-08-27 00:45:00",
+          "n": 9,
+          "wins": 3,
+          "losses": 6,
+          "winRate": 0.3333333333333333,
+          "PF": 0.11923705089832455,
+          "avgR": -0.587175299401117,
+          "totalR": -5.284577694610053
+        }
+      ],
+      "stability": {
+        "eligibleWindows": 6,
+        "positiveWindows": 2,
+        "positiveWindowRate": 0.3333333333333333,
+        "finalWindowPositive": false,
+        "allEligibleWindowsPositive": false
+      },
+      "byWeekday": {
+        "SUN": {
+          "n": 5,
+          "wins": 2,
+          "losses": 3,
+          "winRate": 0.4,
+          "PF": 4.000028613821827,
+          "avgR": 1.800017168293096,
+          "totalR": 9.00008584146548
+        },
+        "MON": {
+          "n": 5,
+          "wins": 2,
+          "losses": 3,
+          "winRate": 0.4,
+          "PF": 0.16266289671324308,
+          "avgR": -0.5024022619720541,
+          "totalR": -2.5120113098602705
+        },
+        "TUE": {
+          "n": 11,
+          "wins": 4,
+          "losses": 7,
+          "winRate": 0.36363636363636365,
+          "PF": 1.628468497925414,
+          "avgR": 0.3999344986798088,
+          "totalR": 4.399279485477897
+        },
+        "WED": {
+          "n": 7,
+          "wins": 2,
+          "losses": 5,
+          "winRate": 0.2857142857142857,
+          "PF": 3.331498094641018,
+          "avgR": 1.6653557818864415,
+          "totalR": 11.65749047320509
+        },
+        "THU": {
+          "n": 10,
+          "wins": 2,
+          "losses": 8,
+          "winRate": 0.2,
+          "PF": 0.2732215052049081,
+          "avgR": -0.5814227958360736,
+          "totalR": -5.8142279583607355
+        },
+        "FRI": {
+          "n": 6,
+          "wins": 1,
+          "losses": 5,
+          "winRate": 0.16666666666666666,
+          "PF": 0.2899124615179063,
+          "avgR": -0.5917396154017448,
+          "totalR": -3.5504376924104686
+        },
+        "SAT": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "BUY + OUTSIDE",
+      "overall": {
+        "n": 13,
+        "wins": 3,
+        "losses": 10,
+        "winRate": 0.23076923076923078,
+        "PF": 0.14600348656532003,
+        "avgR": -0.656920394949754,
+        "totalR": -8.5399651343468
+      },
+      "windows": [
+        {
+          "window": 1,
+          "from": "2026-07-30 04:50:00",
+          "to": "2026-07-31 02:35:00",
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -2
+        },
+        {
+          "window": 2,
+          "from": "2026-08-06 05:35:00",
+          "to": "2026-08-11 07:25:00",
+          "n": 2,
+          "wins": 1,
+          "losses": 1,
+          "winRate": 0.5,
+          "PF": 0.923437482638411,
+          "avgR": -0.03828125868079452,
+          "totalR": -0.07656251736158903
+        },
+        {
+          "window": 3,
+          "from": "2026-08-12 04:20:00",
+          "to": "2026-08-12 05:25:00",
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -2
+        },
+        {
+          "window": 4,
+          "from": "2026-08-13 02:05:00",
+          "to": "2026-08-13 02:40:00",
+          "n": 2,
+          "wins": 1,
+          "losses": 1,
+          "winRate": 0.5,
+          "PF": 0.13351399049992616,
+          "avgR": -0.4332430047500369,
+          "totalR": -0.8664860095000738
+        },
+        {
+          "window": 5,
+          "from": "2026-08-13 04:25:00",
+          "to": "2026-08-13 08:05:00",
+          "n": 2,
+          "wins": 1,
+          "losses": 1,
+          "winRate": 0.5,
+          "PF": 0.40308339251486314,
+          "avgR": -0.29845830374256843,
+          "totalR": -0.5969166074851369
+        },
+        {
+          "window": 6,
+          "from": "2026-08-14 03:10:00",
+          "to": "2026-08-18 02:15:00",
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -3
+        }
+      ],
+      "stability": {
+        "eligibleWindows": 0,
+        "positiveWindows": 0,
+        "positiveWindowRate": 0,
+        "finalWindowPositive": false,
+        "allEligibleWindowsPositive": false
+      },
+      "byWeekday": {
+        "SUN": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        },
+        "MON": {
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -2
+        },
+        "TUE": {
+          "n": 1,
+          "wins": 0,
+          "losses": 1,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -1
+        },
+        "WED": {
+          "n": 4,
+          "wins": 1,
+          "losses": 3,
+          "winRate": 0.25,
+          "PF": 0.04450466349997539,
+          "avgR": -0.7166215023750184,
+          "totalR": -2.8664860095000737
+        },
+        "THU": {
+          "n": 6,
+          "wins": 2,
+          "losses": 4,
+          "winRate": 0.3333333333333333,
+          "PF": 0.33163021878831855,
+          "avgR": -0.44557985414112106,
+          "totalR": -2.6734791248467262
+        },
+        "FRI": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        },
+        "SAT": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "SELL + LONDON",
+      "overall": {
+        "n": 56,
+        "wins": 15,
+        "losses": 41,
+        "winRate": 0.26785714285714285,
+        "PF": 0.45016769862738537,
+        "avgR": -0.4025557920763786,
+        "totalR": -22.5431243562772
+      },
+      "windows": [
+        {
+          "window": 1,
+          "from": "2026-07-24 14:00:00",
+          "to": "2026-07-30 10:35:00",
+          "n": 9,
+          "wins": 5,
+          "losses": 4,
+          "winRate": 0.5555555555555556,
+          "PF": 1.6753526748440415,
+          "avgR": 0.3001567443751296,
+          "totalR": 2.7014106993761664
+        },
+        {
+          "window": 2,
+          "from": "2026-07-30 10:40:00",
+          "to": "2026-08-03 11:55:00",
+          "n": 9,
+          "wins": 0,
+          "losses": 9,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -9
+        },
+        {
+          "window": 3,
+          "from": "2026-08-03 19:05:00",
+          "to": "2026-08-06 15:15:00",
+          "n": 9,
+          "wins": 4,
+          "losses": 5,
+          "winRate": 0.4444444444444444,
+          "PF": 1.3822370432332816,
+          "avgR": 0.21235391290737868,
+          "totalR": 1.911185216166408
+        },
+        {
+          "window": 4,
+          "from": "2026-08-06 19:05:00",
+          "to": "2026-08-14 11:45:00",
+          "n": 9,
+          "wins": 1,
+          "losses": 8,
+          "winRate": 0.1111111111111111,
+          "PF": 0.09385160176676828,
+          "avgR": -0.8054652428739837,
+          "totalR": -7.249187185865853
+        },
+        {
+          "window": 5,
+          "from": "2026-08-14 11:55:00",
+          "to": "2026-08-19 18:45:00",
+          "n": 9,
+          "wins": 3,
+          "losses": 6,
+          "winRate": 0.3333333333333333,
+          "PF": 0.19392089843227275,
+          "avgR": -0.5373860677118182,
+          "totalR": -4.8364746094063635
+        },
+        {
+          "window": 6,
+          "from": "2026-08-20 13:50:00",
+          "to": "2026-08-27 11:35:00",
+          "n": 11,
+          "wins": 2,
+          "losses": 9,
+          "winRate": 0.18181818181818182,
+          "PF": 0.32554905816138274,
+          "avgR": -0.5518234978679595,
+          "totalR": -6.070058476547555
+        }
+      ],
+      "stability": {
+        "eligibleWindows": 6,
+        "positiveWindows": 2,
+        "positiveWindowRate": 0.3333333333333333,
+        "finalWindowPositive": false,
+        "allEligibleWindowsPositive": false
+      },
+      "byWeekday": {
+        "SUN": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        },
+        "MON": {
+          "n": 6,
+          "wins": 0,
+          "losses": 6,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -6
+        },
+        "TUE": {
+          "n": 11,
+          "wins": 6,
+          "losses": 5,
+          "winRate": 0.5454545454545454,
+          "PF": 1.0990252107563498,
+          "avgR": 0.04501145943470443,
+          "totalR": 0.49512605378174873
+        },
+        "WED": {
+          "n": 13,
+          "wins": 5,
+          "losses": 8,
+          "winRate": 0.38461538461538464,
+          "PF": 0.9754896157802173,
+          "avgR": -0.015083313366020116,
+          "totalR": -0.1960830737582615
+        },
+        "THU": {
+          "n": 16,
+          "wins": 2,
+          "losses": 14,
+          "winRate": 0.125,
+          "PF": 0.04726105165864888,
+          "avgR": -0.8336465797986823,
+          "totalR": -13.338345276778917
+        },
+        "FRI": {
+          "n": 10,
+          "wins": 2,
+          "losses": 8,
+          "winRate": 0.2,
+          "PF": 0.5620222425597787,
+          "avgR": -0.35038220595217695,
+          "totalR": -3.5038220595217697
+        },
+        "SAT": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "SELL + NEW_YORK",
+      "overall": {
+        "n": 33,
+        "wins": 12,
+        "losses": 21,
+        "winRate": 0.36363636363636365,
+        "PF": 1.6524978113790154,
+        "avgR": 0.4152258799684644,
+        "totalR": 13.702454038959324
+      },
+      "windows": [
+        {
+          "window": 1,
+          "from": "2026-07-23 23:35:00",
+          "to": "2026-08-02 22:05:00",
+          "n": 5,
+          "wins": 4,
+          "losses": 1,
+          "winRate": 0.8,
+          "PF": 10.069424600174335,
+          "avgR": 1.813884920034867,
+          "totalR": 9.069424600174335
+        },
+        {
+          "window": 2,
+          "from": "2026-08-03 19:30:00",
+          "to": "2026-08-06 19:55:00",
+          "n": 5,
+          "wins": 1,
+          "losses": 4,
+          "winRate": 0.2,
+          "PF": 2.934077721892734,
+          "avgR": 1.547262177514187,
+          "totalR": 7.736310887570935
+        },
+        {
+          "window": 3,
+          "from": "2026-08-07 00:00:00",
+          "to": "2026-08-12 22:05:00",
+          "n": 5,
+          "wins": 3,
+          "losses": 2,
+          "winRate": 0.6,
+          "PF": 1.1162777140589824,
+          "avgR": 0.04651108562359298,
+          "totalR": 0.23255542811796492
+        },
+        {
+          "window": 4,
+          "from": "2026-08-12 23:30:00",
+          "to": "2026-08-17 01:10:00",
+          "n": 5,
+          "wins": 0,
+          "losses": 5,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -5
+        },
+        {
+          "window": 5,
+          "from": "2026-08-17 19:50:00",
+          "to": "2026-08-19 00:05:00",
+          "n": 5,
+          "wins": 1,
+          "losses": 4,
+          "winRate": 0.2,
+          "PF": 1.2764501995931707,
+          "avgR": 0.2211601596745366,
+          "totalR": 1.105800798372683
+        },
+        {
+          "window": 6,
+          "from": "2026-08-20 23:20:00",
+          "to": "2026-08-27 00:10:00",
+          "n": 8,
+          "wins": 3,
+          "losses": 5,
+          "winRate": 0.375,
+          "PF": 1.1116724649446805,
+          "avgR": 0.06979529059042536,
+          "totalR": 0.5583623247234029
+        }
+      ],
+      "stability": {
+        "eligibleWindows": 6,
+        "positiveWindows": 5,
+        "positiveWindowRate": 0.8333333333333334,
+        "finalWindowPositive": true,
+        "allEligibleWindowsPositive": false
+      },
+      "byWeekday": {
+        "SUN": {
+          "n": 5,
+          "wins": 2,
+          "losses": 3,
+          "winRate": 0.4,
+          "PF": 0.06634645508270544,
+          "avgR": -0.5601921269503768,
+          "totalR": -2.800960634751884
+        },
+        "MON": {
+          "n": 6,
+          "wins": 2,
+          "losses": 4,
+          "winRate": 0.3333333333333333,
+          "PF": 4.210527921485904,
+          "avgR": 2.1403519476572694,
+          "totalR": 12.842111685943618
+        },
+        "TUE": {
+          "n": 6,
+          "wins": 0,
+          "losses": 6,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -6
+        },
+        "WED": {
+          "n": 9,
+          "wins": 3,
+          "losses": 6,
+          "winRate": 0.3333333333333333,
+          "PF": 0.314919786799792,
+          "avgR": -0.456720142133472,
+          "totalR": -4.110481279201248
+        },
+        "THU": {
+          "n": 6,
+          "wins": 4,
+          "losses": 2,
+          "winRate": 0.6666666666666666,
+          "PF": 7.3443470038677585,
+          "avgR": 2.114782334622586,
+          "totalR": 12.688694007735517
+        },
+        "FRI": {
+          "n": 1,
+          "wins": 1,
+          "losses": 0,
+          "winRate": 1,
+          "PF": null,
+          "avgR": 1.0830902592333151,
+          "totalR": 1.0830902592333151
+        },
+        "SAT": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "SELL + OUTSIDE",
+      "overall": {
+        "n": 18,
+        "wins": 2,
+        "losses": 16,
+        "winRate": 0.1111111111111111,
+        "PF": 0.15744094499500072,
+        "avgR": -0.748941382226666,
+        "totalR": -13.480944880079987
+      },
+      "windows": [
+        {
+          "window": 1,
+          "from": "2026-07-27 09:50:00",
+          "to": "2026-07-29 07:15:00",
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -3
+        },
+        {
+          "window": 2,
+          "from": "2026-07-30 05:35:00",
+          "to": "2026-08-05 02:00:00",
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -3
+        },
+        {
+          "window": 3,
+          "from": "2026-08-06 06:10:00",
+          "to": "2026-08-07 01:50:00",
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -3
+        },
+        {
+          "window": 4,
+          "from": "2026-08-10 05:05:00",
+          "to": "2026-08-18 05:55:00",
+          "n": 3,
+          "wins": 1,
+          "losses": 2,
+          "winRate": 0.3333333333333333,
+          "PF": 0.7499741588712072,
+          "avgR": -0.16668389408586184,
+          "totalR": -0.5000516822575856
+        },
+        {
+          "window": 5,
+          "from": "2026-08-18 07:30:00",
+          "to": "2026-08-19 07:40:00",
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -3
+        },
+        {
+          "window": 6,
+          "from": "2026-08-21 06:00:00",
+          "to": "2026-08-25 08:30:00",
+          "n": 3,
+          "wins": 1,
+          "losses": 2,
+          "winRate": 0.3333333333333333,
+          "PF": 0.5095534010887987,
+          "avgR": -0.32696439927413423,
+          "totalR": -0.9808931978224027
+        }
+      ],
+      "stability": {
+        "eligibleWindows": 0,
+        "positiveWindows": 0,
+        "positiveWindowRate": 0,
+        "finalWindowPositive": false,
+        "allEligibleWindowsPositive": false
+      },
+      "byWeekday": {
+        "SUN": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        },
+        "MON": {
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -3
+        },
+        "TUE": {
+          "n": 6,
+          "wins": 2,
+          "losses": 4,
+          "winRate": 0.3333333333333333,
+          "PF": 0.6297637799800029,
+          "avgR": -0.24682414667999805,
+          "totalR": -1.4809448800799883
+        },
+        "WED": {
+          "n": 3,
+          "wins": 0,
+          "losses": 3,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -3
+        },
+        "THU": {
+          "n": 5,
+          "wins": 0,
+          "losses": 5,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -5
+        },
+        "FRI": {
+          "n": 1,
+          "wins": 0,
+          "losses": 1,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -1
+        },
+        "SAT": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": 0,
+          "totalR": 0
+        }
+      }
+    }
+  ],
+  "nextStep": "Only a candidate with strong rolling stability should proceed to a fresh untouched holdout / day-of-week robustness test before any Strategy A rule change."
+}

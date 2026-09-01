@@ -1,0 +1,56 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_EARLY_EXIT_MANAGEMENT_GLOBAL_HOLDOUT_V1",
+  "timeframe": "5min",
+  "scope": "Prospective exit-management simulation. Entry rules are unchanged. An early exit is allowed only after entry and only when the specified early MAE/MFE condition is observed; otherwise the original backtest exit is retained.",
+  "methodology": {
+    "split": "One shared chronological DEV/VALIDATION/HOLDOUT partition; boundaries are fixed for every candidate.",
+    "search": "7 horizons x 4 MAE thresholds x 4 MFE thresholds = 112 fixed hypotheses.",
+    "trigger": "At the close of horizon H, exit if early MAE >= threshold and early MFE < threshold. If the original SL/TP exit occurred before or on H, the original exit is retained.",
+    "execution": "Early-exit price is the close of the H-th post-entry candle. This is intentionally conservative and deterministic.",
+    "selectionGate": "DEV and VALIDATION each n >= 10, PF >= 1, avgR > 0. Candidates are ranked on VALIDATION only. HOLDOUT is untouched until final evaluation.",
+    "multipleComparisons": "The fixed grid is exploratory; any positive holdout result is evidence for a follow-up pre-specified robustness test, not a production rule.",
+    "noEntryLookahead": "The condition uses only candles available after the trade entry."
+  },
+  "globalCounts": {
+    "all": 220,
+    "dev": 73,
+    "validation": 73,
+    "holdout": 74
+  },
+  "baseline": {
+    "dev": {
+      "n": 73,
+      "winRate": 0.2054794520547945,
+      "PF": 0.7595347172833435,
+      "avgR": -0.19105460818583664,
+      "totalR": -13.946986397566075
+    },
+    "validation": {
+      "n": 73,
+      "winRate": 0.2876712328767123,
+      "PF": 0.9127667193097094,
+      "avgR": -0.06213877528623438,
+      "totalR": -4.536130595895109
+    },
+    "holdout": {
+      "n": 74,
+      "winRate": 0.28378378378378377,
+      "PF": 0.5259787780763681,
+      "avgR": -0.339501685972331,
+      "totalR": -25.123124761952493
+    },
+    "all": {
+      "n": 220,
+      "winRate": 0.2590909090909091,
+      "PF": 0.7324770444453148,
+      "avgR": -0.1982101897973349,
+      "totalR": -43.60624175541368
+    }
+  },
+  "tests": 112,
+  "devValidationCandidates": 0,
+  "robustHoldoutCandidates": 0,
+  "topCandidates": [],
+  "robustHoldout": []
+}

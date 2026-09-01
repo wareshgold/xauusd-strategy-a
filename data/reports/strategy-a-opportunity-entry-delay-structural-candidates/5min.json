@@ -1,0 +1,613 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_OPPORTUNITY_ENTRY_DELAY_STRUCTURAL_CANDIDATES",
+  "timeframe": "5min",
+  "sourceReport": "strategy-a-opportunity-window-structural-forensics/5min.json",
+  "methodology": {
+    "scope": "defined opportunity windows only",
+    "target": "D9_12 entry delay, because prior forensic showed the strongest 1min OOS result there",
+    "candidates": "descriptive pre-entry structural feature intersections; no threshold optimization",
+    "validation": "chronological first/second-half split; OOS is reported separately and is not used to select a rule",
+    "guardrail": "candidate is not considered validated unless it has meaningful OOS sample and remains economically positive without relying on a tiny subgroup"
+  },
+  "overall": {
+    "n": 80,
+    "wins": 14,
+    "losses": 66,
+    "winRate": 0.175,
+    "PF": 0.32570689081349546,
+    "avgR": -0.5562918150788663,
+    "totalR": -44.503345206309305
+  },
+  "targetD9_12": {
+    "n": 16,
+    "wins": 0,
+    "losses": 16,
+    "winRate": 0,
+    "PF": 0,
+    "avgR": -1,
+    "totalR": -16,
+    "maxDD": 16,
+    "firstHalf": {
+      "n": 7,
+      "wins": 0,
+      "losses": 7,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -7
+    },
+    "oos": {
+      "n": 9,
+      "wins": 0,
+      "losses": 9,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -9,
+      "maxDD": 9
+    }
+  },
+  "byBand": [
+    {
+      "band": "D0_2",
+      "n": 21,
+      "wins": 4,
+      "losses": 17,
+      "winRate": 0.19047619047619047,
+      "PF": 0.46513243324264253,
+      "avgR": -0.4329880302321466,
+      "totalR": -9.092748634875079,
+      "maxDD": 11.775566401461518
+    },
+    {
+      "band": "D3_5",
+      "n": 19,
+      "wins": 3,
+      "losses": 16,
+      "winRate": 0.15789473684210525,
+      "PF": 0.07430515942250812,
+      "avgR": -0.7795324973284142,
+      "totalR": -14.811117449239871,
+      "maxDD": 14.811117449239871
+    },
+    {
+      "band": "D6_8",
+      "n": 24,
+      "wins": 7,
+      "losses": 17,
+      "winRate": 0.2916666666666667,
+      "PF": 0.729442404576803,
+      "avgR": -0.19164496342476456,
+      "totalR": -4.599479122194349,
+      "maxDD": 7.606264254507337
+    },
+    {
+      "band": "D9_12",
+      "n": 16,
+      "wins": 0,
+      "losses": 16,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -16,
+      "maxDD": 16
+    },
+    {
+      "band": "D13_PLUS",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "winRate": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0
+    }
+  ],
+  "byCandidate": [
+    {
+      "name": "FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "FVG_RETEST",
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "maxDD": 1
+      },
+      "oos": {
+        "name": "FVG_RETEST",
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "maxDD": 2
+      },
+      "oosComplement": {
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -7
+      }
+    },
+    {
+      "name": "EXPANSION",
+      "n": 15,
+      "wins": 0,
+      "losses": 15,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -15,
+      "maxDD": 15,
+      "firstHalf": {
+        "name": "EXPANSION",
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -7,
+        "maxDD": 7
+      },
+      "oos": {
+        "name": "EXPANSION",
+        "n": 8,
+        "wins": 0,
+        "losses": 8,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -8,
+        "maxDD": 8
+      },
+      "oosComplement": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1
+      }
+    },
+    {
+      "name": "EXPANSION+FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "EXPANSION+FVG_RETEST",
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "maxDD": 1
+      },
+      "oos": {
+        "name": "EXPANSION+FVG_RETEST",
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "maxDD": 2
+      },
+      "oosComplement": {
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -7
+      }
+    },
+    {
+      "name": "SWEEP+FVG_RETEST",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "winRate": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0,
+      "firstHalf": {
+        "name": "SWEEP+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "SWEEP+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oosComplement": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9
+      }
+    },
+    {
+      "name": "BOS+FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "BOS+FVG_RETEST",
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "maxDD": 1
+      },
+      "oos": {
+        "name": "BOS+FVG_RETEST",
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "maxDD": 2
+      },
+      "oosComplement": {
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -7
+      }
+    },
+    {
+      "name": "DISPLACEMENT+FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "DISPLACEMENT+FVG_RETEST",
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "maxDD": 1
+      },
+      "oos": {
+        "name": "DISPLACEMENT+FVG_RETEST",
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "maxDD": 2
+      },
+      "oosComplement": {
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -7
+      }
+    },
+    {
+      "name": "SWEEP+BOS+FVG_RETEST",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "winRate": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0,
+      "firstHalf": {
+        "name": "SWEEP+BOS+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "SWEEP+BOS+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oosComplement": {
+        "n": 9,
+        "wins": 0,
+        "losses": 9,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -9
+      }
+    },
+    {
+      "name": "BOS+DISPLACEMENT+FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "BOS+DISPLACEMENT+FVG_RETEST",
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "maxDD": 1
+      },
+      "oos": {
+        "name": "BOS+DISPLACEMENT+FVG_RETEST",
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "maxDD": 2
+      },
+      "oosComplement": {
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -7
+      }
+    },
+    {
+      "name": "EXPANSION+BOS+FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "EXPANSION+BOS+FVG_RETEST",
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "maxDD": 1
+      },
+      "oos": {
+        "name": "EXPANSION+BOS+FVG_RETEST",
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "maxDD": 2
+      },
+      "oosComplement": {
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -7
+      }
+    }
+  ],
+  "byWindow": [
+    {
+      "window": "LONDON_OPEN_WINDOW",
+      "n": 4,
+      "wins": 0,
+      "losses": 4,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -4,
+      "maxDD": 4,
+      "oos": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -2
+      }
+    },
+    {
+      "window": "LONDON_NY_OVERLAP",
+      "n": 5,
+      "wins": 0,
+      "losses": 5,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -5,
+      "maxDD": 5,
+      "oos": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -3
+      }
+    },
+    {
+      "window": "PRE_NY_BUILD",
+      "n": 6,
+      "wins": 0,
+      "losses": 6,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -6,
+      "maxDD": 6,
+      "oos": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -3
+      }
+    },
+    {
+      "window": "NY_OPEN_WINDOW",
+      "n": 1,
+      "wins": 0,
+      "losses": 1,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -1,
+      "maxDD": 1,
+      "oos": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1
+      }
+    }
+  ],
+  "byDirection": [
+    {
+      "direction": "BUY",
+      "n": 5,
+      "wins": 0,
+      "losses": 5,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -5,
+      "maxDD": 5,
+      "oos": {
+        "n": 5,
+        "wins": 0,
+        "losses": 5,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -5
+      }
+    },
+    {
+      "direction": "SELL",
+      "n": 11,
+      "wins": 0,
+      "losses": 11,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -11,
+      "maxDD": 11,
+      "oos": {
+        "n": 4,
+        "wins": 0,
+        "losses": 4,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -4
+      }
+    }
+  ],
+  "nextResearchQuestion": "If a compact structural candidate is positive in both halves, test it on a third chronological holdout before changing the live strategy."
+}

@@ -1,0 +1,306 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_BASE_COMPONENT_CONTRIBUTION_GLOBAL_HOLDOUT_V3",
+  "timeframe": "1min",
+  "methodology": {
+    "ordering": "chronological",
+    "split": "first third DEV / middle third VAL / final third HOLDOUT",
+    "purpose": "diagnostic conditional contribution of deterministic base components; no rule optimization or causal claim",
+    "sessionFallback": "derive from entryTime in UTC when baseline trade metadata is absent",
+    "components": [
+      "breakout/follow-through/spike structure",
+      "first correction / Leg-1",
+      "entry trigger",
+      "Leg-2 projection / TP1",
+      "quality context: EMA/location/session"
+    ]
+  },
+  "overall": {
+    "DEV": {
+      "n": 108,
+      "wins": 20,
+      "losses": 84,
+      "winRate": 0.18518518518518517,
+      "avgR": 0.5961232515793894,
+      "PF": 1.7664441806020719,
+      "totalR": 64.38131117057405,
+      "maxDrawdownR": 54.317936802925814,
+      "maxConsecutiveLosses": 9
+    },
+    "VAL": {
+      "n": 109,
+      "wins": 21,
+      "losses": 84,
+      "winRate": 0.1926605504587156,
+      "avgR": -0.34704802403841717,
+      "PF": 0.5496638735691968,
+      "totalR": -37.82823462018747,
+      "maxDrawdownR": 41.03930969820048,
+      "maxConsecutiveLosses": 19
+    },
+    "HOLDOUT": {
+      "n": 109,
+      "wins": 22,
+      "losses": 79,
+      "winRate": 0.2018348623853211,
+      "avgR": -0.03040609408496926,
+      "PF": 0.9580472879080804,
+      "totalR": -3.3142642552616493,
+      "maxDrawdownR": 24.286389335333926,
+      "maxConsecutiveLosses": 10
+    }
+  },
+  "holdout": {
+    "byDirection": {
+      "SELL": {
+        "n": 50,
+        "wins": 12,
+        "losses": 34,
+        "winRate": 0.24,
+        "avgR": 0.381847262013978,
+        "PF": 1.5615400911970267,
+        "totalR": 19.0923631006989,
+        "maxDrawdownR": 15.610689181773328,
+        "maxConsecutiveLosses": 11
+      },
+      "BUY": {
+        "n": 59,
+        "wins": 10,
+        "losses": 45,
+        "winRate": 0.1694915254237288,
+        "avgR": -0.3797733450162805,
+        "PF": 0.502074947645321,
+        "totalR": -22.406627355960552,
+        "maxDrawdownR": 24.653493897228103,
+        "maxConsecutiveLosses": 12
+      }
+    },
+    "bySession": {
+      "LONDON": {
+        "n": 43,
+        "wins": 9,
+        "losses": 29,
+        "winRate": 0.20930232558139536,
+        "avgR": 0.0599106999091183,
+        "PF": 1.088833106761796,
+        "totalR": 2.576160096092087,
+        "maxDrawdownR": 14.363385673600174,
+        "maxConsecutiveLosses": 7
+      },
+      "NEW_YORK": {
+        "n": 46,
+        "wins": 8,
+        "losses": 36,
+        "winRate": 0.17391304347826086,
+        "avgR": -0.5208102524055516,
+        "PF": 0.33452023303735073,
+        "totalR": -23.957271610655372,
+        "maxDrawdownR": 23.957271610655372,
+        "maxConsecutiveLosses": 10
+      },
+      "OUTSIDE": {
+        "n": 20,
+        "wins": 5,
+        "losses": 14,
+        "winRate": 0.25,
+        "avgR": 0.9033423629650817,
+        "PF": 2.290489089950117,
+        "totalR": 18.066847259301635,
+        "maxDrawdownR": 8.753437113199599,
+        "maxConsecutiveLosses": 4
+      }
+    },
+    "byDirectionSession": {
+      "BUY_LONDON": {
+        "n": 27,
+        "wins": 5,
+        "losses": 20,
+        "winRate": 0.18518518518518517,
+        "avgR": -0.18048188505466858,
+        "PF": 0.7563494551761976,
+        "totalR": -4.8730108964760515,
+        "maxDrawdownR": 13.661665941907,
+        "maxConsecutiveLosses": 10
+      },
+      "BUY_NEW_YORK": {
+        "n": 24,
+        "wins": 5,
+        "losses": 17,
+        "winRate": 0.20833333333333334,
+        "avgR": -0.3972340191451875,
+        "PF": 0.4391990317950294,
+        "totalR": -9.5336164594845,
+        "maxDrawdownR": 9.5336164594845,
+        "maxConsecutiveLosses": 5
+      },
+      "SELL_LONDON": {
+        "n": 16,
+        "wins": 4,
+        "losses": 9,
+        "winRate": 0.25,
+        "avgR": 0.46557318703550865,
+        "PF": 1.8276856658409042,
+        "totalR": 7.449170992568138,
+        "maxDrawdownR": 4.957463004491684,
+        "maxConsecutiveLosses": 3
+      },
+      "SELL_NEW_YORK": {
+        "n": 22,
+        "wins": 3,
+        "losses": 19,
+        "winRate": 0.13636363636363635,
+        "avgR": -0.6556206886895851,
+        "PF": 0.2408602552015331,
+        "totalR": -14.423655151170873,
+        "maxDrawdownR": 14.423655151170873,
+        "maxConsecutiveLosses": 9
+      }
+    },
+    "componentFactors": {
+      "structure_high": {
+        "n": 93,
+        "wins": 18,
+        "losses": 67,
+        "winRate": 0.1935483870967742,
+        "avgR": 0.030159753227969002,
+        "PF": 1.0418635380627033,
+        "totalR": 2.804857050201117,
+        "maxDrawdownR": 19.431446581167442,
+        "maxConsecutiveLosses": 9,
+        "share": 0.8532110091743119
+      },
+      "structure_low": {
+        "n": 16,
+        "wins": 4,
+        "losses": 12,
+        "winRate": 0.25,
+        "avgR": -0.382445081591423,
+        "PF": 0.49007322454476937,
+        "totalR": -6.119121305462768,
+        "maxDrawdownR": 6.119121305462768,
+        "maxConsecutiveLosses": 4,
+        "share": 0.14678899082568808
+      },
+      "overlap_clean": {
+        "n": 10,
+        "wins": 3,
+        "losses": 6,
+        "winRate": 0.3,
+        "avgR": 2.5820284372501234,
+        "PF": 5.303380728750206,
+        "totalR": 25.820284372501234,
+        "maxDrawdownR": 5.905277820770639,
+        "maxConsecutiveLosses": 5,
+        "share": 0.09174311926605505
+      },
+      "overlap_dirty": {
+        "n": 99,
+        "wins": 19,
+        "losses": 73,
+        "winRate": 0.1919191919191919,
+        "avgR": -0.2942883699774029,
+        "PF": 0.6008965941402344,
+        "totalR": -29.134548627762886,
+        "maxDrawdownR": 29.134548627762886,
+        "maxConsecutiveLosses": 7,
+        "share": 0.908256880733945
+      },
+      "p_gap": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "PF": null,
+        "totalR": 0,
+        "maxDrawdownR": 0,
+        "maxConsecutiveLosses": 0,
+        "share": 0
+      },
+      "no_p_gap": {
+        "n": 109,
+        "wins": 22,
+        "losses": 79,
+        "winRate": 0.2018348623853211,
+        "avgR": -0.03040609408496926,
+        "PF": 0.9580472879080804,
+        "totalR": -3.3142642552616493,
+        "maxDrawdownR": 24.286389335333926,
+        "maxConsecutiveLosses": 10,
+        "share": 1
+      },
+      "near_round": {
+        "n": 42,
+        "wins": 7,
+        "losses": 32,
+        "winRate": 0.16666666666666666,
+        "avgR": -0.4772292612997467,
+        "PF": 0.3736365945440825,
+        "totalR": -20.04362897458936,
+        "maxDrawdownR": 20.04362897458936,
+        "maxConsecutiveLosses": 9,
+        "share": 0.3853211009174312
+      },
+      "not_near_round": {
+        "n": 67,
+        "wins": 15,
+        "losses": 47,
+        "winRate": 0.22388059701492538,
+        "avgR": 0.2496920107362345,
+        "PF": 1.355943930198462,
+        "totalR": 16.729364719327712,
+        "maxDrawdownR": 18.43144658116744,
+        "maxConsecutiveLosses": 9,
+        "share": 0.6146788990825688
+      },
+      "ema_aligned": {
+        "n": 109,
+        "wins": 22,
+        "losses": 79,
+        "winRate": 0.2018348623853211,
+        "avgR": -0.03040609408496926,
+        "PF": 0.9580472879080804,
+        "totalR": -3.3142642552616493,
+        "maxDrawdownR": 24.286389335333926,
+        "maxConsecutiveLosses": 10,
+        "share": 1
+      },
+      "ema_not_aligned": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "PF": null,
+        "totalR": 0,
+        "maxDrawdownR": 0,
+        "maxConsecutiveLosses": 0,
+        "share": 0
+      },
+      "grade_A": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "PF": null,
+        "totalR": 0,
+        "maxDrawdownR": 0,
+        "maxConsecutiveLosses": 0,
+        "share": 0
+      },
+      "grade_B": {
+        "n": 109,
+        "wins": 22,
+        "losses": 79,
+        "winRate": 0.2018348623853211,
+        "avgR": -0.03040609408496926,
+        "PF": 0.9580472879080804,
+        "totalR": -3.3142642552616493,
+        "maxDrawdownR": 24.286389335333926,
+        "maxConsecutiveLosses": 10,
+        "share": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_TP1_ATTAINMENT_PATH_FORENSICS_V1",
+  "timeframe": "5min",
+  "scope": "Descriptive path analysis of every recorded baseline trade. No entry rule or exit rule is changed. TP1 is treated as the minimum objective; the analysis measures whether TP1 is reached before the invalidation stop and how much adverse excursion occurs on the way.",
+  "methodology": {
+    "source": "strategy-a-baseline trades + historical OHLC",
+    "barrierOrder": "TP1 and SL are replayed from post-entry candles; if both are first touched on the same candle the case is flagged ambiguous and is not counted as TP1-before-SL.",
+    "tp1Definition": "directional touch of recorded TP1 level",
+    "invalidationDefinition": "directional touch of recorded stopLoss",
+    "horizons": [
+      1,
+      2,
+      3,
+      5,
+      8,
+      12,
+      20,
+      30,
+      50
+    ],
+    "selection": "No candidate optimization; all horizon summaries are descriptive.",
+    "important": "This analysis does not permit an early exit merely because price moves against the trade. It explicitly measures the path to the minimum TP1 objective."
+  },
+  "counts": {
+    "all": 232,
+    "dev": 77,
+    "validation": 77,
+    "holdout": 78
+  },
+  "pathSummary": {
+    "all": {
+      "n": 232,
+      "tp1HitRate": 0.25,
+      "tp1OrAmbiguousRate": 0.9094827586206896,
+      "medianBarsToTp1": 13,
+      "p75BarsToTp1": 84,
+      "medianMAEBeforeBarrier": 1.4508354883628118,
+      "medianMFEBeforeBarrier": 1.0264920322040225
+    },
+    "dev": {
+      "n": 77,
+      "tp1HitRate": 0.19480519480519481,
+      "tp1OrAmbiguousRate": 0.9090909090909091,
+      "medianBarsToTp1": 14,
+      "p75BarsToTp1": 138,
+      "medianMAEBeforeBarrier": 1.6914578133192375,
+      "medianMFEBeforeBarrier": 1.2837532091489838
+    },
+    "validation": {
+      "n": 77,
+      "tp1HitRate": 0.2857142857142857,
+      "tp1OrAmbiguousRate": 0.974025974025974,
+      "medianBarsToTp1": 13,
+      "p75BarsToTp1": 64,
+      "medianMAEBeforeBarrier": 1.3970633972280229,
+      "medianMFEBeforeBarrier": 1.1583914091037948
+    },
+    "holdout": {
+      "n": 78,
+      "tp1HitRate": 0.2692307692307692,
+      "tp1OrAmbiguousRate": 0.8461538461538461,
+      "medianBarsToTp1": 11,
+      "p75BarsToTp1": 34,
+      "medianMAEBeforeBarrier": 1.4607389052381468,
+      "medianMFEBeforeBarrier": 0.7106980671656201
+    }
+  },
+  "barrierOutcomes": {
+    "all": {
+      "n": 232,
+      "winRate": 0.25,
+      "PF": 0.7851739916194825,
+      "avgR": -0.1509337903707945,
+      "totalR": -35.01663936602432
+    },
+    "tp1BeforeSl": {
+      "n": 58,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 2.2066096661030286,
+      "totalR": 127.98336063397565
+    },
+    "slBeforeTp1": {
+      "n": 163,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -163
+    },
+    "sameCandle": {
+      "n": 11,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": 0,
+      "totalR": 0
+    }
+  },
+  "horizonSurvival": {
+    "H1": {
+      "eligibleN": 232,
+      "tp1ReachedByH": 30,
+      "tp1ReachRate": 0.12931034482758622,
+      "tp1BeforeSlByH": 21,
+      "tp1BeforeSlRate": 0.09051724137931035,
+      "stillNoBarrierAtH": 95
+    },
+    "H2": {
+      "eligibleN": 231,
+      "tp1ReachedByH": 44,
+      "tp1ReachRate": 0.19047619047619047,
+      "tp1BeforeSlByH": 29,
+      "tp1BeforeSlRate": 0.12554112554112554,
+      "stillNoBarrierAtH": 63
+    },
+    "H3": {
+      "eligibleN": 231,
+      "tp1ReachedByH": 57,
+      "tp1ReachRate": 0.24675324675324675,
+      "tp1BeforeSlByH": 36,
+      "tp1BeforeSlRate": 0.15584415584415584,
+      "stillNoBarrierAtH": 46
+    },
+    "H5": {
+      "eligibleN": 231,
+      "tp1ReachedByH": 69,
+      "tp1ReachRate": 0.2987012987012987,
+      "tp1BeforeSlByH": 42,
+      "tp1BeforeSlRate": 0.18181818181818182,
+      "stillNoBarrierAtH": 28
+    },
+    "H8": {
+      "eligibleN": 231,
+      "tp1ReachedByH": 91,
+      "tp1ReachRate": 0.3939393939393939,
+      "tp1BeforeSlByH": 47,
+      "tp1BeforeSlRate": 0.20346320346320346,
+      "stillNoBarrierAtH": 20
+    },
+    "H12": {
+      "eligibleN": 231,
+      "tp1ReachedByH": 105,
+      "tp1ReachRate": 0.45454545454545453,
+      "tp1BeforeSlByH": 53,
+      "tp1BeforeSlRate": 0.22943722943722944,
+      "stillNoBarrierAtH": 12
+    },
+    "H20": {
+      "eligibleN": 231,
+      "tp1ReachedByH": 123,
+      "tp1ReachRate": 0.5324675324675324,
+      "tp1BeforeSlByH": 55,
+      "tp1BeforeSlRate": 0.23809523809523808,
+      "stillNoBarrierAtH": 7
+    },
+    "H30": {
+      "eligibleN": 231,
+      "tp1ReachedByH": 134,
+      "tp1ReachRate": 0.5800865800865801,
+      "tp1BeforeSlByH": 56,
+      "tp1BeforeSlRate": 0.24242424242424243,
+      "stillNoBarrierAtH": 5
+    },
+    "H50": {
+      "eligibleN": 231,
+      "tp1ReachedByH": 147,
+      "tp1ReachRate": 0.6363636363636364,
+      "tp1BeforeSlByH": 58,
+      "tp1BeforeSlRate": 0.2510822510822511,
+      "stillNoBarrierAtH": 1
+    }
+  },
+  "pathClasses": {
+    "tp1_fast_1_3": {
+      "all": {
+        "n": 36,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 1.4871931800192089,
+        "totalR": 53.538954480691515
+      },
+      "dev": {
+        "n": 11,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 3.0629659867709735,
+        "totalR": 33.69262585448071
+      },
+      "validation": {
+        "n": 10,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 0.4643470625206742,
+        "totalR": 4.643470625206742
+      },
+      "holdout": {
+        "n": 15,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 1.013523866733603,
+        "totalR": 15.202858001004047
+      }
+    },
+    "tp1_slow_4_8": {
+      "all": {
+        "n": 11,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 3.747632457824456,
+        "totalR": 41.22395703606902
+      },
+      "dev": {
+        "n": 1,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 1.4495623075895314,
+        "totalR": 1.4495623075895314
+      },
+      "validation": {
+        "n": 6,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 5.121477599372428,
+        "totalR": 30.728865596234566
+      },
+      "holdout": {
+        "n": 4,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 2.261382283061231,
+        "totalR": 9.045529132244924
+      }
+    },
+    "tp1_very_slow_9_plus": {
+      "all": {
+        "n": 11,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 3.020040828837742,
+        "totalR": 33.22044911721516
+      },
+      "dev": {
+        "n": 3,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 5.525663449038209,
+        "totalR": 16.576990347114627
+      },
+      "validation": {
+        "n": 6,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 2.1691617775503325,
+        "totalR": 13.014970665301995
+      },
+      "holdout": {
+        "n": 2,
+        "winRate": 1,
+        "PF": null,
+        "avgR": 1.8142440523992693,
+        "totalR": 3.6284881047985387
+      }
+    },
+    "sl_before_tp1_low_mae": {
+      "all": {
+        "n": 0,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": 0,
+        "totalR": 0
+      },
+      "dev": {
+        "n": 0,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": 0,
+        "totalR": 0
+      },
+      "validation": {
+        "n": 0,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": 0,
+        "totalR": 0
+      },
+      "holdout": {
+        "n": 0,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": 0,
+        "totalR": 0
+      }
+    },
+    "sl_before_tp1_high_mae": {
+      "all": {
+        "n": 163,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -163
+      },
+      "dev": {
+        "n": 57,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -57
+      },
+      "validation": {
+        "n": 52,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -52
+      },
+      "holdout": {
+        "n": 54,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -54
+      }
+    }
+  }
+}

@@ -1,0 +1,382 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_DIRECTION_SESSION_FORENSICS_V1",
+  "timeframe": "1min",
+  "symbol": "XAU/USD",
+  "scope": "Baseline trades only; BUY/SELL and session decomposition; chronological global thirds; no optimization or production rule changes",
+  "methodology": {
+    "sessionSource": "UTC entryTime, matching Strategy A Context.ts precedence: LONDON 07:00-16:00 UTC, then NEW_YORK 16:00-22:00 UTC, otherwise OUTSIDE; therefore 13:00-16:00 UTC is classified LONDON to match production context",
+    "split": "same chronological global DEV/VALIDATION/HOLDOUT boundaries for every subgroup",
+    "selectionGate": "DEV and VALIDATION each n >= 10, PF >= 1, avgR > 0",
+    "holdout": "Untouched third; not used for selection",
+    "warning": "Subgroup results are diagnostic and subject to multiple-testing risk. A positive holdout cell is not a validated edge."
+  },
+  "globalBoundaries": {
+    "devEnd": "2026-08-24 03:28:00",
+    "validationEnd": "2026-08-25 18:50:00",
+    "holdoutStart": "2026-08-25 19:11:00"
+  },
+  "globalCounts": {
+    "all": 310,
+    "dev": 103,
+    "validation": 103,
+    "holdout": 104
+  },
+  "overall": {
+    "n": 310,
+    "wins": 63,
+    "losses": 247,
+    "winRate": 0.2032258064516129,
+    "PF": 1.0940842603041498,
+    "avgR": 0.07496391062943528,
+    "totalR": 23.238812295124934
+  },
+  "direction": [
+    {
+      "label": "BUY",
+      "dev": {
+        "n": 55,
+        "wins": 11,
+        "losses": 44,
+        "winRate": 0.2,
+        "PF": 0.24511630770063747,
+        "avgR": -0.6039069538394899,
+        "totalR": -33.214882461171946
+      },
+      "validation": {
+        "n": 56,
+        "wins": 14,
+        "losses": 42,
+        "winRate": 0.25,
+        "PF": 0.7511110841646713,
+        "avgR": -0.18666668687649643,
+        "totalR": -10.4533344650838
+      },
+      "holdout": {
+        "n": 56,
+        "wins": 10,
+        "losses": 46,
+        "winRate": 0.17857142857142858,
+        "PF": 0.4911602748704228,
+        "avgR": -0.41797548849929544,
+        "totalR": -23.406627355960545
+      },
+      "passesDevValidation": false
+    },
+    {
+      "label": "SELL",
+      "dev": {
+        "n": 47,
+        "wins": 9,
+        "losses": 38,
+        "winRate": 0.19148936170212766,
+        "PF": 3.6209524639933157,
+        "avgR": 2.1190679496116167,
+        "totalR": 99.59619363174598
+      },
+      "validation": {
+        "n": 48,
+        "wins": 7,
+        "losses": 41,
+        "winRate": 0.14583333333333334,
+        "PF": 0.3567097523145446,
+        "avgR": -0.5494770865646599,
+        "totalR": -26.374900155103674
+      },
+      "holdout": {
+        "n": 48,
+        "wins": 12,
+        "losses": 36,
+        "winRate": 0.25,
+        "PF": 1.4747878639083032,
+        "avgR": 0.3560908979312271,
+        "totalR": 17.0923631006989
+      },
+      "passesDevValidation": false
+    }
+  ],
+  "session": [
+    {
+      "label": "LONDON",
+      "dev": {
+        "n": 55,
+        "wins": 9,
+        "losses": 46,
+        "winRate": 0.16363636363636364,
+        "PF": 0.36462665874264605,
+        "avgR": -0.5314031581425142,
+        "totalR": -29.22717369783828
+      },
+      "validation": {
+        "n": 55,
+        "wins": 16,
+        "losses": 39,
+        "winRate": 0.2909090909090909,
+        "PF": 0.9768596467979713,
+        "avgR": -0.016408614088711346,
+        "totalR": -0.9024737748791241
+      },
+      "holdout": {
+        "n": 56,
+        "wins": 11,
+        "losses": 45,
+        "winRate": 0.19642857142857142,
+        "PF": 0.8256910875828687,
+        "avgR": -0.14006966176376628,
+        "totalR": -7.8439010587709115
+      },
+      "passesDevValidation": false
+    },
+    {
+      "label": "NEW_YORK",
+      "dev": {
+        "n": 35,
+        "wins": 9,
+        "losses": 26,
+        "winRate": 0.2571428571428571,
+        "PF": 5.026360959415782,
+        "avgR": 2.991010998423152,
+        "totalR": 104.68538494481032
+      },
+      "validation": {
+        "n": 35,
+        "wins": 6,
+        "losses": 29,
+        "winRate": 0.17142857142857143,
+        "PF": 0.18398083891096687,
+        "avgR": -0.6761301620451988,
+        "totalR": -23.664555671581958
+      },
+      "holdout": {
+        "n": 36,
+        "wins": 6,
+        "losses": 30,
+        "winRate": 0.16666666666666666,
+        "PF": 0.319689919260893,
+        "avgR": -0.5669250672825891,
+        "totalR": -20.409302422173205
+      },
+      "passesDevValidation": false
+    },
+    {
+      "label": "OUTSIDE",
+      "dev": {
+        "n": 12,
+        "wins": 0,
+        "losses": 12,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -12
+      },
+      "validation": {
+        "n": 13,
+        "wins": 2,
+        "losses": 11,
+        "winRate": 0.15384615384615385,
+        "PF": 0.057155354135073805,
+        "avgR": -0.7977916234241683,
+        "totalR": -10.371291104514189
+      },
+      "holdout": {
+        "n": 13,
+        "wins": 4,
+        "losses": 9,
+        "winRate": 0.3076923076923077,
+        "PF": 3.552458342230253,
+        "avgR": 1.7670865446209445,
+        "totalR": 22.972125080072278
+      },
+      "passesDevValidation": false
+    }
+  ],
+  "directionSession": [
+    {
+      "label": "BUY + LONDON",
+      "dev": {
+        "n": 30,
+        "wins": 5,
+        "losses": 25,
+        "winRate": 0.16666666666666666,
+        "PF": 0.22775367091657933,
+        "avgR": -0.6435386075695173,
+        "totalR": -19.30615822708552
+      },
+      "validation": {
+        "n": 31,
+        "wins": 12,
+        "losses": 19,
+        "winRate": 0.3870967741935484,
+        "PF": 1.5556784482126564,
+        "avgR": 0.34057711342066044,
+        "totalR": 10.557890516040473
+      },
+      "holdout": {
+        "n": 31,
+        "wins": 5,
+        "losses": 26,
+        "winRate": 0.16129032258064516,
+        "PF": 0.5818072732124596,
+        "avgR": -0.3507422869830984,
+        "totalR": -10.87301089647605
+      },
+      "passesDevValidation": false
+    },
+    {
+      "label": "BUY + NEW_YORK",
+      "dev": {
+        "n": 18,
+        "wins": 3,
+        "losses": 15,
+        "winRate": 0.16666666666666666,
+        "PF": 0.22939242784868066,
+        "avgR": -0.6421729767927661,
+        "totalR": -11.55911358226979
+      },
+      "validation": {
+        "n": 19,
+        "wins": 4,
+        "losses": 15,
+        "winRate": 0.21052631578947367,
+        "PF": 0.20701184338684211,
+        "avgR": -0.6260432815367036,
+        "totalR": -11.89482234919737
+      },
+      "holdout": {
+        "n": 19,
+        "wins": 5,
+        "losses": 14,
+        "winRate": 0.2631578947368421,
+        "PF": 0.5333131100368214,
+        "avgR": -0.34387455049918425,
+        "totalR": -6.5336164594845005
+      },
+      "passesDevValidation": false
+    },
+    {
+      "label": "BUY + OUTSIDE",
+      "dev": {
+        "n": 6,
+        "wins": 0,
+        "losses": 6,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -6
+      },
+      "validation": {
+        "n": 6,
+        "wins": 1,
+        "losses": 5,
+        "winRate": 0.16666666666666666,
+        "PF": 0.1067973432512902,
+        "avgR": -0.7443355472905915,
+        "totalR": -4.466013283743549
+      },
+      "holdout": {
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -7
+      },
+      "passesDevValidation": false
+    },
+    {
+      "label": "SELL + LONDON",
+      "dev": {
+        "n": 24,
+        "wins": 4,
+        "losses": 20,
+        "winRate": 0.16666666666666666,
+        "PF": 0.5539492264623618,
+        "avgR": -0.3717089779480318,
+        "totalR": -8.921015470752764
+      },
+      "validation": {
+        "n": 25,
+        "wins": 4,
+        "losses": 21,
+        "winRate": 0.16,
+        "PF": 0.40664931948001914,
+        "avgR": -0.49841457163678393,
+        "totalR": -12.460364290919598
+      },
+      "holdout": {
+        "n": 25,
+        "wins": 6,
+        "losses": 19,
+        "winRate": 0.24,
+        "PF": 1.1594268335634286,
+        "avgR": 0.1211643935082056,
+        "totalR": 3.02910983770514
+      },
+      "passesDevValidation": false
+    },
+    {
+      "label": "SELL + NEW_YORK",
+      "dev": {
+        "n": 16,
+        "wins": 5,
+        "losses": 11,
+        "winRate": 0.3125,
+        "PF": 11.501564463863522,
+        "avgR": 7.219825568906171,
+        "totalR": 115.51720910249874
+      },
+      "validation": {
+        "n": 17,
+        "wins": 2,
+        "losses": 15,
+        "winRate": 0.11764705882352941,
+        "PF": 0.09670017416098832,
+        "avgR": -0.7970292580932457,
+        "totalR": -13.549497387585175
+      },
+      "holdout": {
+        "n": 17,
+        "wins": 2,
+        "losses": 15,
+        "winRate": 0.11764705882352941,
+        "PF": 0.24209116847288184,
+        "avgR": -0.6687430866415749,
+        "totalR": -11.368632472906773
+      },
+      "passesDevValidation": false
+    },
+    {
+      "label": "SELL + OUTSIDE",
+      "dev": {
+        "n": 6,
+        "wins": 0,
+        "losses": 6,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -6
+      },
+      "validation": {
+        "n": 6,
+        "wins": 1,
+        "losses": 5,
+        "winRate": 0.16666666666666666,
+        "PF": 0.018944435845872184,
+        "avgR": -0.8175463034617731,
+        "totalR": -4.905277820770639
+      },
+      "holdout": {
+        "n": 7,
+        "wins": 4,
+        "losses": 3,
+        "winRate": 0.5714285714285714,
+        "PF": 10.65737502669076,
+        "avgR": 4.138875011438897,
+        "totalR": 28.972125080072278
+      },
+      "passesDevValidation": false
+    }
+  ],
+  "nextResearchQuestion": "If a subgroup survives HOLDOUT, test its stability across chronological windows and day-of-week before considering any rule change."
+}

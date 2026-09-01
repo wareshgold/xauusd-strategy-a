@@ -1,0 +1,195 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_TP1_PREENTRY_DISCRIMINATION_GLOBAL_HOLDOUT_V1",
+  "timeframe": "5min",
+  "scope": "Pre-entry-only discrimination of TP1-before-SL using features known at signal time. No post-entry MAE/MFE features are used.",
+  "methodology": {
+    "target": "TP1-before-SL",
+    "features": "direction, UTC session, entry geometry buckets when present in baseline trade rows",
+    "split": "one shared chronological thirds partition for every pair",
+    "selectionGate": "DEV and VALIDATION n >= 10, PF >= 1, avgR > 0",
+    "holdout": "untouched during candidate selection",
+    "warning": "Positive holdout results are exploratory until replicated on another unseen period."
+  },
+  "counts": {
+    "trades": 232,
+    "dev": 77,
+    "validation": 77,
+    "holdout": 78
+  },
+  "pairTests": 17,
+  "devValidationCandidates": 3,
+  "robustHoldoutCandidates": 3,
+  "topCandidates": [
+    {
+      "featureA": "direction",
+      "bucketA": "SELL",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 17,
+        "winRate": 0.4117647058823529,
+        "PF": 1.29113822697908,
+        "avgR": 0.1541320025183366,
+        "totalR": 2.6202440428117226
+      },
+      "validation": {
+        "n": 17,
+        "winRate": 0.29411764705882354,
+        "PF": 1.576524753189114,
+        "avgR": 0.3730454285341325,
+        "totalR": 6.341772285080252
+      },
+      "holdout": {
+        "n": 19,
+        "winRate": 0.3157894736842105,
+        "PF": 1.0457003574268102,
+        "avgR": 0.0312686656078174,
+        "totalR": 0.5941046465485307
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "session",
+      "bucketA": "NEW_YORK",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 38,
+        "winRate": 0.2894736842105263,
+        "PF": 1.5507329522884912,
+        "avgR": 0.376817283144757,
+        "totalR": 14.319056759500766
+      },
+      "validation": {
+        "n": 38,
+        "winRate": 0.2631578947368421,
+        "PF": 1.0819010814897565,
+        "avgR": 0.05603758207193873,
+        "totalR": 2.1294281187336717
+      },
+      "holdout": {
+        "n": 38,
+        "winRate": 0.39473684210526316,
+        "PF": 1.117661908898477,
+        "avgR": 0.068120052520171,
+        "totalR": 2.588561995766498
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "session",
+      "bucketA": "NEW_YORK",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 38,
+        "winRate": 0.2894736842105263,
+        "PF": 1.5507329522884912,
+        "avgR": 0.376817283144757,
+        "totalR": 14.319056759500766
+      },
+      "validation": {
+        "n": 38,
+        "winRate": 0.2631578947368421,
+        "PF": 1.0819010814897565,
+        "avgR": 0.05603758207193873,
+        "totalR": 2.1294281187336717
+      },
+      "holdout": {
+        "n": 38,
+        "winRate": 0.39473684210526316,
+        "PF": 1.117661908898477,
+        "avgR": 0.068120052520171,
+        "totalR": 2.588561995766498
+      },
+      "passesDevValidation": true
+    }
+  ],
+  "robustHoldout": [
+    {
+      "featureA": "direction",
+      "bucketA": "SELL",
+      "featureB": "session",
+      "bucketB": "NEW_YORK",
+      "dev": {
+        "n": 17,
+        "winRate": 0.4117647058823529,
+        "PF": 1.29113822697908,
+        "avgR": 0.1541320025183366,
+        "totalR": 2.6202440428117226
+      },
+      "validation": {
+        "n": 17,
+        "winRate": 0.29411764705882354,
+        "PF": 1.576524753189114,
+        "avgR": 0.3730454285341325,
+        "totalR": 6.341772285080252
+      },
+      "holdout": {
+        "n": 19,
+        "winRate": 0.3157894736842105,
+        "PF": 1.0457003574268102,
+        "avgR": 0.0312686656078174,
+        "totalR": 0.5941046465485307
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "session",
+      "bucketA": "NEW_YORK",
+      "featureB": "entryLocation",
+      "bucketB": "0_25%",
+      "dev": {
+        "n": 38,
+        "winRate": 0.2894736842105263,
+        "PF": 1.5507329522884912,
+        "avgR": 0.376817283144757,
+        "totalR": 14.319056759500766
+      },
+      "validation": {
+        "n": 38,
+        "winRate": 0.2631578947368421,
+        "PF": 1.0819010814897565,
+        "avgR": 0.05603758207193873,
+        "totalR": 2.1294281187336717
+      },
+      "holdout": {
+        "n": 38,
+        "winRate": 0.39473684210526316,
+        "PF": 1.117661908898477,
+        "avgR": 0.068120052520171,
+        "totalR": 2.588561995766498
+      },
+      "passesDevValidation": true
+    },
+    {
+      "featureA": "session",
+      "bucketA": "NEW_YORK",
+      "featureB": "stopToImpulse",
+      "bucketB": "LT_25%",
+      "dev": {
+        "n": 38,
+        "winRate": 0.2894736842105263,
+        "PF": 1.5507329522884912,
+        "avgR": 0.376817283144757,
+        "totalR": 14.319056759500766
+      },
+      "validation": {
+        "n": 38,
+        "winRate": 0.2631578947368421,
+        "PF": 1.0819010814897565,
+        "avgR": 0.05603758207193873,
+        "totalR": 2.1294281187336717
+      },
+      "holdout": {
+        "n": 38,
+        "winRate": 0.39473684210526316,
+        "PF": 1.117661908898477,
+        "avgR": 0.068120052520171,
+        "totalR": 2.588561995766498
+      },
+      "passesDevValidation": true
+    }
+  ]
+}

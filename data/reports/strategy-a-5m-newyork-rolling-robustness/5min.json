@@ -1,0 +1,920 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_5M_NEWYORK_ROLLING_ROBUSTNESS_V1",
+  "scope": "Exploratory temporal stability of the previously observed 5m NEW_YORK pre-entry candidates. No optimization or rule change.",
+  "methodology": {
+    "windows": 6,
+    "minWindowN": 12,
+    "partition": "six chronological windows within each candidate subset",
+    "directionSplit": "BUY/SELL in every window",
+    "passHeuristic": "not a production gate; inspect whether positive expectancy/PF survives across multiple independent windows",
+    "warning": "Baseline dataset is finite and overlapping candidate definitions are exploratory. Results must be replicated on unseen data before deployment."
+  },
+  "candidates": [
+    {
+      "name": "NEW_YORK",
+      "count": 114,
+      "overall": {
+        "n": 114,
+        "winRate": 0.3157894736842105,
+        "PF": 1.2572573901892015,
+        "avgR": 0.16699163924562224,
+        "totalR": 19.037046874000936
+      },
+      "rolling": [
+        {
+          "window": 1,
+          "start": "2026-07-23 23:35:00",
+          "end": "2026-07-29 19:45:00",
+          "stats": {
+            "n": 19,
+            "winRate": 0.21052631578947367,
+            "PF": 0.7243158451447673,
+            "avgR": -0.20313569305122406,
+            "totalR": -3.859578167973257
+          },
+          "directions": {
+            "BUY": {
+              "n": 10,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": -1,
+              "totalR": -10
+            },
+            "SELL": {
+              "n": 9,
+              "winRate": 0.4444444444444444,
+              "PF": 2.5351054580066856,
+              "avgR": 0.6822690924474158,
+              "totalR": 6.1404218320267425
+            }
+          }
+        },
+        {
+          "window": 2,
+          "start": "2026-07-30 00:30:00",
+          "end": "2026-08-04 00:10:00",
+          "stats": {
+            "n": 19,
+            "winRate": 0.3684210526315789,
+            "PF": 2.514886243956169,
+            "avgR": 0.9567702593407382,
+            "totalR": 18.178634927474025
+          },
+          "directions": {
+            "BUY": {
+              "n": 10,
+              "winRate": 0.3,
+              "PF": 2.4232145470168724,
+              "avgR": 0.9962501829118107,
+              "totalR": 9.962501829118107
+            },
+            "SELL": {
+              "n": 9,
+              "winRate": 0.4444444444444444,
+              "PF": 2.643226619671183,
+              "avgR": 0.9129036775951016,
+              "totalR": 8.216133098355915
+            }
+          }
+        },
+        {
+          "window": 3,
+          "start": "2026-08-04 01:15:00",
+          "end": "2026-08-12 00:35:00",
+          "stats": {
+            "n": 19,
+            "winRate": 0.21052631578947367,
+            "PF": 0.3134559034280545,
+            "avgR": -0.505874597474065,
+            "totalR": -9.611617352007237
+          },
+          "directions": {
+            "BUY": {
+              "n": 8,
+              "winRate": 0.125,
+              "PF": 0.0054100327991903185,
+              "avgR": -0.8702662213007085,
+              "totalR": -6.962129770405668
+            },
+            "SELL": {
+              "n": 11,
+              "winRate": 0.2727272727272727,
+              "PF": 0.6215017740569188,
+              "avgR": -0.24086250741832435,
+              "totalR": -2.649487581601568
+            }
+          }
+        },
+        {
+          "window": 4,
+          "start": "2026-08-12 00:40:00",
+          "end": "2026-08-18 01:05:00",
+          "stats": {
+            "n": 19,
+            "winRate": 0.3157894736842105,
+            "PF": 1.9784204558950755,
+            "avgR": 0.6179497616179425,
+            "totalR": 11.741045470740907
+          },
+          "directions": {
+            "BUY": {
+              "n": 8,
+              "winRate": 0.5,
+              "PF": 5.793431897752446,
+              "avgR": 1.7975369616571673,
+              "totalR": 14.380295693257338
+            },
+            "SELL": {
+              "n": 11,
+              "winRate": 0.18181818181818182,
+              "PF": 0.7067499752759521,
+              "avgR": -0.23993183841058469,
+              "totalR": -2.6392502225164316
+            }
+          }
+        },
+        {
+          "window": 5,
+          "start": "2026-08-18 01:25:00",
+          "end": "2026-08-24 17:25:00",
+          "stats": {
+            "n": 19,
+            "winRate": 0.42105263157894735,
+            "PF": 1.6295629986746947,
+            "avgR": 0.36448384133798123,
+            "totalR": 6.925192985421643
+          },
+          "directions": {
+            "BUY": {
+              "n": 14,
+              "winRate": 0.42857142857142855,
+              "PF": 1.5964877791257572,
+              "avgR": 0.3408501595004327,
+              "totalR": 4.771902233006058
+            },
+            "SELL": {
+              "n": 5,
+              "winRate": 0.4,
+              "PF": 1.7177635841385284,
+              "avgR": 0.430658150483117,
+              "totalR": 2.153290752415585
+            }
+          }
+        },
+        {
+          "window": 6,
+          "start": "2026-08-24 18:15:00",
+          "end": "2026-08-27 00:45:00",
+          "stats": {
+            "n": 19,
+            "winRate": 0.3684210526315789,
+            "PF": 0.6057608191222594,
+            "avgR": -0.2282437362976393,
+            "totalR": -4.336630989655147
+          },
+          "directions": {
+            "BUY": {
+              "n": 11,
+              "winRate": 0.36363636363636365,
+              "PF": 0.5547259857640985,
+              "avgR": -0.2428767350377644,
+              "totalR": -2.6716440854154087
+            },
+            "SELL": {
+              "n": 8,
+              "winRate": 0.375,
+              "PF": 0.6670026191520526,
+              "avgR": -0.20812336302996717,
+              "totalR": -1.6649869042397374
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "NEW_YORK_SELL",
+      "count": 53,
+      "overall": {
+        "n": 53,
+        "winRate": 0.33962264150943394,
+        "PF": 1.289579423467894,
+        "avgR": 0.18030416932906612,
+        "totalR": 9.556120974440505
+      },
+      "rolling": [
+        {
+          "window": 1,
+          "start": "2026-07-23 23:35:00",
+          "end": "2026-07-29 19:05:00",
+          "stats": {
+            "n": 8,
+            "winRate": 0.375,
+            "PF": 2.289440301626907,
+            "avgR": 0.6447201508134534,
+            "totalR": 5.157761206507627
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 8,
+              "winRate": 0.375,
+              "PF": 2.289440301626907,
+              "avgR": 0.6447201508134534,
+              "totalR": 5.157761206507627
+            }
+          }
+        },
+        {
+          "window": 2,
+          "start": "2026-07-29 19:20:00",
+          "end": "2026-08-03 19:05:00",
+          "stats": {
+            "n": 8,
+            "winRate": 0.5,
+            "PF": 0.6156207090760238,
+            "avgR": -0.19218964546198805,
+            "totalR": -1.5375171636959044
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 8,
+              "winRate": 0.5,
+              "PF": 0.6156207090760238,
+              "avgR": -0.19218964546198805,
+              "totalR": -1.5375171636959044
+            }
+          }
+        },
+        {
+          "window": 3,
+          "start": "2026-08-03 19:30:00",
+          "end": "2026-08-06 19:55:00",
+          "stats": {
+            "n": 8,
+            "winRate": 0.25,
+            "PF": 2.5182028094937148,
+            "avgR": 1.138652107120286,
+            "totalR": 9.109216856962288
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 8,
+              "winRate": 0.25,
+              "PF": 2.5182028094937148,
+              "avgR": 1.138652107120286,
+              "totalR": 9.109216856962288
+            }
+          }
+        },
+        {
+          "window": 4,
+          "start": "2026-08-07 00:00:00",
+          "end": "2026-08-12 22:05:00",
+          "stats": {
+            "n": 8,
+            "winRate": 0.375,
+            "PF": 0.5581388570294912,
+            "avgR": -0.22093057148525438,
+            "totalR": -1.767444571882035
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 8,
+              "winRate": 0.375,
+              "PF": 0.5581388570294912,
+              "avgR": -0.22093057148525438,
+              "totalR": -1.767444571882035
+            }
+          }
+        },
+        {
+          "window": 5,
+          "start": "2026-08-12 23:30:00",
+          "end": "2026-08-18 01:05:00",
+          "stats": {
+            "n": 8,
+            "winRate": 0.125,
+            "PF": 0.7294001140532405,
+            "avgR": -0.23677490020341463,
+            "totalR": -1.894199201627317
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 8,
+              "winRate": 0.125,
+              "PF": 0.7294001140532405,
+              "avgR": -0.23677490020341463,
+              "totalR": -1.894199201627317
+            }
+          }
+        },
+        {
+          "window": 6,
+          "start": "2026-08-18 20:20:00",
+          "end": "2026-08-27 00:10:00",
+          "stats": {
+            "n": 13,
+            "winRate": 0.38461538461538464,
+            "PF": 1.061037981021981,
+            "avgR": 0.03756183447506521,
+            "totalR": 0.4883038481758477
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 13,
+              "winRate": 0.38461538461538464,
+              "PF": 1.061037981021981,
+              "avgR": 0.03756183447506521,
+              "totalR": 0.4883038481758477
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "NEW_YORK_BUY",
+      "count": 61,
+      "overall": {
+        "n": 61,
+        "winRate": 0.29508196721311475,
+        "PF": 1.23124209511123,
+        "avgR": 0.15542501474689221,
+        "totalR": 9.480925899560425
+      },
+      "rolling": [
+        {
+          "window": 1,
+          "start": "2026-07-24 18:45:00",
+          "end": "2026-07-29 19:45:00",
+          "stats": {
+            "n": 10,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": -1,
+            "totalR": -10
+          },
+          "directions": {
+            "BUY": {
+              "n": 10,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": -1,
+              "totalR": -10
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 2,
+          "start": "2026-07-30 00:30:00",
+          "end": "2026-08-02 22:00:00",
+          "stats": {
+            "n": 10,
+            "winRate": 0.3,
+            "PF": 2.4232145470168724,
+            "avgR": 0.9962501829118107,
+            "totalR": 9.962501829118107
+          },
+          "directions": {
+            "BUY": {
+              "n": 10,
+              "winRate": 0.3,
+              "PF": 2.4232145470168724,
+              "avgR": 0.9962501829118107,
+              "totalR": 9.962501829118107
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 3,
+          "start": "2026-08-04 01:15:00",
+          "end": "2026-08-12 22:30:00",
+          "stats": {
+            "n": 10,
+            "winRate": 0.2,
+            "PF": 0.29146633418229523,
+            "avgR": -0.5668269326541638,
+            "totalR": -5.668269326541639
+          },
+          "directions": {
+            "BUY": {
+              "n": 10,
+              "winRate": 0.2,
+              "PF": 0.29146633418229523,
+              "avgR": -0.5668269326541638,
+              "totalR": -5.668269326541639
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 4,
+          "start": "2026-08-13 19:20:00",
+          "end": "2026-08-19 00:20:00",
+          "stats": {
+            "n": 10,
+            "winRate": 0.5,
+            "PF": 6.50300827316028,
+            "avgR": 2.2012033092641117,
+            "totalR": 22.01203309264112
+          },
+          "directions": {
+            "BUY": {
+              "n": 10,
+              "winRate": 0.5,
+              "PF": 6.50300827316028,
+              "avgR": 2.2012033092641117,
+              "totalR": 22.01203309264112
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 5,
+          "start": "2026-08-19 01:05:00",
+          "end": "2026-08-24 17:25:00",
+          "stats": {
+            "n": 10,
+            "winRate": 0.4,
+            "PF": 0.3077173982930412,
+            "avgR": -0.4153695610241753,
+            "totalR": -4.153695610241753
+          },
+          "directions": {
+            "BUY": {
+              "n": 10,
+              "winRate": 0.4,
+              "PF": 0.3077173982930412,
+              "avgR": -0.4153695610241753,
+              "totalR": -4.153695610241753
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 6,
+          "start": "2026-08-24 18:15:00",
+          "end": "2026-08-27 00:45:00",
+          "stats": {
+            "n": 11,
+            "winRate": 0.36363636363636365,
+            "PF": 0.5547259857640985,
+            "avgR": -0.2428767350377644,
+            "totalR": -2.6716440854154087
+          },
+          "directions": {
+            "BUY": {
+              "n": 11,
+              "winRate": 0.36363636363636365,
+              "PF": 0.5547259857640985,
+              "avgR": -0.2428767350377644,
+              "totalR": -2.6716440854154087
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "NEW_YORK_entryLocation_0_25",
+      "count": 0,
+      "overall": {
+        "n": 0,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": 0,
+        "totalR": 0
+      },
+      "rolling": [
+        {
+          "window": 1,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 2,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 3,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 4,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 5,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 6,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "NEW_YORK_stopToImpulse_LT_25",
+      "count": 0,
+      "overall": {
+        "n": 0,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": 0,
+        "totalR": 0
+      },
+      "rolling": [
+        {
+          "window": 1,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 2,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 3,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 4,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 5,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        },
+        {
+          "window": 6,
+          "start": null,
+          "end": null,
+          "stats": {
+            "n": 0,
+            "winRate": 0,
+            "PF": 0,
+            "avgR": 0,
+            "totalR": 0
+          },
+          "directions": {
+            "BUY": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            },
+            "SELL": {
+              "n": 0,
+              "winRate": 0,
+              "PF": 0,
+              "avgR": 0,
+              "totalR": 0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

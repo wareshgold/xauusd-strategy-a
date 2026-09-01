@@ -1,0 +1,203 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "DIAGNOSTIC_ONLY",
+  "timeframe": "5min",
+  "hypothesis": {
+    "horizonBars": 5,
+    "adverseThresholdR": 0.25,
+    "rule": "Exit at -0.25R if MAE reaches 0.25R within the first 5 bars, strictly before the baseline terminal bar."
+  },
+  "matchedTrades": 232,
+  "sourceBaselineTrades": 232,
+  "sourceEarlyPathTrades": 232,
+  "fullSample": {
+    "baseline": {
+      "trades": 232,
+      "wins": 58,
+      "losses": 163,
+      "winRate": 0.25,
+      "averageR": -0.1509337903707945,
+      "profitFactor": 0.7851739916194825,
+      "totalR": -35.01663936602432,
+      "maxDrawdownR": 46.289059522000116
+    },
+    "earlyInvalidation": {
+      "trades": 232,
+      "wins": 9,
+      "losses": 223,
+      "winRate": 0.03879310344827586,
+      "averageR": -0.16597223485082474,
+      "profitFactor": 0.3445862385465303,
+      "totalR": -38.50555848539134,
+      "maxDrawdownR": 47.095160874780696
+    },
+    "earlyExits": 219
+  },
+  "outOfSampleSecondHalf": {
+    "definition": "Chronological second half of matched trades; candidate rule was fixed before this report and is not optimized here.",
+    "from": "2026-08-12 18:25:00",
+    "to": "2026-08-27 11:35:00",
+    "baseline": {
+      "trades": 116,
+      "wins": 34,
+      "losses": 78,
+      "winRate": 0.29310344827586204,
+      "averageR": -0.0811228262618582,
+      "profitFactor": 0.8793557968413389,
+      "totalR": -9.410247846375551,
+      "maxDrawdownR": 29.898836139644562
+    },
+    "earlyInvalidation": {
+      "trades": 116,
+      "wins": 5,
+      "losses": 111,
+      "winRate": 0.04310344827586207,
+      "averageR": -0.19072555993387563,
+      "profitFactor": 0.22371351044457635,
+      "totalR": -22.124164952329572,
+      "maxDrawdownR": 23.129113931440457
+    },
+    "deltaTotalR": -12.713917105954021,
+    "deltaAverageR": -0.10960273367201744
+  },
+  "chronologicalSegments": [
+    {
+      "segment": 1,
+      "from": "2026-07-23 23:35:00",
+      "to": "2026-08-02 22:00:00",
+      "baseline": {
+        "trades": 58,
+        "wins": 11,
+        "losses": 42,
+        "winRate": 0.1896551724137931,
+        "averageR": -0.14541201126729325,
+        "profitFactor": 0.7991929368213568,
+        "totalR": -8.433896653503009,
+        "maxDrawdownR": 20.238969376301647
+      },
+      "earlyInvalidation": {
+        "trades": 58,
+        "wins": 2,
+        "losses": 56,
+        "winRate": 0.034482758620689655,
+        "averageR": -0.11513339629468156,
+        "profitFactor": 0.5890623393789827,
+        "totalR": -6.6777369850915305,
+        "maxDrawdownR": 15.267339374480883,
+        "earlyExits": 53,
+        "winnerCuts": 9,
+        "loserCuts": 39
+      },
+      "delta": {
+        "totalR": 1.7561596684114784,
+        "averageR": 0.030278614972611695,
+        "profitFactor": -0.21013059744237417,
+        "maxDrawdownR": -4.971630001820763
+      }
+    },
+    {
+      "segment": 2,
+      "from": "2026-08-02 22:05:00",
+      "to": "2026-08-12 17:05:00",
+      "baseline": {
+        "trades": 58,
+        "wins": 13,
+        "losses": 43,
+        "winRate": 0.22413793103448276,
+        "averageR": -0.2960774976921683,
+        "profitFactor": 0.6006396542756801,
+        "totalR": -17.17249486614576,
+        "maxDrawdownR": 24.076039535888313
+      },
+      "earlyInvalidation": {
+        "trades": 58,
+        "wins": 2,
+        "losses": 56,
+        "winRate": 0.034482758620689655,
+        "averageR": -0.16730442324086614,
+        "profitFactor": 0.3068816751449831,
+        "totalR": -9.703656547970237,
+        "maxDrawdownR": 9.703656547970237,
+        "earlyExits": 56,
+        "winnerCuts": 11,
+        "loserCuts": 43
+      },
+      "delta": {
+        "totalR": 7.468838318175525,
+        "averageR": 0.12877307445130215,
+        "profitFactor": -0.293757979130697,
+        "maxDrawdownR": -14.372382987918076
+      }
+    },
+    {
+      "segment": 3,
+      "from": "2026-08-12 18:25:00",
+      "to": "2026-08-19 12:40:00",
+      "baseline": {
+        "trades": 58,
+        "wins": 19,
+        "losses": 38,
+        "winRate": 0.3275862068965517,
+        "averageR": 0.2718149187731653,
+        "profitFactor": 1.4148754023379893,
+        "totalR": 15.76526528884359,
+        "maxDrawdownR": 9.14988646555574
+      },
+      "earlyInvalidation": {
+        "trades": 58,
+        "wins": 3,
+        "losses": 55,
+        "winRate": 0.05172413793103448,
+        "averageR": -0.18116171793811828,
+        "profitFactor": 0.2753531282475269,
+        "totalR": -10.50737964041086,
+        "maxDrawdownR": 11.512328619521746,
+        "earlyExits": 54,
+        "winnerCuts": 16,
+        "loserCuts": 37
+      },
+      "delta": {
+        "totalR": -26.27264492925445,
+        "averageR": -0.45297663671128363,
+        "profitFactor": -1.1395222740904623,
+        "maxDrawdownR": 2.362442153966006
+      }
+    },
+    {
+      "segment": 4,
+      "from": "2026-08-19 12:45:00",
+      "to": "2026-08-27 11:35:00",
+      "baseline": {
+        "trades": 58,
+        "wins": 15,
+        "losses": 40,
+        "winRate": 0.25862068965517243,
+        "averageR": -0.4340605712968818,
+        "profitFactor": 0.37061217161952154,
+        "totalR": -25.175513135219145,
+        "maxDrawdownR": 25.539621021122834
+      },
+      "earlyInvalidation": {
+        "trades": 58,
+        "wins": 2,
+        "losses": 56,
+        "winRate": 0.034482758620689655,
+        "averageR": -0.20028940192963302,
+        "profitFactor": 0.17022962057723473,
+        "totalR": -11.616785311918715,
+        "maxDrawdownR": 12.480893197822404,
+        "earlyExits": 56,
+        "winnerCuts": 13,
+        "loserCuts": 40
+      },
+      "delta": {
+        "totalR": 13.55872782330043,
+        "averageR": 0.2337711693672488,
+        "profitFactor": -0.2003825510422868,
+        "maxDrawdownR": -13.05872782330043
+      }
+    }
+  ],
+  "interpretation": "Diagnostic validation only. The 0.25R / 5-bar hypothesis was selected during prior research, so this is not a fully independent discovery test. Treat the second half and segment results as confirmation evidence, not proof of a production edge.",
+  "researchNote": "No strategy parameters or production trading rules changed."
+}

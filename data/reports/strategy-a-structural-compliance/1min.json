@@ -1,0 +1,7167 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "timeframe": "1min",
+  "symbol": "XAU/USD",
+  "source": "twelvedata",
+  "candles": 10000,
+  "counts": {
+    "replayEvents": 9940,
+    "spikeFound": 8067905,
+    "correctionFound": 6849985,
+    "triggerFound": 1602,
+    "projectionFound": 1602,
+    "qualityAllowed": 647,
+    "baselineEntries": 356,
+    "pgapObservations": 3613,
+    "pgapCandidates": 573,
+    "pgapValidated": 0,
+    "leg2ProjectionAvailable": 356,
+    "leg2CompletedAtEntry": 0,
+    "postEntryLeg2Observable": 356,
+    "postEntryLeg2RatioMedian": 1.0023857028986287,
+    "postEntryLeg2RatioP50": 1.0023857028986287,
+    "postEntryLeg2RatioP90": 7.303533389463814,
+    "postEntryLeg2RatioMax": 33.40165346124247
+  },
+  "compliance": {
+    "spike": "EXERCISED",
+    "correction": "EXERCISED",
+    "pGap": "RESEARCH_ONLY_NOT_A_GATE",
+    "leg1": "PROJECTED",
+    "leg2": "NOT_VALIDATED_AT_ENTRY",
+    "trigger": "EXERCISED",
+    "entry": "EXERCISED"
+  },
+  "findings": [
+    "The baseline creates an entry after correction-extreme reclaim, but does not require a validated P-GAP.",
+    "PGAPResearch.ts only records imbalance observations and explicitly does not define a production P-GAP rule.",
+    "LegProjection.ts computes a theoretical Leg-2 target from Leg-1 size; it does not validate that a second leg has completed before entry.",
+    "PGAP observations in this report are aggregated once per unique baseline entry; replay-event duplication is intentionally excluded.",
+    "The post-entry ratio is diagnostic only: favorable excursion divided by projected Leg-1 size. It must not be used as an entry filter without a separately validated Strategy A rule."
+  ],
+  "stageFailures": {
+    "correction_not_confirmed": 1217920
+  },
+  "entries": [
+    {
+      "entryIndex": 161,
+      "entryTime": "2026-08-20 15:46:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 113,
+        "endIndex": 121
+      },
+      "correction": {
+        "startIndex": 122,
+        "extremeIndex": 160
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 24.14303000000018,
+      "projectionTP1": 4534.9464,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 162,
+      "entryTime": "2026-08-20 15:47:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 112,
+        "endIndex": 120
+      },
+      "correction": {
+        "startIndex": 121,
+        "extremeIndex": 161
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 24.2509,
+      "projectionTP1": 4534.37012,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 163,
+      "entryTime": "2026-08-20 15:48:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 127,
+        "endIndex": 136
+      },
+      "correction": {
+        "startIndex": 137,
+        "extremeIndex": 155
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 16.08766999999989,
+      "projectionTP1": 4534.02388,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 179,
+      "entryTime": "2026-08-20 16:04:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 152,
+        "endIndex": 160
+      },
+      "correction": {
+        "startIndex": 161,
+        "extremeIndex": 177
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 12.566179999999804,
+      "projectionTP1": 4511.73495,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 205,
+      "entryTime": "2026-08-20 16:30:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 111,
+        "endIndex": 119
+      },
+      "correction": {
+        "startIndex": 120,
+        "extremeIndex": 201
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 23.318960000000516,
+      "projectionTP1": 4532.0626600000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 209,
+      "entryTime": "2026-08-20 16:34:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 108,
+        "endIndex": 116
+      },
+      "correction": {
+        "startIndex": 117,
+        "extremeIndex": 207
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 11.29932000000008,
+      "projectionTP1": 4516.20933,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 213,
+      "entryTime": "2026-08-20 16:38:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 200,
+        "endIndex": 208
+      },
+      "correction": {
+        "startIndex": 209,
+        "extremeIndex": 211
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 7.0264799999995375,
+      "projectionTP1": 4504.782200000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 259,
+      "entryTime": "2026-08-20 17:24:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 236,
+        "endIndex": 244
+      },
+      "correction": {
+        "startIndex": 245,
+        "extremeIndex": 257
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 0.02903000000060274,
+      "projectionTP1": 4512.487759999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 265,
+      "entryTime": "2026-08-20 17:30:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 170,
+        "endIndex": 178
+      },
+      "correction": {
+        "startIndex": 179,
+        "extremeIndex": 187
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 7.849040000000059,
+      "projectionTP1": 4522.7653,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 285,
+      "entryTime": "2026-08-20 17:50:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 184,
+        "endIndex": 192
+      },
+      "correction": {
+        "startIndex": 193,
+        "extremeIndex": 284
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 11.145849999999882,
+      "projectionTP1": 4509.16702,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 301,
+      "entryTime": "2026-08-20 18:06:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 181,
+        "endIndex": 189
+      },
+      "correction": {
+        "startIndex": 190,
+        "extremeIndex": 300
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 9.41972000000078,
+      "projectionTP1": 4512.602529999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 302,
+      "entryTime": "2026-08-20 18:07:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 183,
+        "endIndex": 191
+      },
+      "correction": {
+        "startIndex": 192,
+        "extremeIndex": 298
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 10.3433500000001,
+      "projectionTP1": 4510.8578,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 317,
+      "entryTime": "2026-08-20 18:22:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 291,
+        "endIndex": 299
+      },
+      "correction": {
+        "startIndex": 300,
+        "extremeIndex": 303
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.44974000000002,
+      "projectionTP1": 4520.01122,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 321,
+      "entryTime": "2026-08-20 18:26:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 292,
+        "endIndex": 300
+      },
+      "correction": {
+        "startIndex": 301,
+        "extremeIndex": 302
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.26394000000073,
+      "projectionTP1": 4521.530990000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 335,
+      "entryTime": "2026-08-20 18:40:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 301,
+        "endIndex": 309
+      },
+      "correction": {
+        "startIndex": 310,
+        "extremeIndex": 332
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 11.463459999999941,
+      "projectionTP1": 4511.13207,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 344,
+      "entryTime": "2026-08-20 18:49:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 325,
+        "endIndex": 333
+      },
+      "correction": {
+        "startIndex": 334,
+        "extremeIndex": 341
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.03690000000006,
+      "projectionTP1": 4522.99471,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 366,
+      "entryTime": "2026-08-20 19:11:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 179,
+        "endIndex": 187
+      },
+      "correction": {
+        "startIndex": 188,
+        "extremeIndex": 364
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.971770000000106,
+      "projectionTP1": 4517.59202,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 373,
+      "entryTime": "2026-08-20 19:18:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 148,
+        "endIndex": 156
+      },
+      "correction": {
+        "startIndex": 157,
+        "extremeIndex": 372
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 11.574889999999868,
+      "projectionTP1": 4517.66305,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 375,
+      "entryTime": "2026-08-20 19:20:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 150,
+        "endIndex": 159
+      },
+      "correction": {
+        "startIndex": 160,
+        "extremeIndex": 368
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 13.305570000000444,
+      "projectionTP1": 4513.673019999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 379,
+      "entryTime": "2026-08-20 19:24:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 364,
+        "endIndex": 372
+      },
+      "correction": {
+        "startIndex": 373,
+        "extremeIndex": 378
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.429490000000442,
+      "projectionTP1": 4528.41977,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 395,
+      "entryTime": "2026-08-20 19:40:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 149,
+        "endIndex": 157
+      },
+      "correction": {
+        "startIndex": 158,
+        "extremeIndex": 394
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 11.709560000000238,
+      "projectionTP1": 4517.89138,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 419,
+      "entryTime": "2026-08-20 20:04:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 402,
+        "endIndex": 410
+      },
+      "correction": {
+        "startIndex": 411,
+        "extremeIndex": 418
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.423300000000381,
+      "projectionTP1": 4531.33414,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 425,
+      "entryTime": "2026-08-20 20:10:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 387,
+        "endIndex": 396
+      },
+      "correction": {
+        "startIndex": 397,
+        "extremeIndex": 424
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 6.0106299999997646,
+      "projectionTP1": 4528.64642,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 434,
+      "entryTime": "2026-08-20 20:19:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 362,
+        "endIndex": 370
+      },
+      "correction": {
+        "startIndex": 371,
+        "extremeIndex": 433
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 6.382470000000467,
+      "projectionTP1": 4527.586920000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 467,
+      "entryTime": "2026-08-20 20:52:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 357,
+        "endIndex": 365
+      },
+      "correction": {
+        "startIndex": 366,
+        "extremeIndex": 446
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.57969999999932,
+      "projectionTP1": 4525.535639999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 469,
+      "entryTime": "2026-08-20 20:54:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 442,
+        "endIndex": 450
+      },
+      "correction": {
+        "startIndex": 451,
+        "extremeIndex": 468
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.7240700000002107,
+      "projectionTP1": 4517.8892399999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 470,
+      "entryTime": "2026-08-20 20:55:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 441,
+        "endIndex": 449
+      },
+      "correction": {
+        "startIndex": 450,
+        "extremeIndex": 469
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.562149999999747,
+      "projectionTP1": 4518.3040200000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 537,
+      "entryTime": "2026-08-20 22:02:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 520,
+        "endIndex": 529
+      },
+      "correction": {
+        "startIndex": 530,
+        "extremeIndex": 536
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 0.15106999999989057,
+      "projectionTP1": 4518.66757,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 547,
+      "entryTime": "2026-08-20 22:12:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 529,
+        "endIndex": 537
+      },
+      "correction": {
+        "startIndex": 538,
+        "extremeIndex": 544
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.9963999999999942,
+      "projectionTP1": 4520.89757,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 583,
+      "entryTime": "2026-08-20 22:48:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 432,
+        "endIndex": 441
+      },
+      "correction": {
+        "startIndex": 442,
+        "extremeIndex": 577
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 1.5968600000005608,
+      "projectionTP1": 4521.067359999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 585,
+      "entryTime": "2026-08-20 22:50:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 572,
+        "endIndex": 580
+      },
+      "correction": {
+        "startIndex": 581,
+        "extremeIndex": 584
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 3.445679999999811,
+      "projectionTP1": 4523.42398,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 590,
+      "entryTime": "2026-08-20 22:55:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 425,
+        "endIndex": 433
+      },
+      "correction": {
+        "startIndex": 434,
+        "extremeIndex": 588
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 2.2611699999997654,
+      "projectionTP1": 4521.91635,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 603,
+      "entryTime": "2026-08-20 23:08:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 424,
+        "endIndex": 432
+      },
+      "correction": {
+        "startIndex": 433,
+        "extremeIndex": 598
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.145040000000336,
+      "projectionTP1": 4524.262879999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 629,
+      "entryTime": "2026-08-20 23:34:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 593,
+        "endIndex": 601
+      },
+      "correction": {
+        "startIndex": 602,
+        "extremeIndex": 628
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 5.840710000000399,
+      "projectionTP1": 4529.49945,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 666,
+      "entryTime": "2026-08-21 00:11:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 570,
+        "endIndex": 578
+      },
+      "correction": {
+        "startIndex": 579,
+        "extremeIndex": 665
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.3432500000008076,
+      "projectionTP1": 4522.877380000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 674,
+      "entryTime": "2026-08-21 00:19:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 568,
+        "endIndex": 577
+      },
+      "correction": {
+        "startIndex": 578,
+        "extremeIndex": 669
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 2.978459999999359,
+      "projectionTP1": 4521.322939999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 688,
+      "entryTime": "2026-08-21 00:33:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 318,
+        "endIndex": 327
+      },
+      "correction": {
+        "startIndex": 328,
+        "extremeIndex": 685
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 5.465729999999894,
+      "projectionTP1": 4520.031919999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 705,
+      "entryTime": "2026-08-21 00:50:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 315,
+        "endIndex": 324
+      },
+      "correction": {
+        "startIndex": 325,
+        "extremeIndex": 704
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 9.1610299999993,
+      "projectionTP1": 4519.291429999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 716,
+      "entryTime": "2026-08-21 01:01:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 314,
+        "endIndex": 322
+      },
+      "correction": {
+        "startIndex": 323,
+        "extremeIndex": 715
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 9.122479999999996,
+      "projectionTP1": 4518.85493,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 717,
+      "entryTime": "2026-08-21 01:02:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 706,
+        "endIndex": 715
+      },
+      "correction": {
+        "startIndex": 716,
+        "extremeIndex": 716
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.492619999999988,
+      "projectionTP1": 4510.93913,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 721,
+      "entryTime": "2026-08-21 01:06:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 690,
+        "endIndex": 698
+      },
+      "correction": {
+        "startIndex": 699,
+        "extremeIndex": 718
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.7301299999999173,
+      "projectionTP1": 4512.16582,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 731,
+      "entryTime": "2026-08-21 01:16:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 642,
+        "endIndex": 650
+      },
+      "correction": {
+        "startIndex": 651,
+        "extremeIndex": 659
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.4135800000003655,
+      "projectionTP1": 4526.1786600000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 734,
+      "entryTime": "2026-08-21 01:19:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 665,
+        "endIndex": 673
+      },
+      "correction": {
+        "startIndex": 674,
+        "extremeIndex": 731
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.646719999999732,
+      "projectionTP1": 4517.378680000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 738,
+      "entryTime": "2026-08-21 01:23:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 654,
+        "endIndex": 662
+      },
+      "correction": {
+        "startIndex": 663,
+        "extremeIndex": 737
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.049269999999524,
+      "projectionTP1": 4521.29589,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 741,
+      "entryTime": "2026-08-21 01:26:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 624,
+        "endIndex": 632
+      },
+      "correction": {
+        "startIndex": 633,
+        "extremeIndex": 740
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 6.751589999999851,
+      "projectionTP1": 4522.85123,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 871,
+      "entryTime": "2026-08-21 03:36:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 857,
+        "endIndex": 865
+      },
+      "correction": {
+        "startIndex": 866,
+        "extremeIndex": 867
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 2.7074600000005375,
+      "projectionTP1": 4531.3405999999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 972,
+      "entryTime": "2026-08-21 05:17:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 869,
+        "endIndex": 877
+      },
+      "correction": {
+        "startIndex": 878,
+        "extremeIndex": 894
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.045399999999972,
+      "projectionTP1": 4528.53276,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1010,
+      "entryTime": "2026-08-21 05:55:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 928,
+        "endIndex": 937
+      },
+      "correction": {
+        "startIndex": 938,
+        "extremeIndex": 1007
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.586919999999736,
+      "projectionTP1": 4542.87131,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1292,
+      "entryTime": "2026-08-21 10:37:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1258,
+        "endIndex": 1267
+      },
+      "correction": {
+        "startIndex": 1268,
+        "extremeIndex": 1290
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 3.333059999999932,
+      "projectionTP1": 4587.54572,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1296,
+      "entryTime": "2026-08-21 10:41:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1217,
+        "endIndex": 1225
+      },
+      "correction": {
+        "startIndex": 1226,
+        "extremeIndex": 1293
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 10.122989999999845,
+      "projectionTP1": 4582.7216,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1318,
+      "entryTime": "2026-08-21 11:03:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1286,
+        "endIndex": 1294
+      },
+      "correction": {
+        "startIndex": 1295,
+        "extremeIndex": 1317
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 5.223659999999654,
+      "projectionTP1": 4591.72755,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1339,
+      "entryTime": "2026-08-21 11:24:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1209,
+        "endIndex": 1217
+      },
+      "correction": {
+        "startIndex": 1218,
+        "extremeIndex": 1338
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.876209999999446,
+      "projectionTP1": 4591.516670000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1343,
+      "entryTime": "2026-08-21 11:28:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1216,
+        "endIndex": 1224
+      },
+      "correction": {
+        "startIndex": 1225,
+        "extremeIndex": 1334
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 13.82064999999966,
+      "projectionTP1": 4582.8238,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1354,
+      "entryTime": "2026-08-21 11:39:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1212,
+        "endIndex": 1220
+      },
+      "correction": {
+        "startIndex": 1221,
+        "extremeIndex": 1352
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 13.293709999999919,
+      "projectionTP1": 4590.08225,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1360,
+      "entryTime": "2026-08-21 11:45:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1345,
+        "endIndex": 1353
+      },
+      "correction": {
+        "startIndex": 1354,
+        "extremeIndex": 1355
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 7.546089999999822,
+      "projectionTP1": 4603.8431199999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1367,
+      "entryTime": "2026-08-21 11:52:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1350,
+        "endIndex": 1359
+      },
+      "correction": {
+        "startIndex": 1360,
+        "extremeIndex": 1360
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.8508300000003146,
+      "projectionTP1": 4595.659549999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1382,
+      "entryTime": "2026-08-21 12:07:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1372,
+        "endIndex": 1380
+      },
+      "correction": {
+        "startIndex": 1381,
+        "extremeIndex": 1381
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 3.6961599999995087,
+      "projectionTP1": 4594.68918,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1387,
+      "entryTime": "2026-08-21 12:12:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1327,
+        "endIndex": 1335
+      },
+      "correction": {
+        "startIndex": 1336,
+        "extremeIndex": 1386
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.734919999999875,
+      "projectionTP1": 4594.838659999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1390,
+      "entryTime": "2026-08-21 12:15:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1330,
+        "endIndex": 1338
+      },
+      "correction": {
+        "startIndex": 1339,
+        "extremeIndex": 1389
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 9.515940000000228,
+      "projectionTP1": 4598.98769,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1396,
+      "entryTime": "2026-08-21 12:21:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1283,
+        "endIndex": 1291
+      },
+      "correction": {
+        "startIndex": 1292,
+        "extremeIndex": 1395
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.810190000000148,
+      "projectionTP1": 4591.12463,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1398,
+      "entryTime": "2026-08-21 12:23:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1282,
+        "endIndex": 1290
+      },
+      "correction": {
+        "startIndex": 1291,
+        "extremeIndex": 1396
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.158840000000055,
+      "projectionTP1": 4588.11992,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1413,
+      "entryTime": "2026-08-21 12:38:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1156,
+        "endIndex": 1164
+      },
+      "correction": {
+        "startIndex": 1165,
+        "extremeIndex": 1412
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 10.817189999999755,
+      "projectionTP1": 4579.321919999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1417,
+      "entryTime": "2026-08-21 12:42:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1153,
+        "endIndex": 1161
+      },
+      "correction": {
+        "startIndex": 1162,
+        "extremeIndex": 1415
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 13.875009999999747,
+      "projectionTP1": 4579.44471,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1434,
+      "entryTime": "2026-08-21 12:59:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1423,
+        "endIndex": 1431
+      },
+      "correction": {
+        "startIndex": 1432,
+        "extremeIndex": 1432
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.954319999999825,
+      "projectionTP1": 4580.427659999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1440,
+      "entryTime": "2026-08-21 13:05:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1408,
+        "endIndex": 1416
+      },
+      "correction": {
+        "startIndex": 1417,
+        "extremeIndex": 1437
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 16.28943000000072,
+      "projectionTP1": 4566.622519999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1448,
+      "entryTime": "2026-08-21 13:13:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1405,
+        "endIndex": 1414
+      },
+      "correction": {
+        "startIndex": 1415,
+        "extremeIndex": 1447
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 17.636089999999967,
+      "projectionTP1": 4568.46801,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1452,
+      "entryTime": "2026-08-21 13:17:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1403,
+        "endIndex": 1411
+      },
+      "correction": {
+        "startIndex": 1412,
+        "extremeIndex": 1450
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 13.633829999999762,
+      "projectionTP1": 4572.93127,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1474,
+      "entryTime": "2026-08-21 13:39:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1329,
+        "endIndex": 1337
+      },
+      "correction": {
+        "startIndex": 1338,
+        "extremeIndex": 1393
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.213369999999486,
+      "projectionTP1": 4596.84275,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1492,
+      "entryTime": "2026-08-21 13:57:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1477,
+        "endIndex": 1486
+      },
+      "correction": {
+        "startIndex": 1487,
+        "extremeIndex": 1487
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 1.6940999999997075,
+      "projectionTP1": 4586.386689999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1527,
+      "entryTime": "2026-08-21 14:32:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1379,
+        "endIndex": 1388
+      },
+      "correction": {
+        "startIndex": 1389,
+        "extremeIndex": 1522
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 9.535200000000259,
+      "projectionTP1": 4590.627039999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1529,
+      "entryTime": "2026-08-21 14:34:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1388,
+        "endIndex": 1397
+      },
+      "correction": {
+        "startIndex": 1398,
+        "extremeIndex": 1516
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.740300000000389,
+      "projectionTP1": 4585.412429999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1537,
+      "entryTime": "2026-08-21 14:42:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1502,
+        "endIndex": 1510
+      },
+      "correction": {
+        "startIndex": 1511,
+        "extremeIndex": 1533
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 0.07848999999987427,
+      "projectionTP1": 4584.70093,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1544,
+      "entryTime": "2026-08-21 14:49:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1516,
+        "endIndex": 1524
+      },
+      "correction": {
+        "startIndex": 1525,
+        "extremeIndex": 1532
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 12.653780000000552,
+      "projectionTP1": 4600.950610000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1582,
+      "entryTime": "2026-08-21 15:27:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1527,
+        "endIndex": 1535
+      },
+      "correction": {
+        "startIndex": 1536,
+        "extremeIndex": 1580
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 19.43213999999989,
+      "projectionTP1": 4584.65571,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1650,
+      "entryTime": "2026-08-21 16:35:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1635,
+        "endIndex": 1643
+      },
+      "correction": {
+        "startIndex": 1644,
+        "extremeIndex": 1649
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.036189999999806,
+      "projectionTP1": 4612.129620000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1690,
+      "entryTime": "2026-08-21 17:15:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1667,
+        "endIndex": 1675
+      },
+      "correction": {
+        "startIndex": 1676,
+        "extremeIndex": 1689
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.428480000000491,
+      "projectionTP1": 4626.78218,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1694,
+      "entryTime": "2026-08-21 17:19:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1669,
+        "endIndex": 1678
+      },
+      "correction": {
+        "startIndex": 1679,
+        "extremeIndex": 1688
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.113250000000335,
+      "projectionTP1": 4628.494000000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1697,
+      "entryTime": "2026-08-21 17:22:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1663,
+        "endIndex": 1671
+      },
+      "correction": {
+        "startIndex": 1672,
+        "extremeIndex": 1696
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.193890000000465,
+      "projectionTP1": 4627.12031,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1701,
+      "entryTime": "2026-08-21 17:26:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1662,
+        "endIndex": 1670
+      },
+      "correction": {
+        "startIndex": 1671,
+        "extremeIndex": 1698
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.60530000000017,
+      "projectionTP1": 4624.010740000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1703,
+      "entryTime": "2026-08-21 17:28:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1652,
+        "endIndex": 1660
+      },
+      "correction": {
+        "startIndex": 1661,
+        "extremeIndex": 1702
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 6.263719999999921,
+      "projectionTP1": 4621.55024,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1741,
+      "entryTime": "2026-08-21 18:06:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1713,
+        "endIndex": 1721
+      },
+      "correction": {
+        "startIndex": 1722,
+        "extremeIndex": 1738
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 6.15346000000045,
+      "projectionTP1": 4619.259429999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1768,
+      "entryTime": "2026-08-21 18:33:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1736,
+        "endIndex": 1744
+      },
+      "correction": {
+        "startIndex": 1745,
+        "extremeIndex": 1767
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.562589999999545,
+      "projectionTP1": 4626.3537799999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1770,
+      "entryTime": "2026-08-21 18:35:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1748,
+        "endIndex": 1756
+      },
+      "correction": {
+        "startIndex": 1757,
+        "extremeIndex": 1766
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.1059800000002724,
+      "projectionTP1": 4624.256920000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1776,
+      "entryTime": "2026-08-21 18:41:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1731,
+        "endIndex": 1739
+      },
+      "correction": {
+        "startIndex": 1740,
+        "extremeIndex": 1775
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.489020000000892,
+      "projectionTP1": 4624.640020000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1802,
+      "entryTime": "2026-08-21 19:07:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1778,
+        "endIndex": 1786
+      },
+      "correction": {
+        "startIndex": 1787,
+        "extremeIndex": 1800
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.19735000000037,
+      "projectionTP1": 4624.44733,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1826,
+      "entryTime": "2026-08-21 19:31:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1775,
+        "endIndex": 1783
+      },
+      "correction": {
+        "startIndex": 1784,
+        "extremeIndex": 1824
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 2.4808899999998175,
+      "projectionTP1": 4620.9308599999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1832,
+      "entryTime": "2026-08-21 19:37:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1722,
+        "endIndex": 1730
+      },
+      "correction": {
+        "startIndex": 1731,
+        "extremeIndex": 1830
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 2.2004900000001726,
+      "projectionTP1": 4618.776690000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1844,
+      "entryTime": "2026-08-21 19:49:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1802,
+        "endIndex": 1810
+      },
+      "correction": {
+        "startIndex": 1811,
+        "extremeIndex": 1823
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 2.9801500000003216,
+      "projectionTP1": 4622.95858,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1846,
+      "entryTime": "2026-08-21 19:51:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1823,
+        "endIndex": 1831
+      },
+      "correction": {
+        "startIndex": 1832,
+        "extremeIndex": 1844
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 5,
+      "pgapValidated": 0,
+      "leg1Size": 5.908920000000762,
+      "projectionTP1": 4616.872149999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1905,
+      "entryTime": "2026-08-21 20:50:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1591,
+        "endIndex": 1599
+      },
+      "correction": {
+        "startIndex": 1600,
+        "extremeIndex": 1904
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.025469999999586,
+      "projectionTP1": 4608.71304,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1906,
+      "entryTime": "2026-08-21 20:51:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1593,
+        "endIndex": 1601
+      },
+      "correction": {
+        "startIndex": 1602,
+        "extremeIndex": 1903
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.052889999999934,
+      "projectionTP1": 4608.80393,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1937,
+      "entryTime": "2026-08-21 21:22:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1920,
+        "endIndex": 1928
+      },
+      "correction": {
+        "startIndex": 1929,
+        "extremeIndex": 1935
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.466059999999743,
+      "projectionTP1": 4607.9569599999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 1957,
+      "entryTime": "2026-08-21 21:42:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1940,
+        "endIndex": 1948
+      },
+      "correction": {
+        "startIndex": 1949,
+        "extremeIndex": 1955
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 0.3611900000005335,
+      "projectionTP1": 4607.868740000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4672,
+      "entryTime": "2026-08-23 18:57:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1911,
+        "endIndex": 1919
+      },
+      "correction": {
+        "startIndex": 1920,
+        "extremeIndex": 4671
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.1418800000001283,
+      "projectionTP1": 4606.76954,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4712,
+      "entryTime": "2026-08-23 19:37:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1913,
+        "endIndex": 1921
+      },
+      "correction": {
+        "startIndex": 1922,
+        "extremeIndex": 4710
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.969540000000052,
+      "projectionTP1": 4606.92369,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4716,
+      "entryTime": "2026-08-23 19:41:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 4703,
+        "endIndex": 4711
+      },
+      "correction": {
+        "startIndex": 4712,
+        "extremeIndex": 4715
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.0400200000003679,
+      "projectionTP1": 4602.678669999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4718,
+      "entryTime": "2026-08-23 19:43:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 4708,
+        "endIndex": 4716
+      },
+      "correction": {
+        "startIndex": 4717,
+        "extremeIndex": 4717
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 0.07903999999962252,
+      "projectionTP1": 4603.61579,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4856,
+      "entryTime": "2026-08-23 22:01:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1653,
+        "endIndex": 1661
+      },
+      "correction": {
+        "startIndex": 1662,
+        "extremeIndex": 1873
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 6.522600000000239,
+      "projectionTP1": 4620.48614,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4857,
+      "entryTime": "2026-08-23 22:02:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 4668,
+        "endIndex": 4677
+      },
+      "correction": {
+        "startIndex": 4678,
+        "extremeIndex": 4855
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.634009999999762,
+      "projectionTP1": 4613.22785,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4878,
+      "entryTime": "2026-08-23 22:23:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 4866,
+        "endIndex": 4874
+      },
+      "correction": {
+        "startIndex": 4875,
+        "extremeIndex": 4876
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 2.9836999999997715,
+      "projectionTP1": 4617.22115,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4930,
+      "entryTime": "2026-08-23 23:15:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 4919,
+        "endIndex": 4927
+      },
+      "correction": {
+        "startIndex": 4928,
+        "extremeIndex": 4929
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.6504299999996874,
+      "projectionTP1": 4608.52067,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4937,
+      "entryTime": "2026-08-23 23:22:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 4920,
+        "endIndex": 4928
+      },
+      "correction": {
+        "startIndex": 4929,
+        "extremeIndex": 4936
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.461620000000039,
+      "projectionTP1": 4606.45421,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4949,
+      "entryTime": "2026-08-23 23:34:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 4890,
+        "endIndex": 4898
+      },
+      "correction": {
+        "startIndex": 4899,
+        "extremeIndex": 4945
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.1604899999993,
+      "projectionTP1": 4607.9780200000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4957,
+      "entryTime": "2026-08-23 23:42:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 4900,
+        "endIndex": 4908
+      },
+      "correction": {
+        "startIndex": 4909,
+        "extremeIndex": 4937
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 3.1775299999999334,
+      "projectionTP1": 4607.93066,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4960,
+      "entryTime": "2026-08-23 23:45:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 4938,
+        "endIndex": 4946
+      },
+      "correction": {
+        "startIndex": 4947,
+        "extremeIndex": 4958
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 6.9936399999996866,
+      "projectionTP1": 4615.161279999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4963,
+      "entryTime": "2026-08-23 23:48:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 4939,
+        "endIndex": 4947
+      },
+      "correction": {
+        "startIndex": 4948,
+        "extremeIndex": 4957
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.577690000000075,
+      "projectionTP1": 4616.8981,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4993,
+      "entryTime": "2026-08-24 00:18:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1759,
+        "endIndex": 1767
+      },
+      "correction": {
+        "startIndex": 1768,
+        "extremeIndex": 4980
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.686029999999846,
+      "projectionTP1": 4627.05567,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4996,
+      "entryTime": "2026-08-24 00:21:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 1758,
+        "endIndex": 1766
+      },
+      "correction": {
+        "startIndex": 1767,
+        "extremeIndex": 4979
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.435050000000047,
+      "projectionTP1": 4622.13516,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 4999,
+      "entryTime": "2026-08-24 00:24:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 4981,
+        "endIndex": 4990
+      },
+      "correction": {
+        "startIndex": 4991,
+        "extremeIndex": 4996
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 12.69192000000021,
+      "projectionTP1": 4635.296,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5000,
+      "entryTime": "2026-08-24 00:25:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 4951,
+        "endIndex": 4959
+      },
+      "correction": {
+        "startIndex": 4960,
+        "extremeIndex": 4968
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 9.143769999999677,
+      "projectionTP1": 4609.96975,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5004,
+      "entryTime": "2026-08-24 00:29:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1584,
+        "endIndex": 1592
+      },
+      "correction": {
+        "startIndex": 1593,
+        "extremeIndex": 5002
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.862099999999373,
+      "projectionTP1": 4606.949379999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5006,
+      "entryTime": "2026-08-24 00:31:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 4959,
+        "endIndex": 4967
+      },
+      "correction": {
+        "startIndex": 4968,
+        "extremeIndex": 5001
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 8.17525999999998,
+      "projectionTP1": 4613.4990099999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5009,
+      "entryTime": "2026-08-24 00:34:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 4965,
+        "endIndex": 4973
+      },
+      "correction": {
+        "startIndex": 4974,
+        "extremeIndex": 5000
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 11.964280000000144,
+      "projectionTP1": 4620.28229,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5038,
+      "entryTime": "2026-08-24 01:03:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 4995,
+        "endIndex": 5003
+      },
+      "correction": {
+        "startIndex": 5004,
+        "extremeIndex": 5036
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 33.72125000000051,
+      "projectionTP1": 4598.88823,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5061,
+      "entryTime": "2026-08-24 01:26:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5028,
+        "endIndex": 5036
+      },
+      "correction": {
+        "startIndex": 5037,
+        "extremeIndex": 5060
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 16.29656000000068,
+      "projectionTP1": 4629.481040000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5062,
+      "entryTime": "2026-08-24 01:27:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5029,
+        "endIndex": 5037
+      },
+      "correction": {
+        "startIndex": 5038,
+        "extremeIndex": 5059
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 21.795270000000528,
+      "projectionTP1": 4635.52825,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5181,
+      "entryTime": "2026-08-24 03:26:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5107,
+        "endIndex": 5115
+      },
+      "correction": {
+        "startIndex": 5116,
+        "extremeIndex": 5135
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 9.459289999999783,
+      "projectionTP1": 4653.24546,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5183,
+      "entryTime": "2026-08-24 03:28:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5136,
+        "endIndex": 5144
+      },
+      "correction": {
+        "startIndex": 5145,
+        "extremeIndex": 5182
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 17.95836000000054,
+      "projectionTP1": 4629.9617,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5344,
+      "entryTime": "2026-08-24 06:09:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5293,
+        "endIndex": 5302
+      },
+      "correction": {
+        "startIndex": 5303,
+        "extremeIndex": 5341
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.786260000000766,
+      "projectionTP1": 4642.13157,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5346,
+      "entryTime": "2026-08-24 06:11:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5193,
+        "endIndex": 5201
+      },
+      "correction": {
+        "startIndex": 5202,
+        "extremeIndex": 5344
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 5.661560000000463,
+      "projectionTP1": 4644.570089999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5357,
+      "entryTime": "2026-08-24 06:22:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5135,
+        "endIndex": 5143
+      },
+      "correction": {
+        "startIndex": 5144,
+        "extremeIndex": 5350
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 20.60175000000072,
+      "projectionTP1": 4633.66793,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5360,
+      "entryTime": "2026-08-24 06:25:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5347,
+        "endIndex": 5355
+      },
+      "correction": {
+        "startIndex": 5356,
+        "extremeIndex": 5359
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 9.992679999999382,
+      "projectionTP1": 4655.969259999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5421,
+      "entryTime": "2026-08-24 07:26:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5381,
+        "endIndex": 5389
+      },
+      "correction": {
+        "startIndex": 5390,
+        "extremeIndex": 5420
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 10.268119999999726,
+      "projectionTP1": 4652.57813,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5577,
+      "entryTime": "2026-08-24 10:02:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5501,
+        "endIndex": 5509
+      },
+      "correction": {
+        "startIndex": 5510,
+        "extremeIndex": 5575
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.021119999999428,
+      "projectionTP1": 4642.34748,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5596,
+      "entryTime": "2026-08-24 10:21:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5505,
+        "endIndex": 5513
+      },
+      "correction": {
+        "startIndex": 5514,
+        "extremeIndex": 5572
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.507950000000164,
+      "projectionTP1": 4636.73052,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5600,
+      "entryTime": "2026-08-24 10:25:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5572,
+        "endIndex": 5580
+      },
+      "correction": {
+        "startIndex": 5581,
+        "extremeIndex": 5599
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.860469999999623,
+      "projectionTP1": 4647.98486,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5613,
+      "entryTime": "2026-08-24 10:38:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5602,
+        "endIndex": 5610
+      },
+      "correction": {
+        "startIndex": 5611,
+        "extremeIndex": 5612
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.7195400000000518,
+      "projectionTP1": 4644.41305,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5615,
+      "entryTime": "2026-08-24 10:40:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5592,
+        "endIndex": 5601
+      },
+      "correction": {
+        "startIndex": 5602,
+        "extremeIndex": 5613
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 4.558680000000095,
+      "projectionTP1": 4644.08812,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5624,
+      "entryTime": "2026-08-24 10:49:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5569,
+        "endIndex": 5578
+      },
+      "correction": {
+        "startIndex": 5579,
+        "extremeIndex": 5623
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.582370000000083,
+      "projectionTP1": 4647.89238,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5625,
+      "entryTime": "2026-08-24 10:50:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5606,
+        "endIndex": 5614
+      },
+      "correction": {
+        "startIndex": 5615,
+        "extremeIndex": 5622
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.649930000000495,
+      "projectionTP1": 4648.593580000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5628,
+      "entryTime": "2026-08-24 10:53:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5612,
+        "endIndex": 5620
+      },
+      "correction": {
+        "startIndex": 5621,
+        "extremeIndex": 5627
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.7866199999998571,
+      "projectionTP1": 4646.194030000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5638,
+      "entryTime": "2026-08-24 11:03:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5568,
+        "endIndex": 5576
+      },
+      "correction": {
+        "startIndex": 5577,
+        "extremeIndex": 5636
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.228869999999915,
+      "projectionTP1": 4646.64184,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5672,
+      "entryTime": "2026-08-24 11:37:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5589,
+        "endIndex": 5597
+      },
+      "correction": {
+        "startIndex": 5598,
+        "extremeIndex": 5670
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 4.385159999999814,
+      "projectionTP1": 4650.57673,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5676,
+      "entryTime": "2026-08-24 11:41:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5356,
+        "endIndex": 5364
+      },
+      "correction": {
+        "startIndex": 5365,
+        "extremeIndex": 5672
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 15.217389999999796,
+      "projectionTP1": 4647.72854,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5685,
+      "entryTime": "2026-08-24 11:50:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5613,
+        "endIndex": 5622
+      },
+      "correction": {
+        "startIndex": 5623,
+        "extremeIndex": 5669
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.6039000000000669,
+      "projectionTP1": 4648.77647,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5699,
+      "entryTime": "2026-08-24 12:04:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5683,
+        "endIndex": 5691
+      },
+      "correction": {
+        "startIndex": 5692,
+        "extremeIndex": 5698
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 3.1944100000000617,
+      "projectionTP1": 4654.3572,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5702,
+      "entryTime": "2026-08-24 12:07:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5682,
+        "endIndex": 5690
+      },
+      "correction": {
+        "startIndex": 5691,
+        "extremeIndex": 5697
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 0.4822100000001228,
+      "projectionTP1": 4653.06948,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5716,
+      "entryTime": "2026-08-24 12:21:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5701,
+        "endIndex": 5710
+      },
+      "correction": {
+        "startIndex": 5711,
+        "extremeIndex": 5715
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.934940000000097,
+      "projectionTP1": 4659.71281,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5730,
+      "entryTime": "2026-08-24 12:35:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5717,
+        "endIndex": 5725
+      },
+      "correction": {
+        "startIndex": 5726,
+        "extremeIndex": 5728
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 7.67135000000053,
+      "projectionTP1": 4659.9376,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5752,
+      "entryTime": "2026-08-24 12:57:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5677,
+        "endIndex": 5685
+      },
+      "correction": {
+        "startIndex": 5686,
+        "extremeIndex": 5749
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 12.335250000000087,
+      "projectionTP1": 4653.45857,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5759,
+      "entryTime": "2026-08-24 13:04:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5675,
+        "endIndex": 5683
+      },
+      "correction": {
+        "startIndex": 5684,
+        "extremeIndex": 5758
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 16.153080000000045,
+      "projectionTP1": 4653.25297,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5792,
+      "entryTime": "2026-08-24 13:37:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5772,
+        "endIndex": 5780
+      },
+      "correction": {
+        "startIndex": 5781,
+        "extremeIndex": 5790
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.44876000000022,
+      "projectionTP1": 4671.40538,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5804,
+      "entryTime": "2026-08-24 13:49:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5788,
+        "endIndex": 5796
+      },
+      "correction": {
+        "startIndex": 5797,
+        "extremeIndex": 5803
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 8.867379999999685,
+      "projectionTP1": 4667.9636,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5829,
+      "entryTime": "2026-08-24 14:14:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5818,
+        "endIndex": 5826
+      },
+      "correction": {
+        "startIndex": 5827,
+        "extremeIndex": 5828
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 7.957120000000032,
+      "projectionTP1": 4671.48368,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5835,
+      "entryTime": "2026-08-24 14:20:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5817,
+        "endIndex": 5825
+      },
+      "correction": {
+        "startIndex": 5826,
+        "extremeIndex": 5831
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 6.132380000000012,
+      "projectionTP1": 4666.20801,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5836,
+      "entryTime": "2026-08-24 14:21:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5743,
+        "endIndex": 5751
+      },
+      "correction": {
+        "startIndex": 5752,
+        "extremeIndex": 5835
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 10.765449999999873,
+      "projectionTP1": 4665.2184099999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5846,
+      "entryTime": "2026-08-24 14:31:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5826,
+        "endIndex": 5834
+      },
+      "correction": {
+        "startIndex": 5835,
+        "extremeIndex": 5843
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 10.875090000000455,
+      "projectionTP1": 4662.55286,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5860,
+      "entryTime": "2026-08-24 14:45:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5844,
+        "endIndex": 5852
+      },
+      "correction": {
+        "startIndex": 5853,
+        "extremeIndex": 5859
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.67747000000054,
+      "projectionTP1": 4677.519630000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5869,
+      "entryTime": "2026-08-24 14:54:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5843,
+        "endIndex": 5851
+      },
+      "correction": {
+        "startIndex": 5852,
+        "extremeIndex": 5865
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 9.438580000000002,
+      "projectionTP1": 4673.58561,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5875,
+      "entryTime": "2026-08-24 15:00:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5860,
+        "endIndex": 5868
+      },
+      "correction": {
+        "startIndex": 5869,
+        "extremeIndex": 5872
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 13.891829999999572,
+      "projectionTP1": 4659.035580000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5906,
+      "entryTime": "2026-08-24 15:31:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5858,
+        "endIndex": 5866
+      },
+      "correction": {
+        "startIndex": 5867,
+        "extremeIndex": 5905
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 16.104010000000017,
+      "projectionTP1": 4662.69635,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5925,
+      "entryTime": "2026-08-24 15:50:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5615,
+        "endIndex": 5623
+      },
+      "correction": {
+        "startIndex": 5624,
+        "extremeIndex": 5668
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.86362999999983,
+      "projectionTP1": 4642.70461,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5926,
+      "entryTime": "2026-08-24 15:51:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5835,
+        "endIndex": 5843
+      },
+      "correction": {
+        "startIndex": 5844,
+        "extremeIndex": 5924
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 15.364010000000235,
+      "projectionTP1": 4664.30494,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5935,
+      "entryTime": "2026-08-24 16:00:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5666,
+        "endIndex": 5674
+      },
+      "correction": {
+        "startIndex": 5675,
+        "extremeIndex": 5932
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 24.22015999999985,
+      "projectionTP1": 4668.47058,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5945,
+      "entryTime": "2026-08-24 16:10:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5926,
+        "endIndex": 5934
+      },
+      "correction": {
+        "startIndex": 5935,
+        "extremeIndex": 5937
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 6.601070000000618,
+      "projectionTP1": 4647.98208,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5953,
+      "entryTime": "2026-08-24 16:18:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5943,
+        "endIndex": 5951
+      },
+      "correction": {
+        "startIndex": 5952,
+        "extremeIndex": 5952
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.28863000000001193,
+      "projectionTP1": 4656.66592,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5984,
+      "entryTime": "2026-08-24 16:49:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5960,
+        "endIndex": 5969
+      },
+      "correction": {
+        "startIndex": 5970,
+        "extremeIndex": 5983
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.427950000000237,
+      "projectionTP1": 4659.571730000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5985,
+      "entryTime": "2026-08-24 16:50:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5959,
+        "endIndex": 5967
+      },
+      "correction": {
+        "startIndex": 5968,
+        "extremeIndex": 5982
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.627169999999751,
+      "projectionTP1": 4660.23385,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5989,
+      "entryTime": "2026-08-24 16:54:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5947,
+        "endIndex": 5955
+      },
+      "correction": {
+        "startIndex": 5956,
+        "extremeIndex": 5987
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.776130000000194,
+      "projectionTP1": 4658.29817,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 5994,
+      "entryTime": "2026-08-24 16:59:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5932,
+        "endIndex": 5940
+      },
+      "correction": {
+        "startIndex": 5941,
+        "extremeIndex": 5993
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 9.320260000000417,
+      "projectionTP1": 4653.3550000000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6000,
+      "entryTime": "2026-08-24 17:05:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5930,
+        "endIndex": 5938
+      },
+      "correction": {
+        "startIndex": 5939,
+        "extremeIndex": 5991
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 3.700220000000627,
+      "projectionTP1": 4650.621110000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6016,
+      "entryTime": "2026-08-24 17:21:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5986,
+        "endIndex": 5995
+      },
+      "correction": {
+        "startIndex": 5996,
+        "extremeIndex": 6015
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 13.479820000000473,
+      "projectionTP1": 4646.309609999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6019,
+      "entryTime": "2026-08-24 17:24:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5556,
+        "endIndex": 5564
+      },
+      "correction": {
+        "startIndex": 5565,
+        "extremeIndex": 6017
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 9.166830000000118,
+      "projectionTP1": 4641.5819,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6020,
+      "entryTime": "2026-08-24 17:25:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5663,
+        "endIndex": 5671
+      },
+      "correction": {
+        "startIndex": 5672,
+        "extremeIndex": 6016
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 14.538789999999608,
+      "projectionTP1": 4650.489159999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6025,
+      "entryTime": "2026-08-24 17:30:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5997,
+        "endIndex": 6005
+      },
+      "correction": {
+        "startIndex": 6006,
+        "extremeIndex": 6015
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 11.67583999999988,
+      "projectionTP1": 4654.47425,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6061,
+      "entryTime": "2026-08-24 18:06:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6042,
+        "endIndex": 6051
+      },
+      "correction": {
+        "startIndex": 6052,
+        "extremeIndex": 6058
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.822290000000066,
+      "projectionTP1": 4634.68778,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6066,
+      "entryTime": "2026-08-24 18:11:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6052,
+        "endIndex": 6060
+      },
+      "correction": {
+        "startIndex": 6061,
+        "extremeIndex": 6064
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 6.389079999999922,
+      "projectionTP1": 4635.3709499999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6095,
+      "entryTime": "2026-08-24 18:40:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5097,
+        "endIndex": 5105
+      },
+      "correction": {
+        "startIndex": 5106,
+        "extremeIndex": 6094
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 12.594959999999446,
+      "projectionTP1": 4638.797769999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6096,
+      "entryTime": "2026-08-24 18:41:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6075,
+        "endIndex": 6083
+      },
+      "correction": {
+        "startIndex": 6084,
+        "extremeIndex": 6093
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 10.309970000000249,
+      "projectionTP1": 4637.68466,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6118,
+      "entryTime": "2026-08-24 19:03:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6085,
+        "endIndex": 6093
+      },
+      "correction": {
+        "startIndex": 6094,
+        "extremeIndex": 6117
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 12.335200000000441,
+      "projectionTP1": 4628.89751,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6119,
+      "entryTime": "2026-08-24 19:04:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6083,
+        "endIndex": 6091
+      },
+      "correction": {
+        "startIndex": 6092,
+        "extremeIndex": 6118
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 7.569310000000769,
+      "projectionTP1": 4633.908259999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6140,
+      "entryTime": "2026-08-24 19:25:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6036,
+        "endIndex": 6044
+      },
+      "correction": {
+        "startIndex": 6045,
+        "extremeIndex": 6135
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 5.417379999999866,
+      "projectionTP1": 4637.6705600000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6141,
+      "entryTime": "2026-08-24 19:26:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6122,
+        "endIndex": 6130
+      },
+      "correction": {
+        "startIndex": 6131,
+        "extremeIndex": 6134
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 2.8880699999999706,
+      "projectionTP1": 4639.31566,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6166,
+      "entryTime": "2026-08-24 19:51:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6009,
+        "endIndex": 6017
+      },
+      "correction": {
+        "startIndex": 6018,
+        "extremeIndex": 6165
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 19.563829999999143,
+      "projectionTP1": 4635.279530000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6167,
+      "entryTime": "2026-08-24 19:52:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6010,
+        "endIndex": 6018
+      },
+      "correction": {
+        "startIndex": 6019,
+        "extremeIndex": 6164
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 22.23703000000023,
+      "projectionTP1": 4631.98157,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6188,
+      "entryTime": "2026-08-24 20:13:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6166,
+        "endIndex": 6174
+      },
+      "correction": {
+        "startIndex": 6175,
+        "extremeIndex": 6187
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 2.8283900000005815,
+      "projectionTP1": 4654.64582,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6189,
+      "entryTime": "2026-08-24 20:14:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6173,
+        "endIndex": 6181
+      },
+      "correction": {
+        "startIndex": 6182,
+        "extremeIndex": 6188
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 2.2605899999998655,
+      "projectionTP1": 4652.3419699999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6193,
+      "entryTime": "2026-08-24 20:18:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6180,
+        "endIndex": 6188
+      },
+      "correction": {
+        "startIndex": 6189,
+        "extremeIndex": 6192
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 2.0367800000003626,
+      "projectionTP1": 4652.589919999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6226,
+      "entryTime": "2026-08-24 20:51:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6211,
+        "endIndex": 6219
+      },
+      "correction": {
+        "startIndex": 6220,
+        "extremeIndex": 6222
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.5117900000004738,
+      "projectionTP1": 4648.53104,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6299,
+      "entryTime": "2026-08-24 22:04:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6196,
+        "endIndex": 6205
+      },
+      "correction": {
+        "startIndex": 6206,
+        "extremeIndex": 6295
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 3.2461599999996906,
+      "projectionTP1": 4651.50184,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6303,
+      "entryTime": "2026-08-24 22:08:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5966,
+        "endIndex": 5974
+      },
+      "correction": {
+        "startIndex": 5975,
+        "extremeIndex": 5981
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.330069999999978,
+      "projectionTP1": 4661.45753,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6305,
+      "entryTime": "2026-08-24 22:10:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5981,
+        "endIndex": 5990
+      },
+      "correction": {
+        "startIndex": 5991,
+        "extremeIndex": 6304
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 8.471389999999701,
+      "projectionTP1": 4652.01237,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6327,
+      "entryTime": "2026-08-24 22:32:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6316,
+        "endIndex": 6324
+      },
+      "correction": {
+        "startIndex": 6325,
+        "extremeIndex": 6326
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 1.5645599999998012,
+      "projectionTP1": 4657.74243,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6334,
+      "entryTime": "2026-08-24 22:39:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5980,
+        "endIndex": 5988
+      },
+      "correction": {
+        "startIndex": 5989,
+        "extremeIndex": 6331
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 8.134469999999965,
+      "projectionTP1": 4652.78373,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6373,
+      "entryTime": "2026-08-24 23:18:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5912,
+        "endIndex": 5920
+      },
+      "correction": {
+        "startIndex": 5921,
+        "extremeIndex": 6371
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 12.26317999999992,
+      "projectionTP1": 4664.2094,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6381,
+      "entryTime": "2026-08-24 23:26:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5913,
+        "endIndex": 5921
+      },
+      "correction": {
+        "startIndex": 5922,
+        "extremeIndex": 6370
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 14.604709999999614,
+      "projectionTP1": 4659.95366,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6396,
+      "entryTime": "2026-08-24 23:41:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6377,
+        "endIndex": 6385
+      },
+      "correction": {
+        "startIndex": 6386,
+        "extremeIndex": 6394
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.93318999999974,
+      "projectionTP1": 4669.88314,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6408,
+      "entryTime": "2026-08-24 23:53:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5793,
+        "endIndex": 5801
+      },
+      "correction": {
+        "startIndex": 5802,
+        "extremeIndex": 6405
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 19.161809999999605,
+      "projectionTP1": 4661.267320000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6422,
+      "entryTime": "2026-08-25 00:07:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6399,
+        "endIndex": 6407
+      },
+      "correction": {
+        "startIndex": 6408,
+        "extremeIndex": 6421
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 5.483830000000125,
+      "projectionTP1": 4681.00281,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6473,
+      "entryTime": "2026-08-25 00:58:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6448,
+        "endIndex": 6457
+      },
+      "correction": {
+        "startIndex": 6458,
+        "extremeIndex": 6472
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.647009999999682,
+      "projectionTP1": 4695.12184,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6478,
+      "entryTime": "2026-08-25 01:03:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6440,
+        "endIndex": 6448
+      },
+      "correction": {
+        "startIndex": 6449,
+        "extremeIndex": 6476
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 11.323710000000574,
+      "projectionTP1": 4686.31893,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6480,
+      "entryTime": "2026-08-25 01:05:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6391,
+        "endIndex": 6399
+      },
+      "correction": {
+        "startIndex": 6400,
+        "extremeIndex": 6479
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.919280000000072,
+      "projectionTP1": 4675.42684,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6501,
+      "entryTime": "2026-08-25 01:26:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 5917,
+        "endIndex": 5925
+      },
+      "correction": {
+        "startIndex": 5926,
+        "extremeIndex": 6352
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 19.407720000000154,
+      "projectionTP1": 4647.43639,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6502,
+      "entryTime": "2026-08-25 01:27:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6364,
+        "endIndex": 6372
+      },
+      "correction": {
+        "startIndex": 6373,
+        "extremeIndex": 6500
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 9.548060000000078,
+      "projectionTP1": 4676.42397,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6504,
+      "entryTime": "2026-08-25 01:29:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6390,
+        "endIndex": 6398
+      },
+      "correction": {
+        "startIndex": 6399,
+        "extremeIndex": 6499
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.208849999999984,
+      "projectionTP1": 4674.45296,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6556,
+      "entryTime": "2026-08-25 02:21:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6296,
+        "endIndex": 6304
+      },
+      "correction": {
+        "startIndex": 6305,
+        "extremeIndex": 6539
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 7.6430899999995745,
+      "projectionTP1": 4659.39978,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6558,
+      "entryTime": "2026-08-25 02:23:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6297,
+        "endIndex": 6305
+      },
+      "correction": {
+        "startIndex": 6306,
+        "extremeIndex": 6538
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.582400000000234,
+      "projectionTP1": 4659.85632,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6570,
+      "entryTime": "2026-08-25 02:35:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6553,
+        "endIndex": 6562
+      },
+      "correction": {
+        "startIndex": 6563,
+        "extremeIndex": 6569
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 11.378480000000309,
+      "projectionTP1": 4654.550700000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6571,
+      "entryTime": "2026-08-25 02:36:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6557,
+        "endIndex": 6565
+      },
+      "correction": {
+        "startIndex": 6566,
+        "extremeIndex": 6568
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.743660000000091,
+      "projectionTP1": 4653.45022,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6766,
+      "entryTime": "2026-08-25 05:51:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6729,
+        "endIndex": 6737
+      },
+      "correction": {
+        "startIndex": 6738,
+        "extremeIndex": 6765
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.654309999999896,
+      "projectionTP1": 4645.87323,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6769,
+      "entryTime": "2026-08-25 05:54:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6728,
+        "endIndex": 6736
+      },
+      "correction": {
+        "startIndex": 6737,
+        "extremeIndex": 6768
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.37680999999975,
+      "projectionTP1": 4644.82888,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6799,
+      "entryTime": "2026-08-25 06:24:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6780,
+        "endIndex": 6788
+      },
+      "correction": {
+        "startIndex": 6789,
+        "extremeIndex": 6798
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.726180000000568,
+      "projectionTP1": 4648.94188,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 6866,
+      "entryTime": "2026-08-25 07:31:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6727,
+        "endIndex": 6735
+      },
+      "correction": {
+        "startIndex": 6736,
+        "extremeIndex": 6864
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.114959999999883,
+      "projectionTP1": 4644.49247,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7064,
+      "entryTime": "2026-08-25 10:49:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7010,
+        "endIndex": 7018
+      },
+      "correction": {
+        "startIndex": 7019,
+        "extremeIndex": 7063
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.105340000000069,
+      "projectionTP1": 4635.73913,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7108,
+      "entryTime": "2026-08-25 11:33:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7092,
+        "endIndex": 7101
+      },
+      "correction": {
+        "startIndex": 7102,
+        "extremeIndex": 7107
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.8099099999999453,
+      "projectionTP1": 4641.61802,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7121,
+      "entryTime": "2026-08-25 11:46:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7107,
+        "endIndex": 7116
+      },
+      "correction": {
+        "startIndex": 7117,
+        "extremeIndex": 7119
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.660609999999906,
+      "projectionTP1": 4645.0641,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7140,
+      "entryTime": "2026-08-25 12:05:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7050,
+        "endIndex": 7058
+      },
+      "correction": {
+        "startIndex": 7059,
+        "extremeIndex": 7139
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.984079999999267,
+      "projectionTP1": 4639.333879999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7156,
+      "entryTime": "2026-08-25 12:21:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7140,
+        "endIndex": 7148
+      },
+      "correction": {
+        "startIndex": 7149,
+        "extremeIndex": 7154
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 5.32969999999932,
+      "projectionTP1": 4639.802119999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7177,
+      "entryTime": "2026-08-25 12:42:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6994,
+        "endIndex": 7002
+      },
+      "correction": {
+        "startIndex": 7003,
+        "extremeIndex": 7176
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 5.583799999999428,
+      "projectionTP1": 4636.167979999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7220,
+      "entryTime": "2026-08-25 13:25:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5080,
+        "endIndex": 5088
+      },
+      "correction": {
+        "startIndex": 5089,
+        "extremeIndex": 7219
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 13.58770000000004,
+      "projectionTP1": 4626.34659,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7223,
+      "entryTime": "2026-08-25 13:28:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5079,
+        "endIndex": 5087
+      },
+      "correction": {
+        "startIndex": 5088,
+        "extremeIndex": 7221
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 5,
+      "pgapValidated": 0,
+      "leg1Size": 14.885409999999865,
+      "projectionTP1": 4626.08467,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7224,
+      "entryTime": "2026-08-25 13:29:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5086,
+        "endIndex": 5094
+      },
+      "correction": {
+        "startIndex": 5095,
+        "extremeIndex": 7218
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 5,
+      "pgapValidated": 0,
+      "leg1Size": 18.27216000000044,
+      "projectionTP1": 4634.20538,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7250,
+      "entryTime": "2026-08-25 13:55:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5024,
+        "endIndex": 5032
+      },
+      "correction": {
+        "startIndex": 5033,
+        "extremeIndex": 7249
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 10.327400000000125,
+      "projectionTP1": 4617.98533,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7282,
+      "entryTime": "2026-08-25 14:27:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7214,
+        "endIndex": 7222
+      },
+      "correction": {
+        "startIndex": 7223,
+        "extremeIndex": 7281
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 16.06366000000071,
+      "projectionTP1": 4611.851929999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7284,
+      "entryTime": "2026-08-25 14:29:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7212,
+        "endIndex": 7221
+      },
+      "correction": {
+        "startIndex": 7222,
+        "extremeIndex": 7280
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 11.56768000000011,
+      "projectionTP1": 4615.14832,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7287,
+      "entryTime": "2026-08-25 14:32:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7274,
+        "endIndex": 7283
+      },
+      "correction": {
+        "startIndex": 7284,
+        "extremeIndex": 7286
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.4156999999995605,
+      "projectionTP1": 4626.769399999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7339,
+      "entryTime": "2026-08-25 15:24:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7190,
+        "endIndex": 7198
+      },
+      "correction": {
+        "startIndex": 7199,
+        "extremeIndex": 7337
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 10.245240000000194,
+      "projectionTP1": 4633.12377,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7349,
+      "entryTime": "2026-08-25 15:34:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6792,
+        "endIndex": 6800
+      },
+      "correction": {
+        "startIndex": 6801,
+        "extremeIndex": 6826
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.0375099999992017,
+      "projectionTP1": 4649.586729999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7353,
+      "entryTime": "2026-08-25 15:38:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6566,
+        "endIndex": 6574
+      },
+      "correction": {
+        "startIndex": 6575,
+        "extremeIndex": 7352
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 13.779820000000655,
+      "projectionTP1": 4643.014439999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7362,
+      "entryTime": "2026-08-25 15:47:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6813,
+        "endIndex": 6821
+      },
+      "correction": {
+        "startIndex": 6822,
+        "extremeIndex": 7351
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.451500000000124,
+      "projectionTP1": 4650.45751,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7366,
+      "entryTime": "2026-08-25 15:51:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6820,
+        "endIndex": 6828
+      },
+      "correction": {
+        "startIndex": 6829,
+        "extremeIndex": 7350
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.817180000000008,
+      "projectionTP1": 4646.56195,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7380,
+      "entryTime": "2026-08-25 16:05:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7129,
+        "endIndex": 7137
+      },
+      "correction": {
+        "startIndex": 7138,
+        "extremeIndex": 7349
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 4.915530000000217,
+      "projectionTP1": 4644.37097,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7386,
+      "entryTime": "2026-08-25 16:11:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7131,
+        "endIndex": 7139
+      },
+      "correction": {
+        "startIndex": 7140,
+        "extremeIndex": 7348
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 8.721840000000157,
+      "projectionTP1": 4636.0165799999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7388,
+      "entryTime": "2026-08-25 16:13:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7350,
+        "endIndex": 7358
+      },
+      "correction": {
+        "startIndex": 7359,
+        "extremeIndex": 7385
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 11.928249999999935,
+      "projectionTP1": 4656.39183,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7398,
+      "entryTime": "2026-08-25 16:23:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7344,
+        "endIndex": 7352
+      },
+      "correction": {
+        "startIndex": 7353,
+        "extremeIndex": 7397
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 17.51760000000013,
+      "projectionTP1": 4655.95166,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7399,
+      "entryTime": "2026-08-25 16:24:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7345,
+        "endIndex": 7353
+      },
+      "correction": {
+        "startIndex": 7354,
+        "extremeIndex": 7396
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 14.669780000000173,
+      "projectionTP1": 4654.31053,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7426,
+      "entryTime": "2026-08-25 16:51:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7389,
+        "endIndex": 7397
+      },
+      "correction": {
+        "startIndex": 7398,
+        "extremeIndex": 7425
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.837069999999585,
+      "projectionTP1": 4639.92367,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7446,
+      "entryTime": "2026-08-25 17:11:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7343,
+        "endIndex": 7351
+      },
+      "correction": {
+        "startIndex": 7352,
+        "extremeIndex": 7444
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 12.944400000000314,
+      "projectionTP1": 4648.802930000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7457,
+      "entryTime": "2026-08-25 17:22:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7437,
+        "endIndex": 7445
+      },
+      "correction": {
+        "startIndex": 7446,
+        "extremeIndex": 7455
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 6.8318899999994755,
+      "projectionTP1": 4637.25327,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7485,
+      "entryTime": "2026-08-25 17:50:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7431,
+        "endIndex": 7439
+      },
+      "correction": {
+        "startIndex": 7440,
+        "extremeIndex": 7483
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.362930000000233,
+      "projectionTP1": 4639.43769,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7490,
+      "entryTime": "2026-08-25 17:55:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7476,
+        "endIndex": 7484
+      },
+      "correction": {
+        "startIndex": 7485,
+        "extremeIndex": 7489
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 3.3233900000004724,
+      "projectionTP1": 4645.08538,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7500,
+      "entryTime": "2026-08-25 18:05:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7480,
+        "endIndex": 7489
+      },
+      "correction": {
+        "startIndex": 7490,
+        "extremeIndex": 7490
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.8161200000004101,
+      "projectionTP1": 4644.513,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7505,
+      "entryTime": "2026-08-25 18:10:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7493,
+        "endIndex": 7501
+      },
+      "correction": {
+        "startIndex": 7502,
+        "extremeIndex": 7503
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.4045500000001994,
+      "projectionTP1": 4645.973919999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7531,
+      "entryTime": "2026-08-25 18:36:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7514,
+        "endIndex": 7522
+      },
+      "correction": {
+        "startIndex": 7523,
+        "extremeIndex": 7530
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 2.2114799999999377,
+      "projectionTP1": 4648.42511,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7540,
+      "entryTime": "2026-08-25 18:45:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7522,
+        "endIndex": 7530
+      },
+      "correction": {
+        "startIndex": 7531,
+        "extremeIndex": 7538
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.2199499999996988,
+      "projectionTP1": 4646.89717,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7541,
+      "entryTime": "2026-08-25 18:46:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7519,
+        "endIndex": 7527
+      },
+      "correction": {
+        "startIndex": 7528,
+        "extremeIndex": 7537
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 1.424829999999929,
+      "projectionTP1": 4648.0178,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7542,
+      "entryTime": "2026-08-25 18:47:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7365,
+        "endIndex": 7373
+      },
+      "correction": {
+        "startIndex": 7374,
+        "extremeIndex": 7378
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 0.9198799999994662,
+      "projectionTP1": 4651.4895,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7543,
+      "entryTime": "2026-08-25 18:48:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7371,
+        "endIndex": 7379
+      },
+      "correction": {
+        "startIndex": 7380,
+        "extremeIndex": 7542
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 1.7397600000003877,
+      "projectionTP1": 4650.07212,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7545,
+      "entryTime": "2026-08-25 18:50:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7379,
+        "endIndex": 7387
+      },
+      "correction": {
+        "startIndex": 7388,
+        "extremeIndex": 7544
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 9.497299999999996,
+      "projectionTP1": 4642.64636,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7566,
+      "entryTime": "2026-08-25 19:11:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 6345,
+        "endIndex": 6353
+      },
+      "correction": {
+        "startIndex": 6354,
+        "extremeIndex": 6533
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.032510000000002,
+      "projectionTP1": 4666.52844,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7568,
+      "entryTime": "2026-08-25 19:13:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6534,
+        "endIndex": 6542
+      },
+      "correction": {
+        "startIndex": 6543,
+        "extremeIndex": 7567
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 22.073169999999664,
+      "projectionTP1": 4640.8010300000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7574,
+      "entryTime": "2026-08-25 19:19:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6531,
+        "endIndex": 6539
+      },
+      "correction": {
+        "startIndex": 6540,
+        "extremeIndex": 7573
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 14.026110000000699,
+      "projectionTP1": 4653.418459999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7579,
+      "entryTime": "2026-08-25 19:24:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6533,
+        "endIndex": 6541
+      },
+      "correction": {
+        "startIndex": 6542,
+        "extremeIndex": 7571
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 18.672789999999623,
+      "projectionTP1": 4645.70272,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7591,
+      "entryTime": "2026-08-25 19:36:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7565,
+        "endIndex": 7573
+      },
+      "correction": {
+        "startIndex": 7574,
+        "extremeIndex": 7589
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 7.420939999999973,
+      "projectionTP1": 4666.57004,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7658,
+      "entryTime": "2026-08-25 20:43:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7600,
+        "endIndex": 7609
+      },
+      "correction": {
+        "startIndex": 7610,
+        "extremeIndex": 7656
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.746249999999236,
+      "projectionTP1": 4666.792119999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7669,
+      "entryTime": "2026-08-25 20:54:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7599,
+        "endIndex": 7607
+      },
+      "correction": {
+        "startIndex": 7608,
+        "extremeIndex": 7666
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 3.9487300000000687,
+      "projectionTP1": 4664.36631,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7735,
+      "entryTime": "2026-08-25 22:00:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7359,
+        "endIndex": 7367
+      },
+      "correction": {
+        "startIndex": 7368,
+        "extremeIndex": 7562
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.034859999999753,
+      "projectionTP1": 4649.69873,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7736,
+      "entryTime": "2026-08-25 22:01:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7564,
+        "endIndex": 7572
+      },
+      "correction": {
+        "startIndex": 7573,
+        "extremeIndex": 7734
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 8.059070000000247,
+      "projectionTP1": 4665.038860000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7747,
+      "entryTime": "2026-08-25 22:12:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7664,
+        "endIndex": 7672
+      },
+      "correction": {
+        "startIndex": 7673,
+        "extremeIndex": 7746
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.909679999999753,
+      "projectionTP1": 4658.24205,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7750,
+      "entryTime": "2026-08-25 22:15:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7632,
+        "endIndex": 7640
+      },
+      "correction": {
+        "startIndex": 7641,
+        "extremeIndex": 7641
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.5047199999999066,
+      "projectionTP1": 4665.60328,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7783,
+      "entryTime": "2026-08-25 22:48:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 6527,
+        "endIndex": 6535
+      },
+      "correction": {
+        "startIndex": 6536,
+        "extremeIndex": 7781
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 14.36268999999993,
+      "projectionTP1": 4656.86137,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7813,
+      "entryTime": "2026-08-25 23:18:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7765,
+        "endIndex": 7773
+      },
+      "correction": {
+        "startIndex": 7774,
+        "extremeIndex": 7812
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 3.625839999999698,
+      "projectionTP1": 4669.98142,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7818,
+      "entryTime": "2026-08-25 23:23:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7648,
+        "endIndex": 7657
+      },
+      "correction": {
+        "startIndex": 7658,
+        "extremeIndex": 7749
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.695600000000013,
+      "projectionTP1": 4662.60183,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7822,
+      "entryTime": "2026-08-25 23:27:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7745,
+        "endIndex": 7754
+      },
+      "correction": {
+        "startIndex": 7755,
+        "extremeIndex": 7821
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 5,
+      "pgapValidated": 0,
+      "leg1Size": 5.525740000000042,
+      "projectionTP1": 4665.79231,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7843,
+      "entryTime": "2026-08-25 23:48:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7737,
+        "endIndex": 7745
+      },
+      "correction": {
+        "startIndex": 7746,
+        "extremeIndex": 7836
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.0579600000000937,
+      "projectionTP1": 4661.20699,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7847,
+      "entryTime": "2026-08-25 23:52:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7556,
+        "endIndex": 7564
+      },
+      "correction": {
+        "startIndex": 7565,
+        "extremeIndex": 7846
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 5.496530000000348,
+      "projectionTP1": 4659.906580000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7853,
+      "entryTime": "2026-08-25 23:58:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7559,
+        "endIndex": 7567
+      },
+      "correction": {
+        "startIndex": 7568,
+        "extremeIndex": 7852
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 6.293109999999615,
+      "projectionTP1": 4660.48971,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7857,
+      "entryTime": "2026-08-26 00:02:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7378,
+        "endIndex": 7386
+      },
+      "correction": {
+        "startIndex": 7387,
+        "extremeIndex": 7553
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.43243000000075,
+      "projectionTP1": 4645.141459999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7860,
+      "entryTime": "2026-08-26 00:05:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7377,
+        "endIndex": 7385
+      },
+      "correction": {
+        "startIndex": 7386,
+        "extremeIndex": 7552
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.582029999999577,
+      "projectionTP1": 4646.0342200000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7871,
+      "entryTime": "2026-08-26 00:16:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7860,
+        "endIndex": 7868
+      },
+      "correction": {
+        "startIndex": 7869,
+        "extremeIndex": 7870
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.13910000000032596,
+      "projectionTP1": 4651.9509800000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7875,
+      "entryTime": "2026-08-26 00:20:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7863,
+        "endIndex": 7871
+      },
+      "correction": {
+        "startIndex": 7872,
+        "extremeIndex": 7873
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.1826200000004974,
+      "projectionTP1": 4653.003839999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7883,
+      "entryTime": "2026-08-26 00:28:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7535,
+        "endIndex": 7543
+      },
+      "correction": {
+        "startIndex": 7544,
+        "extremeIndex": 7878
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.7602399999996123,
+      "projectionTP1": 4649.520979999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7889,
+      "entryTime": "2026-08-26 00:34:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7549,
+        "endIndex": 7557
+      },
+      "correction": {
+        "startIndex": 7558,
+        "extremeIndex": 7876
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 6.396190000000388,
+      "projectionTP1": 4656.06238,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7898,
+      "entryTime": "2026-08-26 00:43:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7470,
+        "endIndex": 7478
+      },
+      "correction": {
+        "startIndex": 7479,
+        "extremeIndex": 7897
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.034679999999753,
+      "projectionTP1": 4642.393239999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7911,
+      "entryTime": "2026-08-26 00:56:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7448,
+        "endIndex": 7456
+      },
+      "correction": {
+        "startIndex": 7457,
+        "extremeIndex": 7909
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 8.654120000000148,
+      "projectionTP1": 4643.8674900000005,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7919,
+      "entryTime": "2026-08-26 01:04:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7487,
+        "endIndex": 7495
+      },
+      "correction": {
+        "startIndex": 7496,
+        "extremeIndex": 7892
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.6934599999995044,
+      "projectionTP1": 4645.57249,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7922,
+      "entryTime": "2026-08-26 01:07:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7892,
+        "endIndex": 7900
+      },
+      "correction": {
+        "startIndex": 7901,
+        "extremeIndex": 7920
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 5,
+      "pgapValidated": 0,
+      "leg1Size": 7.966609999999491,
+      "projectionTP1": 4637.824210000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7923,
+      "entryTime": "2026-08-26 01:08:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7893,
+        "endIndex": 7901
+      },
+      "correction": {
+        "startIndex": 7902,
+        "extremeIndex": 7919
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 5,
+      "pgapValidated": 0,
+      "leg1Size": 6.1062599999995655,
+      "projectionTP1": 4637.73728,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 7934,
+      "entryTime": "2026-08-26 01:19:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7890,
+        "endIndex": 7899
+      },
+      "correction": {
+        "startIndex": 7900,
+        "extremeIndex": 7931
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 5,
+      "pgapValidated": 0,
+      "leg1Size": 10.982820000000174,
+      "projectionTP1": 4637.0517,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8042,
+      "entryTime": "2026-08-26 03:07:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7873,
+        "endIndex": 7881
+      },
+      "correction": {
+        "startIndex": 7882,
+        "extremeIndex": 7971
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 8.43681000000015,
+      "projectionTP1": 4645.88113,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8047,
+      "entryTime": "2026-08-26 03:12:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 7942,
+        "endIndex": 7950
+      },
+      "correction": {
+        "startIndex": 7951,
+        "extremeIndex": 7964
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 4.365139999999883,
+      "projectionTP1": 4644.52245,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8067,
+      "entryTime": "2026-08-26 03:32:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8046,
+        "endIndex": 8054
+      },
+      "correction": {
+        "startIndex": 8055,
+        "extremeIndex": 8065
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.4259000000001834,
+      "projectionTP1": 4647.28579,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8235,
+      "entryTime": "2026-08-26 06:20:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 7329,
+        "endIndex": 7337
+      },
+      "correction": {
+        "startIndex": 7338,
+        "extremeIndex": 8232
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 9.050719999999274,
+      "projectionTP1": 4642.161139999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8461,
+      "entryTime": "2026-08-26 10:06:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8449,
+        "endIndex": 8457
+      },
+      "correction": {
+        "startIndex": 8458,
+        "extremeIndex": 8460
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 2.4048200000006545,
+      "projectionTP1": 4622.300359999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8513,
+      "entryTime": "2026-08-26 10:58:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8499,
+        "endIndex": 8507
+      },
+      "correction": {
+        "startIndex": 8508,
+        "extremeIndex": 8512
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 0.9037500000004002,
+      "projectionTP1": 4621.335300000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8541,
+      "entryTime": "2026-08-26 11:26:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8527,
+        "endIndex": 8535
+      },
+      "correction": {
+        "startIndex": 8536,
+        "extremeIndex": 8538
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.2264100000002145,
+      "projectionTP1": 4622.55411,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8575,
+      "entryTime": "2026-08-26 12:00:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8450,
+        "endIndex": 8458
+      },
+      "correction": {
+        "startIndex": 8459,
+        "extremeIndex": 8574
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 1.6733100000001286,
+      "projectionTP1": 4623.673589999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8579,
+      "entryTime": "2026-08-26 12:04:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8409,
+        "endIndex": 8417
+      },
+      "correction": {
+        "startIndex": 8418,
+        "extremeIndex": 8577
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.583370000000286,
+      "projectionTP1": 4621.47442,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8609,
+      "entryTime": "2026-08-26 12:34:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8570,
+        "endIndex": 8578
+      },
+      "correction": {
+        "startIndex": 8579,
+        "extremeIndex": 8606
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 8.952650000000176,
+      "projectionTP1": 4625.97098,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8634,
+      "entryTime": "2026-08-26 12:59:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8487,
+        "endIndex": 8495
+      },
+      "correction": {
+        "startIndex": 8496,
+        "extremeIndex": 8633
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 9.105949999999211,
+      "projectionTP1": 4615.785319999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8653,
+      "entryTime": "2026-08-26 13:18:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 5023,
+        "endIndex": 5031
+      },
+      "correction": {
+        "startIndex": 5032,
+        "extremeIndex": 8651
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 12.876110000000153,
+      "projectionTP1": 4617.17353,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8699,
+      "entryTime": "2026-08-26 14:04:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8688,
+        "endIndex": 8696
+      },
+      "correction": {
+        "startIndex": 8697,
+        "extremeIndex": 8698
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 7.051180000000386,
+      "projectionTP1": 4630.473440000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8708,
+      "entryTime": "2026-08-26 14:13:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8638,
+        "endIndex": 8647
+      },
+      "correction": {
+        "startIndex": 8648,
+        "extremeIndex": 8681
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 5.95317999999952,
+      "projectionTP1": 4616.041440000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8709,
+      "entryTime": "2026-08-26 14:14:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8686,
+        "endIndex": 8694
+      },
+      "correction": {
+        "startIndex": 8695,
+        "extremeIndex": 8707
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 7.030040000000554,
+      "projectionTP1": 4629.4885,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8723,
+      "entryTime": "2026-08-26 14:28:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8679,
+        "endIndex": 8687
+      },
+      "correction": {
+        "startIndex": 8688,
+        "extremeIndex": 8722
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 7.568419999999605,
+      "projectionTP1": 4625.013129999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8724,
+      "entryTime": "2026-08-26 14:29:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8710,
+        "endIndex": 8718
+      },
+      "correction": {
+        "startIndex": 8719,
+        "extremeIndex": 8721
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.2794700000004013,
+      "projectionTP1": 4619.93825,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8738,
+      "entryTime": "2026-08-26 14:43:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8709,
+        "endIndex": 8717
+      },
+      "correction": {
+        "startIndex": 8718,
+        "extremeIndex": 8719
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 2.247580000000198,
+      "projectionTP1": 4623.256350000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8742,
+      "entryTime": "2026-08-26 14:47:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8721,
+        "endIndex": 8729
+      },
+      "correction": {
+        "startIndex": 8730,
+        "extremeIndex": 8737
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 4.820909999999458,
+      "projectionTP1": 4616.372130000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8746,
+      "entryTime": "2026-08-26 14:51:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8676,
+        "endIndex": 8684
+      },
+      "correction": {
+        "startIndex": 8685,
+        "extremeIndex": 8743
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 8.235649999999623,
+      "projectionTP1": 4621.207329999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8751,
+      "entryTime": "2026-08-26 14:56:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8677,
+        "endIndex": 8686
+      },
+      "correction": {
+        "startIndex": 8687,
+        "extremeIndex": 8749
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 11.882660000000214,
+      "projectionTP1": 4621.30786,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8754,
+      "entryTime": "2026-08-26 14:59:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8659,
+        "endIndex": 8667
+      },
+      "correction": {
+        "startIndex": 8668,
+        "extremeIndex": 8753
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 10.183050000000549,
+      "projectionTP1": 4616.5675,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8760,
+      "entryTime": "2026-08-26 15:05:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8658,
+        "endIndex": 8666
+      },
+      "correction": {
+        "startIndex": 8667,
+        "extremeIndex": 8758
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 8.057690000000548,
+      "projectionTP1": 4606.86008,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8763,
+      "entryTime": "2026-08-26 15:08:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1571,
+        "endIndex": 1579
+      },
+      "correction": {
+        "startIndex": 1580,
+        "extremeIndex": 8761
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.979139999999461,
+      "projectionTP1": 4596.24281,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8765,
+      "entryTime": "2026-08-26 15:10:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1573,
+        "endIndex": 1581
+      },
+      "correction": {
+        "startIndex": 1582,
+        "extremeIndex": 8760
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 7.618709999999737,
+      "projectionTP1": 4603.26899,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8774,
+      "entryTime": "2026-08-26 15:19:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 1553,
+        "endIndex": 1562
+      },
+      "correction": {
+        "startIndex": 1563,
+        "extremeIndex": 8771
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 9.252440000000206,
+      "projectionTP1": 4595.89542,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8789,
+      "entryTime": "2026-08-26 15:34:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8764,
+        "endIndex": 8772
+      },
+      "correction": {
+        "startIndex": 8773,
+        "extremeIndex": 8787
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.146869999999581,
+      "projectionTP1": 4592.83848,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8795,
+      "entryTime": "2026-08-26 15:40:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8765,
+        "endIndex": 8773
+      },
+      "correction": {
+        "startIndex": 8774,
+        "extremeIndex": 8790
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 9.506539999999404,
+      "projectionTP1": 4589.15519,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8806,
+      "entryTime": "2026-08-26 15:51:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8754,
+        "endIndex": 8762
+      },
+      "correction": {
+        "startIndex": 8763,
+        "extremeIndex": 8803
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 19.131800000000112,
+      "projectionTP1": 4588.83925,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8811,
+      "entryTime": "2026-08-26 15:56:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8797,
+        "endIndex": 8805
+      },
+      "correction": {
+        "startIndex": 8806,
+        "extremeIndex": 8808
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 6.723279999999249,
+      "projectionTP1": 4606.962489999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8813,
+      "entryTime": "2026-08-26 15:58:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8793,
+        "endIndex": 8801
+      },
+      "correction": {
+        "startIndex": 8802,
+        "extremeIndex": 8812
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.80199999999968,
+      "projectionTP1": 4605.88026,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8818,
+      "entryTime": "2026-08-26 16:03:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8796,
+        "endIndex": 8804
+      },
+      "correction": {
+        "startIndex": 8805,
+        "extremeIndex": 8814
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 9.230539999999564,
+      "projectionTP1": 4606.576749999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8823,
+      "entryTime": "2026-08-26 16:08:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8809,
+        "endIndex": 8817
+      },
+      "correction": {
+        "startIndex": 8818,
+        "extremeIndex": 8822
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 9.949319999999716,
+      "projectionTP1": 4592.5836,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8831,
+      "entryTime": "2026-08-26 16:16:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8820,
+        "endIndex": 8829
+      },
+      "correction": {
+        "startIndex": 8830,
+        "extremeIndex": 8830
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.2094299999998839,
+      "projectionTP1": 4598.74579,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8867,
+      "entryTime": "2026-08-26 16:52:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8844,
+        "endIndex": 8853
+      },
+      "correction": {
+        "startIndex": 8854,
+        "extremeIndex": 8866
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.9835200000006807,
+      "projectionTP1": 4592.2383899999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8870,
+      "entryTime": "2026-08-26 16:55:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8858,
+        "endIndex": 8866
+      },
+      "correction": {
+        "startIndex": 8867,
+        "extremeIndex": 8868
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 6.153909999999996,
+      "projectionTP1": 4595.8363,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8898,
+      "entryTime": "2026-08-26 17:23:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8839,
+        "endIndex": 8847
+      },
+      "correction": {
+        "startIndex": 8848,
+        "extremeIndex": 8897
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.074090000000069,
+      "projectionTP1": 4594.26131,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8899,
+      "entryTime": "2026-08-26 17:24:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8840,
+        "endIndex": 8849
+      },
+      "correction": {
+        "startIndex": 8850,
+        "extremeIndex": 8896
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 1.6222500000003492,
+      "projectionTP1": 4596.04923,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8911,
+      "entryTime": "2026-08-26 17:36:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8831,
+        "endIndex": 8839
+      },
+      "correction": {
+        "startIndex": 8840,
+        "extremeIndex": 8908
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.624929999999949,
+      "projectionTP1": 4595.66057,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8914,
+      "entryTime": "2026-08-26 17:39:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8899,
+        "endIndex": 8907
+      },
+      "correction": {
+        "startIndex": 8908,
+        "extremeIndex": 8913
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 0.889299999999821,
+      "projectionTP1": 4597.7450499999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8933,
+      "entryTime": "2026-08-26 17:58:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8919,
+        "endIndex": 8928
+      },
+      "correction": {
+        "startIndex": 8929,
+        "extremeIndex": 8931
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 0.1527799999994386,
+      "projectionTP1": 4595.6216699999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8959,
+      "entryTime": "2026-08-26 18:24:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8932,
+        "endIndex": 8940
+      },
+      "correction": {
+        "startIndex": 8941,
+        "extremeIndex": 8957
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.935019999999895,
+      "projectionTP1": 4600.2311899999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8973,
+      "entryTime": "2026-08-26 18:38:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8934,
+        "endIndex": 8942
+      },
+      "correction": {
+        "startIndex": 8943,
+        "extremeIndex": 8955
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.211140000000341,
+      "projectionTP1": 4603.58819,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 8978,
+      "entryTime": "2026-08-26 18:43:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8930,
+        "endIndex": 8938
+      },
+      "correction": {
+        "startIndex": 8939,
+        "extremeIndex": 8954
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 2.1182800000005955,
+      "projectionTP1": 4598.171810000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9001,
+      "entryTime": "2026-08-26 19:06:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8976,
+        "endIndex": 8984
+      },
+      "correction": {
+        "startIndex": 8985,
+        "extremeIndex": 8998
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.6599200000000565,
+      "projectionTP1": 4595.94756,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9024,
+      "entryTime": "2026-08-26 19:29:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8991,
+        "endIndex": 8999
+      },
+      "correction": {
+        "startIndex": 9000,
+        "extremeIndex": 9021
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 5.52027999999973,
+      "projectionTP1": 4592.43482,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9074,
+      "entryTime": "2026-08-26 20:19:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8870,
+        "endIndex": 8879
+      },
+      "correction": {
+        "startIndex": 8880,
+        "extremeIndex": 9073
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.1913600000007136,
+      "projectionTP1": 4592.452490000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9075,
+      "entryTime": "2026-08-26 20:20:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9018,
+        "endIndex": 9026
+      },
+      "correction": {
+        "startIndex": 9027,
+        "extremeIndex": 9071
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 8.837419999999838,
+      "projectionTP1": 4599.66024,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9078,
+      "entryTime": "2026-08-26 20:23:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8857,
+        "endIndex": 8865
+      },
+      "correction": {
+        "startIndex": 8866,
+        "extremeIndex": 9076
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.65502000000015,
+      "projectionTP1": 4594.02177,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9079,
+      "entryTime": "2026-08-26 20:24:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 8872,
+        "endIndex": 8880
+      },
+      "correction": {
+        "startIndex": 8881,
+        "extremeIndex": 9075
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.3468299999995,
+      "projectionTP1": 4591.55761,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9090,
+      "entryTime": "2026-08-26 20:35:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9015,
+        "endIndex": 9023
+      },
+      "correction": {
+        "startIndex": 9024,
+        "extremeIndex": 9070
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 6.507189999999355,
+      "projectionTP1": 4598.307159999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9094,
+      "entryTime": "2026-08-26 20:39:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9069,
+        "endIndex": 9077
+      },
+      "correction": {
+        "startIndex": 9078,
+        "extremeIndex": 9093
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 8.32394000000022,
+      "projectionTP1": 4584.9700299999995,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9176,
+      "entryTime": "2026-08-26 22:01:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9106,
+        "endIndex": 9114
+      },
+      "correction": {
+        "startIndex": 9115,
+        "extremeIndex": 9175
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 1.5011399999993955,
+      "projectionTP1": 4592.488149999999,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9178,
+      "entryTime": "2026-08-26 22:03:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9028,
+        "endIndex": 9036
+      },
+      "correction": {
+        "startIndex": 9037,
+        "extremeIndex": 9176
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 3.5424199999997654,
+      "projectionTP1": 4600.78932,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9195,
+      "entryTime": "2026-08-26 22:20:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8750,
+        "endIndex": 8758
+      },
+      "correction": {
+        "startIndex": 8759,
+        "extremeIndex": 9194
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 12.192979999999807,
+      "projectionTP1": 4600.1404,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9196,
+      "entryTime": "2026-08-26 22:21:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8751,
+        "endIndex": 8759
+      },
+      "correction": {
+        "startIndex": 8760,
+        "extremeIndex": 9193
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 11.194639999999708,
+      "projectionTP1": 4599.70817,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9198,
+      "entryTime": "2026-08-26 22:23:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8749,
+        "endIndex": 8757
+      },
+      "correction": {
+        "startIndex": 8758,
+        "extremeIndex": 9197
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 11.139799999999923,
+      "projectionTP1": 4602.04468,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9248,
+      "entryTime": "2026-08-26 23:13:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8746,
+        "endIndex": 8755
+      },
+      "correction": {
+        "startIndex": 8756,
+        "extremeIndex": 9247
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.530450000000201,
+      "projectionTP1": 4605.86686,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9272,
+      "entryTime": "2026-08-26 23:37:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9261,
+        "endIndex": 9269
+      },
+      "correction": {
+        "startIndex": 9270,
+        "extremeIndex": 9271
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.3759000000000015,
+      "projectionTP1": 4618.76415,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9277,
+      "entryTime": "2026-08-26 23:42:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8741,
+        "endIndex": 8749
+      },
+      "correction": {
+        "startIndex": 8750,
+        "extremeIndex": 9276
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 11.854220000000169,
+      "projectionTP1": 4611.9956,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9278,
+      "entryTime": "2026-08-26 23:43:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9260,
+        "endIndex": 9268
+      },
+      "correction": {
+        "startIndex": 9269,
+        "extremeIndex": 9275
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 3.314289999999346,
+      "projectionTP1": 4619.828020000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9301,
+      "entryTime": "2026-08-27 00:06:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8742,
+        "endIndex": 8750
+      },
+      "correction": {
+        "startIndex": 8751,
+        "extremeIndex": 9299
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 13.300929999999425,
+      "projectionTP1": 4612.657550000001,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9313,
+      "entryTime": "2026-08-27 00:18:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8752,
+        "endIndex": 8761
+      },
+      "correction": {
+        "startIndex": 8762,
+        "extremeIndex": 9249
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 17.78769000000011,
+      "projectionTP1": 4596.52747,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9316,
+      "entryTime": "2026-08-27 00:21:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9292,
+        "endIndex": 9300
+      },
+      "correction": {
+        "startIndex": 9301,
+        "extremeIndex": 9301
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.53458000000046,
+      "projectionTP1": 4624.67666,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9317,
+      "entryTime": "2026-08-27 00:22:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9306,
+        "endIndex": 9314
+      },
+      "correction": {
+        "startIndex": 9315,
+        "extremeIndex": 9315
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 6.136739999999918,
+      "projectionTP1": 4614.48111,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9333,
+      "entryTime": "2026-08-27 00:38:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9249,
+        "endIndex": 9257
+      },
+      "correction": {
+        "startIndex": 9258,
+        "extremeIndex": 9330
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 9.789990000000216,
+      "projectionTP1": 4621.57282,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9351,
+      "entryTime": "2026-08-27 00:56:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9186,
+        "endIndex": 9194
+      },
+      "correction": {
+        "startIndex": 9195,
+        "extremeIndex": 9348
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 7.826769999999669,
+      "projectionTP1": 4610.33176,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9368,
+      "entryTime": "2026-08-27 01:13:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9324,
+        "endIndex": 9332
+      },
+      "correction": {
+        "startIndex": 9333,
+        "extremeIndex": 9366
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 8.685730000000149,
+      "projectionTP1": 4612.75741,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9444,
+      "entryTime": "2026-08-27 02:29:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 8325,
+        "endIndex": 8333
+      },
+      "correction": {
+        "startIndex": 8334,
+        "extremeIndex": 9410
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.791259999999966,
+      "projectionTP1": 4629.84753,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9501,
+      "entryTime": "2026-08-27 03:26:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9444,
+        "endIndex": 9452
+      },
+      "correction": {
+        "startIndex": 9453,
+        "extremeIndex": 9498
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 9.860779999999977,
+      "projectionTP1": 4627.69134,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9505,
+      "entryTime": "2026-08-27 03:30:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9445,
+        "endIndex": 9453
+      },
+      "correction": {
+        "startIndex": 9454,
+        "extremeIndex": 9496
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 9.989300000000185,
+      "projectionTP1": 4626.09675,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9649,
+      "entryTime": "2026-08-27 05:54:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9356,
+        "endIndex": 9364
+      },
+      "correction": {
+        "startIndex": 9365,
+        "extremeIndex": 9647
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 13.242870000000039,
+      "projectionTP1": 4616.18785,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9713,
+      "entryTime": "2026-08-27 06:58:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9065,
+        "endIndex": 9073
+      },
+      "correction": {
+        "startIndex": 9074,
+        "extremeIndex": 9175
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 4,
+      "pgapValidated": 0,
+      "leg1Size": 6.18177999999989,
+      "projectionTP1": 4593.19889,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9715,
+      "entryTime": "2026-08-27 07:00:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9669,
+        "endIndex": 9677
+      },
+      "correction": {
+        "startIndex": 9678,
+        "extremeIndex": 9713
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 8.618470000000343,
+      "projectionTP1": 4607.42622,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9731,
+      "entryTime": "2026-08-27 07:16:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9720,
+        "endIndex": 9728
+      },
+      "correction": {
+        "startIndex": 9729,
+        "extremeIndex": 9730
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.0326500000001033,
+      "projectionTP1": 4603.564,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9736,
+      "entryTime": "2026-08-27 07:21:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9714,
+        "endIndex": 9722
+      },
+      "correction": {
+        "startIndex": 9723,
+        "extremeIndex": 9735
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 4.491719999999987,
+      "projectionTP1": 4601.77013,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9748,
+      "entryTime": "2026-08-27 07:33:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9734,
+        "endIndex": 9742
+      },
+      "correction": {
+        "startIndex": 9743,
+        "extremeIndex": 9745
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 5.883389999999963,
+      "projectionTP1": 4594.22348,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9785,
+      "entryTime": "2026-08-27 08:10:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9731,
+        "endIndex": 9740
+      },
+      "correction": {
+        "startIndex": 9741,
+        "extremeIndex": 9777
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 6.38695000000007,
+      "projectionTP1": 4597.80736,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9796,
+      "entryTime": "2026-08-27 08:21:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9704,
+        "endIndex": 9712
+      },
+      "correction": {
+        "startIndex": 9713,
+        "extremeIndex": 9795
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 6.490939999999682,
+      "projectionTP1": 4600.84853,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9799,
+      "entryTime": "2026-08-27 08:24:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9773,
+        "endIndex": 9781
+      },
+      "correction": {
+        "startIndex": 9782,
+        "extremeIndex": 9797
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 4.729809999999816,
+      "projectionTP1": 4605.81567,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9813,
+      "entryTime": "2026-08-27 08:38:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9770,
+        "endIndex": 9778
+      },
+      "correction": {
+        "startIndex": 9779,
+        "extremeIndex": 9812
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 6.912819999999556,
+      "projectionTP1": 4604.82537,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9814,
+      "entryTime": "2026-08-27 08:39:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9772,
+        "endIndex": 9780
+      },
+      "correction": {
+        "startIndex": 9781,
+        "extremeIndex": 9811
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 6.754289999999855,
+      "projectionTP1": 4605.06351,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9835,
+      "entryTime": "2026-08-27 09:00:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9811,
+        "endIndex": 9820
+      },
+      "correction": {
+        "startIndex": 9821,
+        "extremeIndex": 9832
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 3,
+      "pgapValidated": 0,
+      "leg1Size": 3.4409599999999045,
+      "projectionTP1": 4598.04387,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9846,
+      "entryTime": "2026-08-27 09:11:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9826,
+        "endIndex": 9834
+      },
+      "correction": {
+        "startIndex": 9835,
+        "extremeIndex": 9838
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 2,
+      "pgapValidated": 0,
+      "leg1Size": 4.880580000000009,
+      "projectionTP1": 4601.74193,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9934,
+      "entryTime": "2026-08-27 10:39:00",
+      "direction": "BUY",
+      "spike": {
+        "startIndex": 9911,
+        "endIndex": 9919
+      },
+      "correction": {
+        "startIndex": 9920,
+        "extremeIndex": 9930
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 1,
+      "pgapValidated": 0,
+      "leg1Size": 1.4268000000001848,
+      "projectionTP1": 4579.56423,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9990,
+      "entryTime": "2026-08-27 11:35:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9863,
+        "endIndex": 9872
+      },
+      "correction": {
+        "startIndex": 9873,
+        "extremeIndex": 9988
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 11,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 9.135049999999865,
+      "projectionTP1": 4589.29404,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    },
+    {
+      "entryIndex": 9998,
+      "entryTime": "2026-08-27 11:43:00",
+      "direction": "SELL",
+      "spike": {
+        "startIndex": 9865,
+        "endIndex": 9873
+      },
+      "correction": {
+        "startIndex": 9874,
+        "extremeIndex": 9997
+      },
+      "trigger": "CORRECTION_EXTREME_RECLAIM",
+      "pgapObservations": 10,
+      "pgapCandidates": 0,
+      "pgapValidated": 0,
+      "leg1Size": 12.235789999999724,
+      "projectionTP1": 4587.58022,
+      "twoLegValidation": "NOT_APPLIED_AT_ENTRY"
+    }
+  ]
+}

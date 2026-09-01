@@ -1,0 +1,363 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "timeframe": "5min",
+  "pivot": 2,
+  "lookback": 20,
+  "purpose": "Diagnostic reconstruction of structural/context features at baseline entries. No strategy rule is activated.",
+  "sample": {
+    "matched": 221,
+    "firstHalf": 110,
+    "secondHalf": 111,
+    "baseline": {
+      "trades": 221,
+      "wins": 58,
+      "losses": 163,
+      "winRate": 0.26244343891402716,
+      "avgR": -0.15844633197296074,
+      "totalR": -35.01663936602432,
+      "PF": 0.7851739916194825
+    }
+  },
+  "features": {
+    "aligned": {
+      "yes": {
+        "trades": 69,
+        "wins": 19,
+        "losses": 50,
+        "winRate": 0.2753623188405797,
+        "avgR": -0.24484779390687816,
+        "totalR": -16.894497779574593,
+        "PF": 0.6621100444085082
+      },
+      "no": {
+        "trades": 152,
+        "wins": 39,
+        "losses": 113,
+        "winRate": 0.2565789473684211,
+        "avgR": -0.11922461570032716,
+        "totalR": -18.12214158644973,
+        "PF": 0.8396270656066395
+      },
+      "firstHalf": {
+        "trades": 34,
+        "wins": 6,
+        "losses": 28,
+        "winRate": 0.17647058823529413,
+        "avgR": -0.6379611879505047,
+        "totalR": -21.69068039031716,
+        "PF": 0.22533284320295857
+      },
+      "secondHalf": {
+        "trades": 35,
+        "wins": 13,
+        "losses": 22,
+        "winRate": 0.37142857142857144,
+        "avgR": 0.13703378887835901,
+        "totalR": 4.796182610742566,
+        "PF": 1.2180083004882982
+      },
+      "stablePositive": false
+    },
+    "sweep": {
+      "yes": {
+        "trades": 32,
+        "wins": 16,
+        "losses": 16,
+        "winRate": 0.5,
+        "avgR": 0.05839615030863855,
+        "totalR": 1.8686768098764337,
+        "PF": 1.116792300617277
+      },
+      "no": {
+        "trades": 189,
+        "wins": 42,
+        "losses": 147,
+        "winRate": 0.2222222222222222,
+        "avgR": -0.19516040304709395,
+        "totalR": -36.885316175900755,
+        "PF": 0.7490794817965934
+      },
+      "firstHalf": {
+        "trades": 16,
+        "wins": 4,
+        "losses": 12,
+        "winRate": 0.25,
+        "avgR": -0.5159233677824399,
+        "totalR": -8.254773884519038,
+        "PF": 0.31210217629008014
+      },
+      "secondHalf": {
+        "trades": 16,
+        "wins": 12,
+        "losses": 4,
+        "winRate": 0.75,
+        "avgR": 0.632715668399717,
+        "totalR": 10.123450694395473,
+        "PF": 3.530862673598868
+      },
+      "stablePositive": false
+    },
+    "bos": {
+      "yes": {
+        "trades": 19,
+        "wins": 3,
+        "losses": 16,
+        "winRate": 0.15789473684210525,
+        "avgR": -0.6180316690075929,
+        "totalR": -11.742601711144264,
+        "PF": 0.2660873930534834
+      },
+      "no": {
+        "trades": 202,
+        "wins": 55,
+        "losses": 147,
+        "winRate": 0.2722772277227723,
+        "avgR": -0.11521800819247548,
+        "totalR": -23.274037654880047,
+        "PF": 0.8416732132321083
+      },
+      "firstHalf": {
+        "trades": 9,
+        "wins": 1,
+        "losses": 8,
+        "winRate": 0.1111111111111111,
+        "avgR": -0.8518941721762036,
+        "totalR": -7.667047549585832,
+        "PF": 0.04161905630177095
+      },
+      "secondHalf": {
+        "trades": 10,
+        "wins": 2,
+        "losses": 8,
+        "winRate": 0.2,
+        "avgR": -0.4075554161558433,
+        "totalR": -4.075554161558433,
+        "PF": 0.4905557298051959
+      },
+      "stablePositive": false
+    },
+    "displacement": {
+      "yes": {
+        "trades": 91,
+        "wins": 33,
+        "losses": 58,
+        "winRate": 0.3626373626373626,
+        "avgR": -0.04046398325263606,
+        "totalR": -3.6822224759898816,
+        "PF": 0.9365134055863816
+      },
+      "no": {
+        "trades": 130,
+        "wins": 25,
+        "losses": 105,
+        "winRate": 0.19230769230769232,
+        "avgR": -0.241033976077188,
+        "totalR": -31.33441689003444,
+        "PF": 0.7015769819996721
+      },
+      "firstHalf": {
+        "trades": 45,
+        "wins": 14,
+        "losses": 31,
+        "winRate": 0.3111111111111111,
+        "avgR": -0.10903295760729814,
+        "totalR": -4.906483092328417,
+        "PF": 0.8417263518603738
+      },
+      "secondHalf": {
+        "trades": 46,
+        "wins": 19,
+        "losses": 27,
+        "winRate": 0.41304347826086957,
+        "avgR": 0.02661436122475076,
+        "totalR": 1.224260616338535,
+        "PF": 1.045342985790316
+      },
+      "stablePositive": false
+    },
+    "expansion": {
+      "yes": {
+        "trades": 80,
+        "wins": 34,
+        "losses": 46,
+        "winRate": 0.425,
+        "avgR": 0.23709203722283054,
+        "totalR": 18.967362977826443,
+        "PF": 1.412333977778836
+      },
+      "no": {
+        "trades": 141,
+        "wins": 24,
+        "losses": 117,
+        "winRate": 0.1702127659574468,
+        "avgR": -0.38286526485000544,
+        "totalR": -53.98400234385077,
+        "PF": 0.5385982705653779
+      },
+      "firstHalf": {
+        "trades": 40,
+        "wins": 16,
+        "losses": 24,
+        "winRate": 0.4,
+        "avgR": 0.3211446101266143,
+        "totalR": 12.845784405064572,
+        "PF": 1.5352410168776907
+      },
+      "secondHalf": {
+        "trades": 40,
+        "wins": 18,
+        "losses": 22,
+        "winRate": 0.45,
+        "avgR": 0.15303946431904683,
+        "totalR": 6.121578572761873,
+        "PF": 1.2782535714891758
+      },
+      "stablePositive": true
+    }
+  },
+  "combinations": {
+    "alignedAndSweep": {
+      "trades": 9,
+      "wins": 4,
+      "losses": 5,
+      "winRate": 0.4444444444444444,
+      "avgR": -0.3908366544430084,
+      "totalR": -3.5175298899870757,
+      "PF": 0.2964940220025848
+    },
+    "alignedAndBOS": {
+      "trades": 7,
+      "wins": 2,
+      "losses": 5,
+      "winRate": 0.2857142857142857,
+      "avgR": -0.15365059450834753,
+      "totalR": -1.0755541615584328,
+      "PF": 0.7848891676883134
+    },
+    "alignedAndDisplacement": {
+      "trades": 27,
+      "wins": 10,
+      "losses": 17,
+      "winRate": 0.37037037037037035,
+      "avgR": -0.39007954567486436,
+      "totalR": -10.532147733221338,
+      "PF": 0.38046189804580366
+    },
+    "alignedAndExpansion": {
+      "trades": 27,
+      "wins": 14,
+      "losses": 13,
+      "winRate": 0.5185185185185185,
+      "avgR": 0.011203197287329165,
+      "totalR": 0.30248632675788745,
+      "PF": 1.0232681789813758
+    },
+    "sweepAndDisplacement": {
+      "trades": 18,
+      "wins": 10,
+      "losses": 8,
+      "winRate": 0.5555555555555556,
+      "avgR": -0.08215680510267825,
+      "totalR": -1.4788224918482085,
+      "PF": 0.8151471885189739
+    }
+  },
+  "byBias": {
+    "MIXED": {
+      "trades": 78,
+      "wins": 19,
+      "losses": 59,
+      "winRate": 0.24358974358974358,
+      "avgR": -0.10610407299922432,
+      "totalR": -8.276117693939497,
+      "PF": 0.8597268187467881
+    },
+    "BEARISH": {
+      "trades": 54,
+      "wins": 18,
+      "losses": 36,
+      "winRate": 0.3333333333333333,
+      "avgR": -0.2362578080327946,
+      "totalR": -12.757921633770907,
+      "PF": 0.6456132879508081
+    },
+    "BULLISH": {
+      "trades": 89,
+      "wins": 21,
+      "losses": 68,
+      "winRate": 0.23595505617977527,
+      "avgR": -0.1571078655990328,
+      "totalR": -13.982600038313919,
+      "PF": 0.7943735288483247
+    }
+  },
+  "oosByBias": {
+    "firstHalf": {
+      "MIXED": {
+        "trades": 39,
+        "wins": 9,
+        "losses": 30,
+        "winRate": 0.23076923076923078,
+        "avgR": 0.10418314106937597,
+        "totalR": 4.063142501705663,
+        "PF": 1.1354380833901887
+      },
+      "BEARISH": {
+        "trades": 29,
+        "wins": 6,
+        "losses": 23,
+        "winRate": 0.20689655172413793,
+        "avgR": -0.5746650539117549,
+        "totalR": -16.665286563440894,
+        "PF": 0.2754223233286568
+      },
+      "BULLISH": {
+        "trades": 42,
+        "wins": 9,
+        "losses": 33,
+        "winRate": 0.21428571428571427,
+        "avgR": -0.3334344632836557,
+        "totalR": -14.00424745791354,
+        "PF": 0.575628864911711
+      }
+    },
+    "secondHalf": {
+      "BEARISH": {
+        "trades": 25,
+        "wins": 12,
+        "losses": 13,
+        "winRate": 0.48,
+        "avgR": 0.1562945971867995,
+        "totalR": 3.9073649296699875,
+        "PF": 1.3005665330515372
+      },
+      "MIXED": {
+        "trades": 39,
+        "wins": 10,
+        "losses": 29,
+        "winRate": 0.2564102564102564,
+        "avgR": -0.3163912870678246,
+        "totalR": -12.33926019564516,
+        "PF": 0.5745082691156841
+      },
+      "BULLISH": {
+        "trades": 47,
+        "wins": 12,
+        "losses": 35,
+        "winRate": 0.2553191489361702,
+        "avgR": 0.00046058339573663165,
+        "totalR": 0.021647419599621687,
+        "PF": 1.0006184977028463
+      }
+    }
+  },
+  "followUpCandidates": [
+    "expansion"
+  ],
+  "warnings": [
+    "Structural context uses only candles available before the entry index plus the entry candle for reaction features; sweep/BOS/displacement therefore assume the signal is evaluated at entry-candle close.",
+    "Pivot=2 is a fixed diagnostic probe, not a validated production parameter.",
+    "No feature or combination is promoted to a trading rule by this report.",
+    "Small samples and correlated features can create unstable apparent edges."
+  ]
+}

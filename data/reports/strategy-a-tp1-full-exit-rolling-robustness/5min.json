@@ -1,0 +1,464 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_TP1_FULL_EXIT_ROLLING_ROBUSTNESS_V1",
+  "timeframe": "5min",
+  "management": "100% exit at TP1; no runner; entry generation unchanged.",
+  "methodology": {
+    "windows": 6,
+    "ordering": "chronological",
+    "costs": "same as baseline dataset/backtest",
+    "selection": "no optimization; fixed TP1 full-exit rule",
+    "warning": "Rolling-window stability is robustness evidence, not proof of future profitability."
+  },
+  "overall": {
+    "n": 232,
+    "wins": 58,
+    "losses": 163,
+    "winRate": 0.25,
+    "PF": 0.7851739916194825,
+    "avgR": -0.1509337903707945,
+    "totalR": -35.01663936602432,
+    "maxDrawdownR": 46.289059522000116,
+    "maxConsecutiveLosses": 11
+  },
+  "windows": [
+    {
+      "window": 1,
+      "from": "2026-07-23 23:35:00",
+      "to": "2026-07-30 14:00:00",
+      "n": 38,
+      "wins": 8,
+      "losses": 27,
+      "winRate": 0.21052631578947367,
+      "PF": 1.10682004768469,
+      "avgR": 0.07589845493385863,
+      "totalR": 2.884141287486628,
+      "maxDrawdownR": 16.98140706721027,
+      "maxConsecutiveLosses": 11,
+      "byDirection": {
+        "SELL": {
+          "n": 20,
+          "wins": 7,
+          "losses": 12,
+          "winRate": 0.35,
+          "PF": 1.2933759381787973,
+          "avgR": 0.1760255629072784,
+          "totalR": 3.520511258145568,
+          "maxDrawdownR": 8.751908897830223,
+          "maxConsecutiveLosses": 5
+        },
+        "BUY": {
+          "n": 18,
+          "wins": 1,
+          "losses": 15,
+          "winRate": 0.05555555555555555,
+          "PF": 0.957575335289404,
+          "avgR": -0.03535388725883001,
+          "totalR": -0.6363699706589401,
+          "maxDrawdownR": 14,
+          "maxConsecutiveLosses": 13
+        }
+      },
+      "bySession": {
+        "NEW_YORK": {
+          "n": 10,
+          "wins": 3,
+          "losses": 7,
+          "winRate": 0.3,
+          "PF": 3.311818655444352,
+          "avgR": 1.6182730588110463,
+          "totalR": 16.182730588110463,
+          "maxDrawdownR": 7,
+          "maxConsecutiveLosses": 7
+        },
+        "LONDON": {
+          "n": 22,
+          "wins": 5,
+          "losses": 14,
+          "winRate": 0.22727272727272727,
+          "PF": 0.4786721928125833,
+          "avgR": -0.33175405911926514,
+          "totalR": -7.298589300623833,
+          "maxDrawdownR": 9.98140706721027,
+          "maxConsecutiveLosses": 6
+        },
+        "OUTSIDE": {
+          "n": 6,
+          "wins": 0,
+          "losses": 6,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -6,
+          "maxDrawdownR": 6,
+          "maxConsecutiveLosses": 6
+        }
+      }
+    },
+    {
+      "window": 2,
+      "from": "2026-07-30 15:45:00",
+      "to": "2026-08-05 16:50:00",
+      "n": 38,
+      "wins": 6,
+      "losses": 30,
+      "winRate": 0.15789473684210525,
+      "PF": 0.6154043750768962,
+      "avgR": -0.3036281249392924,
+      "totalR": -11.537868747693112,
+      "maxDrawdownR": 16.15080415881802,
+      "maxConsecutiveLosses": 7,
+      "byDirection": {
+        "BUY": {
+          "n": 19,
+          "wins": 2,
+          "losses": 16,
+          "winRate": 0.10526315789473684,
+          "PF": 0.16242948748606553,
+          "avgR": -0.7053225368538395,
+          "totalR": -13.401128200222951,
+          "maxDrawdownR": 13.401128200222951,
+          "maxConsecutiveLosses": 9
+        },
+        "SELL": {
+          "n": 19,
+          "wins": 4,
+          "losses": 14,
+          "winRate": 0.21052631578947367,
+          "PF": 1.1330899608949885,
+          "avgR": 0.09806628697525462,
+          "totalR": 1.8632594525298378,
+          "maxDrawdownR": 7.749675958595069,
+          "maxConsecutiveLosses": 5
+        }
+      },
+      "bySession": {
+        "LONDON": {
+          "n": 22,
+          "wins": 1,
+          "losses": 19,
+          "winRate": 0.045454545454545456,
+          "PF": 0.15140129071336692,
+          "avgR": -0.7328807034748195,
+          "totalR": -16.12337547644603,
+          "maxDrawdownR": 16.12337547644603,
+          "maxConsecutiveLosses": 7
+        },
+        "NEW_YORK": {
+          "n": 14,
+          "wins": 5,
+          "losses": 9,
+          "winRate": 0.35714285714285715,
+          "PF": 1.731722969861435,
+          "avgR": 0.4703933377680653,
+          "totalR": 6.5855067287529145,
+          "maxDrawdownR": 3.1508041588180205,
+          "maxConsecutiveLosses": 3
+        },
+        "OUTSIDE": {
+          "n": 2,
+          "wins": 0,
+          "losses": 2,
+          "winRate": 0,
+          "PF": 0,
+          "avgR": -1,
+          "totalR": -2,
+          "maxDrawdownR": 2,
+          "maxConsecutiveLosses": 2
+        }
+      }
+    },
+    {
+      "window": 3,
+      "from": "2026-08-05 18:25:00",
+      "to": "2026-08-12 10:50:00",
+      "n": 38,
+      "wins": 10,
+      "losses": 26,
+      "winRate": 0.2631578947368421,
+      "PF": 0.4248975361752967,
+      "avgR": -0.3934911594590075,
+      "totalR": -14.952664059442284,
+      "maxDrawdownR": 20.23371050726444,
+      "maxConsecutiveLosses": 8,
+      "byDirection": {
+        "SELL": {
+          "n": 21,
+          "wins": 6,
+          "losses": 13,
+          "winRate": 0.2857142857142857,
+          "PF": 0.4433061504425894,
+          "avgR": -0.34462000210696847,
+          "totalR": -7.2370200442463375,
+          "maxDrawdownR": 10.60992601363769,
+          "maxConsecutiveLosses": 6
+        },
+        "BUY": {
+          "n": 17,
+          "wins": 4,
+          "losses": 13,
+          "winRate": 0.23529411764705882,
+          "PF": 0.406488921908004,
+          "avgR": -0.4538614126585851,
+          "totalR": -7.715644015195947,
+          "maxDrawdownR": 11.962129770405667,
+          "maxConsecutiveLosses": 6
+        }
+      },
+      "bySession": {
+        "LONDON": {
+          "n": 17,
+          "wins": 6,
+          "losses": 10,
+          "winRate": 0.35294117647058826,
+          "PF": 0.9108421779317892,
+          "avgR": -0.052445777687182796,
+          "totalR": -0.8915782206821076,
+          "maxDrawdownR": 7.249187185865853,
+          "maxConsecutiveLosses": 7
+        },
+        "NEW_YORK": {
+          "n": 12,
+          "wins": 3,
+          "losses": 8,
+          "winRate": 0.25,
+          "PF": 0.12693458482517647,
+          "avgR": -0.582043610116549,
+          "totalR": -6.984523321398589,
+          "maxDrawdownR": 6.984523321398589,
+          "maxConsecutiveLosses": 3
+        },
+        "OUTSIDE": {
+          "n": 9,
+          "wins": 1,
+          "losses": 8,
+          "winRate": 0.1111111111111111,
+          "PF": 0.11542968532980137,
+          "avgR": -0.7862847241512877,
+          "totalR": -7.076562517361589,
+          "maxDrawdownR": 8,
+          "maxConsecutiveLosses": 8
+        }
+      }
+    },
+    {
+      "window": 4,
+      "from": "2026-08-12 11:25:00",
+      "to": "2026-08-18 01:05:00",
+      "n": 38,
+      "wins": 13,
+      "losses": 24,
+      "winRate": 0.34210526315789475,
+      "PF": 1.6963698714823725,
+      "avgR": 0.4398125504099195,
+      "totalR": 16.712876915576942,
+      "maxDrawdownR": 7.463402616985211,
+      "maxConsecutiveLosses": 5,
+      "byDirection": {
+        "BUY": {
+          "n": 21,
+          "wins": 10,
+          "losses": 10,
+          "winRate": 0.47619047619047616,
+          "PF": 3.3538766964201576,
+          "avgR": 1.1208936649619798,
+          "totalR": 23.538766964201578,
+          "maxDrawdownR": 3.463402616985211,
+          "maxConsecutiveLosses": 3
+        },
+        "SELL": {
+          "n": 17,
+          "wins": 3,
+          "losses": 14,
+          "winRate": 0.17647058823529413,
+          "PF": 0.5124364250982401,
+          "avgR": -0.40152294403674355,
+          "totalR": -6.8258900486246405,
+          "maxDrawdownR": 12.186639826108209,
+          "maxConsecutiveLosses": 8
+        }
+      },
+      "bySession": {
+        "LONDON": {
+          "n": 19,
+          "wins": 6,
+          "losses": 13,
+          "winRate": 0.3157894736842105,
+          "PF": 1.42718616296049,
+          "avgR": 0.2922852693940194,
+          "totalR": 5.553420118486368,
+          "maxDrawdownR": 7,
+          "maxConsecutiveLosses": 7
+        },
+        "NEW_YORK": {
+          "n": 14,
+          "wins": 5,
+          "losses": 8,
+          "winRate": 0.35714285714285715,
+          "PF": 2.702857426759473,
+          "avgR": 0.9730613867196986,
+          "totalR": 13.62285941407578,
+          "maxDrawdownR": 5,
+          "maxConsecutiveLosses": 5
+        },
+        "OUTSIDE": {
+          "n": 5,
+          "wins": 2,
+          "losses": 3,
+          "winRate": 0.4,
+          "PF": 0.1788657943382631,
+          "avgR": -0.49268052339704216,
+          "totalR": -2.463402616985211,
+          "maxDrawdownR": 2.463402616985211,
+          "maxConsecutiveLosses": 2
+        }
+      }
+    },
+    {
+      "window": 5,
+      "from": "2026-08-18 01:25:00",
+      "to": "2026-08-21 12:25:00",
+      "n": 38,
+      "wins": 9,
+      "losses": 28,
+      "winRate": 0.23684210526315788,
+      "PF": 0.7075883013778647,
+      "avgR": -0.21546125161631022,
+      "totalR": -8.187527561419788,
+      "maxDrawdownR": 12.084724108450942,
+      "maxConsecutiveLosses": 5,
+      "byDirection": {
+        "BUY": {
+          "n": 20,
+          "wins": 5,
+          "losses": 14,
+          "winRate": 0.25,
+          "PF": 0.917205266771205,
+          "avgR": -0.057956313260156565,
+          "totalR": -1.1591262652031313,
+          "maxDrawdownR": 8,
+          "maxConsecutiveLosses": 8
+        },
+        "SELL": {
+          "n": 18,
+          "wins": 4,
+          "losses": 14,
+          "winRate": 0.2222222222222222,
+          "PF": 0.49797133598452453,
+          "avgR": -0.3904667386787032,
+          "totalR": -7.028401296216657,
+          "maxDrawdownR": 12.649834783298157,
+          "maxConsecutiveLosses": 12
+        }
+      },
+      "bySession": {
+        "NEW_YORK": {
+          "n": 10,
+          "wins": 4,
+          "losses": 6,
+          "winRate": 0.4,
+          "PF": 2.720626668026913,
+          "avgR": 1.0323760008161478,
+          "totalR": 10.323760008161477,
+          "maxDrawdownR": 2.723323004425419,
+          "maxConsecutiveLosses": 2
+        },
+        "OUTSIDE": {
+          "n": 7,
+          "wins": 1,
+          "losses": 6,
+          "winRate": 0.14285714285714285,
+          "PF": 0.2499913862904024,
+          "avgR": -0.6428645260367979,
+          "totalR": -4.500051682257586,
+          "maxDrawdownR": 4.500051682257586,
+          "maxConsecutiveLosses": 4
+        },
+        "LONDON": {
+          "n": 21,
+          "wins": 4,
+          "losses": 16,
+          "winRate": 0.19047619047619047,
+          "PF": 0.12429775704227006,
+          "avgR": -0.6672017089201752,
+          "totalR": -14.011235887323679,
+          "maxDrawdownR": 14.011235887323679,
+          "maxConsecutiveLosses": 6
+        }
+      }
+    },
+    {
+      "window": 6,
+      "from": "2026-08-21 12:45:00",
+      "to": "2026-08-27 11:35:00",
+      "n": 42,
+      "wins": 12,
+      "losses": 28,
+      "winRate": 0.2857142857142857,
+      "PF": 0.2880143856952606,
+      "avgR": -0.47465707620315944,
+      "totalR": -19.935597200532698,
+      "maxDrawdownR": 19.935597200532698,
+      "maxConsecutiveLosses": 6,
+      "byDirection": {
+        "BUY": {
+          "n": 26,
+          "wins": 7,
+          "losses": 17,
+          "winRate": 0.2692307692307692,
+          "PF": 0.2163810187325257,
+          "avgR": -0.5123662569825794,
+          "totalR": -13.321522681547064,
+          "maxDrawdownR": 13.321522681547064,
+          "maxConsecutiveLosses": 5
+        },
+        "SELL": {
+          "n": 16,
+          "wins": 5,
+          "losses": 11,
+          "winRate": 0.3125,
+          "PF": 0.3987204982740327,
+          "avgR": -0.4133796574366025,
+          "totalR": -6.61407451898564,
+          "maxDrawdownR": 6.61407451898564,
+          "maxConsecutiveLosses": 3
+        }
+      },
+      "bySession": {
+        "LONDON": {
+          "n": 19,
+          "wins": 6,
+          "losses": 13,
+          "winRate": 0.3157894736842105,
+          "PF": 0.45330742588580253,
+          "avgR": -0.3740528138676088,
+          "totalR": -7.107003463484567,
+          "maxDrawdownR": 8.998930925750571,
+          "maxConsecutiveLosses": 5
+        },
+        "NEW_YORK": {
+          "n": 20,
+          "wins": 5,
+          "losses": 14,
+          "winRate": 0.25,
+          "PF": 0.08230710434101896,
+          "avgR": -0.6423850269612866,
+          "totalR": -12.847700539225732,
+          "maxDrawdownR": 12.847700539225732,
+          "maxConsecutiveLosses": 4
+        },
+        "OUTSIDE": {
+          "n": 3,
+          "wins": 1,
+          "losses": 1,
+          "winRate": 0.3333333333333333,
+          "PF": 1.0191068021775973,
+          "avgR": 0.006368934059199101,
+          "totalR": 0.019106802177597304,
+          "maxDrawdownR": 1,
+          "maxConsecutiveLosses": 1
+        }
+      }
+    }
+  ]
+}

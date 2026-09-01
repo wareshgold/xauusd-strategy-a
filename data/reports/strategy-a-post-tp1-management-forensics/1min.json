@@ -1,0 +1,404 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_POST_TP1_MANAGEMENT_FORENSICS_V1",
+  "timeframe": "1min",
+  "scope": "Descriptive analysis only of trades that reached TP1 before SL. No early invalidation is introduced and no post-TP1 feature is used to select entries.",
+  "methodology": {
+    "target": "post-TP1 continuation and giveback",
+    "rule": "a signal remains valid until TP1 or structural invalidation; this report never converts pre-TP1 adverse movement into an early exit",
+    "tp2": "recorded TP2 when available; otherwise continuation metrics are still measured",
+    "window": "up to 50 candles after TP1",
+    "selection": "descriptive only; no optimization or candidate selection"
+  },
+  "counts": {
+    "all": 326,
+    "tp1BeforeSl": 63,
+    "dev": 20,
+    "validation": 21,
+    "holdout": 22
+  },
+  "tp1ReachedOutcome": {
+    "n": 63,
+    "winRate": 1,
+    "PF": null,
+    "avgR": 4.289504957065477,
+    "totalR": 270.238812295125
+  },
+  "postTp1Classes": {
+    "tp2Reached": {
+      "n": 35,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 1.855004449079534,
+      "totalR": 64.9251557177837
+    },
+    "noTp2By50": {
+      "n": 28,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 7.332630592047901,
+      "totalR": 205.31365657734125
+    },
+    "lowGiveback": {
+      "n": 0,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": 0,
+      "totalR": 0
+    },
+    "highGiveback": {
+      "n": 63,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 4.289504957065477,
+      "totalR": 270.238812295125
+    },
+    "fastTp2": {
+      "n": 35,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 1.855004449079534,
+      "totalR": 64.9251557177837
+    },
+    "slowTp2": {
+      "n": 0,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": 0,
+      "totalR": 0
+    }
+  },
+  "holdout": {
+    "all": {
+      "n": 22,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 3.440260715669925,
+      "totalR": 75.68573574473835
+    },
+    "tp2Reached": {
+      "n": 10,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 2.259337264403945,
+      "totalR": 22.593372644039448
+    },
+    "noTp2By50": {
+      "n": 12,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 4.42436359172491,
+      "totalR": 53.09236310069891
+    },
+    "lowGiveback": {
+      "n": 0,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": 0,
+      "totalR": 0
+    },
+    "highGiveback": {
+      "n": 22,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 3.440260715669925,
+      "totalR": 75.68573574473835
+    }
+  },
+  "horizons": {
+    "H1": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    },
+    "H2": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    },
+    "H3": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    },
+    "H5": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    },
+    "H8": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    },
+    "H12": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    },
+    "H20": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    },
+    "H30": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    },
+    "H50": {
+      "eligibleN": 63,
+      "tp2ReachedByH": 35,
+      "tp2Rate": 0.5555555555555556,
+      "highGivebackBy50": 63,
+      "highGivebackRate": 1
+    }
+  },
+  "holdoutPathStats": {
+    "tp1Bars": {
+      "n": 22,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 3.440260715669925,
+      "totalR": 75.68573574473835
+    },
+    "tp1Rows": [
+      {
+        "entryTime": "2026-08-25 22:01:00",
+        "direction": "BUY",
+        "barsToTp1": 14,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 4.531313124634329,
+        "postMaeR": 0,
+        "maxGivebackR": 0.8995692234450257
+      },
+      {
+        "entryTime": "2026-08-25 22:15:00",
+        "direction": "BUY",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 10.419688257385431,
+        "postMaeR": 0.7150477593497928,
+        "maxGivebackR": 3.232654564465153
+      },
+      {
+        "entryTime": "2026-08-25 23:23:00",
+        "direction": "SELL",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 21.604952041057143,
+        "postMaeR": 0.8080898208054031,
+        "maxGivebackR": 4.208881701244923
+      },
+      {
+        "entryTime": "2026-08-26 00:16:00",
+        "direction": "BUY",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 36.01892783024864,
+        "postMaeR": 215.53950421434766,
+        "maxGivebackR": 244.5176456237407
+      },
+      {
+        "entryTime": "2026-08-26 00:56:00",
+        "direction": "BUY",
+        "barsToTp1": 7,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 11.993582064632477,
+        "postMaeR": 0,
+        "maxGivebackR": 7.292154001410292
+      },
+      {
+        "entryTime": "2026-08-26 01:19:00",
+        "direction": "SELL",
+        "barsToTp1": 15,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 4.187514792588833,
+        "postMaeR": 7.188661382535873,
+        "maxGivebackR": 11.2142703112109
+      },
+      {
+        "entryTime": "2026-08-26 10:06:00",
+        "direction": "SELL",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 4.24445314420385,
+        "postMaeR": 1,
+        "maxGivebackR": 4.862468931233527
+      },
+      {
+        "entryTime": "2026-08-26 11:26:00",
+        "direction": "BUY",
+        "barsToTp1": 6,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 24.082705410832038,
+        "postMaeR": 0.6617635270540307,
+        "maxGivebackR": 10.739959919843608
+      },
+      {
+        "entryTime": "2026-08-26 12:34:00",
+        "direction": "BUY",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 1.03314506405085,
+        "postMaeR": 4.707022927753476,
+        "maxGivebackR": 5.299037650834444
+      },
+      {
+        "entryTime": "2026-08-26 14:47:00",
+        "direction": "SELL",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 7.420934602883582,
+        "postMaeR": 0.7218984431935244,
+        "maxGivebackR": 3.5612223493309183
+      },
+      {
+        "entryTime": "2026-08-26 15:19:00",
+        "direction": "BUY",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 1.8541455826880853,
+        "postMaeR": 0.24704467699523677,
+        "maxGivebackR": 1.7571842431270643
+      },
+      {
+        "entryTime": "2026-08-26 15:51:00",
+        "direction": "SELL",
+        "barsToTp1": 49,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 17.979915104229587,
+        "postMaeR": 0,
+        "maxGivebackR": 10.27634554870555
+      },
+      {
+        "entryTime": "2026-08-26 16:03:00",
+        "direction": "BUY",
+        "barsToTp1": 3,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 0.9488257944752777,
+        "postMaeR": 2.7561699619119975,
+        "maxGivebackR": 3.42284777764302
+      },
+      {
+        "entryTime": "2026-08-26 16:08:00",
+        "direction": "SELL",
+        "barsToTp1": 30,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 3.754205394386214,
+        "postMaeR": 0,
+        "maxGivebackR": 3.363894365536465
+      },
+      {
+        "entryTime": "2026-08-26 16:52:00",
+        "direction": "SELL",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 0.9084543961846435,
+        "postMaeR": 2.6325189145457766,
+        "maxGivebackR": 3.445369362560272
+      },
+      {
+        "entryTime": "2026-08-26 17:58:00",
+        "direction": "BUY",
+        "barsToTp1": 6,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 8.512508919498595,
+        "postMaeR": 4.207656712867951,
+        "maxGivebackR": 12.117088676024073
+      },
+      {
+        "entryTime": "2026-08-26 20:23:00",
+        "direction": "BUY",
+        "barsToTp1": 2,
+        "tp2ReachedAfterTp1": true,
+        "barsToTp2": 1,
+        "postMfeR": 3.602312005188907,
+        "postMaeR": 0,
+        "maxGivebackR": 0.7710119687583381
+      },
+      {
+        "entryTime": "2026-08-27 00:06:00",
+        "direction": "SELL",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 3.665006002738611,
+        "postMaeR": 0.39135043817178733,
+        "maxGivebackR": 1.459187935339078
+      },
+      {
+        "entryTime": "2026-08-27 03:26:00",
+        "direction": "SELL",
+        "barsToTp1": 21,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 40.45775000538185,
+        "postMaeR": 0,
+        "maxGivebackR": 5.742776894763757
+      },
+      {
+        "entryTime": "2026-08-27 03:30:00",
+        "direction": "SELL",
+        "barsToTp1": 28,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 24.91181245626079,
+        "postMaeR": 0,
+        "maxGivebackR": 3.6915325402377306
+      },
+      {
+        "entryTime": "2026-08-27 08:21:00",
+        "direction": "SELL",
+        "barsToTp1": 2,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 1.4302688721186059,
+        "postMaeR": 0.3959930044750199,
+        "maxGivebackR": 1.3612762424037155
+      },
+      {
+        "entryTime": "2026-08-27 09:00:00",
+        "direction": "SELL",
+        "barsToTp1": 1,
+        "tp2ReachedAfterTp1": false,
+        "barsToTp2": null,
+        "postMfeR": 4.58721047280639,
+        "postMaeR": 0.1451008123372016,
+        "maxGivebackR": 1.2797152290550533
+      }
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_BASE_STAGE_FUNNEL_FORENSICS_V3_UNIQUE_PATHS",
+  "timeframe": "5min",
+  "replayEvents": 10000,
+  "methodology": "Each historical breakout is one path. Stages are counted once per path and only when the required information is observable. No strategy-rule changes.",
+  "stages": {
+    "sufficientHistory": {
+      "seen": 10000,
+      "passed": 9941,
+      "rejected": 59
+    },
+    "breakout": {
+      "seen": 2031,
+      "passed": 2031,
+      "rejected": 0
+    },
+    "followThrough": {
+      "seen": 2031,
+      "passed": 1287,
+      "rejected": 744
+    },
+    "spike": {
+      "seen": 1287,
+      "passed": 1179,
+      "rejected": 108
+    },
+    "correction": {
+      "seen": 1179,
+      "passed": 1035,
+      "rejected": 144
+    },
+    "trigger": {
+      "seen": 1035,
+      "passed": 1016,
+      "rejected": 19
+    },
+    "projection": {
+      "seen": 1016,
+      "passed": 1016,
+      "rejected": 0
+    },
+    "invalidation": {
+      "seen": 1016,
+      "passed": 1016,
+      "rejected": 0
+    },
+    "context": {
+      "seen": 1016,
+      "passed": 1016,
+      "rejected": 0
+    },
+    "quality": {
+      "seen": 1016,
+      "passed": 423,
+      "rejected": 593
+    },
+    "riskReward": {
+      "seen": 423,
+      "passed": 354,
+      "rejected": 69
+    },
+    "finalCandidate": {
+      "seen": 354,
+      "passed": 354,
+      "rejected": 0
+    }
+  },
+  "rawFinalCandidateCount": 354,
+  "finalCandidates": 231,
+  "resolvedFinalCandidates": 220,
+  "finalWinRate": 0.2590909090909091,
+  "finalOutcomeCounts": {
+    "TP1": 57,
+    "SL": 163,
+    "AMBIGUOUS": 11,
+    "OPEN": 0
+  },
+  "finalByDirection": {
+    "BUY": 121,
+    "SELL": 110
+  },
+  "finalBySession": {
+    "LONDON": 120,
+    "NEW_YORK": 79,
+    "OUTSIDE": 32
+  },
+  "finalByQuality": {
+    "B": 231
+  },
+  "finalByResult": {
+    "AMBIGUOUS": 11,
+    "SL": 163,
+    "TP1": 57
+  }
+}

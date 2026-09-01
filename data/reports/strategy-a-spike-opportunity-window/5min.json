@@ -1,0 +1,689 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_SPIKE_OPPORTUNITY_WINDOW",
+  "timeframe": "5min",
+  "data": {
+    "symbol": "XAU/USD",
+    "source": "twelvedata",
+    "candles": 10000,
+    "from": "2026-07-23 18:25:00",
+    "to": "2026-08-27 11:40:00"
+  },
+  "methodology": {
+    "lookbackBars": 60,
+    "binMinutes": 15,
+    "spikeDefinition": "Exploratory only: true-range divided by the median true-range of the preceding 60 bars; spike bars are the top 10% of normalized scores in this dataset and extreme bars are the top 5%. No strategy gate is changed.",
+    "sessionClock": "UTC; aligned with current Strategy A context (London 07:00-16:00, New York 13:00-22:00).",
+    "validation": "Descriptive and split-sample diagnostics only. No threshold is accepted for production from this report."
+  },
+  "thresholds": {
+    "spikeP90": 2.1553412000725958,
+    "extremeP95": 2.9962071876635235
+  },
+  "hourly": [
+    {
+      "hourUTC": 0,
+      "medianScore": 1.6043647759953137,
+      "p90Score": 5.366118050260988,
+      "spikeBars": 158,
+      "observations": 420
+    },
+    {
+      "hourUTC": 1,
+      "medianScore": 1.7037022754129993,
+      "p90Score": 3.8878071162181707,
+      "spikeBars": 161,
+      "observations": 420
+    },
+    {
+      "hourUTC": 2,
+      "medianScore": 1.0505493432705766,
+      "p90Score": 2.143272483697575,
+      "spikeBars": 41,
+      "observations": 420
+    },
+    {
+      "hourUTC": 3,
+      "medianScore": 0.8497249225589198,
+      "p90Score": 1.2661917042189335,
+      "spikeBars": 8,
+      "observations": 420
+    },
+    {
+      "hourUTC": 4,
+      "medianScore": 0.7744404417790604,
+      "p90Score": 1.1637929591736307,
+      "spikeBars": 1,
+      "observations": 420
+    },
+    {
+      "hourUTC": 5,
+      "medianScore": 1.0261063947065379,
+      "p90Score": 1.7834145321997013,
+      "spikeBars": 28,
+      "observations": 420
+    },
+    {
+      "hourUTC": 6,
+      "medianScore": 1.017999619577616,
+      "p90Score": 1.6743561891250767,
+      "spikeBars": 15,
+      "observations": 420
+    },
+    {
+      "hourUTC": 7,
+      "medianScore": 0.9980785691672898,
+      "p90Score": 1.6234617317796132,
+      "spikeBars": 9,
+      "observations": 420
+    },
+    {
+      "hourUTC": 8,
+      "medianScore": 1.0258660131763633,
+      "p90Score": 1.6838331107525009,
+      "spikeBars": 21,
+      "observations": 420
+    },
+    {
+      "hourUTC": 9,
+      "medianScore": 0.9584599106007482,
+      "p90Score": 1.5392021342193856,
+      "spikeBars": 16,
+      "observations": 420
+    },
+    {
+      "hourUTC": 10,
+      "medianScore": 0.9112464436342402,
+      "p90Score": 1.3571270701625033,
+      "spikeBars": 9,
+      "observations": 420
+    },
+    {
+      "hourUTC": 11,
+      "medianScore": 1.0089419442090912,
+      "p90Score": 1.7615356411938554,
+      "spikeBars": 19,
+      "observations": 417
+    },
+    {
+      "hourUTC": 12,
+      "medianScore": 1.1431299142414337,
+      "p90Score": 2.833472814122378,
+      "spikeBars": 72,
+      "observations": 408
+    },
+    {
+      "hourUTC": 13,
+      "medianScore": 1.3124874103936113,
+      "p90Score": 3.0687461351485834,
+      "spikeBars": 104,
+      "observations": 408
+    },
+    {
+      "hourUTC": 14,
+      "medianScore": 1.0894373845340006,
+      "p90Score": 2.3572225514639285,
+      "spikeBars": 59,
+      "observations": 408
+    },
+    {
+      "hourUTC": 15,
+      "medianScore": 1.0018380380329832,
+      "p90Score": 1.8037792094979643,
+      "spikeBars": 26,
+      "observations": 408
+    },
+    {
+      "hourUTC": 16,
+      "medianScore": 0.8584019593458805,
+      "p90Score": 1.2161051840105899,
+      "spikeBars": 6,
+      "observations": 408
+    },
+    {
+      "hourUTC": 17,
+      "medianScore": 0.8252080002269655,
+      "p90Score": 1.210040890187811,
+      "spikeBars": 6,
+      "observations": 408
+    },
+    {
+      "hourUTC": 18,
+      "medianScore": 0.8568012324245944,
+      "p90Score": 1.309321059566565,
+      "spikeBars": 16,
+      "observations": 408
+    },
+    {
+      "hourUTC": 19,
+      "medianScore": 0.8700714765118164,
+      "p90Score": 1.549731594215475,
+      "spikeBars": 20,
+      "observations": 408
+    },
+    {
+      "hourUTC": 20,
+      "medianScore": 0.7486609109031126,
+      "p90Score": 1.2476063459726763,
+      "spikeBars": 8,
+      "observations": 408
+    },
+    {
+      "hourUTC": 21,
+      "medianScore": 0.14582653409234556,
+      "p90Score": 1.1151687635888725,
+      "spikeBars": 10,
+      "observations": 408
+    },
+    {
+      "hourUTC": 22,
+      "medianScore": 0.9410209574656365,
+      "p90Score": 9.91720116886259,
+      "spikeBars": 85,
+      "observations": 408
+    },
+    {
+      "hourUTC": 23,
+      "medianScore": 1.0579328505613594,
+      "p90Score": 7.117618123920282,
+      "spikeBars": 96,
+      "observations": 415
+    }
+  ],
+  "windows": [
+    {
+      "name": "LONDON_OPEN_WINDOW",
+      "observations": 840,
+      "medianScore": 1.019476422376366,
+      "p90Score": 1.6525160892543331,
+      "spikeRate": 0.03571428571428571,
+      "extremeRate": 0.005952380952380952
+    },
+    {
+      "name": "LONDON_NY_OVERLAP",
+      "observations": 1224,
+      "medianScore": 1.0570007808335868,
+      "p90Score": 2.5066688357948945,
+      "spikeRate": 0.15441176470588236,
+      "extremeRate": 0.058823529411764705
+    },
+    {
+      "name": "NY_OPEN_WINDOW",
+      "observations": 408,
+      "medianScore": 1.3124874103936113,
+      "p90Score": 3.0687461351485834,
+      "spikeRate": 0.2549019607843137,
+      "extremeRate": 0.12009803921568628
+    },
+    {
+      "name": "PRE_NY_BUILD",
+      "observations": 825,
+      "medianScore": 1.0512702078522624,
+      "p90Score": 2.292921627305301,
+      "spikeRate": 0.1103030303030303,
+      "extremeRate": 0.04727272727272727
+    },
+    {
+      "name": "OTHER",
+      "observations": 9940,
+      "medianScore": 0.9943069786153131,
+      "p90Score": 2.1553412000725958,
+      "spikeRate": 0.1,
+      "extremeRate": 0.05
+    }
+  ],
+  "baselineTradeWindows": [
+    {
+      "name": "LONDON_OPEN_WINDOW",
+      "n": 9,
+      "PF": 0.12738835027219966,
+      "avgR": -0.7756547997580447,
+      "totalR": -6.980893197822403,
+      "maxDD": 8,
+      "spikeScoreP50": 0.9983057266440724
+    },
+    {
+      "name": "LONDON_NY_OVERLAP",
+      "n": 39,
+      "PF": 0.31849036044654255,
+      "avgR": -0.559187396556683,
+      "totalR": -21.80830846571064,
+      "maxDD": 24.491126232297077,
+      "spikeScoreP50": 1.4468417739227135
+    },
+    {
+      "name": "NY_OPEN_WINDOW",
+      "n": 17,
+      "PF": 0.41250470333822786,
+      "avgR": -0.44926110921194345,
+      "totalR": -7.637438856603039,
+      "maxDD": 7.637438856603039,
+      "spikeScoreP50": 2.3216612832379058
+    },
+    {
+      "name": "PRE_NY_BUILD",
+      "n": 32,
+      "PF": 0.3956098637393748,
+      "avgR": -0.491066985711758,
+      "totalR": -15.714143542776256,
+      "maxDD": 15.714143542776256,
+      "spikeScoreP50": 1.066302697022531
+    },
+    {
+      "name": "OTHER",
+      "n": 221,
+      "PF": 0.7851739916194825,
+      "avgR": -0.15844633197296074,
+      "totalR": -35.01663936602432,
+      "maxDD": 46.289059522000116,
+      "spikeScoreP50": 1.2517299373927158
+    }
+  ],
+  "oosBaselineTradeWindows": [
+    {
+      "name": "LONDON_OPEN_WINDOW",
+      "n": 5,
+      "PF": 0.2547767005443993,
+      "avgR": -0.5961786395644806,
+      "totalR": -2.980893197822403
+    },
+    {
+      "name": "LONDON_NY_OVERLAP",
+      "n": 21,
+      "PF": 0.05592073809453087,
+      "avgR": -0.8541669512478055,
+      "totalR": -17.937505976203916
+    },
+    {
+      "name": "NY_OPEN_WINDOW",
+      "n": 7,
+      "PF": 0.04152230831738237,
+      "avgR": -0.8215523071565294,
+      "totalR": -5.750866150095706
+    },
+    {
+      "name": "PRE_NY_BUILD",
+      "n": 20,
+      "PF": 0.4450059917281294,
+      "avgR": -0.4439952066174965,
+      "totalR": -8.87990413234993
+    },
+    {
+      "name": "OTHER",
+      "n": 111,
+      "PF": 0.8907760019951225,
+      "avgR": -0.07576799861599595,
+      "totalR": -8.410247846375551
+    }
+  ],
+  "dailySpikeDistribution": [
+    {
+      "date": "2026-07-23",
+      "n": 7,
+      "spikes": 0,
+      "extreme": 0,
+      "max": 2.123716182495677,
+      "spikeRate": 0,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 0
+    },
+    {
+      "date": "2026-07-24",
+      "n": 288,
+      "spikes": 38,
+      "extreme": 16,
+      "max": 7.620648440545972,
+      "spikeRate": 0.13194444444444445,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 38
+    },
+    {
+      "date": "2026-07-25",
+      "n": 288,
+      "spikes": 0,
+      "extreme": 0,
+      "max": 1.0670625756068106,
+      "spikeRate": 0,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 0
+    },
+    {
+      "date": "2026-07-26",
+      "n": 288,
+      "spikes": 27,
+      "extreme": 27,
+      "max": 440.1860553716822,
+      "spikeRate": 0.09375,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 27
+    },
+    {
+      "date": "2026-07-27",
+      "n": 288,
+      "spikes": 25,
+      "extreme": 13,
+      "max": 34.49232127096939,
+      "spikeRate": 0.08680555555555555,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 25
+    },
+    {
+      "date": "2026-07-28",
+      "n": 288,
+      "spikes": 33,
+      "extreme": 9,
+      "max": 5.046029761541491,
+      "spikeRate": 0.11458333333333333,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 33
+    },
+    {
+      "date": "2026-07-29",
+      "n": 288,
+      "spikes": 40,
+      "extreme": 18,
+      "max": 11.768870381236953,
+      "spikeRate": 0.1388888888888889,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 40
+    },
+    {
+      "date": "2026-07-30",
+      "n": 288,
+      "spikes": 21,
+      "extreme": 7,
+      "max": 4.878738794516549,
+      "spikeRate": 0.07291666666666667,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 21
+    },
+    {
+      "date": "2026-07-31",
+      "n": 288,
+      "spikes": 23,
+      "extreme": 8,
+      "max": 4.494695253701094,
+      "spikeRate": 0.0798611111111111,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 23
+    },
+    {
+      "date": "2026-08-01",
+      "n": 288,
+      "spikes": 0,
+      "extreme": 0,
+      "max": 1.0674164795850378,
+      "spikeRate": 0,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 0
+    },
+    {
+      "date": "2026-08-02",
+      "n": 288,
+      "spikes": 31,
+      "extreme": 29,
+      "max": 277.25474584050954,
+      "spikeRate": 0.1076388888888889,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 31
+    },
+    {
+      "date": "2026-08-03",
+      "n": 288,
+      "spikes": 25,
+      "extreme": 13,
+      "max": 8.269854139157664,
+      "spikeRate": 0.08680555555555555,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 25
+    },
+    {
+      "date": "2026-08-04",
+      "n": 288,
+      "spikes": 44,
+      "extreme": 20,
+      "max": 7.72008390689695,
+      "spikeRate": 0.1527777777777778,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 44
+    },
+    {
+      "date": "2026-08-05",
+      "n": 288,
+      "spikes": 37,
+      "extreme": 13,
+      "max": 11.447978997870702,
+      "spikeRate": 0.1284722222222222,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 37
+    },
+    {
+      "date": "2026-08-06",
+      "n": 288,
+      "spikes": 43,
+      "extreme": 24,
+      "max": 6.165845400140746,
+      "spikeRate": 0.14930555555555555,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 43
+    },
+    {
+      "date": "2026-08-07",
+      "n": 288,
+      "spikes": 36,
+      "extreme": 18,
+      "max": 14.366116983300461,
+      "spikeRate": 0.125,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 36
+    },
+    {
+      "date": "2026-08-08",
+      "n": 288,
+      "spikes": 0,
+      "extreme": 0,
+      "max": 1.2512444636069888,
+      "spikeRate": 0,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 0
+    },
+    {
+      "date": "2026-08-09",
+      "n": 288,
+      "spikes": 27,
+      "extreme": 26,
+      "max": 81.15738161575426,
+      "spikeRate": 0.09375,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 27
+    },
+    {
+      "date": "2026-08-10",
+      "n": 288,
+      "spikes": 29,
+      "extreme": 9,
+      "max": 15.925554760203445,
+      "spikeRate": 0.10069444444444445,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 29
+    },
+    {
+      "date": "2026-08-11",
+      "n": 288,
+      "spikes": 43,
+      "extreme": 20,
+      "max": 9.72080536229646,
+      "spikeRate": 0.14930555555555555,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 43
+    },
+    {
+      "date": "2026-08-12",
+      "n": 288,
+      "spikes": 41,
+      "extreme": 16,
+      "max": 15.36343149585773,
+      "spikeRate": 0.1423611111111111,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 41
+    },
+    {
+      "date": "2026-08-13",
+      "n": 288,
+      "spikes": 49,
+      "extreme": 25,
+      "max": 12.793593487416071,
+      "spikeRate": 0.1701388888888889,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 49
+    },
+    {
+      "date": "2026-08-14",
+      "n": 288,
+      "spikes": 25,
+      "extreme": 4,
+      "max": 4.310534263454112,
+      "spikeRate": 0.08680555555555555,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 25
+    },
+    {
+      "date": "2026-08-15",
+      "n": 288,
+      "spikes": 2,
+      "extreme": 2,
+      "max": 17.340728744950063,
+      "spikeRate": 0.006944444444444444,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 2
+    },
+    {
+      "date": "2026-08-16",
+      "n": 288,
+      "spikes": 25,
+      "extreme": 25,
+      "max": 37.2877969333899,
+      "spikeRate": 0.08680555555555555,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 25
+    },
+    {
+      "date": "2026-08-17",
+      "n": 288,
+      "spikes": 38,
+      "extreme": 20,
+      "max": 22.768884706298426,
+      "spikeRate": 0.13194444444444445,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 38
+    },
+    {
+      "date": "2026-08-18",
+      "n": 288,
+      "spikes": 43,
+      "extreme": 18,
+      "max": 6.141353876242639,
+      "spikeRate": 0.14930555555555555,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 43
+    },
+    {
+      "date": "2026-08-19",
+      "n": 288,
+      "spikes": 38,
+      "extreme": 19,
+      "max": 12.246510814578475,
+      "spikeRate": 0.13194444444444445,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 38
+    },
+    {
+      "date": "2026-08-20",
+      "n": 288,
+      "spikes": 33,
+      "extreme": 10,
+      "max": 6.432549368790368,
+      "spikeRate": 0.11458333333333333,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 33
+    },
+    {
+      "date": "2026-08-21",
+      "n": 288,
+      "spikes": 24,
+      "extreme": 8,
+      "max": 4.057680109500773,
+      "spikeRate": 0.08333333333333333,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 24
+    },
+    {
+      "date": "2026-08-22",
+      "n": 288,
+      "spikes": 0,
+      "extreme": 0,
+      "max": 1.1674521496550405,
+      "spikeRate": 0,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 0
+    },
+    {
+      "date": "2026-08-23",
+      "n": 288,
+      "spikes": 27,
+      "extreme": 27,
+      "max": 86.83915746498576,
+      "spikeRate": 0.09375,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 27
+    },
+    {
+      "date": "2026-08-24",
+      "n": 288,
+      "spikes": 36,
+      "extreme": 16,
+      "max": 47.65663771718088,
+      "spikeRate": 0.125,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 36
+    },
+    {
+      "date": "2026-08-25",
+      "n": 288,
+      "spikes": 34,
+      "extreme": 14,
+      "max": 8.020648011007676,
+      "spikeRate": 0.11805555555555555,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 34
+    },
+    {
+      "date": "2026-08-26",
+      "n": 288,
+      "spikes": 37,
+      "extreme": 15,
+      "max": 6.507751096356158,
+      "spikeRate": 0.1284722222222222,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 37
+    },
+    {
+      "date": "2026-08-27",
+      "n": 141,
+      "spikes": 20,
+      "extreme": 8,
+      "max": 4.163030721847618,
+      "spikeRate": 0.14184397163120568,
+      "desiredSignalRange": "1-5",
+      "spikeEventCountProxy": 20
+    }
+  ],
+  "decisionHints": {
+    "targetSignalsPerDay": {
+      "min": 1,
+      "max": 5
+    },
+    "nextResearchGate": "Test whether high-spike opportunity windows combine with structurally valid SP2L setups and remain positive in OOS, without forcing a daily signal quota.",
+    "warning": "The current sample is short. A 1-5 signal/day target is a design objective, not evidence that the market supplies 1-5 valid setups every day."
+  }
+}

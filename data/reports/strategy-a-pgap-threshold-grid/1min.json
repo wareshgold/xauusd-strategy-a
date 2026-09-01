@@ -1,0 +1,900 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "timeframe": "1min",
+  "sourceReport": "data/reports/strategy-a-pgap-candidate-quality/1min.json",
+  "purpose": "Diagnostic threshold-distribution study for pre-entry P-GAP candidate size relative to spike size. No threshold is promoted to a trading rule.",
+  "fullSample": {
+    "trades": 310,
+    "baseline": {
+      "trades": 310,
+      "wins": 63,
+      "losses": 247,
+      "winRate": 0.2032258064516129,
+      "avgR": 0.07496391062943528,
+      "totalR": 23.238812295124934,
+      "PF": 1.0940842603041498,
+      "medianR": -1
+    },
+    "baselineDD": 116.43256075844721,
+    "ratioDistribution": {
+      "p25": 0.013875475343190872,
+      "p50": 0.026292961302292243,
+      "p75": 0.04722075404510507,
+      "p90": 0.06759826848420203
+    },
+    "byRatioBand": {
+      "LT_0.02": {
+        "trades": 102,
+        "wins": 21,
+        "losses": 81,
+        "winRate": 0.20588235294117646,
+        "avgR": -0.049594431490867875,
+        "totalR": -5.058632012068523,
+        "PF": 0.9375477529374255,
+        "medianR": -1,
+        "DD": 43.138902154900066
+      },
+      "0.02_0.05": {
+        "trades": 91,
+        "wins": 18,
+        "losses": 73,
+        "winRate": 0.1978021978021978,
+        "avgR": -0.41720799670484576,
+        "totalR": -37.965927700140966,
+        "PF": 0.479918798628206,
+        "medianR": -1,
+        "DD": 41.40019070954628
+      },
+      "0.05_0.10": {
+        "trades": 56,
+        "wins": 13,
+        "losses": 43,
+        "winRate": 0.23214285714285715,
+        "avgR": 1.5950217323801301,
+        "totalR": 89.32121701328728,
+        "PF": 3.0772376049601693,
+        "medianR": -1,
+        "DD": 36.75650489696747
+      },
+      "0.10_0.20": {
+        "trades": 3,
+        "wins": 2,
+        "losses": 1,
+        "winRate": 0.6666666666666666,
+        "avgR": -0.0017294588951624057,
+        "totalR": -0.005188376685487217,
+        "PF": 0.9948116233145128,
+        "medianR": 0.3248434771499223,
+        "DD": 1
+      },
+      "0.20_0.40": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null,
+        "medianR": null,
+        "DD": 0
+      },
+      "GE_0.40": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null,
+        "medianR": null,
+        "DD": 0
+      }
+    },
+    "cumulativeUpperThresholds": {
+      "LE_0.02": {
+        "threshold": 0.02,
+        "kept": 102,
+        "coverage": 0.32903225806451614,
+        "trades": 102,
+        "wins": 21,
+        "losses": 81,
+        "winRate": 0.20588235294117646,
+        "avgR": -0.049594431490867875,
+        "totalR": -5.058632012068523,
+        "PF": 0.9375477529374255,
+        "medianR": -1,
+        "DD": 43.138902154900066
+      },
+      "LE_0.05": {
+        "threshold": 0.05,
+        "kept": 193,
+        "coverage": 0.6225806451612903,
+        "trades": 193,
+        "wins": 39,
+        "losses": 154,
+        "winRate": 0.20207253886010362,
+        "avgR": -0.22292517985600763,
+        "totalR": -43.024559712209474,
+        "PF": 0.7206197421285099,
+        "medianR": -1,
+        "DD": 74.26295856104036
+      },
+      "LE_0.10": {
+        "threshold": 0.1,
+        "kept": 249,
+        "coverage": 0.8032258064516129,
+        "trades": 249,
+        "wins": 52,
+        "losses": 197,
+        "winRate": 0.20883534136546184,
+        "avgR": 0.18593035060673813,
+        "totalR": 46.29665730107779,
+        "PF": 1.2350084126958267,
+        "medianR": -1,
+        "DD": 97.37383039068247
+      },
+      "LE_0.20": {
+        "threshold": 0.2,
+        "kept": 252,
+        "coverage": 0.8129032258064516,
+        "trades": 252,
+        "wins": 54,
+        "losses": 198,
+        "winRate": 0.21428571428571427,
+        "avgR": 0.18369630525552505,
+        "totalR": 46.29146892439231,
+        "PF": 1.2337952975979412,
+        "medianR": -1,
+        "DD": 97.37901876736795
+      },
+      "LE_0.40": {
+        "threshold": 0.4,
+        "kept": 252,
+        "coverage": 0.8129032258064516,
+        "trades": 252,
+        "wins": 54,
+        "losses": 198,
+        "winRate": 0.21428571428571427,
+        "avgR": 0.18369630525552505,
+        "totalR": 46.29146892439231,
+        "PF": 1.2337952975979412,
+        "medianR": -1,
+        "DD": 97.37901876736795
+      }
+    }
+  },
+  "oosSecondHalf": {
+    "trades": 155,
+    "baseline": {
+      "trades": 155,
+      "wins": 28,
+      "losses": 127,
+      "winRate": 0.18064516129032257,
+      "avgR": -0.26008959707587315,
+      "totalR": -40.31388754676034,
+      "PF": 0.6825678145924382,
+      "medianR": -1
+    },
+    "baselineDD": 61.28601262683262,
+    "byRatioBand": {
+      "LT_0.02": {
+        "trades": 55,
+        "wins": 11,
+        "losses": 44,
+        "winRate": 0.2,
+        "avgR": 0.2982906839283695,
+        "totalR": 16.405987616060322,
+        "PF": 1.3728633549104619,
+        "medianR": -1,
+        "DD": 21.674282526771222
+      },
+      "0.02_0.05": {
+        "trades": 46,
+        "wins": 8,
+        "losses": 38,
+        "winRate": 0.17391304347826086,
+        "avgR": -0.4151441984357258,
+        "totalR": -19.096633128043386,
+        "PF": 0.4974570229462267,
+        "medianR": -1,
+        "DD": 19.096633128043386
+      },
+      "0.05_0.10": {
+        "trades": 26,
+        "wins": 8,
+        "losses": 18,
+        "winRate": 0.3076923076923077,
+        "avgR": -0.47259999946001613,
+        "totalR": -12.28759998596042,
+        "PF": 0.31735555633553236,
+        "medianR": -1,
+        "DD": 12.480024684866228
+      },
+      "0.10_0.20": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0,
+        "medianR": -1,
+        "DD": 1
+      },
+      "0.20_0.40": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null,
+        "medianR": null,
+        "DD": 0
+      },
+      "GE_0.40": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null,
+        "medianR": null,
+        "DD": 0
+      }
+    },
+    "cumulativeUpperThresholds": {
+      "LE_0.02": {
+        "threshold": 0.02,
+        "kept": 55,
+        "coverage": 0.3548387096774194,
+        "trades": 55,
+        "wins": 11,
+        "losses": 44,
+        "winRate": 0.2,
+        "avgR": 0.2982906839283695,
+        "totalR": 16.405987616060322,
+        "PF": 1.3728633549104619,
+        "medianR": -1,
+        "DD": 21.674282526771222
+      },
+      "LE_0.05": {
+        "threshold": 0.05,
+        "kept": 101,
+        "coverage": 0.6516129032258065,
+        "trades": 101,
+        "wins": 19,
+        "losses": 82,
+        "winRate": 0.18811881188118812,
+        "avgR": -0.026640054574089772,
+        "totalR": -2.690645511983067,
+        "PF": 0.967187249853865,
+        "medianR": -1,
+        "DD": 31.49478135140864
+      },
+      "LE_0.10": {
+        "threshold": 0.1,
+        "kept": 127,
+        "coverage": 0.8193548387096774,
+        "trades": 127,
+        "wins": 27,
+        "losses": 100,
+        "winRate": 0.2125984251968504,
+        "avgR": -0.11793894092868888,
+        "totalR": -14.978245497943488,
+        "PF": 0.8502175450205649,
+        "medianR": -1,
+        "DD": 39.568353009278916
+      },
+      "LE_0.20": {
+        "threshold": 0.2,
+        "kept": 128,
+        "coverage": 0.8258064516129032,
+        "trades": 128,
+        "wins": 27,
+        "losses": 101,
+        "winRate": 0.2109375,
+        "avgR": -0.1248300429526835,
+        "totalR": -15.978245497943488,
+        "PF": 0.8417995495253119,
+        "medianR": -1,
+        "DD": 40.568353009278916
+      },
+      "LE_0.40": {
+        "threshold": 0.4,
+        "kept": 128,
+        "coverage": 0.8258064516129032,
+        "trades": 128,
+        "wins": 27,
+        "losses": 101,
+        "winRate": 0.2109375,
+        "avgR": -0.1248300429526835,
+        "totalR": -15.978245497943488,
+        "PF": 0.8417995495253119,
+        "medianR": -1,
+        "DD": 40.568353009278916
+      }
+    }
+  },
+  "byDirection": {
+    "BUY": {
+      "trades": 167,
+      "byRatioBand": {
+        "LT_0.02": {
+          "trades": 69,
+          "wins": 14,
+          "losses": 55,
+          "winRate": 0.2028985507246377,
+          "avgR": -0.4770729898272868,
+          "totalR": -32.91803629808279,
+          "PF": 0.4014902491257676,
+          "medianR": -1,
+          "DD": 32.92620834276168
+        },
+        "0.02_0.05": {
+          "trades": 36,
+          "wins": 9,
+          "losses": 27,
+          "winRate": 0.25,
+          "avgR": -0.3212791271979279,
+          "totalR": -11.566048579125404,
+          "PF": 0.5716278304027629,
+          "medianR": -1,
+          "DD": 15.406520935927428
+        },
+        "0.05_0.10": {
+          "trades": 22,
+          "wins": 4,
+          "losses": 18,
+          "winRate": 0.18181818181818182,
+          "avgR": -0.7288972352540687,
+          "totalR": -16.035739175589512,
+          "PF": 0.10912560135613822,
+          "medianR": -1,
+          "DD": 16.035739175589512
+        },
+        "0.10_0.20": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "0.20_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "GE_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        }
+      },
+      "cumulativeUpperThresholds": {
+        "LE_0.02": {
+          "threshold": 0.02,
+          "kept": 69,
+          "coverage": 0.41317365269461076,
+          "trades": 69,
+          "wins": 14,
+          "losses": 55,
+          "winRate": 0.2028985507246377,
+          "avgR": -0.4770729898272868,
+          "totalR": -32.91803629808279,
+          "PF": 0.4014902491257676,
+          "medianR": -1,
+          "DD": 32.92620834276168
+        },
+        "LE_0.05": {
+          "threshold": 0.05,
+          "kept": 105,
+          "coverage": 0.6287425149700598,
+          "trades": 105,
+          "wins": 23,
+          "losses": 82,
+          "winRate": 0.21904761904761905,
+          "avgR": -0.42365795121150657,
+          "totalR": -44.48408487720819,
+          "PF": 0.4575111600340464,
+          "medianR": -1,
+          "DD": 44.48408487720819
+        },
+        "LE_0.10": {
+          "threshold": 0.1,
+          "kept": 127,
+          "coverage": 0.7604790419161677,
+          "trades": 127,
+          "wins": 27,
+          "losses": 100,
+          "winRate": 0.2125984251968504,
+          "avgR": -0.4765340476598243,
+          "totalR": -60.51982405279769,
+          "PF": 0.394801759472023,
+          "medianR": -1,
+          "DD": 60.51982405279769
+        },
+        "LE_0.20": {
+          "threshold": 0.2,
+          "kept": 127,
+          "coverage": 0.7604790419161677,
+          "trades": 127,
+          "wins": 27,
+          "losses": 100,
+          "winRate": 0.2125984251968504,
+          "avgR": -0.4765340476598243,
+          "totalR": -60.51982405279769,
+          "PF": 0.394801759472023,
+          "medianR": -1,
+          "DD": 60.51982405279769
+        },
+        "LE_0.40": {
+          "threshold": 0.4,
+          "kept": 127,
+          "coverage": 0.7604790419161677,
+          "trades": 127,
+          "wins": 27,
+          "losses": 100,
+          "winRate": 0.2125984251968504,
+          "avgR": -0.4765340476598243,
+          "totalR": -60.51982405279769,
+          "PF": 0.394801759472023,
+          "medianR": -1,
+          "DD": 60.51982405279769
+        }
+      }
+    },
+    "SELL": {
+      "trades": 143,
+      "byRatioBand": {
+        "LT_0.02": {
+          "trades": 33,
+          "wins": 7,
+          "losses": 26,
+          "winRate": 0.21212121212121213,
+          "avgR": 0.8442243723034625,
+          "totalR": 27.85940428601426,
+          "PF": 2.071515549462087,
+          "medianR": -1,
+          "DD": 13.974217217539426
+        },
+        "0.02_0.05": {
+          "trades": 55,
+          "wins": 9,
+          "losses": 46,
+          "winRate": 0.16363636363636364,
+          "avgR": -0.4799978022002828,
+          "totalR": -26.399879121015555,
+          "PF": 0.4260895843257488,
+          "medianR": -1,
+          "DD": 31.88828031831546
+        },
+        "0.05_0.10": {
+          "trades": 34,
+          "wins": 9,
+          "losses": 25,
+          "winRate": 0.2647058823529412,
+          "avgR": 3.0987340055552,
+          "totalR": 105.35695618887681,
+          "PF": 5.214278247555073,
+          "medianR": -1,
+          "DD": 21.11007653960462
+        },
+        "0.10_0.20": {
+          "trades": 3,
+          "wins": 2,
+          "losses": 1,
+          "winRate": 0.6666666666666666,
+          "avgR": -0.0017294588951624057,
+          "totalR": -0.005188376685487217,
+          "PF": 0.9948116233145128,
+          "medianR": 0.3248434771499223,
+          "DD": 1
+        },
+        "0.20_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "GE_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        }
+      },
+      "cumulativeUpperThresholds": {
+        "LE_0.02": {
+          "threshold": 0.02,
+          "kept": 33,
+          "coverage": 0.23076923076923078,
+          "trades": 33,
+          "wins": 7,
+          "losses": 26,
+          "winRate": 0.21212121212121213,
+          "avgR": 0.8442243723034625,
+          "totalR": 27.85940428601426,
+          "PF": 2.071515549462087,
+          "medianR": -1,
+          "DD": 13.974217217539426
+        },
+        "LE_0.05": {
+          "threshold": 0.05,
+          "kept": 88,
+          "coverage": 0.6153846153846154,
+          "trades": 88,
+          "wins": 16,
+          "losses": 72,
+          "winRate": 0.18181818181818182,
+          "avgR": 0.016585513238621577,
+          "totalR": 1.4595251649986989,
+          "PF": 1.0202711828472042,
+          "medianR": -1,
+          "DD": 39.164652336900495
+        },
+        "LE_0.10": {
+          "threshold": 0.1,
+          "kept": 122,
+          "coverage": 0.8531468531468531,
+          "trades": 122,
+          "wins": 25,
+          "losses": 97,
+          "winRate": 0.20491803278688525,
+          "avgR": 0.8755449291301269,
+          "totalR": 106.81648135387549,
+          "PF": 2.101200838699748,
+          "medianR": -1,
+          "DD": 54.07520916314688
+        },
+        "LE_0.20": {
+          "threshold": 0.2,
+          "kept": 125,
+          "coverage": 0.8741258741258742,
+          "trades": 125,
+          "wins": 27,
+          "losses": 98,
+          "winRate": 0.216,
+          "avgR": 0.8544903438175201,
+          "totalR": 106.81129297719,
+          "PF": 2.0899111528284697,
+          "medianR": -1,
+          "DD": 54.08039753983236
+        },
+        "LE_0.40": {
+          "threshold": 0.4,
+          "kept": 125,
+          "coverage": 0.8741258741258742,
+          "trades": 125,
+          "wins": 27,
+          "losses": 98,
+          "winRate": 0.216,
+          "avgR": 0.8544903438175201,
+          "totalR": 106.81129297719,
+          "PF": 2.0899111528284697,
+          "medianR": -1,
+          "DD": 54.08039753983236
+        }
+      }
+    }
+  },
+  "bySession": {
+    "OVERLAP": {
+      "trades": 53,
+      "byRatioBand": {
+        "LT_0.02": {
+          "trades": 18,
+          "wins": 2,
+          "losses": 16,
+          "winRate": 0.1111111111111111,
+          "avgR": 0.010997143844124166,
+          "totalR": 0.19794858919423497,
+          "PF": 1.0123717868246396,
+          "medianR": -1,
+          "DD": 12.47974250821835
+        },
+        "0.02_0.05": {
+          "trades": 13,
+          "wins": 3,
+          "losses": 10,
+          "winRate": 0.23076923076923078,
+          "avgR": -0.17459657035201157,
+          "totalR": -2.2697554145761503,
+          "PF": 0.7730244585423849,
+          "medianR": -1,
+          "DD": 4
+        },
+        "0.05_0.10": {
+          "trades": 10,
+          "wins": 4,
+          "losses": 6,
+          "winRate": 0.4,
+          "avgR": -0.4005495837769744,
+          "totalR": -4.005495837769744,
+          "PF": 0.33241736037170927,
+          "medianR": -1,
+          "DD": 5.435450654454295
+        },
+        "0.10_0.20": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "0.20_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "GE_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        }
+      }
+    },
+    "NEW_YORK_ONLY": {
+      "trades": 104,
+      "byRatioBand": {
+        "LT_0.02": {
+          "trades": 35,
+          "wins": 6,
+          "losses": 29,
+          "winRate": 0.17142857142857143,
+          "avgR": -0.3901438970570916,
+          "totalR": -13.655036396998208,
+          "PF": 0.529136675965579,
+          "medianR": -1,
+          "DD": 20.33205324914529
+        },
+        "0.02_0.05": {
+          "trades": 23,
+          "wins": 7,
+          "losses": 16,
+          "winRate": 0.30434782608695654,
+          "avgR": -0.2610825606408888,
+          "totalR": -6.0048988947404425,
+          "PF": 0.6246938190787225,
+          "medianR": -1,
+          "DD": 11.439161904145754
+        },
+        "0.05_0.10": {
+          "trades": 21,
+          "wins": 4,
+          "losses": 17,
+          "winRate": 0.19047619047619047,
+          "avgR": 5.312314335633085,
+          "totalR": 111.55860104829478,
+          "PF": 7.562270649899693,
+          "medianR": -1,
+          "DD": 14.326696163054166
+        },
+        "0.10_0.20": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "0.20_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "GE_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        }
+      }
+    },
+    "OUTSIDE": {
+      "trades": 100,
+      "byRatioBand": {
+        "LT_0.02": {
+          "trades": 35,
+          "wins": 8,
+          "losses": 27,
+          "winRate": 0.22857142857142856,
+          "avgR": 0.3079611950674736,
+          "totalR": 10.778641827361577,
+          "PF": 1.3992089565689474,
+          "medianR": -1,
+          "DD": 22.129297493099557
+        },
+        "0.02_0.05": {
+          "trades": 33,
+          "wins": 4,
+          "losses": 29,
+          "winRate": 0.12121212121212122,
+          "avgR": -0.6567693567642668,
+          "totalR": -21.673388773220807,
+          "PF": 0.2526417664406619,
+          "medianR": -1,
+          "DD": 21.673388773220807
+        },
+        "0.05_0.10": {
+          "trades": 20,
+          "wins": 3,
+          "losses": 17,
+          "winRate": 0.15,
+          "avgR": -0.7759517537686464,
+          "totalR": -15.519035075372928,
+          "PF": 0.08711558380159254,
+          "medianR": -1,
+          "DD": 15.519035075372928
+        },
+        "0.10_0.20": {
+          "trades": 1,
+          "wins": 1,
+          "losses": 0,
+          "winRate": 1,
+          "avgR": 0.3248434771499223,
+          "totalR": 0.3248434771499223,
+          "PF": null,
+          "medianR": 0.3248434771499223,
+          "DD": 0
+        },
+        "0.20_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "GE_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        }
+      }
+    },
+    "LONDON_ONLY": {
+      "trades": 53,
+      "byRatioBand": {
+        "LT_0.02": {
+          "trades": 14,
+          "wins": 5,
+          "losses": 9,
+          "winRate": 0.35714285714285715,
+          "avgR": -0.1700132879732949,
+          "totalR": -2.3801860316261285,
+          "PF": 0.7355348853748745,
+          "medianR": -1,
+          "DD": 4
+        },
+        "0.02_0.05": {
+          "trades": 22,
+          "wins": 4,
+          "losses": 18,
+          "winRate": 0.18181818181818182,
+          "avgR": -0.36444930080016197,
+          "totalR": -8.017884617603563,
+          "PF": 0.554561965688691,
+          "medianR": -1,
+          "DD": 12.504648056004287
+        },
+        "0.05_0.10": {
+          "trades": 5,
+          "wins": 2,
+          "losses": 3,
+          "winRate": 0.4,
+          "avgR": -0.542570624372966,
+          "totalR": -2.71285312186483,
+          "PF": 0.09571562604505651,
+          "medianR": -1,
+          "DD": 3
+        },
+        "0.10_0.20": {
+          "trades": 2,
+          "wins": 1,
+          "losses": 1,
+          "winRate": 0.5,
+          "avgR": -0.16501592691770472,
+          "totalR": -0.33003185383540945,
+          "PF": 0.6699681461645906,
+          "medianR": -0.16501592691770472,
+          "DD": 1
+        },
+        "0.20_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        },
+        "GE_0.40": {
+          "trades": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": 0,
+          "avgR": 0,
+          "totalR": 0,
+          "PF": null,
+          "medianR": null,
+          "DD": 0
+        }
+      }
+    }
+  },
+  "researchWarnings": [
+    "P-GAP candidate evidence is heuristic and is not yet a validated P-GAP definition.",
+    "Small bins can show unstable PF/AvgR and must not be treated as evidence of a robust edge.",
+    "The second-half split is an exploratory OOS check, not a formal walk-forward validation.",
+    "No threshold or filter is activated by this report."
+  ]
+}

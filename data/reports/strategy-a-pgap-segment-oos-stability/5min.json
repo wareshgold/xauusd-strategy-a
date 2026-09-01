@@ -1,0 +1,942 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "timeframe": "5min",
+  "sourceReport": "data/reports/strategy-a-pgap-candidate-quality/5min.json",
+  "purpose": "OOS stability screen for P-GAP ratio × direction × session interactions. Diagnostic only; no rule activation.",
+  "sample": {
+    "matchedTrades": 221,
+    "candidateTrades": 216,
+    "firstHalfTrades": 108,
+    "secondHalfTrades": 108,
+    "candidateRatioDistribution": {
+      "0.10_0.20": {
+        "trades": 93,
+        "wins": 22,
+        "losses": 71,
+        "winRate": 0.23655913978494625,
+        "avgR": -0.04841961838981546,
+        "totalR": -4.503024510252838,
+        "PF": 0.9365771195739038
+      },
+      "0.05_0.10": {
+        "trades": 22,
+        "wins": 7,
+        "losses": 15,
+        "winRate": 0.3181818181818182,
+        "avgR": 0.6260686581293513,
+        "totalR": 13.77351047884573,
+        "PF": 1.9182340319230486
+      },
+      "0.20_0.40": {
+        "trades": 80,
+        "wins": 20,
+        "losses": 60,
+        "winRate": 0.25,
+        "avgR": -0.4824628806741808,
+        "totalR": -38.597030453934465,
+        "PF": 0.3567161591010924
+      },
+      "LT_0.02": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "GE_0.40": {
+        "trades": 12,
+        "wins": 4,
+        "losses": 8,
+        "winRate": 0.3333333333333333,
+        "avgR": -0.5477520647234025,
+        "totalR": -6.573024776680831,
+        "PF": 0.17837190291489605
+      },
+      "0.02_0.05": {
+        "trades": 8,
+        "wins": 3,
+        "losses": 5,
+        "winRate": 0.375,
+        "avgR": -0.3401875716758711,
+        "totalR": -2.721500573406969,
+        "PF": 0.4556998853186062
+      }
+    }
+  },
+  "candidateBaseline": {
+    "firstHalf": {
+      "trades": 108,
+      "wins": 24,
+      "losses": 84,
+      "winRate": 0.2222222222222222,
+      "avgR": -0.22685881511782782,
+      "totalR": -24.500752032725405,
+      "PF": 0.7083243805627928
+    },
+    "secondHalf": {
+      "trades": 108,
+      "wins": 32,
+      "losses": 76,
+      "winRate": 0.2962962962962963,
+      "avgR": -0.14000294261762924,
+      "totalR": -15.120317802703958,
+      "PF": 0.8010484499644215
+    },
+    "sameAvgRSign": true,
+    "positiveAvgRBothHalves": false,
+    "PFAbove1BothHalves": false,
+    "qualifiesForFollowUp": false
+  },
+  "segments": {
+    "BUY__LONDON_ONLY__0.05_0.10": {
+      "firstHalf": {
+        "trades": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "PF": 0
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__LONDON_ONLY__0.10_0.20": {
+      "firstHalf": {
+        "trades": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 3,
+        "wins": 1,
+        "losses": 2,
+        "winRate": 0.3333333333333333,
+        "avgR": 1.5333238650644547,
+        "totalR": 4.599971595193364,
+        "PF": 3.299985797596682
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__LONDON_ONLY__0.20_0.40": {
+      "firstHalf": {
+        "trades": 4,
+        "wins": 1,
+        "losses": 3,
+        "winRate": 0.25,
+        "avgR": -0.6777159834950739,
+        "totalR": -2.7108639339802956,
+        "PF": 0.09637868867323478
+      },
+      "secondHalf": {
+        "trades": 5,
+        "wins": 1,
+        "losses": 4,
+        "winRate": 0.2,
+        "avgR": -0.7451017979858424,
+        "totalR": -3.725508989929212,
+        "PF": 0.06862275251769694
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__LONDON_ONLY__GE_0.40": {
+      "firstHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "avgR": -0.42769905220581583,
+        "totalR": -0.8553981044116317,
+        "PF": 0.1446018955883683
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__OVERLAP__0.05_0.10": {
+      "firstHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__OVERLAP__0.10_0.20": {
+      "firstHalf": {
+        "trades": 4,
+        "wins": 1,
+        "losses": 3,
+        "winRate": 0.25,
+        "avgR": 0.2584780516379013,
+        "totalR": 1.033912206551605,
+        "PF": 1.3446374021838683
+      },
+      "secondHalf": {
+        "trades": 4,
+        "wins": 0,
+        "losses": 4,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -4,
+        "PF": 0
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__OVERLAP__0.20_0.40": {
+      "firstHalf": {
+        "trades": 4,
+        "wins": 0,
+        "losses": 4,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -4,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 4,
+        "wins": 0,
+        "losses": 4,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -4,
+        "PF": 0
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__OVERLAP__GE_0.40": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__NEW_YORK_ONLY__0.02_0.05": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 1.364107885903689,
+        "totalR": 1.364107885903689,
+        "PF": null
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__NEW_YORK_ONLY__0.05_0.10": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 1.4495623075895314,
+        "totalR": 1.4495623075895314,
+        "PF": null
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__NEW_YORK_ONLY__0.10_0.20": {
+      "firstHalf": {
+        "trades": 6,
+        "wins": 1,
+        "losses": 5,
+        "winRate": 0.16666666666666666,
+        "avgR": -0.7300857793644785,
+        "totalR": -4.380514676186871,
+        "PF": 0.12389706476262582
+      },
+      "secondHalf": {
+        "trades": 6,
+        "wins": 2,
+        "losses": 4,
+        "winRate": 0.3333333333333333,
+        "avgR": -0.22981379155434198,
+        "totalR": -1.3788827493260518,
+        "PF": 0.655279312668487
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__NEW_YORK_ONLY__0.20_0.40": {
+      "firstHalf": {
+        "trades": 5,
+        "wins": 0,
+        "losses": 5,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -5,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 5,
+        "wins": 4,
+        "losses": 1,
+        "winRate": 0.8,
+        "avgR": 1.1744398435584344,
+        "totalR": 5.872199217792172,
+        "PF": 6.872199217792172
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__NEW_YORK_ONLY__GE_0.40": {
+      "firstHalf": {
+        "trades": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "PF": 0
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__OUTSIDE__0.05_0.10": {
+      "firstHalf": {
+        "trades": 3,
+        "wins": 1,
+        "losses": 2,
+        "winRate": 0.3333333333333333,
+        "avgR": 4.121210009780353,
+        "totalR": 12.36363002934106,
+        "PF": 7.18181501467053
+      },
+      "secondHalf": {
+        "trades": 3,
+        "wins": 2,
+        "losses": 1,
+        "winRate": 0.6666666666666666,
+        "avgR": 2.573099977713911,
+        "totalR": 7.719299933141733,
+        "PF": 8.719299933141734
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": true,
+      "PFAbove1BothHalves": true,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__OUTSIDE__0.10_0.20": {
+      "firstHalf": {
+        "trades": 9,
+        "wins": 3,
+        "losses": 6,
+        "winRate": 0.3333333333333333,
+        "avgR": 0.6781300959300771,
+        "totalR": 6.103170863370694,
+        "PF": 2.017195143895116
+      },
+      "secondHalf": {
+        "trades": 9,
+        "wins": 2,
+        "losses": 7,
+        "winRate": 0.2222222222222222,
+        "avgR": -0.7251464841966571,
+        "totalR": -6.526318357769914,
+        "PF": 0.06766880603286943
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__OUTSIDE__0.20_0.40": {
+      "firstHalf": {
+        "trades": 9,
+        "wins": 1,
+        "losses": 8,
+        "winRate": 0.1111111111111111,
+        "avgR": -0.7862847241512877,
+        "totalR": -7.076562517361589,
+        "PF": 0.11542968532980137
+      },
+      "secondHalf": {
+        "trades": 9,
+        "wins": 3,
+        "losses": 6,
+        "winRate": 0.3333333333333333,
+        "avgR": -0.24661761623764733,
+        "totalR": -2.219558546138826,
+        "PF": 0.6300735756435291
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "BUY__OUTSIDE__GE_0.40": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 0.06829919818904523,
+        "totalR": 0.06829919818904523,
+        "PF": null
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__LONDON_ONLY__LT_0.02": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__LONDON_ONLY__0.02_0.05": {
+      "firstHalf": {
+        "trades": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "avgR": -0.44948431660122506,
+        "totalR": -0.8989686332024501,
+        "PF": 0.10103136679754991
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__LONDON_ONLY__0.10_0.20": {
+      "firstHalf": {
+        "trades": 5,
+        "wins": 1,
+        "losses": 4,
+        "winRate": 0.2,
+        "avgR": -0.22467509528920573,
+        "totalR": -1.1233754764460286,
+        "PF": 0.7191561308884928
+      },
+      "secondHalf": {
+        "trades": 6,
+        "wins": 1,
+        "losses": 5,
+        "winRate": 0.16666666666666666,
+        "avgR": -0.6634821996370671,
+        "totalR": -3.980893197822403,
+        "PF": 0.20382136043551946
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__LONDON_ONLY__0.20_0.40": {
+      "firstHalf": {
+        "trades": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 4,
+        "wins": 0,
+        "losses": 4,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -4,
+        "PF": 0
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OVERLAP__0.02_0.05": {
+      "firstHalf": {
+        "trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 0.8133601738917923,
+        "totalR": 0.8133601738917923,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OVERLAP__0.05_0.10": {
+      "firstHalf": {
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "avgR": 1.341408883293219,
+        "totalR": 2.682817766586438,
+        "PF": 3.682817766586438
+      },
+      "secondHalf": {
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "avgR": -0.33564886359654167,
+        "totalR": -0.6712977271930833,
+        "PF": 0.3287022728069167
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OVERLAP__0.10_0.20": {
+      "firstHalf": {
+        "trades": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "PF": 0
+      },
+      "secondHalf": {
+        "trades": 4,
+        "wins": 1,
+        "losses": 3,
+        "winRate": 0.25,
+        "avgR": -0.5622967964664635,
+        "totalR": -2.249187185865854,
+        "PF": 0.2502709380447154
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OVERLAP__0.20_0.40": {
+      "firstHalf": {
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "avgR": -0.3754330750478529,
+        "totalR": -0.7508661500957058,
+        "PF": 0.24913384990429424
+      },
+      "secondHalf": {
+        "trades": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "PF": 0
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OVERLAP__GE_0.40": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 0.3329524504141676,
+        "totalR": 0.3329524504141676,
+        "PF": null
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__NEW_YORK_ONLY__0.05_0.10": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__NEW_YORK_ONLY__0.10_0.20": {
+      "firstHalf": {
+        "trades": 5,
+        "wins": 2,
+        "losses": 3,
+        "winRate": 0.4,
+        "avgR": -0.3071709266047485,
+        "totalR": -1.5358546330237424,
+        "PF": 0.4880484556587526
+      },
+      "secondHalf": {
+        "trades": 5,
+        "wins": 1,
+        "losses": 4,
+        "winRate": 0.2,
+        "avgR": -0.2239616971574006,
+        "totalR": -1.119808485787003,
+        "PF": 0.7200478785532493
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__NEW_YORK_ONLY__0.20_0.40": {
+      "firstHalf": {
+        "trades": 6,
+        "wins": 2,
+        "losses": 4,
+        "winRate": 0.3333333333333333,
+        "avgR": -0.4075920723644216,
+        "totalR": -2.4455524341865296,
+        "PF": 0.38861189145336766
+      },
+      "secondHalf": {
+        "trades": 7,
+        "wins": 3,
+        "losses": 4,
+        "winRate": 0.42857142857142855,
+        "avgR": 0.07224946255201647,
+        "totalR": 0.5057462378641153,
+        "PF": 1.1264365594660288
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__NEW_YORK_ONLY__GE_0.40": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OUTSIDE__0.02_0.05": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OUTSIDE__0.05_0.10": {
+      "firstHalf": {
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "avgR": -0.3852509153099756,
+        "totalR": -0.7705018306199511,
+        "PF": 0.22949816938004886
+      },
+      "secondHalf": {
+        "trades": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "PF": 0
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OUTSIDE__0.10_0.20": {
+      "firstHalf": {
+        "trades": 10,
+        "wins": 3,
+        "losses": 7,
+        "winRate": 0.3,
+        "avgR": 1.342239804683978,
+        "totalR": 13.422398046839781,
+        "PF": 2.917485435262826
+      },
+      "secondHalf": {
+        "trades": 11,
+        "wins": 3,
+        "losses": 8,
+        "winRate": 0.2727272727272727,
+        "avgR": 0.23930523091087139,
+        "totalR": 2.6323575400195853,
+        "PF": 1.3290446925024484
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": true,
+      "PFAbove1BothHalves": true,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OUTSIDE__0.20_0.40": {
+      "firstHalf": {
+        "trades": 5,
+        "wins": 2,
+        "losses": 3,
+        "winRate": 0.4,
+        "avgR": -0.31556344774349976,
+        "totalR": -1.577817238717499,
+        "PF": 0.4740609204275004
+      },
+      "secondHalf": {
+        "trades": 5,
+        "wins": 2,
+        "losses": 3,
+        "winRate": 0.4,
+        "avgR": -0.29364921983621706,
+        "totalR": -1.4682460991810853,
+        "PF": 0.5105846336063049
+      },
+      "sameAvgRSign": true,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    },
+    "SELL__OUTSIDE__GE_0.40": {
+      "firstHalf": {
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": null
+      },
+      "secondHalf": {
+        "trades": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 0.8811216791275872,
+        "totalR": 0.8811216791275872,
+        "PF": null
+      },
+      "sameAvgRSign": false,
+      "positiveAvgRBothHalves": false,
+      "PFAbove1BothHalves": false,
+      "qualifiesForFollowUp": false
+    }
+  },
+  "followUpCandidates": [],
+  "researchWarnings": [
+    "This is a stability screen, not a formal statistical validation.",
+    "No segment is promoted solely from this report.",
+    "PF and average R are both reported because PF can be dominated by a small number of outliers.",
+    "The >=20 trades per half threshold is a research minimum, not a claim of statistical sufficiency.",
+    "P-GAP remains a heuristic candidate feature until its market-structure definition is independently validated."
+  ]
+}

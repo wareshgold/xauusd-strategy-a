@@ -1,0 +1,613 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_OPPORTUNITY_ENTRY_DELAY_STRUCTURAL_CANDIDATES",
+  "timeframe": "1min",
+  "sourceReport": "strategy-a-opportunity-window-structural-forensics/1min.json",
+  "methodology": {
+    "scope": "defined opportunity windows only",
+    "target": "D9_12 entry delay, because prior forensic showed the strongest 1min OOS result there",
+    "candidates": "descriptive pre-entry structural feature intersections; no threshold optimization",
+    "validation": "chronological first/second-half split; OOS is reported separately and is not used to select a rule",
+    "guardrail": "candidate is not considered validated unless it has meaningful OOS sample and remains economically positive without relying on a tiny subgroup"
+  },
+  "overall": {
+    "n": 92,
+    "wins": 20,
+    "losses": 72,
+    "winRate": 0.21739130434782608,
+    "PF": 0.6179424288283958,
+    "avgR": -0.2990015774386468,
+    "totalR": -27.508145124355504
+  },
+  "targetD9_12": {
+    "n": 18,
+    "wins": 5,
+    "losses": 13,
+    "winRate": 0.2777777777777778,
+    "PF": 1.5997139351705003,
+    "avgR": 0.4331267309564725,
+    "totalR": 7.796281157216505,
+    "maxDD": 5.881409940196081,
+    "firstHalf": {
+      "n": 12,
+      "wins": 3,
+      "losses": 9,
+      "winRate": 0.25,
+      "PF": 0.55497218356535,
+      "avgR": -0.33377086232598746,
+      "totalR": -4.00525034791185
+    },
+    "oos": {
+      "n": 6,
+      "wins": 2,
+      "losses": 4,
+      "winRate": 0.3333333333333333,
+      "PF": 3.950382876282089,
+      "avgR": 1.9669219175213926,
+      "totalR": 11.801531505128356,
+      "maxDD": 2
+    }
+  },
+  "byBand": [
+    {
+      "band": "D0_2",
+      "n": 28,
+      "wins": 3,
+      "losses": 25,
+      "winRate": 0.10714285714285714,
+      "PF": 0.12682389814351674,
+      "avgR": -0.7796215195147173,
+      "totalR": -21.829402546412084,
+      "maxDD": 21.829402546412084
+    },
+    {
+      "band": "D3_5",
+      "n": 25,
+      "wins": 7,
+      "losses": 18,
+      "winRate": 0.28,
+      "PF": 0.7781045067418051,
+      "avgR": -0.1597647551459004,
+      "totalR": -3.9941188786475106,
+      "maxDD": 6.933023019960303
+    },
+    {
+      "band": "D6_8",
+      "n": 21,
+      "wins": 5,
+      "losses": 16,
+      "winRate": 0.23809523809523808,
+      "PF": 0.4074434464679739,
+      "avgR": -0.4514716598339246,
+      "totalR": -9.480904856512417,
+      "maxDD": 9.480904856512417
+    },
+    {
+      "band": "D9_12",
+      "n": 18,
+      "wins": 5,
+      "losses": 13,
+      "winRate": 0.2777777777777778,
+      "PF": 1.5997139351705003,
+      "avgR": 0.4331267309564725,
+      "totalR": 7.796281157216505,
+      "maxDD": 5.881409940196081
+    },
+    {
+      "band": "D13_PLUS",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "winRate": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0
+    }
+  ],
+  "byCandidate": [
+    {
+      "name": "FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "FVG_RETEST",
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "maxDD": 3
+      },
+      "oosComplement": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "winRate": 0.6666666666666666,
+        "PF": 15.801531505128356,
+        "avgR": 4.933843835042786,
+        "totalR": 14.801531505128356
+      }
+    },
+    {
+      "name": "EXPANSION",
+      "n": 18,
+      "wins": 5,
+      "losses": 13,
+      "winRate": 0.2777777777777778,
+      "PF": 1.5997139351705003,
+      "avgR": 0.4331267309564725,
+      "totalR": 7.796281157216505,
+      "maxDD": 5.881409940196081,
+      "firstHalf": {
+        "name": "EXPANSION",
+        "n": 12,
+        "wins": 3,
+        "losses": 9,
+        "winRate": 0.25,
+        "PF": 0.55497218356535,
+        "avgR": -0.33377086232598746,
+        "totalR": -4.00525034791185,
+        "maxDD": 4.175266025995052
+      },
+      "oos": {
+        "name": "EXPANSION",
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "winRate": 0.3333333333333333,
+        "PF": 3.950382876282089,
+        "avgR": 1.9669219175213926,
+        "totalR": 11.801531505128356,
+        "maxDD": 2
+      },
+      "oosComplement": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0
+      }
+    },
+    {
+      "name": "EXPANSION+FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "EXPANSION+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "EXPANSION+FVG_RETEST",
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "maxDD": 3
+      },
+      "oosComplement": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "winRate": 0.6666666666666666,
+        "PF": 15.801531505128356,
+        "avgR": 4.933843835042786,
+        "totalR": 14.801531505128356
+      }
+    },
+    {
+      "name": "SWEEP+FVG_RETEST",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "winRate": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0,
+      "firstHalf": {
+        "name": "SWEEP+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "SWEEP+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oosComplement": {
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "winRate": 0.3333333333333333,
+        "PF": 3.950382876282089,
+        "avgR": 1.9669219175213926,
+        "totalR": 11.801531505128356
+      }
+    },
+    {
+      "name": "BOS+FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "BOS+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "BOS+FVG_RETEST",
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "maxDD": 3
+      },
+      "oosComplement": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "winRate": 0.6666666666666666,
+        "PF": 15.801531505128356,
+        "avgR": 4.933843835042786,
+        "totalR": 14.801531505128356
+      }
+    },
+    {
+      "name": "DISPLACEMENT+FVG_RETEST",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "winRate": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0,
+      "firstHalf": {
+        "name": "DISPLACEMENT+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "DISPLACEMENT+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oosComplement": {
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "winRate": 0.3333333333333333,
+        "PF": 3.950382876282089,
+        "avgR": 1.9669219175213926,
+        "totalR": 11.801531505128356
+      }
+    },
+    {
+      "name": "SWEEP+BOS+FVG_RETEST",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "winRate": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0,
+      "firstHalf": {
+        "name": "SWEEP+BOS+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "SWEEP+BOS+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oosComplement": {
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "winRate": 0.3333333333333333,
+        "PF": 3.950382876282089,
+        "avgR": 1.9669219175213926,
+        "totalR": 11.801531505128356
+      }
+    },
+    {
+      "name": "BOS+DISPLACEMENT+FVG_RETEST",
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "winRate": 0,
+      "PF": null,
+      "avgR": 0,
+      "totalR": 0,
+      "maxDD": 0,
+      "firstHalf": {
+        "name": "BOS+DISPLACEMENT+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "BOS+DISPLACEMENT+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oosComplement": {
+        "n": 6,
+        "wins": 2,
+        "losses": 4,
+        "winRate": 0.3333333333333333,
+        "PF": 3.950382876282089,
+        "avgR": 1.9669219175213926,
+        "totalR": 11.801531505128356
+      }
+    },
+    {
+      "name": "EXPANSION+BOS+FVG_RETEST",
+      "n": 3,
+      "wins": 0,
+      "losses": 3,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -3,
+      "maxDD": 3,
+      "firstHalf": {
+        "name": "EXPANSION+BOS+FVG_RETEST",
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0,
+        "maxDD": 0
+      },
+      "oos": {
+        "name": "EXPANSION+BOS+FVG_RETEST",
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "maxDD": 3
+      },
+      "oosComplement": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "winRate": 0.6666666666666666,
+        "PF": 15.801531505128356,
+        "avgR": 4.933843835042786,
+        "totalR": 14.801531505128356
+      }
+    }
+  ],
+  "byWindow": [
+    {
+      "window": "LONDON_NY_OVERLAP",
+      "n": 8,
+      "wins": 1,
+      "losses": 7,
+      "winRate": 0.125,
+      "PF": 2.096813013916084,
+      "avgR": 0.9597113871765732,
+      "totalR": 7.677691097412586,
+      "maxDD": 7,
+      "oos": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "winRate": 0.3333333333333333,
+        "PF": 7.338845548706293,
+        "avgR": 4.225897032470862,
+        "totalR": 12.677691097412586
+      }
+    },
+    {
+      "window": "PRE_NY_BUILD",
+      "n": 7,
+      "wins": 3,
+      "losses": 4,
+      "winRate": 0.42857142857142855,
+      "PF": 0.7543406075927469,
+      "avgR": -0.14037679566128752,
+      "totalR": -0.9826375696290126,
+      "maxDD": 2.106477977344782,
+      "oos": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "PF": 1.1238404077157693,
+        "avgR": 0.06192020385788466,
+        "totalR": 0.12384040771576932
+      }
+    },
+    {
+      "window": "LONDON_OPEN_WINDOW",
+      "n": 2,
+      "wins": 0,
+      "losses": 2,
+      "winRate": 0,
+      "PF": 0,
+      "avgR": -1,
+      "totalR": -2,
+      "maxDD": 2,
+      "oos": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "PF": 0,
+        "avgR": -1,
+        "totalR": -1
+      }
+    },
+    {
+      "window": "NY_OPEN_WINDOW",
+      "n": 1,
+      "wins": 1,
+      "losses": 0,
+      "winRate": 1,
+      "PF": null,
+      "avgR": 3.101227629432932,
+      "totalR": 3.101227629432932,
+      "maxDD": 0,
+      "oos": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "winRate": 0,
+        "PF": null,
+        "avgR": 0,
+        "totalR": 0
+      }
+    }
+  ],
+  "byDirection": [
+    {
+      "direction": "BUY",
+      "n": 8,
+      "wins": 3,
+      "losses": 5,
+      "winRate": 0.375,
+      "PF": 0.6034724860741976,
+      "avgR": -0.24782969620362655,
+      "totalR": -1.9826375696290124,
+      "maxDD": 2.1752660259950516,
+      "oos": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "winRate": 0.3333333333333333,
+        "PF": 0.5619202038578847,
+        "avgR": -0.2920531974280769,
+        "totalR": -0.8761595922842307
+      }
+    },
+    {
+      "direction": "SELL",
+      "n": 10,
+      "wins": 2,
+      "losses": 8,
+      "winRate": 0.2,
+      "PF": 2.2223648408556897,
+      "avgR": 0.9778918726845518,
+      "totalR": 9.778918726845518,
+      "maxDD": 5,
+      "oos": {
+        "n": 3,
+        "wins": 1,
+        "losses": 2,
+        "winRate": 0.3333333333333333,
+        "PF": 7.338845548706293,
+        "avgR": 4.225897032470862,
+        "totalR": 12.677691097412586
+      }
+    }
+  ],
+  "nextResearchQuestion": "If a compact structural candidate is positive in both halves, test it on a third chronological holdout before changing the live strategy."
+}

@@ -1,0 +1,749 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_TP1_MANAGEMENT_SCENARIOS_GLOBAL_HOLDOUT_V4",
+  "timeframe": "5min",
+  "scope": "Full resolved trade universe. Entry generation is unchanged. A signal remains valid until TP1 or structural invalidation; management changes only after TP1.",
+  "methodology": {
+    "universe": "All baseline trades with finite rMultiple are included in every scenario. Trades that never reach TP1 retain their baseline realized R, so scenario expectancy is not conditioned on future TP1 success.",
+    "tp1": "minimum objective for TP1-qualified trades",
+    "runner": "50% position remains after TP1 in runner scenarios",
+    "tp2": "deterministic 2-leg projection reconstructed from the same Strategy A correction/projection logic used to create TP1; no baseline tp2 field is trusted",
+    "fallback": "If TP1 is reached but no valid deterministic TP2 is reconstructable, runner scenarios fall back to full TP1 exit rather than dropping the trade",
+    "window": "50 candles after TP1",
+    "protectedStop": "BE means entry price; +0.25R means entry plus 0.25 initial-risk in the favorable direction",
+    "selection": "No optimization; scenarios fixed before holdout"
+  },
+  "counts": {
+    "baselineResolved": 232,
+    "tp1Qualified": 69,
+    "tp2Valid": 43,
+    "universe": 232
+  },
+  "scenarios": {
+    "TP1_FULL_EXIT": {
+      "description": "100% realized at TP1 for TP1-qualified trades; all non-TP1 trades retain their baseline realized R.",
+      "dev": {
+        "n": 77,
+        "winRate": 0.2597402597402597,
+        "PF": 1.3886774622729836,
+        "avgR": 0.28772227726701377,
+        "totalR": 22.15461534956006
+      },
+      "validation": {
+        "n": 77,
+        "winRate": 0.3246753246753247,
+        "PF": 1.3227597908237905,
+        "avgR": 0.2179676509459364,
+        "totalR": 16.783509122837103
+      },
+      "holdout": {
+        "n": 78,
+        "winRate": 0.3076923076923077,
+        "PF": 0.6747451812764861,
+        "avgR": -0.2251764129624327,
+        "totalR": -17.563760211069752
+      },
+      "all": {
+        "n": 232,
+        "winRate": 0.2974137931034483,
+        "PF": 1.1311310690878977,
+        "avgR": 0.09213088043675613,
+        "totalR": 21.374364261327422
+      },
+      "managedTrades": 69,
+      "tp2ManagedTrades": 43
+    },
+    "HALF_TP1_HALF_TP2_OR_BE": {
+      "description": "50% realized at TP1; remaining 50% targets deterministic TP2 and moves to breakeven after TP1. If TP2 is not valid, fall back to full TP1 exit.",
+      "dev": {
+        "n": 77,
+        "winRate": 0.2597402597402597,
+        "PF": 1.5272271648406877,
+        "avgR": 0.3902850441028466,
+        "totalR": 30.051948395919187
+      },
+      "validation": {
+        "n": 77,
+        "winRate": 0.3116883116883117,
+        "PF": 1.356769211846805,
+        "avgR": 0.24151233992189222,
+        "totalR": 18.5964501739857
+      },
+      "holdout": {
+        "n": 78,
+        "winRate": 0.3076923076923077,
+        "PF": 0.5532541685203308,
+        "avgR": -0.30928557563977094,
+        "totalR": -24.124274899902133
+      },
+      "all": {
+        "n": 232,
+        "winRate": 0.29310344827586204,
+        "PF": 1.1503398300025878,
+        "avgR": 0.1057074296120808,
+        "totalR": 24.524123670002744
+      },
+      "managedTrades": 69,
+      "tp2ManagedTrades": 43
+    },
+    "HALF_TP1_HALF_TP2_OR_PLUS_025R": {
+      "description": "50% realized at TP1; remaining 50% targets deterministic TP2 and uses a fixed +0.25R protected stop after TP1. If TP2 is not valid, fall back to full TP1 exit.",
+      "dev": {
+        "n": 77,
+        "winRate": 0.2597402597402597,
+        "PF": 1.5403850595775297,
+        "avgR": 0.40002530384310625,
+        "totalR": 30.80194839591918
+      },
+      "validation": {
+        "n": 77,
+        "winRate": 0.3116883116883117,
+        "PF": 1.3783521139368566,
+        "avgR": 0.2561227295322818,
+        "totalR": 19.7214501739857
+      },
+      "holdout": {
+        "n": 78,
+        "winRate": 0.3076923076923077,
+        "PF": 0.5717726870388494,
+        "avgR": -0.2964650628192581,
+        "totalR": -23.124274899902133
+      },
+      "all": {
+        "n": 232,
+        "winRate": 0.29310344827586204,
+        "PF": 1.1679643949849496,
+        "avgR": 0.11809967099139114,
+        "totalR": 27.399123670002744
+      },
+      "managedTrades": 69,
+      "tp2ManagedTrades": 43
+    }
+  },
+  "holdoutRows": [
+    {
+      "entryTime": "2026-08-18 02:15:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 05:55:00",
+      "direction": "SELL",
+      "scenarioR": 1.4999483177424144,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-18 07:30:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 11:10:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 11:15:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 12:25:00",
+      "direction": "SELL",
+      "scenarioR": 0.10103136679754991,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 13:45:00",
+      "direction": "SELL",
+      "scenarioR": 0.24913384990429424,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 15:00:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 15:15:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 15:25:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 15:30:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 20:20:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-18 20:50:00",
+      "direction": "BUY",
+      "scenarioR": 2.609381302620941,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-18 23:35:00",
+      "direction": "BUY",
+      "scenarioR": 8.31621654062687,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-19 00:05:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-19 00:20:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-19 01:05:00",
+      "direction": "BUY",
+      "scenarioR": 0.2766769955745809,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-19 07:10:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-19 07:40:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-19 12:40:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-19 12:45:00",
+      "direction": "BUY",
+      "scenarioR": 2.4735417273433518,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-19 13:00:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-19 18:30:00",
+      "direction": "BUY",
+      "scenarioR": 1.364107885903689,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-19 18:45:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 01:05:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 11:50:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 12:10:00",
+      "direction": "BUY",
+      "scenarioR": 0.27449101007078774,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 13:00:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 13:50:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 14:05:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 14:25:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 14:40:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-20 23:20:00",
+      "direction": "SELL",
+      "scenarioR": 5.121485169339085,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-21 00:20:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-21 06:00:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-21 12:25:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-21 12:45:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-21 15:30:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-21 20:25:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-21 20:30:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-21 20:40:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-23 22:00:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-23 22:05:00",
+      "direction": "SELL",
+      "scenarioR": 0.03180558307650024,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-24 00:30:00",
+      "direction": "BUY",
+      "scenarioR": 0.06829919818904523,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-24 11:05:00",
+      "direction": "BUY",
+      "scenarioR": 0.1446018955883683,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-24 15:50:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-24 17:25:00",
+      "direction": "BUY",
+      "scenarioR": 0.13722031009093164,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-24 18:15:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-24 23:20:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 01:05:00",
+      "direction": "BUY",
+      "scenarioR": 0.450118460545397,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 02:20:00",
+      "direction": "BUY",
+      "scenarioR": 3.5667058158259324,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-25 06:15:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 08:30:00",
+      "direction": "SELL",
+      "scenarioR": 1.0191068021775973,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-25 11:20:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 13:30:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 14:40:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 18:15:00",
+      "direction": "SELL",
+      "scenarioR": 0.04975000923944779,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 19:05:00",
+      "direction": "BUY",
+      "scenarioR": 2.669496859330682,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-25 19:30:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 23:30:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-25 23:45:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 00:15:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 00:25:00",
+      "direction": "BUY",
+      "scenarioR": 2.5191170077134544,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-26 01:00:00",
+      "direction": "BUY",
+      "scenarioR": 0.1970046466555051,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 12:10:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 12:35:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 13:00:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 15:10:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 15:35:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 16:45:00",
+      "direction": "BUY",
+      "scenarioR": 0.011735948053007081,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 18:10:00",
+      "direction": "SELL",
+      "scenarioR": 2.880191514212997,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": true
+    },
+    {
+      "entryTime": "2026-08-26 19:45:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 22:05:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 23:30:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-26 23:45:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-27 00:10:00",
+      "direction": "SELL",
+      "scenarioR": 0.40507157230781776,
+      "managed": true,
+      "tp1Qualified": true,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-27 00:45:00",
+      "direction": "BUY",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    },
+    {
+      "entryTime": "2026-08-27 11:35:00",
+      "direction": "SELL",
+      "scenarioR": -1,
+      "managed": false,
+      "tp1Qualified": false,
+      "tp2Valid": false
+    }
+  ]
+}
