@@ -18,7 +18,8 @@
     "research:base-components": "node scripts/analyze-base-component-contribution-global-holdout.mjs",
     "research:base-funnel": "node scripts/analyze-base-stage-funnel-forensics.mjs",
     "research:trigger-funnel": "node scripts/analyze-trigger-funnel-forensics.mjs",
-    "research:trigger-latency": "node scripts/analyze-trigger-latency-global-holdout.mjs"
+    "research:trigger-latency": "node scripts/analyze-trigger-latency-global-holdout.mjs",
+    "research:direction-session-rolling": "node scripts/analyze-direction-session-rolling-robustness.mjs"
   },
   "engines": {
     "node": ">=22"
