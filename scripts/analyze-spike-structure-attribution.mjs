@@ -13,7 +13,7 @@ const tr=(c,p)=>Math.max(c.high-c.low,Math.abs(c.high-p),Math.abs(c.low-p));
 const excluded=(ts,mins)=>{if(!mins)return false;const d=parse(ts);if(!d||d.getUTCDay()!==0)return false;const delta=d.getUTCHours()*60+d.getUTCMinutes()-1320;return delta>=0&&delta<mins};
 const metrics=rows=>{const r=rows.map(x=>x.r).filter(Number.isFinite),w=r.filter(x=>x>0),l=r.filter(x=>x<0);return{n:r.length,wins:w.length,losses:l.length,winRate:r.length?w.length/r.length:null,avgR:mean(r),totalR:r.reduce((s,x)=>s+x,0),profitFactor:l.length?w.reduce((s,x)=>s+x,0)/-l.reduce((s,x)=>s+x,0):null}};
 function boot(a,b){if(a.length<MIN_CELL_N||b.length<MIN_CELL_N)return null;let seed=0x12345678,r=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296};const z=[];for(let k=0;k<BOOT;k++){let x=0,y=0;for(let i=0;i<a.length;i++)x+=a[Math.floor(r()*a.length)];for(let i=0;i<b.length;i++)y+=b[Math.floor(r()*b.length)];z.push(x/a.length-y/b.length)}z.sort((x,y)=>x-y);return{lo:q(z,.025),hi:q(z,.975),iterations:BOOT}}
-function compare(rows){const a=rows.filter(x=>x.spike).map(x=>({r:x.r})),b=rows.filter(x=>!x.spike).map(x=>({r:x.r})),ma=metrics(a),mb=metrics(b);return{spike:ma,nonSpike:mb,deltaR:ma.avgR!=null&&mb.avgR!=null?ma.avgR-mb.avgR:null,bootstrap95:boot(a.map(x=>x.r),b.map(x=>x.r))}}
+function compare(rows){const a=rows.filter(x=>x.spike).map(x=>({r:x.rMultiple})),b=rows.filter(x=>!x.spike).map(x=>({r:x.rMultiple})),ma=metrics(a),mb=metrics(b);return{spike:ma,nonSpike:mb,deltaR:ma.avgR!=null&&mb.avgR!=null?ma.avgR-mb.avgR:null,bootstrap95:boot(a.map(x=>x.r),b.map(x=>x.r))}}
 function overlap(x){if(!Number.isFinite(x))return'NA';if(x<.25)return'<.25';if(x<.5)return'.25-.5';if(x<.75)return'.5-.75';return'>=.75'}
 const fmt=x=>Number.isFinite(x)?x.toFixed(4):'n/a';
 async function run(tf){
@@ -26,7 +26,7 @@ async function run(tf){
  const trades=resolvedTrades.map(t=>{const i=Number.isInteger(t.entryIndex)?t.entryIndex:idx.get(t.entryTime);if(i==null||i<LOOKBACK||!Number.isFinite(t.rMultiple))return null;return{...t,index:i,priorScore:score[i-1]}}).filter(Boolean);
  const sensitivity={};
  for(const mins of REOPEN){const eligible=trades.filter(t=>!excluded(t.entryTime,mins));const tagged=eligible.map(t=>({...t,spike:Number.isFinite(t.priorScore)&&t.priorScore>=FIXED_SPIKE,descriptiveSpike:Number.isFinite(t.priorScore)&&t.priorScore>=q(eligible.map(x=>x.priorScore),.9)}));const cut=q(eligible.map(x=>x.priorScore),.9);const groups={structureScore:{},qualityGrade:{},session:{},direction:{},pgap:{},emaAligned:{},overlap:{}};
-  for(const v of ['0','1','2','3+']){const r=tagged.filter(t=>{const x=t.structureScore;if(x==null)return v==='NA';return x<=0?'0':x===1?'1':x===2?'2':'3+'===v});if(r.length>=MIN_CELL_N)groups.structureScore[v]=compare(r)}
+  for(const v of ['0','1','2','3+']){const r=tagged.filter(t=>{const x=t.structureScore;if(x==null)return v==='NA';const bucket=x<=0?'0':x===1?'1':x===2?'2':'3+';return bucket===v});if(r.length>=MIN_CELL_N)groups.structureScore[v]=compare(r)}
   for(const v of ['A','B','C','D','NA']){const r=tagged.filter(t=>(t.qualityGrade??'NA')===v);if(r.length>=MIN_CELL_N)groups.qualityGrade[v]=compare(r)}
   for(const v of ['LONDON','NEW_YORK','ASIA','OVERLAP','NA']){const r=tagged.filter(t=>(t.session??'NA')===v);if(r.length>=MIN_CELL_N)groups.session[v]=compare(r)}
   for(const v of ['BUY','SELL','NA']){const r=tagged.filter(t=>(t.direction??'NA')===v);if(r.length>=MIN_CELL_N)groups.direction[v]=compare(r)}
