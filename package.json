@@ -21,6 +21,7 @@
     "research:trigger-latency": "node scripts/analyze-trigger-latency-global-holdout.mjs",
     "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
+    "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
     "research:direction-session-rolling": "node scripts/analyze-direction-session-rolling-robustness.mjs",
     "research:fresh-holdout-late-ny": "node scripts/analyze-fresh-holdout-late-ny.mjs"
   },
