@@ -1,0 +1,824 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "BASELINE_FORENSICS_HOLDOUT",
+  "warning": "Post-hoc descriptive analysis only. No production filter or threshold is validated by this report.",
+  "timeframe": "5min",
+  "symbol": "XAU/USD",
+  "source": "twelvedata",
+  "candles": 15000,
+  "holdoutCandles": 5000,
+  "splitIndex": 10000,
+  "holdoutFrom": "2026-08-15 22:50:00",
+  "holdoutTo": "2026-09-02 07:25:00",
+  "baseline": {
+    "n": 138,
+    "wins": 39,
+    "losses": 99,
+    "winRate": 0.2826086956521739,
+    "avgR": 0.05361405034920047,
+    "totalR": 7.398738948189665,
+    "profitFactor": 1.0747347368504008
+  },
+  "winners": {
+    "n": 39,
+    "avgR": 2.728172793543325,
+    "qualityScore": {
+      "p10": 5,
+      "p25": 5,
+      "p50": 5,
+      "p75": 5,
+      "p90": 6
+    },
+    "structureScore": {
+      "p10": 0.6666666666666666,
+      "p25": 0.7,
+      "p50": 0.7777777777777778,
+      "p75": 0.7777777777777778,
+      "p90": 0.8888888888888888
+    },
+    "overlapScore": {
+      "p10": 0.5615026731683106,
+      "p25": 0.6251850949718158,
+      "p50": 0.6479458977111991,
+      "p75": 0.6769027762466406,
+      "p90": 0.7142651432772688
+    },
+    "rewardRisk": {
+      "p10": 0.04975000923944779,
+      "p25": 0.1970046466555051,
+      "p50": 0.7744123825833631,
+      "p75": 2.669496859330682,
+      "p90": 6.599971595193364
+    },
+    "spikeSize": {
+      "p10": 7.173719999999776,
+      "p25": 9.270989999999983,
+      "p50": 12.953559999999925,
+      "p75": 16.777610000000095,
+      "p90": 24.537610000000313
+    }
+  },
+  "losers": {
+    "n": 99,
+    "avgR": -1,
+    "qualityScore": {
+      "p10": 5,
+      "p25": 5,
+      "p50": 5,
+      "p75": 6,
+      "p90": 6
+    },
+    "structureScore": {
+      "p10": 0.6,
+      "p25": 0.7777777777777778,
+      "p50": 0.7777777777777778,
+      "p75": 0.7777777777777778,
+      "p90": 0.8888888888888888
+    },
+    "overlapScore": {
+      "p10": 0.5395753001220023,
+      "p25": 0.5929066361214298,
+      "p50": 0.6383514452280601,
+      "p75": 0.7002689844159931,
+      "p90": 0.7254710023370785
+    },
+    "rewardRisk": {
+      "p10": 1.026720982807645,
+      "p25": 2.378574397406313,
+      "p50": 4.011233096936663,
+      "p75": 11.387215007226668,
+      "p90": 39.261671216028454
+    },
+    "spikeSize": {
+      "p10": 7.947790000000168,
+      "p25": 12.398919999999634,
+      "p50": 16.50260999999955,
+      "p75": 21.638969999999972,
+      "p90": 28.441319999999905
+    }
+  },
+  "categorical": {
+    "direction": {
+      "BUY": {
+        "n": 75,
+        "wins": 19,
+        "losses": 56,
+        "winRate": 0.25333333333333335,
+        "avgR": -0.2205332902585754,
+        "totalR": -16.539996769393156,
+        "profitFactor": 0.7046429148322652
+      },
+      "SELL": {
+        "n": 63,
+        "wins": 20,
+        "losses": 43,
+        "winRate": 0.31746031746031744,
+        "avgR": 0.37997993202512415,
+        "totalR": 23.938735717582823,
+        "profitFactor": 1.556714784129833
+      }
+    },
+    "session": {
+      "LONDON": {
+        "n": 64,
+        "wins": 16,
+        "losses": 48,
+        "winRate": 0.25,
+        "avgR": -0.4591987142559464,
+        "totalR": -29.38871771238057,
+        "profitFactor": 0.3877350476587382
+      },
+      "NEW_YORK": {
+        "n": 59,
+        "wins": 18,
+        "losses": 41,
+        "winRate": 0.3050847457627119,
+        "avgR": 0.6740935629132712,
+        "totalR": 39.771520211883,
+        "profitFactor": 1.9700370783386094
+      },
+      "OUTSIDE": {
+        "n": 15,
+        "wins": 5,
+        "losses": 10,
+        "winRate": 0.3333333333333333,
+        "avgR": -0.19893757008751706,
+        "totalR": -2.984063551312756,
+        "profitFactor": 0.7015936448687243
+      }
+    },
+    "qualityGrade": {
+      "B": {
+        "n": 138,
+        "wins": 39,
+        "losses": 99,
+        "winRate": 0.2826086956521739,
+        "avgR": 0.05361405034920047,
+        "totalR": 7.398738948189665,
+        "profitFactor": 1.0747347368504008
+      }
+    },
+    "emaAligned": {
+      "true": {
+        "n": 138,
+        "wins": 39,
+        "losses": 99,
+        "winRate": 0.2826086956521739,
+        "avgR": 0.05361405034920047,
+        "totalR": 7.398738948189665,
+        "profitFactor": 1.0747347368504008
+      }
+    },
+    "nearRoundLevel": {
+      "false": {
+        "n": 95,
+        "wins": 29,
+        "losses": 66,
+        "winRate": 0.30526315789473685,
+        "avgR": 0.1146505764478277,
+        "totalR": 10.89180476254363,
+        "profitFactor": 1.165027344887025
+      },
+      "true": {
+        "n": 43,
+        "wins": 10,
+        "losses": 33,
+        "winRate": 0.23255813953488372,
+        "avgR": -0.08123408870590616,
+        "totalR": -3.4930658143539652,
+        "profitFactor": 0.8941495207771525
+      }
+    },
+    "hasPGAPEvidence": {
+      "false": {
+        "n": 138,
+        "wins": 39,
+        "losses": 99,
+        "winRate": 0.2826086956521739,
+        "avgR": 0.05361405034920047,
+        "totalR": 7.398738948189665,
+        "profitFactor": 1.0747347368504008
+      }
+    },
+    "qualityScore": {
+      "<6": {
+        "n": 105,
+        "wins": 34,
+        "losses": 71,
+        "winRate": 0.3238095238095238,
+        "avgR": 0.09813525111993829,
+        "totalR": 10.304201367593521,
+        "profitFactor": 1.1451295967266693
+      },
+      "<8": {
+        "n": 33,
+        "wins": 5,
+        "losses": 28,
+        "winRate": 0.15151515151515152,
+        "avgR": -0.08804431573951083,
+        "totalR": -2.9054624194038574,
+        "profitFactor": 0.8962334850212909
+      }
+    },
+    "structureScore": {
+      "<0.7": {
+        "n": 24,
+        "wins": 6,
+        "losses": 18,
+        "winRate": 0.25,
+        "avgR": -0.57148792809652,
+        "totalR": -13.71571027431648,
+        "profitFactor": 0.2380160958713065
+      },
+      "<0.85": {
+        "n": 90,
+        "wins": 26,
+        "losses": 64,
+        "winRate": 0.28888888888888886,
+        "avgR": -0.17387607400342148,
+        "totalR": -15.648846660307932,
+        "profitFactor": 0.7554867709326885
+      },
+      ">=0.85": {
+        "n": 24,
+        "wins": 7,
+        "losses": 17,
+        "winRate": 0.2916666666666667,
+        "avgR": 1.5318039951172533,
+        "totalR": 36.76329588281408,
+        "profitFactor": 3.162546816636122
+      }
+    },
+    "overlapScore": {
+      "<0.6": {
+        "n": 36,
+        "wins": 7,
+        "losses": 29,
+        "winRate": 0.19444444444444445,
+        "avgR": -0.47174071770448756,
+        "totalR": -16.98266583736155,
+        "profitFactor": 0.41439083319442926
+      },
+      "<0.7": {
+        "n": 69,
+        "wins": 25,
+        "losses": 44,
+        "winRate": 0.36231884057971014,
+        "avgR": 0.6212790167188963,
+        "totalR": 42.86825215360384,
+        "profitFactor": 1.9742784580364505
+      },
+      "<0.85": {
+        "n": 33,
+        "wins": 7,
+        "losses": 26,
+        "winRate": 0.21212121212121213,
+        "avgR": -0.5602074960015947,
+        "totalR": -18.486847368052626,
+        "profitFactor": 0.2889674089210529
+      }
+    },
+    "rewardRisk": {
+      "<1": {
+        "n": 29,
+        "wins": 21,
+        "losses": 8,
+        "winRate": 0.7241379310344828,
+        "avgR": -0.05610305948375643,
+        "totalR": -1.6269887250289363,
+        "profitFactor": 0.7966264093713831
+      },
+      "<1.5": {
+        "n": 9,
+        "wins": 4,
+        "losses": 5,
+        "winRate": 0.4444444444444444,
+        "avgR": 0.00015701423152678394,
+        "totalR": 0.0014131280837410554,
+        "profitFactor": 1.000282625616748
+      },
+      "<2": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "winRate": 0.2,
+        "avgR": -0.4708838472082249,
+        "totalR": -2.3544192360411245,
+        "profitFactor": 0.41139519098971894
+      },
+      "<3": {
+        "n": 22,
+        "wins": 4,
+        "losses": 18,
+        "winRate": 0.18181818181818182,
+        "avgR": -0.3309207866605353,
+        "totalR": -7.280257306531777,
+        "profitFactor": 0.5955412607482347
+      },
+      ">=3": {
+        "n": 73,
+        "wins": 9,
+        "losses": 64,
+        "winRate": 0.1232876712328767,
+        "avgR": 0.25560261763983233,
+        "totalR": 18.65899108770776,
+        "profitFactor": 1.291546735745434
+      }
+    },
+    "entryHourUTC": {
+      "10": {
+        "n": 14,
+        "wins": 3,
+        "losses": 11,
+        "winRate": 0.21428571428571427,
+        "avgR": -0.7196420350724335,
+        "totalR": -10.07498849101407,
+        "profitFactor": 0.08409195536235724
+      },
+      "11": {
+        "n": 7,
+        "wins": 0,
+        "losses": 7,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -7,
+        "profitFactor": 0
+      },
+      "12": {
+        "n": 8,
+        "wins": 2,
+        "losses": 6,
+        "winRate": 0.25,
+        "avgR": -0.3196093686836328,
+        "totalR": -2.5568749494690626,
+        "profitFactor": 0.5738541750884895
+      },
+      "13": {
+        "n": 3,
+        "wins": 2,
+        "losses": 1,
+        "winRate": 0.6666666666666666,
+        "avgR": -0.28368124728535377,
+        "totalR": -0.8510437418560612,
+        "profitFactor": 0.1489562581439387
+      },
+      "14": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "winRate": 0.5,
+        "avgR": 0.2324853808631112,
+        "totalR": 0.9299415234524449,
+        "profitFactor": 1.4649707617262224
+      },
+      "15": {
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "winRate": 0.5,
+        "avgR": 0.5084011863085927,
+        "totalR": 2.0336047452343706,
+        "profitFactor": 2.0168023726171853
+      },
+      "16": {
+        "n": 10,
+        "wins": 1,
+        "losses": 9,
+        "winRate": 0.1,
+        "avgR": -0.788174987773996,
+        "totalR": -7.88174987773996,
+        "profitFactor": 0.12425001358444893
+      },
+      "17": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "winRate": 0.25,
+        "avgR": -0.09765467434476471,
+        "totalR": -0.39061869737905885,
+        "profitFactor": 0.8697937675403137
+      },
+      "18": {
+        "n": 7,
+        "wins": 2,
+        "losses": 5,
+        "winRate": 0.2857142857142857,
+        "avgR": -0.6019357983487463,
+        "totalR": -4.213550588441224,
+        "profitFactor": 0.15728988231175522
+      },
+      "19": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "avgR": 2.0607425846695424,
+        "totalR": 4.121485169339085,
+        "profitFactor": 5.121485169339085
+      },
+      "20": {
+        "n": 18,
+        "wins": 5,
+        "losses": 13,
+        "winRate": 0.2777777777777778,
+        "avgR": 1.5213227004345857,
+        "totalR": 27.383808607822544,
+        "profitFactor": 3.1064468159863496
+      },
+      "21": {
+        "n": 18,
+        "wins": 8,
+        "losses": 10,
+        "winRate": 0.4444444444444444,
+        "avgR": 1.1528969776823115,
+        "totalR": 20.752145598281608,
+        "profitFactor": 3.0752145598281606
+      },
+      "22": {
+        "n": 2,
+        "wins": 0,
+        "losses": 2,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -2,
+        "profitFactor": 0
+      },
+      "23": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 0.21262678659374074,
+        "totalR": 0.21262678659374074,
+        "profitFactor": null
+      },
+      "00": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 3.509842159590129,
+        "totalR": 3.509842159590129,
+        "profitFactor": null
+      },
+      "01": {
+        "n": 1,
+        "wins": 0,
+        "losses": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "profitFactor": 0
+      },
+      "02": {
+        "n": 4,
+        "wins": 1,
+        "losses": 3,
+        "winRate": 0.25,
+        "avgR": -0.3750129205643964,
+        "totalR": -1.5000516822575856,
+        "profitFactor": 0.4999827725808048
+      },
+      "03": {
+        "n": 2,
+        "wins": 1,
+        "losses": 1,
+        "winRate": 0.5,
+        "avgR": -0.11279380870831845,
+        "totalR": -0.2255876174166369,
+        "profitFactor": 0.7744123825833631
+      },
+      "04": {
+        "n": 3,
+        "wins": 0,
+        "losses": 3,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -3,
+        "profitFactor": 0
+      },
+      "05": {
+        "n": 1,
+        "wins": 1,
+        "losses": 0,
+        "winRate": 1,
+        "avgR": 1.0191068021775973,
+        "totalR": 1.0191068021775973,
+        "profitFactor": null
+      },
+      "07": {
+        "n": 5,
+        "wins": 1,
+        "losses": 4,
+        "winRate": 0.2,
+        "avgR": -0.7710796208823263,
+        "totalR": -3.8553981044116314,
+        "profitFactor": 0.03615047389709208
+      },
+      "08": {
+        "n": 7,
+        "wins": 2,
+        "losses": 5,
+        "winRate": 0.2857142857142857,
+        "avgR": -0.6606396604473803,
+        "totalR": -4.624477623131662,
+        "profitFactor": 0.07510447537366753
+      },
+      "09": {
+        "n": 12,
+        "wins": 2,
+        "losses": 10,
+        "winRate": 0.16666666666666666,
+        "avgR": -0.2824567559320748,
+        "totalR": -3.389481071184898,
+        "profitFactor": 0.6610518928815102
+      }
+    }
+  },
+  "tradeSamples": {
+    "worst": [
+      {
+        "entryIndex": 10299,
+        "entryTime": "2026-08-16 23:45:00",
+        "direction": "BUY",
+        "session": "NEW_YORK",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.8888888888888888,
+        "overlapScore": 0.5675836953632623,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 3.889705913249539
+      },
+      {
+        "entryIndex": 10306,
+        "entryTime": "2026-08-17 00:20:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.6371416161371387,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 1.4553637463381406
+      },
+      {
+        "entryIndex": 10316,
+        "entryTime": "2026-08-17 01:10:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.6875284925950929,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 4.605766596930563
+      },
+      {
+        "entryIndex": 10445,
+        "entryTime": "2026-08-17 11:55:00",
+        "direction": "BUY",
+        "session": "LONDON",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.5555555555555556,
+        "overlapScore": 0.5473163883724619,
+        "emaAligned": true,
+        "nearRoundLevel": true,
+        "rewardRisk": 2.7983163221373992
+      },
+      {
+        "entryIndex": 10471,
+        "entryTime": "2026-08-17 14:05:00",
+        "direction": "SELL",
+        "session": "LONDON",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.5555555555555556,
+        "overlapScore": 0.736050338614529,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 19.883709423472375
+      },
+      {
+        "entryIndex": 10540,
+        "entryTime": "2026-08-17 19:50:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.6194241536673155,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 3.4120068011895177
+      },
+      {
+        "entryIndex": 10596,
+        "entryTime": "2026-08-18 00:30:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 6,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.7002689844159931,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 39.261671216028454
+      },
+      {
+        "entryIndex": 10607,
+        "entryTime": "2026-08-18 01:25:00",
+        "direction": "BUY",
+        "session": "NEW_YORK",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.8,
+        "overlapScore": 0.5395753001220023,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 2.378574397406313
+      },
+      {
+        "entryIndex": 10613,
+        "entryTime": "2026-08-18 01:55:00",
+        "direction": "BUY",
+        "session": "OUTSIDE",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.7338086773156118,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 3.8450781838949655
+      },
+      {
+        "entryIndex": 10617,
+        "entryTime": "2026-08-18 02:15:00",
+        "direction": "BUY",
+        "session": "OUTSIDE",
+        "rMultiple": -1,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.6666666666666666,
+        "overlapScore": 0.7078491385275378,
+        "emaAligned": true,
+        "nearRoundLevel": true,
+        "rewardRisk": 3.127648506080881
+      }
+    ],
+    "best": [
+      {
+        "entryIndex": 14635,
+        "entryTime": "2026-09-01 01:05:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": 20.889770693306954,
+        "qualityGrade": "B",
+        "qualityScore": 6,
+        "structureScore": 0.8888888888888888,
+        "overlapScore": 0.6412669558712396,
+        "emaAligned": true,
+        "nearRoundLevel": true,
+        "rewardRisk": 20.889770693306954
+      },
+      {
+        "entryIndex": 14627,
+        "entryTime": "2026-09-01 00:25:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": 18.085153087652543,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.8888888888888888,
+        "overlapScore": 0.667898089454452,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 18.085153087652543
+      },
+      {
+        "entryIndex": 10298,
+        "entryTime": "2026-08-16 23:40:00",
+        "direction": "BUY",
+        "session": "NEW_YORK",
+        "rMultiple": 11.931786643276435,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 1,
+        "overlapScore": 0.6897510550939128,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 11.931786643276435
+      },
+      {
+        "entryIndex": 10873,
+        "entryTime": "2026-08-18 23:35:00",
+        "direction": "BUY",
+        "session": "NEW_YORK",
+        "rMultiple": 8.31621654062687,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.8,
+        "overlapScore": 0.6698781217436384,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 8.31621654062687
+      },
+      {
+        "entryIndex": 10456,
+        "entryTime": "2026-08-17 12:50:00",
+        "direction": "BUY",
+        "session": "LONDON",
+        "rMultiple": 6.599971595193364,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.5444247649287532,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 6.599971595193364
+      },
+      {
+        "entryIndex": 11446,
+        "entryTime": "2026-08-20 23:20:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": 5.121485169339085,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.6154042624986555,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 5.121485169339085
+      },
+      {
+        "entryIndex": 10603,
+        "entryTime": "2026-08-18 01:05:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": 5.105800798372683,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.8,
+        "overlapScore": 0.6702297824677639,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 5.105800798372683
+      },
+      {
+        "entryIndex": 14954,
+        "entryTime": "2026-09-02 03:40:00",
+        "direction": "BUY",
+        "session": "OUTSIDE",
+        "rMultiple": 3.509842159590129,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.7088774604698922,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 3.509842159590129
+      },
+      {
+        "entryIndex": 14342,
+        "entryTime": "2026-08-31 00:40:00",
+        "direction": "SELL",
+        "session": "NEW_YORK",
+        "rMultiple": 3.0989644003497,
+        "qualityGrade": "B",
+        "qualityScore": 5,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.5687981575783341,
+        "emaAligned": true,
+        "nearRoundLevel": false,
+        "rewardRisk": 3.0989644003497
+      },
+      {
+        "entryIndex": 13112,
+        "entryTime": "2026-08-26 18:10:00",
+        "direction": "SELL",
+        "session": "LONDON",
+        "rMultiple": 2.880191514212997,
+        "qualityGrade": "B",
+        "qualityScore": 6,
+        "structureScore": 0.7777777777777778,
+        "overlapScore": 0.6802420864720853,
+        "emaAligned": true,
+        "nearRoundLevel": true,
+        "rewardRisk": 2.880191514212997
+      }
+    ]
+  }
+}
