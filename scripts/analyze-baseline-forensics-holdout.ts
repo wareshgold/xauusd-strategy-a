@@ -34,10 +34,10 @@ const CONTEXT: ContextConfig = {
 };
 
 type ForensicMetadata = {
-  readonly breakoutIndex?: number;
+  readonly breakoutIndex: number;
   readonly spikeStartIndex: number;
   readonly spikeEndIndex: number;
-  readonly followThroughIndex?: number;
+  readonly followThroughIndex: number;
   readonly spikeSize: number;
   readonly rewardRisk: number;
 };
@@ -53,6 +53,7 @@ const decide: StrategyADecision = (event) => {
   const spikes = detectSpikeCandidates(candles, breakouts, followThrough, { maxCandles: SPIKE_MAX_CANDLES, minDirectionalFraction: SPIKE_MIN_DIRECTIONAL_FRACTION, maxOverlapFraction: SPIKE_MAX_OVERLAP_FRACTION });
   const candidates: ForensicCandidate[] = [];
   for (const spike of spikes.candidates) {
+    if (spike.breakoutIndex === undefined || spike.followThroughIndex === undefined) continue;
     if (spike.endIndex >= event.index) continue;
     const correction = detectFirstCorrection(candles, spike);
     if (!correction || correction.correctionExtremeIndex >= event.index) continue;
@@ -121,15 +122,19 @@ function bucketNumber(value: number | undefined, edges: readonly number[]): stri
   return `>=${edges.at(-1)}`;
 }
 
-function summarize<T>(items: readonly T[], key: (item: T) => string, tradeOf: (item: T) => BacktestTrade) {
-  const groups = new Map<string, BacktestTrade[]>();
+function summarize(items: readonly ForensicTrade[], key: (item: ForensicTrade) => string) {
+  const groups = new Map<string, ForensicTrade[]>();
   for (const item of items) {
     const k = key(item);
     const arr = groups.get(k) ?? [];
-    arr.push(tradeOf(item));
+    arr.push(item);
     groups.set(k, arr);
   }
-  return Object.fromEntries([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, ts]) => [k, metric(ts)]));
+  return Object.fromEntries(
+    [...groups.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, ts]) => [k, metric(ts)]),
+  );
 }
 
 function quantiles(values: readonly number[]) {
@@ -154,7 +159,7 @@ async function run(timeframe: '1min' | '5min'): Promise<void> {
   const splitIndex = dataset.candles.length - HOLDOUT_CANDLES;
   const result = runStrategyABacktest(dataset.candles, decide).result;
   const holdoutTrades = result.trades.filter((t) => t.entryIndex >= splitIndex && t.rMultiple !== null);
-  const candidates = result.trades.filter((t) => t.entryIndex >= splitIndex) as readonly ForensicTrade[];
+  const candidates = result.trades.filter((t) => t.entryIndex >= splitIndex) as unknown as readonly ForensicTrade[];
   const closed = candidates.filter((t) => t.rMultiple !== null);
   const wins = closed.filter((t) => t.rMultiple! > 0);
   const losses = closed.filter((t) => t.rMultiple! < 0);
@@ -184,17 +189,17 @@ async function run(timeframe: '1min' | '5min'): Promise<void> {
     winners: byOutcome(wins),
     losers: byOutcome(losses),
     categorical: {
-      direction: summarize(candidates, (t) => t.direction, (t) => t),
-      session: summarize(candidates, (t) => t.session ?? 'NA', (t) => t),
-      qualityGrade: summarize(candidates, (t) => t.qualityGrade ?? 'NA', (t) => t),
-      emaAligned: summarize(candidates, (t) => String(t.emaAligned), (t) => t),
-      nearRoundLevel: summarize(candidates, (t) => String(t.nearRoundLevel), (t) => t),
-      hasPGAPEvidence: summarize(candidates, (t) => String(t.hasPGAPEvidence), (t) => t),
-      qualityScore: summarize(candidates, (t) => bucketNumber(t.qualityScore, [6, 8, 10]), (t) => t),
-      structureScore: summarize(candidates, (t) => bucketNumber(t.structureScore, [0.55, 0.70, 0.85]), (t) => t),
-      overlapScore: summarize(candidates, (t) => bucketNumber(t.overlapScore, [0.60, 0.70, 0.85]), (t) => t),
-      rewardRisk: summarize(candidates, (t) => bucketNumber(t.rewardRisk, [1, 1.5, 2, 3]), (t) => t),
-      entryHourUTC: summarize(candidates, (t) => String(Math.floor(minutesOfDay(t.entryTime) / 60)).padStart(2, '0'), (t) => t),
+      direction: summarize(candidates, (t) => t.direction),
+      session: summarize(candidates, (t) => t.session ?? 'NA'),
+      qualityGrade: summarize(candidates, (t) => t.qualityGrade ?? 'NA'),
+      emaAligned: summarize(candidates, (t) => String(t.emaAligned)),
+      nearRoundLevel: summarize(candidates, (t) => String(t.nearRoundLevel)),
+      hasPGAPEvidence: summarize(candidates, (t) => String(t.hasPGAPEvidence)),
+      qualityScore: summarize(candidates, (t) => bucketNumber(t.qualityScore, [6, 8, 10])),
+      structureScore: summarize(candidates, (t) => bucketNumber(t.structureScore, [0.55, 0.70, 0.85])),
+      overlapScore: summarize(candidates, (t) => bucketNumber(t.overlapScore, [0.60, 0.70, 0.85])),
+      rewardRisk: summarize(candidates, (t) => bucketNumber(t.rewardRisk, [1, 1.5, 2, 3])),
+      entryHourUTC: summarize(candidates, (t) => String(Math.floor(minutesOfDay(t.entryTime) / 60)).padStart(2, '0')),
     },
     tradeSamples: {
       worst: [...losses].sort((a, b) => a.rMultiple! - b.rMultiple!).slice(0, 10).map((t) => ({ entryIndex: t.entryIndex, entryTime: t.entryTime, direction: t.direction, session: t.session, rMultiple: t.rMultiple, qualityGrade: t.qualityGrade, qualityScore: t.qualityScore, structureScore: t.structureScore, overlapScore: t.overlapScore, emaAligned: t.emaAligned, nearRoundLevel: t.nearRoundLevel, rewardRisk: t.rewardRisk })),
