@@ -20,7 +20,8 @@ function key(c){return `${c.index}|${c.direction}|${Number(c.entry).toPrecision(
 function summarize(rows, name, predicate, baseline){const s=metrics(rows.filter(predicate));return {name,...s,deltaAvgR:s.avgR-baseline.avgR,pass:s.n>=MIN_N&&s.avgR>0&&s.PF!==null&&s.PF>=1};}
 function split(rows, pred){return {all:rows.filter(pred),wins:rows.filter(r=>pred(r)&&r.r>0),losses:rows.filter(r=>pred(r)&&r.r<0)}}
 
-async function run(tf){
+async function run(timeframe){
+ const tf=timeframe;
  const candles=JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf}.json`),'utf8')).candles;
  const path=JSON.parse(await readFile(resolve(PATH_DIR,`${tf}.json`),'utf8'));
  const base=JSON.parse(await readFile(resolve(BASE_DIR,`${tf}.json`),'utf8'));
@@ -44,7 +45,7 @@ async function run(tf){
  for(const field of ['triggerDelay','correctionDepth','triggerExtension','stopToImpulse','rr']){
   outcomeFeature[field]={winners:rows.filter(r=>r.r>0).map(r=>r[field]).filter(Number.isFinite),losers:rows.filter(r=>r.r<0).map(r=>r[field]).filter(Number.isFinite)};
  }
- const report={strategy:'Strategy A',mode:'ENTRY_TRIGGER_ROOT_CAUSE_PREHOLDOUT',timeframe,candles:candles.length,scope:{preHoldoutCandles:PRE,freshHoldoutExcluded:true},methodology:{outcomeSource:'canonical baseline',featureSource:'direct baseline-path forensic',purpose:'diagnostic attribution only; no threshold optimization or production change',minN:MIN_N},parity:{baselineResolved:trades.length,forensicMatched:rows.length,baselineMissing:trades.filter(t=>!rows.some(r=>key(r)===`${t.entryIndex}|${t.direction}|${Number(t.entry).toPrecision(15)}|${Number(t.stopLoss).toPrecision(15)}|${Number(t.tp1).toPrecision(15)}`)).length},baseline,descriptors,topPairCandidates:cells.sort((a,b)=>b.avgR-a.avgR).slice(0,12),outcome:{byOutcome,outcomeFeature}};
+ const report={strategy:'Strategy A',mode:'ENTRY_TRIGGER_ROOT_CAUSE_PREHOLDOUT',timeframe:tf,candles:candles.length,scope:{preHoldoutCandles:PRE,freshHoldoutExcluded:true},methodology:{outcomeSource:'canonical baseline',featureSource:'direct baseline-path forensic',purpose:'diagnostic attribution only; no threshold optimization or production change',minN:MIN_N},parity:{baselineResolved:trades.length,forensicMatched:rows.length,baselineMissing:trades.filter(t=>!rows.some(r=>key(r)===`${t.entryIndex}|${t.direction}|${Number(t.entry).toPrecision(15)}|${Number(t.stopLoss).toPrecision(15)}|${Number(t.tp1).toPrecision(15)}`)).length},baseline,descriptors,topPairCandidates:cells.sort((a,b)=>b.avgR-a.avgR).slice(0,12),outcome:{byOutcome,outcomeFeature}};
  await mkdir(OUT_DIR,{recursive:true});const out=resolve(OUT_DIR,`${tf}.json`);await writeFile(out,JSON.stringify(report,null,2));
  console.log(`${tf}: n=${baseline.n} avgR=${baseline.avgR.toFixed(4)} PF=${baseline.PF?.toFixed(4)??'n/a'} matched=${rows.length}`);
  for(const d of descriptors)console.log(`  ${d.name}: n=${d.n} avgR=${d.avgR.toFixed(4)} PF=${d.PF?.toFixed(3)??'n/a'} delta=${d.deltaAvgR.toFixed(4)} pass=${d.pass}`);
