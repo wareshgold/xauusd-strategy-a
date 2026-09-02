@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { runStrategyABacktest } from '../src/backtest/StrategyAAdapter.js';
-import { loadHistoricalDataset } from '../src/backtest/HistoricalDataLoader.js';
-import { decideBaseline } from './run-baseline-backtest.js';
+import type { HistoricalDataset } from '../src/backtest/HistoricalCandle.js';
+import { decide } from './run-baseline-backtest.js';
 import type { Candle } from '../src/domain/market/Candle.js';
 import type { BacktestTrade } from '../src/backtest/BacktestTypes.js';
 
@@ -29,24 +29,9 @@ type Excursion = {
   readonly mfeBeforeExitR: number;
 };
 
-function tr(c: Candle, prev: Candle): number {
-  return Math.max(c.high - c.low, Math.abs(c.high - prev.close), Math.abs(c.low - prev.close));
-}
-
-function atr14(candles: readonly Candle[], index: number): number | null {
-  if (index < 14) return null;
-  let sum = 0;
-  for (let i = index - 13; i <= index; i += 1) {
-    const current = candles[i];
-    const previous = candles[i - 1];
-    if (!current || !previous) return null;
-    sum += tr(current, previous);
-  }
-  return sum / 14;
-}
-
 function excursion(candles: readonly Candle[], trade: Trade): Excursion {
   const risk = Math.abs(trade.entry - trade.stopLoss);
+  if (risk <= 0) throw new Error(`Invalid trade risk at entryIndex=${trade.entryIndex}`);
   let mae = 0;
   let mfe = 0;
   let maeBars = 0;
@@ -102,7 +87,6 @@ function groupSummary(trades: readonly Trade[], excursions: readonly Excursion[]
   const losses = rs.filter((r) => r <= 0);
   const grossWin = wins.reduce((a, b) => a + b, 0);
   const grossLoss = Math.abs(losses.reduce((a, b) => a + b, 0));
-  const ex = excursions;
   return {
     n: trades.length,
     wins: wins.length,
@@ -111,28 +95,27 @@ function groupSummary(trades: readonly Trade[], excursions: readonly Excursion[]
     avgR: mean(rs),
     totalR: rs.reduce((a, b) => a + b, 0),
     profitFactor: grossLoss ? grossWin / grossLoss : null,
-    maeR: { p50: quantile(ex.map((x) => x.maeR), .5), p90: quantile(ex.map((x) => x.maeR), .9) },
-    mfeR: { p50: quantile(ex.map((x) => x.mfeR), .5), p90: quantile(ex.map((x) => x.mfeR), .9) },
-    mfeBeforeMaeRate: ex.length ? ex.filter((x) => x.mfeBeforeMae).length / ex.length : null,
-    maeBeforeMfeRate: ex.length ? ex.filter((x) => x.maeBeforeMfe).length / ex.length : null,
-    medianBarsToExit: quantile(ex.map((x) => x.barsToExit), .5),
-    medianMfeBeforeExitR: quantile(ex.map((x) => x.mfeBeforeExitR), .5),
+    maeR: { p50: quantile(excursions.map((x) => x.maeR), .5), p90: quantile(excursions.map((x) => x.maeR), .9) },
+    mfeR: { p50: quantile(excursions.map((x) => x.mfeR), .5), p90: quantile(excursions.map((x) => x.mfeR), .9) },
+    mfeBeforeMaeRate: excursions.length ? excursions.filter((x) => x.mfeBeforeMae).length / excursions.length : null,
+    maeBeforeMfeRate: excursions.length ? excursions.filter((x) => x.maeBeforeMfe).length / excursions.length : null,
+    medianBarsToExit: quantile(excursions.map((x) => x.barsToExit), .5),
+    medianMfeBeforeExitR: quantile(excursions.map((x) => x.mfeBeforeExitR), .5),
   };
 }
 
 function summarizeSlice(trades: readonly Trade[], candles: readonly Candle[]) {
-  const xs = trades.map((t) => excursion(candles, t));
-  return groupSummary(trades, xs);
+  return groupSummary(trades, trades.map((t) => excursion(candles, t)));
 }
 
 async function main() {
   for (const timeframe of TIMEFRAMES) {
     const path = `data/historical/xauusd-${timeframe}.json`;
-    const raw = JSON.parse(await readFile(path, 'utf8'));
-    const candles = loadHistoricalDataset(raw);
+    const dataset = JSON.parse(await readFile(path, 'utf8')) as HistoricalDataset;
+    const candles = dataset.candles;
     if (candles.length < HOLDOUT_CANDLES * 3) throw new Error(`${timeframe}: dataset too small`);
     const splitIndex = candles.length - HOLDOUT_CANDLES;
-    const result = runStrategyABacktest(candles, decideBaseline);
+    const result = runStrategyABacktest(candles, decide);
     const trades = result.result.trades.filter((t) => t.entryIndex >= splitIndex && t.rMultiple != null) as unknown as Trade[];
     const byDirection = Object.fromEntries(['BUY', 'SELL'].map((d) => [d, summarizeSlice(trades.filter((t) => t.direction === d), candles)]));
     const bySession = Object.fromEntries(['LONDON', 'NEW_YORK', 'OUTSIDE'].map((s) => [s, summarizeSlice(trades.filter((t) => (t.session ?? 'OUTSIDE') === s), candles)]));
@@ -148,15 +131,17 @@ async function main() {
     const report = {
       strategy: 'Strategy A / SP2L', mode: 'BASELINE_ATTRIBUTION_V2_HOLDOUT',
       warning: 'Post-hoc diagnostic only. No production filter, threshold, entry rule, or exit rule is validated by this report.',
-      timeframe, symbol: 'XAU/USD', source: 'twelvedata', candles: candles.length,
+      timeframe, symbol: dataset.symbol, source: dataset.source, candles: candles.length,
       holdoutCandles: HOLDOUT_CANDLES, splitIndex,
-      holdoutFrom: candles[splitIndex]?.time ?? null, holdoutTo: candles[candles.length - 1]?.time ?? null,
+      holdoutFrom: candles[splitIndex]?.timestamp ?? null, holdoutTo: candles[candles.length - 1]?.timestamp ?? null,
       baseline: summarizeSlice(trades, candles), byOutcome, byDirection, bySession, byDirectionSession,
       interpretationTargets: ['entry timing vs directional bias', 'adverse-first vs favorable-first path', 'realized excursion vs projected target geometry', 'session-direction interaction'],
     };
     const out = `data/reports/strategy-a-baseline-attribution-v2-holdout/${timeframe}.json`;
-    await import('node:fs/promises').then((fs) => fs.mkdir('data/reports/strategy-a-baseline-attribution-v2-holdout', { recursive: true }).then(() => fs.writeFile(out, JSON.stringify(report, null, 2))));
-    console.log(`${timeframe}: holdout=${trades.length} avgR=${report.baseline.avgR?.toFixed(4)} PF=${report.baseline.profitFactor?.toFixed(4)}`);
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    await mkdir('data/reports/strategy-a-baseline-attribution-v2-holdout', { recursive: true });
+    await writeFile(out, JSON.stringify(report, null, 2));
+    console.log(`${timeframe}: holdout=${trades.length} avgR=${report.baseline.avgR?.toFixed(4)} PF=${report.baseline.profitFactor?.toFixed(4) ?? 'n/a'}`);
     console.log(`Report -> ${out}`);
   }
 }
