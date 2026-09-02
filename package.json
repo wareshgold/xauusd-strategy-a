@@ -27,7 +27,8 @@
     "research:direction-session-rolling": "node scripts/analyze-direction-session-rolling-robustness.mjs",
     "research:fresh-holdout-late-ny": "node scripts/analyze-fresh-holdout-late-ny.mjs",
     "research:volatility-hypothesis-holdout": "tsc -p tsconfig.backtest.json && node dist/scripts/analyze-volatility-hypothesis-holdout.js",
-    "research:baseline-forensics-holdout": "tsc -p tsconfig.backtest.json && node dist/scripts/analyze-baseline-forensics-holdout.js"
+    "research:baseline-forensics-holdout": "tsc -p tsconfig.backtest.json && node dist/scripts/analyze-baseline-forensics-holdout.js",
+    "research:baseline-attribution-v2-holdout": "tsc -p tsconfig.backtest.json && node dist/scripts/analyze-baseline-attribution-v2-holdout.js"
   },
   "engines": {
     "node": ">=22"
