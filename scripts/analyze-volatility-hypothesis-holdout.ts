@@ -80,7 +80,7 @@ async function loadDataset(timeframe: '1min' | '5min'): Promise<HistoricalDatase
 }
 
 function atr14(candles: HistoricalDataset['candles'], entryIndex: number): number | null {
-  if (entryIndex < 13) return null;
+  if (entryIndex < 14) return null;
   let sum = 0;
   for (let i = entryIndex - 13; i <= entryIndex; i += 1) {
     const candle = candles[i];
@@ -93,9 +93,11 @@ function atr14(candles: HistoricalDataset['candles'], entryIndex: number): numbe
 }
 
 function rangeToAtr(candles: HistoricalDataset['candles'], entryIndex: number): number | null {
+  const candle = candles[entryIndex];
+  if (!candle) return null;
   const atr = atr14(candles, entryIndex);
   if (atr == null) return null;
-  return (candles[entryIndex].high - candles[entryIndex].low) / atr;
+  return (candle.high - candle.low) / atr;
 }
 
 function maxDrawdown(values: number[]): number {
