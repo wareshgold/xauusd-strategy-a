@@ -20,6 +20,7 @@
     "research:trigger-funnel": "node scripts/analyze-trigger-funnel-forensics.mjs",
     "research:trigger-latency": "node scripts/analyze-trigger-latency-global-holdout.mjs",
     "research:entry-trigger-mechanics": "node scripts/analyze-entry-trigger-mechanics-preholdout.mjs",
+    "research:entry-path-forensics": "node scripts/analyze-baseline-entry-path-forensics.mjs",
     "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
     "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
@@ -34,13 +35,6 @@
     "research:baseline-forensics-holdout": "tsc -p tsconfig.backtest.json && node dist/scripts/analyze-baseline-forensics-holdout.js",
     "research:baseline-attribution-v2-holdout": "tsc -p tsconfig.backtest.json && node dist/scripts/analyze-baseline-attribution-v2-holdout.js"
   },
-  "engines": {
-    "node": ">=22"
-  },
-  "devDependencies": {
-    "@types/node": "latest",
-    "eslint": "latest",
-    "typescript": "latest",
-    "vitest": "latest"
-  }
+  "engines": { "node": ">=22" },
+  "devDependencies": { "@types/node": "latest", "eslint": "latest", "typescript": "latest", "vitest": "latest" }
 }
