@@ -8,5 +8,10 @@
     "sourceMap": false,
     "types": ["node"]
   },
-  "include": ["src", "scripts/run-baseline-backtest.ts", "scripts/analyze-volatility-hypothesis-holdout.ts"]
+  "include": [
+    "src",
+    "scripts/run-baseline-backtest.ts",
+    "scripts/analyze-volatility-hypothesis-holdout.ts",
+    "scripts/analyze-baseline-forensics-holdout.ts"
+  ]
 }
