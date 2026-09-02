@@ -23,6 +23,7 @@
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
     "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
     "research:temporal-regime-stability": "node scripts/analyze-temporal-regime-stability.mjs",
+    "research:strong-weak-attribution": "node scripts/analyze-strong-weak-window-attribution.mjs",
     "research:direction-session-rolling": "node scripts/analyze-direction-session-rolling-robustness.mjs",
     "research:fresh-holdout-late-ny": "node scripts/analyze-fresh-holdout-late-ny.mjs"
   },
