@@ -28,6 +28,7 @@
     "research:entry-trigger-reclaim-mechanics": "node scripts/analyze-entry-trigger-reclaim-mechanics.mjs",
     "research:entry-trigger-immediate-failure": "node scripts/analyze-entry-trigger-immediate-failure.mjs",
     "research:entry-trigger-failure-ordering-v2": "node scripts/analyze-entry-trigger-failure-ordering-v2.mjs",
+    "research:candidate-selection-competition": "node scripts/analyze-candidate-selection-competition.mjs",
     "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
     "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
@@ -39,7 +40,7 @@
     "research:frozen-5m-sell-ny-robustness": "node scripts/analyze-frozen-5m-sell-ny-robustness.mjs",
     "research:fresh-holdout-late-ny": "node scripts/analyze-fresh-holdout-late-ny.mjs",
     "research:volatility-hypothesis-holdout": "tsc -p tsconfig.backtest.json && node dist/scripts/analyze-volatility-hypothesis-holdout.js",
-    "research:baseline-forensics-holdout": "tsc -p tsconfig.backtest.json && node dist/scripts/analyze-baseline-forensics-holdout.js",
+    "research:baseline-forensics-holdout": "tsc -p tsconfig.backtest.json && node scripts/analyze-baseline-forensics-holdout.js",
     "research:baseline-attribution-v2-holdout": "tsc -p tsconfig.backtest.json && node scripts/analyze-baseline-attribution-v2-holdout.mjs"
   },
   "engines": { "node": ">=22" },
