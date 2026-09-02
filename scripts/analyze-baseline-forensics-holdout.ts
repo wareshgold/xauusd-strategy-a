@@ -33,14 +33,17 @@ const CONTEXT: ContextConfig = {
   avoidWindows: [],
 };
 
-interface ForensicCandidate extends BacktestCandidate {
-  readonly breakoutIndex: number;
+type ForensicMetadata = {
+  readonly breakoutIndex?: number;
   readonly spikeStartIndex: number;
   readonly spikeEndIndex: number;
-  readonly followThroughIndex: number;
+  readonly followThroughIndex?: number;
   readonly spikeSize: number;
   readonly rewardRisk: number;
-}
+};
+
+type ForensicCandidate = BacktestCandidate & ForensicMetadata;
+type ForensicTrade = BacktestTrade & ForensicMetadata;
 
 const decide: StrategyADecision = (event) => {
   const candles = event.visibleCandles;
@@ -151,13 +154,13 @@ async function run(timeframe: '1min' | '5min'): Promise<void> {
   const splitIndex = dataset.candles.length - HOLDOUT_CANDLES;
   const result = runStrategyABacktest(dataset.candles, decide).result;
   const holdoutTrades = result.trades.filter((t) => t.entryIndex >= splitIndex && t.rMultiple !== null);
-  const allCandidates = result.trades.filter((t) => t.entryIndex >= splitIndex) as Array<BacktestTrade & ForensicCandidate>;
-  const candidates = allCandidates as readonly ForensicCandidate[];
-  const wins = candidates.filter((t) => t.rMultiple! > 0);
-  const losses = candidates.filter((t) => t.rMultiple! < 0);
-  const byOutcome = (items: readonly ForensicCandidate[]) => ({
+  const candidates = result.trades.filter((t) => t.entryIndex >= splitIndex) as readonly ForensicTrade[];
+  const closed = candidates.filter((t) => t.rMultiple !== null);
+  const wins = closed.filter((t) => t.rMultiple! > 0);
+  const losses = closed.filter((t) => t.rMultiple! < 0);
+  const byOutcome = (items: readonly ForensicTrade[]) => ({
     n: items.length,
-    avgR: metric(items.map((t) => t as BacktestTrade)).avgR,
+    avgR: metric(items).avgR,
     qualityScore: quantiles(items.map((t) => t.qualityScore ?? NaN)),
     structureScore: quantiles(items.map((t) => t.structureScore ?? NaN)),
     overlapScore: quantiles(items.map((t) => t.overlapScore ?? NaN)),
@@ -194,8 +197,8 @@ async function run(timeframe: '1min' | '5min'): Promise<void> {
       entryHourUTC: summarize(candidates, (t) => String(Math.floor(minutesOfDay(t.entryTime) / 60)).padStart(2, '0'), (t) => t),
     },
     tradeSamples: {
-      worst: [...losses].sort((a, b) => (a.rMultiple! - b.rMultiple!)).slice(0, 10).map((t) => ({ entryIndex: t.entryIndex, entryTime: t.entryTime, direction: t.direction, session: t.session, rMultiple: t.rMultiple, qualityGrade: t.qualityGrade, qualityScore: t.qualityScore, structureScore: t.structureScore, overlapScore: t.overlapScore, emaAligned: t.emaAligned, nearRoundLevel: t.nearRoundLevel, rewardRisk: t.rewardRisk })),
-      best: [...wins].sort((a, b) => (b.rMultiple! - a.rMultiple!)).slice(0, 10).map((t) => ({ entryIndex: t.entryIndex, entryTime: t.entryTime, direction: t.direction, session: t.session, rMultiple: t.rMultiple, qualityGrade: t.qualityGrade, qualityScore: t.qualityScore, structureScore: t.structureScore, overlapScore: t.overlapScore, emaAligned: t.emaAligned, nearRoundLevel: t.nearRoundLevel, rewardRisk: t.rewardRisk })),
+      worst: [...losses].sort((a, b) => a.rMultiple! - b.rMultiple!).slice(0, 10).map((t) => ({ entryIndex: t.entryIndex, entryTime: t.entryTime, direction: t.direction, session: t.session, rMultiple: t.rMultiple, qualityGrade: t.qualityGrade, qualityScore: t.qualityScore, structureScore: t.structureScore, overlapScore: t.overlapScore, emaAligned: t.emaAligned, nearRoundLevel: t.nearRoundLevel, rewardRisk: t.rewardRisk })),
+      best: [...wins].sort((a, b) => b.rMultiple! - a.rMultiple!).slice(0, 10).map((t) => ({ entryIndex: t.entryIndex, entryTime: t.entryTime, direction: t.direction, session: t.session, rMultiple: t.rMultiple, qualityGrade: t.qualityGrade, qualityScore: t.qualityScore, structureScore: t.structureScore, overlapScore: t.overlapScore, emaAligned: t.emaAligned, nearRoundLevel: t.nearRoundLevel, rewardRisk: t.rewardRisk })),
     },
   };
 
