@@ -6,6 +6,7 @@ const OUT_DIR = resolve(ROOT, 'data/reports/strategy-a-direction-session-h2-fres
 const TIMEFRAMES = ['1min', '5min'];
 const TOTAL_CANDLES = 15000;
 const FRESH_HOLDOUT_CANDLES = 5000;
+const QUALIFIED_TIMEFRAME = '5min';
 const CANDIDATE_DIRECTION = 'SELL';
 const CANDIDATE_SESSION = 'NEW_YORK';
 
@@ -128,6 +129,35 @@ async function run(timeframe) {
     .filter((t) => new Date(t.entryTime) >= new Date(holdoutCutoff))
     .sort((a, b) => new Date(a.entryTime) - new Date(b.entryTime));
 
+  if (timeframe !== QUALIFIED_TIMEFRAME) {
+    const report = {
+      strategy: 'Strategy A',
+      mode: 'RESEARCH_H2_FRESH_HOLDOUT_CONFIRMATION',
+      timeframe,
+      symbol: source.symbol ?? 'XAUUSD',
+      warning: 'No confirmation test is valid for this timeframe because the frozen H2 DEV/VAL gate qualified only the 5min candidate.',
+      hypothesis: 'Frozen H2 candidate SELL + NEW_YORK qualified only on 5min and is therefore not tested on 1min.',
+      methodology: {
+        totalCandles: candles.length,
+        freshHoldoutCandles: FRESH_HOLDOUT_CANDLES,
+        splitIndex,
+        holdoutFrom: holdoutCutoff,
+        holdoutTo: candles[candles.length - 1]?.timestamp ?? null,
+        candidate: 'SELL + NEW_YORK',
+        baselineComparison: 'Not applicable; 1min did not qualify in the preceding DEV/VAL gate.',
+        noOptimization: true,
+      },
+      verdict: 'NOT_ELIGIBLE',
+      conclusion: 'Do not interpret 1min fresh-holdout performance as confirmation. The H2 candidate qualified only on 5min.',
+    };
+    await mkdir(OUT_DIR, { recursive: true });
+    const out = resolve(OUT_DIR, `${timeframe}.json`);
+    await writeFile(out, JSON.stringify(report, null, 2));
+    console.log(`${timeframe}: H2 candidate not eligible for confirmation (qualified timeframe=${QUALIFIED_TIMEFRAME}) | verdict=NOT_ELIGIBLE`);
+    console.log(`Report -> ${out}`);
+    return;
+  }
+
   const frozen = holdout.filter((t) => t.direction === CANDIDATE_DIRECTION && t.session === CANDIDATE_SESSION);
   const baselineSummary = addExcursionStats(summarize(holdout), holdout, candles);
   const frozenSummary = addExcursionStats(summarize(frozen), frozen, candles);
@@ -138,7 +168,7 @@ async function run(timeframe) {
     timeframe,
     symbol: source.symbol ?? 'XAUUSD',
     warning: 'Single frozen confirmation test. No optimization or production rule change is performed by this report.',
-    hypothesis: 'Frozen H2 candidate SELL + NEW_YORK qualified on the pre-holdout DEV/VAL gate and is tested once on the reserved fresh holdout.',
+    hypothesis: 'Frozen H2 candidate SELL + NEW_YORK qualified on the 5min pre-holdout DEV/VAL gate and is tested once on the reserved fresh holdout.',
     methodology: {
       totalCandles: candles.length,
       freshHoldoutCandles: FRESH_HOLDOUT_CANDLES,
