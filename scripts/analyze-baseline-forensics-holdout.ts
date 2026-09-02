@@ -33,7 +33,17 @@ const CONTEXT: ContextConfig = {
   avoidWindows: [],
 };
 
-type ForensicMetadata = {
+type ForensicMetadata = Pick<
+  BacktestCandidate,
+  | 'session'
+  | 'qualityGrade'
+  | 'qualityScore'
+  | 'structureScore'
+  | 'overlapScore'
+  | 'hasPGAPEvidence'
+  | 'nearRoundLevel'
+  | 'emaAligned'
+> & {
   readonly breakoutIndex: number;
   readonly spikeStartIndex: number;
   readonly spikeEndIndex: number;
