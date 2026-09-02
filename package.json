@@ -23,6 +23,7 @@
     "research:entry-path-forensics": "node scripts/analyze-baseline-entry-path-forensics.mjs",
     "research:entry-trigger-outcome-forensics": "node scripts/analyze-entry-trigger-outcome-forensics.mjs",
     "research:entry-trigger-mechanics-dev-val": "node scripts/analyze-entry-trigger-mechanics-dev-val.mjs",
+    "research:entry-trigger-mechanics-fresh-holdout": "node scripts/analyze-entry-trigger-mechanics-fresh-holdout.mjs",
     "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
     "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
