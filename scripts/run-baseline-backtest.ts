@@ -31,7 +31,7 @@ const CONTEXT: ContextConfig = {
   avoidWindows: [],
 };
 
-const decide: StrategyADecision = (event) => {
+export const decide: StrategyADecision = (event) => {
   const candles = event.visibleCandles;
   if (candles.length < Math.max(BREAKOUT_LOOKBACK + 2, CONTEXT.emaPeriod)) return [];
   const breakouts = detectBreakout(candles, BREAKOUT_LOOKBACK);
