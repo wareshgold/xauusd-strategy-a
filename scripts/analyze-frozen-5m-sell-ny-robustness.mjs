@@ -90,35 +90,31 @@ function stability(windows) {
 }
 
 async function run() {
-  const source = JSON.parse(await readFile(
-    resolve(ROOT, `data/reports/strategy-a-baseline/${TIMEFRAME}.json`),
-    'utf8',
-  ));
+  const source = JSON.parse(await readFile(resolve(ROOT, `data/reports/strategy-a-baseline/${TIMEFRAME}.json`), 'utf8'));
+  const candles = JSON.parse(await readFile(resolve(ROOT, `data/historical/xauusd-${TIMEFRAME}.json`), 'utf8')).candles ?? [];
+  if (candles.length < TOTAL_CANDLES) throw new Error(`${TIMEFRAME}: expected at least ${TOTAL_CANDLES} candles, found ${candles.length}`);
+
+  const freshHoldoutCutoff = candles[PRE_HOLDOUT_CANDLES]?.timestamp;
+  if (!freshHoldoutCutoff) throw new Error(`${TIMEFRAME}: missing fresh holdout cutoff timestamp`);
 
   const rows = (source.trades ?? [])
     .filter((t) => Number.isFinite(Number(t.rMultiple)) && t.result !== 'AMBIGUOUS')
     .map((t) => ({ ...t, rMultiple: Number(t.rMultiple), session: session(t.entryTime) }))
     .sort((a, b) => new Date(a.entryTime) - new Date(b.entryTime));
 
-  const preHoldout = rows.filter((_, i) => i < PRE_HOLDOUT_CANDLES);
+  const preHoldout = rows.filter((t) => new Date(t.entryTime) < new Date(freshHoldoutCutoff));
   const candidateRows = preHoldout.filter((r) => r.direction === DIRECTION && r.session === SESSION);
-  const windows = splitRolling(candidateRows).map((w, i) => ({
-    window: i + 1,
-    from: w[0]?.entryTime ?? null,
-    to: w.at(-1)?.entryTime ?? null,
-    ...summarize(w),
-  }));
-
-  const baselineWindows = splitRolling(preHoldout).map((w, i) => ({
-    window: i + 1,
-    from: w[0]?.entryTime ?? null,
-    to: w.at(-1)?.entryTime ?? null,
-    ...summarize(w),
-  }));
+  const windows = splitRolling(candidateRows).map((w, i) => ({ window: i + 1, from: w[0]?.entryTime ?? null, to: w.at(-1)?.entryTime ?? null, ...summarize(w) }));
+  const baselineWindows = splitRolling(preHoldout).map((w, i) => ({ window: i + 1, from: w[0]?.entryTime ?? null, to: w.at(-1)?.entryTime ?? null, ...summarize(w) }));
 
   const overall = summarize(candidateRows);
   const baseline = summarize(preHoldout);
   const s = stability(windows);
+  const verdict = s.eligibleWindows >= 4 && s.positiveWindowRate >= 0.67 && s.finalWindowPositive
+    ? 'ROBUST'
+    : s.positiveWindowRate >= 0.5 && s.finalWindowPositive
+      ? 'PROMISING_INCONCLUSIVE'
+      : 'FRAGILE_REJECT';
 
   const report = {
     strategy: 'Strategy A / SP2L',
@@ -130,10 +126,12 @@ async function run() {
       totalCandles: TOTAL_CANDLES,
       freshHoldoutCandles: FRESH_HOLDOUT_CANDLES,
       preHoldoutCandles: PRE_HOLDOUT_CANDLES,
+      freshHoldoutCutoff,
       rollingWindows: WINDOW_COUNT,
       minimumWindowN: MIN_WINDOW_N,
       sessionDefinition: 'UTC entryTime; NEW_YORK 13:00-22:00, matching the H2 candidate definition.',
       ordering: 'chronological entryTime',
+      tradeSplit: 'Trades are assigned to pre-holdout by entryTime against the deterministic candle timestamp cutoff; no row-count approximation is used.',
       holdoutExcluded: true,
       optimization: false,
       note: 'The candidate was previously observed in fresh-holdout attribution, so the later holdout confirmation is not equivalent to a blinded discovery-free test. This report therefore emphasizes pre-holdout temporal stability.',
@@ -143,18 +141,9 @@ async function run() {
       candidate: { ...overall, maxDD: maxDrawdown(candidateRows), maxConsecutiveLosses: maxConsecutiveLosses(candidateRows) },
       deltaAvgR: overall.avgR - baseline.avgR,
       deltaPF: (overall.PF ?? 0) - (baseline.PF ?? 0),
-      candidateShareOfBaselineTotalR: baseline.totalR ? overall.totalR / baseline.totalR : null,
     },
-    rolling: {
-      candidate: windows,
-      baseline: baselineWindows,
-      stability: s,
-    },
-    verdict: s.eligibleWindows >= 4 && s.positiveWindowRate >= 0.67 && s.finalWindowPositive
-      ? 'ROBUST'
-      : s.positiveWindowRate >= 0.5 && s.finalWindowPositive
-        ? 'PROMISING_INCONCLUSIVE'
-        : 'FRAGILE_REJECT',
+    rolling: { candidate: windows, baseline: baselineWindows, stability: s },
+    verdict,
     verdictRationale: 'ROBUST requires at least 4 eligible chronological candidate windows, at least two-thirds positive by both AvgR and PF, and a positive final window. PROMISING_INCONCLUSIVE requires at least half positive and a positive final window. These are research gates, not production promotion rules.',
     nextStep: 'Do not alter Strategy A from this report. If ROBUST or PROMISING_INCONCLUSIVE, proceed to independent day-of-week/regime stress tests and prospective paper-signal validation before any production filter change.',
   };
@@ -162,11 +151,10 @@ async function run() {
   await mkdir(OUT_DIR, { recursive: true });
   const out = resolve(OUT_DIR, `${TIMEFRAME}.json`);
   await writeFile(out, JSON.stringify(report, null, 2));
-
   console.log(`${TIMEFRAME}: preHoldout baseline n=${baseline.n} avgR=${baseline.avgR.toFixed(4)} PF=${baseline.PF?.toFixed(4) ?? 'n/a'} | frozen SELL+NEW_YORK n=${overall.n} avgR=${overall.avgR.toFixed(4)} PF=${overall.PF?.toFixed(4) ?? 'n/a'}`);
   console.log(`  stability: positiveWindows=${s.positiveWindows}/${s.eligibleWindows} (${(s.positiveWindowRate * 100).toFixed(1)}%) finalPositive=${s.finalWindowPositive} | maxDD=${maxDrawdown(candidateRows).toFixed(4)}R maxCL=${maxConsecutiveLosses(candidateRows)}`);
   for (const w of windows) console.log(`  W${w.window} n=${w.n} PF=${w.PF?.toFixed(4) ?? 'n/a'} avgR=${w.avgR.toFixed(4)} totalR=${w.totalR.toFixed(4)}`);
-  console.log(`  VERDICT=${report.verdict}`);
+  console.log(`  VERDICT=${verdict}`);
   console.log(`Report -> ${out}`);
 }
 
