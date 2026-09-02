@@ -25,6 +25,8 @@
     "research:entry-trigger-mechanics-dev-val": "node scripts/analyze-entry-trigger-mechanics-dev-val.mjs",
     "research:entry-trigger-mechanics-fresh-holdout": "node scripts/analyze-entry-trigger-mechanics-fresh-holdout.mjs",
     "research:entry-trigger-root-cause": "node scripts/analyze-entry-trigger-root-cause.mjs",
+    "research:entry-trigger-reclaim-mechanics": "node scripts/analyze-entry-trigger-reclaim-mechanics.mjs",
+    "research:entry-trigger-immediate-failure": "node scripts/analyze-entry-trigger-immediate-failure.mjs",
     "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
     "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
