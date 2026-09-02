@@ -1,0 +1,321 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "BASELINE_ATTRIBUTION_V2_HOLDOUT",
+  "warning": "Post-hoc diagnostic only. No production filter, threshold, entry rule, or exit rule is validated by this report.",
+  "timeframe": "5min",
+  "symbol": "XAU/USD",
+  "source": "twelvedata",
+  "candles": 15000,
+  "holdoutCandles": 5000,
+  "splitIndex": 10000,
+  "holdoutFrom": "2026-08-15 22:50:00",
+  "holdoutTo": "2026-09-02 07:25:00",
+  "baseline": {
+    "n": 138,
+    "wins": 39,
+    "losses": 99,
+    "winRate": 0.2826086956521739,
+    "avgR": 0.05361405034920047,
+    "totalR": 7.398738948189665,
+    "profitFactor": 1.0747347368504008,
+    "maeR": {
+      "p50": 1.4037105522495166,
+      "p90": 7.350148861406477
+    },
+    "mfeR": {
+      "p50": 0.7036020849340817,
+      "p90": 6.064925496053431
+    },
+    "mfeBeforeMaeRate": 0.5507246376811594,
+    "maeBeforeMfeRate": 0.13043478260869565,
+    "medianBarsToExit": 1,
+    "medianMfeBeforeExitR": 0.7036020849340817
+  },
+  "byOutcome": {
+    "winners": {
+      "n": 39,
+      "wins": 39,
+      "losses": 0,
+      "winRate": 1,
+      "avgR": 2.728172793543325,
+      "totalR": 106.39873894818967,
+      "profitFactor": null,
+      "maeR": {
+        "p50": 0.43518379459721984,
+        "p90": 0.8161290958651808
+      },
+      "mfeR": {
+        "p50": 1.0705333434644928,
+        "p90": 8.602224660295487
+      },
+      "mfeBeforeMaeRate": 1,
+      "maeBeforeMfeRate": 0,
+      "medianBarsToExit": 2,
+      "medianMfeBeforeExitR": 1.0705333434644928
+    },
+    "losers": {
+      "n": 99,
+      "wins": 0,
+      "losses": 99,
+      "winRate": 0,
+      "avgR": -1,
+      "totalR": -99,
+      "profitFactor": 0,
+      "maeR": {
+        "p50": 1.9243828862437946,
+        "p90": 9.385862190086769
+      },
+      "mfeR": {
+        "p50": 0.6347004735733034,
+        "p90": 4.11653372520476
+      },
+      "mfeBeforeMaeRate": 0.37373737373737376,
+      "maeBeforeMfeRate": 0.18181818181818182,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.6347004735733034
+    }
+  },
+  "byDirection": {
+    "BUY": {
+      "n": 75,
+      "wins": 19,
+      "losses": 56,
+      "winRate": 0.25333333333333335,
+      "avgR": -0.2205332902585754,
+      "totalR": -16.539996769393156,
+      "profitFactor": 0.7046429148322652,
+      "maeR": {
+        "p50": 1.4538458999472217,
+        "p90": 7.922325332028682
+      },
+      "mfeR": {
+        "p50": 0.5983239163855218,
+        "p90": 5.302642626552484
+      },
+      "mfeBeforeMaeRate": 0.56,
+      "maeBeforeMfeRate": 0.13333333333333333,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.5983239163855218
+    },
+    "SELL": {
+      "n": 63,
+      "wins": 20,
+      "losses": 43,
+      "winRate": 0.31746031746031744,
+      "avgR": 0.37997993202512415,
+      "totalR": 23.938735717582823,
+      "profitFactor": 1.556714784129833,
+      "maeR": {
+        "p50": 1.3491136286646817,
+        "p90": 6.059719458568228
+      },
+      "mfeR": {
+        "p50": 0.9315162029228187,
+        "p90": 6.008010546416752
+      },
+      "mfeBeforeMaeRate": 0.5396825396825397,
+      "maeBeforeMfeRate": 0.12698412698412698,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.9315162029228187
+    }
+  },
+  "bySession": {
+    "LONDON": {
+      "n": 64,
+      "wins": 16,
+      "losses": 48,
+      "winRate": 0.25,
+      "avgR": -0.4591987142559464,
+      "totalR": -29.38871771238057,
+      "profitFactor": 0.3877350476587382,
+      "maeR": {
+        "p50": 1.5400709694998018,
+        "p90": 7.630624294054302
+      },
+      "mfeR": {
+        "p50": 0.6454651012154782,
+        "p90": 5.5965658750830976
+      },
+      "mfeBeforeMaeRate": 0.546875,
+      "maeBeforeMfeRate": 0.125,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.6454651012154782
+    },
+    "NEW_YORK": {
+      "n": 59,
+      "wins": 18,
+      "losses": 41,
+      "winRate": 0.3050847457627119,
+      "avgR": 0.6740935629132712,
+      "totalR": 39.771520211883,
+      "profitFactor": 1.9700370783386094,
+      "maeR": {
+        "p50": 1.2575895727150488,
+        "p90": 7.488105497451127
+      },
+      "mfeR": {
+        "p50": 0.7134047532350386,
+        "p90": 6.756395426476193
+      },
+      "mfeBeforeMaeRate": 0.5084745762711864,
+      "maeBeforeMfeRate": 0.1694915254237288,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.7134047532350386
+    },
+    "OUTSIDE": {
+      "n": 15,
+      "wins": 5,
+      "losses": 10,
+      "winRate": 0.3333333333333333,
+      "avgR": -0.19893757008751706,
+      "totalR": -2.984063551312756,
+      "profitFactor": 0.7015936448687243,
+      "maeR": {
+        "p50": 1.3491136286646817,
+        "p90": 1.9224480786472142
+      },
+      "mfeR": {
+        "p50": 0.7591520970517153,
+        "p90": 2.289927362736901
+      },
+      "mfeBeforeMaeRate": 0.7333333333333333,
+      "maeBeforeMfeRate": 0,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.7591520970517153
+    }
+  },
+  "byDirectionSession": {
+    "BUY_LONDON": {
+      "n": 39,
+      "wins": 10,
+      "losses": 29,
+      "winRate": 0.2564102564102564,
+      "avgR": -0.438767935976046,
+      "totalR": -17.111949503065794,
+      "profitFactor": 0.40993277575635173,
+      "maeR": {
+        "p50": 1.2593262092683568,
+        "p90": 4.734219265559666
+      },
+      "mfeR": {
+        "p50": 0.6438849558376862,
+        "p90": 6.187814626120028
+      },
+      "mfeBeforeMaeRate": 0.5897435897435898,
+      "maeBeforeMfeRate": 0.1282051282051282,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.6438849558376862
+    },
+    "BUY_NEW_YORK": {
+      "n": 31,
+      "wins": 7,
+      "losses": 24,
+      "winRate": 0.22580645161290322,
+      "avgR": -0.0048553616939105175,
+      "totalR": -0.15051621251122604,
+      "profitFactor": 0.9937284911453655,
+      "maeR": {
+        "p50": 1.5371732105820404,
+        "p90": 10.92025179074763
+      },
+      "mfeR": {
+        "p50": 0.5983239163855218,
+        "p90": 4.11184320268074
+      },
+      "mfeBeforeMaeRate": 0.4838709677419355,
+      "maeBeforeMfeRate": 0.16129032258064516,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.5983239163855218
+    },
+    "BUY_OUTSIDE": {
+      "n": 5,
+      "wins": 2,
+      "losses": 3,
+      "winRate": 0.4,
+      "avgR": 0.14449378923677392,
+      "totalR": 0.7224689461838696,
+      "profitFactor": 1.24082298206129,
+      "maeR": {
+        "p50": 1.4538458999472217,
+        "p90": 2.3640422524501994
+      },
+      "mfeR": {
+        "p50": 0.42722307207393345,
+        "p90": 2.6456351125620166
+      },
+      "mfeBeforeMaeRate": 0.8,
+      "maeBeforeMfeRate": 0,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.42722307207393345
+    },
+    "SELL_LONDON": {
+      "n": 25,
+      "wins": 6,
+      "losses": 19,
+      "winRate": 0.24,
+      "avgR": -0.4910707283725909,
+      "totalR": -12.276768209314772,
+      "profitFactor": 0.35385430477290664,
+      "maeR": {
+        "p50": 2.1213644657950677,
+        "p90": 8.482693306815687
+      },
+      "mfeR": {
+        "p50": 0.6470452465932701,
+        "p90": 4.312137603499455
+      },
+      "mfeBeforeMaeRate": 0.48,
+      "maeBeforeMfeRate": 0.12,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.6470452465932701
+    },
+    "SELL_NEW_YORK": {
+      "n": 28,
+      "wins": 11,
+      "losses": 17,
+      "winRate": 0.39285714285714285,
+      "avgR": 1.4257870151569365,
+      "totalR": 39.92203642439422,
+      "profitFactor": 3.3483550837878955,
+      "maeR": {
+        "p50": 1.2206180910494002,
+        "p90": 6.042825870150058
+      },
+      "mfeR": {
+        "p50": 1.5901157714712268,
+        "p90": 7.4739320909364935
+      },
+      "mfeBeforeMaeRate": 0.5357142857142857,
+      "maeBeforeMfeRate": 0.17857142857142858,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 1.5901157714712268
+    },
+    "SELL_OUTSIDE": {
+      "n": 10,
+      "wins": 3,
+      "losses": 7,
+      "winRate": 0.3,
+      "avgR": -0.3706532497496625,
+      "totalR": -3.7065324974966254,
+      "profitFactor": 0.4704953575004821,
+      "maeR": {
+        "p50": 1.2893881264050029,
+        "p90": 1.9200295691514886
+      },
+      "mfeR": {
+        "p50": 0.9502792610261999,
+        "p90": 1.7206669708308795
+      },
+      "mfeBeforeMaeRate": 0.7,
+      "maeBeforeMfeRate": 0,
+      "medianBarsToExit": 1.5,
+      "medianMfeBeforeExitR": 0.9502792610261999
+    }
+  },
+  "interpretationTargets": [
+    "entry timing vs directional bias",
+    "adverse-first vs favorable-first path",
+    "realized excursion vs projected target geometry",
+    "session-direction interaction"
+  ]
+}

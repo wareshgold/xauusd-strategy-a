@@ -1,0 +1,321 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "BASELINE_ATTRIBUTION_V2_HOLDOUT",
+  "warning": "Post-hoc diagnostic only. No production filter, threshold, entry rule, or exit rule is validated by this report.",
+  "timeframe": "1min",
+  "symbol": "XAU/USD",
+  "source": "twelvedata",
+  "candles": 15000,
+  "holdoutCandles": 5000,
+  "splitIndex": 10000,
+  "holdoutFrom": "2026-08-29 20:10:00",
+  "holdoutTo": "2026-09-02 07:29:00",
+  "baseline": {
+    "n": 163,
+    "wins": 34,
+    "losses": 129,
+    "winRate": 0.2085889570552147,
+    "avgR": -0.1814760484205257,
+    "totalR": -29.580595892545688,
+    "profitFactor": 0.770693055096545,
+    "maeR": {
+      "p50": 1.518158606498544,
+      "p90": 9.971855038820351
+    },
+    "mfeR": {
+      "p50": 0.848403849093654,
+      "p90": 7.44960149732069
+    },
+    "mfeBeforeMaeRate": 0.43558282208588955,
+    "maeBeforeMfeRate": 0.25153374233128833,
+    "medianBarsToExit": 1,
+    "medianMfeBeforeExitR": 0.848403849093654
+  },
+  "byOutcome": {
+    "winners": {
+      "n": 34,
+      "wins": 34,
+      "losses": 0,
+      "winRate": 1,
+      "avgR": 2.9241001208074793,
+      "totalR": 99.4194041074543,
+      "profitFactor": null,
+      "maeR": {
+        "p50": 0.43066746157177105,
+        "p90": 0.8103457268150441
+      },
+      "mfeR": {
+        "p50": 1.7415392848591402,
+        "p90": 9.89210818157559
+      },
+      "mfeBeforeMaeRate": 1,
+      "maeBeforeMfeRate": 0,
+      "medianBarsToExit": 4,
+      "medianMfeBeforeExitR": 1.7415392848591402
+    },
+    "losers": {
+      "n": 129,
+      "wins": 0,
+      "losses": 129,
+      "winRate": 0,
+      "avgR": -1,
+      "totalR": -129,
+      "profitFactor": 0,
+      "maeR": {
+        "p50": 1.7764633801507008,
+        "p90": 10.809366199284415
+      },
+      "mfeR": {
+        "p50": 0.6575001998224979,
+        "p90": 7.030435355195027
+      },
+      "mfeBeforeMaeRate": 0.2868217054263566,
+      "maeBeforeMfeRate": 0.3178294573643411,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.6575001998224979
+    }
+  },
+  "byDirection": {
+    "BUY": {
+      "n": 88,
+      "wins": 17,
+      "losses": 71,
+      "winRate": 0.19318181818181818,
+      "avgR": -0.43392154792573995,
+      "totalR": -38.185096217465116,
+      "profitFactor": 0.4621817434159843,
+      "maeR": {
+        "p50": 1.649048956567912,
+        "p90": 6.762017191464025
+      },
+      "mfeR": {
+        "p50": 0.8261912014923665,
+        "p90": 5.7295103265967535
+      },
+      "mfeBeforeMaeRate": 0.4090909090909091,
+      "maeBeforeMfeRate": 0.25,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.8261912014923665
+    },
+    "SELL": {
+      "n": 75,
+      "wins": 17,
+      "losses": 58,
+      "winRate": 0.22666666666666666,
+      "avgR": 0.11472667099892575,
+      "totalR": 8.604500324919432,
+      "profitFactor": 1.1483534538779212,
+      "maeR": {
+        "p50": 1.3536462122384336,
+        "p90": 11.509041873930519
+      },
+      "mfeR": {
+        "p50": 0.8754800150145696,
+        "p90": 11.733090441042107
+      },
+      "mfeBeforeMaeRate": 0.4666666666666667,
+      "maeBeforeMfeRate": 0.25333333333333335,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.8754800150145696
+    }
+  },
+  "bySession": {
+    "LONDON": {
+      "n": 79,
+      "wins": 13,
+      "losses": 66,
+      "winRate": 0.16455696202531644,
+      "avgR": -0.404432927325398,
+      "totalR": -31.95020125870644,
+      "profitFactor": 0.5159060415347508,
+      "maeR": {
+        "p50": 1.5777853477829913,
+        "p90": 12.226233298094469
+      },
+      "mfeR": {
+        "p50": 0.848403849093654,
+        "p90": 5.271766345821237
+      },
+      "mfeBeforeMaeRate": 0.4050632911392405,
+      "maeBeforeMfeRate": 0.24050632911392406,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.848403849093654
+    },
+    "NEW_YORK": {
+      "n": 70,
+      "wins": 18,
+      "losses": 52,
+      "winRate": 0.2571428571428571,
+      "avgR": 0.0662240847383523,
+      "totalR": 4.635685931684661,
+      "profitFactor": 1.0891478063785511,
+      "maeR": {
+        "p50": 1.6194729909835281,
+        "p90": 8.251692933035077
+      },
+      "mfeR": {
+        "p50": 0.8580343309161409,
+        "p90": 11.850733019706382
+      },
+      "mfeBeforeMaeRate": 0.45714285714285713,
+      "maeBeforeMfeRate": 0.2714285714285714,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.8580343309161409
+    },
+    "OUTSIDE": {
+      "n": 14,
+      "wins": 3,
+      "losses": 11,
+      "winRate": 0.21428571428571427,
+      "avgR": -0.16186289753742164,
+      "totalR": -2.266080565523903,
+      "profitFactor": 0.7939926758614633,
+      "maeR": {
+        "p50": 1.2903007075897917,
+        "p90": 2.140359177047709
+      },
+      "mfeR": {
+        "p50": 0.7168572765413481,
+        "p90": 6.553276698168793
+      },
+      "mfeBeforeMaeRate": 0.5,
+      "maeBeforeMfeRate": 0.21428571428571427,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.7168572765413481
+    }
+  },
+  "byDirectionSession": {
+    "BUY_LONDON": {
+      "n": 48,
+      "wins": 8,
+      "losses": 40,
+      "winRate": 0.16666666666666666,
+      "avgR": -0.6736896137294428,
+      "totalR": -32.337101459013255,
+      "profitFactor": 0.1915724635246685,
+      "maeR": {
+        "p50": 1.6690893543752465,
+        "p90": 9.545114293231256
+      },
+      "mfeR": {
+        "p50": 0.8261912014923665,
+        "p90": 4.215726603265816
+      },
+      "mfeBeforeMaeRate": 0.3333333333333333,
+      "maeBeforeMfeRate": 0.2708333333333333,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.8261912014923665
+    },
+    "BUY_NEW_YORK": {
+      "n": 34,
+      "wins": 8,
+      "losses": 26,
+      "winRate": 0.23529411764705882,
+      "avgR": -0.02523507926228079,
+      "totalR": -0.8579926949175469,
+      "profitFactor": 0.9670002809647098,
+      "maeR": {
+        "p50": 1.700238206327237,
+        "p90": 4.852326804170399
+      },
+      "mfeR": {
+        "p50": 0.9751110484598392,
+        "p90": 7.259633362024331
+      },
+      "mfeBeforeMaeRate": 0.5,
+      "maeBeforeMfeRate": 0.2647058823529412,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.9751110484598392
+    },
+    "BUY_OUTSIDE": {
+      "n": 6,
+      "wins": 1,
+      "losses": 5,
+      "winRate": 0.16666666666666666,
+      "avgR": -0.8316670105890517,
+      "totalR": -4.99000206353431,
+      "profitFactor": 0.0019995872931380157,
+      "maeR": {
+        "p50": 1.1580550438944677,
+        "p90": 1.5003628142533074
+      },
+      "mfeR": {
+        "p50": 0.7168572765413481,
+        "p90": 1.7465652757813852
+      },
+      "mfeBeforeMaeRate": 0.5,
+      "maeBeforeMfeRate": 0,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.7168572765413481
+    },
+    "SELL_LONDON": {
+      "n": 31,
+      "wins": 5,
+      "losses": 26,
+      "winRate": 0.16129032258064516,
+      "avgR": 0.01248065162280061,
+      "totalR": 0.38690020030681893,
+      "profitFactor": 1.0148807769348775,
+      "maeR": {
+        "p50": 1.4541345350446593,
+        "p90": 12.296296296165961
+      },
+      "mfeR": {
+        "p50": 0.8754800150145696,
+        "p90": 10.003980230084844
+      },
+      "mfeBeforeMaeRate": 0.5161290322580645,
+      "maeBeforeMfeRate": 0.1935483870967742,
+      "medianBarsToExit": 2,
+      "medianMfeBeforeExitR": 0.8754800150145696
+    },
+    "SELL_NEW_YORK": {
+      "n": 36,
+      "wins": 10,
+      "losses": 26,
+      "winRate": 0.2777777777777778,
+      "avgR": 0.1526021840722835,
+      "totalR": 5.493678626602206,
+      "profitFactor": 1.2112953317923925,
+      "maeR": {
+        "p50": 1.2792014982340199,
+        "p90": 10.437491345292404
+      },
+      "mfeR": {
+        "p50": 0.8580343309161409,
+        "p90": 12.124391356942027
+      },
+      "mfeBeforeMaeRate": 0.4166666666666667,
+      "maeBeforeMfeRate": 0.2777777777777778,
+      "medianBarsToExit": 1,
+      "medianMfeBeforeExitR": 0.8580343309161409
+    },
+    "SELL_OUTSIDE": {
+      "n": 8,
+      "wins": 2,
+      "losses": 6,
+      "winRate": 0.25,
+      "avgR": 0.34049018725130087,
+      "totalR": 2.723921498010407,
+      "profitFactor": 1.4539869163350678,
+      "maeR": {
+        "p50": 1.3797925653328138,
+        "p90": 4.151695919816431
+      },
+      "mfeR": {
+        "p50": 0.7508148312766352,
+        "p90": 8.93286424759817
+      },
+      "mfeBeforeMaeRate": 0.5,
+      "maeBeforeMfeRate": 0.375,
+      "medianBarsToExit": 2.5,
+      "medianMfeBeforeExitR": 0.7508148312766352
+    }
+  },
+  "interpretationTargets": [
+    "entry timing vs directional bias",
+    "adverse-first vs favorable-first path",
+    "realized excursion vs projected target geometry",
+    "session-direction interaction"
+  ]
+}
