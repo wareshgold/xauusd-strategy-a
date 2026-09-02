@@ -4,18 +4,13 @@ import { resolve } from 'node:path';
 const ROOT = resolve(process.cwd());
 const OUT_DIR = resolve(ROOT, 'data/reports/strategy-a-direction-session-h2-dev-val');
 const TIMEFRAMES = ['1min', '5min'];
-const HOLDOUT_CANDLES = 5000;
-const DEV_FRACTION = 0.6;
+const TOTAL_CANDLES = 15000;
+const FRESH_HOLDOUT_CANDLES = 5000;
+const PRE_HOLDOUT_CANDLES = TOTAL_CANDLES - FRESH_HOLDOUT_CANDLES;
+const DEV_CANDLES = 6000;
+const MIN_N_PER_SPLIT = 10;
 const DIRECTIONS = ['BUY', 'SELL'];
 const SESSIONS = ['LONDON', 'NEW_YORK', 'OUTSIDE'];
-
-function session(entryTime) {
-  const d = new Date(entryTime);
-  const m = d.getUTCHours() * 60 + d.getUTCMinutes();
-  if (m >= 420 && m < 960) return 'LONDON';
-  if (m >= 960 && m < 1320) return 'NEW_YORK';
-  return 'OUTSIDE';
-}
 
 function summarize(rows) {
   const rs = rows.map((r) => Number(r.rMultiple)).filter(Number.isFinite);
@@ -35,67 +30,101 @@ function summarize(rows) {
   };
 }
 
-function candidate(rows, direction, sess) {
-  const subset = rows.filter((r) => r.direction === direction && r.session === sess);
-  return { label: `${direction} + ${sess}`, ...summarize(subset) };
+function byRegime(rows, direction, session) {
+  return rows.filter((r) => r.direction === direction && r.session === session);
 }
 
 async function run(timeframe) {
   const source = JSON.parse(await readFile(resolve(ROOT, `data/reports/strategy-a-baseline/${timeframe}.json`), 'utf8'));
-  const all = (source.trades ?? [])
+  const candles = JSON.parse(await readFile(resolve(ROOT, `data/historical/xauusd-${timeframe}.json`), 'utf8')).candles ?? [];
+
+  if (candles.length < TOTAL_CANDLES) {
+    throw new Error(`${timeframe}: expected at least ${TOTAL_CANDLES} candles, found ${candles.length}`);
+  }
+
+  const freshHoldoutCutoff = candles[PRE_HOLDOUT_CANDLES]?.timestamp;
+  const devValCutoff = candles[DEV_CANDLES]?.timestamp;
+  if (!freshHoldoutCutoff || !devValCutoff) throw new Error(`${timeframe}: missing deterministic split timestamps`);
+
+  const allTrades = (source.trades ?? [])
     .filter((t) => Number.isFinite(Number(t.rMultiple)) && t.result !== 'AMBIGUOUS')
-    .map((t) => ({ ...t, rMultiple: Number(t.rMultiple), session: session(t.entryTime) }))
+    .map((t) => ({ ...t, rMultiple: Number(t.rMultiple) }))
     .sort((a, b) => new Date(a.entryTime) - new Date(b.entryTime));
 
-  const holdoutStart = Math.max(0, all.length ? (source.trades ?? []).length - 0 : 0);
-  // Baseline reports contain the full 15k-candle backtest trades. Identify the fresh holdout
-  // by entry candle timestamp using the historical candle boundary, without reading/modifying data.
-  const candles = JSON.parse(await readFile(resolve(ROOT, `data/historical/xauusd-${timeframe}.json`), 'utf8'));
-  const cutoffIndex = Math.max(0, candles.candles.length - HOLDOUT_CANDLES);
-  const cutoffTime = candles.candles[cutoffIndex]?.timestamp ?? null;
-  if (!cutoffTime) throw new Error(`Missing fresh holdout cutoff for ${timeframe}`);
+  const preHoldout = allTrades.filter((t) => new Date(t.entryTime) < new Date(freshHoldoutCutoff));
+  const dev = preHoldout.filter((t) => new Date(t.entryTime) < new Date(devValCutoff));
+  const val = preHoldout.filter((t) => new Date(t.entryTime) >= new Date(devValCutoff));
 
-  const preHoldout = all.filter((r) => new Date(r.entryTime) < new Date(cutoffTime));
-  const split = Math.floor(preHoldout.length * DEV_FRACTION);
-  const dev = preHoldout.slice(0, split);
-  const val = preHoldout.slice(split);
-
-  const devBase = summarize(dev);
-  const valBase = summarize(val);
+  const baseline = { dev: summarize(dev), val: summarize(val) };
   const candidates = [];
+
   for (const direction of DIRECTIONS) {
-    for (const sess of SESSIONS) {
-      const d = candidate(dev, direction, sess);
-      const v = candidate(val, direction, sess);
-      const devDelta = d.avgR - devBase.avgR;
-      const valDelta = v.avgR - valBase.avgR;
-      const stablePositive = d.n >= 10 && v.n >= 10 && d.avgR > 0 && v.avgR > 0 && d.PF >= 1 && v.PF >= 1;
-      candidates.push({ label: d.label, dev: d, val: v, devDeltaAvgR: devDelta, valDeltaAvgR: valDelta, stablePositive });
+    for (const session of SESSIONS) {
+      const devRows = byRegime(dev, direction, session);
+      const valRows = byRegime(val, direction, session);
+      const devStats = { label: `${direction} + ${session}`, ...summarize(devRows) };
+      const valStats = { label: `${direction} + ${session}`, ...summarize(valRows) };
+      const devDeltaAvgR = devStats.avgR - baseline.dev.avgR;
+      const valDeltaAvgR = valStats.avgR - baseline.val.avgR;
+      const stablePositive =
+        devStats.n >= MIN_N_PER_SPLIT &&
+        valStats.n >= MIN_N_PER_SPLIT &&
+        devStats.avgR > 0 &&
+        valStats.avgR > 0 &&
+        devStats.PF >= 1 &&
+        valStats.PF >= 1;
+      candidates.push({ label: devStats.label, dev: devStats, val: valStats, devDeltaAvgR, valDeltaAvgR, stablePositive });
     }
   }
 
-  // H2 is intentionally frozen as categorical direction × session attribution.
-  // No threshold, hour, score, or subgroup was optimized here. This report only asks
-  // whether the exact categories reproduce across DEV and VAL before any new holdout.
-  const robustCandidates = candidates.filter((c) => c.stablePositive);
+  const frozenH2 = candidates.find((c) => c.label === 'SELL + NEW_YORK');
+  const gatePassed = Boolean(frozenH2?.stablePositive);
+
   const report = {
-    strategy: 'Strategy A / SP2L',
+    strategy: 'Strategy A',
     mode: 'RESEARCH_H2_DIRECTION_SESSION_DEV_VAL',
     timeframe,
-    scope: 'Pre-holdout trades only. Current 5k fresh holdout is excluded and remains untouched for H2 validation.',
-    hypothesis: 'Frozen H2: Strategy A expectancy differs systematically by direction × trading session; any candidate regime must be positive on both chronological DEV and VAL without threshold optimization.',
-    split: { preHoldoutTrades: preHoldout.length, devTrades: dev.length, valTrades: val.length, devFraction: DEV_FRACTION, freshHoldoutCandles: HOLDOUT_CANDLES, freshHoldoutCutoff: cutoffTime },
-    baseline: { dev: devBase, val: valBase },
-    candidates,
-    gate: { minimumNPerSplit: 10, rule: 'candidate must have n>=10 in both DEV and VAL, avgR>0 and PF>=1 in both; no automatic production promotion', passed: robustCandidates.map((c) => c.label) },
-    conclusion: robustCandidates.length ? 'H2 has at least one DEV/VAL-stable categorical regime and may proceed to a separate fresh holdout test.' : 'H2 fails the frozen DEV/VAL robustness gate; do not add a direction/session filter to Strategy A and revisit entry/trigger mechanics.',
+    scope: 'Pre-holdout only. The final 5,000 candles are excluded and remain reserved for a separate fresh H2 holdout test.',
+    hypothesis: 'Frozen H2: Strategy A expectancy differs systematically by direction × trading session; the pre-registered candidate is SELL + NEW_YORK because it was identified before this DEV/VAL test from baseline attribution.',
+    methodology: {
+      sourceBaseline: 'data/reports/strategy-a-baseline',
+      totalCandlesRequired: TOTAL_CANDLES,
+      freshHoldoutCandles: FRESH_HOLDOUT_CANDLES,
+      preHoldoutCandles: PRE_HOLDOUT_CANDLES,
+      devCandles: DEV_CANDLES,
+      valCandles: PRE_HOLDOUT_CANDLES - DEV_CANDLES,
+      splitMethod: 'Chronological candle split; trades are assigned by entryTime. No threshold, hour boundary, score, or subgroup optimization is performed.',
+      minimumNPerSplit: MIN_N_PER_SPLIT,
+      promotionRule: 'Frozen SELL + NEW_YORK must have n>=10, avgR>0, and PF>=1 in both DEV and VAL. Passing does not modify Strategy A; it only authorizes a separate fresh holdout test.',
+    },
+    split: {
+      devCutoff: devValCutoff,
+      freshHoldoutCutoff: freshHoldoutCutoff,
+      preHoldoutTrades: preHoldout.length,
+      devTrades: dev.length,
+      valTrades: val.length,
+    },
+    baseline,
+    frozenCandidate: frozenH2,
+    allDirectionSessionCells: candidates,
+    gate: {
+      passed: gatePassed,
+      candidate: 'SELL + NEW_YORK',
+      rule: 'n>=10, avgR>0, PF>=1 in both DEV and VAL',
+    },
+    conclusion: gatePassed
+      ? 'H2 passes the frozen DEV/VAL gate. Do not change production Strategy A. The next step is a single fresh holdout test of SELL + NEW_YORK on the reserved 5,000 candles.'
+      : 'H2 fails the frozen DEV/VAL gate. Do not add a direction/session filter to Strategy A; the hypothesis should be rejected and research should return to entry/trigger mechanics.',
   };
 
   await mkdir(OUT_DIR, { recursive: true });
   const out = resolve(OUT_DIR, `${timeframe}.json`);
   await writeFile(out, JSON.stringify(report, null, 2));
-  console.log(`${timeframe}: preHoldout=${preHoldout.length} DEV=${dev.length} VAL=${val.length} baselineDEV=${devBase.avgR.toFixed(4)} baselineVAL=${valBase.avgR.toFixed(4)}`);
-  for (const c of candidates) console.log(`  ${c.label}: DEV n=${c.dev.n} avgR=${c.dev.avgR.toFixed(4)} PF=${c.dev.PF?.toFixed(4) ?? 'n/a'} | VAL n=${c.val.n} avgR=${c.val.avgR.toFixed(4)} PF=${c.val.PF?.toFixed(4) ?? 'n/a'} | pass=${c.stablePositive}`);
+  console.log(`${timeframe}: preHoldout=${preHoldout.length} DEV=${dev.length} VAL=${val.length} baselineDEV=${baseline.dev.avgR.toFixed(4)} baselineVAL=${baseline.val.avgR.toFixed(4)}`);
+  for (const c of candidates) {
+    console.log(`  ${c.label}: DEV n=${c.dev.n} avgR=${c.dev.avgR.toFixed(4)} PF=${c.dev.PF?.toFixed(4) ?? 'n/a'} | VAL n=${c.val.n} avgR=${c.val.avgR.toFixed(4)} PF=${c.val.PF?.toFixed(4) ?? 'n/a'} | pass=${c.stablePositive}`);
+  }
+  console.log(`  FROZEN H2 SELL + NEW_YORK: ${gatePassed ? 'PASS' : 'FAIL'}`);
   console.log(`Report -> ${out}`);
 }
 
