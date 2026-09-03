@@ -93,7 +93,7 @@ async function run(timeframe){
  for(let index=0;index<PRE;index++){
   const candidates=buildCandidates(candles,index); if(!candidates.length)continue;
   const selected=candidates[0],t=canonical.get(key(selected)); if(!t)continue;
-  rows.push({index,candidateCount:candidates.length,r:Number(t.rMultiple),...selected.geometry});
+  rows.push({index,candidateCount:candidates.length,r:Number(t.rMultiple),geometry:selected.geometry});
  }
  const devRows=rows.filter(r=>r.index<DEV),valRows=rows.filter(r=>r.index>=DEV&&r.index<PRE);
  const tests=[];
