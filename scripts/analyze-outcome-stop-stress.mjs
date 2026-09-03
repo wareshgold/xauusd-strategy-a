@@ -8,7 +8,7 @@ const TOTAL = 15000;
 const PRE = 10000;
 const DEV = 6000;
 const HORIZON = 20;
-const THRESHOLDS = [0.25, 0.5, 1];
+const THRESHOLDS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3];
 const STOP_MULTIPLIERS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 function metrics(rows) {
@@ -29,8 +29,12 @@ function quantiles(values) {
   return { n: v.length, p25: at(.25), median: at(.5), p75: at(.75), mean: v.reduce((a,b) => a+b, 0) / v.length };
 }
 
-function signedMove(direction, price, entry) {
+function favorableMove(direction, price, entry) {
   return direction === 'BUY' ? price - entry : entry - price;
+}
+
+function adverseMove(direction, price, entry) {
+  return direction === 'BUY' ? entry - price : price - entry;
 }
 
 function path(candles, trade) {
@@ -41,8 +45,8 @@ function path(candles, trade) {
   const out = { first: {}, timeToFav: {}, timeToAdv: {}, mfe: 0, mae: 0 };
   for (let i = entryIndex + 1; i <= end; i++) {
     const c = candles[i];
-    const fav = signedMove(trade.direction, trade.direction === 'BUY' ? c.high : c.low, entry) / risk;
-    const adv = signedMove(trade.direction, trade.direction === 'BUY' ? c.low : c.high, entry) / risk;
+    const fav = favorableMove(trade.direction, trade.direction === 'BUY' ? c.high : c.low, entry) / risk;
+    const adv = adverseMove(trade.direction, trade.direction === 'BUY' ? c.low : c.high, entry) / risk;
     out.mfe = Math.max(out.mfe, fav); out.mae = Math.max(out.mae, adv);
     for (const t of THRESHOLDS) {
       const k = String(t);
@@ -117,7 +121,8 @@ async function run(timeframe) {
   const report = {
     strategy: 'Strategy A', mode: 'OUTCOME_THRESHOLD_AND_DIAGNOSTIC_STOP_STRESS_PREHOLDOUT', timeframe,
     scope: { totalCandles: TOTAL, preHoldoutCandles: PRE, devCandles: DEV, valCandles: PRE-DEV, freshHoldoutCandles: TOTAL-PRE, freshHoldoutExcluded: true },
-    methodology: { purpose: 'Separate path ordering from stop-distance sensitivity using canonical entries.', horizon: HORIZON, thresholds: THRESHOLDS.map(t => `+/-${t}R`), stopMultipliers: STOP_MULTIPLIERS, stressTarget: 'Canonical TP1 is retained; hypothetical stop distance is multiplier x canonical entry-to-stop distance.', sameCandle: 'If hypothetical stop and TP1 are both touched in one candle, classify AMBIGUOUS; no intrabar order is inferred.', noOptimization: true, noProductionChange: true },
+    methodology: { purpose: 'Separate path ordering from stop-distance sensitivity using canonical entries.', horizon: HORIZON, thresholds: THRESHOLDS.map(t => `+/-${t}R`), stopMultipliers: STOP_MULTIPLIERS, stressTarget: 'Canonical TP1 is retained; hypothetical stop distance is multiplier x canonical entry-to-stop distance.', sameCandle: 'If hypothetical stop and TP1 are both touched in one candle, classify AMBIGUOUS; no intrabar order is inferred.', noOptimization: true, noProductionChange: true,
+      adverseDefinition: 'Adverse excursion is positive when price moves against the trade: BUY uses entry-low; SELL uses high-entry.' },
     counts: { joined: rows.length, DEV: dev.length, VAL: val.length },
     baseline: { DEV: metrics(dev.map(x => x.outcome)), VAL: metrics(val.map(x => x.outcome)) },
     thresholdOrdering: { DEV: thresholdSummary(dev), VAL: thresholdSummary(val) },
