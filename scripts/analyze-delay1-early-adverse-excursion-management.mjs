@@ -72,21 +72,17 @@ function buildCandidate(candles, index) {
 
   for (const spike of spikes.candidates) {
     if (spike.endIndex >= index) continue;
-
     const correction = detectFirstCorrection(v, spike);
     if (!correction || correction.correctionExtremeIndex >= index) continue;
-
     const trigger = detectEntryTrigger(v, correction);
     if (!trigger || trigger.index !== index) continue;
     if (index - correction.correctionExtremeIndex !== 1) continue;
 
     const projection = projectLeg2(v, correction);
     if (!projection) continue;
-
     const invalidation = getInvalidationRule(correction);
     const ema = buildEMAContext(v.map(c => c.close), CONTEXT);
     if (!ema) continue;
-
     const location = buildLocationContext(trigger.entryPrice, CONTEXT);
     const session = buildSessionContext(trigger.timestamp, CONTEXT);
     const quality = scoreSetup(spike, { ema, location, session });
@@ -106,7 +102,6 @@ function buildCandidate(candles, index) {
       tp1: projection.tp1,
     };
   }
-
   return null;
 }
 
@@ -127,6 +122,20 @@ function excursionAt(candles, candidate, h) {
     mae = Math.max(mae, adverse / risk);
   }
   return mae;
+}
+
+function stopTouched(candidate, candle) {
+  const s = Number(candidate.stopLoss);
+  return candidate.direction === 'BUY'
+    ? Number(candle.low) <= s
+    : Number(candle.high) >= s;
+}
+
+function stopTouchedThrough(candles, candidate, endIndex) {
+  for (let j = candidate.entryIndex + 1; j <= endIndex; j++) {
+    if (stopTouched(candidate, candles[j])) return true;
+  }
+  return false;
 }
 
 function exitR(candidate, price) {
@@ -155,6 +164,7 @@ function simulate(candles, row, threshold, checkpoint, executionModel) {
       exitTime: null,
       exitPrice: null,
       exitR: null,
+      stopPrecedence: false,
     };
   }
 
@@ -162,6 +172,27 @@ function simulate(candles, row, threshold, checkpoint, executionModel) {
     ? candidate.entryIndex + checkpoint
     : candidate.entryIndex + checkpoint + 1;
   if (exitIndex >= candles.length) return null;
+
+  // The canonical stop remains active. If it is touched before the scheduled
+  // management exit, the position is already closed at -1R. This prevents
+  // the management simulation from producing impossible post-stop losses.
+  const stopHit = stopTouchedThrough(candles, candidate, exitIndex);
+  if (stopHit) {
+    return {
+      ...row,
+      finalR: -1,
+      management: 'STOP_FIRST',
+      checkpoint,
+      thresholdR: threshold,
+      executionModel,
+      maeAtCheckpoint: mae,
+      exitIndex: null,
+      exitTime: null,
+      exitPrice: null,
+      exitR: -1,
+      stopPrecedence: true,
+    };
+  }
 
   const exitCandle = candles[exitIndex];
   const exitPrice = Number(executionModel === 'CHECKPOINT_CLOSE' ? exitCandle.close : exitCandle.open);
@@ -179,6 +210,7 @@ function simulate(candles, row, threshold, checkpoint, executionModel) {
     exitTime: exitCandle.timestamp,
     exitPrice,
     exitR: r,
+    stopPrecedence: false,
   };
 }
 
@@ -213,9 +245,8 @@ async function run(tf) {
       for (const threshold of THRESHOLDS) {
         const simulated = rows.map(r => simulate(candles, r, threshold, h, executionModel)).filter(Boolean);
         const early = simulated.filter(r => r.management === 'EARLY_EXIT');
-        const canonical = simulated.map(r => ({ ...r, finalR: Number(r.trade.rMultiple) }));
         const s = stats(simulated);
-        const baseline = stats(canonical);
+        const baseline = stats(simulated.map(r => ({ ...r, finalR: Number(r.trade.rMultiple) })));
         results[executionModel][`h${h}`][`>${threshold}R`] = {
           ...s,
           baselineAvgR: baseline.avgR,
@@ -224,6 +255,7 @@ async function run(tf) {
           earlyExitShare: pct(early.length, simulated.length),
           earlyExitAvgR: stats(early).avgR,
           earlyExitPF: stats(early).PF,
+          stopFirstCount: simulated.filter(r => r.management === 'STOP_FIRST').length,
         };
       }
     }
@@ -233,19 +265,15 @@ async function run(tf) {
     strategy: 'Strategy A',
     mode: 'DELAY1_EARLY_ADVERSE_EXCURSION_MANAGEMENT',
     timeframe: tf,
-    scope: {
-      totalCandles: candles.length,
-      preHoldoutCandles: PRE,
-      freshHoldoutCandles: FRESH,
-      delayExactly: 1,
-    },
+    scope: { totalCandles: candles.length, preHoldoutCandles: PRE, freshHoldoutCandles: FRESH, delayExactly: 1 },
     frozenPolicies: {
       checkpoints: CHECKPOINTS,
       thresholdsR: THRESHOLDS,
       executionModels: EXECUTION_MODELS,
-      rule: 'At checkpoint h, if MAE through candle h exceeds threshold, exit at the specified executable price; otherwise retain canonical outcome.',
-      checkpointClose: 'exit at close of candle entryIndex+h',
-      nextOpen: 'exit at open of candle entryIndex+h+1',
+      rule: 'At checkpoint h, if MAE through candle h exceeds threshold, request an early exit; the canonical stop remains active until the position is closed.',
+      checkpointClose: 'exit at close of candle entryIndex+h if stop has not already been touched',
+      nextOpen: 'exit at open of candle entryIndex+h+1 if stop has not already been touched',
+      stopPrecedence: 'If canonical stop is touched before the scheduled management exit, finalR is -1R and no later exit price is used.',
     },
     methodology: {
       outcomeSource: 'canonical baseline fresh-holdout trades',
@@ -257,11 +285,7 @@ async function run(tf) {
       diagnosticOnly: true,
       exactJoin: true,
     },
-    parity: {
-      canonicalFreshTrades: canonicalFresh.length,
-      delay1FreshJoined: rows.length,
-      unmatchedCanonicalFresh: canonicalFresh.length - rows.length,
-    },
+    parity: { canonicalFreshTrades: canonicalFresh.length, delay1FreshJoined: rows.length, unmatchedCanonicalFresh: canonicalFresh.length - rows.length },
     baselineDelay1: stats(rows.map(r => ({ finalR: Number(r.trade.rMultiple) }))),
     policies: results,
   };
@@ -279,7 +303,7 @@ async function run(tf) {
     for (const h of CHECKPOINTS) {
       for (const threshold of THRESHOLDS) {
         const s = results[executionModel][`h${h}`][`>${threshold}R`];
-        console.log(`  h${h} MAE>${threshold}R: n=${s.n} AvgR=${s.avgR?.toFixed(3)} PF=${s.PF?.toFixed(3) ?? 'n/a'} WR=${(100 * (s.winRate ?? 0)).toFixed(1)} ΔvsBase=${s.deltaAvgR?.toFixed(3)} earlyExits=${s.earlyExitCount} share=${(100 * (s.earlyExitShare ?? 0)).toFixed(1)} earlyExitAvgR=${s.earlyExitAvgR?.toFixed(3) ?? 'n/a'} earlyExitPF=${s.earlyExitPF?.toFixed(3) ?? 'n/a'}`);
+        console.log(`  h${h} MAE>${threshold}R: n=${s.n} AvgR=${s.avgR?.toFixed(3)} PF=${s.PF?.toFixed(3) ?? 'n/a'} WR=${(100 * (s.winRate ?? 0)).toFixed(1)} ΔvsBase=${s.deltaAvgR?.toFixed(3)} earlyExits=${s.earlyExitCount} share=${(100 * (s.earlyExitShare ?? 0)).toFixed(1)} earlyExitAvgR=${s.earlyExitAvgR?.toFixed(3) ?? 'n/a'} earlyExitPF=${s.earlyExitPF?.toFixed(3) ?? 'n/a'} stopFirst=${s.stopFirstCount}`);
       }
     }
   }
