@@ -24,6 +24,7 @@
     "research:entry-trigger-outcome-forensics": "node scripts/analyze-entry-trigger-outcome-forensics.mjs",
     "research:entry-trigger-mechanics-dev-val": "node scripts/analyze-entry-trigger-mechanics-dev-val.mjs",
     "research:entry-quality-combinations-dev-val": "node scripts/analyze-entry-quality-combinations-dev-val.mjs",
+    "research:entry-quality-combinations-rolling": "node scripts/analyze-entry-quality-combinations-rolling.mjs",
     "research:entry-trigger-mechanics-fresh-holdout": "node scripts/analyze-entry-trigger-mechanics-fresh-holdout.mjs",
     "research:entry-trigger-root-cause": "node scripts/analyze-entry-trigger-root-cause.mjs",
     "research:entry-trigger-reclaim-mechanics": "node scripts/analyze-entry-trigger-reclaim-mechanics.mjs",
