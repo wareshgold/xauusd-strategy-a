@@ -1,46 +1,41 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { detectBreakout } from '../src/domain/market/BreakoutDetector.js';
+import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.js';
+import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.js';
+import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.js';
+import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
+import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.js';
+import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
+import { buildEMAContext, buildLocationContext, buildSessionContext } from '../src/domain/strategy-a/Context.js';
+import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
 
-const ROOT=resolve(process.cwd());
-const PATH_DIR=resolve(ROOT,'data/reports/strategy-a-first-correction-path-forensics');
-const BASE_DIR=resolve(ROOT,'data/reports/strategy-a-baseline');
-const OUT_DIR=resolve(ROOT,'data/reports/strategy-a-entry-quality-combinations-dev-val');
+const ROOT=resolve(process.cwd()), BASE_DIR=resolve(ROOT,'data/reports/strategy-a-baseline'), OUT_DIR=resolve(ROOT,'data/reports/strategy-a-entry-quality-combinations-dev-val');
 const TOTAL=15000, PRE=10000, DEV=6000, MIN_N=10;
+const BREAKOUT_LOOKBACK=5, FT_MAX_BARS=2, SPIKE_MAX_CANDLES=8, SPIKE_MIN_DIRECTIONAL_FRACTION=.5, SPIKE_MAX_OVERLAP_FRACTION=.8;
+const CONTEXT={emaPeriod:60,roundStep:50,roundDistance:5,tradingSessions:[{name:'LONDON',startMinutes:420,endMinutes:960},{name:'NEW_YORK',startMinutes:780,endMinutes:1320}],avoidWindows:[]};
 
 function stats(rows){const rs=rows.map(r=>Number(r.r)).filter(Number.isFinite),w=rs.filter(x=>x>0),l=rs.filter(x=>x<0),gp=w.reduce((a,b)=>a+b,0),gl=-l.reduce((a,b)=>a+b,0);return{n:rs.length,wins:w.length,losses:l.length,winRate:rs.length?w.length/rs.length:0,avgR:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:0,totalR:rs.reduce((a,b)=>a+b,0),PF:gl?gp/gl:null};}
 function key(c){return `${c.entryIndex}|${c.direction}|${Number(c.entry).toPrecision(15)}|${Number(c.stopLoss).toPrecision(15)}|${Number(c.tp1).toPrecision(15)}`;}
-function evaluate(name,p,dev,val,bD,bV){const d=stats(dev.filter(p)),v=stats(val.filter(p));return{name,DEV:d,VAL:v,devDeltaAvgR:d.avgR-bD.avgR,valDeltaAvgR:v.avgR-bV.avgR,eligible:d.n>=MIN_N&&v.n>=MIN_N,pass:d.n>=MIN_N&&v.n>=MIN_N&&d.avgR>0&&v.avgR>0&&d.PF!==null&&v.PF!==null&&d.PF>=1&&v.PF>=1};}
+function normalized(candle,direction){const range=candle.high-candle.low;if(!(range>0))return{range:0,body:0,closeLoc:0,oppWick:0};const buy=direction==='BUY';const body=Math.abs((buy?candle.close-candle.open:candle.open-candle.close)/range);const closeLoc=buy?(candle.close-candle.low)/range:(candle.high-candle.close)/range;const oppWick=buy?(Math.min(candle.open,candle.close)-candle.low)/range:(candle.high-Math.max(candle.open,candle.close))/range;return{range,body,closeLoc,oppWick};}
+function pathFeatures(candles,c){const {spike,correction,trigger}=c;const n=normalized(candles[trigger.index],trigger.direction);const impulse=Math.abs(spike.size),extremeMove=Math.abs(correction.extremePrice-spike.endPrice);return{triggerDelay:trigger.index-correction.correctionExtremeIndex,triggerBody:n.body,triggerCloseLocation:n.closeLoc,triggerOppositeWick:n.oppWick,triggerExtension:impulse?Math.abs(trigger.entryPrice-spike.endPrice)/impulse:null,correctionDepth:impulse?Math.abs(correction.extremePrice-spike.startPrice)/impulse:null,stopToImpulse:impulse?Math.abs(trigger.entryPrice-correction.extremePrice)/impulse:null,entryExtensionToCorrection:extremeMove?Math.abs(trigger.entryPrice-correction.extremePrice)/extremeMove:null};}
+function buildCandidates(candles,index){const visible=candles.slice(0,index+1);if(visible.length<Math.max(BREAKOUT_LOOKBACK+2,CONTEXT.emaPeriod))return[];const bo=detectBreakout(visible,BREAKOUT_LOOKBACK),ft=detectFollowThrough(visible,bo,{maxBarsAfterBreakout:FT_MAX_BARS,requireCloseBeyondBrokenLevel:true}),sp=detectSpikeCandidates(visible,bo,ft,{maxCandles:SPIKE_MAX_CANDLES,minDirectionalFraction:SPIKE_MIN_DIRECTIONAL_FRACTION,maxOverlapFraction:SPIKE_MAX_OVERLAP_FRACTION}),out=[];for(const spike of sp.candidates){if(spike.endIndex>=index)continue;const correction=detectFirstCorrection(visible,spike);if(!correction||correction.correctionExtremeIndex>=index)continue;const trigger=detectEntryTrigger(visible,correction);if(!trigger||trigger.index!==index)continue;const projection=projectLeg2(visible,correction);if(!projection)continue;const inv=getInvalidationRule(correction),ema=buildEMAContext(visible.map(c=>c.close),CONTEXT);if(!ema)continue;const location=buildLocationContext(trigger.entryPrice,CONTEXT),session=buildSessionContext(trigger.timestamp,CONTEXT),quality=scoreSetup(spike,{ema,location,session});if(!quality.tradeAllowed)continue;const risk=Math.abs(trigger.entryPrice-inv.invalidationLevel),reward=Math.abs(projection.tp1-trigger.entryPrice),directional=trigger.direction==='BUY'?projection.tp1>trigger.entryPrice:projection.tp1<trigger.entryPrice;if(!(risk>0&&reward>0&&directional))continue;out.push({entryIndex:index,index,entryTime:trigger.timestamp,direction:trigger.direction,entry:trigger.entryPrice,stopLoss:inv.invalidationLevel,tp1:projection.tp1,spike,correction,trigger});}return out;}
+function summarize(name,dev,val,bD,bV){const d=stats(dev),v=stats(val),eligible=d.n>=MIN_N&&v.n>=MIN_N;return{name,DEV:d,VAL:v,devDeltaAvgR:d.avgR-bD.avgR,valDeltaAvgR:v.avgR-bV.avgR,eligible,pass:eligible&&d.avgR>0&&v.avgR>0&&d.PF!==null&&v.PF!==null&&d.PF>=1&&v.PF>=1};}
+
 async function run(timeframe){
- const candles=(JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${timeframe}.json`),'utf8')).candles??[]);
- const path=JSON.parse(await readFile(resolve(PATH_DIR,`${timeframe}.json`),'utf8'));
- const base=JSON.parse(await readFile(resolve(BASE_DIR,`${timeframe}.json`),'utf8'));
- const cutoff=new Date(candles[PRE].timestamp),devCut=new Date(candles[DEV].timestamp);
+ const candles=(JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${timeframe}.json`),'utf8')).candles??[]);if(candles.length<TOTAL)throw new Error(`${timeframe}: expected ${TOTAL} candles, got ${candles.length}`);
+ const base=JSON.parse(await readFile(resolve(BASE_DIR,`${timeframe}.json`),'utf8'));const cutoff=new Date(candles[PRE].timestamp),devCut=new Date(candles[DEV].timestamp);
  const canonical=new Map((base.trades??[]).filter(t=>t.result!=='AMBIGUOUS'&&Number.isFinite(Number(t.rMultiple))&&new Date(t.entryTime)<cutoff).map(t=>[key(t),t]));
- const selected=(path.baselineSelected??[]).filter(c=>c.index<PRE),rows=[];
- for(const c of selected){const t=canonical.get(key(c));if(t)rows.push({...c,r:Number(t.rMultiple),entryTime:t.entryTime});}
- const dev=rows.filter(r=>r.index<DEV),val=rows.filter(r=>r.index>=DEV&&r.index<PRE),bD=stats(dev),bV=stats(val);
+ const rows=[];for(let index=0;index<PRE;index++){const cs=buildCandidates(candles,index);if(!cs.length)continue;const c=cs[0],t=canonical.get(key(c));if(!t)continue;rows.push({...pathFeatures(candles,c),index,r:Number(t.rMultiple),entryTime:t.entryTime});}
+ const dev=rows.filter(r=>new Date(r.entryTime)<devCut),val=rows.filter(r=>new Date(r.entryTime)>=devCut&&new Date(r.entryTime)<cutoff),bD=stats(dev),bV=stats(val);
  const predicates={
-  'delay<=1':r=>r.triggerDelay<=1,
-  'triggerBody>=50%':r=>r.triggerBody>=0.50,
-  'triggerClose>=75%':r=>r.triggerCloseLocation>=0.75,
-  'triggerOppWick<=25%':r=>r.triggerOppositeWick<=0.25,
-  'delay<=1 AND body>=50%':r=>r.triggerDelay<=1&&r.triggerBody>=0.50,
-  'delay<=1 AND close>=75%':r=>r.triggerDelay<=1&&r.triggerCloseLocation>=0.75,
-  'delay<=1 AND oppWick<=25%':r=>r.triggerDelay<=1&&r.triggerOppositeWick<=0.25,
-  'body>=50% AND close>=75%':r=>r.triggerBody>=0.50&&r.triggerCloseLocation>=0.75,
-  'body>=50% AND oppWick<=25%':r=>r.triggerBody>=0.50&&r.triggerOppositeWick<=0.25,
-  'close>=75% AND oppWick<=25%':r=>r.triggerCloseLocation>=0.75&&r.triggerOppositeWick<=0.25,
-  'delay<=1 AND body>=50% AND close>=75%':r=>r.triggerDelay<=1&&r.triggerBody>=0.50&&r.triggerCloseLocation>=0.75,
-  'delay<=1 AND body>=50% AND oppWick<=25%':r=>r.triggerDelay<=1&&r.triggerBody>=0.50&&r.triggerOppositeWick<=0.25,
-  'delay<=1 AND close>=75% AND oppWick<=25%':r=>r.triggerDelay<=1&&r.triggerCloseLocation>=0.75&&r.triggerOppositeWick<=0.25,
-  'body>=50% AND close>=75% AND oppWick<=25%':r=>r.triggerBody>=0.50&&r.triggerCloseLocation>=0.75&&r.triggerOppositeWick<=0.25,
-  'ALL FOUR':r=>r.triggerDelay<=1&&r.triggerBody>=0.50&&r.triggerCloseLocation>=0.75&&r.triggerOppositeWick<=0.25
- };
- const results=Object.entries(predicates).map(([n,p])=>evaluate(n,p,dev,val,bD,bV));
- const report={strategy:'Strategy A',mode:'ENTRY_QUALITY_COMBINATIONS_DEV_VAL',timeframe,scope:{totalCandles:TOTAL,preHoldoutCandles:PRE,devCandles:DEV,valCandles:PRE-DEV,freshHoldoutCandles:TOTAL-PRE,freshHoldoutExcluded:true},methodology:{purpose:'Frozen diagnostic matrix for reclaim/entry quality; not a production optimization.',outcomeSource:'canonical baseline outcome joined by exact entry/direction/SL/TP1 key',featureSource:'first-correction path forensics',thresholdsFrozen:{triggerDelay:'<=1',triggerBody:0.50,triggerCloseLocation:0.75,triggerOppositeWick:0.25},split:'chronological 6000 DEV / 4000 VAL',minN:MIN_N,valNotUsedForThresholdSelection:true,noFreshHoldout:true,productionUntouched:true},baseline:{DEV:bD,VAL:bV},results,decision:'Attribution only. A passing combination does not authorize production change; any candidate must be separately pre-registered for one fresh-holdout confirmation.'};
- await mkdir(OUT_DIR,{recursive:true});const out=resolve(OUT_DIR,`${timeframe}.json`);await writeFile(out,JSON.stringify(report,null,2));
- console.log(`${timeframe}: joined=${rows.length} DEV=${dev.length} VAL=${val.length} baselineDEV=${bD.avgR.toFixed(4)} baselineVAL=${bV.avgR.toFixed(4)}`);
- for(const x of results)console.log(`  ${x.name}: DEV n=${x.DEV.n} avgR=${x.DEV.avgR.toFixed(4)} PF=${x.DEV.PF?.toFixed(3)??'n/a'} | VAL n=${x.VAL.n} avgR=${x.VAL.avgR.toFixed(4)} PF=${x.VAL.PF?.toFixed(3)??'n/a'} | pass=${x.pass}`);
- console.log(`Report -> ${out}`);
+ 'delay<=1':r=>r.triggerDelay<=1,'triggerBody>=50%':r.triggerBody>=.5,'triggerClose>=75%':r.triggerCloseLocation>=.75,'triggerOppWick<=25%':r.triggerOppositeWick<=.25,
+ 'delay<=1 AND body>=50%':r=>r.triggerDelay<=1&&r.triggerBody>=.5,'delay<=1 AND close>=75%':r=>r.triggerDelay<=1&&r.triggerCloseLocation>=.75,'delay<=1 AND oppWick<=25%':r=>r.triggerDelay<=1&&r.triggerOppositeWick<=.25,
+ 'body>=50% AND close>=75%':r=>r.triggerBody>=.5&&r.triggerCloseLocation>=.75,'body>=50% AND oppWick<=25%':r=>r.triggerBody>=.5&&r.triggerOppositeWick<=.25,'close>=75% AND oppWick<=25%':r=>r.triggerCloseLocation>=.75&&r.triggerOppositeWick<=.25,
+ 'delay<=1 AND body>=50% AND close>=75%':r=>r.triggerDelay<=1&&r.triggerBody>=.5&&r.triggerCloseLocation>=.75,'delay<=1 AND body>=50% AND oppWick<=25%':r=>r.triggerDelay<=1&&r.triggerBody>=.5&&r.triggerOppositeWick<=.25,'delay<=1 AND close>=75% AND oppWick<=25%':r=>r.triggerDelay<=1&&r.triggerCloseLocation>=.75&&r.triggerOppositeWick<=.25,'body>=50% AND close>=75% AND oppWick<=25%':r=>r.triggerBody>=.5&&r.triggerCloseLocation>=.75&&r.triggerOppositeWick<=.25,
+ 'ALL FOUR':r=>r.triggerDelay<=1&&r.triggerBody>=.5&&r.triggerCloseLocation>=.75&&r.triggerOppositeWick<=.25};
+ const results=Object.entries(predicates).map(([name,p])=>summarize(name,dev.filter(p),val.filter(p),bD,bV));
+ const report={strategy:'Strategy A',mode:'ENTRY_QUALITY_COMBINATIONS_DEV_VAL',timeframe,scope:{totalCandles:TOTAL,preHoldoutCandles:PRE,devCandles:DEV,valCandles:PRE-DEV,freshHoldoutCandles:TOTAL-PRE,freshHoldoutExcluded:true},methodology:{purpose:'Frozen diagnostic matrix for reclaim/entry quality; not a production optimization.',selection:'Canonical baseline selected candidate reconstructed from visible candles; outcome joined by exact entry/direction/SL/TP1 key.',featureSource:'trigger candle OHLC plus deterministic first-correction geometry.',thresholdsFrozen:{triggerDelay:'<=1',triggerBody:'.>=0.50',triggerCloseLocation:'>=0.75',triggerOppositeWick:'<=0.25'},split:'chronological 6000 DEV / 4000 VAL',minN:MIN_N,valNotUsedForThresholdSelection:true,noFreshHoldout:true,productionUntouched:true},baseline:{DEV:bD,VAL:bV},parity:{joined:rows.length,canonicalResolvedPreHoldout:canonical.size},results,decision:'Attribution only. Passing combinations require separate pre-registered fresh-holdout confirmation and production review.'};
+ await mkdir(OUT_DIR,{recursive:true});const out=resolve(OUT_DIR,`${timeframe}.json`);await writeFile(out,JSON.stringify(report,null,2));console.log(`${timeframe}: joined=${rows.length} DEV=${dev.length} VAL=${val.length} baselineDEV=${bD.avgR.toFixed(4)} baselineVAL=${bV.avgR.toFixed(4)}`);for(const x of results)console.log(`  ${x.name}: DEV n=${x.DEV.n} avgR=${x.DEV.avgR.toFixed(4)} PF=${x.DEV.PF?.toFixed(3)??'n/a'} | VAL n=${x.VAL.n} avgR=${x.VAL.avgR.toFixed(4)} PF=${x.VAL.PF?.toFixed(3)??'n/a'} | pass=${x.pass}`);console.log(`Report -> ${out}`);
 }
 await run('1min');await run('5min');
