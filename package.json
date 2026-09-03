@@ -28,6 +28,7 @@
     "research:entry-trigger-delay-categories-dev-val": "node scripts/analyze-entry-trigger-delay-categories-dev-val.mjs",
     "research:trigger-delay-first-correction-state": "node scripts/analyze-trigger-delay-first-correction-state.mjs",
     "research:trigger-delay-post-entry-path": "node scripts/analyze-trigger-delay-post-entry-path.mjs",
+    "research:delay1-feature-forensics": "node scripts/analyze-delay1-feature-forensics-dev-val.mjs",
     "research:entry-trigger-mechanics-fresh-holdout": "node scripts/analyze-entry-trigger-mechanics-fresh-holdout.mjs",
     "research:entry-trigger-root-cause": "node scripts/analyze-entry-trigger-root-cause.mjs",
     "research:entry-trigger-reclaim-mechanics": "node scripts/analyze-entry-trigger-reclaim-mechanics.mjs",
