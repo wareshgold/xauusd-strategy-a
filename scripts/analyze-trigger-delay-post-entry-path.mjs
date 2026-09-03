@@ -10,8 +10,10 @@ import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
 import { buildEMAContext, buildLocationContext, buildSessionContext } from '../src/domain/strategy-a/Context.js';
 import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
 
-const ROOT=resolve(process.cwd()),BASE_DIR=resolve(ROOT,'data/reports/strategy-a-baseline'),OUT_DIR=resolve(ROOT,'data/reports/strategy-a-trigger-delay-post-entry-path');
-const TOTAL=15000,PRE=10000,DEV=6000;
+const ROOT=resolve(process.cwd());
+const BASE_DIR=resolve(ROOT,'data/reports/strategy-a-baseline');
+const OUT_DIR=resolve(ROOT,'data/reports/strategy-a-trigger-delay-post-entry-path');
+const PRE=10000, DEV=6000;
 const BREAKOUT_LOOKBACK=5,FT_MAX_BARS=2,SPIKE_MAX_CANDLES=8,SPIKE_MIN_DIRECTIONAL_FRACTION=.5,SPIKE_MAX_OVERLAP_FRACTION=.8;
 const CONTEXT={emaPeriod:60,roundStep:50,roundDistance:5,tradingSessions:[{name:'LONDON',startMinutes:420,endMinutes:960},{name:'NEW_YORK',startMinutes:780,endMinutes:1320}],avoidWindows:[]};
 const THRESHOLDS=[.5,1,2],HORIZONS=[1,3,5,10,20];
@@ -23,8 +25,36 @@ function thresholdEvent(candles,t,threshold,horizon){const risk=Math.abs(t.entry
 function pathStats(candles,rows,horizon,threshold){const counts={FAVORABLE_FIRST:0,ADVERSE_FIRST:0,SAME_BAR:0,NONE:0};for(const r of rows)counts[thresholdEvent(candles,r,threshold,horizon)]++;const n=rows.length;return{n,...Object.fromEntries(Object.entries(counts).map(([k,v])=>[k,n?v/n:0]))};}
 function excursion(candles,r,horizon){const end=Math.min(candles.length-1,r.entryIndex+horizon),risk=Math.abs(r.entry-r.stopLoss);let mfe=0,mae=0;for(let i=r.entryIndex+1;i<=end;i++){const c=candles[i],fav=r.direction==='BUY'?c.high-r.entry:r.entry-c.low,adv=r.direction==='BUY'?r.entry-c.low:c.high-r.entry;mfe=Math.max(mfe,fav/risk);mae=Math.max(mae,adv/risk);}return{mfe,mae};}
 function median(a){if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;}
-async function run(tf){const candles=(JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf}.json`),'utf8')).candles??[]),base=JSON.parse(await readFile(resolve(BASE_DIR,`${tf}.json`),'utf8'));const cutoff=new Date(candles[PRE].timestamp),devCut=new Date(candles[DEV].timestamp),canonical=new Map((base.trades??[]).filter(t=>t.result!=='AMBIGUOUS'&&Number.isFinite(Number(t.rMultiple))&&new Date(t.entryTime)<cutoff).map(t=>[key(t),t])),rows=[];for(let i=0;i<PRE;i++){const cs=buildCandidates(candles,i);if(!cs.length)continue;const c=cs[0],t=canonical.get(key(c));if(!t)continue;rows.push({entryIndex:i,entryTime:t.entryTime,r:Number(t.rMultiple),direction:t.direction,entry:Number(t.entry),stopLoss:Number(t.stopLoss),delay:delayFor(c)});}const dev=rows.filter(r=>new Date(r.entryTime)<devCut),val=rows.filter(r=>new Date(r.entryTime)>=devCut&&new Date(r.entryTime)<cutoff),cats={delay1:r=>r.delay===1,delay2:r=>r.delay===2,delay3:r=>r.delay===3,'delay4+':r=>r.delay>=4},result={};for(const[name,p]of Object.entries(cats)){const d=dev.filter(p),v=val.filter(p),out={DEV:stats(d),VAL:stats(v),DEV_path:{},VAL_path:{}};for(const h of HORIZONS)for(const th of THRESHOLDS){out.DEV_path[`h${h}_pm${th}R`]=pathStats(candles,d,h,th);out.VAL_path[`h${h}_pm${th}R`]=pathStats(candles,v,h,th);}for(const[label,rs]of[['DEV',d],['VAL',v]]){const ex=rs.map(r=>excursion(candles,r,20));out[`${label}_excursionH20`]={medianMFE:median(ex.map(x=>x.mfe)),medianMAE:median(ex.map(x=>x.mae))};}result[name]=out;}
-const report={strategy:'Strategy A',mode:'TRIGGER_DELAY_POST_ENTRY_PATH_COMPACT',timeframe:tf,scope:{totalCandles:TOTAL,preHoldoutCandles:PRE,devCandles:DEV,valCandles:PRE-DEV,freshHoldoutExcluded:true,horizons:HORIZONS,thresholds:THRESHOLDS},methodology:{purpose:'Compact frozen diagnostic of post-entry path by trigger-delay category.',delayDefinition:'trigger index minus correction extreme index',eventDefinition:'first post-entry candle to touch favorable/adverse threshold; SAME_BAR remains OHLC-ambiguous',excursionDefinition:'median normalized MFE/MAE over 20 post-entry candles',noFreshHoldout:true,productionUntouched:true},counts:{joined:rows.length,DEV:dev.length,VAL:val.length},results:result,decision:'Diagnostic only; no production change or fresh-holdout authorization.'};await mkdir(OUT_DIR,{recursive:true});await writeFile(resolve(OUT_DIR,`${tf}.json`),JSON.stringify(report,null,2));
-console.log(`\n=== ${tf} COMPACT POST-ENTRY PATH ===`);for(const[name,x]of Object.entries(result)){console.log(`${name} | DEV n=${x.DEV.n} AvgR=${x.DEV.avgR.toFixed(3)} PF=${x.DEV.PF?.toFixed(2)??'n/a'} | VAL n=${x.VAL.n} AvgR=${x.VAL.avgR.toFixed(3)} PF=${x.VAL.PF?.toFixed(2)??'n/a'}`);console.log(`  H20 median MFE/MAE | DEV ${x.DEV_excursionH20.medianMFE?.toFixed(2)??'n/a'}/${x.DEV_excursionH20.medianMAE?.toFixed(2)??'n/a'}R | VAL ${x.VAL_excursionH20.medianMFE?.toFixed(2)??'n/a'}/${x.VAL_excursionH20.medianMAE?.toFixed(2)??'n/a'}R`);for(const h of HORIZONS)for(const th of THRESHOLDS){const d=x.DEV_path[`h${h}_pm${th}R`],v=x.VAL_path[`h${h}_pm${th}R`];console.log(`  h${h} ±${th}R | DEV F/A/S/N=${(100*d.FAVORABLE_FIRST).toFixed(0)}/${(100*d.ADVERSE_FIRST).toFixed(0)}/${(100*d.SAME_BAR).toFixed(0)}/${(100*d.NONE).toFixed(0)}% | VAL F/A/S/N=${(100*v.FAVORABLE_FIRST).toFixed(0)}/${(100*v.ADVERSE_FIRST).toFixed(0)}/${(100*v.SAME_BAR).toFixed(0)}/${(100*v.NONE).toFixed(0)}%`);}}}}
+async function run(tf){
+  const candles=(JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf}.json`),'utf8')).candles??[]);
+  const base=JSON.parse(await readFile(resolve(BASE_DIR,`${tf}.json`),'utf8'));
+  const cutoff=new Date(candles[PRE].timestamp),devCut=new Date(candles[DEV].timestamp);
+  const canonical=new Map((base.trades??[]).filter(t=>t.result!=='AMBIGUOUS'&&Number.isFinite(Number(t.rMultiple))&&new Date(t.entryTime)<cutoff).map(t=>[key(t),t]));
+  const rows=[];
+  for(let i=0;i<PRE;i++){const cs=buildCandidates(candles,i);if(!cs.length)continue;const c=cs[0],t=canonical.get(key(c));if(!t)continue;rows.push({entryIndex:i,entryTime:t.entryTime,r:Number(t.rMultiple),direction:t.direction,entry:Number(t.entry),stopLoss:Number(t.stopLoss),delay:delayFor(c)});}
+  const dev=rows.filter(r=>new Date(r.entryTime)<devCut),val=rows.filter(r=>new Date(r.entryTime)>=devCut&&new Date(r.entryTime)<cutoff);
+  const cats={delay1:r=>r.delay===1,delay2:r=>r.delay===2,delay3:r=>r.delay===3,'delay4+':r=>r.delay>=4};
+  const result={};
+  for(const[name,p]of Object.entries(cats)){
+    const d=dev.filter(p),v=val.filter(p),out={DEV:stats(d),VAL:stats(v),DEV_path:{},VAL_path:{}};
+    for(const h of HORIZONS)for(const th of THRESHOLDS){out.DEV_path[`h${h}_pm${th}R`]=pathStats(candles,d,h,th);out.VAL_path[`h${h}_pm${th}R`]=pathStats(candles,v,h,th);}
+    for(const[label,rs]of[['DEV',d],['VAL',v]]){const ex=rs.map(r=>excursion(candles,r,20));out[`${label}_excursionH20`]={medianMFE:median(ex.map(x=>x.mfe)),medianMAE:median(ex.map(x=>x.mae))};}
+    result[name]=out;
+  }
+  const report={strategy:'Strategy A',mode:'TRIGGER_DELAY_POST_ENTRY_PATH_COMPACT',timeframe:tf,scope:{preHoldoutCandles:PRE,devCandles:DEV,valCandles:PRE-DEV,freshHoldoutExcluded:true,horizons:HORIZONS,thresholds:THRESHOLDS},methodology:{purpose:'Compact frozen diagnostic of post-entry path by trigger-delay category.',delayDefinition:'trigger index minus correction extreme index',eventDefinition:'first post-entry candle to touch favorable/adverse threshold; SAME_BAR remains OHLC-ambiguous',excursionDefinition:'median normalized MFE/MAE over 20 post-entry candles',noFreshHoldout:true,productionUntouched:true},counts:{joined:rows.length,DEV:dev.length,VAL:val.length},results:result,decision:'Diagnostic only; no production change or fresh-holdout authorization.'};
+  await mkdir(OUT_DIR,{recursive:true});
+  await writeFile(resolve(OUT_DIR,`${tf}.json`),JSON.stringify(report,null,2));
+  console.log(`\n=== ${tf} COMPACT POST-ENTRY PATH ===`);
+  for(const[name,x]of Object.entries(result)){
+    console.log(`${name} | DEV n=${x.DEV.n} AvgR=${x.DEV.avgR.toFixed(3)} PF=${x.DEV.PF?.toFixed(2)??'n/a'} | VAL n=${x.VAL.n} AvgR=${x.VAL.avgR.toFixed(3)} PF=${x.VAL.PF?.toFixed(2)??'n/a'}`);
+    console.log(`  H20 median MFE/MAE | DEV ${x.DEV_excursionH20.medianMFE?.toFixed(2)??'n/a'}/${x.DEV_excursionH20.medianMAE?.toFixed(2)??'n/a'}R | VAL ${x.VAL_excursionH20.medianMFE?.toFixed(2)??'n/a'}/${x.VAL_excursionH20.medianMAE?.toFixed(2)??'n/a'}R`);
+    for(const h of HORIZONS){
+      for(const th of THRESHOLDS){
+        const d=x.DEV_path[`h${h}_pm${th}R`],v=x.VAL_path[`h${h}_pm${th}R`];
+        console.log(`  h${h} ±${th}R | DEV F/A/S/N=${(100*d.FAVORABLE_FIRST).toFixed(0)}/${(100*d.ADVERSE_FIRST).toFixed(0)}/${(100*d.SAME_BAR).toFixed(0)}/${(100*d.NONE).toFixed(0)}% | VAL F/A/S/N=${(100*v.FAVORABLE_FIRST).toFixed(0)}/${(100*v.ADVERSE_FIRST).toFixed(0)}/${(100*v.SAME_BAR).toFixed(0)}/${(100*v.NONE).toFixed(0)}%`);
+      }
+    }
+  }
 }
-await run('1min');await run('5min');
+await run('1min');
+await run('5min');
