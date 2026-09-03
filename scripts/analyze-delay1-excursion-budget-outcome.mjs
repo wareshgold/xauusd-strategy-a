@@ -22,9 +22,80 @@ const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2};
 const pct=(n,d)=>d?n/d:null;
 const pf=rs=>{const g=rs.filter(x=>x>0).reduce((a,b)=>a+b,0),l=-rs.filter(x=>x<0).reduce((a,b)=>a+b,0);return l?g/l:null};
-function build(candles,index){const v=candles.slice(0,index+1);if(v.length<Math.max(BREAKOUT_LOOKBACK+2,CONTEXT.emaPeriod))return[];const bo=detectBreakout(v,BREAKOUT_LOOKBACK);const ft=detectFollowThrough(v,bo,{maxBarsAfterBreakout:FT_MAX_BARS,requireCloseBeyondBrokenLevel:true});const sp=detectSpikeCandidates(v,bo,ft,{maxCandles:SPIKE_MAX_CANDLES,minDirectionalFraction:SPIKE_MIN_DIRECTIONAL_FRACTION,maxOverlapFraction:SPIKE_MAX_OVERLAP_FRACTION});const out=[];for(const spike of sp.candidates){if(spike.endIndex>=index)continue;const correction=detectFirstCorrection(v,spike);if(!correction||correction.correctionExtremeIndex>=index)continue;const trigger=detectEntryTrigger(v,correction);if(!trigger||trigger.index!==index)continue;const projection=projectLeg2(v,correction);if(!projection)continue;const inv=getInvalidationRule(correction),ema=buildEMAContext(v.map(c=>c.close),CONTEXT);if(!ema)continue;const location=buildLocationContext(trigger.entryPrice,CONTEXT),session=buildSessionContext(trigger.timestamp,CONTEXT),quality=scoreSetup(spike,{ema,location,session});if(!quality.tradeAllowed)continue;const risk=Math.abs(trigger.entryPrice-inv.invalidationLevel),reward=Math.abs(projection.tp1-trigger.entryPrice);if(!(risk>0&&reward>0&&(trigger.direction==='BUY'?projection.tp1>trigger.entryPrice:projection.tp1<trigger.entryPrice)))continue;out.push({entryIndex:index,entryTime:trigger.timestamp,direction:trigger.direction,entry:trigger.entryPrice,stopLoss:inv.invalidationLevel,tp1:projection.tp1,session:session.session});}return out;}
-function pathFor(c,t){const i=t.entryIndex,e=t.entry,s=t.stopLoss,d=t.direction,r=Math.abs(e-s);if(!r)return null;const p=[];for(let j=i+1;j<=Math.min(c.length-1,i+20);j++){const f=(d==='BUY'?c[j].high-e:e-c[j].low)/r,a=(d==='BUY'?e-c[j].low:c[j].high-e)/r;p.push({b:j-i,f,a});}const first=(level,type)=>{for(const x of p)if((type==='f'?x.f:x.a)>=level)return x.b;return null};const advBefore=favBar=>favBar===null?Math.max(0,...p.map(x=>x.a)):Math.max(0,...p.filter(x=>x.b<=favBar).map(x=>x.a));const firstFav=Object.fromEntries(FAV.map(x=>[x,first(x,'f')]));const advBeforePlus=Object.fromEntries(FAV.map(x=>[x,advBefore(firstFav[x])]));const horizons=Object.fromEntries(H.map(h=>{const q=p.filter(x=>x.b<=h),fp=first(1,'f'),fp2=first(2,'f'),fa=first(1,'a');return[h,{mfe:Math.max(0,...q.map(x=>x.f)),mae:Math.max(0,...q.map(x=>x.a)),favFirst:fp!==null&&(fa===null||fp<fa),advFirst:fa!==null&&(fp===null||fa<fp),sameBar:fp!==null&&fa!==null&&fp===fa,plusReach:fp!==null,plus2Reach:fp2!==null,minusReach:fa!==null}]}));return{firstFav,advBeforePlus,horizons};}
-function bucketSummary(rows,budgetKey){const out={};for(const[name,lo,hi]of BUCKETS){const x=rows.filter(r=>r[budgetKey]!==null&&r[budgetKey]>=lo&&r[budgetKey]<hi);out[name]={n:x.length,rate:pct(x.length,rows.length),avgR:mean(x.map(r=>r.rMultiple)),pf:pf(x.map(r=>r.rMultiple)),winRate:pct(x.filter(r=>r.rMultiple>0).length,x.length),medianMFE:median(x.map(r=>r.horizons.h20.mfe)),medianMAE:median(x.map(r=>r.horizons.h20.mae)),plus1First:pct(x.filter(r=>r.horizons.h20.favFirst).length,x.length),minus1First:pct(x.filter(r=>r.horizons.h20.advFirst).length,x.length),sameBar:pct(x.filter(r=>r.horizons.h20.sameBar).length,x.length)};}return out;}
-function summarize(rows){return{n:rows.length,avgR:mean(rows.map(r=>r.rMultiple)),pf:pf(rows.map(r=>r.rMultiple)),winRate:pct(rows.filter(r=>r.rMultiple>0).length,rows.length),medianMFEH20:median(rows.map(r=>r.horizons.h20.mfe)),medianMAEH20:median(rows.map(r=>r.horizons.h20.mae)),budgetRelativeToPlus1R:bucketSummary(rows,'adverseBudget'),byFavMilestone:Object.fromEntries(FAV.map(level=>[`+${level}R`,{n:rows.filter(r=>r.adverseByFav[level]!==null).length,buckets:bucketSummary(rows,`adverseByFav_${level}`)}])),horizons:Object.fromEntries(H.map(h=>{const x=rows.map(r=>r.horizons[h]);return[`h${h}`,{plus1ReachRate:pct(x.filter(v=>v.plusReach).length,x.length),minus1ReachRate:pct(x.filter(v=>v.minusReach).length,x.length),favorableFirst:pct(x.filter(v=>v.favFirst).length,x.length),adverseFirst:pct(x.filter(v=>v.advFirst).length,x.length),sameBar:pct(x.filter(v=>v.sameBar).length,x.length),medianMFE:median(x.map(v=>v.mfe)),medianMAE:median(x.map(v=>v.mae))}]}))};}
-async function run(tf){const raw=JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf}.json`),'utf8')),candles=raw.candles??raw;const base=JSON.parse(await readFile(resolve(BASE_DIR,`${tf}.json`),'utf8'));const cutoff=new Date(candles[PRE].timestamp);const canonical=new Map((base.trades??[]).filter(t=>t.result!=='AMBIGUOUS'&&Number.isFinite(Number(t.rMultiple))&&new Date(t.entryTime)<cutoff).map(t=>[key(t),t]));const rows=[];for(let i=0;i<PRE;i++){const cs=build(candles,i);if(!cs.length)continue;const c=cs[0],t=canonical.get(key(c));if(!t||c.entryIndex-c.correction?.correctionExtremeIndex!==1)continue;const p=pathFor(c,t);if(!p)continue;rows.push({entryIndex:i,rMultiple:Number(t.rMultiple),adverseBudget:p.advBeforePlus[1],adverseByFav:Object.fromEntries(FAV.map(x=>[x,p.advBeforePlus[x]])),...Object.fromEntries(FAV.map(x=>[`adverseByFav_${x}`,p.advBeforePlus[x]])),horizons:p.horizons});}const dev=rows.filter(r=>r.entryIndex<DEV),val=rows.filter(r=>r.entryIndex>=DEV&&r.entryIndex<PRE);const report={strategy:'Strategy A',mode:'DELAY1_EXCURSION_BUDGET_OUTCOME',timeframe:tf,scope:{preHoldoutCandles:PRE,devCandles:DEV,valCandles:PRE-DEV,delayExactly:1,freshHoldoutExcluded:true},methodology:{buckets:BUCKETS.map(([name,minR,maxR])=>({name,minR,maxR})),favMilestones:FAV,horizons:H,noOptimization:true,noFreshHoldout:true,productionUntouched:true,note:'Adverse budget is measured from entry until each first favorable milestone. Trades that never reach that milestone are excluded from that milestone table. Same-bar OHLC ordering remains ambiguous.'},DEV:summarize(dev),VAL:summarize(val),allPreHoldout:summarize(rows),rows};await mkdir(OUT,{recursive:true});const out=resolve(OUT,`${tf}.json`);await writeFile(out,JSON.stringify(report,null,2));const print=(label,s)=>{console.log(`${label}: n=${s.n} AvgR=${s.avgR?.toFixed(3)} PF=${s.pf?.toFixed(3)} WR=${(100*s.winRate).toFixed(1)} MFE/MAE H20=${s.medianMFEH20?.toFixed(2)}/${s.medianMAEH20?.toFixed(2)}`);for(const[k,v]of Object.entries(s.budgetRelativeToPlus1R))console.log(`  ${k}: n=${v.n} rate=${(100*v.rate).toFixed(1)} AvgR=${v.avgR?.toFixed(3)} PF=${v.pf?.toFixed(3)} WR=${v.winRate===null?'null':(100*v.winRate).toFixed(1)} +1Rfirst=${v.plus1First===null?'null':(100*v.plus1First).toFixed(1)} -1Rfirst=${v.minus1First===null?'null':(100*v.minus1First).toFixed(1)} same=${v.sameBar===null?'null':(100*v.sameBar).toFixed(1)}`)};console.log(`\n=== ${tf} DELAY1 EXCURSION BUDGET × OUTCOME ===`);print('DEV',report.DEV);print('VAL',report.VAL);console.log(`Report -> ${out}`);}
+
+function build(candles,index){
+  const v=candles.slice(0,index+1);
+  if(v.length<Math.max(BREAKOUT_LOOKBACK+2,CONTEXT.emaPeriod))return[];
+  const bo=detectBreakout(v,BREAKOUT_LOOKBACK);
+  const ft=detectFollowThrough(v,bo,{maxBarsAfterBreakout:FT_MAX_BARS,requireCloseBeyondBrokenLevel:true});
+  const sp=detectSpikeCandidates(v,bo,ft,{maxCandles:SPIKE_MAX_CANDLES,minDirectionalFraction:SPIKE_MIN_DIRECTIONAL_FRACTION,maxOverlapFraction:SPIKE_MAX_OVERLAP_FRACTION});
+  const out=[];
+  for(const spike of sp.candidates){
+    if(spike.endIndex>=index)continue;
+    const correction=detectFirstCorrection(v,spike);
+    if(!correction||correction.correctionExtremeIndex>=index)continue;
+    const trigger=detectEntryTrigger(v,correction);
+    if(!trigger||trigger.index!==index)continue;
+    const projection=projectLeg2(v,correction); if(!projection)continue;
+    const inv=getInvalidationRule(correction), ema=buildEMAContext(v.map(c=>c.close),CONTEXT); if(!ema)continue;
+    const location=buildLocationContext(trigger.entryPrice,CONTEXT), session=buildSessionContext(trigger.timestamp,CONTEXT), quality=scoreSetup(spike,{ema,location,session});
+    if(!quality.tradeAllowed)continue;
+    const risk=Math.abs(trigger.entryPrice-inv.invalidationLevel), reward=Math.abs(projection.tp1-trigger.entryPrice);
+    if(!(risk>0&&reward>0&&(trigger.direction==='BUY'?projection.tp1>trigger.entryPrice:projection.tp1<trigger.entryPrice)))continue;
+    out.push({entryIndex:index,entryTime:trigger.timestamp,direction:trigger.direction,entry:trigger.entryPrice,stopLoss:inv.invalidationLevel,tp1:projection.tp1,session:session.session,correction});
+  }
+  return out;
+}
+
+function analyze(c,t){
+  const i=Number(t.entryIndex),e=Number(t.entry),s=Number(t.stopLoss??t.sl),d=t.direction,r=Math.abs(e-s);
+  if(!Number.isInteger(i)||!Number.isFinite(e)||!Number.isFinite(s)||!r||!d)return null;
+  const path=[];
+  for(let j=i+1;j<=Math.min(c.length-1,i+20);j++){
+    const f=(d==='BUY'?c[j].high-e:e-c[j].low)/r;
+    const a=(d==='BUY'?e-c[j].low:c[j].high-e)/r;
+    path.push({b:j-i,f,a});
+  }
+  const firstAt=(level,maxBars=20)=>{for(const x of path){if(x.b>maxBars)break;if(x.f>=level)return x.b;}return null;};
+  const adverseBefore=(favBar,maxBars=20)=>Math.max(0,...path.filter(x=>x.b<=maxBars&&(favBar===null||x.b<=favBar)).map(x=>x.a));
+  const firstFav=Object.fromEntries(FAV.map(level=>[level,firstAt(level)]));
+  const adverseByFav=Object.fromEntries(FAV.map(level=>[level,firstFav[level]===null?null:adverseBefore(firstFav[level])]));
+  const horizons=Object.fromEntries(H.map(h=>{
+    const q=path.filter(x=>x.b<=h); let plusBar=null,minusBar=null;
+    for(const x of q){if(plusBar===null&&x.f>=1)plusBar=x.b;if(minusBar===null&&x.a>=1)minusBar=x.b;}
+    return [h,{mfe:Math.max(0,...q.map(x=>x.f)),mae:Math.max(0,...q.map(x=>x.a)),favFirst:plusBar!==null&&(minusBar===null||plusBar<minusBar),advFirst:minusBar!==null&&(plusBar===null||minusBar<plusBar),sameBar:plusBar!==null&&minusBar!==null&&plusBar===minusBar,plusReach:plusBar!==null,minusReach:minusBar!==null}];
+  }));
+  return {entryIndex:i,entryTime:t.entryTime,direction:d,entry:e,stop:s,risk:r,rMultiple:Number(t.rMultiple),firstFav,adverseByFav,horizons};
+}
+
+function bucketSummary(rows,budgetKey){
+  const out={};
+  for(const[name,lo,hi]of BUCKETS){
+    const x=rows.filter(r=>r[budgetKey]!==null&&r[budgetKey]>=lo&&r[budgetKey]<hi);
+    out[name]={n:x.length,rate:pct(x.length,rows.length),avgR:mean(x.map(r=>r.rMultiple)),pf:pf(x.map(r=>r.rMultiple)),winRate:pct(x.filter(r=>r.rMultiple>0).length,x.length),medianMFEH20:median(x.map(r=>r.horizons[20].mfe)),medianMAEH20:median(x.map(r=>r.horizons[20].mae)),plus1First:pct(x.filter(r=>r.horizons[20].favFirst).length,x.length),minus1First:pct(x.filter(r=>r.horizons[20].advFirst).length,x.length),sameBar:pct(x.filter(r=>r.horizons[20].sameBar).length,x.length)};
+  }
+  return out;
+}
+
+function summarize(rows){
+  return {n:rows.length,avgR:mean(rows.map(r=>r.rMultiple)),pf:pf(rows.map(r=>r.rMultiple)),winRate:pct(rows.filter(r=>r.rMultiple>0).length,rows.length),medianMFEH20:median(rows.map(r=>r.horizons[20].mfe)),medianMAEH20:median(rows.map(r=>r.horizons[20].mae)),budgetRelativeToPlus1R:bucketSummary(rows,'adverseBudget'),byFavMilestone:Object.fromEntries(FAV.map(level=>{const eligible=rows.filter(r=>r.adverseByFav[level]!==null);return [`+${level}R`,{eligibleN:eligible.length,buckets:bucketSummary(eligible,`adverseByFav_${level}`)}];})),horizons:Object.fromEntries(H.map(h=>{const x=rows.map(r=>r.horizons[h]);return [`h${h}`,{plus1ReachRate:pct(x.filter(v=>v.plusReach).length,x.length),minus1ReachRate:pct(x.filter(v=>v.minusReach).length,x.length),favorableFirst:pct(x.filter(v=>v.favFirst).length,x.length),adverseFirst:pct(x.filter(v=>v.advFirst).length,x.length),sameBar:pct(x.filter(v=>v.sameBar).length,x.length),medianMFE:median(x.map(v=>v.mfe)),medianMAE:median(x.map(v=>v.mae))}];}))};
+}
+
+async function run(tf){
+  const raw=JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf}.json`),'utf8')),candles=raw.candles??raw;
+  const base=JSON.parse(await readFile(resolve(BASE_DIR,`${tf}.json`),'utf8'));
+  const cutoff=new Date(candles[PRE].timestamp);
+  const canonical=new Map((base.trades??[]).filter(t=>t.result!=='AMBIGUOUS'&&Number.isFinite(Number(t.rMultiple))&&new Date(t.entryTime)<cutoff).map(t=>[key(t),t]));
+  const rows=[];
+  for(let i=0;i<PRE;i++){
+    const cs=build(candles,i); if(!cs.length)continue;
+    const c=cs[0],t=canonical.get(key(c)); if(!t||c.entryIndex-c.correction.correctionExtremeIndex!==1)continue;
+    const r=analyze(c,t); if(r)rows.push(r);
+  }
+  for(const r of rows)r.adverseBudget=r.adverseByFav[1];
+  const dev=rows.filter(r=>r.entryIndex<DEV),val=rows.filter(r=>r.entryIndex>=DEV&&r.entryIndex<PRE);
+  const report={strategy:'Strategy A',mode:'DELAY1_EXCURSION_BUDGET_OUTCOME',timeframe:tf,scope:{preHoldoutCandles:PRE,devCandles:DEV,valCandles:PRE-DEV,delayExactly:1,freshHoldoutExcluded:true},methodology:{buckets:BUCKETS.map(([name,minR,maxR])=>({name,minR,maxR})),favMilestones:FAV,horizons:H,noOptimization:true,noFreshHoldout:true,productionUntouched:true,note:'Adverse excursion is measured from entry through the first favorable milestone. Milestone tables exclude trades that never reach that milestone. Same-bar OHLC ordering remains ambiguous.'},DEV:summarize(dev),VAL:summarize(val),allPreHoldout:summarize(rows),rows};
+  await mkdir(OUT,{recursive:true}); const out=resolve(OUT,`${tf}.json`); await writeFile(out,JSON.stringify(report,null,2));
+  const print=(label,s)=>{console.log(`${label}: n=${s.n} AvgR=${s.avgR?.toFixed(3)} PF=${s.pf?.toFixed(3)} WR=${(100*s.winRate).toFixed(1)} MFE/MAE H20=${s.medianMFEH20?.toFixed(2)}/${s.medianMAEH20?.toFixed(2)}`);for(const[k,v]of Object.entries(s.budgetRelativeToPlus1R))console.log(`  ${k}: n=${v.n} rate=${(100*v.rate).toFixed(1)} AvgR=${v.avgR?.toFixed(3)} PF=${v.pf?.toFixed(3)} WR=${v.winRate===null?'null':(100*v.winRate).toFixed(1)} +1Rfirst=${v.plus1First===null?'null':(100*v.plus1First).toFixed(1)} -1Rfirst=${v.minus1First===null?'null':(100*v.minus1First).toFixed(1)} same=${v.sameBar===null?'null':(100*v.sameBar).toFixed(1)}`)};console.log(`\n=== ${tf} DELAY1 EXCURSION BUDGET × OUTCOME ===`);print('DEV',report.DEV);print('VAL',report.VAL);console.log(`Report -> ${out}`);
+}
 for(const tf of ['1min','5min'])await run(tf);
