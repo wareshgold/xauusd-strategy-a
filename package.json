@@ -19,6 +19,7 @@
     "research:delay1-early-adverse-excursion-outcome": "node scripts/analyze-delay1-early-adverse-excursion-outcome.mjs",
     "research:delay1-early-adverse-excursion-fresh-holdout": "node scripts/analyze-delay1-early-adverse-excursion-fresh-holdout.mjs",
     "research:delay1-early-adverse-excursion-management": "node scripts/analyze-delay1-early-adverse-excursion-management.mjs",
+    "research:delay1-early-mae-state-transition": "node scripts/analyze-delay1-early-mae-state-transition.mjs",
     "research:delay1-feature-forensics": "node scripts/analyze-delay1-feature-forensics-dev-val.mjs",
     "research:delay1-chronological-regime-path": "node scripts/analyze-delay1-chronological-regime-path.mjs",
     "research:delay1-path-regime-classification": "node scripts/analyze-delay1-path-regime-classification.mjs",
