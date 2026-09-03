@@ -38,6 +38,7 @@
     "research:outcome-path-forensics": "node scripts/analyze-outcome-path-forensics.mjs",
     "research:outcome-stop-stress": "node scripts/analyze-outcome-stop-stress.mjs",
     "research:outcome-survival-matrix": "node scripts/analyze-outcome-survival-matrix.mjs",
+    "research:outcome-milestone-management": "node scripts/analyze-outcome-milestone-management.mjs",
     "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
     "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
