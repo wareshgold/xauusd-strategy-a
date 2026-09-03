@@ -34,6 +34,7 @@
     "research:stop-first-correction-geometry-fresh-holdout": "node scripts/analyze-stop-first-correction-geometry-fresh-holdout.mjs",
     "research:first-correction-structure-forensics": "node scripts/analyze-first-correction-structure-forensics.mjs",
     "research:first-correction-path-forensics": "node scripts/analyze-first-correction-path-forensics.mjs",
+    "research:first-correction-path-state-forensics": "node scripts/analyze-first-correction-path-state-forensics.mjs",
     "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
     "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
