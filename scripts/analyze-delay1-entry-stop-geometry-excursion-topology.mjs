@@ -1,13 +1,97 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { detectBreakout } from '../src/domain/market/BreakoutDetector.js';
+import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.js';
+import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.js';
+import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.js';
+import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
+import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.js';
+import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
+import { buildEMAContext, buildLocationContext, buildSessionContext } from '../src/domain/strategy-a/Context.js';
+import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
 
-const ROOT=resolve(process.cwd()), PRE=10000, DEV=6000, H=[1,3,5,10,20], TH=[0.25,0.5,0.75,1,1.5];
+const ROOT=resolve(process.cwd());
+const PRE=10000, DEV=6000, H=[1,3,5,10,20], TH=[0.25,0.5,0.75,1,1.5];
 const OUT=resolve(ROOT,'data/reports/strategy-a-delay1-entry-stop-geometry-excursion-topology');
-const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const BASE_DIR=resolve(ROOT,'data/reports/strategy-a-baseline');
+const BREAKOUT_LOOKBACK=5, FT_MAX_BARS=2, SPIKE_MAX_CANDLES=8, SPIKE_MIN_DIRECTIONAL_FRACTION=.5, SPIKE_MAX_OVERLAP_FRACTION=.8;
+const CONTEXT={emaPeriod:60,roundStep:50,roundDistance:5,tradingSessions:[{name:'LONDON',startMinutes:420,endMinutes:960},{name:'NEW_YORK',startMinutes:780,endMinutes:1320}],avoidWindows:[]};
+const key=c=>`${c.entryIndex}|${c.direction}|${Number(c.entry).toPrecision(15)}|${Number(c.stopLoss).toPrecision(15)}|${Number(c.tp1).toPrecision(15)}`;
 const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2};
 const pct=(n,d)=>d?n/d:null;
 const pf=rs=>{const g=rs.filter(x=>x>0).reduce((a,b)=>a+b,0),l=-rs.filter(x=>x<0).reduce((a,b)=>a+b,0);return l?g/l:null};
-function analyze(c,t){const i=Number(t.entryIndex),e=Number(t.entry),s=Number(t.stopLoss??t.sl),d=t.direction,r=Math.abs(e-s);if(!Number.isInteger(i)||!Number.isFinite(e)||!Number.isFinite(s)||!r||!d)return null;const path=[];let maxF=0,maxA=0,f1=null,f2=null,a25=null,a50=null,a75=null,a1=null,a15=null;for(let j=i+1;j<=Math.min(c.length-1,i+20);j++){const f=d==='BUY'?c[j].high-e:e-c[j].low,a=d==='BUY'?e-c[j].low:c[j].high-e,fr=f/r,ar=a/r,b=j-i;maxF=Math.max(maxF,fr);maxA=Math.max(maxA,ar);if(f1===null&&fr>=1)f1=b;if(f2===null&&fr>=2)f2=b;if(a25===null&&ar>=.25)a25=b;if(a50===null&&ar>=.5)a50=b;if(a75===null&&ar>=.75)a75=b;if(a1===null&&ar>=1)a1=b;if(a15===null&&ar>=1.5)a15=b;path.push({b,f:fr,a:ar})}const advBefore=f1===null?maxA:Math.max(0,...path.filter(x=>x.b<=f1).map(x=>x.a));let cls;if(f1!==null&&a1!==null&&f1===a1)cls='STOP_SAME_BAR_AMBIGUOUS';else if(a1!==null&&(f1===null||a1<f1))cls='STOP_FIRST';else if(f1===null)cls='NO_PLUS_1R_BY_H20';else if(path.some(x=>x.b>f1&&x.a>=.5))cls='WHIPSAW_AFTER_PLUS_1R';else if(advBefore<=.25)cls='CLEAN_PLUS_1R';else if(advBefore<=.5)cls='SHALLOW_PULLBACK';else cls='DEEP_PULLBACK';const hs={};for(const h of H){const q=path.filter(x=>x.b<=h);let p=null,a=null;for(const x of q){if(p===null&&x.f>=1)p=x.b;if(a===null&&x.a>=1)a=x.b}hs[`h${h}`]={mfe:Math.max(0,...q.map(x=>x.f)),mae:Math.max(0,...q.map(x=>x.a)),firstPlus1:p,firstMinus1:a}}return{entryIndex:i,entryTime:t.entryTime,direction:d,session:t.session??null,entry:e,stop:s,risk:r,rMultiple:Number(t.rMultiple),pathClass:cls,maxMFER:maxF,maxMAER:maxA,firstPlus025:null,firstPlus05:null,firstPlus1:f1,firstPlus2:f2,firstMinus025:a25,firstMinus05:a50,firstMinus075:a75,firstMinus1:a1,firstMinus15:a15,adverseBeforePlus1R:advBefore,horizons:hs}}
-function summarize(rows){const classes=['CLEAN_PLUS_1R','SHALLOW_PULLBACK','DEEP_PULLBACK','WHIPSAW_AFTER_PLUS_1R','STOP_FIRST','STOP_SAME_BAR_AMBIGUOUS','NO_PLUS_1R_BY_H20'];return{n:rows.length,avgR:mean(rows.map(r=>r.rMultiple)),pf:pf(rows.map(r=>r.rMultiple)),winRate:pct(rows.filter(r=>r.rMultiple>0).length,rows.length),medianRisk:median(rows.map(r=>r.risk)),medianMFEH20:median(rows.map(r=>r.horizons.h20.mfe)),medianMAEH20:median(rows.map(r=>r.horizons.h20.mae)),medianAdverseBeforePlus1R:median(rows.filter(r=>r.firstPlus1!==null).map(r=>r.adverseBeforePlus1R)),pathClasses:Object.fromEntries(classes.map(k=>{const x=rows.filter(r=>r.pathClass===k);return[k,{n:x.length,rate:pct(x.length,rows.length),avgR:mean(x.map(r=>r.rMultiple)),pf:pf(x.map(r=>r.rMultiple)),medianMFEH20:median(x.map(r=>r.horizons.h20.mfe)),medianMAEH20:median(x.map(r=>r.horizons.h20.mae))}]})),prePlus1AdverseThresholds:Object.fromEntries(TH.map(t=>{const x=rows.filter(r=>r.firstPlus1!==null),y=x.filter(r=>r.adverseBeforePlus1R<=t);return[`adverseBeforePlus1<=${t}R`,{n:y.length,rate:pct(y.length,x.length)}]})),horizons:Object.fromEntries(H.map(h=>{const plus=rows.filter(r=>r.horizons[`h${h}`].firstPlus1!==null),minus=rows.filter(r=>r.horizons[`h${h}`].firstMinus1!==null);return[`h${h}`,{plus1ReachRate:pct(plus.length,rows.length),minus1ReachRate:pct(minus.length,rows.length),medianMFE:median(rows.map(r=>r.horizons[`h${h}`].mfe)),medianMAE:median(rows.map(r=>r.horizons[`h${h}`].mae)),favorableFirst:rows.filter(r=>{const p=r.horizons[`h${h}`].firstPlus1,a=r.horizons[`h${h}`].firstMinus1;return p!==null&&(a===null||p<a)}).length,adverseFirst:rows.filter(r=>{const p=r.horizons[`h${h}`].firstPlus1,a=r.horizons[`h${h}`].firstMinus1;return a!==null&&(p===null||a<p)}).length,sameBar:rows.filter(r=>{const p=r.horizons[`h${h}`].firstPlus1,a=r.horizons[`h${h}`].firstMinus1;return p!==null&&a!==null&&p===a}).length}] }))}}
-async function run(tf){const raw=JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf}.json`),'utf8')),c=raw.candles??raw,b=JSON.parse(await readFile(resolve(ROOT,`data/reports/strategy-a-baseline/${tf}.json`),'utf8')),tr=(b.trades??[]).filter(t=>t.result!=='AMBIGUOUS'&&Number.isFinite(Number(t.rMultiple))&&Number.isInteger(t.entryIndex)&&t.entryIndex<PRE),rows=tr.map(t=>analyze(c,t)).filter(Boolean),dev=rows.filter(r=>r.entryIndex<DEV),val=rows.filter(r=>r.entryIndex>=DEV&&r.entryIndex<PRE),report={strategy:'Strategy A',mode:'DELAY1_ENTRY_STOP_GEOMETRY_EXCURSION_TOPOLOGY',timeframe:tf,scope:{preHoldoutCandles:PRE,devCandles:DEV,valCandles:PRE-DEV,freshHoldoutExcluded:true,delayExactly1Required:true},methodology:{source:'canonical baseline trades',horizons:H,pathClasses:['CLEAN_PLUS_1R','SHALLOW_PULLBACK','DEEP_PULLBACK','WHIPSAW_AFTER_PLUS_1R','STOP_FIRST','STOP_SAME_BAR_AMBIGUOUS','NO_PLUS_1R_BY_H20'],noOptimization:true,noFreshHoldout:true,productionUntouched:true,note:'Forensic diagnostic only; OHLC cannot establish intrabar ordering on the same bar.'},DEV:summarize(dev),VAL:summarize(val),allPreHoldout:summarize(rows),rows};await mkdir(OUT,{recursive:true});const out=resolve(OUT,`${tf}.json`);await writeFile(out,JSON.stringify(report,null,2));const print=(l,s)=>{console.log(`${l}: n=${s.n} AvgR=${s.avgR?.toFixed(3)} PF=${s.pf?.toFixed(3)} WR=${(100*s.winRate).toFixed(1)} riskMed=${s.medianRisk?.toFixed(2)} MFE/MAE H20=${s.medianMFEH20?.toFixed(2)}/${s.medianMAEH20?.toFixed(2)}`);for(const[k,v]of Object.entries(s.pathClasses))console.log(`  ${k}: n=${v.n} rate=${(100*v.rate).toFixed(1)} AvgR=${v.avgR?.toFixed(3)} PF=${v.pf?.toFixed(3)}`);console.log(`  adverse-before +1R counts <=0.25/0.5/0.75/1/1.5R: ${TH.map(t=>s.prePlus1AdverseThresholds[`adverseBeforePlus1<=${t}R`].n).join('/')}`)};console.log(`\n=== ${tf} DELAY1 ENTRY→STOP GEOMETRY / EXCURSION TOPOLOGY ===`);print('DEV',report.DEV);print('VAL',report.VAL);console.log(`Report -> ${out}`)}
+
+function build(candles,index){
+  const v=candles.slice(0,index+1);
+  if(v.length<Math.max(BREAKOUT_LOOKBACK+2,CONTEXT.emaPeriod))return[];
+  const bo=detectBreakout(v,BREAKOUT_LOOKBACK);
+  const ft=detectFollowThrough(v,bo,{maxBarsAfterBreakout:FT_MAX_BARS,requireCloseBeyondBrokenLevel:true});
+  const sp=detectSpikeCandidates(v,bo,ft,{maxCandles:SPIKE_MAX_CANDLES,minDirectionalFraction:SPIKE_MIN_DIRECTIONAL_FRACTION,maxOverlapFraction:SPIKE_MAX_OVERLAP_FRACTION});
+  const out=[];
+  for(const spike of sp.candidates){
+    if(spike.endIndex>=index)continue;
+    const correction=detectFirstCorrection(v,spike);
+    if(!correction||correction.correctionExtremeIndex>=index)continue;
+    const trigger=detectEntryTrigger(v,correction);
+    if(!trigger||trigger.index!==index)continue;
+    const projection=projectLeg2(v,correction); if(!projection)continue;
+    const inv=getInvalidationRule(correction), ema=buildEMAContext(v.map(c=>c.close),CONTEXT); if(!ema)continue;
+    const location=buildLocationContext(trigger.entryPrice,CONTEXT), session=buildSessionContext(trigger.timestamp,CONTEXT), quality=scoreSetup(spike,{ema,location,session});
+    if(!quality.tradeAllowed)continue;
+    const risk=Math.abs(trigger.entryPrice-inv.invalidationLevel), reward=Math.abs(projection.tp1-trigger.entryPrice);
+    if(!(risk>0&&reward>0&&(trigger.direction==='BUY'?projection.tp1>trigger.entryPrice:projection.tp1<trigger.entryPrice)))continue;
+    out.push({entryIndex:index,entryTime:trigger.timestamp,direction:trigger.direction,entry:trigger.entryPrice,stopLoss:inv.invalidationLevel,tp1:projection.tp1,session:session.session,spike,correction,trigger});
+  }
+  return out;
+}
+
+function analyze(c,t){
+  const i=Number(t.entryIndex),e=Number(t.entry),s=Number(t.stopLoss??t.sl),d=t.direction,r=Math.abs(e-s);
+  if(!Number.isInteger(i)||!Number.isFinite(e)||!Number.isFinite(s)||!r||!d)return null;
+  const path=[]; let maxF=0,maxA=0,f1=null,f2=null,a25=null,a50=null,a75=null,a1=null,a15=null;
+  for(let j=i+1;j<=Math.min(c.length-1,i+20);j++){
+    const f=d==='BUY'?c[j].high-e:e-c[j].low,a=d==='BUY'?e-c[j].low:c[j].high-e,fr=f/r,ar=a/r,b=j-i;
+    maxF=Math.max(maxF,fr); maxA=Math.max(maxA,ar);
+    if(f1===null&&fr>=1)f1=b; if(f2===null&&fr>=2)f2=b;
+    if(a25===null&&ar>=.25)a25=b; if(a50===null&&ar>=.5)a50=b; if(a75===null&&ar>=.75)a75=b; if(a1===null&&ar>=1)a1=b; if(a15===null&&ar>=1.5)a15=b;
+    path.push({b,f:fr,a:ar});
+  }
+  const advBefore=f1===null?maxA:Math.max(0,...path.filter(x=>x.b<=f1).map(x=>x.a));
+  let cls;
+  if(f1!==null&&a1!==null&&f1===a1)cls='STOP_SAME_BAR_AMBIGUOUS';
+  else if(a1!==null&&(f1===null||a1<f1))cls='STOP_FIRST';
+  else if(f1===null)cls='NO_PLUS_1R_BY_H20';
+  else if(path.some(x=>x.b>f1&&x.a>=.5))cls='WHIPSAW_AFTER_PLUS_1R';
+  else if(advBefore<=.25)cls='CLEAN_PLUS_1R';
+  else if(advBefore<=.5)cls='SHALLOW_PULLBACK';
+  else cls='DEEP_PULLBACK';
+  const horizons={};
+  for(const h of H){const q=path.filter(x=>x.b<=h);let p=null,a=null;for(const x of q){if(p===null&&x.f>=1)p=x.b;if(a===null&&x.a>=1)a=x.b}horizons[`h${h}`]={mfe:Math.max(0,...q.map(x=>x.f)),mae:Math.max(0,...q.map(x=>x.a)),firstPlus1:p,firstMinus1:a};}
+  return {entryIndex:i,entryTime:t.entryTime,direction:d,entry:e,stop:s,risk:r,rMultiple:Number(t.rMultiple),pathClass:cls,maxMFER:maxF,maxMAER:maxA,firstPlus1:f1,firstPlus2:f2,firstMinus025:a25,firstMinus05:a50,firstMinus075:a75,firstMinus1:a1,firstMinus15:a15,adverseBeforePlus1R:advBefore,horizons};
+}
+
+function summarize(rows){
+  const classes=['CLEAN_PLUS_1R','SHALLOW_PULLBACK','DEEP_PULLBACK','WHIPSAW_AFTER_PLUS_1R','STOP_FIRST','STOP_SAME_BAR_AMBIGUOUS','NO_PLUS_1R_BY_H20'];
+  return {n:rows.length,avgR:mean(rows.map(r=>r.rMultiple)),pf:pf(rows.map(r=>r.rMultiple)),winRate:pct(rows.filter(r=>r.rMultiple>0).length,rows.length),medianRisk:median(rows.map(r=>r.risk)),medianMFEH20:median(rows.map(r=>r.horizons.h20.mfe)),medianMAEH20:median(rows.map(r=>r.horizons.h20.mae)),medianAdverseBeforePlus1R:median(rows.filter(r=>r.firstPlus1!==null).map(r=>r.adverseBeforePlus1R)),pathClasses:Object.fromEntries(classes.map(k=>{const x=rows.filter(r=>r.pathClass===k);return[k,{n:x.length,rate:pct(x.length,rows.length),avgR:mean(x.map(r=>r.rMultiple)),pf:pf(x.map(r=>r.rMultiple)),medianMFEH20:median(x.map(r=>r.horizons.h20.mfe)),medianMAEH20:median(x.map(r=>r.horizons.h20.mae))}]})),prePlus1AdverseThresholds:Object.fromEntries(TH.map(t=>{const x=rows.filter(r=>r.firstPlus1!==null),y=x.filter(r=>r.adverseBeforePlus1R<=t);return[`adverseBeforePlus1<=${t}R`,{n:y.length,rate:pct(y.length,x.length)}]})),horizons:Object.fromEntries(H.map(h=>{const plus=rows.filter(r=>r.horizons[`h${h}`].firstPlus1!==null),minus=rows.filter(r=>r.horizons[`h${h}`].firstMinus1!==null);return[`h${h}`,{plus1ReachRate:pct(plus.length,rows.length),minus1ReachRate:pct(minus.length,rows.length),medianMFE:median(rows.map(r=>r.horizons[`h${h}`].mfe)),medianMAE:median(rows.map(r=>r.horizons[`h${h}`].mae)),favorableFirst:rows.filter(r=>{const p=r.horizons[`h${h}`].firstPlus1,a=r.horizons[`h${h}`].firstMinus1;return p!==null&&(a===null||p<a)}).length,adverseFirst:rows.filter(r=>{const p=r.horizons[`h${h}`].firstPlus1,a=r.horizons[`h${h}`].firstMinus1;return a!==null&&(p===null||a<p)}).length,sameBar:rows.filter(r=>{const p=r.horizons[`h${h}`].firstPlus1,a=r.horizons[`h${h}`].firstMinus1;return p!==null&&a!==null&&p===a}).length}]}))};
+}
+
+async function run(tf){
+  const raw=JSON.parse(await readFile(resolve(ROOT,`data/historical/xauusd-${tf}.json`),'utf8')),candles=raw.candles??raw;
+  const base=JSON.parse(await readFile(resolve(BASE_DIR,`${tf}.json`),'utf8'));
+  const cutoff=new Date(candles[PRE].timestamp),devCut=new Date(candles[DEV].timestamp);
+  const canonical=new Map((base.trades??[]).filter(t=>t.result!=='AMBIGUOUS'&&Number.isFinite(Number(t.rMultiple))&&new Date(t.entryTime)<cutoff).map(t=>[key(t),t]));
+  const rows=[];
+  for(let i=0;i<PRE;i++){
+    const cs=build(candles,i); if(!cs.length)continue;
+    const c=cs[0], t=canonical.get(key(c)); if(!t)continue;
+    if(c.entryIndex-c.correction.correctionExtremeIndex!==1)continue;
+    const r=analyze(candles,t); if(r)rows.push(r);
+  }
+  const dev=rows.filter(r=>r.entryIndex<DEV),val=rows.filter(r=>r.entryIndex>=DEV&&r.entryIndex<PRE);
+  const report={strategy:'Strategy A',mode:'DELAY1_ENTRY_STOP_GEOMETRY_EXCURSION_TOPOLOGY',timeframe:tf,scope:{preHoldoutCandles:PRE,devCandles:DEV,valCandles:PRE-DEV,freshHoldoutExcluded:true,delayExactly:1},methodology:{source:'canonical baseline trades reconstructed against Strategy A detectors',horizons:H,pathClasses:['CLEAN_PLUS_1R','SHALLOW_PULLBACK','DEEP_PULLBACK','WHIPSAW_AFTER_PLUS_1R','STOP_FIRST','STOP_SAME_BAR_AMBIGUOUS','NO_PLUS_1R_BY_H20'],noOptimization:true,noFreshHoldout:true,productionUntouched:true,note:'Delay=1 is explicitly enforced as entryIndex - correctionExtremeIndex = 1. OHLC cannot establish intrabar ordering on the same bar.'},DEV:summarize(dev),VAL:summarize(val),allPreHoldout:summarize(rows),rows};
+  await mkdir(OUT,{recursive:true}); const out=resolve(OUT,`${tf}.json`); await writeFile(out,JSON.stringify(report,null,2));
+  const print=(label,s)=>{console.log(`${label}: n=${s.n} AvgR=${s.avgR?.toFixed(3)} PF=${s.pf?.toFixed(3)} WR=${(100*s.winRate).toFixed(1)} riskMed=${s.medianRisk?.toFixed(2)} MFE/MAE H20=${s.medianMFEH20?.toFixed(2)}/${s.medianMAEH20?.toFixed(2)}`);for(const[k,v]of Object.entries(s.pathClasses))console.log(`  ${k}: n=${v.n} rate=${(100*v.rate).toFixed(1)} AvgR=${v.avgR?.toFixed(3)} PF=${v.pf?.toFixed(3)}`);console.log(`  adverse-before +1R counts <=0.25/0.5/0.75/1/1.5R: ${TH.map(t=>s.prePlus1AdverseThresholds[`adverseBeforePlus1<=${t}R`].n).join('/')}`)};
+  console.log(`\n=== ${tf} DELAY1 ENTRY→STOP GEOMETRY / EXCURSION TOPOLOGY ===`); print('DEV',report.DEV); print('VAL',report.VAL); console.log(`Report -> ${out}`);
+}
 for(const tf of ['1min','5min'])await run(tf);
