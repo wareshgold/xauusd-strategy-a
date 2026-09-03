@@ -42,13 +42,7 @@ const pf = rs => {
 
 function stats(rows) {
   const rs = rows.map(r => Number(r.rMultiple)).filter(Number.isFinite);
-  return {
-    n: rs.length,
-    avgR: mean(rs),
-    totalR: rs.reduce((a, b) => a + b, 0),
-    PF: pf(rs),
-    WR: pct(rs.filter(x => x > 0).length, rs.length),
-  };
+  return { n: rs.length, avgR: mean(rs), totalR: rs.reduce((a, b) => a + b, 0), PF: pf(rs), WR: pct(rs.filter(x => x > 0).length, rs.length) };
 }
 
 function buildCandidate(candles, index) {
@@ -57,14 +51,12 @@ function buildCandidate(candles, index) {
   const bo = detectBreakout(v, 5);
   const ft = detectFollowThrough(v, bo, { maxBarsAfterBreakout: 2, requireCloseBeyondBrokenLevel: true });
   const sp = detectSpikeCandidates(v, bo, ft, { maxCandles: 8, minDirectionalFraction: 0.5, maxOverlapFraction: 0.8 });
-
   for (const spike of sp.candidates) {
     if (spike.endIndex >= index) continue;
     const correction = detectFirstCorrection(v, spike);
     if (!correction || correction.correctionExtremeIndex >= index) continue;
     const trigger = detectEntryTrigger(v, correction);
-    if (!trigger || trigger.index !== index) continue;
-    if (index - correction.correctionExtremeIndex !== 1) continue;
+    if (!trigger || trigger.index !== index || index - correction.correctionExtremeIndex !== 1) continue;
     const projection = projectLeg2(v, correction);
     if (!projection) continue;
     const inv = getInvalidationRule(correction);
@@ -78,33 +70,19 @@ function buildCandidate(candles, index) {
     const reward = Math.abs(projection.tp1 - trigger.entryPrice);
     if (!(risk > 0 && reward > 0)) continue;
     if (!(trigger.direction === 'BUY' ? projection.tp1 > trigger.entryPrice : projection.tp1 < trigger.entryPrice)) continue;
-    return {
-      entryIndex: index,
-      entryTime: trigger.timestamp,
-      direction: trigger.direction,
-      entry: trigger.entryPrice,
-      stopLoss: inv.invalidationLevel,
-      tp1: projection.tp1,
-    };
+    return { entryIndex: index, entryTime: trigger.timestamp, direction: trigger.direction, entry: trigger.entryPrice, stopLoss: inv.invalidationLevel, tp1: projection.tp1 };
   }
   return null;
 }
 
 function path(candles, c) {
-  const i = Number(c.entryIndex);
-  const e = Number(c.entry);
-  const s = Number(c.stopLoss);
-  const d = c.direction;
+  const i = Number(c.entryIndex), e = Number(c.entry), s = Number(c.stopLoss), d = c.direction;
   const risk = Math.abs(e - s);
   if (!Number.isInteger(i) || !Number.isFinite(e) || !Number.isFinite(s) || risk <= 0) return null;
   const out = [];
   for (let j = i + 1; j <= Math.min(candles.length - 1, i + 20); j++) {
     const x = candles[j];
-    out.push({
-      bar: j - i,
-      adverse: Math.max(0, (d === 'BUY' ? e - x.low : x.high - e) / risk),
-      favorable: Math.max(0, (d === 'BUY' ? x.high - e : e - x.low) / risk),
-    });
+    out.push({ bar: j - i, adverse: Math.max(0, (d === 'BUY' ? e - x.low : x.high - e) / risk), favorable: Math.max(0, (d === 'BUY' ? x.high - e : e - x.low) / risk) });
   }
   return out;
 }
@@ -119,8 +97,7 @@ function maeState(mae) {
 }
 
 function firstEvent(p, start, end) {
-  let plus1 = null;
-  let stop = null;
+  let plus1 = null, stop = null;
   for (const x of p) {
     if (x.bar <= start || x.bar > end) continue;
     if (plus1 === null && x.favorable >= 1) plus1 = x.bar;
@@ -133,16 +110,17 @@ function firstEvent(p, start, end) {
   return plus1 < stop ? 'PLUS1' : 'STOP';
 }
 
-function transition(bucket, checkpoint, horizon) {
+function transition(bucket, checkpoint, horizon, eligibleN) {
   const future = bucket.filter(r => r.p.some(x => x.bar > checkpoint && x.bar <= horizon));
   const first = future.map(r => firstEvent(r.p, checkpoint, horizon));
+  const rs = future.map(r => r.rMultiple);
   return {
     n: future.length,
-    share: pct(future.length, bucket._eligibleN ?? future.length),
-    avgR: mean(future.map(r => r.rMultiple)),
-    totalR: future.reduce((a, r) => a + r.rMultiple, 0),
-    PF: pf(future.map(r => r.rMultiple)),
-    WR: pct(future.filter(r => r.rMultiple > 0).length, future.length),
+    shareOfEligible: pct(future.length, eligibleN),
+    avgR: mean(rs),
+    totalR: rs.reduce((a, b) => a + b, 0),
+    PF: pf(rs),
+    WR: pct(rs.filter(x => x > 0).length, rs.length),
     plus1Rate: pct(future.filter(r => r.p.some(x => x.bar > checkpoint && x.bar <= horizon && x.favorable >= 1)).length, future.length),
     plus2Rate: pct(future.filter(r => r.p.some(x => x.bar > checkpoint && x.bar <= horizon && x.favorable >= 2)).length, future.length),
     stopRate: pct(future.filter(r => r.p.some(x => x.bar > checkpoint && x.bar <= horizon && x.adverse >= 1)).length, future.length),
@@ -156,11 +134,7 @@ function transition(bucket, checkpoint, horizon) {
 function stateRows(rows, checkpoint, survivorsOnly) {
   const eligible = rows.filter(r => !survivorsOnly || r.p.filter(x => x.bar <= checkpoint).every(x => x.adverse < 1));
   const grouped = {};
-  for (const r of eligible) {
-    const state = maeState(maeAt(r.p, checkpoint));
-    (grouped[state] ??= []).push(r);
-  }
-  for (const bucket of Object.values(grouped)) bucket._eligibleN = eligible.length;
+  for (const r of eligible) (grouped[maeState(maeAt(r.p, checkpoint))] ??= []).push(r);
   return { eligibleN: eligible.length, grouped };
 }
 
@@ -174,12 +148,8 @@ async function run(tf) {
   const raw = JSON.parse(await readFile(resolve(ROOT, `data/historical/xauusd-${tf}.json`), 'utf8'));
   const candles = raw.candles ?? raw;
   if (candles.length < PRE + FRESH) throw new Error(`${tf}: expected ${PRE + FRESH} candles, found ${candles.length}`);
-
-  const pre = await loadBase(tf, candles, false);
-  const fresh = await loadBase(tf, candles, true);
-  const preMap = new Map(pre.map(t => [key(t), t]));
-  const freshMap = new Map(fresh.map(t => [key(t), t]));
-
+  const pre = await loadBase(tf, candles, false), fresh = await loadBase(tf, candles, true);
+  const preMap = new Map(pre.map(t => [key(t), t])), freshMap = new Map(fresh.map(t => [key(t), t]));
   const makeRows = (start, end, map) => {
     const rows = [];
     for (let i = start; i < end; i++) {
@@ -192,7 +162,6 @@ async function run(tf) {
     }
     return rows;
   };
-
   const datasets = { DEV: makeRows(0, DEV, preMap), VAL: makeRows(DEV, PRE, preMap), FRESH: makeRows(PRE, PRE + FRESH, freshMap) };
   const report = {
     strategy: 'Strategy A',
@@ -200,51 +169,41 @@ async function run(tf) {
     timeframe: tf,
     scope: { preHoldoutCandles: PRE, devCandles: DEV, valCandles: PRE - DEV, freshHoldoutCandles: FRESH, delayExactly: 1, checkpoints: CHECKPOINTS, horizons: HORIZONS, maeBinsR: MAE_BINS },
     methodology: {
-      purpose: 'Separate the outcome associated with the frozen entry from the conditional outcome associated with the post-entry path state.',
-      entryEdge: 'Canonical baseline rMultiple of exact-joined DELAY1 entries; no alternative entry or management is simulated.',
-      pathState: 'At T1/T2/T3, classify by MAE accumulated from entry through T.',
-      conditionalOutcome: 'Within each state, report canonical AvgR/PF/WR plus future +1R/+2R/-1R event probabilities through H5/H10/H20.',
-      survivorView: 'SURVIVORS_ONLY excludes rows that touched the canonical 1R stop by the checkpoint; this is descriptive conditioning, not a trading rule.',
-      sameBarOHLC: 'If +1R and -1R first occur on the same candle, classify SAME_BAR_AMBIGUOUS; no intrabar order is inferred.',
-      fresh: 'Fresh holdout is evaluation-only; no threshold or state is selected from it.',
-      noOptimization: true,
-      diagnosticOnly: true,
-      productionUntouched: true,
+      purpose: 'Separate the frozen entry outcome from the conditional post-entry path outcome.',
+      entryEdge: 'Canonical baseline rMultiple of exact-joined DELAY1 entries; no alternate entry or management.',
+      pathState: 'At T1/T2/T3 classify by maximum MAE accumulated from entry through T.',
+      conditionalOutcome: 'State-wise canonical AvgR/PF/WR plus future +1R/+2R/-1R event probabilities.',
+      survivorView: 'SURVIVORS_ONLY excludes trades that touched canonical 1R stop by the checkpoint; descriptive only.',
+      sameBarOHLC: 'Same-candle +1R and -1R first events are SAME_BAR_AMBIGUOUS; no intrabar ordering inferred.',
+      fresh: 'Fresh holdout is evaluation-only; no state or threshold is selected from it.',
+      noOptimization: true, diagnosticOnly: true, productionUntouched: true,
     },
-    parity: {},
-    datasets: {},
+    parity: {}, datasets: {},
   };
-
   for (const [name, rows] of Object.entries(datasets)) {
     report.parity[name] = { joined: rows.length, baseline: stats(rows) };
     report.datasets[name] = { summary: stats(rows), states: { ALL: {}, SURVIVORS_ONLY: {} } };
-    for (const checkpoint of CHECKPOINTS) {
-      for (const horizon of HORIZONS.filter(h => h > checkpoint)) {
-        const label = `T${checkpoint}_H${horizon}`;
-        for (const survivor of [false, true]) {
-          const view = stateRows(rows, checkpoint, survivor);
-          const out = {};
-          for (const [state, bucket] of Object.entries(view.grouped)) out[state] = transition(bucket, checkpoint, horizon);
-          report.datasets[name].states[survivor ? 'SURVIVORS_ONLY' : 'ALL'][label] = { eligibleN: view.eligibleN, states: out };
-        }
+    for (const checkpoint of CHECKPOINTS) for (const horizon of HORIZONS.filter(h => h > checkpoint)) {
+      const label = `T${checkpoint}_H${horizon}`;
+      for (const survivor of [false, true]) {
+        const view = stateRows(rows, checkpoint, survivor), out = {};
+        for (const [state, bucket] of Object.entries(view.grouped)) out[state] = transition(bucket, checkpoint, horizon, view.eligibleN);
+        report.datasets[name].states[survivor ? 'SURVIVORS_ONLY' : 'ALL'][label] = { eligibleN: view.eligibleN, states: out };
       }
     }
   }
-
   await mkdir(OUT, { recursive: true });
   const outFile = resolve(OUT, `${tf}.json`);
   await writeFile(outFile, JSON.stringify(report, null, 2));
-
   console.log(`\n=== ${tf} DELAY1 ENTRY EDGE vs POST-ENTRY PATH ===`);
   for (const [name, rows] of Object.entries(datasets)) {
     const s = stats(rows);
     console.log(`${name}: n=${s.n} AvgR=${s.avgR?.toFixed(3)} PF=${s.PF?.toFixed(3) ?? 'n/a'} WR=${(100 * (s.WR ?? 0)).toFixed(1)} TotalR=${s.totalR.toFixed(3)}`);
     for (const checkpoint of CHECKPOINTS) {
-      const horizon = HORIZONS.find(h => h > checkpoint);
-      const view = stateRows(rows, checkpoint, true);
+      const horizon = HORIZONS.find(h => h > checkpoint), view = stateRows(rows, checkpoint, true);
       console.log(`  T${checkpoint}->H${horizon} survivors=${view.eligibleN}`);
       for (const [state, bucket] of Object.entries(view.grouped)) {
-        const x = transition(bucket, checkpoint, horizon);
+        const x = transition(bucket, checkpoint, horizon, view.eligibleN);
         console.log(`    ${state}: n=${x.n} AvgR=${x.avgR?.toFixed(3) ?? 'n/a'} PF=${x.PF?.toFixed(3) ?? 'n/a'} +1beforeSTOP=${(100 * (x.plus1BeforeStopRate ?? 0)).toFixed(1)}% STOPbefore+1=${(100 * (x.stopBeforePlus1Rate ?? 0)).toFixed(1)}% +1R=${(100 * (x.plus1Rate ?? 0)).toFixed(1)}% STOP=${(100 * (x.stopRate ?? 0)).toFixed(1)}%`);
       }
     }
