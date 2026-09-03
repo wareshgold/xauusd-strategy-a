@@ -14,6 +14,7 @@
     "backtest:baseline": "tsc -p tsconfig.backtest.json && node dist/scripts/run-baseline-backtest.js",
     "research:delay1-counterfactual-entry-location": "node scripts/analyze-delay1-counterfactual-entry-location.mjs",
     "research:delay1-entry-stop-geometry-excursion-topology": "node scripts/analyze-delay1-entry-stop-geometry-excursion-topology.mjs",
+    "research:delay1-excursion-budget-outcome": "node scripts/analyze-delay1-excursion-budget-outcome.mjs",
     "research:delay1-feature-forensics": "node scripts/analyze-delay1-feature-forensics-dev-val.mjs",
     "research:delay1-chronological-regime-path": "node scripts/analyze-delay1-chronological-regime-path.mjs",
     "research:delay1-path-regime-classification": "node scripts/analyze-delay1-path-regime-classification.mjs",
