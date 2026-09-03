@@ -29,6 +29,7 @@
     "research:entry-trigger-immediate-failure": "node scripts/analyze-entry-trigger-immediate-failure.mjs",
     "research:entry-trigger-failure-ordering-v2": "node scripts/analyze-entry-trigger-failure-ordering-v2.mjs",
     "research:candidate-selection-competition": "node scripts/analyze-candidate-selection-competition.mjs",
+    "research:candidate-competition-dev-val": "node scripts/analyze-candidate-competition-dev-val.mjs",
     "research:opportunity-window": "node scripts/analyze-opportunity-window-global-holdout.mjs",
     "research:entry-geometry-single-factor": "node scripts/analyze-entry-geometry-single-factor-oos.mjs",
     "research:structural-chain-quality": "node scripts/analyze-structural-chain-quality-global-holdout.mjs",
