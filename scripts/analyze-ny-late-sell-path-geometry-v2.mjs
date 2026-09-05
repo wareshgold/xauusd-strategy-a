@@ -185,7 +185,8 @@ function archetypes(rows) {
   return Object.fromEntries(defs.map(([name, fn]) => [name, stats(rows.filter(fn))]));
 }
 async function run(tf) {
-  const candles = JSON.parse(await readFile(resolve(ROOT, `data/historical/xauusd-${tf}.json`), 'utf8')).candles ?? [];
+  const fileName = tf === '5m' ? 'xauusd-5min.json' : tf === '1m' ? 'xauusd-1min.json' : `xauusd-${tf}.json`;
+  const candles = JSON.parse(await readFile(resolve(ROOT, 'data/historical', fileName), 'utf8')).candles ?? [];
   const base = JSON.parse(await readFile(resolve(BASE, `${tf}.json`), 'utf8'));
   const cutoff = new Date(candles[PRE].timestamp);
   const devCut = new Date(candles[DEV].timestamp);
