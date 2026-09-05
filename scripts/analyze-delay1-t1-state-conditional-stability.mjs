@@ -1,0 +1,137 @@
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { detectBreakout } from '../src/domain/market/BreakoutDetector.js';
+import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.js';
+import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.js';
+import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.js';
+import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
+import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.js';
+import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
+import { buildEMAContext, buildLocationContext, buildSessionContext } from '../src/domain/strategy-a/Context.js';
+import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
+
+const ROOT = resolve(process.cwd());
+const BASE = resolve(ROOT, 'data/reports/strategy-a-baseline');
+const OUT = resolve(ROOT, 'data/reports/strategy-a-t1-conditional-stability');
+const PRE = 10000;
+const DEV = 6000;
+const BLOCKS = [
+  ['DEV_A', 0, 3000],
+  ['DEV_B', 3000, 6000],
+  ['VAL', 6000, 10000],
+];
+const BINS = [3, 4];
+const CTX = { emaPeriod: 60, roundStep: 50, roundDistance: 5, tradingSessions: [{ name: 'LONDON', startMinutes: 420, endMinutes: 960 }, { name: 'NEW_YORK', startMinutes: 780, endMinutes: 1320 }], avoidWindows: [] };
+const finite = Number.isFinite;
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const median = a => { const v = [...a].sort((x, y) => x - y); return v.length ? v[Math.floor(v.length / 2)] : null; };
+function edges(a, b) { a = a.filter(finite).sort((x, y) => x - y); if (!a.length) return []; return [...new Set(Array.from({ length: b - 1 }, (_, i) => { const p = (a.length - 1) * (i + 1) / b, l = Math.floor(p), h = Math.ceil(p); return a[l] + (a[h] - a[l]) * (p - l); }).filter(finite))]; }
+const bin = (v, e) => finite(v) ? e.reduce((k, x) => k + (v > x ? 1 : 0), 0) : null;
+function candidate(candles, index) {
+  const v = candles.slice(0, index + 1); if (v.length < 60) return null;
+  const bo = detectBreakout(v, 5), ft = detectFollowThrough(v, bo, { maxBarsAfterBreakout: 2, requireCloseBeyondBrokenLevel: true });
+  const sp = detectSpikeCandidates(v, bo, ft, { maxCandles: 8, minDirectionalFraction: .5, maxOverlapFraction: .8 });
+  for (const spike of sp.candidates) {
+    if (spike.endIndex >= index) continue;
+    const cor = detectFirstCorrection(v, spike);
+    if (!cor || cor.correctionExtremeIndex >= index || index - cor.correctionExtremeIndex !== 1) continue;
+    const tr = detectEntryTrigger(v, cor); if (!tr || tr.index !== index) continue;
+    const pr = projectLeg2(v, cor); if (!pr) continue;
+    const inv = getInvalidationRule(cor), ema = buildEMAContext(v.map(c => c.close), CTX), loc = buildLocationContext(tr.entryPrice, CTX), ses = buildSessionContext(tr.timestamp, CTX);
+    if (!ema || !scoreSetup(spike, { ema, location: loc, session: ses }).tradeAllowed) continue;
+    const risk = Math.abs(tr.entryPrice - inv.invalidationLevel); if (risk <= 0) continue;
+    return { entryIndex: index, direction: tr.direction, entry: tr.entryPrice, stopLoss: inv.invalidationLevel, tp1: pr.tp1, risk };
+  }
+  return null;
+}
+function path(c) {
+  let t1Mae = null;
+  for (let j = c.entryIndex + 1; j <= Math.min(c.entryIndex + 20, c.candles.length - 1); j++) {
+    const x = c.candles[j];
+    const adv = (c.direction === 'BUY' ? c.entry - x.low : x.high - c.entry) / c.risk;
+    if (j === c.entryIndex + 1) t1Mae = Math.max(0, adv);
+  }
+  return { t1Mae };
+}
+async function rows() {
+  const raw = JSON.parse(await readFile(resolve(ROOT, 'data/historical/xauusd-5min.json'), 'utf8'));
+  const candles = raw.candles ?? raw;
+  const base = JSON.parse(await readFile(resolve(BASE, '5min.json'), 'utf8')).trades ?? [];
+  const map = new Map(base.filter(t => t.result !== 'AMBIGUOUS').map(t => [`${t.entryIndex}|${t.direction}|${Number(t.entry).toPrecision(15)}|${Number(t.stopLoss).toPrecision(15)}|${Number(t.tp1).toPrecision(15)}`, t]));
+  const out = [];
+  for (let i = 0; i < PRE; i++) {
+    const c = candidate(candles, i); if (!c) continue;
+    const key = `${c.entryIndex}|${c.direction}|${Number(c.entry).toPrecision(15)}|${Number(c.stopLoss).toPrecision(15)}|${Number(c.tp1).toPrecision(15)}`;
+    const t = map.get(key); if (!t) continue;
+    const p = path({ ...c, candles }); if (!finite(p.t1Mae)) continue;
+    out.push({ entryIndex: i, y: Number(t.rMultiple), result: t.result ?? null, T1_MAE: p.t1Mae, session: t.session ?? 'UNKNOWN', direction: t.direction });
+  }
+  return out;
+}
+function stats(set) {
+  const ys = set.map(r => r.y).filter(finite);
+  return { n: set.length, meanR: mean(ys), medianR: median(ys), winRate: ys.length ? ys.filter(x => x > 0).length / ys.length : null };
+}
+function monotonic(stateStats) {
+  const m = stateStats.map(s => s.meanR);
+  if (m.some(x => !finite(x))) return false;
+  const up = m.every((x, i) => i === 0 || x >= m[i - 1]);
+  const down = m.every((x, i) => i === 0 || x <= m[i - 1]);
+  return up || down;
+}
+function stateTable(set, edgesForBins, b) {
+  const assign = r => bin(r.T1_MAE, edgesForBins);
+  const states = Array.from({ length: b }, (_, s) => stats(set.filter(r => assign(r) === s)));
+  return { states: states.map((x, s) => ({ state: s + 1, stats: x })), monotonicMeanR: monotonic(states) };
+}
+function conditionalTable(set, edgesForBins, b, key) {
+  const assign = r => bin(r.T1_MAE, edgesForBins);
+  const values = [...new Set(set.map(r => r[key]))].sort();
+  return Object.fromEntries(values.map(value => {
+    const cell = set.filter(r => r[key] === value);
+    return [value, stateTable(cell, edgesForBins, b)];
+  }));
+}
+async function run() {
+  const all = await rows();
+  const dev = all.filter(r => r.entryIndex < DEV);
+  const report = {
+    strategy: 'Strategy A',
+    mode: 'DELAY1_T1_MAE_CONDITIONAL_STABILITY',
+    timeframe: '5min',
+    scope: { preHoldoutCandles: PRE, devCandles: DEV, valCandles: PRE - DEV, freshHoldoutExcluded: true, delayExactly: 1 },
+    methodology: {
+      feature: 'T1_MAE normalized by initial risk during the first post-entry candle.',
+      bins: '3/4 quantile edges fitted on DEV only and reused unchanged in DEV_B/VAL.',
+      chronology: 'DEV_A=0-2999, DEV_B=3000-5999, VAL=6000-9999 entry indices.',
+      conditionalDimensions: ['session', 'direction'],
+      minimumCellN: 0,
+      noThresholdOptimization: true,
+      diagnosticOnly: true,
+      productionUntouched: true,
+    },
+    overall: { n: all.length, devN: dev.length, valN: all.length - dev.length },
+    bins: {},
+  };
+  for (const b of BINS) {
+    const e = edges(dev.map(r => r.T1_MAE), b);
+    report.bins[b] = {
+      edges: e,
+      chronological: Object.fromEntries(BLOCKS.map(([name, lo, hi]) => {
+        const set = all.filter(r => r.entryIndex >= lo && r.entryIndex < hi);
+        return [name, { n: set.length, overall: stats(set), states: stateTable(set, e, b) }];
+      })),
+      conditional: {
+        DEV: { session: conditionalTable(dev, e, b, 'session'), direction: conditionalTable(dev, e, b, 'direction') },
+        VAL: { session: conditionalTable(all.filter(r => r.entryIndex >= DEV), e, b, 'session'), direction: conditionalTable(all.filter(r => r.entryIndex >= DEV), e, b, 'direction') },
+      },
+    };
+  }
+  await mkdir(OUT, { recursive: true });
+  await writeFile(resolve(OUT, '5min.json'), JSON.stringify(report, null, 2));
+  console.log(`5min: n=${all.length} DEV=${dev.length} VAL=${all.length - dev.length}`);
+  for (const b of BINS) {
+    console.log(`bins=${b} DEV_A=${report.bins[b].chronological.DEV_A.states.monotonicMeanR} DEV_B=${report.bins[b].chronological.DEV_B.states.monotonicMeanR} VAL=${report.bins[b].chronological.VAL.states.monotonicMeanR}`);
+  }
+}
+await run();
