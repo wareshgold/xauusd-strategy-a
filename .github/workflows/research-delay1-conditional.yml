@@ -1,0 +1,39 @@
+name: Research - DELAY1 conditional path information
+
+on:
+  push:
+    branches:
+      - research/entry-edge-post-entry-path
+    paths:
+      - 'scripts/analyze-delay1-continuous-path-conditional-information.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'src/**'
+      - 'data/historical/**'
+      - 'data/reports/strategy-a-baseline/**'
+      - '.github/workflows/research-delay1-conditional.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/entry-edge-post-entry-path
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run research:delay1-conditional-path-information
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delay1-conditional-path-information
+          path: data/reports/strategy-a-delay1-conditional-path-information/*.json
+          if-no-files-found: error
