@@ -3,30 +3,17 @@ import { resolve } from 'node:path';
 
 const ROOT = resolve(process.cwd());
 const REPORT = resolve(ROOT, 'data/reports/strategy-a-ny-late-sell-path-geometry-v2/5m.json');
-const BASE = resolve(ROOT, 'data/reports/strategy-a-baseline/5min.json');
 const CANDLES = resolve(ROOT, 'data/historical/xauusd-5min.json');
 const OUT = resolve(ROOT, 'data/reports/strategy-a-ny-late-sell-case-anatomy');
-const PRE = 10000;
 const DEV = 6000;
 const HORIZONS = [12, 24, 48];
 
 const p = (n) => Number.isFinite(n) ? Number(n.toFixed(6)) : null;
 
-function key(c) {
-  return `${c.entryIndex}|${c.direction}|${Number(c.entry).toPrecision(15)}|${Number(c.stopLoss).toPrecision(15)}|${Number(c.tp1).toPrecision(15)}`;
-}
-
 function candleAt(candles, index) {
   const c = candles[index];
   if (!c) return null;
-  return {
-    index,
-    timestamp: c.timestamp,
-    open: c.open,
-    high: c.high,
-    low: c.low,
-    close: c.close,
-  };
+  return { index, timestamp: c.timestamp, open: c.open, high: c.high, low: c.low, close: c.close };
 }
 
 function stage(candles, index, priceField = 'close') {
@@ -35,7 +22,7 @@ function stage(candles, index, priceField = 'close') {
   return { ...c, price: c[priceField] };
 }
 
-function excursion(candles, entryIndex, entry, stopLoss, tp1, horizon) {
+function excursion(candles, entryIndex, entry, stopLoss, horizon) {
   const end = Math.min(candles.length - 1, entryIndex + horizon);
   const path = candles.slice(entryIndex + 1, end + 1);
   if (!path.length) return { bars: 0, mfeR: 0, maeR: 0 };
@@ -46,22 +33,22 @@ function excursion(candles, entryIndex, entry, stopLoss, tp1, horizon) {
   return { bars: path.length, mfeR: p(favorable / risk), maeR: p(adverse / risk) };
 }
 
-function firstBaselineOutcome(candles, row) {
-  const result = row.result;
-  if (result !== 'TP1' && result !== 'SL') return null;
-  const start = row.entryIndex + 1;
-  for (let i = start; i < candles.length; i += 1) {
+function outcomeOnPath(candles, row) {
+  const risk = Math.abs(row.entry - row.stopLoss);
+  if (!(risk > 0)) return { result: 'INVALID', index: null, timestamp: null, rMultiple: null };
+  for (let i = row.entryIndex + 1; i < candles.length; i += 1) {
     const c = candles[i];
-    const hitTP = c.low <= row.tp1;
     const hitSL = c.high >= row.stopLoss;
-    if (result === 'TP1' && hitTP) return { index: i, timestamp: c.timestamp, type: 'TP1' };
-    if (result === 'SL' && hitSL) return { index: i, timestamp: c.timestamp, type: 'SL' };
+    const hitTP = c.low <= row.tp1;
+    if (hitSL && hitTP) return { result: 'AMBIGUOUS', index: i, timestamp: c.timestamp, rMultiple: null };
+    if (hitSL) return { result: 'SL', index: i, timestamp: c.timestamp, rMultiple: -1 };
+    if (hitTP) return { result: 'TP1', index: i, timestamp: c.timestamp, rMultiple: Math.abs(row.tp1 - row.entry) / risk };
   }
-  return null;
+  return { result: 'OPEN', index: null, timestamp: null, rMultiple: null };
 }
 
 function outcomeExcursion(candles, row, outcome) {
-  if (!outcome) return null;
+  if (!outcome?.index) return null;
   const risk = Math.abs(row.entry - row.stopLoss);
   if (!(risk > 0)) return null;
   const path = candles.slice(row.entryIndex + 1, outcome.index + 1);
@@ -122,15 +109,20 @@ function pathShape(rows) {
 
 async function main() {
   const report = JSON.parse(await readFile(REPORT, 'utf8'));
-  const baseline = JSON.parse(await readFile(BASE, 'utf8'));
   const candles = JSON.parse(await readFile(CANDLES, 'utf8')).candles ?? [];
-  const outcomes = new Map((baseline.trades ?? [])
-    .filter((t) => t.result !== 'AMBIGUOUS' && Number.isFinite(Number(t.rMultiple)))
-    .map((t) => [key(t), t]));
 
   const cases = (report.cases ?? []).map((row) => {
-    const base = outcomes.get(key(row));
-    if (!base) throw new Error(`Missing baseline outcome for ${row.entryTime}`);
+    const entryCandle = candles[row.entryIndex];
+    if (!entryCandle) throw new Error(`Missing historical candle at entryIndex ${row.entryIndex} for ${row.entryTime}`);
+    if (entryCandle.timestamp !== row.entryTime) {
+      throw new Error(`Historical candle lineage mismatch at entryIndex ${row.entryIndex}: report=${row.entryTime} candles=${entryCandle.timestamp}`);
+    }
+
+    const outcome = outcomeOnPath(candles, row);
+    if (outcome.result === 'AMBIGUOUS') {
+      throw new Error(`Ambiguous outcome for ${row.entryTime} at ${outcome.timestamp}`);
+    }
+
     const stages = {
       breakout: stage(candles, row.breakoutIndex),
       followThrough: stage(candles, row.followThroughIndex),
@@ -140,22 +132,23 @@ async function main() {
       structuralExtreme: stage(candles, row.correctionExtremeIndex, row.direction === 'SELL' ? 'high' : 'low'),
       entry: stage(candles, row.entryIndex, 'close'),
     };
-    const outcome = firstBaselineOutcome(candles, base);
+
     return {
       classification: row.r > 0 ? (row.r >= 5 ? 'EXCEPTIONAL_WIN' : 'NORMAL_WIN') : 'LOSS',
       split: new Date(row.entryTime) < new Date(candles[DEV].timestamp) ? 'DEV' : 'VAL',
       entryTime: row.entryTime,
       entryIndex: row.entryIndex,
       r: row.r,
-      result: base.result,
+      recomputedR: outcome.rMultiple,
+      result: outcome.result,
       direction: row.direction,
       entry: row.entry,
       stopLoss: row.stopLoss,
       tp1: row.tp1,
       stages,
-      outcome,
-      outcomeExcursion: outcomeExcursion(candles, base, outcome),
-      fixedHorizonExcursion: Object.fromEntries(HORIZONS.map((h) => [String(h), excursion(candles, row.entryIndex, row.entry, row.stopLoss, row.tp1, h)])),
+      outcome: { index: outcome.index, timestamp: outcome.timestamp, type: outcome.result },
+      outcomeExcursion: outcomeExcursion(candles, row, outcome),
+      fixedHorizonExcursion: Object.fromEntries(HORIZONS.map((h) => [String(h), excursion(candles, row.entryIndex, row.entry, row.stopLoss, h)])),
       geometry: Object.fromEntries(Object.entries(row).filter(([k]) => !['entryTime', 'entryIndex', 'r', 'direction', 'entry', 'stopLoss', 'tp1'].includes(k))),
     };
   });
@@ -176,12 +169,13 @@ async function main() {
     scope: { source: 'Path Geometry V2', n: cases.length, dev: groups.DEV.length, val: groups.VAL.length, freshHoldoutExcluded: true, productionUntouched: true },
     methodology: {
       purpose: 'Descriptive case-by-case anatomy before any hypothesis or threshold is frozen.',
-      outcome: 'Baseline TP1/SL result is retained; first candle touching the realized baseline outcome level is used only to measure path excursion to outcome.',
+      outcome: 'Outcome is recomputed directly from the canonical historical candles using the same first-hit SL/TP semantics as the deterministic backtest. No baseline report join is used.',
       fixedHorizons: HORIZONS.map((h) => `${h} bars after entry`),
       classification: 'EXCEPTIONAL_WIN=r>=5R; NORMAL_WIN=0<r<5R; LOSS=r<0. This classification is descriptive and does not create a trading rule.',
       noOptimization: true,
       noNewThresholds: true,
       holdoutLocked: true,
+      lineageCheck: 'entryIndex must resolve to the exact entryTime in the current historical candle file; mismatch fails closed.',
     },
     groupStats: Object.fromEntries(Object.entries(groups).map(([name, rows]) => [name, groupStats(rows)])),
     groupGeometry: Object.fromEntries(Object.entries(groups).map(([name, rows]) => [name, pathShape(rows)])),
@@ -194,7 +188,7 @@ async function main() {
   console.log('Group stats:');
   console.table(Object.fromEntries(Object.entries(reportOut.groupStats).map(([k, v]) => [k, v])));
   console.log('Case classification:');
-  console.table(cases.map((x) => ({ split: x.split, time: x.entryTime, class: x.classification, r: x.r, result: x.result, barsToOutcome: x.outcomeExcursion?.barsToOutcome ?? null, mfeR: x.outcomeExcursion?.mfeR ?? null, maeR: x.outcomeExcursion?.maeR ?? null })));
+  console.table(cases.map((x) => ({ split: x.split, time: x.entryTime, class: x.classification, r: x.r, recomputedR: x.recomputedR, result: x.result, barsToOutcome: x.outcomeExcursion?.barsToOutcome ?? null, mfeR: x.outcomeExcursion?.mfeR ?? null, maeR: x.outcomeExcursion?.maeR ?? null })));
 }
 
 await main();
