@@ -1,0 +1,1388 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_NY_LATE_SELL_PATH_GEOMETRY_V2",
+  "timeframe": "5m",
+  "window": {
+    "londonStart": "08:00 Europe/London",
+    "nyLateStart": "14:00 America/New_York",
+    "nyEnd": "17:00 America/New_York",
+    "dstAware": true
+  },
+  "scope": {
+    "preHoldoutCandles": 10000,
+    "devCandles": 6000,
+    "valCandles": 4000,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "universe": {
+    "n": 15,
+    "dev": 9,
+    "val": 6,
+    "all": {
+      "n": 15,
+      "winRate": 0.4666666666666667,
+      "avgR": 1.561348761965424,
+      "totalR": 23.420231429481362,
+      "PF": 3.9275289286851707
+    },
+    "DEV": {
+      "n": 9,
+      "winRate": 0.4444444444444444,
+      "avgR": 1.481387421435561,
+      "totalR": 13.332486792920049,
+      "PF": 3.66649735858401
+    },
+    "VAL": {
+      "n": 6,
+      "winRate": 0.5,
+      "avgR": 1.6812907727602189,
+      "totalR": 10.087744636561313,
+      "PF": 4.362581545520437
+    }
+  },
+  "featureDistributions": {
+    "breakoutExtension": {
+      "all": {
+        "n": 15,
+        "min": 0.04116,
+        "median": 0.85437,
+        "max": 8.49748,
+        "mean": 1.585843
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.04116,
+        "median": 0.71684,
+        "max": 8.49748,
+        "mean": 1.449766
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.07482,
+        "median": 1.094805,
+        "max": 6.05576,
+        "mean": 1.78996
+      }
+    },
+    "breakoutExtensionToPreRange": {
+      "all": {
+        "n": 15,
+        "min": 0.00772,
+        "median": 0.101051,
+        "max": 4.988721,
+        "mean": 0.504186
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.018922,
+        "median": 0.147208,
+        "max": 0.951649,
+        "mean": 0.214206
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.00772,
+        "median": 0.082491,
+        "max": 4.988721,
+        "mean": 0.939157
+      }
+    },
+    "breakoutToFollowThroughBars": {
+      "all": {
+        "n": 15,
+        "min": 1,
+        "median": 1,
+        "max": 2,
+        "mean": 1.333333
+      },
+      "DEV": {
+        "n": 9,
+        "min": 1,
+        "median": 1,
+        "max": 2,
+        "mean": 1.222222
+      },
+      "VAL": {
+        "n": 6,
+        "min": 1,
+        "median": 1.5,
+        "max": 2,
+        "mean": 1.5
+      }
+    },
+    "followThroughDistance": {
+      "all": {
+        "n": 15,
+        "min": 0.01768,
+        "median": 0.74312,
+        "max": 3.00843,
+        "mean": 1.002666
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.12166,
+        "median": 0.67192,
+        "max": 2.239,
+        "mean": 0.753269
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.01768,
+        "median": 1.334945,
+        "max": 3.00843,
+        "mean": 1.376762
+      }
+    },
+    "followThroughFromLevel": {
+      "all": {
+        "n": 15,
+        "min": 0.8385,
+        "median": 1.59749,
+        "max": 9.03664,
+        "mean": 2.588509
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.8385,
+        "median": 1.58171,
+        "max": 9.03664,
+        "mean": 2.203034
+      },
+      "VAL": {
+        "n": 6,
+        "min": 1.27758,
+        "median": 2.06077,
+        "max": 7.7181,
+        "mean": 3.166722
+      }
+    },
+    "followThroughDistanceToPreRange": {
+      "all": {
+        "n": 15,
+        "min": 0.014916,
+        "median": 0.132233,
+        "max": 1.029293,
+        "mean": 0.204099
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.014916,
+        "median": 0.19424,
+        "max": 1.029293,
+        "mean": 0.254199
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.041032,
+        "median": 0.126244,
+        "max": 0.238323,
+        "mean": 0.12895
+      }
+    },
+    "spikeBars": {
+      "all": {
+        "n": 15,
+        "min": 9,
+        "median": 9,
+        "max": 10,
+        "mean": 9.333333
+      },
+      "DEV": {
+        "n": 9,
+        "min": 9,
+        "median": 9,
+        "max": 10,
+        "mean": 9.222222
+      },
+      "VAL": {
+        "n": 6,
+        "min": 9,
+        "median": 9.5,
+        "max": 10,
+        "mean": 9.5
+      }
+    },
+    "spikeSize": {
+      "all": {
+        "n": 15,
+        "min": 1.04843,
+        "median": 7.96696,
+        "max": 30.0026,
+        "mean": 10.055576
+      },
+      "DEV": {
+        "n": 9,
+        "min": 1.04843,
+        "median": 6.27325,
+        "max": 30.0026,
+        "mean": 7.952971
+      },
+      "VAL": {
+        "n": 6,
+        "min": 5.34958,
+        "median": 11.521,
+        "max": 21.19688,
+        "mean": 13.209483
+      }
+    },
+    "spikeSizeToMedianRange": {
+      "all": {
+        "n": 15,
+        "min": 0.728097,
+        "median": 3.604508,
+        "max": 15.695023,
+        "mean": 4.284377
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.728097,
+        "median": 3.604508,
+        "max": 15.695023,
+        "mean": 4.533925
+      },
+      "VAL": {
+        "n": 6,
+        "min": 1.174645,
+        "median": 4.187998,
+        "max": 5.584666,
+        "mean": 3.910054
+      }
+    },
+    "spikeSizeToPreRange": {
+      "all": {
+        "n": 15,
+        "min": 0.276472,
+        "median": 1.515826,
+        "max": 23.68569,
+        "mean": 2.933108
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.276472,
+        "median": 1.006009,
+        "max": 3.360047,
+        "mean": 1.585524
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.551996,
+        "median": 1.597504,
+        "max": 23.68569,
+        "mean": 4.954484
+      }
+    },
+    "spikeDurationBars": {
+      "all": {
+        "n": 15,
+        "min": 9,
+        "median": 9,
+        "max": 10,
+        "mean": 9.333333
+      },
+      "DEV": {
+        "n": 9,
+        "min": 9,
+        "median": 9,
+        "max": 10,
+        "mean": 9.222222
+      },
+      "VAL": {
+        "n": 6,
+        "min": 9,
+        "median": 9.5,
+        "max": 10,
+        "mean": 9.5
+      }
+    },
+    "correctionBars": {
+      "all": {
+        "n": 15,
+        "min": 1,
+        "median": 17,
+        "max": 2118,
+        "mean": 168.933333
+      },
+      "DEV": {
+        "n": 9,
+        "min": 1,
+        "median": 6,
+        "max": 2118,
+        "mean": 245.888889
+      },
+      "VAL": {
+        "n": 6,
+        "min": 3,
+        "median": 41,
+        "max": 137,
+        "mean": 53.5
+      }
+    },
+    "correctionDepth": {
+      "all": {
+        "n": 15,
+        "min": 0.011788,
+        "median": 0.100786,
+        "max": 1.723673,
+        "mean": 0.233764
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.011788,
+        "median": 0.062838,
+        "max": 1.723673,
+        "mean": 0.257069
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.083355,
+        "median": 0.181123,
+        "max": 0.358898,
+        "mean": 0.198807
+      }
+    },
+    "entryDelayFromCorrection": {
+      "all": {
+        "n": 15,
+        "min": 1,
+        "median": 1,
+        "max": 47,
+        "mean": 4.666667
+      },
+      "DEV": {
+        "n": 9,
+        "min": 1,
+        "median": 1,
+        "max": 8,
+        "mean": 1.777778
+      },
+      "VAL": {
+        "n": 6,
+        "min": 1,
+        "median": 1.5,
+        "max": 47,
+        "mean": 9
+      }
+    },
+    "entryDistanceFromStructuralHigh": {
+      "all": {
+        "n": 15,
+        "min": 0.18213,
+        "median": 0.995,
+        "max": 4.30447,
+        "mean": 1.531157
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.21428,
+        "median": 0.995,
+        "max": 4.30447,
+        "mean": 1.708192
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.18213,
+        "median": 1.09934,
+        "max": 2.62145,
+        "mean": 1.265603
+      }
+    },
+    "entryDistanceFromStructuralHighPct": {
+      "all": {
+        "n": 15,
+        "min": 0.017846,
+        "median": 0.122962,
+        "max": 0.888986,
+        "mean": 0.28858
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.033164,
+        "median": 0.324507,
+        "max": 0.888986,
+        "mean": 0.384992
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.017846,
+        "median": 0.062978,
+        "max": 0.39679,
+        "mean": 0.143962
+      }
+    },
+    "entryDistanceFromSpikeEnd": {
+      "all": {
+        "n": 15,
+        "min": 0.17332,
+        "median": 6.65179,
+        "max": 30.50587,
+        "mean": 9.794264
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.17332,
+        "median": 4.87385,
+        "max": 30.50587,
+        "mean": 6.814374
+      },
+      "VAL": {
+        "n": 6,
+        "min": 4.8557,
+        "median": 12.32704,
+        "max": 25.3546,
+        "mean": 14.264098
+      }
+    },
+    "entryDistanceFromSpikeEndPct": {
+      "all": {
+        "n": 15,
+        "min": 0.154848,
+        "median": 0.986364,
+        "max": 1.210018,
+        "mean": 0.833893
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.154848,
+        "median": 0.780174,
+        "max": 1.054748,
+        "mean": 0.686591
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.907679,
+        "median": 1.061797,
+        "max": 1.210018,
+        "mean": 1.054845
+      }
+    },
+    "stopDistance": {
+      "all": {
+        "n": 15,
+        "min": 0.18213,
+        "median": 0.995,
+        "max": 4.30447,
+        "mean": 1.531157
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.21428,
+        "median": 0.995,
+        "max": 4.30447,
+        "mean": 1.708192
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.18213,
+        "median": 1.09934,
+        "max": 2.62145,
+        "mean": 1.265603
+      }
+    },
+    "rewardDistance": {
+      "all": {
+        "n": 15,
+        "min": 0.09731,
+        "median": 3.64719,
+        "max": 17.31411,
+        "mean": 5.841923
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.09731,
+        "median": 2.84676,
+        "max": 10.91308,
+        "mean": 3.451711
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.25293,
+        "median": 10.39726,
+        "max": 17.31411,
+        "mean": 9.42724
+      }
+    },
+    "plannedRR": {
+      "all": {
+        "n": 15,
+        "min": 0.036996,
+        "median": 6.042625,
+        "max": 49.350135,
+        "mean": 10.018277
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.036996,
+        "median": 1.790111,
+        "max": 10.96792,
+        "mean": 4.262741
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.096485,
+        "median": 14.02827,
+        "max": 49.350135,
+        "mean": 18.651581
+      }
+    },
+    "leg1Size": {
+      "all": {
+        "n": 15,
+        "min": 1.22116,
+        "median": 5.6846,
+        "max": 18.78937,
+        "mean": 7.373079
+      },
+      "DEV": {
+        "n": 9,
+        "min": 1.22116,
+        "median": 5.43247,
+        "max": 11.90808,
+        "mean": 5.159903
+      },
+      "VAL": {
+        "n": 6,
+        "min": 2.87438,
+        "median": 10.850035,
+        "max": 18.78937,
+        "mean": 10.692843
+      }
+    },
+    "structureScore": {
+      "all": {
+        "n": 15,
+        "min": 0.555556,
+        "median": 0.7,
+        "max": 0.888889,
+        "mean": 0.736296
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.555556,
+        "median": 0.777778,
+        "max": 0.888889,
+        "mean": 0.746914
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.666667,
+        "median": 0.7,
+        "max": 0.777778,
+        "mean": 0.72037
+      }
+    },
+    "overlapScore": {
+      "all": {
+        "n": 15,
+        "min": 0.460361,
+        "median": 0.595287,
+        "max": 0.787188,
+        "mean": 0.615943
+      },
+      "DEV": {
+        "n": 9,
+        "min": 0.460361,
+        "median": 0.581473,
+        "max": 0.787188,
+        "mean": 0.59571
+      },
+      "VAL": {
+        "n": 6,
+        "min": 0.569874,
+        "median": 0.645365,
+        "max": 0.732947,
+        "mean": 0.646292
+      }
+    }
+  },
+  "fixedArchetypes": {
+    "DEV": {
+      "fastCorrection": {
+        "n": 2,
+        "winRate": 1,
+        "avgR": 0.1735988810694961,
+        "totalR": 0.3471977621389922,
+        "PF": null
+      },
+      "slowCorrection": {
+        "n": 7,
+        "winRate": 0.2857142857142857,
+        "avgR": 1.8550412901115796,
+        "totalR": 12.985289030781058,
+        "PF": 3.5970578061562115
+      },
+      "shallowCorrection": {
+        "n": 8,
+        "winRate": 0.375,
+        "avgR": 1.6277856892506404,
+        "totalR": 13.022285514005123,
+        "PF": 3.6044571028010255
+      },
+      "deepCorrection": {
+        "n": 1,
+        "winRate": 1,
+        "avgR": 0.3102012789149257,
+        "totalR": 0.3102012789149257,
+        "PF": null
+      },
+      "fastEntry": {
+        "n": 8,
+        "winRate": 0.5,
+        "avgR": 1.7915608491150061,
+        "totalR": 14.332486792920049,
+        "PF": 4.583121698230013
+      },
+      "delayedEntry": {
+        "n": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "cleanStructure": {
+        "n": 6,
+        "winRate": 0.5,
+        "avgR": 1.1238140672551158,
+        "totalR": 6.742884403530695,
+        "PF": 3.2476281345102316
+      },
+      "lessCleanStructure": {
+        "n": 3,
+        "winRate": 0.3333333333333333,
+        "avgR": 2.196534129796451,
+        "totalR": 6.589602389389354,
+        "PF": 4.294801194694677
+      },
+      "fastShallow": {
+        "n": 7,
+        "winRate": 0.42857142857142855,
+        "avgR": 2.0031836448578746,
+        "totalR": 14.022285514005123,
+        "PF": 4.505571378501282
+      }
+    },
+    "VAL": {
+      "fastCorrection": {
+        "n": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": 0
+      },
+      "slowCorrection": {
+        "n": 6,
+        "winRate": 0.5,
+        "avgR": 1.6812907727602189,
+        "totalR": 10.087744636561313,
+        "PF": 4.362581545520437
+      },
+      "shallowCorrection": {
+        "n": 6,
+        "winRate": 0.5,
+        "avgR": 1.6812907727602189,
+        "totalR": 10.087744636561313,
+        "PF": 4.362581545520437
+      },
+      "deepCorrection": {
+        "n": 0,
+        "winRate": 0,
+        "avgR": 0,
+        "totalR": 0,
+        "PF": 0
+      },
+      "fastEntry": {
+        "n": 3,
+        "winRate": 0.3333333333333333,
+        "avgR": 3.245436962523645,
+        "totalR": 9.736310887570935,
+        "PF": 5.868155443785468
+      },
+      "delayedEntry": {
+        "n": 3,
+        "winRate": 0.6666666666666666,
+        "avgR": 0.11714458299679253,
+        "totalR": 0.3514337489903776,
+        "PF": 1.3514337489903776
+      },
+      "cleanStructure": {
+        "n": 5,
+        "winRate": 0.6,
+        "avgR": 2.2175489273122624,
+        "totalR": 11.087744636561313,
+        "PF": 6.543872318280656
+      },
+      "lessCleanStructure": {
+        "n": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "PF": 0
+      },
+      "fastShallow": {
+        "n": 3,
+        "winRate": 0.3333333333333333,
+        "avgR": 3.245436962523645,
+        "totalR": 9.736310887570935,
+        "PF": 5.868155443785468
+      }
+    }
+  },
+  "cases": [
+    {
+      "entryTime": "2026-07-14 23:35:00",
+      "entryIndex": 793,
+      "r": -1,
+      "breakoutIndex": 788,
+      "breakoutLevel": 4048.583,
+      "breakoutClose": 4047.67321,
+      "breakoutExtension": 0.9097900000001573,
+      "breakoutExtensionToPreRange": 0.2630043767092316,
+      "followThroughIndex": 789,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 0.6719199999997727,
+      "followThroughFromLevel": 1.58170999999993,
+      "followThroughDistanceToPreRange": 0.1942403200720788,
+      "spikeStartIndex": 781,
+      "spikeEndIndex": 789,
+      "spikeBars": 9,
+      "spikeSize": 6.273249999999734,
+      "spikeSizeToMedianRange": 3.2460157301049923,
+      "spikeSizeToPreRange": 1.8134868554180987,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4054.20238,
+      "correctionStartIndex": 790,
+      "correctionExtremeIndex": 792,
+      "correctionBars": 3,
+      "correctionDepth": 0.1777101183597471,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 0.7713700000003882,
+      "entryDistanceFromStructuralHighPct": 0.12296178217039348,
+      "entryDistanceFromSpikeEnd": 6.616699999999582,
+      "entryDistanceFromSpikeEndPct": 1.0547483361893537,
+      "stopDistance": 0.7713700000003882,
+      "rewardDistance": 4.661099999999351,
+      "plannedRR": 6.042625458595752,
+      "leg1Size": 5.432469999999739,
+      "structureScore": 0.6666666666666666,
+      "overlapScore": 0.4603611390513438,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": true,
+      "emaAligned": true,
+      "qualityScore": 5,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-07-14 23:40:00",
+      "entryIndex": 794,
+      "r": -1,
+      "breakoutIndex": 775,
+      "breakoutLevel": 4051.69969,
+      "breakoutClose": 4051.65853,
+      "breakoutExtension": 0.041159999999763386,
+      "breakoutExtensionToPreRange": 0.01892170203365301,
+      "followThroughIndex": 776,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 2.2390000000000327,
+      "followThroughFromLevel": 2.280159999999796,
+      "followThroughDistanceToPreRange": 1.0292927806995444,
+      "spikeStartIndex": 768,
+      "spikeEndIndex": 776,
+      "spikeBars": 9,
+      "spikeSize": 6.278479999999945,
+      "spikeSizeToMedianRange": 15.695022873292691,
+      "spikeSizeToPreRange": 2.886285903423995,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4056.13694,
+      "correctionStartIndex": 777,
+      "correctionExtremeIndex": 793,
+      "correctionBars": 17,
+      "correctionDepth": 0.1007855404492675,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 2.037409999999909,
+      "entryDistanceFromStructuralHighPct": 0.3245068870172282,
+      "entryDistanceFromSpikeEnd": 4.873849999999948,
+      "entryDistanceFromSpikeEndPct": 0.7762786534320393,
+      "stopDistance": 2.037409999999909,
+      "rewardDistance": 3.647190000000137,
+      "plannedRR": 1.7901109742272296,
+      "leg1Size": 5.684600000000046,
+      "structureScore": 0.5555555555555556,
+      "overlapScore": 0.595286612445737,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": true,
+      "emaAligned": true,
+      "qualityScore": 5,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-07-15 00:10:00",
+      "entryIndex": 800,
+      "r": -1,
+      "breakoutIndex": 757,
+      "breakoutLevel": 4051.37139,
+      "breakoutClose": 4050.65455,
+      "breakoutExtension": 0.7168399999995927,
+      "breakoutExtensionToPreRange": 0.08788767483369807,
+      "followThroughIndex": 758,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 0.12166000000024724,
+      "followThroughFromLevel": 0.8384999999998399,
+      "followThroughDistanceToPreRange": 0.014916040567344892,
+      "spikeStartIndex": 750,
+      "spikeEndIndex": 758,
+      "spikeBars": 9,
+      "spikeSize": 6.10523000000012,
+      "spikeSizeToMedianRange": 4.027595078669416,
+      "spikeSizeToPreRange": 0.7485275222159113,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4056.46601,
+      "correctionStartIndex": 759,
+      "correctionExtremeIndex": 799,
+      "correctionBars": 41,
+      "correctionDepth": 0.026952301551286303,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 4.3044700000000375,
+      "entryDistanceFromStructuralHighPct": 0.7050463291309178,
+      "entryDistanceFromSpikeEnd": 1.965310000000045,
+      "entryDistanceFromSpikeEndPct": 0.3219059724203685,
+      "stopDistance": 4.3044700000000375,
+      "rewardDistance": 1.0457500000002256,
+      "plannedRR": 0.2429451244869209,
+      "leg1Size": 5.350220000000263,
+      "structureScore": 0.8888888888888888,
+      "overlapScore": 0.5814728572005199,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": true,
+      "emaAligned": true,
+      "qualityScore": 6,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-07-15 22:45:00",
+      "entryIndex": 1071,
+      "r": 0.3102012789149257,
+      "breakoutIndex": 1068,
+      "breakoutLevel": 4061.57345,
+      "breakoutClose": 4060.71908,
+      "breakoutExtension": 0.8543700000000172,
+      "breakoutExtensionToPreRange": 0.22529844389889733,
+      "followThroughIndex": 1069,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 0.7431199999996352,
+      "followThroughFromLevel": 1.5974899999996524,
+      "followThroughDistanceToPreRange": 0.19596167893308875,
+      "spikeStartIndex": 1061,
+      "spikeEndIndex": 1069,
+      "spikeBars": 9,
+      "spikeSize": 1.0484299999998257,
+      "spikeSizeToMedianRange": 0.7280966137946279,
+      "spikeSizeToPreRange": 0.27647231004936607,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4060.60253,
+      "correctionStartIndex": 1070,
+      "correctionExtremeIndex": 1070,
+      "correctionBars": 1,
+      "correctionDepth": 1.7236725389395504,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 0.9320400000001428,
+      "entryDistanceFromStructuralHighPct": 0.8889863891726656,
+      "entryDistanceFromSpikeEnd": 0.17331999999987602,
+      "entryDistanceFromSpikeEndPct": 0.16531385023311507,
+      "stopDistance": 0.9320400000001428,
+      "rewardDistance": 0.28911999999991167,
+      "plannedRR": 0.3102012789149257,
+      "leg1Size": 1.2211600000000544,
+      "structureScore": 0.7777777777777778,
+      "overlapScore": 0.7871876062974342,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": false,
+      "emaAligned": true,
+      "qualityScore": 6,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-07-15 23:50:00",
+      "entryIndex": 1084,
+      "r": 0.03699648322406649,
+      "breakoutIndex": 1079,
+      "breakoutLevel": 4058.05201,
+      "breakoutClose": 4057.93579,
+      "breakoutExtension": 0.11621999999988475,
+      "breakoutExtensionToPreRange": 0.036390849370279886,
+      "followThroughIndex": 1081,
+      "breakoutToFollowThroughBars": 2,
+      "followThroughDistance": 0.7729500000000371,
+      "followThroughFromLevel": 0.8891699999999219,
+      "followThroughDistanceToPreRange": 0.24202638978477958,
+      "spikeStartIndex": 1072,
+      "spikeEndIndex": 1081,
+      "spikeBars": 10,
+      "spikeSize": 2.9647799999997915,
+      "spikeSizeToMedianRange": 1.3901174771598166,
+      "spikeSizeToPreRange": 0.9283330097755791,
+      "spikeDurationBars": 10,
+      "structuralHigh": 4060.04905,
+      "correctionStartIndex": 1082,
+      "correctionExtremeIndex": 1083,
+      "correctionBars": 2,
+      "correctionDepth": 0.042013235383472014,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 2.63025000000016,
+      "entryDistanceFromStructuralHighPct": 0.8871653208670948,
+      "entryDistanceFromSpikeEnd": 0.4590899999998328,
+      "entryDistanceFromSpikeEndPct": 0.1548479145163773,
+      "stopDistance": 2.63025000000016,
+      "rewardDistance": 0.09731000000010681,
+      "plannedRR": 0.03699648322406649,
+      "leg1Size": 2.727560000000267,
+      "structureScore": 0.8,
+      "overlapScore": 0.4925485446110208,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": false,
+      "emaAligned": true,
+      "qualityScore": 5,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-07-21 22:40:00",
+      "entryIndex": 2798,
+      "r": 9.395686641391704,
+      "breakoutIndex": 2776,
+      "breakoutLevel": 4078.77599,
+      "breakoutClose": 4078.18548,
+      "breakoutExtension": 0.5905099999999948,
+      "breakoutExtensionToPreRange": 0.16684891175664518,
+      "followThroughIndex": 2777,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 0.3577500000001237,
+      "followThroughFromLevel": 0.9482600000001185,
+      "followThroughDistanceToPreRange": 0.10108245106934849,
+      "spikeStartIndex": 2769,
+      "spikeEndIndex": 2777,
+      "spikeBars": 9,
+      "spikeSize": 7.9669599999997445,
+      "spikeSizeToMedianRange": 4.799893964404732,
+      "spikeSizeToPreRange": 2.2510687473687,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4085.30109,
+      "correctionStartIndex": 2778,
+      "correctionExtremeIndex": 2797,
+      "correctionBars": 20,
+      "correctionDepth": 0.06283827206362491,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 0.609269999999924,
+      "entryDistanceFromStructuralHighPct": 0.07647459005692805,
+      "entryDistanceFromSpikeEnd": 7.8583199999998214,
+      "entryDistanceFromSpikeEndPct": 0.9863636820066969,
+      "stopDistance": 0.609269999999924,
+      "rewardDistance": 5.724510000000009,
+      "plannedRR": 9.395686641391704,
+      "leg1Size": 6.333779999999933,
+      "structureScore": 0.7777777777777778,
+      "overlapScore": 0.752086564640576,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": false,
+      "emaAligned": true,
+      "qualityScore": 6,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-07-22 00:25:00",
+      "entryIndex": 2819,
+      "r": -1,
+      "breakoutIndex": 698,
+      "breakoutLevel": 4077.47197,
+      "breakoutClose": 4068.97449,
+      "breakoutExtension": 8.497479999999996,
+      "breakoutExtensionToPreRange": 0.9516486322433548,
+      "followThroughIndex": 700,
+      "breakoutToFollowThroughBars": 2,
+      "followThroughDistance": 0.5391600000002654,
+      "followThroughFromLevel": 9.036640000000261,
+      "followThroughDistanceToPreRange": 0.06038153388540838,
+      "spikeStartIndex": 691,
+      "spikeEndIndex": 700,
+      "spikeBars": 10,
+      "spikeSize": 30.002600000000257,
+      "spikeSizeToMedianRange": 4.863946929210444,
+      "spikeSizeToPreRange": 3.3600471261767884,
+      "spikeDurationBars": 10,
+      "structuralHigh": 4099.18717,
+      "correctionStartIndex": 701,
+      "correctionExtremeIndex": 2818,
+      "correctionBars": 2118,
+      "correctionDepth": 0.04993800537286885,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 0.9949999999998909,
+      "entryDistanceFromStructuralHighPct": 0.03316379247131523,
+      "entryDistanceFromSpikeEnd": 30.505870000000414,
+      "entryDistanceFromSpikeEndPct": 1.0167742129015536,
+      "stopDistance": 0.9949999999998909,
+      "rewardDistance": 10.913080000000264,
+      "plannedRR": 10.967919597991418,
+      "leg1Size": 11.908080000000155,
+      "structureScore": 0.7,
+      "overlapScore": 0.6595189681587681,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": true,
+      "emaAligned": true,
+      "qualityScore": 6,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-07-23 23:35:00",
+      "entryIndex": 3385,
+      "r": 8.589602389389354,
+      "breakoutIndex": 3378,
+      "breakoutLevel": 4049.07479,
+      "breakoutClose": 4049.00087,
+      "breakoutExtension": 0.0739200000002711,
+      "breakoutExtensionToPreRange": 0.030643844077994208,
+      "followThroughIndex": 3379,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 0.9863099999997758,
+      "followThroughFromLevel": 1.0602300000000469,
+      "followThroughDistanceToPreRange": 0.40887892116407937,
+      "spikeStartIndex": 3371,
+      "spikeEndIndex": 3379,
+      "spikeBars": 9,
+      "spikeSize": 2.4109800000001087,
+      "spikeSizeToMedianRange": 2.450133127374754,
+      "spikeSizeToPreRange": 0.999481807290244,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4050.36686,
+      "correctionStartIndex": 3380,
+      "correctionExtremeIndex": 3384,
+      "correctionBars": 5,
+      "correctionDepth": 0.011787737766424939,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 0.21428000000014435,
+      "entryDistanceFromStructuralHighPct": 0.08887672232873549,
+      "entryDistanceFromSpikeEnd": 2.225120000000061,
+      "entryDistanceFromSpikeEndPct": 0.9229110154376895,
+      "stopDistance": 0.21428000000014435,
+      "rewardDistance": 1.8405799999995907,
+      "plannedRR": 8.589602389389354,
+      "leg1Size": 2.054859999999735,
+      "structureScore": 0.6666666666666666,
+      "overlapScore": 0.4843434346908465,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": true,
+      "emaAligned": true,
+      "qualityScore": 5,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-07-27 00:25:00",
+      "entryIndex": 4259,
+      "r": -1,
+      "breakoutIndex": 4244,
+      "breakoutLevel": 4087.30483,
+      "breakoutClose": 4086.05723,
+      "breakoutExtension": 1.2476000000001477,
+      "breakoutExtensionToPreRange": 0.14720770256399704,
+      "followThroughIndex": 4245,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 0.3475499999999556,
+      "followThroughFromLevel": 1.5951500000001033,
+      "followThroughDistanceToPreRange": 0.04100836568299501,
+      "spikeStartIndex": 4237,
+      "spikeEndIndex": 4245,
+      "spikeBars": 9,
+      "spikeSize": 8.526029999999992,
+      "spikeSizeToMedianRange": 3.604507520989997,
+      "spikeSizeToPreRange": 1.006009368621005,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4093.9982,
+      "correctionStartIndex": 4246,
+      "correctionExtremeIndex": 4251,
+      "correctionBars": 6,
+      "correctionDepth": 0.11792123649576763,
+      "entryDelayFromCorrection": 8,
+      "entryDistanceFromStructuralHigh": 2.8796400000001086,
+      "entryDistanceFromStructuralHighPct": 0.3377468763304975,
+      "entryDistanceFromSpikeEnd": 6.651789999999892,
+      "entryDistanceFromSpikeEndPct": 0.7801743601652702,
+      "stopDistance": 2.8796400000001086,
+      "rewardDistance": 2.846759999999904,
+      "plannedRR": 0.9885819060715216,
+      "leg1Size": 5.726400000000012,
+      "structureScore": 0.8888888888888888,
+      "overlapScore": 0.548587006159966,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": false,
+      "emaAligned": true,
+      "qualityScore": 5,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-08-04 00:10:00",
+      "entryIndex": 6560,
+      "r": 11.736310887570935,
+      "breakoutIndex": 6421,
+      "breakoutLevel": 4047.57433,
+      "breakoutClose": 4046.29873,
+      "breakoutExtension": 1.2755999999999403,
+      "breakoutExtensionToPreRange": 0.10105091045634328,
+      "followThroughIndex": 6422,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 3.008429999999862,
+      "followThroughFromLevel": 4.284029999999802,
+      "followThroughDistanceToPreRange": 0.23832282106003222,
+      "spikeStartIndex": 6414,
+      "spikeEndIndex": 6422,
+      "spikeBars": 9,
+      "spikeSize": 21.196879999999965,
+      "spikeSizeToMedianRange": 5.58466625390285,
+      "spikeSizeToPreRange": 1.679181579518619,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4065.99246,
+      "correctionStartIndex": 6423,
+      "correctionExtremeIndex": 6559,
+      "correctionBars": 137,
+      "correctionDepth": 0.0838741361936236,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 1.475260000000162,
+      "entryDistanceFromStructuralHighPct": 0.06959797857043888,
+      "entryDistanceFromSpikeEnd": 21.499489999999696,
+      "entryDistanceFromSpikeEndPct": 1.0142761576231847,
+      "stopDistance": 1.475260000000162,
+      "rewardDistance": 17.3141099999998,
+      "plannedRR": 11.736310887570935,
+      "leg1Size": 18.789369999999963,
+      "structureScore": 0.7777777777777778,
+      "overlapScore": 0.7061703783638273,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": false,
+      "emaAligned": true,
+      "qualityScore": 6,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-08-05 23:25:00",
+      "entryIndex": 7127,
+      "r": -1,
+      "breakoutIndex": 7081,
+      "breakoutLevel": 4250.56412,
+      "breakoutClose": 4250.29409,
+      "breakoutExtension": 0.2700299999996787,
+      "breakoutExtensionToPreRange": 0.03543924026706037,
+      "followThroughIndex": 7083,
+      "breakoutToFollowThroughBars": 2,
+      "followThroughDistance": 1.0075500000002648,
+      "followThroughFromLevel": 1.2775799999999435,
+      "followThroughDistanceToPreRange": 0.13223273907020905,
+      "spikeStartIndex": 7074,
+      "spikeEndIndex": 7083,
+      "spikeBars": 10,
+      "spikeSize": 12.836310000000594,
+      "spikeSizeToMedianRange": 3.2231950945140206,
+      "spikeSizeToPreRange": 1.684661238503248,
+      "spikeDurationBars": 10,
+      "structuralHigh": 4263.48327,
+      "correctionStartIndex": 7084,
+      "correctionExtremeIndex": 7126,
+      "correctionBars": 43,
+      "correctionDepth": 0.1298605284539976,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 0.7234199999993507,
+      "entryDistanceFromStructuralHighPct": 0.05635731764029672,
+      "entryDistanceFromSpikeEnd": 13.779820000000655,
+      "entryDistanceFromSpikeEndPct": 1.0735032108137008,
+      "stopDistance": 0.7234199999993507,
+      "rewardDistance": 11.8063800000009,
+      "plannedRR": 16.320228912680733,
+      "leg1Size": 12.52980000000025,
+      "structureScore": 0.7,
+      "overlapScore": 0.578029680878486,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": false,
+      "emaAligned": true,
+      "qualityScore": 5,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-08-07 00:00:00",
+      "entryIndex": 7422,
+      "r": 0.09648476987949235,
+      "breakoutIndex": 7379,
+      "breakoutLevel": 4242.33565,
+      "breakoutClose": 4241.42164,
+      "breakoutExtension": 0.9140100000004168,
+      "breakoutExtensionToPreRange": 0.06393180495559699,
+      "followThroughIndex": 7381,
+      "breakoutToFollowThroughBars": 2,
+      "followThroughDistance": 0.6850699999995413,
+      "followThroughFromLevel": 1.599079999999958,
+      "followThroughDistanceToPreRange": 0.04791825212074434,
+      "spikeStartIndex": 7372,
+      "spikeEndIndex": 7381,
+      "spikeBars": 10,
+      "spikeSize": 8.714539999999943,
+      "spikeSizeToMedianRange": 3.07633164711572,
+      "spikeSizeToPreRange": 0.609551614924881,
+      "spikeDurationBars": 10,
+      "structuralHigh": 4252.24306,
+      "correctionStartIndex": 7382,
+      "correctionExtremeIndex": 7420,
+      "correctionBars": 39,
+      "correctionDepth": 0.35889788789769445,
+      "entryDelayFromCorrection": 2,
+      "entryDistanceFromStructuralHigh": 2.6214499999996406,
+      "entryDistanceFromStructuralHighPct": 0.30081335331522463,
+      "entryDistanceFromSpikeEnd": 9.220720000000256,
+      "entryDistanceFromSpikeEndPct": 1.0580845345824699,
+      "stopDistance": 2.6214499999996406,
+      "rewardDistance": 0.25293000000056054,
+      "plannedRR": 0.09648476987949235,
+      "leg1Size": 2.874380000000201,
+      "structureScore": 0.7,
+      "overlapScore": 0.6662988612686993,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": true,
+      "emaAligned": true,
+      "qualityScore": 6,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-08-12 22:05:00",
+      "entryIndex": 9127,
+      "r": 1.2549489791108852,
+      "breakoutIndex": 9076,
+      "breakoutLevel": 4401.79593,
+      "breakoutClose": 4401.72111,
+      "breakoutExtension": 0.07481999999981781,
+      "breakoutExtensionToPreRange": 0.007720302579709956,
+      "followThroughIndex": 9077,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 1.8795000000000073,
+      "followThroughFromLevel": 1.954319999999825,
+      "followThroughDistanceToPreRange": 0.19393622959904105,
+      "spikeStartIndex": 9069,
+      "spikeEndIndex": 9077,
+      "spikeBars": 9,
+      "spikeSize": 5.34958000000006,
+      "spikeSizeToMedianRange": 1.1746449988032566,
+      "spikeSizeToPreRange": 0.5519964752000244,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4406.25688,
+      "correctionStartIndex": 9078,
+      "correctionExtremeIndex": 9080,
+      "correctionBars": 3,
+      "correctionDepth": 0.3044687620336527,
+      "entryDelayFromCorrection": 47,
+      "entryDistanceFromStructuralHigh": 2.122659999999996,
+      "entryDistanceFromStructuralHighPct": 0.39679002837605426,
+      "entryDistanceFromSpikeEnd": 4.85570000000007,
+      "entryDistanceFromSpikeEndPct": 0.9076787336575984,
+      "stopDistance": 2.122659999999996,
+      "rewardDistance": 2.663829999999507,
+      "plannedRR": 1.2549489791108852,
+      "leg1Size": 4.786489999999503,
+      "structureScore": 0.7777777777777778,
+      "overlapScore": 0.5698741483267615,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": true,
+      "emaAligned": true,
+      "qualityScore": 6,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-08-12 23:30:00",
+      "entryIndex": 9144,
+      "r": -1,
+      "breakoutIndex": 9131,
+      "breakoutLevel": 4401.79593,
+      "breakoutClose": 4399.64639,
+      "breakoutExtension": 2.149540000000343,
+      "breakoutExtensionToPreRange": 4.988720757521585,
+      "followThroughIndex": 9133,
+      "breakoutToFollowThroughBars": 2,
+      "followThroughDistance": 0.01767999999992753,
+      "followThroughFromLevel": 2.1672200000002704,
+      "followThroughDistanceToPreRange": 0.041032305978305136,
+      "spikeStartIndex": 9124,
+      "spikeEndIndex": 9133,
+      "spikeBars": 10,
+      "spikeSize": 10.205690000000686,
+      "spikeSizeToMedianRange": 5.152801409666884,
+      "spikeSizeToPreRange": 23.685689751214568,
+      "spikeDurationBars": 10,
+      "structuralHigh": 4409.75438,
+      "correctionStartIndex": 9134,
+      "correctionExtremeIndex": 9143,
+      "correctionBars": 10,
+      "correctionDepth": 0.083355461512147,
+      "entryDelayFromCorrection": 1,
+      "entryDistanceFromStructuralHigh": 0.1821300000001429,
+      "entryDistanceFromStructuralHighPct": 0.017845927124979365,
+      "entryDistanceFromSpikeEnd": 10.874260000000504,
+      "entryDistanceFromSpikeEndPct": 1.0655095343871677,
+      "stopDistance": 0.1821300000001429,
+      "rewardDistance": 8.988139999999476,
+      "plannedRR": 49.3501345192578,
+      "leg1Size": 9.170269999999618,
+      "structureScore": 0.7,
+      "overlapScore": 0.6244307061789464,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": false,
+      "emaAligned": true,
+      "qualityScore": 5,
+      "qualityGrade": "B"
+    },
+    {
+      "entryTime": "2026-08-13 00:25:00",
+      "entryIndex": 9155,
+      "r": -1,
+      "breakoutIndex": 9063,
+      "breakoutLevel": 4411.05799,
+      "breakoutClose": 4405.00223,
+      "breakoutExtension": 6.055760000000191,
+      "breakoutExtensionToPreRange": 0.4380797226735437,
+      "followThroughIndex": 9064,
+      "breakoutToFollowThroughBars": 1,
+      "followThroughDistance": 1.6623399999998583,
+      "followThroughFromLevel": 7.7181000000000495,
+      "followThroughDistanceToPreRange": 0.12025533478688943,
+      "spikeStartIndex": 9056,
+      "spikeEndIndex": 9064,
+      "spikeBars": 9,
+      "spikeSize": 20.95389999999952,
+      "spikeSizeToMedianRange": 5.248683689776379,
+      "spikeSizeToPreRange": 1.5158260401549382,
+      "spikeDurationBars": 9,
+      "structuralHigh": 4428.3944,
+      "correctionStartIndex": 9065,
+      "correctionExtremeIndex": 9153,
+      "correctionBars": 89,
+      "correctionDepth": 0.23238633380900967,
+      "entryDelayFromCorrection": 2,
+      "entryDistanceFromStructuralHigh": 0.4687000000003536,
+      "entryDistanceFromStructuralHighPct": 0.02236815103633998,
+      "entryDistanceFromSpikeEnd": 25.354599999999664,
+      "entryDistanceFromSpikeEndPct": 1.2100181827726697,
+      "stopDistance": 0.4687000000003536,
+      "rewardDistance": 15.538049999999203,
+      "plannedRR": 33.15137614676228,
+      "leg1Size": 16.006749999999556,
+      "structureScore": 0.6666666666666666,
+      "overlapScore": 0.7329468800803374,
+      "hasPGAPEvidence": false,
+      "nearRoundLevel": false,
+      "emaAligned": true,
+      "qualityScore": 5,
+      "qualityGrade": "B"
+    }
+  ],
+  "methodology": {
+    "canonicalReconstruction": true,
+    "outcomeJoin": "exact entryIndex + direction + entry + stopLoss + tp1 key",
+    "geometry": "descriptive only; breakout level, breakout extension, follow-through distance/timing, spike geometry, correction geometry, structural high and entry geometry are measured without changing detectors",
+    "precedingRange": "5 completed candles immediately before spike start; descriptive normalization only",
+    "thresholds": "no new thresholds introduced; existing detector/archetype definitions retained",
+    "valRole": "chronological OOS stability check only",
+    "freshHoldout": "locked and excluded",
+    "productionRule": "unchanged"
+  },
+  "interpretation": "Path Geometry V2 completes the missing breakout-to-spike-to-correction-to-entry measurements. It is intended to inspect the 5m NY-Late SELL cases row-by-row and compare DEV versus VAL before any hypothesis is frozen."
+}
