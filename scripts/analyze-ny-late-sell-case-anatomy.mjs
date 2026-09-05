@@ -22,6 +22,22 @@ function stage(candles, index, priceField = 'close') {
   return { ...c, price: c[priceField] };
 }
 
+function reconstructLevels(candles, row) {
+  const entryCandle = candles[row.entryIndex];
+  if (!entryCandle) throw new Error(`Missing historical candle at entryIndex ${row.entryIndex} for ${row.entryTime}`);
+  if (entryCandle.timestamp !== row.entryTime) {
+    throw new Error(`Historical candle lineage mismatch at entryIndex ${row.entryIndex}: report=${row.entryTime} candles=${entryCandle.timestamp}`);
+  }
+  if (row.direction !== 'SELL') throw new Error(`Unexpected direction for ${row.entryTime}: ${row.direction}`);
+  const entry = Number(entryCandle.close);
+  const stopDistance = Number(row.stopDistance);
+  const rewardDistance = Number(row.rewardDistance);
+  if (!(Number.isFinite(entry) && stopDistance > 0 && rewardDistance > 0)) {
+    throw new Error(`Invalid geometry levels for ${row.entryTime}: entry=${entry} stopDistance=${stopDistance} rewardDistance=${rewardDistance}`);
+  }
+  return { entry, stopLoss: entry + stopDistance, tp1: entry - rewardDistance };
+}
+
 function excursion(candles, entryIndex, entry, stopLoss, horizon) {
   const end = Math.min(candles.length - 1, entryIndex + horizon);
   const path = candles.slice(entryIndex + 1, end + 1);
@@ -48,7 +64,7 @@ function outcomeOnPath(candles, row) {
 }
 
 function outcomeExcursion(candles, row, outcome) {
-  if (!outcome?.index) return null;
+  if (outcome.index == null) return null;
   const risk = Math.abs(row.entry - row.stopLoss);
   if (!(risk > 0)) return null;
   const path = candles.slice(row.entryIndex + 1, outcome.index + 1);
@@ -112,13 +128,9 @@ async function main() {
   const candles = JSON.parse(await readFile(CANDLES, 'utf8')).candles ?? [];
 
   const cases = (report.cases ?? []).map((row) => {
-    const entryCandle = candles[row.entryIndex];
-    if (!entryCandle) throw new Error(`Missing historical candle at entryIndex ${row.entryIndex} for ${row.entryTime}`);
-    if (entryCandle.timestamp !== row.entryTime) {
-      throw new Error(`Historical candle lineage mismatch at entryIndex ${row.entryIndex}: report=${row.entryTime} candles=${entryCandle.timestamp}`);
-    }
-
-    const outcome = outcomeOnPath(candles, row);
+    const levels = reconstructLevels(candles, row);
+    const enriched = { ...row, ...levels };
+    const outcome = outcomeOnPath(candles, enriched);
     if (outcome.result === 'AMBIGUOUS') {
       throw new Error(`Ambiguous outcome for ${row.entryTime} at ${outcome.timestamp}`);
     }
@@ -142,14 +154,14 @@ async function main() {
       recomputedR: outcome.rMultiple,
       result: outcome.result,
       direction: row.direction,
-      entry: row.entry,
-      stopLoss: row.stopLoss,
-      tp1: row.tp1,
+      entry: levels.entry,
+      stopLoss: levels.stopLoss,
+      tp1: levels.tp1,
       stages,
       outcome: { index: outcome.index, timestamp: outcome.timestamp, type: outcome.result },
-      outcomeExcursion: outcomeExcursion(candles, row, outcome),
-      fixedHorizonExcursion: Object.fromEntries(HORIZONS.map((h) => [String(h), excursion(candles, row.entryIndex, row.entry, row.stopLoss, h)])),
-      geometry: Object.fromEntries(Object.entries(row).filter(([k]) => !['entryTime', 'entryIndex', 'r', 'direction', 'entry', 'stopLoss', 'tp1'].includes(k))),
+      outcomeExcursion: outcomeExcursion(candles, enriched, outcome),
+      fixedHorizonExcursion: Object.fromEntries(HORIZONS.map((h) => [String(h), excursion(candles, row.entryIndex, levels.entry, levels.stopLoss, h)])),
+      geometry: Object.fromEntries(Object.entries(row).filter(([k]) => !['entryTime', 'entryIndex', 'r', 'direction'].includes(k))),
     };
   });
 
@@ -169,7 +181,8 @@ async function main() {
     scope: { source: 'Path Geometry V2', n: cases.length, dev: groups.DEV.length, val: groups.VAL.length, freshHoldoutExcluded: true, productionUntouched: true },
     methodology: {
       purpose: 'Descriptive case-by-case anatomy before any hypothesis or threshold is frozen.',
-      outcome: 'Outcome is recomputed directly from the canonical historical candles using the same first-hit SL/TP semantics as the deterministic backtest. No baseline report join is used.',
+      outcome: 'Outcome is recomputed directly from the canonical historical candles using the same first-hit SL/TP semantics as the deterministic backtest. Entry/SL/TP are reconstructed from the exact entry candle close plus the recorded geometry distances.',
+      levelReconstruction: 'SELL entry=entry candle close; stopLoss=entry+stopDistance; tp1=entry-rewardDistance. These are reconstruction identities from Path Geometry V2, not new trading rules.',
       fixedHorizons: HORIZONS.map((h) => `${h} bars after entry`),
       classification: 'EXCEPTIONAL_WIN=r>=5R; NORMAL_WIN=0<r<5R; LOSS=r<0. This classification is descriptive and does not create a trading rule.',
       noOptimization: true,
