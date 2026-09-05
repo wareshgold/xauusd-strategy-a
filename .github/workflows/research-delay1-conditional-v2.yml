@@ -1,4 +1,4 @@
-name: Research - DELAY1 conditional path information v2
+name: Research - DELAY1 nested conditional information
 
 on:
   push:
@@ -33,6 +33,6 @@ jobs:
       - run: pnpm run research:delay1-continuous-path-conditional-information
       - uses: actions/upload-artifact@v4
         with:
-          name: delay1-conditional-path-information-v2
-          path: data/reports/strategy-a-delay1-conditional-path-information/*.json
+          name: delay1-nested-conditional-information
+          path: data/reports/strategy-a-delay1-nested-conditional-information/*.json
           if-no-files-found: error
