@@ -150,14 +150,14 @@ function interactionRows(rows) {
   }).sort((a, b) => b.n - a.n);
 }
 
-function stableCells(dev, val) {
-  const valByKey = new Map(val.map((r) => [`${r.windowId}|${r.direction}|${r.quality}`, r]));
+function stableCells(dev, valMap) {
   return dev.filter((r) => r.eligible).map((r) => {
-    const v = valByKey.get(`${r.windowId}|${r.direction}|${r.quality}`);
+    const key = `${r.windowId}|${r.direction}|${r.quality}`;
+    const v = valMap.get(key) ?? null;
     const sameSign = Boolean(v && Math.sign(r.avgR) === Math.sign(v.avgR) && r.avgR !== 0 && v.avgR !== 0);
     const bothPositive = Boolean(v && r.avgR > 0 && v.avgR > 0 && r.PF >= 1 && v.PF >= 1);
     const bothNegative = Boolean(v && r.avgR < 0 && v.avgR < 0 && r.PF < 1 && v.PF < 1);
-    return { ...r, val: v ?? null, sameSign, bothPositive, bothNegative };
+    return { ...r, val: v, sameSign, bothPositive, bothNegative };
   });
 }
 
