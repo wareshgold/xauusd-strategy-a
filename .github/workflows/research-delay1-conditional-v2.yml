@@ -28,8 +28,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-      - run: corepack enable
+      - run: npm install --global pnpm@10
       - run: pnpm install --frozen-lockfile
       - run: pnpm run research:delay1-continuous-path-conditional-information
       - uses: actions/upload-artifact@v4
