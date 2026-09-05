@@ -1,0 +1,36 @@
+name: Research - DELAY1 nested conditional information
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/entry-edge-post-entry-path
+    paths:
+      - scripts/analyze-delay1-nested-conditional-information.mjs
+      - src/**
+      - data/historical/**
+      - data/reports/strategy-a-baseline/**
+      - .github/workflows/research-delay1-nested-conditional-information.yml
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/entry-edge-post-entry-path
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/analyze-delay1-nested-conditional-information.mjs
+      - name: Upload nested CMI report
+        uses: actions/upload-artifact@v4
+        with:
+          name: delay1-nested-conditional-information
+          path: data/reports/strategy-a-nested-conditional-information/*.json
