@@ -5,7 +5,7 @@ on:
     branches:
       - research/entry-edge-post-entry-path
     paths:
-      - 'scripts/analyze-delay1-continuous-path-conditional-information.mjs'
+      - 'scripts/analyze-delay1-nested-cmi.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'src/**'
