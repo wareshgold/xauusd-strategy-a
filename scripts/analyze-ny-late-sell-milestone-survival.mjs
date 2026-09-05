@@ -36,30 +36,23 @@ function firstMilestone(candles, entryIndex, entry, stopLoss, milestoneR, maxBar
     const c = candles[i];
     const hitFavorable = c.low <= target;
     const hitStop = c.high >= stopLoss;
-    if (hitFavorable && hitStop) {
-      return { status: 'INTRABAR_CONFLICT', index: i, timestamp: c.timestamp, bars: i - entryIndex };
-    }
-    if (hitFavorable) {
-      return { status: 'REACHED', index: i, timestamp: c.timestamp, bars: i - entryIndex };
-    }
-    if (hitStop) {
-      return { status: 'STOPPED_BEFORE_MILESTONE', index: i, timestamp: c.timestamp, bars: i - entryIndex };
-    }
+    if (hitFavorable && hitStop) return { status: 'INTRABAR_CONFLICT', index: i, timestamp: c.timestamp, bars: i - entryIndex };
+    if (hitFavorable) return { status: 'REACHED', index: i, timestamp: c.timestamp, bars: i - entryIndex };
+    if (hitStop) return { status: 'STOPPED_BEFORE_MILESTONE', index: i, timestamp: c.timestamp, bars: i - entryIndex };
   }
   return { status: 'NOT_REACHED', index: null, timestamp: null, bars: null };
 }
 
-function postMilestonePath(candles, entryIndex, milestoneIndex, entry, stopLoss, maxBars) {
+function postMilestonePath(candles, milestoneIndex, entry, stopLoss, milestoneR, maxBars) {
   const risk = Math.abs(entry - stopLoss);
-  const end = Math.min(candles.length - 1, entryIndex + maxBars);
+  const end = Math.min(candles.length - 1, milestoneIndex + maxBars);
   if (milestoneIndex == null || !(risk > 0) || milestoneIndex > end) return null;
   const path = candles.slice(milestoneIndex + 1, end + 1);
   if (!path.length) return { barsObserved: 0, mfeAfterR: 0, maeAfterR: 0, pullbackFromMilestoneR: 0 };
-  const milestonePrice = entry - ((milestoneIndex === entryIndex ? 0 : 0));
+  const milestonePrice = entry - milestoneR * risk;
   const mfeAfter = Math.max(0, ...path.map((c) => entry - c.low)) / risk;
   const maeAfter = Math.max(0, ...path.map((c) => c.high - entry)) / risk;
-  const milestoneLow = Math.min(...[candles[milestoneIndex].low]);
-  const pullbackFromMilestoneR = Math.max(0, ...path.map((c) => c.high - milestoneLow)) / risk;
+  const pullbackFromMilestoneR = Math.max(0, ...path.map((c) => c.high - milestonePrice)) / risk;
   return { barsObserved: path.length, mfeAfterR: p(mfeAfter), maeAfterR: p(maeAfter), pullbackFromMilestoneR: p(pullbackFromMilestoneR) };
 }
 
@@ -68,18 +61,15 @@ function firstReachAndSurvival(candles, row, milestoneR, horizon) {
   const stopLoss = Number(row.stopLoss);
   const risk = Math.abs(entry - stopLoss);
   const plannedRR = Number(row.geometry?.plannedRR);
-  if (!(risk > 0 && plannedRR >= milestoneR)) {
-    return { eligible: false, status: 'TARGET_BELOW_MILESTONE' };
-  }
+  if (!(risk > 0 && plannedRR >= milestoneR)) return { eligible: false, status: 'TARGET_BELOW_MILESTONE' };
 
   const first = firstMilestone(candles, row.entryIndex, entry, stopLoss, milestoneR, horizon);
   if (first.status !== 'REACHED') {
     return { eligible: true, status: first.status, barsToMilestone: first.bars ?? null, milestoneIndex: first.index ?? null, milestoneTime: first.timestamp ?? null, reached: false };
   }
 
-  const path = postMilestonePath(candles, row.entryIndex, first.index, entry, stopLoss, horizon);
+  const path = postMilestonePath(candles, first.index, entry, stopLoss, milestoneR, horizon);
   const horizonEnd = Math.min(candles.length - 1, row.entryIndex + horizon);
-  const milestonePrice = entry - milestoneR * risk;
   let stopAfterMilestone = null;
   for (let i = first.index + 1; i <= horizonEnd; i += 1) {
     const c = candles[i];
@@ -92,7 +82,7 @@ function firstReachAndSurvival(candles, row, milestoneR, horizon) {
     barsToMilestone: first.bars,
     milestoneIndex: first.index,
     milestoneTime: first.timestamp,
-    milestonePrice: p(milestonePrice),
+    milestonePrice: p(entry - milestoneR * risk),
     survivalToHorizon: stopAfterMilestone == null,
     stopAfterMilestoneBars: stopAfterMilestone?.barsAfterMilestone ?? null,
     stopAfterMilestoneTime: stopAfterMilestone?.timestamp ?? null,
@@ -148,12 +138,7 @@ async function main() {
 
   const cases = sourceCases.map((row) => {
     const enriched = { ...row, entryIndex: Number(row.entryIndex) };
-    enriched.milestones = Object.fromEntries(HORIZONS.map((horizon) => [
-      String(horizon),
-      Object.fromEntries(MILESTONES_R.map((milestoneR) => [
-        String(milestoneR), firstReachAndSurvival(candles, enriched, milestoneR, horizon),
-      ])),
-    ]));
+    enriched.milestones = Object.fromEntries(HORIZONS.map((horizon) => [String(horizon), Object.fromEntries(MILESTONES_R.map((milestoneR) => [String(milestoneR), firstReachAndSurvival(candles, enriched, milestoneR, horizon)]))]));
     return enriched;
   });
 
