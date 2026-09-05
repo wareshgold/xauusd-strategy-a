@@ -23,17 +23,21 @@ function stage(candles, index, priceField = 'close') {
 }
 
 function reconstructLevels(candles, row) {
-  const entryCandle = candles[row.entryIndex];
-  if (!entryCandle) throw new Error(`Missing historical candle at entryIndex ${row.entryIndex} for ${row.entryTime}`);
-  if (entryCandle.timestamp !== row.entryTime) {
-    throw new Error(`Historical candle lineage mismatch at entryIndex ${row.entryIndex}: report=${row.entryTime} candles=${entryCandle.timestamp}`);
+  const features = row.features ?? {};
+  const entryIndex = Number(row.entryIndex);
+  const entryTime = row.entryTime;
+  const entryCandle = candles[entryIndex];
+  if (!entryCandle) throw new Error(`Missing historical candle at entryIndex ${entryIndex} for ${entryTime}`);
+  if (entryCandle.timestamp !== entryTime) {
+    throw new Error(`Historical candle lineage mismatch at entryIndex ${entryIndex}: report=${entryTime} candles=${entryCandle.timestamp}`);
   }
-  if (row.direction !== 'SELL') throw new Error(`Unexpected direction for ${row.entryTime}: ${row.direction}`);
+  const direction = row.direction ?? 'SELL';
+  if (direction !== 'SELL') throw new Error(`Unexpected direction for ${entryTime}: ${direction}`);
   const entry = Number(entryCandle.close);
-  const stopDistance = Number(row.stopDistance);
-  const rewardDistance = Number(row.rewardDistance);
+  const stopDistance = Number(features.stopDistance);
+  const rewardDistance = Number(features.rewardDistance);
   if (!(Number.isFinite(entry) && stopDistance > 0 && rewardDistance > 0)) {
-    throw new Error(`Invalid geometry levels for ${row.entryTime}: entry=${entry} stopDistance=${stopDistance} rewardDistance=${rewardDistance}`);
+    throw new Error(`Invalid geometry levels for ${entryTime}: entry=${entry} stopDistance=${stopDistance} rewardDistance=${rewardDistance}`);
   }
   return { entry, stopLoss: entry + stopDistance, tp1: entry - rewardDistance };
 }
@@ -109,17 +113,17 @@ function quantiles(values) {
 
 function pathShape(rows) {
   return {
-    breakoutToFollowThroughBars: quantiles(rows.map((x) => x.breakoutToFollowThroughBars)),
-    breakoutExtension: quantiles(rows.map((x) => x.breakoutExtension)),
-    followThroughDistance: quantiles(rows.map((x) => x.followThroughDistance)),
-    spikeSize: quantiles(rows.map((x) => x.spikeSize)),
-    spikeSizeToPreRange: quantiles(rows.map((x) => x.spikeSizeToPreRange)),
-    correctionDepth: quantiles(rows.map((x) => x.correctionDepth)),
-    correctionBars: quantiles(rows.map((x) => x.correctionBars)),
-    entryDelayFromCorrection: quantiles(rows.map((x) => x.entryDelayFromCorrection)),
-    entryDistanceFromStructuralHighPct: quantiles(rows.map((x) => x.entryDistanceFromStructuralHighPct)),
-    entryDistanceFromSpikeEndPct: quantiles(rows.map((x) => x.entryDistanceFromSpikeEndPct)),
-    plannedRR: quantiles(rows.map((x) => x.plannedRR)),
+    breakoutToFollowThroughBars: quantiles(rows.map((x) => x.features.breakoutToFollowThroughBars)),
+    breakoutExtension: quantiles(rows.map((x) => x.features.breakoutExtension)),
+    followThroughDistance: quantiles(rows.map((x) => x.features.followThroughDistance)),
+    spikeSize: quantiles(rows.map((x) => x.features.spikeSize)),
+    spikeSizeToPreRange: quantiles(rows.map((x) => x.features.spikeSizeToPreRange)),
+    correctionDepth: quantiles(rows.map((x) => x.features.correctionDepth)),
+    correctionBars: quantiles(rows.map((x) => x.features.correctionBars)),
+    entryDelayFromCorrection: quantiles(rows.map((x) => x.features.entryDelayFromCorrection)),
+    entryDistanceFromStructuralHighPct: quantiles(rows.map((x) => x.features.entryDistanceFromStructuralHighPct)),
+    entryDistanceFromSpikeEndPct: quantiles(rows.map((x) => x.features.entryDistanceFromSpikeEndPct)),
+    plannedRR: quantiles(rows.map((x) => x.features.plannedRR)),
   };
 }
 
@@ -128,40 +132,41 @@ async function main() {
   const candles = JSON.parse(await readFile(CANDLES, 'utf8')).candles ?? [];
 
   const cases = (report.cases ?? []).map((row) => {
+    const features = row.features ?? {};
     const levels = reconstructLevels(candles, row);
-    const enriched = { ...row, ...levels };
+    const enriched = { ...row, ...levels, entryIndex: Number(row.entryIndex), direction: row.direction ?? 'SELL' };
     const outcome = outcomeOnPath(candles, enriched);
     if (outcome.result === 'AMBIGUOUS') {
       throw new Error(`Ambiguous outcome for ${row.entryTime} at ${outcome.timestamp}`);
     }
 
     const stages = {
-      breakout: stage(candles, row.breakoutIndex),
-      followThrough: stage(candles, row.followThroughIndex),
-      spikeStart: stage(candles, row.spikeStartIndex),
-      spikeEnd: stage(candles, row.spikeEndIndex),
-      correctionStart: stage(candles, row.correctionStartIndex),
-      structuralExtreme: stage(candles, row.correctionExtremeIndex, row.direction === 'SELL' ? 'high' : 'low'),
-      entry: stage(candles, row.entryIndex, 'close'),
+      breakout: stage(candles, features.breakoutIndex),
+      followThrough: stage(candles, features.followThroughIndex),
+      spikeStart: stage(candles, features.spikeStartIndex),
+      spikeEnd: stage(candles, features.spikeEndIndex),
+      correctionStart: stage(candles, features.correctionStartIndex),
+      structuralExtreme: stage(candles, features.correctionExtremeIndex, 'high'),
+      entry: stage(candles, Number(row.entryIndex), 'close'),
     };
 
     return {
       classification: row.r > 0 ? (row.r >= 5 ? 'EXCEPTIONAL_WIN' : 'NORMAL_WIN') : 'LOSS',
       split: new Date(row.entryTime) < new Date(candles[DEV].timestamp) ? 'DEV' : 'VAL',
       entryTime: row.entryTime,
-      entryIndex: row.entryIndex,
+      entryIndex: Number(row.entryIndex),
       r: row.r,
       recomputedR: outcome.rMultiple,
       result: outcome.result,
-      direction: row.direction,
+      direction: enriched.direction,
       entry: levels.entry,
       stopLoss: levels.stopLoss,
       tp1: levels.tp1,
       stages,
       outcome: { index: outcome.index, timestamp: outcome.timestamp, type: outcome.result },
       outcomeExcursion: outcomeExcursion(candles, enriched, outcome),
-      fixedHorizonExcursion: Object.fromEntries(HORIZONS.map((h) => [String(h), excursion(candles, row.entryIndex, levels.entry, levels.stopLoss, h)])),
-      geometry: Object.fromEntries(Object.entries(row).filter(([k]) => !['entryTime', 'entryIndex', 'r', 'direction'].includes(k))),
+      fixedHorizonExcursion: Object.fromEntries(HORIZONS.map((h) => [String(h), excursion(candles, enriched.entryIndex, levels.entry, levels.stopLoss, h)])),
+      geometry: features,
     };
   });
 
