@@ -193,7 +193,7 @@ async function run(tf) {
     const r = outcomes.get(key(c));
     if (r == null) continue;
     c.features.r = r;
-    rows.push(c);
+    rows.push({ ...c, r });
   }
   rows.sort((a, b) => new Date(a.entryTime) - new Date(b.entryTime));
   const dev = rows.filter((x) => new Date(x.entryTime) < devCut);
