@@ -23,7 +23,6 @@ function stage(candles, index, priceField = 'close') {
 }
 
 function reconstructLevels(candles, row) {
-  const features = row.features ?? {};
   const entryIndex = Number(row.entryIndex);
   const entryTime = row.entryTime;
   const entryCandle = candles[entryIndex];
@@ -34,8 +33,8 @@ function reconstructLevels(candles, row) {
   const direction = row.direction ?? 'SELL';
   if (direction !== 'SELL') throw new Error(`Unexpected direction for ${entryTime}: ${direction}`);
   const entry = Number(entryCandle.close);
-  const stopDistance = Number(features.stopDistance);
-  const rewardDistance = Number(features.rewardDistance);
+  const stopDistance = Number(row.stopDistance);
+  const rewardDistance = Number(row.rewardDistance);
   if (!(Number.isFinite(entry) && stopDistance > 0 && rewardDistance > 0)) {
     throw new Error(`Invalid geometry levels for ${entryTime}: entry=${entry} stopDistance=${stopDistance} rewardDistance=${rewardDistance}`);
   }
@@ -113,17 +112,17 @@ function quantiles(values) {
 
 function pathShape(rows) {
   return {
-    breakoutToFollowThroughBars: quantiles(rows.map((x) => x.features.breakoutToFollowThroughBars)),
-    breakoutExtension: quantiles(rows.map((x) => x.features.breakoutExtension)),
-    followThroughDistance: quantiles(rows.map((x) => x.features.followThroughDistance)),
-    spikeSize: quantiles(rows.map((x) => x.features.spikeSize)),
-    spikeSizeToPreRange: quantiles(rows.map((x) => x.features.spikeSizeToPreRange)),
-    correctionDepth: quantiles(rows.map((x) => x.features.correctionDepth)),
-    correctionBars: quantiles(rows.map((x) => x.features.correctionBars)),
-    entryDelayFromCorrection: quantiles(rows.map((x) => x.features.entryDelayFromCorrection)),
-    entryDistanceFromStructuralHighPct: quantiles(rows.map((x) => x.features.entryDistanceFromStructuralHighPct)),
-    entryDistanceFromSpikeEndPct: quantiles(rows.map((x) => x.features.entryDistanceFromSpikeEndPct)),
-    plannedRR: quantiles(rows.map((x) => x.features.plannedRR)),
+    breakoutToFollowThroughBars: quantiles(rows.map((x) => x.breakoutToFollowThroughBars)),
+    breakoutExtension: quantiles(rows.map((x) => x.breakoutExtension)),
+    followThroughDistance: quantiles(rows.map((x) => x.followThroughDistance)),
+    spikeSize: quantiles(rows.map((x) => x.spikeSize)),
+    spikeSizeToPreRange: quantiles(rows.map((x) => x.spikeSizeToPreRange)),
+    correctionDepth: quantiles(rows.map((x) => x.correctionDepth)),
+    correctionBars: quantiles(rows.map((x) => x.correctionBars)),
+    entryDelayFromCorrection: quantiles(rows.map((x) => x.entryDelayFromCorrection)),
+    entryDistanceFromStructuralHighPct: quantiles(rows.map((x) => x.entryDistanceFromStructuralHighPct)),
+    entryDistanceFromSpikeEndPct: quantiles(rows.map((x) => x.entryDistanceFromSpikeEndPct)),
+    plannedRR: quantiles(rows.map((x) => x.plannedRR)),
   };
 }
 
@@ -132,7 +131,6 @@ async function main() {
   const candles = JSON.parse(await readFile(CANDLES, 'utf8')).candles ?? [];
 
   const cases = (report.cases ?? []).map((row) => {
-    const features = row.features ?? {};
     const levels = reconstructLevels(candles, row);
     const enriched = { ...row, ...levels, entryIndex: Number(row.entryIndex), direction: row.direction ?? 'SELL' };
     const outcome = outcomeOnPath(candles, enriched);
@@ -141,12 +139,12 @@ async function main() {
     }
 
     const stages = {
-      breakout: stage(candles, features.breakoutIndex),
-      followThrough: stage(candles, features.followThroughIndex),
-      spikeStart: stage(candles, features.spikeStartIndex),
-      spikeEnd: stage(candles, features.spikeEndIndex),
-      correctionStart: stage(candles, features.correctionStartIndex),
-      structuralExtreme: stage(candles, features.correctionExtremeIndex, 'high'),
+      breakout: stage(candles, row.breakoutIndex),
+      followThrough: stage(candles, row.followThroughIndex),
+      spikeStart: stage(candles, row.spikeStartIndex),
+      spikeEnd: stage(candles, row.spikeEndIndex),
+      correctionStart: stage(candles, row.correctionStartIndex),
+      structuralExtreme: stage(candles, row.correctionExtremeIndex, 'high'),
       entry: stage(candles, Number(row.entryIndex), 'close'),
     };
 
@@ -166,7 +164,7 @@ async function main() {
       outcome: { index: outcome.index, timestamp: outcome.timestamp, type: outcome.result },
       outcomeExcursion: outcomeExcursion(candles, enriched, outcome),
       fixedHorizonExcursion: Object.fromEntries(HORIZONS.map((h) => [String(h), excursion(candles, enriched.entryIndex, levels.entry, levels.stopLoss, h)])),
-      geometry: features,
+      geometry: { ...row },
     };
   });
 
@@ -188,7 +186,6 @@ async function main() {
       purpose: 'Descriptive case-by-case anatomy before any hypothesis or threshold is frozen.',
       outcome: 'Outcome is recomputed directly from the canonical historical candles using the same first-hit SL/TP semantics as the deterministic backtest. Entry/SL/TP are reconstructed from the exact entry candle close plus the recorded geometry distances.',
       levelReconstruction: 'SELL entry=entry candle close; stopLoss=entry+stopDistance; tp1=entry-rewardDistance. These are reconstruction identities from Path Geometry V2, not new trading rules.',
-      fixedHorizons: HORIZONS.map((h) => `${h} bars after entry`),
       classification: 'EXCEPTIONAL_WIN=r>=5R; NORMAL_WIN=0<r<5R; LOSS=r<0. This classification is descriptive and does not create a trading rule.',
       noOptimization: true,
       noNewThresholds: true,
