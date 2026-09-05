@@ -25,6 +25,7 @@
     "research:delay1-continuous-path-dynamics": "node scripts/analyze-delay1-continuous-path-dynamics.mjs",
     "research:delay1-audit-path-timing": "node scripts/audit-delay1-path-dynamics-timing.mjs",
     "research:delay1-continuous-path-association": "node scripts/analyze-delay1-continuous-path-association.mjs",
+    "research:delay1-continuous-path-conditional-information": "node scripts/analyze-delay1-continuous-path-conditional-information.mjs",
     "research:delay1-feature-forensics": "node scripts/analyze-delay1-feature-forensics-dev-val.mjs",
     "research:delay1-chronological-regime-path": "node scripts/analyze-delay1-chronological-regime-path.mjs",
     "research:delay1-path-regime-classification": "node scripts/analyze-delay1-path-regime-classification.mjs",
