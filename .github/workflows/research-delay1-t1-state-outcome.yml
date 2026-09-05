@@ -1,0 +1,38 @@
+name: Research - DELAY1 T1 MAE state outcome
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/entry-edge-post-entry-path
+    paths:
+      - scripts/analyze-delay1-t1-state-outcome.mjs
+      - package.json
+      - pnpm-lock.yaml
+      - src/**
+      - data/historical/**
+      - data/reports/strategy-a-baseline/**
+      - .github/workflows/research-delay1-t1-state-outcome.yml
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/entry-edge-post-entry-path
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run research:delay1-t1-state-outcome
+      - name: Upload diagnostic reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: delay1-t1-state-outcome
+          path: data/reports/strategy-a-t1-state-outcome/*.json
