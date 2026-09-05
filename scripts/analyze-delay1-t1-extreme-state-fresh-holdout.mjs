@@ -131,11 +131,17 @@ async function run(tf) {
   const report = { strategy: 'Strategy A', mode: 'DELAY1_T1_EXTREME_STATE_FRESH_HOLDOUT', timeframe: tf, scope: { totalCandles: PRE + FRESH, devCandles: DEV, valCandles: PRE - DEV, freshHoldoutCandles: FRESH, delayExactly: 1 }, methodology: { hypothesis: 'The highest T1_MAE quantile is economically worse than all lower T1_MAE states.', edgesFitOn: 'DEV only', edgesFrozenFor: ['VAL', 'FRESH_HOLDOUT'], bins: BINS, permutations: PERMUTATIONS, seed: SEED, bootstrapReplicates: 1000, noThresholdOptimization: true, noHoldoutOptimization: true, diagnosticOnly: true, productionUntouched: true } };
   for (const b of BINS) {
     const e = edges(dev.map(r => r.T1_MAE), b), extreme = r => bin(r.T1_MAE, e) === b - 1;
-    report[b] = { edges: e, dev: { extreme: stats(dev.filter(extreme)), control: stats(dev.filter(r => !extreme(r))), test: permutationP(dev, extreme), bootstrapCI: bootstrapCI(dev, extreme) }, val: { extreme: stats(val.filter(extreme)), control: stats(val.filter(r => !extreme(r))), test: permutationP(val, extreme), bootstrapCI: bootstrapCI(val, extreme) }, freshHoldout: { extreme: stats(fresh.filter(extreme)), control: stats(fresh.filter(r => !extreme(r))), test: permutationP(fresh, extreme), bootstrapCI: bootstrapCI(fresh, extreme) } };
+    const devTest = permutationP(dev, extreme);
+    const valTest = permutationP(val, extreme);
+    const freshTest = permutationP(fresh, extreme);
+    const devCI = bootstrapCI(dev, extreme);
+    const valCI = bootstrapCI(val, extreme);
+    const freshCI = bootstrapCI(fresh, extreme);
+    report[b] = { edges: e, dev: { extreme: stats(dev.filter(extreme)), control: stats(dev.filter(r => !extreme(r))), test: devTest, bootstrapCI: devCI }, val: { extreme: stats(val.filter(extreme)), control: stats(val.filter(r => !extreme(r))), test: valTest, bootstrapCI: valCI }, freshHoldout: { extreme: stats(fresh.filter(extreme)), control: stats(fresh.filter(r => !extreme(r))), test: freshTest, bootstrapCI: freshCI } };
   }
   await mkdir(OUT, { recursive: true });
   await writeFile(resolve(OUT, `${tf}.json`), JSON.stringify({ ...report, counts: { all: all.length, dev: dev.length, val: val.length, freshHoldout: fresh.length } }, null, 2));
-  console.log(`\n${tf}: n=${all.length} DEV=${dev.length} VAL=${val.length} FRESH=${fresh.length}`);
-  for (const b of BINS) { const x = report[b]; console.log(`bins=${b} DEV diff=${x.dev.test?.observedDifferenceR?.toFixed(4)} p=${x.dev.test?.p?.toFixed(4)} | VAL diff=${x.val.test?.observedDifferenceR?.toFixed(4)} p=${x.val.test?.p?.toFixed(4)} | FRESH extreme=${x.freshHoldout.extreme.meanR?.toFixed(4)} control=${x.freshHoldout.control.meanR?.toFixed(4)} diff=${x.freshHoldout.test?.observedDifferenceR?.toFixed(4)} p=${x.freshHoldout.test?.p?.toFixed(4)} CI=[${x.freshHoldout.bootstrapCI?.low95?.toFixed(4)},${x.freshHoldout.bootstrapCI?.high95?.toFixed(4)}]`); }
+  const fmt = (v, d = 4) => Number.isFinite(v) ? v.toFixed(d) : 'NA';
+  for (const b of BINS) { const x = report[b]; console.log(`bins=${b} DEV diff=${fmt(x.dev.test?.observedDifferenceR)} p=${fmt(x.dev.test?.p)} | VAL diff=${fmt(x.val.test?.observedDifferenceR)} p=${fmt(x.val.test?.p)} | FRESH extreme=${fmt(x.freshHoldout.extreme.meanR)} control=${fmt(x.freshHoldout.control.meanR)} diff=${fmt(x.freshHoldout.test?.observedDifferenceR)} p=${fmt(x.freshHoldout.test?.p)} CI=[${fmt(x.freshHoldout.bootstrapCI?.low95)},${fmt(x.freshHoldout.bootstrapCI?.high95)}]`); }
 }
 for (const tf of ['1min', '5min']) await run(tf);
