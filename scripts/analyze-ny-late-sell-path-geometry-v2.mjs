@@ -186,8 +186,9 @@ function archetypes(rows) {
 }
 async function run(tf) {
   const fileName = tf === '5m' ? 'xauusd-5min.json' : tf === '1m' ? 'xauusd-1min.json' : `xauusd-${tf}.json`;
+  const baseFileName = tf === '5m' ? '5min.json' : tf === '1m' ? '1min.json' : `${tf}.json`;
   const candles = JSON.parse(await readFile(resolve(ROOT, 'data/historical', fileName), 'utf8')).candles ?? [];
-  const base = JSON.parse(await readFile(resolve(BASE, `${tf}.json`), 'utf8'));
+  const base = JSON.parse(await readFile(resolve(BASE, baseFileName), 'utf8'));
   const cutoff = new Date(candles[PRE].timestamp);
   const devCut = new Date(candles[DEV].timestamp);
   const outcomes = new Map((base.trades ?? [])
