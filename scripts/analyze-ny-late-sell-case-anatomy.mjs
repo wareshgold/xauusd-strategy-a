@@ -47,8 +47,8 @@ function excursion(candles, entryIndex, entry, stopLoss, horizon) {
   if (!path.length) return { bars: 0, mfeR: 0, maeR: 0 };
   const risk = Math.abs(entry - stopLoss);
   if (!(risk > 0)) return { bars: path.length, mfeR: null, maeR: null };
-  const favorable = Math.max(...path.map((c) => entry - c.low));
-  const adverse = Math.max(...path.map((c) => c.high - entry));
+  const favorable = Math.max(0, ...path.map((c) => entry - c.low));
+  const adverse = Math.max(0, ...path.map((c) => c.high - entry));
   return { bars: path.length, mfeR: p(favorable / risk), maeR: p(adverse / risk) };
 }
 
@@ -72,8 +72,8 @@ function outcomeExcursion(candles, row, outcome) {
   if (!(risk > 0)) return null;
   const path = candles.slice(row.entryIndex + 1, outcome.index + 1);
   if (!path.length) return { barsToOutcome: 0, mfeR: 0, maeR: 0 };
-  const favorable = Math.max(...path.map((c) => row.entry - c.low));
-  const adverse = Math.max(...path.map((c) => c.high - row.entry));
+  const favorable = Math.max(0, ...path.map((c) => row.entry - c.low));
+  const adverse = Math.max(0, ...path.map((c) => c.high - row.entry));
   return {
     barsToOutcome: outcome.index - row.entryIndex,
     mfeR: p(favorable / risk),
@@ -186,6 +186,8 @@ async function main() {
       purpose: 'Descriptive case-by-case anatomy before any hypothesis or threshold is frozen.',
       outcome: 'Outcome is recomputed directly from the canonical historical candles using the same first-hit SL/TP semantics as the deterministic backtest. Entry/SL/TP are reconstructed from the exact entry candle close plus the recorded geometry distances.',
       levelReconstruction: 'SELL entry=entry candle close; stopLoss=entry+stopDistance; tp1=entry-rewardDistance. These are reconstruction identities from Path Geometry V2, not new trading rules.',
+      fixedHorizons: HORIZONS.map((h) => `${h} bars after entry`),
+      excursionConvention: 'MFE and MAE are non-negative excursion magnitudes in R; if price never moves favorably/adversely, the value is 0 rather than a negative number.',
       classification: 'EXCEPTIONAL_WIN=r>=5R; NORMAL_WIN=0<r<5R; LOSS=r<0. This classification is descriptive and does not create a trading rule.',
       noOptimization: true,
       noNewThresholds: true,
