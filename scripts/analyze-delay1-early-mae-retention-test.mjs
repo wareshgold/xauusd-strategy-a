@@ -15,7 +15,6 @@ const BASE = resolve(ROOT, 'data/reports/strategy-a-baseline');
 const OUT = resolve(ROOT, 'data/reports/strategy-a-delay1-early-mae-retention-test');
 const PRE = 10000;
 const DEV = 6000;
-const HORIZONS = [1, 3, 5, 10];
 const BANDS = [0.25, 0.5, 0.75, 1.0];
 
 const CTX = {
@@ -106,18 +105,8 @@ function maeAt(candles, c, horizon) {
   return mae;
 }
 
-function bandFor(v) {
-  if (!finite(v)) return null;
-  if (v < 0.25) return '0-.25R';
-  if (v < 0.5) return '.25-.50R';
-  if (v < 0.75) return '.50-.75R';
-  if (v < 1.0) return '.75-1.00R';
-  return '>1.00R';
-}
-
-function retention(rows, feature, maxMae, options = {}) {
-  const source = options.postEntryOnly ? rows.filter(r => !r.sameBarSL) : rows;
-  const complete = source.filter(r => finite(r[feature]));
+function retention(rows, feature, maxMae) {
+  const complete = rows.filter(r => finite(r[feature]));
   const retained = complete.filter(r => r[feature] < maxMae);
   const removed = complete.filter(r => r[feature] >= maxMae);
   const winnersRemoved = removed.filter(r => r.rMultiple > 0).length;
@@ -140,14 +129,9 @@ function retention(rows, feature, maxMae, options = {}) {
 }
 
 function evaluate(rows, feature) {
-  const horizons = {};
-  for (const threshold of BANDS) {
-    horizons[threshold] = {
-      all: retention(rows, feature, threshold),
-      postEntryOnly: retention(rows, feature, threshold, { postEntryOnly: true }),
-    };
-  }
-  return horizons;
+  const result = {};
+  for (const threshold of BANDS) result[threshold] = retention(rows, feature, threshold);
+  return result;
 }
 
 async function load() {
@@ -270,8 +254,8 @@ async function run() {
   for (const feature of ['t1Mae', 't3Mae', 't5Mae', 't10Mae']) {
     console.log(`\n${feature}`);
     for (const threshold of BANDS) {
-      const d = report.retention[feature].postEntryDev.all[threshold];
-      const v = report.retention[feature].postEntryVal.all[threshold];
+      const d = report.retention[feature].postEntryDev[threshold];
+      const v = report.retention[feature].postEntryVal[threshold];
       console.log(`  <${threshold.toFixed(2)}R | DEV retained=${compact(d.retained)} removed=${compact(d.removed)} Wremoved=${d.winnersRemoved} Lremoved=${d.losersRemoved} Xremoved=${d.exceptionalRemoved} | VAL retained=${compact(v.retained)} removed=${compact(v.removed)} Wremoved=${v.winnersRemoved} Lremoved=${v.losersRemoved} Xremoved=${v.exceptionalRemoved}`);
     }
   }
