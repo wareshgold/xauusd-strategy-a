@@ -1,0 +1,5356 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_SELL_TEMPORAL_INTERACTION",
+  "timeframe": "5m",
+  "experimentType": "TEMPORAL_INTERACTION_DESCRIPTION",
+  "frozenPrereqs": {
+    "datasetTimezone": "UTC",
+    "poorsamadiTimezone": "Europe/Istanbul",
+    "london": "07:00-16:00 UTC",
+    "newYork": "16:00-22:00 UTC",
+    "triggerTimestamp": "candle OPEN time",
+    "preHoldoutN": 210,
+    "devN": 128,
+    "valN": 82
+  },
+  "integrity": {
+    "totalTrades": 210,
+    "devN": 128,
+    "valN": 82,
+    "replayFailures": 0,
+    "cellCounts": {
+      "BUY+NEW_YORK": {
+        "total": 36,
+        "DEV": 27,
+        "VAL": 9
+      },
+      "BUY+LONDON": {
+        "total": 55,
+        "DEV": 32,
+        "VAL": 23
+      },
+      "SELL+LONDON": {
+        "total": 58,
+        "DEV": 37,
+        "VAL": 21
+      },
+      "SELL+NEW_YORK": {
+        "total": 29,
+        "DEV": 15,
+        "VAL": 14
+      },
+      "BUY+OUTSIDE": {
+        "total": 15,
+        "DEV": 6,
+        "VAL": 9
+      },
+      "SELL+OUTSIDE": {
+        "total": 17,
+        "DEV": 11,
+        "VAL": 6
+      }
+    },
+    "sellNy": {
+      "total": 29,
+      "DEV": 15,
+      "VAL": 14
+    },
+    "sellLondon": {
+      "total": 58,
+      "DEV": 37,
+      "VAL": 21
+    }
+  },
+  "layer1": {
+    "sellNy": {
+      "label": "SELL+NEW_YORK",
+      "n": 29,
+      "devN": 15,
+      "valN": 14,
+      "all": {
+        "n": 29,
+        "WR": 0.482759,
+        "avgR": 0.692492,
+        "PF": 2.338817,
+        "totalR": 20.082261
+      },
+      "dev": {
+        "n": 15,
+        "WR": 0.6,
+        "avgR": 0.996411,
+        "PF": 3.491027,
+        "totalR": 14.946161
+      },
+      "val": {
+        "n": 14,
+        "WR": 0.357143,
+        "avgR": 0.366864,
+        "PF": 1.570678,
+        "totalR": 5.1361
+      },
+      "nonEx": {
+        "n": 26,
+        "WR": 0.423077,
+        "avgR": -0.370744,
+        "PF": 0.357377,
+        "totalR": -9.639339
+      },
+      "devNonEx": {
+        "n": 13,
+        "WR": 0.538462,
+        "avgR": -0.233779,
+        "PF": 0.493479,
+        "totalR": -3.039128
+      },
+      "valNonEx": {
+        "n": 13,
+        "WR": 0.307692,
+        "avgR": -0.507709,
+        "PF": 0.266643,
+        "totalR": -6.600211
+      },
+      "exceptionalCount": 3
+    },
+    "sellLondon": {
+      "label": "SELL+LONDON",
+      "n": 58,
+      "devN": 37,
+      "valN": 21,
+      "all": {
+        "n": 58,
+        "WR": 0.310345,
+        "avgR": 0.771658,
+        "PF": 2.118904,
+        "totalR": 44.756145
+      },
+      "dev": {
+        "n": 37,
+        "WR": 0.324324,
+        "avgR": 1.385967,
+        "PF": 3.051231,
+        "totalR": 51.280787
+      },
+      "val": {
+        "n": 21,
+        "WR": 0.285714,
+        "avgR": -0.310697,
+        "PF": 0.565024,
+        "totalR": -6.524642
+      },
+      "nonEx": {
+        "n": 56,
+        "WR": 0.285714,
+        "avgR": -0.336701,
+        "PF": 0.528619,
+        "totalR": -18.855233
+      },
+      "devNonEx": {
+        "n": 35,
+        "WR": 0.285714,
+        "avgR": -0.352303,
+        "PF": 0.506776,
+        "totalR": -12.330591
+      },
+      "valNonEx": {
+        "n": 21,
+        "WR": 0.285714,
+        "avgR": -0.310697,
+        "PF": 0.565024,
+        "totalR": -6.524642
+      },
+      "exceptionalCount": 2
+    }
+  },
+  "layer2": {
+    "sellNy": {
+      "triggerUTCMinutes": {
+        "all": {
+          "value": -0.208792
+        },
+        "noEx": {
+          "value": -0.146606
+        },
+        "dev": {
+          "value": -0.473904
+        },
+        "val": {
+          "value": -0.043639
+        }
+      },
+      "relativeSessionPosition": {
+        "all": {
+          "value": -0.208792
+        },
+        "noEx": {
+          "value": -0.146606
+        },
+        "dev": {
+          "value": -0.473904
+        },
+        "val": {
+          "value": -0.043639
+        }
+      },
+      "timeFromSessionStart": {
+        "all": {
+          "value": -0.208792
+        },
+        "noEx": {
+          "value": -0.146606
+        },
+        "dev": {
+          "value": -0.473904
+        },
+        "val": {
+          "value": -0.043639
+        }
+      },
+      "timeToSessionEnd": {
+        "all": {
+          "value": 0.208792
+        },
+        "noEx": {
+          "value": 0.146606
+        },
+        "dev": {
+          "value": 0.473904
+        },
+        "val": {
+          "value": 0.043639
+        }
+      }
+    },
+    "sellLondon": {
+      "triggerUTCMinutes": {
+        "all": {
+          "value": -0.015484
+        },
+        "noEx": {
+          "value": 0.03435
+        },
+        "dev": {
+          "value": -0.120928
+        },
+        "val": {
+          "value": 0.209608
+        }
+      },
+      "relativeSessionPosition": {
+        "all": {
+          "value": -0.015484
+        },
+        "noEx": {
+          "value": 0.03435
+        },
+        "dev": {
+          "value": -0.120928
+        },
+        "val": {
+          "value": 0.209608
+        }
+      },
+      "timeFromSessionStart": {
+        "all": {
+          "value": -0.015484
+        },
+        "noEx": {
+          "value": 0.03435
+        },
+        "dev": {
+          "value": -0.120928
+        },
+        "val": {
+          "value": 0.209608
+        }
+      },
+      "timeToSessionEnd": {
+        "all": {
+          "value": 0.015484
+        },
+        "noEx": {
+          "value": -0.03435
+        },
+        "dev": {
+          "value": 0.120928
+        },
+        "val": {
+          "value": -0.209608
+        }
+      }
+    }
+  },
+  "layer3": {
+    "sellNy": {
+      "oceania_early": {
+        "n": 5,
+        "devN": 2,
+        "valN": 3,
+        "totalR": 10.128071,
+        "exceptionalCount": 1,
+        "all": {
+          "n": 5,
+          "WR": 0.8,
+          "avgR": 2.025614,
+          "PF": 11.128071,
+          "totalR": 10.128071
+        },
+        "nonEx": {
+          "n": 4,
+          "WR": 0.75,
+          "avgR": 0.183096,
+          "PF": 1.732384,
+          "totalR": 0.732384
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "transition_0230_0300": {
+        "n": 5,
+        "devN": 4,
+        "valN": 1,
+        "totalR": 5.626599,
+        "exceptionalCount": 1,
+        "all": {
+          "n": 5,
+          "WR": 0.4,
+          "avgR": 1.12532,
+          "PF": 2.875533,
+          "totalR": 5.626599
+        },
+        "nonEx": {
+          "n": 4,
+          "WR": 0.25,
+          "avgR": -0.740751,
+          "PF": 0.012332,
+          "totalR": -2.963004
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "early_0300_0400": {
+        "n": 12,
+        "devN": 6,
+        "valN": 6,
+        "totalR": 4.684563,
+        "exceptionalCount": 1,
+        "all": {
+          "n": 12,
+          "WR": 0.333333,
+          "avgR": 0.39038,
+          "PF": 1.58557,
+          "totalR": 4.684563
+        },
+        "nonEx": {
+          "n": 11,
+          "WR": 0.272727,
+          "avgR": -0.641068,
+          "PF": 0.118532,
+          "totalR": -7.051748
+        }
+      },
+      "pre_europe_0400_0800": {
+        "n": 3,
+        "devN": 1,
+        "valN": 2,
+        "totalR": 0.11062,
+        "exceptionalCount": 0,
+        "all": {
+          "n": 3,
+          "WR": 0.666667,
+          "avgR": 0.036873,
+          "PF": 1.11062,
+          "totalR": 0.11062
+        },
+        "nonEx": {
+          "n": 3,
+          "WR": 0.666667,
+          "avgR": 0.036873,
+          "PF": 1.11062,
+          "totalR": 0.11062
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "europe_0800_0900": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "europe_0900_1000": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "midday_1000_1300": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "us_open_1300_1530": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "transition_1530_1630": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "late_1630_1800": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "late_1800_2100": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "late_2100_2400": {
+        "n": 4,
+        "devN": 2,
+        "valN": 2,
+        "totalR": -0.467591,
+        "exceptionalCount": 0,
+        "all": {
+          "n": 4,
+          "WR": 0.5,
+          "avgR": -0.116898,
+          "PF": 0.766204,
+          "totalR": -0.467591
+        },
+        "nonEx": {
+          "n": 4,
+          "WR": 0.5,
+          "avgR": -0.116898,
+          "PF": 0.766204,
+          "totalR": -0.467591
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      }
+    },
+    "sellLondon": {
+      "oceania_early": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "transition_0230_0300": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "early_0300_0400": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "pre_europe_0400_0800": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "europe_0800_0900": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "europe_0900_1000": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "midday_1000_1300": {
+        "n": 0,
+        "devN": 0,
+        "valN": 0,
+        "totalR": 0,
+        "exceptionalCount": 0,
+        "all": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "nonEx": {
+          "note": "INSUFFICIENT_SAMPLE"
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "us_open_1300_1530": {
+        "n": 16,
+        "devN": 7,
+        "valN": 9,
+        "totalR": 48.665939,
+        "exceptionalCount": 1,
+        "all": {
+          "n": 16,
+          "WR": 0.25,
+          "avgR": 3.041621,
+          "PF": 5.055495,
+          "totalR": 48.665939
+        },
+        "nonEx": {
+          "n": 15,
+          "WR": 0.2,
+          "avgR": -0.455005,
+          "PF": 0.431243,
+          "totalR": -6.82508
+        }
+      },
+      "transition_1530_1630": {
+        "n": 3,
+        "devN": 2,
+        "valN": 1,
+        "totalR": -0.061555,
+        "exceptionalCount": 0,
+        "all": {
+          "n": 3,
+          "WR": 0.333333,
+          "avgR": -0.020518,
+          "PF": 0.969223,
+          "totalR": -0.061555
+        },
+        "nonEx": {
+          "n": 3,
+          "WR": 0.333333,
+          "avgR": -0.020518,
+          "PF": 0.969223,
+          "totalR": -0.061555
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "late_1630_1800": {
+        "n": 9,
+        "devN": 6,
+        "valN": 3,
+        "totalR": 0.777537,
+        "exceptionalCount": 0,
+        "all": {
+          "n": 9,
+          "WR": 0.444444,
+          "avgR": 0.086393,
+          "PF": 1.155507,
+          "totalR": 0.777537
+        },
+        "nonEx": {
+          "n": 9,
+          "WR": 0.444444,
+          "avgR": 0.086393,
+          "PF": 1.155507,
+          "totalR": 0.777537
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "late_1800_2100": {
+        "n": 17,
+        "devN": 13,
+        "valN": 4,
+        "totalR": -1.17888,
+        "exceptionalCount": 1,
+        "all": {
+          "n": 17,
+          "WR": 0.294118,
+          "avgR": -0.069346,
+          "PF": 0.90176,
+          "totalR": -1.17888
+        },
+        "nonEx": {
+          "n": 16,
+          "WR": 0.25,
+          "avgR": -0.581202,
+          "PF": 0.225063,
+          "totalR": -9.29924
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      },
+      "late_2100_2400": {
+        "n": 13,
+        "devN": 9,
+        "valN": 4,
+        "totalR": -3.446896,
+        "exceptionalCount": 0,
+        "all": {
+          "n": 13,
+          "WR": 0.307692,
+          "avgR": -0.265146,
+          "PF": 0.617012,
+          "totalR": -3.446896
+        },
+        "nonEx": {
+          "n": 13,
+          "WR": 0.307692,
+          "avgR": -0.265146,
+          "PF": 0.617012,
+          "totalR": -3.446896
+        },
+        "valNote": "INSUFFICIENT_SAMPLE_VAL"
+      }
+    }
+  },
+  "layer4": {
+    "sellNy": {
+      "triggerReclaimToRange": {
+        "overall": {
+          "all": {
+            "value": 0.268462
+          },
+          "noEx": {
+            "value": 0.531151
+          },
+          "dev": {
+            "value": -0.009221
+          },
+          "val": {
+            "value": 0.417503
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "all": {
+              "value": -0.020802
+            },
+            "noEx": {
+              "value": 0.265936
+            }
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_2100_2400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          }
+        },
+        "flags": [
+          "DEV_VAL_SIGN_CHANGE"
+        ]
+      },
+      "triggerReclaimToCorrection": {
+        "overall": {
+          "all": {
+            "value": 0.25626
+          },
+          "noEx": {
+            "value": 0.557005
+          },
+          "dev": {
+            "value": -0.023976
+          },
+          "val": {
+            "value": 0.350907
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "all": {
+              "value": -0.141456
+            },
+            "noEx": {
+              "value": 0.011562
+            }
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_2100_2400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          }
+        },
+        "flags": [
+          "DEV_VAL_SIGN_CHANGE"
+        ]
+      },
+      "bodyParticipation": {
+        "overall": {
+          "all": {
+            "value": -0.293399
+          },
+          "noEx": {
+            "value": -0.106839
+          },
+          "dev": {
+            "value": -0.341191
+          },
+          "val": {
+            "value": -0.258698
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "all": {
+              "value": -0.403565
+            },
+            "noEx": {
+              "value": -0.387341
+            }
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_2100_2400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          }
+        },
+        "flags": []
+      },
+      "correctionBars": {
+        "overall": {
+          "all": {
+            "value": -0.223978
+          },
+          "noEx": {
+            "value": -0.317637
+          },
+          "dev": {
+            "value": -0.10328
+          },
+          "val": {
+            "value": -0.012807
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "all": {
+              "value": -0.108172
+            },
+            "noEx": {
+              "value": -0.358435
+            }
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_2100_2400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          }
+        },
+        "flags": []
+      },
+      "pathEfficiency": {
+        "overall": {
+          "all": {
+            "value": 0.0968
+          },
+          "noEx": {
+            "value": -0.033897
+          },
+          "dev": {
+            "value": 0.098631
+          },
+          "val": {
+            "value": -0.110139
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "all": {
+              "value": 0.349479
+            },
+            "noEx": {
+              "value": 0.433591
+            }
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_2100_2400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          }
+        },
+        "flags": [
+          "EXCEPTIONAL_SENSITIVITY",
+          "DEV_VAL_SIGN_CHANGE"
+        ]
+      },
+      "correctionToSpike": {
+        "overall": {
+          "all": {
+            "value": -0.283318
+          },
+          "noEx": {
+            "value": -0.207213
+          },
+          "dev": {
+            "value": -0.551439
+          },
+          "val": {
+            "value": 0.145998
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "all": {
+              "value": 0.079049
+            },
+            "noEx": {
+              "value": 0.132968
+            }
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_2100_2400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          }
+        },
+        "flags": [
+          "DEV_VAL_SIGN_CHANGE"
+        ]
+      },
+      "triggerBodyToRange": {
+        "overall": {
+          "all": {
+            "value": -0.0955
+          },
+          "noEx": {
+            "value": 0.071859
+          },
+          "dev": {
+            "value": -0.348569
+          },
+          "val": {
+            "value": 0.274066
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "all": {
+              "value": -0.216344
+            },
+            "noEx": {
+              "value": -0.202343
+            }
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_2100_2400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          }
+        },
+        "flags": [
+          "EXCEPTIONAL_SENSITIVITY",
+          "DEV_VAL_SIGN_CHANGE"
+        ]
+      }
+    },
+    "sellLondon": {
+      "triggerReclaimToRange": {
+        "overall": {
+          "all": {
+            "value": 0.336007
+          },
+          "noEx": {
+            "value": 0.466375
+          },
+          "dev": {
+            "value": 0.202093
+          },
+          "val": {
+            "value": 0.577943
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "all": {
+              "value": 0.202855
+            },
+            "noEx": {
+              "value": 0.477389
+            }
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "all": {
+              "value": 0.24938
+            },
+            "noEx": {
+              "value": 0.457874
+            }
+          },
+          "late_2100_2400": {
+            "all": {
+              "value": 0.187907
+            },
+            "noEx": {
+              "value": 0.187907
+            }
+          }
+        },
+        "flags": []
+      },
+      "triggerReclaimToCorrection": {
+        "overall": {
+          "all": {
+            "value": 0.380132
+          },
+          "noEx": {
+            "value": 0.49801
+          },
+          "dev": {
+            "value": 0.25682
+          },
+          "val": {
+            "value": 0.577943
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "all": {
+              "value": 0.173876
+            },
+            "noEx": {
+              "value": 0.439096
+            }
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "all": {
+              "value": 0.418167
+            },
+            "noEx": {
+              "value": 0.591179
+            }
+          },
+          "late_2100_2400": {
+            "all": {
+              "value": 0.395946
+            },
+            "noEx": {
+              "value": 0.395946
+            }
+          }
+        },
+        "flags": []
+      },
+      "bodyParticipation": {
+        "overall": {
+          "all": {
+            "value": -0.120107
+          },
+          "noEx": {
+            "value": -0.073728
+          },
+          "dev": {
+            "value": -0.303281
+          },
+          "val": {
+            "value": 0.208385
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "all": {
+              "value": -0.291725
+            },
+            "noEx": {
+              "value": -0.347192
+            }
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "all": {
+              "value": 0.228091
+            },
+            "noEx": {
+              "value": 0.430826
+            }
+          },
+          "late_2100_2400": {
+            "all": {
+              "value": -0.046977
+            },
+            "noEx": {
+              "value": -0.046977
+            }
+          }
+        },
+        "flags": [
+          "DEV_VAL_SIGN_CHANGE"
+        ]
+      },
+      "correctionBars": {
+        "overall": {
+          "all": {
+            "value": 0.081227
+          },
+          "noEx": {
+            "value": -0.024373
+          },
+          "dev": {
+            "value": 0.120586
+          },
+          "val": {
+            "value": -0.011403
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "all": {
+              "value": 0.265068
+            },
+            "noEx": {
+              "value": 0.097183
+            }
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "all": {
+              "value": -0.057783
+            },
+            "noEx": {
+              "value": -0.33616
+            }
+          },
+          "late_2100_2400": {
+            "all": {
+              "value": 0.369611
+            },
+            "noEx": {
+              "value": 0.369611
+            }
+          }
+        },
+        "flags": [
+          "EXCEPTIONAL_SENSITIVITY",
+          "DEV_VAL_SIGN_CHANGE"
+        ]
+      },
+      "pathEfficiency": {
+        "overall": {
+          "all": {
+            "value": -0.033732
+          },
+          "noEx": {
+            "value": 0.05161
+          },
+          "dev": {
+            "value": -0.122282
+          },
+          "val": {
+            "value": 0.138381
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "all": {
+              "value": -0.150693
+            },
+            "noEx": {
+              "value": -0.043399
+            }
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "all": {
+              "value": 0.044098
+            },
+            "noEx": {
+              "value": 0.318773
+            }
+          },
+          "late_2100_2400": {
+            "all": {
+              "value": -0.087242
+            },
+            "noEx": {
+              "value": -0.087242
+            }
+          }
+        },
+        "flags": [
+          "EXCEPTIONAL_SENSITIVITY",
+          "DEV_VAL_SIGN_CHANGE"
+        ]
+      },
+      "correctionToSpike": {
+        "overall": {
+          "all": {
+            "value": 0.154327
+          },
+          "noEx": {
+            "value": 0.217713
+          },
+          "dev": {
+            "value": 0.105179
+          },
+          "val": {
+            "value": 0.317462
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "all": {
+              "value": 0.214447
+            },
+            "noEx": {
+              "value": 0.176149
+            }
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "all": {
+              "value": 0.065386
+            },
+            "noEx": {
+              "value": 0.305249
+            }
+          },
+          "late_2100_2400": {
+            "all": {
+              "value": -0.013422
+            },
+            "noEx": {
+              "value": -0.013422
+            }
+          }
+        },
+        "flags": []
+      },
+      "triggerBodyToRange": {
+        "overall": {
+          "all": {
+            "value": 0.20757
+          },
+          "noEx": {
+            "value": 0.337479
+          },
+          "dev": {
+            "value": 0.284469
+          },
+          "val": {
+            "value": 0.08954
+          }
+        },
+        "perWindow": {
+          "oceania_early": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "transition_0230_0300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "early_0300_0400": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "pre_europe_0400_0800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0800_0900": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "europe_0900_1000": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "midday_1000_1300": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "us_open_1300_1530": {
+            "all": {
+              "value": -0.129441
+            },
+            "noEx": {
+              "value": -0.063822
+            }
+          },
+          "transition_1530_1630": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1630_1800": {
+            "note": "INSUFFICIENT_SAMPLE_FOR_SPEARMAN"
+          },
+          "late_1800_2100": {
+            "all": {
+              "value": -0.033453
+            },
+            "noEx": {
+              "value": 0.220243
+            }
+          },
+          "late_2100_2400": {
+            "all": {
+              "value": 0.70465
+            },
+            "noEx": {
+              "value": 0.70465
+            }
+          }
+        },
+        "flags": []
+      }
+    }
+  },
+  "hourly": {
+    "sellNy": {
+      "16:00": {
+        "n": 4,
+        "WR": 0.5,
+        "avgR": -0.116898,
+        "PF": 0.766204,
+        "totalR": -0.467591
+      },
+      "17:00": {
+        "n": 0,
+        "note": "SMALL_SAMPLE"
+      },
+      "18:00": {
+        "n": 2,
+        "note": "SMALL_SAMPLE"
+      },
+      "19:00": {
+        "n": 3,
+        "WR": 0.666667,
+        "avgR": 2.901963,
+        "PF": 9.705888,
+        "totalR": 8.705888
+      },
+      "20:00": {
+        "n": 11,
+        "WR": 0.363636,
+        "avgR": 1.223581,
+        "PF": 2.922771,
+        "totalR": 13.459395
+      },
+      "21:00": {
+        "n": 9,
+        "WR": 0.444444,
+        "avgR": -0.337513,
+        "PF": 0.392477,
+        "totalR": -3.037613
+      }
+    },
+    "sellLondon": {
+      "7:00": {
+        "n": 7,
+        "WR": 0.285714,
+        "avgR": 7.507127,
+        "PF": 11.509977,
+        "totalR": 52.549886
+      },
+      "8:00": {
+        "n": 9,
+        "WR": 0.222222,
+        "avgR": -0.43155,
+        "PF": 0.44515,
+        "totalR": -3.883947
+      },
+      "9:00": {
+        "n": 3,
+        "WR": 0.333333,
+        "avgR": -0.020518,
+        "PF": 0.969223,
+        "totalR": -0.061555
+      },
+      "10:00": {
+        "n": 7,
+        "WR": 0.428571,
+        "avgR": 0.108905,
+        "PF": 1.190583,
+        "totalR": 0.762333
+      },
+      "11:00": {
+        "n": 9,
+        "WR": 0.333333,
+        "avgR": -0.426498,
+        "PF": 0.360253,
+        "totalR": -3.838483
+      },
+      "12:00": {
+        "n": 2,
+        "note": "SMALL_SAMPLE"
+      },
+      "13:00": {
+        "n": 6,
+        "WR": 0.333333,
+        "avgR": 0.701172,
+        "PF": 2.051758,
+        "totalR": 4.207033
+      },
+      "14:00": {
+        "n": 5,
+        "WR": 0.2,
+        "avgR": -0.125419,
+        "PF": 0.843226,
+        "totalR": -0.627094
+      },
+      "15:00": {
+        "n": 10,
+        "WR": 0.3,
+        "avgR": -0.48198,
+        "PF": 0.311457,
+        "totalR": -4.819802
+      }
+    }
+  },
+  "methodology": {
+    "purpose": "Descriptive temporal interaction audit for SELL-side trades.",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noNewTradingRules": true,
+    "holdoutLocked": true,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true,
+    "exceptionalDefinition": "rMultiple >= 5",
+    "poorsamadiConversion": "Intl.DateTimeFormat en-GB Europe/Istanbul",
+    "layer4Clarification": "Layer 4 measures feature→outcome association within chronological and Poorsamadi subsets; it is not a formal feature×time interaction test. With the current sample sizes (SELL+NY N=29, SELL+LONDON N=58), no defensible formal temporal interaction test is performed. Layer 2 continuous time-of-day diagnostics are therefore the primary evidence regarding temporal structure.",
+    "interpretation": "All results are descriptive. No feature threshold or trading rule is selected."
+  },
+  "classifications": {
+    "triggerReclaimToRange": {
+      "SELL+NEW_YORK": "UNSTABLE_OUT_OF_SAMPLE",
+      "SELL+LONDON": "REPRODUCIBLE_FEATURE_ASSOCIATION_NO_TEMPORAL_STRUCTURE"
+    },
+    "triggerReclaimToCorrection": {
+      "SELL+NEW_YORK": "UNSTABLE_OUT_OF_SAMPLE",
+      "SELL+LONDON": "REPRODUCIBLE_FEATURE_ASSOCIATION_NO_TEMPORAL_STRUCTURE"
+    },
+    "bodyParticipation": {
+      "SELL+NEW_YORK": "DESCRIPTIVE_FEATURE_ASSOCIATION",
+      "SELL+LONDON": "UNSTABLE_OUT_OF_SAMPLE"
+    },
+    "correctionBars": {
+      "SELL+NEW_YORK": "NO_CLEAR_FEATURE_STRUCTURE",
+      "SELL+LONDON": "DRIVEN_BY_EXCEPTIONAL"
+    },
+    "pathEfficiency": {
+      "SELL+NEW_YORK": "DRIVEN_BY_EXCEPTIONAL",
+      "SELL+LONDON": "DRIVEN_BY_EXCEPTIONAL"
+    },
+    "correctionToSpike": {
+      "SELL+NEW_YORK": "UNSTABLE_OUT_OF_SAMPLE",
+      "SELL+LONDON": "DESCRIPTIVE_FEATURE_ASSOCIATION"
+    },
+    "triggerBodyToRange": {
+      "SELL+NEW_YORK": "DRIVEN_BY_EXCEPTIONAL",
+      "SELL+LONDON": "DESCRIPTIVE_FEATURE_ASSOCIATION"
+    },
+    "temporalStructureNote": "No feature shows a temporal interaction. The SELL+LONDON reclaim features have a reproducible feature→outcome association that is time-invariant — it holds regardless of when during the London session the trade occurs. This is not temporal evidence."
+  },
+  "cases": [
+    {
+      "split": "DEV",
+      "time": "2026-07-13 00:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.847222,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6536743429864764,
+      "correctionBars": 7,
+      "pathEfficiency": 0.7576893316461084,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.22388770602808544
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-13 10:45:00",
+      "r": 0.7884910618710955,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.027778,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5679710843373594,
+      "correctionBars": 32,
+      "pathEfficiency": 0.26177844636232644,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.3647077221595887
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-13 18:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.842593,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5741655689232965,
+      "correctionBars": 8,
+      "pathEfficiency": 0.7013167408582738,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7558159283964709
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-13 18:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.907407,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.019898127338526018,
+      "triggerReclaimToCorrection": 0.04176537812103248,
+      "bodyParticipation": 0.5974217057976949,
+      "correctionBars": 9,
+      "pathEfficiency": 0.27075804602855214,
+      "correctionToSpike": 1.300467562828742,
+      "triggerBodyToRange": 0.0019002969214287936
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-13 18:55:00",
+      "r": 0.7160530117890864,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.935185,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.29557076570208435,
+      "triggerReclaimToCorrection": 0.3863350763966369,
+      "bodyParticipation": 0.6120082281411425,
+      "correctionBars": 10,
+      "pathEfficiency": 0.40463400727321525,
+      "correctionToSpike": 1.2978626249820329,
+      "triggerBodyToRange": 0.6111385920678969
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-13 20:45:00",
+      "r": 1.0177459156655553,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 17,
+      "relativeSessionPosition": 0.208333,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.4981379466366027,
+      "correctionBars": 8,
+      "pathEfficiency": 0.45624233728265656,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.34083672965001033
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-13 23:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.652778,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5774716685641215,
+      "correctionBars": 28,
+      "pathEfficiency": 0.20504978501495422,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.036092763456644694
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-14 12:35:00",
+      "r": 1.938445224430356,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.231481,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0.1317362222380019,
+      "triggerReclaimToCorrection": 0.6125206461782302,
+      "bodyParticipation": 0.5614148273499499,
+      "correctionBars": 453,
+      "pathEfficiency": 0.019183526404780025,
+      "correctionToSpike": 1.3950373284382152,
+      "triggerBodyToRange": 0.8201288258695493
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-14 15:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 12,
+      "relativeSessionPosition": 0.583333,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.7314004260175838,
+      "correctionBars": 7,
+      "pathEfficiency": 0.9327480087250655,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6712352771596239
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-14 22:15:00",
+      "r": 0.9281034746672618,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 18,
+      "relativeSessionPosition": 0.458333,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.7595257322633411,
+      "correctionBars": 12,
+      "pathEfficiency": 0.6149215748344666,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.3742524905691109
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-14 22:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.5,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.7005047650900945,
+      "correctionBars": 5,
+      "pathEfficiency": 0.8320214109929097,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9738919378928157
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-14 22:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.555556,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5769330742701079,
+      "correctionBars": 15,
+      "pathEfficiency": 0.4034116757233653,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.47624079749198134
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-14 23:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.680556,
+      "poorsamadiWindow": "transition_0230_0300",
+      "triggerReclaimToRange": 0.11046066207379589,
+      "triggerReclaimToCorrection": 0.10440751102796689,
+      "bodyParticipation": 0.7411282104204124,
+      "correctionBars": 3,
+      "pathEfficiency": 1,
+      "correctionToSpike": 1.1777101183597471,
+      "triggerBodyToRange": 0.2466388812325377
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-14 23:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.694444,
+      "poorsamadiWindow": "transition_0230_0300",
+      "triggerReclaimToRange": 0.21854455234198747,
+      "triggerReclaimToCorrection": 0.29479573912715645,
+      "bodyParticipation": 0.523016319517918,
+      "correctionBars": 17,
+      "pathEfficiency": 0.15993760803965307,
+      "correctionToSpike": 1.1007855404492675,
+      "triggerBodyToRange": 0.33121509600010823
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 00:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.777778,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.4459805008444197,
+      "triggerReclaimToCorrection": 0.6865424305159002,
+      "bodyParticipation": 0.5050942181134183,
+      "correctionBars": 41,
+      "pathEfficiency": 0.07984083774825007,
+      "correctionToSpike": 1.0269523015512863,
+      "triggerBodyToRange": 0.8871588797599406
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 00:30:00",
+      "r": 0.5648136338213738,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.833333,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.18483498269038803,
+      "triggerReclaimToCorrection": 0.27339713842739655,
+      "bodyParticipation": 0.5183555212456591,
+      "correctionBars": 46,
+      "pathEfficiency": 0.1614919826863387,
+      "correctionToSpike": 1.080255168347076,
+      "triggerBodyToRange": 0.4221829759311449
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 12:05:00",
+      "r": 0.239428501474246,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.175926,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.15548606148665348,
+      "triggerReclaimToCorrection": 0.364757442050204,
+      "bodyParticipation": 0.5070868001971365,
+      "correctionBars": 104,
+      "pathEfficiency": 0.05291298852821404,
+      "correctionToSpike": 1.030933599313323,
+      "triggerBodyToRange": 0.5553251753712177
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 12:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.240741,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0.06055364041926232,
+      "triggerReclaimToCorrection": 0.3757857391016788,
+      "bodyParticipation": 0.5654933962833223,
+      "correctionBars": 218,
+      "pathEfficiency": 0.021822045072827062,
+      "correctionToSpike": 1.515593008006016,
+      "triggerBodyToRange": 0.23255266320139809
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 16:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.666667,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5876764127373005,
+      "correctionBars": 45,
+      "pathEfficiency": 0.20940307164960822,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.31485019834537853
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 17:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.814815,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.05087597656809543,
+      "triggerReclaimToCorrection": 0.09324576076646239,
+      "bodyParticipation": 0.6511093861723777,
+      "correctionBars": 30,
+      "pathEfficiency": 0.24270637843765827,
+      "correctionToSpike": 1.147344485507836,
+      "triggerBodyToRange": 0.16207036442428027
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 19:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.944444,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6852031532169098,
+      "correctionBars": 6,
+      "pathEfficiency": 1,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.086125076842952
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 19:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.981481,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.002147625272322298,
+      "triggerReclaimToCorrection": 0.0033542595720935688,
+      "bodyParticipation": 0.6572354560967792,
+      "correctionBars": 15,
+      "pathEfficiency": 0.3228085889167991,
+      "correctionToSpike": 1.453087150309414,
+      "triggerBodyToRange": 0.6534508979813463
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 22:45:00",
+      "r": 0.3102012789149257,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.541667,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0.7560902402024587,
+      "triggerReclaimToCorrection": 1.2284373681988283,
+      "bodyParticipation": 0.5590122575463228,
+      "correctionBars": 1,
+      "pathEfficiency": null,
+      "correctionToSpike": 0.7236725389395504,
+      "triggerBodyToRange": 0.15722991279927068
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 23:50:00",
+      "r": 0.03699648322406649,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.722222,
+      "poorsamadiWindow": "transition_0230_0300",
+      "triggerReclaimToRange": 0.6122185342600575,
+      "triggerReclaimToCorrection": 0.8513954436870549,
+      "bodyParticipation": 0.11636955077223236,
+      "correctionBars": 2,
+      "pathEfficiency": 1,
+      "correctionToSpike": 1.0420132353834721,
+      "triggerBodyToRange": 0.4021261675860052
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 00:35:00",
+      "r": 0.28695364283194685,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.847222,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.2567860408385215,
+      "triggerReclaimToCorrection": 0.3905710666595894,
+      "bodyParticipation": 0.5035149444676761,
+      "correctionBars": 13,
+      "pathEfficiency": 0.1143791915840472,
+      "correctionToSpike": 1.0846846331095876,
+      "triggerBodyToRange": 0.22493144305898854
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 01:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 22,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5759067885762953,
+      "correctionBars": 91,
+      "pathEfficiency": 0.17840598655908563,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7062682808717093
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 02:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 22,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5773162536302268,
+      "correctionBars": 104,
+      "pathEfficiency": 0.16660568003622717,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.856760632016676
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 11:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.148148,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.17870252951632098,
+      "triggerReclaimToCorrection": 0.21476780590903813,
+      "bodyParticipation": 0.5535092414121656,
+      "correctionBars": 109,
+      "pathEfficiency": 0.0695286465509665,
+      "correctionToSpike": 1.1038826794515033,
+      "triggerBodyToRange": 0.10593117326410807
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 12:20:00",
+      "r": 0.5822742894828696,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.203704,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5752467999088818,
+      "correctionBars": 329,
+      "pathEfficiency": 0.01018075280947958,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.24836056552769306
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 13:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.296296,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5897241763453084,
+      "correctionBars": 706,
+      "pathEfficiency": 0.014774233166818172,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.865390255457696
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 20:00:00",
+      "r": 0.4493185491895604,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 16,
+      "relativeSessionPosition": 0.083333,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.46223192460573864,
+      "triggerReclaimToCorrection": 0.3946755800986726,
+      "bodyParticipation": 0.718280189432533,
+      "correctionBars": 4,
+      "pathEfficiency": 0.21081242458546628,
+      "correctionToSpike": 1.0104918708957686,
+      "triggerBodyToRange": 0.450491337464043
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 22:50:00",
+      "r": 1.547664422998919,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.555556,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.4198837433010812,
+      "correctionBars": 9,
+      "pathEfficiency": 0.683924552512973,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6907134524648125
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 03:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 0,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0.0657365501286164,
+      "triggerReclaimToCorrection": 0.10563088658339785,
+      "bodyParticipation": 0.6067508149185635,
+      "correctionBars": 115,
+      "pathEfficiency": 0.05465228752030762,
+      "correctionToSpike": 1.1992036856255202,
+      "triggerBodyToRange": 0.7297896218272639
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 06:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 2,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0900_1000",
+      "triggerReclaimToRange": 0.04063868088906677,
+      "triggerReclaimToCorrection": 0.09586230962656127,
+      "bodyParticipation": 0.5504710497144355,
+      "correctionBars": 28,
+      "pathEfficiency": 0.21215262204269827,
+      "correctionToSpike": 1.2640627091323082,
+      "triggerBodyToRange": 0.8441843343274475
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 06:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 3,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0900_1000",
+      "triggerReclaimToRange": 0.005294264031542328,
+      "triggerReclaimToCorrection": 0.008335916172546809,
+      "bodyParticipation": 0.5647782162910527,
+      "correctionBars": 20,
+      "pathEfficiency": 0.36323790007642764,
+      "correctionToSpike": 1.2853125600709008,
+      "triggerBodyToRange": 0.7795853099514696
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 06:40:00",
+      "r": 1.0945051942575177,
+      "classification": "NORMAL_WIN",
+      "session": "OUTSIDE",
+      "utcHour": 3,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0900_1000",
+      "triggerReclaimToRange": 0.27663262029958935,
+      "triggerReclaimToCorrection": 0.4502680335611617,
+      "bodyParticipation": 0.5885229166433152,
+      "correctionBars": 29,
+      "pathEfficiency": 0.14877656406209458,
+      "correctionToSpike": 1.021805310972723,
+      "triggerBodyToRange": 0.47128452155635037
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 12:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.25,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5762105344579411,
+      "correctionBars": 112,
+      "pathEfficiency": 0.14095053142693625,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.058177905114704186
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 13:35:00",
+      "r": 1.0606414753894968,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.342593,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5709145792770751,
+      "correctionBars": 83,
+      "pathEfficiency": 0.04352592049593203,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6773533976880184
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 13:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.361111,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.2660296923781571,
+      "triggerReclaimToCorrection": 1.3146757597288024,
+      "bodyParticipation": 0.48514168722320605,
+      "correctionBars": 33,
+      "pathEfficiency": 0.07882413348182667,
+      "correctionToSpike": 1.0722030380817744,
+      "triggerBodyToRange": 0.6051187179334458
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 15:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.518519,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.17226511359645538,
+      "triggerReclaimToCorrection": 0.3973526058610414,
+      "bodyParticipation": 0.5692794701640317,
+      "correctionBars": 275,
+      "pathEfficiency": 0.029585416549851,
+      "correctionToSpike": 1.021681546863972,
+      "triggerBodyToRange": 0.15744512380424033
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-17 15:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 12,
+      "relativeSessionPosition": 0.564815,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.043730024657128407,
+      "triggerReclaimToCorrection": 0.1279596629950333,
+      "bodyParticipation": 0.5626019448207009,
+      "correctionBars": 281,
+      "pathEfficiency": 0.030239945266618152,
+      "correctionToSpike": 1.037635856281676,
+      "triggerBodyToRange": 0.40483773117360183
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-19 22:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.541667,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.45469193553697385,
+      "correctionBars": 659,
+      "pathEfficiency": 0.03871590292364643,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.1635507161857715
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-20 06:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 3,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0900_1000",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5383364323149785,
+      "correctionBars": 45,
+      "pathEfficiency": 0.2898486082204727,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6632528304893166
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-20 11:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.12037,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.10898163671997038,
+      "triggerReclaimToCorrection": 0.5174109840452384,
+      "bodyParticipation": 0.5580400741492978,
+      "correctionBars": 1142,
+      "pathEfficiency": 0.0088515398404849,
+      "correctionToSpike": 1.2222195038785042,
+      "triggerBodyToRange": 0.39245303268326415
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-20 14:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.398148,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.553525635008214,
+      "correctionBars": 78,
+      "pathEfficiency": 0.06233532742218301,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.16089234644539785
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-20 14:15:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.416667,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.552538235708859,
+      "correctionBars": 138,
+      "pathEfficiency": 0.0827579058610601,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.427564536819466
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-20 14:50:00",
+      "r": 1.0152040101117052,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.481481,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.21319015798105453,
+      "triggerReclaimToCorrection": 0.32327932440152546,
+      "bodyParticipation": 0.5359540385506788,
+      "correctionBars": 8,
+      "pathEfficiency": 0.9005732542410846,
+      "correctionToSpike": 1.0742971586392749,
+      "triggerBodyToRange": 0.6777709066839303
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 00:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.875,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.03634352624832269,
+      "triggerReclaimToCorrection": 0.08856772492669285,
+      "bodyParticipation": 0.5414161736188382,
+      "correctionBars": 151,
+      "pathEfficiency": 0.036464837554981915,
+      "correctionToSpike": 1.101960043451588,
+      "triggerBodyToRange": 0.4105458444675479
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 03:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 0,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0.05205245342278475,
+      "triggerReclaimToCorrection": 0.08822013937069911,
+      "bodyParticipation": 0.5543477266546281,
+      "correctionBars": 1328,
+      "pathEfficiency": 0.02503335903103055,
+      "correctionToSpike": 1.0845099283025412,
+      "triggerBodyToRange": 0.11578077224752797
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 04:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 0,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5743027359625685,
+      "correctionBars": 55,
+      "pathEfficiency": 0.19385742738997241,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.3800430679588335
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 13:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.361111,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5730973338151605,
+      "correctionBars": 96,
+      "pathEfficiency": 0.09614098739073056,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.01623022837017723
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 13:50:00",
+      "r": 0.9788079363675096,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.37037,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.569259002148475,
+      "correctionBars": 99,
+      "pathEfficiency": 0.05218244139976354,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.864394576979651
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 15:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.537037,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.011396665136914445,
+      "triggerReclaimToCorrection": 0.059292811267849015,
+      "bodyParticipation": 0.6064941637560183,
+      "correctionBars": 95,
+      "pathEfficiency": 0.03550164441277636,
+      "correctionToSpike": 1.6346204680332785,
+      "triggerBodyToRange": 0.10309568645404632
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 18:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.888889,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.03485087333012381,
+      "triggerReclaimToCorrection": 0.08255746310811954,
+      "bodyParticipation": 0.6106901579624485,
+      "correctionBars": 132,
+      "pathEfficiency": 0.04490835046793922,
+      "correctionToSpike": 1.2536366832743786,
+      "triggerBodyToRange": 0.1544703480494756
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 22:10:00",
+      "r": 0.5901380877930509,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 18,
+      "relativeSessionPosition": 0.444444,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.8620009291392947,
+      "correctionBars": 1,
+      "pathEfficiency": null,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.3735356411235392
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 22:40:00",
+      "r": 9.395686641391704,
+      "classification": "EXCEPTIONAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.527778,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0.060992078547803634,
+      "triggerReclaimToCorrection": 0.07195317675985048,
+      "bodyParticipation": 0.446605265559026,
+      "correctionBars": 20,
+      "pathEfficiency": 0.6472988496506346,
+      "correctionToSpike": 1.062838272063625,
+      "triggerBodyToRange": 0.258818634033985
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 00:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.819444,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.007242737245138546,
+      "triggerReclaimToCorrection": 0.03158642920020562,
+      "bodyParticipation": 0.5633346635832,
+      "correctionBars": 2118,
+      "pathEfficiency": 0.009273812540812333,
+      "correctionToSpike": 1.0499380053728689,
+      "triggerBodyToRange": 0.7866165446115624
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 11:20:00",
+      "r": 2.058867272870831,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.092593,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.2478601146255109,
+      "triggerReclaimToCorrection": 0.22580518771771782,
+      "bodyParticipation": 0.4086946846596376,
+      "correctionBars": 16,
+      "pathEfficiency": 0.38285985560386493,
+      "correctionToSpike": 1.1588339392602671,
+      "triggerBodyToRange": 0.6732292631439126
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 13:00:00",
+      "r": 0.9742930506051007,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.277778,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5821612294800504,
+      "correctionBars": 53,
+      "pathEfficiency": 0.024635573128786493,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7232246992957797
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 13:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.342593,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.08911196564494171,
+      "triggerReclaimToCorrection": 0.188688317489612,
+      "bodyParticipation": 0.581313960756159,
+      "correctionBars": 114,
+      "pathEfficiency": 0.06367332774505557,
+      "correctionToSpike": 1.3366222353999262,
+      "triggerBodyToRange": 0.3386888820362955
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 16:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.685185,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.628771608605928,
+      "correctionBars": 18,
+      "pathEfficiency": 0.23489999608729248,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.2733350108471275
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 16:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.712963,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6175096708822276,
+      "correctionBars": 13,
+      "pathEfficiency": 0.3209877424355449,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7235596891323571
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 22:05:00",
+      "r": 0.852311378988766,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 18,
+      "relativeSessionPosition": 0.430556,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5813021146886663,
+      "correctionBars": 104,
+      "pathEfficiency": 0.05889761822272171,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.19825899241194242
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 22:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 18,
+      "relativeSessionPosition": 0.444444,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5684478567521017,
+      "correctionBars": 103,
+      "pathEfficiency": 0.09854158648248598,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.658028806842972
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 08:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 5,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "midday_1000_1300",
+      "triggerReclaimToRange": 0.0035576194004575757,
+      "triggerReclaimToCorrection": 0.021759743154246374,
+      "bodyParticipation": 0.5637453300965029,
+      "correctionBars": 2117,
+      "pathEfficiency": 0.004683908886929838,
+      "correctionToSpike": 1.1180135297621112,
+      "triggerBodyToRange": 0.7758865622076164
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 12:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.240741,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5553193817487586,
+      "correctionBars": 508,
+      "pathEfficiency": 0.009290015058855695,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.17952965098348017
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 13:15:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.305556,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5662408739500795,
+      "correctionBars": 674,
+      "pathEfficiency": 0.004455622162361265,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.5728798599438889
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 13:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.333333,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.555207378744777,
+      "correctionBars": 548,
+      "pathEfficiency": 0.012530181248838451,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7464990636740078
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 15:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 12,
+      "relativeSessionPosition": 0.564815,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6331492370858064,
+      "correctionBars": 9,
+      "pathEfficiency": 0.6728890505814208,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9674894351706019
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 17:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.768519,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.4155876697945363,
+      "correctionBars": 4,
+      "pathEfficiency": 0.05668632532709954,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.19084100841733964
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 23:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.611111,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5463220355269187,
+      "correctionBars": 12,
+      "pathEfficiency": 0.20354585856532806,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.029389915497871826
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 23:35:00",
+      "r": 8.589602389389354,
+      "classification": "EXCEPTIONAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.680556,
+      "poorsamadiWindow": "transition_0230_0300",
+      "triggerReclaimToRange": 0.06649392561795699,
+      "triggerReclaimToCorrection": 0.08784127244409541,
+      "bodyParticipation": 0.3831752951804663,
+      "correctionBars": 5,
+      "pathEfficiency": 1,
+      "correctionToSpike": 1.0117877377664248,
+      "triggerBodyToRange": 0.019095251835367314
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-24 10:30:00",
+      "r": 55.491018935224176,
+      "classification": "EXCEPTIONAL_WIN",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.00580928364181516,
+      "triggerReclaimToCorrection": 0.011668860423155231,
+      "bodyParticipation": 0.5556221244355611,
+      "correctionBars": 227,
+      "pathEfficiency": 0.04745263962279858,
+      "correctionToSpike": 1.1742554003579009,
+      "triggerBodyToRange": 0.2912224087680939
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-24 13:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.296296,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.516198322698631,
+      "correctionBars": 54,
+      "pathEfficiency": 0.1043432802188913,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.28681306942186596
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-24 14:00:00",
+      "r": 3.682817766586438,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.388889,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.08135580919676386,
+      "triggerReclaimToCorrection": 0.15946911753980783,
+      "bodyParticipation": 0.5155671132757029,
+      "correctionBars": 27,
+      "pathEfficiency": 0.17361570892629657,
+      "correctionToSpike": 1.694950456822712,
+      "triggerBodyToRange": 0.5273746562530807
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-24 15:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.537037,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.08193313692578892,
+      "triggerReclaimToCorrection": 0.14478106005179497,
+      "bodyParticipation": 0.5691424048702096,
+      "correctionBars": 314,
+      "pathEfficiency": 0.06198370102954515,
+      "correctionToSpike": 1.0719970026226995,
+      "triggerBodyToRange": 0.5991582373657602
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-24 18:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.916667,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6502200088075072,
+      "correctionBars": 59,
+      "pathEfficiency": 0.04543305388795102,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.4568977866915498
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-24 20:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 16,
+      "relativeSessionPosition": 0.083333,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.485776697482208,
+      "correctionBars": 3,
+      "pathEfficiency": 1,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.5965831107762657
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 00:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.777778,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.573178652452606,
+      "correctionBars": 52,
+      "pathEfficiency": 0.17243460706135272,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9384087175471438
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 00:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.819444,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.29362449297559007,
+      "triggerReclaimToCorrection": 0.3021204583152904,
+      "bodyParticipation": 0.617005934454866,
+      "correctionBars": 6,
+      "pathEfficiency": 1,
+      "correctionToSpike": 1.1179212364957676,
+      "triggerBodyToRange": 0.9392580884054719
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 09:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 6,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "midday_1000_1300",
+      "triggerReclaimToRange": 0.014087009577914662,
+      "triggerReclaimToCorrection": 0.012916711494971263,
+      "bodyParticipation": 0.8518617267921674,
+      "correctionBars": 2,
+      "pathEfficiency": 1,
+      "correctionToSpike": 1.0921686757100246,
+      "triggerBodyToRange": 0.19504721819642296
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 12:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.166667,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5922226008821218,
+      "correctionBars": 15,
+      "pathEfficiency": 0.39168087567284515,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7166606690823053
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 12:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.212963,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5867092267830114,
+      "correctionBars": 74,
+      "pathEfficiency": 0.06659642922600373,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9380858099899487
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 17:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.759259,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6303331449486396,
+      "correctionBars": 12,
+      "pathEfficiency": 0.2086775762877327,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.14339972690978336
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 17:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.814815,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6555747354123167,
+      "correctionBars": 12,
+      "pathEfficiency": 0.23466106282038954,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.8066194747648145
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 19:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.990741,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.21925473503709436,
+      "triggerReclaimToCorrection": 0.27018298384932926,
+      "bodyParticipation": 0.42536329337647205,
+      "correctionBars": 27,
+      "pathEfficiency": 0.3974279091279587,
+      "correctionToSpike": 1.1544120364666441,
+      "triggerBodyToRange": 0.16247677276268646
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 22:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.5,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5381683526179833,
+      "correctionBars": 53,
+      "pathEfficiency": 0.09164808289728257,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.5048882110162805
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-28 07:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 4,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "midday_1000_1300",
+      "triggerReclaimToRange": 0.008730128698365543,
+      "triggerReclaimToCorrection": 0.013689670904672211,
+      "bodyParticipation": 0.507898258613548,
+      "correctionBars": 17,
+      "pathEfficiency": 0.24523371725469612,
+      "correctionToSpike": 1.0049240326183846,
+      "triggerBodyToRange": 0.9171799775137276
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-28 16:00:00",
+      "r": 1.4677734901523394,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 12,
+      "relativeSessionPosition": 0.611111,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.07682198595997058,
+      "triggerReclaimToCorrection": 0.27525053902729346,
+      "bodyParticipation": 0.6595515367016402,
+      "correctionBars": 76,
+      "pathEfficiency": 0.0666803270074952,
+      "correctionToSpike": 1.0696972445855752,
+      "triggerBodyToRange": 0.7703521508649607
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-28 18:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.833333,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5813912394985445,
+      "correctionBars": 21,
+      "pathEfficiency": 0.5023220382690924,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7411799374613015
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-28 19:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.944444,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5698450675487656,
+      "correctionBars": 42,
+      "pathEfficiency": 0.21375781302812477,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7864196703098506
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-28 20:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 17,
+      "relativeSessionPosition": 0.236111,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.49258951541054224,
+      "correctionBars": 2,
+      "pathEfficiency": 1,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6000493282651693
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-28 22:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 18,
+      "relativeSessionPosition": 0.486111,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5852618682614399,
+      "correctionBars": 84,
+      "pathEfficiency": 0.18356070671350555,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.22228544138112608
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-29 07:15:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 3,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "midday_1000_1300",
+      "triggerReclaimToRange": 0.011927234390676437,
+      "triggerReclaimToCorrection": 0.05011373264080823,
+      "bodyParticipation": 0.5541996369114337,
+      "correctionBars": 172,
+      "pathEfficiency": 0.031203781819031152,
+      "correctionToSpike": 1.0954418379429693,
+      "triggerBodyToRange": 0.03996985456855936
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-29 14:15:00",
+      "r": 0.35188423533552143,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.416667,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.559182884708287,
+      "correctionBars": 2731,
+      "pathEfficiency": 0.004557488605836579,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.8793020984510376
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-29 17:15:00",
+      "r": 0.08667407566113132,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.75,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.08364624952305945,
+      "triggerReclaimToCorrection": 0.6515990280631249,
+      "bodyParticipation": 0.6136904118508311,
+      "correctionBars": 110,
+      "pathEfficiency": 0.029835878730840464,
+      "correctionToSpike": 2.212588317053407,
+      "triggerBodyToRange": 0.2998339359351716
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-29 17:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.768519,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.028673917955094292,
+      "triggerReclaimToCorrection": 0.1742430439667098,
+      "bodyParticipation": 0.6181777743061019,
+      "correctionBars": 92,
+      "pathEfficiency": 0.028527201915146398,
+      "correctionToSpike": 1.184546361883327,
+      "triggerBodyToRange": 0.9030125877898985
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-29 18:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.842593,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.0719906000447055,
+      "triggerReclaimToCorrection": 0.48653623418625735,
+      "bodyParticipation": 0.5859034752587537,
+      "correctionBars": 523,
+      "pathEfficiency": 0.004996904560248298,
+      "correctionToSpike": 2.23244131899926,
+      "triggerBodyToRange": 0.3912903075131965
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-29 19:05:00",
+      "r": 0.4814847414571422,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.953704,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.14583864263904164,
+      "triggerReclaimToCorrection": 1.0607628333456796,
+      "bodyParticipation": 0.57806304604772,
+      "correctionBars": 773,
+      "pathEfficiency": 0.007478255828525991,
+      "correctionToSpike": 1.4434904062526281,
+      "triggerBodyToRange": 0.9326599399393991
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-29 19:20:00",
+      "r": 0.9826606255191156,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.981481,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.06647857482573834,
+      "triggerReclaimToCorrection": 0.2818255302963138,
+      "bodyParticipation": 0.5731995126388743,
+      "correctionBars": 595,
+      "pathEfficiency": 0.007999713542427284,
+      "correctionToSpike": 1.033502296597567,
+      "triggerBodyToRange": 0.9814370486195303
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-29 19:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 16,
+      "relativeSessionPosition": 0.041667,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6098906396027195,
+      "correctionBars": 7,
+      "pathEfficiency": 0.7143348651128987,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.4084721271579517
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 00:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.833333,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6197172252899684,
+      "correctionBars": 18,
+      "pathEfficiency": 0.4397068746667507,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.2559215527566493
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 00:55:00",
+      "r": 14.36363002934106,
+      "classification": "EXCEPTIONAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.902778,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6018061052273593,
+      "correctionBars": 19,
+      "pathEfficiency": 0.623276128257806,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.909705520865651
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 01:10:00",
+      "r": 0.22949816938004886,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.944444,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0.5244581690751526,
+      "triggerReclaimToCorrection": 0.7372243794030915,
+      "bodyParticipation": 0.8598536525653404,
+      "correctionBars": 7,
+      "pathEfficiency": 0.7441490067983718,
+      "correctionToSpike": 1.0390349032909216,
+      "triggerBodyToRange": 0.9619983474976369
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 04:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 1,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6335539555196874,
+      "correctionBars": 96,
+      "pathEfficiency": 0.07088367467267609,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.2524466597775632
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 05:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 2,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0800_0900",
+      "triggerReclaimToRange": 0.1059648992852412,
+      "triggerReclaimToCorrection": 0.28530947871393514,
+      "bodyParticipation": 0.6225225794211947,
+      "correctionBars": 57,
+      "pathEfficiency": 0.09589529152270565,
+      "correctionToSpike": 1.2360798127771304,
+      "triggerBodyToRange": 0.908588575198589
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 08:15:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 4,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "midday_1000_1300",
+      "triggerReclaimToRange": 0.015216905373292993,
+      "triggerReclaimToCorrection": 0.03220311926713851,
+      "bodyParticipation": 0.6613654681726007,
+      "correctionBars": 38,
+      "pathEfficiency": 0.07358159121894738,
+      "correctionToSpike": 1.0219717708355895,
+      "triggerBodyToRange": 0.10751332062371707
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 10:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.009259,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.022009178089415805,
+      "triggerReclaimToCorrection": 0.05504858036199485,
+      "bodyParticipation": 0.6100318705685518,
+      "correctionBars": 87,
+      "pathEfficiency": 0.0838380378603233,
+      "correctionToSpike": 1.0100154507055656,
+      "triggerBodyToRange": 0.19847541028927818
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 10:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.018519,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.0032809836046724496,
+      "triggerReclaimToCorrection": 0.006621985937766,
+      "bodyParticipation": 0.6022961509590993,
+      "correctionBars": 87,
+      "pathEfficiency": 0.09139224487923217,
+      "correctionToSpike": 1.035873035220685,
+      "triggerBodyToRange": 0.7232850632576991
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 14:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.388889,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.0017609098083459114,
+      "triggerReclaimToCorrection": 0.0032643226748374646,
+      "bodyParticipation": 0.608288625508383,
+      "correctionBars": 220,
+      "pathEfficiency": 0.05547746619850329,
+      "correctionToSpike": 1.0219810331653236,
+      "triggerBodyToRange": 0.44132954174119915
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 16:30:00",
+      "r": 8.12035935498625,
+      "classification": "EXCEPTIONAL_WIN",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.666667,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.023140529290425368,
+      "triggerReclaimToCorrection": 0.1043442248068649,
+      "bodyParticipation": 0.567872563909149,
+      "correctionBars": 2121,
+      "pathEfficiency": 0.006665685292906752,
+      "correctionToSpike": 1.0157171522564055,
+      "triggerBodyToRange": 0.019492500237556012
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 17:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.768519,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.0909640248398229,
+      "triggerReclaimToCorrection": 0.10118605852789131,
+      "bodyParticipation": 0.6220334354888872,
+      "correctionBars": 7,
+      "pathEfficiency": 0.7415280578904594,
+      "correctionToSpike": 1.1346266588498528,
+      "triggerBodyToRange": 0.5937241198754287
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 19:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.981481,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.12362414786864576,
+      "triggerReclaimToCorrection": 0.15041974943536274,
+      "bodyParticipation": 0.5817213304185089,
+      "correctionBars": 22,
+      "pathEfficiency": 0.2689465799625961,
+      "correctionToSpike": 1.0356050358584454,
+      "triggerBodyToRange": 0.3538917109301492
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 20:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 17,
+      "relativeSessionPosition": 0.236111,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5353483890965839,
+      "correctionBars": 17,
+      "pathEfficiency": 0.2907625897567852,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.3650945161302676
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 23:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.652778,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.523860421898379,
+      "correctionBars": 6,
+      "pathEfficiency": 0.5225720540315183,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.8964499049688082
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 23:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.680556,
+      "poorsamadiWindow": "transition_0230_0300",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5199844337815546,
+      "correctionBars": 10,
+      "pathEfficiency": 0.6524679791113597,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.12650315758537634
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 23:40:00",
+      "r": 1.149309492187517,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.694444,
+      "poorsamadiWindow": "transition_0230_0300",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5428309056095979,
+      "correctionBars": 18,
+      "pathEfficiency": 0.17722289250579112,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.24674607934464113
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 00:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.875,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5211163068668112,
+      "correctionBars": 107,
+      "pathEfficiency": 0.09195099312505217,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.43955527463083954
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 02:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 23,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5383621255550212,
+      "correctionBars": 127,
+      "pathEfficiency": 0.16094567279078933,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6266709889399433
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 13:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.277778,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5617064816539338,
+      "correctionBars": 341,
+      "pathEfficiency": 0.03162735696463281,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.02862777995089293
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 13:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.314815,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.562541553001514,
+      "correctionBars": 346,
+      "pathEfficiency": 0.01620287942617784,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7420275842257706
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 13:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.351852,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.03360639563157786,
+      "triggerReclaimToCorrection": 0.043643706629596955,
+      "bodyParticipation": 0.6449977382837255,
+      "correctionBars": 34,
+      "pathEfficiency": 0.28805658587121036,
+      "correctionToSpike": 1.0643424016565952,
+      "triggerBodyToRange": 0.9215098538043958
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 15:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.537037,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.2653082879876222,
+      "triggerReclaimToCorrection": 0.5144770927815441,
+      "bodyParticipation": 0.5840131765048383,
+      "correctionBars": 25,
+      "pathEfficiency": 0.08313292989383435,
+      "correctionToSpike": 1.0854853931546116,
+      "triggerBodyToRange": 0.6574826621553214
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 15:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.546296,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.018483495813484834,
+      "triggerReclaimToCorrection": 0.019828770616223488,
+      "bodyParticipation": 0.5995613950376862,
+      "correctionBars": 12,
+      "pathEfficiency": 0.44774391925963,
+      "correctionToSpike": 1.0166114172616132,
+      "triggerBodyToRange": 0.5473763492728705
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 17:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.824074,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.02847438376612487,
+      "triggerReclaimToCorrection": 0.12888202122414463,
+      "bodyParticipation": 0.5615091383463474,
+      "correctionBars": 64,
+      "pathEfficiency": 0.05581163550370562,
+      "correctionToSpike": 1.0150036632856623,
+      "triggerBodyToRange": 0.30785877070177337
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 19:50:00",
+      "r": 1.0830902592333151,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 16,
+      "relativeSessionPosition": 0.055556,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.11264737648027719,
+      "triggerReclaimToCorrection": 0.36523198837129023,
+      "bodyParticipation": 0.555009848494658,
+      "correctionBars": 86,
+      "pathEfficiency": 0.06479505387723945,
+      "correctionToSpike": 1.004334463885611,
+      "triggerBodyToRange": 0.6778852737902825
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 20:10:00",
+      "r": 1.4495623075895314,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 16,
+      "relativeSessionPosition": 0.111111,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6089363352422261,
+      "correctionBars": 4,
+      "pathEfficiency": 0.815579636745199,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6951620597026767
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 21:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 17,
+      "relativeSessionPosition": 0.263889,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5637242989327087,
+      "correctionBars": 44,
+      "pathEfficiency": 0.12249077310632518,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.01645462255977854
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-02 22:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 18,
+      "relativeSessionPosition": 0.416667,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5627739602392768,
+      "correctionBars": 219,
+      "pathEfficiency": 0.08730917895441472,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.516147355024773
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-02 22:05:00",
+      "r": 0.16723378217161608,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 18,
+      "relativeSessionPosition": 0.430556,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0.2169991534649587,
+      "triggerReclaimToCorrection": 0.8079901626901426,
+      "bodyParticipation": 0.523852712391363,
+      "correctionBars": 750,
+      "pathEfficiency": 0.014461312412093015,
+      "correctionToSpike": 2.03232520777919,
+      "triggerBodyToRange": 0.4354801015548142
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-03 11:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.157407,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.02121026389167043,
+      "triggerReclaimToCorrection": 0.03566369444718871,
+      "bodyParticipation": 0.5788508282961122,
+      "correctionBars": 29,
+      "pathEfficiency": 0.2686255687051696,
+      "correctionToSpike": 1.4416130244066314,
+      "triggerBodyToRange": 0.47167528019407806
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-03 12:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.212963,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5640298206384189,
+      "correctionBars": 7,
+      "pathEfficiency": 0.7582975419262773,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.1130207585057657
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-03 12:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.268519,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.46533421106190054,
+      "correctionBars": 8,
+      "pathEfficiency": 0.8680604326119634,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9669911321715314
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-03 19:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.953704,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.07786826470176217,
+      "triggerReclaimToCorrection": 0.13547277951893505,
+      "bodyParticipation": 0.540274282383688,
+      "correctionBars": 68,
+      "pathEfficiency": 0.1240038462416407,
+      "correctionToSpike": 1.1614705735475628,
+      "triggerBodyToRange": 0.3693537178595738
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-03 19:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 16,
+      "relativeSessionPosition": 0,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.055466512600696266,
+      "triggerReclaimToCorrection": 0.12445317843586219,
+      "bodyParticipation": 0.5543620755879427,
+      "correctionBars": 75,
+      "pathEfficiency": 0.1225950670345081,
+      "correctionToSpike": 1.1240453582577437,
+      "triggerBodyToRange": 0.22117297099220928
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 00:10:00",
+      "r": 11.736310887570935,
+      "classification": "EXCEPTIONAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.777778,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.033565497382583735,
+      "triggerReclaimToCorrection": 0.06421223299492579,
+      "bodyParticipation": 0.5533139123929283,
+      "correctionBars": 137,
+      "pathEfficiency": 0.09712284079988165,
+      "correctionToSpike": 1.0838741361936237,
+      "triggerBodyToRange": 0.346506033235609
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 01:15:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.958333,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6165878655039321,
+      "correctionBars": 10,
+      "pathEfficiency": 0.725713410164755,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.5699875362073639
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 10:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.027778,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5947759262417681,
+      "correctionBars": 55,
+      "pathEfficiency": 0.12158775706670141,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.813720573117755
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 11:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.12037,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.13318671234806914,
+      "triggerReclaimToCorrection": 0.1837555023195344,
+      "bodyParticipation": 0.6482793455827921,
+      "correctionBars": 29,
+      "pathEfficiency": 0.23931171191890882,
+      "correctionToSpike": 1.1633965360027467,
+      "triggerBodyToRange": 0.8818471033466718
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 11:50:00",
+      "r": 2.8766245235539714,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.148148,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.06705392233682944,
+      "triggerReclaimToCorrection": 0.21328883230107587,
+      "bodyParticipation": 0.5752928949025711,
+      "correctionBars": 424,
+      "pathEfficiency": 0.01916550541009217,
+      "correctionToSpike": 1.6364521711782742,
+      "triggerBodyToRange": 0.1488443398088759
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 13:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.287037,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.7076068796261195,
+      "correctionBars": 5,
+      "pathEfficiency": 1,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.3463127385593733
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 17:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.740741,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.007986030578173932,
+      "triggerReclaimToCorrection": 0.04062584779816653,
+      "bodyParticipation": 0.5646562590906844,
+      "correctionBars": 1337,
+      "pathEfficiency": 0.00899751819365922,
+      "correctionToSpike": 1.5563570892245506,
+      "triggerBodyToRange": 0.4936116970849421
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 18:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.842593,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5388724655247978,
+      "correctionBars": 11,
+      "pathEfficiency": 0.8387560992062475,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.5935979230213357
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-05 01:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.972222,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0.030243786162599012,
+      "triggerReclaimToCorrection": 0.060218285239440304,
+      "bodyParticipation": 0.5671458713841121,
+      "correctionBars": 79,
+      "pathEfficiency": 0.08163473567802439,
+      "correctionToSpike": 1.008302415601137,
+      "triggerBodyToRange": 0.6963631694883862
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-05 02:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 22,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0.09537285104267657,
+      "triggerReclaimToCorrection": 0.23045191853339403,
+      "bodyParticipation": 0.6013010553157347,
+      "correctionBars": 96,
+      "pathEfficiency": 0.10866867908816433,
+      "correctionToSpike": 1.0088524514999924,
+      "triggerBodyToRange": 0.7071637876855359
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-05 11:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.092593,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.004358966583751903,
+      "triggerReclaimToCorrection": 0.0065000150724522435,
+      "bodyParticipation": 0.5069109690759982,
+      "correctionBars": 21,
+      "pathEfficiency": 0.31885520939470235,
+      "correctionToSpike": 1.3097582378100066,
+      "triggerBodyToRange": 0.4664220749561116
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-05 16:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.703704,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.3303155816462515,
+      "correctionBars": 2,
+      "pathEfficiency": 1,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7545832021707014
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-05 18:25:00",
+      "r": 3.3729059693913523,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.87963,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.06110011529714813,
+      "triggerReclaimToCorrection": 0.10681188785920895,
+      "bodyParticipation": 0.6205734939937981,
+      "correctionBars": 30,
+      "pathEfficiency": 0.39394572125229504,
+      "correctionToSpike": 1.2921741098041588,
+      "triggerBodyToRange": 0.7589280782956075
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-05 23:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.652778,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0.036349676836457706,
+      "triggerReclaimToCorrection": 0.0687868873034346,
+      "bodyParticipation": 0.5466455396625545,
+      "correctionBars": 47,
+      "pathEfficiency": 0.22435813898792745,
+      "correctionToSpike": 1.476871290910597,
+      "triggerBodyToRange": 0.286720254505012
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 05:35:00",
+      "r": 0.923437482638411,
+      "classification": "NORMAL_WIN",
+      "session": "OUTSIDE",
+      "utcHour": 2,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0800_0900",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5912733615444324,
+      "correctionBars": 77,
+      "pathEfficiency": 0.028777380369619472,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9269629023732097
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 06:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 2,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0900_1000",
+      "triggerReclaimToRange": 0.25407079087913237,
+      "triggerReclaimToCorrection": 0.6006041782456688,
+      "bodyParticipation": 0.8235874296378606,
+      "correctionBars": 3,
+      "pathEfficiency": 0.26427513062461716,
+      "correctionToSpike": 1.2718320002528198,
+      "triggerBodyToRange": 0.9693734868521142
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 11:55:00",
+      "r": 0.2891360660197043,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.157407,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5170918158943687,
+      "correctionBars": 42,
+      "pathEfficiency": 0.11551585251531947,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6086543963109106
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 12:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.231481,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0.0034017743759621696,
+      "triggerReclaimToCorrection": 0.0072289629445357745,
+      "bodyParticipation": 0.5569920650531938,
+      "correctionBars": 14,
+      "pathEfficiency": 0.09190257820360283,
+      "correctionToSpike": 1.1582381031320579,
+      "triggerBodyToRange": 0.8149659301325157
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 13:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.277778,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.7866557819168635,
+      "correctionBars": 4,
+      "pathEfficiency": 1,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.12121383328943226
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 13:10:00",
+      "r": 4.033912206551605,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.296296,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.570836980579699,
+      "correctionBars": 235,
+      "pathEfficiency": 0.016501705191022276,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.2696526999395489
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 13:50:00",
+      "r": 0.3287022728069167,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.37037,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.2746950346912553,
+      "triggerReclaimToCorrection": 0.5969938306331991,
+      "bodyParticipation": 0.6169756406635353,
+      "correctionBars": 24,
+      "pathEfficiency": 0.12248784196642605,
+      "correctionToSpike": 1.233152712537332,
+      "triggerBodyToRange": 0.7546440806645801
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 15:15:00",
+      "r": 0.3329524504141676,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.527778,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.160997762751173,
+      "triggerReclaimToCorrection": 0.4067212543353304,
+      "bodyParticipation": 0.5880175701662759,
+      "correctionBars": 8,
+      "pathEfficiency": 0.2783998407982611,
+      "correctionToSpike": 1.3742803498711458,
+      "triggerBodyToRange": 0.9539969578222806
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 15:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 12,
+      "relativeSessionPosition": 0.574074,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5047707061703716,
+      "correctionBars": 23,
+      "pathEfficiency": 0.2636075480964729,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.4187279305732928
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 19:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.953704,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.04029350024703413,
+      "triggerReclaimToCorrection": 0.03901635747769118,
+      "bodyParticipation": 0.6492863504415627,
+      "correctionBars": 4,
+      "pathEfficiency": 0.555579425349478,
+      "correctionToSpike": 1.2112093252570724,
+      "triggerBodyToRange": 0.30475643954546755
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 19:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 16,
+      "relativeSessionPosition": 0.069444,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.05133427506591068,
+      "triggerReclaimToCorrection": 0.0655419365130672,
+      "bodyParticipation": 0.7805971468414327,
+      "correctionBars": 4,
+      "pathEfficiency": 0.46232109977741537,
+      "correctionToSpike": 1.4150413397757253,
+      "triggerBodyToRange": 0.6296834239913787
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 00:00:00",
+      "r": 0.09648476987949235,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.75,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.15214504519456334,
+      "triggerReclaimToCorrection": 0.22136567875648328,
+      "bodyParticipation": 0.6361990449353245,
+      "correctionBars": 39,
+      "pathEfficiency": 0.3914208355222127,
+      "correctionToSpike": 1.3588978878976945,
+      "triggerBodyToRange": 0.5607273095624228
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 00:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.819444,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6717145954526995,
+      "correctionBars": 14,
+      "pathEfficiency": 0.153318965166933,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.042726800323825566
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 00:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.833333,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6026951897760039,
+      "correctionBars": 13,
+      "pathEfficiency": 0.04020264794922387,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.46077614292421276
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 01:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.930556,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6622811707113925,
+      "correctionBars": 3,
+      "pathEfficiency": 0.8273087913449959,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9650078569608576
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 01:25:00",
+      "r": 0.8811216791275872,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.986111,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0.16038736827452096,
+      "triggerReclaimToCorrection": 0.44050563710998963,
+      "bodyParticipation": 0.5118892517100476,
+      "correctionBars": 13,
+      "pathEfficiency": 0.0275315827318899,
+      "correctionToSpike": 1.151800322404694,
+      "triggerBodyToRange": 0.24469597543192437
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 01:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 22,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0.08483774452679595,
+      "triggerReclaimToCorrection": 0.15011628251111675,
+      "bodyParticipation": 0.5639501565381172,
+      "correctionBars": 14,
+      "pathEfficiency": 0.39431915519664695,
+      "correctionToSpike": 1.9854533975779503,
+      "triggerBodyToRange": 0.11000785993064524
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 01:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 22,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0.16530669656236285,
+      "triggerReclaimToCorrection": 0.22601403751987853,
+      "bodyParticipation": 0.5933052292644599,
+      "correctionBars": 117,
+      "pathEfficiency": 0.05123990215086667,
+      "correctionToSpike": 1.0569445388275132,
+      "triggerBodyToRange": 0.2038819075965963
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 12:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.203704,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5564883291500541,
+      "correctionBars": 19,
+      "pathEfficiency": 0.059674705402763734,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7774291657198833
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-10 05:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 1,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0800_0900",
+      "triggerReclaimToRange": 0.11829878265559897,
+      "triggerReclaimToCorrection": 0.1840298698705822,
+      "bodyParticipation": 0.5597661588908142,
+      "correctionBars": 46,
+      "pathEfficiency": 0.14186554560797615,
+      "correctionToSpike": 1.0301567080563883,
+      "triggerBodyToRange": 0.04990281384288789
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-10 06:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 2,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0900_1000",
+      "triggerReclaimToRange": 0.0353615829048974,
+      "triggerReclaimToCorrection": 0.045603822307025255,
+      "bodyParticipation": 0.5576180056430355,
+      "correctionBars": 56,
+      "pathEfficiency": 0.1679076843042302,
+      "correctionToSpike": 1.087814293558939,
+      "triggerBodyToRange": 0.6839340269177167
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-10 14:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.388889,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5900719668288635,
+      "correctionBars": 126,
+      "pathEfficiency": 0.03369555965645668,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.5050470741562203
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-10 14:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.453704,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.01071745290161936,
+      "triggerReclaimToCorrection": 0.05414206767309545,
+      "bodyParticipation": 0.6294581597662078,
+      "correctionBars": 58,
+      "pathEfficiency": 0.014317231128902153,
+      "correctionToSpike": 1.0323027202920523,
+      "triggerBodyToRange": 0.4224173458146427
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-10 16:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.666667,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.04541564483382901,
+      "triggerReclaimToCorrection": 0.16533994222078627,
+      "bodyParticipation": 0.5780106721502735,
+      "correctionBars": 86,
+      "pathEfficiency": 0.04770485491211748,
+      "correctionToSpike": 1.0722002030536286,
+      "triggerBodyToRange": 0.7722458036632426
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-11 01:05:00",
+      "r": 0.03787022959433223,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.930556,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5081463818783256,
+      "correctionBars": 11,
+      "pathEfficiency": 0.3100145736435007,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9848729909578777
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-11 07:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 3,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "midday_1000_1300",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.561656063684118,
+      "correctionBars": 154,
+      "pathEfficiency": 0.06477970992912538,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.7029447707995338
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-11 13:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 9,
+      "relativeSessionPosition": 0.314815,
+      "poorsamadiWindow": "transition_1530_1630",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5590863260417694,
+      "correctionBars": 40,
+      "pathEfficiency": 0.28310401056606954,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9594826267080144
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-11 13:50:00",
+      "r": 0.7508128141341462,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.37037,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0.3828167985383083,
+      "triggerReclaimToCorrection": 0.5147619359982918,
+      "bodyParticipation": 0.5625470342374919,
+      "correctionBars": 95,
+      "pathEfficiency": 0.08221401750958833,
+      "correctionToSpike": 1.0333165363958827,
+      "triggerBodyToRange": 0.801187525350403
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-11 23:00:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.583333,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6425530299309901,
+      "correctionBars": 10,
+      "pathEfficiency": 0.3241136037495017,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.22450988895583865
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 00:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.847222,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.0501661140500922,
+      "triggerReclaimToCorrection": 0.05135074138110818,
+      "bodyParticipation": 0.5612062085586762,
+      "correctionBars": 77,
+      "pathEfficiency": 0.15417508828984117,
+      "correctionToSpike": 1.0433149613968546,
+      "triggerBodyToRange": 0.2078895789061503
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 00:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.861111,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.10950046715445887,
+      "triggerReclaimToCorrection": 0.41085897350332323,
+      "bodyParticipation": 0.5633380298292204,
+      "correctionBars": 85,
+      "pathEfficiency": 0.033777414406353456,
+      "correctionToSpike": 1.0731424314916413,
+      "triggerBodyToRange": 0.2757682893666315
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 04:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 0,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6092220879220195,
+      "correctionBars": 17,
+      "pathEfficiency": 0.5861292956955075,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.4066928115843043
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 05:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 1,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "europe_0800_0900",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6118123781414222,
+      "correctionBars": 31,
+      "pathEfficiency": 0.4306388628184761,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.1950592547345421
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 10:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.037037,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6321333759059672,
+      "correctionBars": 4,
+      "pathEfficiency": 0.9835208735601327,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6178620015548044
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 11:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.101852,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.7027167983147846,
+      "correctionBars": 4,
+      "pathEfficiency": 0.9845717732019236,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.8319977136587714
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 17:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 13,
+      "relativeSessionPosition": 0.731481,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5540052058457516,
+      "correctionBars": 28,
+      "pathEfficiency": 0.27526672138703606,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.407756052316
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 18:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 14,
+      "relativeSessionPosition": 0.87963,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0.1943447670496747,
+      "triggerReclaimToCorrection": 0.1797485606515978,
+      "bodyParticipation": 0.8189568458326851,
+      "correctionBars": 4,
+      "pathEfficiency": 1,
+      "correctionToSpike": 1.091134095865616,
+      "triggerBodyToRange": 0.6327944925279978
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 22:05:00",
+      "r": 1.2549489791108852,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 18,
+      "relativeSessionPosition": 0.430556,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0.22360501006014533,
+      "triggerReclaimToCorrection": 0.3041774858276122,
+      "bodyParticipation": 0.8054674801535999,
+      "correctionBars": 3,
+      "pathEfficiency": 1,
+      "correctionToSpike": 1.3044687620336528,
+      "triggerBodyToRange": 0.8639926518421877
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 22:30:00",
+      "r": 2.2938604438640295,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.5,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5383790100109095,
+      "correctionBars": 47,
+      "pathEfficiency": 0.2380468934046127,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6734975687284348
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 23:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.666667,
+      "poorsamadiWindow": "transition_0230_0300",
+      "triggerReclaimToRange": 0.015915821705757147,
+      "triggerReclaimToCorrection": 0.02345621455103592,
+      "bodyParticipation": 0.6966016365221012,
+      "correctionBars": 14,
+      "pathEfficiency": 0.4532153707812677,
+      "correctionToSpike": 1.1113070310778885,
+      "triggerBodyToRange": 0.1959332664974519
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 00:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 20,
+      "relativeSessionPosition": 0.819444,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.20409089005107164,
+      "triggerReclaimToCorrection": 0.333195312288249,
+      "bodyParticipation": 0.6415814371026486,
+      "correctionBars": 102,
+      "pathEfficiency": 0.08029873304322942,
+      "correctionToSpike": 1.397888290645054,
+      "triggerBodyToRange": 0.7310891020375205
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 02:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 22,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6057620071115836,
+      "correctionBars": 23,
+      "pathEfficiency": 0.12253463202472481,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6084236329250734
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 02:40:00",
+      "r": 0.13351399049992616,
+      "classification": "NORMAL_WIN",
+      "session": "OUTSIDE",
+      "utcHour": 23,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6090045495629374,
+      "correctionBars": 38,
+      "pathEfficiency": 0.029573655436991687,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.8629279493388976
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 04:25:00",
+      "r": 0.40308339251486314,
+      "classification": "NORMAL_WIN",
+      "session": "OUTSIDE",
+      "utcHour": 0,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.622516854971842,
+      "correctionBars": 59,
+      "pathEfficiency": 0.04292354867934988,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.756034672739285
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 08:05:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 4,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "midday_1000_1300",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5819364119379545,
+      "correctionBars": 381,
+      "pathEfficiency": 0.01293811897502282,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.14689862160974324
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 10:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.046296,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.05455445984777727,
+      "triggerReclaimToCorrection": 0.07017369630236595,
+      "bodyParticipation": 0.5502986302349859,
+      "correctionBars": 52,
+      "pathEfficiency": 0.27527653450955003,
+      "correctionToSpike": 1.1393361223052567,
+      "triggerBodyToRange": 0.6945076908812483
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 11:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.111111,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.030154145827273226,
+      "triggerReclaimToCorrection": 0.03729896719073849,
+      "bodyParticipation": 0.5315656652641344,
+      "correctionBars": 47,
+      "pathEfficiency": 0.159659052360009,
+      "correctionToSpike": 1.0089383167801926,
+      "triggerBodyToRange": 0.9277028403404721
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 11:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.148148,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5827158628773256,
+      "correctionBars": 13,
+      "pathEfficiency": 0.2623353359161467,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.9637536488341798
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 13:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 10,
+      "relativeSessionPosition": 0.351852,
+      "poorsamadiWindow": "late_1630_1800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.562733368906464,
+      "correctionBars": 43,
+      "pathEfficiency": 0.05202782185266934,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.3064871802941978
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 16:20:00",
+      "r": 0.6194853238131292,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 12,
+      "relativeSessionPosition": 0.648148,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5731495676558584,
+      "correctionBars": 851,
+      "pathEfficiency": 0.0041152397412486524,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.41568259205950625
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 16:25:00",
+      "r": 1.9472959917054329,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 12,
+      "relativeSessionPosition": 0.657407,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5729933228309874,
+      "correctionBars": 667,
+      "pathEfficiency": 0.013077330262854316,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.8621166680746021
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 19:20:00",
+      "r": 2.118186056665126,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.981481,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5774284118765225,
+      "correctionBars": 904,
+      "pathEfficiency": 0.0071420729104535105,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.6198683331006444
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 23:05:00",
+      "r": 1.0364625494517479,
+      "classification": "NORMAL_WIN",
+      "session": "NEW_YORK",
+      "utcHour": 19,
+      "relativeSessionPosition": 0.597222,
+      "poorsamadiWindow": "oceania_early",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.587035255671975,
+      "correctionBars": 5,
+      "pathEfficiency": 1,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.4525767419152428
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 00:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "NEW_YORK",
+      "utcHour": 21,
+      "relativeSessionPosition": 0.847222,
+      "poorsamadiWindow": "early_0300_0400",
+      "triggerReclaimToRange": 0.13468008378500354,
+      "triggerReclaimToCorrection": 0.2871614621941556,
+      "bodyParticipation": 0.6696610761702064,
+      "correctionBars": 25,
+      "pathEfficiency": 0.152007377003998,
+      "correctionToSpike": 1.1680498817921101,
+      "triggerBodyToRange": 0.263281552229489
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 03:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "OUTSIDE",
+      "utcHour": 23,
+      "relativeSessionPosition": null,
+      "poorsamadiWindow": "pre_europe_0400_0800",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.5762105582465592,
+      "correctionBars": 993,
+      "pathEfficiency": 0.009900648094602895,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.1939000680209874
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 10:35:00",
+      "r": 6.455120977217525,
+      "classification": "EXCEPTIONAL_WIN",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.009259,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6033862675459815,
+      "correctionBars": 6,
+      "pathEfficiency": 0.7885493581499439,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.503636827186826
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 11:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 7,
+      "relativeSessionPosition": 0.092593,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.1245126406632834,
+      "triggerReclaimToCorrection": 0.12351100121140461,
+      "bodyParticipation": 0.5947053811165965,
+      "correctionBars": 9,
+      "pathEfficiency": 0.4718237877734572,
+      "correctionToSpike": 1.0910513607058987,
+      "triggerBodyToRange": 0.04689672182621126
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 11:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.138889,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.025615540634898876,
+      "triggerReclaimToCorrection": 0.2269097092584694,
+      "bodyParticipation": 0.5437690884559515,
+      "correctionBars": 140,
+      "pathEfficiency": 0.0031450571666655418,
+      "correctionToSpike": 1.120883845060746,
+      "triggerBodyToRange": 0.8991880809632503
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 11:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 8,
+      "relativeSessionPosition": 0.157407,
+      "poorsamadiWindow": "us_open_1300_1530",
+      "triggerReclaimToRange": 0.016327496531471097,
+      "triggerReclaimToCorrection": 0.116096385483597,
+      "bodyParticipation": 0.5704258394396038,
+      "correctionBars": 220,
+      "pathEfficiency": 0.017649181741391566,
+      "correctionToSpike": 1.4251932483925382,
+      "triggerBodyToRange": 0.03549073773752206
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 15:15:00",
+      "r": 0.8133601738917923,
+      "classification": "NORMAL_WIN",
+      "session": "LONDON",
+      "utcHour": 11,
+      "relativeSessionPosition": 0.527778,
+      "poorsamadiWindow": "late_1800_2100",
+      "triggerReclaimToRange": 0.40400415560358605,
+      "triggerReclaimToCorrection": 0.5049259880773448,
+      "bodyParticipation": 0.6105030924694873,
+      "correctionBars": 6,
+      "pathEfficiency": 0.855247003800107,
+      "correctionToSpike": 1.2530837396102832,
+      "triggerBodyToRange": 0.43998864400285204
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 18:50:00",
+      "r": -1,
+      "classification": "LOSS",
+      "session": "LONDON",
+      "utcHour": 15,
+      "relativeSessionPosition": 0.925926,
+      "poorsamadiWindow": "late_2100_2400",
+      "triggerReclaimToRange": 0,
+      "triggerReclaimToCorrection": null,
+      "bodyParticipation": 0.6086242568115539,
+      "correctionBars": 63,
+      "pathEfficiency": 0.15493055635485392,
+      "correctionToSpike": 0,
+      "triggerBodyToRange": 0.5710766963080798
+    }
+  ]
+}

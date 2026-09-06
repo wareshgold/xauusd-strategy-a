@@ -1,0 +1,684 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "RESEARCH_NY_SELL_TRIGGER_PROCESS_FEATURES",
+  "timeframe": "5m",
+  "scope": {
+    "source": "canonical baseline trades + deterministic detector replay",
+    "n": 29,
+    "dev": 15,
+    "val": 14,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true,
+    "pathFeatureNonzeroN": 4,
+    "pathFeatureTotalN": 29,
+    "pathFeatureLimitation": "4/29 cases have intermediate candles (triggerDelay > 1). Path features are 0 for the remaining 25 cases. Statistical claims about path features are descriptive only due to this severe sample limitation."
+  },
+  "methodology": {
+    "purpose": "Descriptive analysis of trigger-process features: timing, adverse excursion during the trigger path, and frequency of failed reclaim attempts.",
+    "features": [
+      "triggerDelay",
+      "triggerPathRetraceDepth",
+      "triggerPathFailedReclaims"
+    ],
+    "featureDefinitions": {
+      "triggerDelay": "trigger.index - correction.correctionExtremeIndex. Integer ≥ 1. Number of 5m candles between the correction extreme and the entry trigger.",
+      "triggerPathRetraceDepth": "For SELL: max(0, max(intermediate.high) - triggerLevel) / correctionSize. Measures maximum adverse excursion during the intermediate path, normalized by correction magnitude. Returns 0 when triggerDelay = 1.",
+      "triggerPathFailedReclaims": "For SELL: count(intermediate.candle where low < triggerLevel AND close >= triggerLevel) / intermediateCount. Measures frequency of intrabar level tests that failed to close beyond the trigger level. Returns 0 when triggerDelay = 1."
+    },
+    "triggerCandleExcluded": "Neither path feature uses the trigger candle. Intermediate candles are indices (correctionExtremeIndex + 1) through (trigger.index - 1), strictly excluding the trigger candle.",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noNewTradingRules": true,
+    "holdoutLocked": true,
+    "interpretation": "All results are descriptive. No feature is promoted to a trading rule by this report."
+  },
+  "overall": {
+    "all": {
+      "n": 29,
+      "WR": 0.482759,
+      "avgR": 0.692492,
+      "PF": 2.338817,
+      "totalR": 20.082261
+    },
+    "dev": {
+      "n": 15,
+      "WR": 0.6,
+      "avgR": 0.996411,
+      "PF": 3.491027,
+      "totalR": 14.946161
+    },
+    "val": {
+      "n": 14,
+      "WR": 0.357143,
+      "avgR": 0.366864,
+      "PF": 1.570678,
+      "totalR": 5.1361
+    },
+    "nonExceptional": {
+      "n": 26,
+      "WR": 0.423077,
+      "avgR": -0.370744,
+      "PF": 0.357377,
+      "totalR": -9.639339
+    },
+    "exceptionalCount": 3
+  },
+  "temporalWindows": [
+    {
+      "id": "DEV_H1",
+      "split": "DEV",
+      "n": 8,
+      "start": "2026-07-14 23:35:00",
+      "end": "2026-07-16 20:00:00",
+      "outcome": {
+        "n": 8,
+        "WR": 0.625,
+        "avgR": -0.168965,
+        "PF": 0.549428,
+        "totalR": -1.351716
+      },
+      "nonExceptionalOutcome": {
+        "n": 8,
+        "WR": 0.625,
+        "avgR": -0.168965,
+        "PF": 0.549428,
+        "totalR": -1.351716
+      },
+      "features": {
+        "triggerDelay": {
+          "normalN": 5,
+          "lossN": 3,
+          "normalMedian": 1,
+          "lossMedian": 1,
+          "delta": 0,
+          "spearmanAll": null,
+          "spearmanNoExceptional": null,
+          "allMedian": 1,
+          "noExceptionalMedian": 1
+        },
+        "triggerPathRetraceDepth": {
+          "normalN": 5,
+          "lossN": 3,
+          "normalMedian": 0,
+          "lossMedian": 0,
+          "delta": 0,
+          "spearmanAll": null,
+          "spearmanNoExceptional": null,
+          "allMedian": 0,
+          "noExceptionalMedian": 0
+        },
+        "triggerPathFailedReclaims": {
+          "normalN": 5,
+          "lossN": 3,
+          "normalMedian": 0,
+          "lossMedian": 0,
+          "delta": 0,
+          "spearmanAll": null,
+          "spearmanNoExceptional": null,
+          "allMedian": 0,
+          "noExceptionalMedian": 0
+        }
+      }
+    },
+    {
+      "id": "DEV_H2",
+      "split": "DEV",
+      "n": 7,
+      "start": "2026-07-21 00:45:00",
+      "end": "2026-07-31 19:50:00",
+      "outcome": {
+        "n": 7,
+        "WR": 0.571429,
+        "avgR": 2.328268,
+        "PF": 6.432626,
+        "totalR": 16.297877
+      },
+      "nonExceptionalOutcome": {
+        "n": 5,
+        "WR": 0.4,
+        "avgR": -0.337482,
+        "PF": 0.437529,
+        "totalR": -1.687412
+      },
+      "features": {
+        "triggerDelay": {
+          "normalN": 2,
+          "lossN": 3,
+          "normalMedian": 1,
+          "lossMedian": 1,
+          "delta": 0,
+          "spearmanAll": -0.423659,
+          "spearmanNoExceptional": -0.395285,
+          "allMedian": 1,
+          "noExceptionalMedian": 1
+        },
+        "triggerPathRetraceDepth": {
+          "normalN": 2,
+          "lossN": 3,
+          "normalMedian": 0,
+          "lossMedian": 0,
+          "delta": 0,
+          "spearmanAll": -0.423659,
+          "spearmanNoExceptional": -0.395285,
+          "allMedian": 0,
+          "noExceptionalMedian": 0
+        },
+        "triggerPathFailedReclaims": {
+          "normalN": 2,
+          "lossN": 3,
+          "normalMedian": 0,
+          "lossMedian": 0,
+          "delta": 0,
+          "spearmanAll": -0.423659,
+          "spearmanNoExceptional": -0.395285,
+          "allMedian": 0,
+          "noExceptionalMedian": 0
+        }
+      }
+    },
+    {
+      "id": "VAL_H1",
+      "split": "VAL",
+      "n": 7,
+      "start": "2026-08-02 22:05:00",
+      "end": "2026-08-07 00:00:00",
+      "outcome": {
+        "n": 7,
+        "WR": 0.428571,
+        "avgR": 1.142861,
+        "PF": 3.000007,
+        "totalR": 8.000029
+      },
+      "nonExceptionalOutcome": {
+        "n": 6,
+        "WR": 0.333333,
+        "avgR": -0.622714,
+        "PF": 0.06593,
+        "totalR": -3.736281
+      },
+      "features": {
+        "triggerDelay": {
+          "normalN": 2,
+          "lossN": 4,
+          "normalMedian": 1.5,
+          "lossMedian": 1,
+          "delta": 0.5,
+          "spearmanAll": 0.225221,
+          "spearmanNoExceptional": 0.464758,
+          "allMedian": 1,
+          "noExceptionalMedian": 1
+        },
+        "triggerPathRetraceDepth": {
+          "normalN": 2,
+          "lossN": 4,
+          "normalMedian": 0.022906,
+          "lossMedian": 0,
+          "delta": 0.022906,
+          "spearmanAll": 0.225221,
+          "spearmanNoExceptional": 0.464758,
+          "allMedian": 0,
+          "noExceptionalMedian": 0
+        },
+        "triggerPathFailedReclaims": {
+          "normalN": 2,
+          "lossN": 4,
+          "normalMedian": 0.5,
+          "lossMedian": 0,
+          "delta": 0.5,
+          "spearmanAll": 0.225221,
+          "spearmanNoExceptional": 0.464758,
+          "allMedian": 0,
+          "noExceptionalMedian": 0
+        }
+      }
+    },
+    {
+      "id": "VAL_H2",
+      "split": "VAL",
+      "n": 7,
+      "start": "2026-08-07 01:25:00",
+      "end": "2026-08-14 00:35:00",
+      "outcome": {
+        "n": 7,
+        "WR": 0.285714,
+        "avgR": -0.409133,
+        "PF": 0.427214,
+        "totalR": -2.863929
+      },
+      "nonExceptionalOutcome": {
+        "n": 7,
+        "WR": 0.285714,
+        "avgR": -0.409133,
+        "PF": 0.427214,
+        "totalR": -2.863929
+      },
+      "features": {
+        "triggerDelay": {
+          "normalN": 2,
+          "lossN": 5,
+          "normalMedian": 24,
+          "lossMedian": 1,
+          "delta": 23,
+          "spearmanAll": 0.277778,
+          "spearmanNoExceptional": 0.277778,
+          "allMedian": 1,
+          "noExceptionalMedian": 1
+        },
+        "triggerPathRetraceDepth": {
+          "normalN": 2,
+          "lossN": 5,
+          "normalMedian": 0.892576,
+          "lossMedian": 0,
+          "delta": 0.892576,
+          "spearmanAll": 0.277778,
+          "spearmanNoExceptional": 0.277778,
+          "allMedian": 0,
+          "noExceptionalMedian": 0
+        },
+        "triggerPathFailedReclaims": {
+          "normalN": 2,
+          "lossN": 5,
+          "normalMedian": 0.01087,
+          "lossMedian": 0,
+          "delta": 0.01087,
+          "spearmanAll": 0.5,
+          "spearmanNoExceptional": 0.5,
+          "allMedian": 0,
+          "noExceptionalMedian": 0
+        }
+      }
+    }
+  ],
+  "features": {
+    "triggerDelay": {
+      "normalN": 11,
+      "lossN": 15,
+      "normalMedian": 1,
+      "lossMedian": 1,
+      "delta": 0,
+      "spearmanAll": -0.01681,
+      "spearmanNoExceptional": 0.073243,
+      "allMedian": 1,
+      "noExceptionalMedian": 1
+    },
+    "triggerPathRetraceDepth": {
+      "normalN": 11,
+      "lossN": 15,
+      "normalMedian": 0,
+      "lossMedian": 0,
+      "delta": 0,
+      "spearmanAll": -0.032736,
+      "spearmanNoExceptional": 0.051452,
+      "allMedian": 0,
+      "noExceptionalMedian": 0
+    },
+    "triggerPathFailedReclaims": {
+      "normalN": 11,
+      "lossN": 15,
+      "normalMedian": 0,
+      "lossMedian": 0,
+      "delta": 0,
+      "spearmanAll": -0.008847,
+      "spearmanNoExceptional": 0.084139,
+      "allMedian": 0,
+      "noExceptionalMedian": 0
+    }
+  },
+  "featureOverlapNotes": {
+    "triggerDelay_note": "Identical to entryDelayFromCorrection in expanded anatomy. NOT in the V3/discriminative/temporal-replication pipeline. First inclusion in the standardized outcome-association framework.",
+    "triggerPathRetraceDepth_note": "Genuinely new. Distinct from triggerReclaimToRange (trigger candle reclaim vs intermediate path adverse excursion). Distinct from pathEfficiency (correction path vs trigger path).",
+    "triggerPathFailedReclaims_note": "Genuinely new. No existing feature counts intrabar level tests. Distinct from triggerPathRetraceDepth (frequency vs magnitude).",
+    "triggerDelay_vs_correctionBars": "triggerDelay measures the gap between correction and trigger. correctionBars measures the duration of the correction itself. Different segments of the trade lifecycle.",
+    "pathFeatures_sampleLimitation": "4/29 cases have intermediate candles. Path feature Spearman correlations and temporal stability are computed on the full sample (24 zeros + 4 non-zeros) and should not be over-interpreted."
+  },
+  "cases": [
+    {
+      "split": "DEV",
+      "time": "2026-07-14 23:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 792,
+      "triggerIndex": 793,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-14 23:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 793,
+      "triggerIndex": 794,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 00:10:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 799,
+      "triggerIndex": 800,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 00:30:00",
+      "r": 0.5648136338213738,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 803,
+      "triggerIndex": 804,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 22:45:00",
+      "r": 0.3102012789149257,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 1070,
+      "triggerIndex": 1071,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-15 23:50:00",
+      "r": 0.03699648322406649,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 1083,
+      "triggerIndex": 1084,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 00:35:00",
+      "r": 0.28695364283194685,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 1092,
+      "triggerIndex": 1093,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-16 20:00:00",
+      "r": 0.4493185491895604,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 1325,
+      "triggerIndex": 1326,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 00:45:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 2534,
+      "triggerIndex": 2535,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-21 22:40:00",
+      "r": 9.395686641391704,
+      "classification": "EXCEPTIONAL_WIN",
+      "correctionExtremeIndex": 2797,
+      "triggerIndex": 2798,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-22 00:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 2818,
+      "triggerIndex": 2819,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-23 23:35:00",
+      "r": 8.589602389389354,
+      "classification": "EXCEPTIONAL_WIN",
+      "correctionExtremeIndex": 3384,
+      "triggerIndex": 3385,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-27 00:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 4251,
+      "triggerIndex": 4259,
+      "triggerDelay": 8,
+      "intermediateCount": 7,
+      "triggerPathRetraceDepth": 2.353229263604757,
+      "triggerPathFailedReclaims": 0.42857142857142855
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-30 01:10:00",
+      "r": 0.22949816938004886,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 5131,
+      "triggerIndex": 5132,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "DEV",
+      "time": "2026-07-31 19:50:00",
+      "r": 1.0830902592333151,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 5643,
+      "triggerIndex": 5644,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-02 22:05:00",
+      "r": 0.16723378217161608,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 6246,
+      "triggerIndex": 6247,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-03 19:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 6503,
+      "triggerIndex": 6504,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-04 00:10:00",
+      "r": 11.736310887570935,
+      "classification": "EXCEPTIONAL_WIN",
+      "correctionExtremeIndex": 6559,
+      "triggerIndex": 6560,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-05 01:20:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 6861,
+      "triggerIndex": 6862,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-05 23:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 7126,
+      "triggerIndex": 7127,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-06 19:55:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 7372,
+      "triggerIndex": 7373,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 00:00:00",
+      "r": 0.09648476987949235,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 7420,
+      "triggerIndex": 7422,
+      "triggerDelay": 2,
+      "intermediateCount": 1,
+      "triggerPathRetraceDepth": 0.04581170511825325,
+      "triggerPathFailedReclaims": 1
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-07 01:25:00",
+      "r": 0.8811216791275872,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 7438,
+      "triggerIndex": 7439,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 00:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 8868,
+      "triggerIndex": 8869,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 00:40:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 8869,
+      "triggerIndex": 8870,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 22:05:00",
+      "r": 1.2549489791108852,
+      "classification": "NORMAL_WIN",
+      "correctionExtremeIndex": 9080,
+      "triggerIndex": 9127,
+      "triggerDelay": 47,
+      "intermediateCount": 46,
+      "triggerPathRetraceDepth": 1.7851529585747963,
+      "triggerPathFailedReclaims": 0.021739130434782608
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-12 23:30:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 9143,
+      "triggerIndex": 9144,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-13 00:25:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 9154,
+      "triggerIndex": 9155,
+      "triggerDelay": 1,
+      "intermediateCount": 0,
+      "triggerPathRetraceDepth": 0,
+      "triggerPathFailedReclaims": 0
+    },
+    {
+      "split": "VAL",
+      "time": "2026-08-14 00:35:00",
+      "r": -1,
+      "classification": "LOSS",
+      "correctionExtremeIndex": 8458,
+      "triggerIndex": 9445,
+      "triggerDelay": 987,
+      "intermediateCount": 986,
+      "triggerPathRetraceDepth": 10.08386243654165,
+      "triggerPathFailedReclaims": 0.002028397565922921
+    }
+  ]
+}
