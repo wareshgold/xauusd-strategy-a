@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 const scripts = [
   'analyze-ny-sell-correction-trigger-lineage-audit.mjs',
   'analyze-ny-sell-setup-freshness-age-audit.mjs',
-  'analyze-ny-sell-correction-path-geometry-v2.mjs',
+  'analyze-ny-sell-correction-path-geometry-compact.mjs',
 ];
 
 for (const script of scripts) {
