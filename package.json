@@ -17,6 +17,7 @@
     "research:phase13-post-entry-recovery-event": "node scripts/analyze-phase13-post-entry-recovery-event.mjs",
     "research:phase14-preentry-setup-timing": "node scripts/analyze-phase14-preentry-setup-timing.mjs",
     "research:phase15-baseline-edge-concentration": "node scripts/analyze-phase15-baseline-edge-concentration.mjs",
-    "research:phase16-sell-edge-deoutlier-stability": "node scripts/analyze-phase16-sell-edge-deoutlier-stability.mjs"
+    "research:phase16-sell-edge-deoutlier-stability": "node scripts/analyze-phase16-sell-edge-deoutlier-stability.mjs",
+    "research:phase17-baseline-failure-decomposition": "node scripts/analyze-phase17-baseline-failure-decomposition.mjs"
   }
 }
