@@ -26,8 +26,6 @@ const WINDOWS = [
 ];
 const DEV_END = WINDOWS.find(w => w.name === 'DEV_3').end;
 
-const round = x => Number.isFinite(x) ? Number(x.toFixed(6)) : null;
-const pct = x => Number.isFinite(x) ? Number((x * 100).toFixed(4)) : null;
 const median = values => {
   const v = values.filter(Number.isFinite).sort((a, b) => a - b);
   if (!v.length) return null;
@@ -43,9 +41,6 @@ const stats = rows => {
   const grossLoss = -losses.reduce((s, x) => s + x.r, 0);
   return { n, avgR: n ? totalR / n : null, PF: grossLoss ? grossWin / grossLoss : null, WR: n ? wins.length / n : null, totalR };
 };
-const bucket = (rows, key) => Object.fromEntries(
-  [...new Set(rows.map(x => x[key]))].sort().map(value => [value, stats(rows.filter(x => x[key] === value))])
-);
 
 function session(timestamp) {
   const d = new Date(timestamp);
@@ -74,10 +69,13 @@ function replay(candles, entryIndex) {
   return null;
 }
 
-function scanToCanonicalExit(candles, entryIndex, entryPrice, stopLoss, takeProfit, direction, result) {
+// Must mirror BacktestEngine.evaluate(): scan every subsequent candle until the
+// first SL/TP event. The 500-bar research horizon applies ONLY to post-exit
+// continuation, never to reconstruction of the canonical baseline exit.
+function scanToCanonicalExit(candles, entryIndex, entryPrice, stopLoss, takeProfit, direction) {
   const risk = Math.abs(entryPrice - stopLoss);
   if (!Number.isFinite(risk) || risk <= 0 || !Number.isFinite(entryPrice) || !Number.isFinite(stopLoss) || !Number.isFinite(takeProfit)) return null;
-  for (let j = entryIndex + 1; j <= Math.min(candles.length - 1, entryIndex + PATH_HORIZON); j++) {
+  for (let j = entryIndex + 1; j < candles.length; j++) {
     const candle = candles[j];
     const hitSL = direction === 'BUY' ? candle.low <= stopLoss : candle.high >= stopLoss;
     const hitTP = direction === 'BUY' ? candle.high >= takeProfit : candle.low <= takeProfit;
@@ -116,20 +114,20 @@ function pathStats(candles, startIndex, endIndex, entryPrice, risk, direction) {
 
 function postExitStats(candles, exitIndex, entryPrice, risk, direction) {
   if (exitIndex >= candles.length - 1) return null;
-  let favorableFromExitR = 0;
-  let adverseFromExitR = 0;
+  let favorableFromEntryR = 0;
+  let adverseFromEntryR = 0;
   let continuation1R = null;
   let continuation2R = null;
   for (let j = exitIndex + 1; j <= Math.min(candles.length - 1, exitIndex + PATH_HORIZON); j++) {
     const candle = candles[j];
     const favorable = direction === 'BUY' ? (candle.high - entryPrice) / risk : (entryPrice - candle.low) / risk;
     const adverse = direction === 'BUY' ? (entryPrice - candle.low) / risk : (candle.high - entryPrice) / risk;
-    favorableFromExitR = Math.max(favorableFromExitR, favorable);
-    adverseFromExitR = Math.max(adverseFromExitR, adverse);
+    favorableFromEntryR = Math.max(favorableFromEntryR, favorable);
+    adverseFromEntryR = Math.max(adverseFromEntryR, adverse);
     if (continuation1R === null && favorable >= 1) continuation1R = j - exitIndex;
     if (continuation2R === null && favorable >= 2) continuation2R = j - exitIndex;
   }
-  return { favorableFromExitR, adverseFromExitR, continuation1R, continuation2R };
+  return { favorableFromEntryR, adverseFromEntryR, continuation1R, continuation2R };
 }
 
 const raw = (base.trades ?? []).filter(trade => {
@@ -139,6 +137,7 @@ const raw = (base.trades ?? []).filter(trade => {
 
 let mismatch = 0;
 let exitMismatch = 0;
+const exitMismatchDetails = [];
 const rows = [];
 for (const trade of raw) {
   const entryIndex = Number(trade.entryIndex);
@@ -150,20 +149,29 @@ for (const trade of raw) {
   const entry = Number(trade.entry);
   const stopLoss = Number(trade.stopLoss);
   const tp1 = Number(trade.tp1);
-  const exit = scanToCanonicalExit(candles, entryIndex, entry, stopLoss, tp1, trade.direction, trade.result);
-  if (!exit || exit.exitReason === 'AMBIGUOUS_SAME_CANDLE') {
-    exitMismatch++;
-    continue;
-  }
+  const exit = scanToCanonicalExit(candles, entryIndex, entry, stopLoss, tp1, trade.direction);
   const expectedReason = trade.result === 'TP1' ? 'TP1' : 'SL';
-  if (exit.exitReason !== expectedReason) {
+  if (!exit || exit.exitReason === 'AMBIGUOUS_SAME_CANDLE' || exit.exitReason !== expectedReason) {
     exitMismatch++;
+    exitMismatchDetails.push({
+      entryIndex,
+      entryTime: trade.entryTime,
+      direction: trade.direction,
+      expectedReason,
+      reconstructed: exit?.exitReason ?? null,
+      reconstructedExitIndex: exit?.exitIndex ?? null,
+      barsToReconstructedExit: exit ? exit.exitIndex - entryIndex : null,
+      baselineR: Number(trade.rMultiple),
+    });
     continue;
   }
-  const preEnd = exit.exitIndex;
+  const pre = pathStats(candles, entryIndex + 1, exit.exitIndex, entry, exit.risk, trade.direction);
+  if (!pre) {
+    exitMismatch++;
+    exitMismatchDetails.push({ entryIndex, entryTime: trade.entryTime, direction: trade.direction, expectedReason, reconstructed: 'INVALID_PRE_PATH' });
+    continue;
+  }
   const post = postExitStats(candles, exit.exitIndex, entry, exit.risk, trade.direction);
-  const pre = pathStats(candles, entryIndex + 1, preEnd, entry, exit.risk, trade.direction);
-  if (!pre) { exitMismatch++; continue; }
   rows.push({
     entryIndex,
     entryTime: trade.entryTime,
@@ -200,7 +208,7 @@ const summarizePath = subset => ({
   preExit2R: subset.length ? subset.filter(x => x.pre.reached2R).length / subset.length : null,
   postExit1R: subset.length ? subset.filter(x => x.post?.continuation1R !== null).length / subset.length : null,
   postExit2R: subset.length ? subset.filter(x => x.post?.continuation2R !== null).length / subset.length : null,
-  postExitFavorableMedian: median(subset.map(x => x.post?.favorableFromExitR)),
+  postExitFavorableMedianFromEntry: median(subset.map(x => x.post?.favorableFromEntryR)),
   exitBarsMedian: median(subset.map(x => x.exitBars)),
 });
 
@@ -223,11 +231,15 @@ const result = {
     replayMismatch: mismatch,
     exitMismatch,
     totalMismatch: mismatch + exitMismatch,
+    exitMismatchDetails,
   },
   methodology: {
     purpose: 'Descriptive attribution of favorable/adverse path before versus after the canonical baseline exit; no optimization or rule selection.',
     pathHorizonBars: PATH_HORIZON,
-    canonicalExit: 'First non-ambiguous hit of baseline stopLoss or tp1; exit reason must match baseline result (SL or TP1).',
+    canonicalExit: 'Exact BacktestEngine semantics: scan all subsequent candles; first SL+TP same-candle is AMBIGUOUS, otherwise first SL/TP determines exit.',
+    postExitHorizon: 'At most 500 bars after canonical exit.',
+    preExitWindow: 'Entry candle excluded; canonical exit candle included.',
+    postExitContinuation: 'Favorable continuation thresholds are measured from original entry price after canonical exit; timing is bars after exit.',
     splitDefinition: 'DEV_1 + DEV_2 + DEV_3 = DEV; VAL_1 + VAL_2 = VAL.',
     noOptimization: true,
     noThresholdSearch: true,
@@ -258,10 +270,12 @@ await writeFile(resolve(out, '5min.json'), JSON.stringify(result, null, 2));
 
 console.log(`PHASE_18_PRE_EXIT_VS_POST_EXIT_PATH_ATTRIBUTION 5min N=${rows.length} DEV=${result.scope.dev} VAL=${result.scope.val} FRESH=LOCKED`);
 console.log(`INTEGRITY expected=210 raw=${raw.length} actual=${rows.length} replayMismatch=${mismatch} exitMismatch=${exitMismatch}`);
-console.log(`OVERALL N=${rows.length} avgR=${round(result.overall.avgR)} PF=${round(result.overall.PF)} WR=${pct(result.overall.WR)}% totalR=${round(result.overall.totalR)}`);
-console.log(`LOSSES preExitMAE=${round(result.outcome.losses.preExitMAE)}R preExitMFE=${round(result.outcome.losses.preExitMFE)}R halfAdv=${pct(result.outcome.losses.preExitHalfAdv)}% halfFav=${pct(result.outcome.losses.preExitHalfFav)}% 1R=${pct(result.outcome.losses.preExit1R)}% 2R=${pct(result.outcome.losses.preExit2R)}% | postExit1R=${pct(result.outcome.losses.postExit1R)}% postExit2R=${pct(result.outcome.losses.postExit2R)}%`);
-console.log(`WINS preExitMAE=${round(result.outcome.wins.preExitMAE)}R preExitMFE=${round(result.outcome.wins.preExitMFE)}R halfAdv=${pct(result.outcome.wins.preExitHalfAdv)}% halfFav=${pct(result.outcome.wins.preExitHalfFav)}% 1R=${pct(result.outcome.wins.preExit1R)}% 2R=${pct(result.outcome.wins.preExit2R)}% | postExit1R=${pct(result.outcome.wins.postExit1R)}% postExit2R=${pct(result.outcome.wins.postExit2R)}%`);
-console.log('=== WINDOWS ===');
-for (const [key, value] of Object.entries(result.windows)) console.log(`${key}: N=${value.n} preMAE=${round(value.preExitMAE)}R preMFE=${round(value.preExitMFE)}R halfAdv=${pct(value.preExitHalfAdv)}% halfFav=${pct(value.preExitHalfFav)}% 1R=${pct(value.preExit1R)}% post1R=${pct(value.postExit1R)}% post2R=${pct(value.postExit2R)}% exitBarsMed=${round(value.exitBarsMedian)}`);
+if (exitMismatchDetails.length) console.log(`EXIT_MISMATCH_DETAILS ${JSON.stringify(exitMismatchDetails)}`);
+console.log(`OVERALL N=${rows.length} avgR=${result.overall.avgR?.toFixed(6)} PF=${result.overall.PF?.toFixed(6)} WR=${(result.overall.WR * 100)?.toFixed(4)}% totalR=${result.overall.totalR?.toFixed(6)}`);
+console.log(`LOSSES preExitMAE=${result.outcome.losses.preExitMAE?.toFixed(6)}R preExitMFE=${result.outcome.losses.preExitMFE?.toFixed(6)}R halfAdv=${(result.outcome.losses.preExitHalfAdv * 100)?.toFixed(4)}% halfFav=${(result.outcome.losses.preExitHalfFav * 100)?.toFixed(4)}% 1R=${(result.outcome.losses.preExit1R * 100)?.toFixed(4)}% 2R=${(result.outcome.losses.preExit2R * 100)?.toFixed(4)}% | postExit1R=${(result.outcome.losses.postExit1R * 100)?.toFixed(4)}% postExit2R=${(result.outcome.losses.postExit2R * 100)?.toFixed(4)}%`);
+console.log(`WINS preExitMAE=${result.outcome.wins.preExitMAE?.toFixed(6)}R preExitMFE=${result.outcome.wins.preExitMFE?.toFixed(6)}R halfAdv=${(result.outcome.wins.preExitHalfAdv * 100)?.toFixed(4)}% halfFav=${(result.outcome.wins.preExitHalfFav * 100)?.toFixed(4)}% 1R=${(result.outcome.wins.preExit1R * 100)?.toFixed(4)}% 2R=${(result.outcome.wins.preExit2R * 100)?.toFixed(4)}% | postExit1R=${(result.outcome.wins.postExit1R * 100)?.toFixed(4)}% postExit2R=${(result.outcome.wins.postExit2R * 100)?.toFixed(4)}%`);
+for (const [name, s] of Object.entries(result.windows)) {
+  console.log(`${name}: N=${s.n} preMAE=${s.preExitMAE?.toFixed(6)}R preMFE=${s.preExitMFE?.toFixed(6)}R halfAdv=${(s.preExitHalfAdv * 100)?.toFixed(4)}% halfFav=${(s.preExitHalfFav * 100)?.toFixed(4)}% 1R=${(s.preExit1R * 100)?.toFixed(4)}% post1R=${(s.postExit1R * 100)?.toFixed(4)}% post2R=${(s.postExit2R * 100)?.toFixed(4)}% exitBarsMed=${s.exitBarsMedian}`);
+}
 console.log(`REPORT=${resolve(out, '5min.json')}`);
 console.log('STATUS=DESCRIPTIVE_ONLY NO_OPT NO_THRESHOLD_SEARCH NO_NEW_RULE NO_FRESH PRODUCTION_UNCHANGED');
