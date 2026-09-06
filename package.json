@@ -48,6 +48,7 @@
     "research:phase12-preentry-geometry-robustness": "node scripts/analyze-phase12-preentry-geometry-robustness.mjs",
     "research:phase12-reclaim-temporal-replication": "node scripts/analyze-phase12-reclaim-temporal-replication.mjs",
     "research:phase13-post-entry-recovery-event": "node scripts/analyze-phase13-post-entry-recovery-event.mjs",
-    "research:phase14-preentry-setup-timing": "node scripts/analyze-phase14-preentry-setup-timing.mjs"
+    "research:phase14-preentry-setup-timing": "node scripts/analyze-phase14-preentry-setup-timing.mjs",
+    "research:phase15-baseline-edge-concentration": "node scripts/analyze-phase15-baseline-edge-concentration.mjs"
   }
 }
