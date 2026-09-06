@@ -25,11 +25,11 @@ function composite(result) {
   const corr = result.buckets.correctionToSpike;
   const close = result.buckets.triggerCloseLocation;
   const rows = result.cases ?? [];
-  const favorable = rows.filter((r) => {
-    const c = ['Q1', 'Q2'].find((q) => corr.ALL[q].featureMedian === corr.ALL.Q1.featureMedian) ? false : true;
-    return Number.isFinite(r.correctionToSpike) && Number.isFinite(r.triggerCloseLocation) &&
-      r.correctionToSpike <= corr.ALL.Q2.featureMedian && r.triggerCloseLocation >= close.ALL.Q3.featureMedian && c;
-  });
+  const favorable = rows.filter((r) =>
+    Number.isFinite(r.correctionToSpike) && Number.isFinite(r.triggerCloseLocation) &&
+    r.correctionToSpike <= corr.ALL.Q2.featureMedian &&
+    r.triggerCloseLocation >= close.ALL.Q3.featureMedian
+  );
   const summarize = (xs) => {
     const wins = xs.filter((x) => x.r > 0).length;
     const total = xs.reduce((s, x) => s + x.r, 0);
@@ -37,7 +37,7 @@ function composite(result) {
     const grossLoss = xs.filter((x) => x.r <= 0).reduce((s, x) => s + Math.abs(x.r), 0);
     return `${xs.length}/${xs.length ? pct(wins / xs.length) : null}%/${f(xs.length ? total / xs.length : null)}/${f(grossLoss ? grossWin / grossLoss : null)}`;
   };
-  return `COMPOSITE exploratory corrToSpike<=ALL-Q2-median & closeLoc>=ALL-Q3-median: ALL ${summarize(favorable)} | DEV ${summarize(favorable.filter(x => x.split === 'DEV'))} | VAL ${summarize(favorable.filter(x => x.split === 'VAL'))}`;
+  return `COMPOSITE exploratory corrToSpike<=ALL-Q2-med & closeLoc>=ALL-Q3-med: ALL ${summarize(favorable)} | DEV ${summarize(favorable.filter(x => x.split === 'DEV'))} | VAL ${summarize(favorable.filter(x => x.split === 'VAL'))}`;
 }
 
 await runGenerator();
