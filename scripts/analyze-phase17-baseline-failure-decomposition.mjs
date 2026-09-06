@@ -95,6 +95,9 @@ function path(candles, entryIndex, entryPrice, stopLoss, takeProfit, direction) 
   let hitSL = null;
   let hitTP = null;
   const risk = Math.abs(entryPrice - stopLoss);
+  if (!Number.isFinite(risk) || risk <= 0 || !Number.isFinite(entryPrice) || !Number.isFinite(stopLoss) || !Number.isFinite(takeProfit)) {
+    return { maeR: null, mfeR: null, firstHalfAdverse: null, firstHalfFavorable: null, first1R: null, hitSL: null, hitTP: null };
+  }
   for (let j = entryIndex + 1; j <= Math.min(candles.length - 1, entryIndex + 500); j++) {
     const candle = candles[j];
     const adverse = direction === 'BUY' ? (entryPrice - candle.low) / risk : (candle.high - entryPrice) / risk;
@@ -125,7 +128,7 @@ for (const trade of raw) {
     mismatch++;
     continue;
   }
-  const pathResult = path(candles, entryIndex, Number(trade.entryPrice), Number(trade.stopLoss), Number(trade.takeProfit1), trade.direction);
+  const pathResult = path(candles, entryIndex, Number(trade.entry), Number(trade.stopLoss), Number(trade.tp1), trade.direction);
   const r = Number(trade.rMultiple);
   rows.push({
     entryIndex,
