@@ -33,5 +33,11 @@
     "research:phase28-breakout-follow-bars-validation": "node scripts/analyze-phase28-breakout-follow-bars-validation.mjs",
     "research:phase29-regime-robustness-audit": "node scripts/analyze-phase29-regime-robustness-audit.mjs",
     "research:phase30-directional-context-alignment-audit": "node scripts/analyze-phase30-directional-context-alignment-audit.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "eslint": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
   }
 }
