@@ -13,6 +13,7 @@ function replay(events: Sp2lEvent[]) {
 const bullishSetup: Sp2lEvent[] = [
   { type: 'CONTEXT_IDENTIFIED', contextId: 'fixture-bull-context' },
   { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse-bull-1', direction: 'BULLISH' },
+  { type: 'FOLLOW_THROUGH_CONFIRMED', index: 8 },
   { type: 'SPIKE_CONFIRMED', spikeId: 'spike-bull-1' },
   {
     type: 'STRUCTURAL_REFERENCE_IDENTIFIED',
@@ -39,6 +40,7 @@ describe('SP2L V2 semantic state model (non-production)', () => {
 
     expect(state.phase).toBe('PENDING');
     expect(state.direction).toBe('BULLISH');
+    expect(state.followThroughIndex).toBe(8);
     expect(state.geometry.firstStructuralReference.price).toBe(2500);
     expect(state.geometry.pendingEntryPrice.price).toBe(2500);
     expect(state.geometry.structuralStop.price).toBe(2492);
@@ -48,6 +50,7 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     const state = replay([
       { type: 'CONTEXT_IDENTIFIED', contextId: 'fixture-bear-context' },
       { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse-bear-1', direction: 'BEARISH' },
+      { type: 'FOLLOW_THROUGH_CONFIRMED', index: 8 },
       { type: 'SPIKE_CONFIRMED', spikeId: 'spike-bear-1' },
       { type: 'STRUCTURAL_REFERENCE_IDENTIFIED', index: 12, price: 2500, status: 'SOURCE_CONFIRMED' },
       { type: 'CORRECTION_BEGAN', index: 13 },
@@ -58,7 +61,7 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(state.direction).toBe('BEARISH');
   });
 
-  it('requires context before strong-move classification', () => {
+  it('rejects a strong move without context', () => {
     const state = replay([
       { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse-1', direction: 'BULLISH' },
     ]);
@@ -67,10 +70,22 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(state.rejectionReason).toBe('STRONG_MOVE_REQUIRES_CONTEXT');
   });
 
+  it('rejects follow-through that returns into the prior area', () => {
+    const state = replay([
+      { type: 'CONTEXT_IDENTIFIED', contextId: 'ctx' },
+      { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse', direction: 'BULLISH' },
+      { type: 'FOLLOW_THROUGH_REJECTED', reason: 'FOLLOW_THROUGH_RETURNED_INTO_PRIOR_AREA' },
+    ]);
+
+    expect(state.phase).toBe('REJECTED');
+    expect(state.rejectionReason).toBe('FOLLOW_THROUGH_RETURNED_INTO_PRIOR_AREA');
+  });
+
   it('requires the structural reference before correction begins', () => {
     const state = replay([
       { type: 'CONTEXT_IDENTIFIED', contextId: 'ctx' },
       { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse', direction: 'BULLISH' },
+      { type: 'FOLLOW_THROUGH_CONFIRMED', index: 8 },
       { type: 'SPIKE_CONFIRMED', spikeId: 'spike' },
       { type: 'CORRECTION_BEGAN', index: 10 },
     ]);
@@ -126,7 +141,7 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(state.position.position2xEnabled).toBe(false);
   });
 
-  it('does not silently enable the separate 2X position concept', () => {
+  it('keeps 2X separate from position 1', () => {
     const state = applySp2lEvent(replay(bullishSetup), {
       type: 'LIMIT_TOUCHED',
       index: 15,
@@ -145,7 +160,7 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(resolveSameCandleTouch('AMBIGUOUS', { entry: true, stop: false, tp1: false })).toBe('FILL');
   });
 
-  it('preserves the semantic distinction from the old close-reclaim entry model', () => {
+  it('preserves the pending-limit semantic distinction from the old close-reclaim model', () => {
     const state = replay(bullishSetup);
 
     expect(state.phase).toBe('PENDING');
