@@ -9,6 +9,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:sp2l-v2": "vitest run tests/sp2l-v2-semantic-state.test.ts",
+    "test:sp2l-g1": "vitest run tests/sp2l-v2-structural-reference.test.ts",
     "lint": "eslint .",
     "download:data": "node scripts/download-xauusd.mjs",
     "audit:data": "node scripts/audit-dataset.mjs",
