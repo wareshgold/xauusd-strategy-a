@@ -29,6 +29,7 @@
     "research:phase25-entry-delay-temporal-validation": "node scripts/analyze-phase25-entry-delay-temporal-validation.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
     "research:phase27-structural-regime-decomposition": "node scripts/analyze-phase27-structural-regime-decomposition.mjs",
-    "research:phase28-breakout-follow-bars-validation": "node scripts/analyze-phase28-breakout-follow-bars-validation.mjs"
+    "research:phase28-breakout-follow-bars-validation": "node scripts/analyze-phase28-breakout-follow-bars-validation.mjs",
+    "research:phase29-regime-robustness-audit": "node scripts/analyze-phase29-regime-robustness-audit.mjs"
   }
 }
