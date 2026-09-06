@@ -45,6 +45,7 @@
     "research:delay1-early-mae-recovery-transition": "node scripts/analyze-delay1-early-mae-recovery-transition.mjs",
     "research:delay1-fixed-horizon-temporal-stability": "node scripts/analyze-delay1-fixed-horizon-temporal-stability.mjs",
     "research:delay1-fixed-horizon-exceptional-segment-stability": "node scripts/analyze-delay1-fixed-horizon-exceptional-segment-stability.mjs",
-    "research:phase12-preentry-geometry-robustness": "node scripts/analyze-phase12-preentry-geometry-robustness.mjs"
+    "research:phase12-preentry-geometry-robustness": "node scripts/analyze-phase12-preentry-geometry-robustness.mjs",
+    "research:phase12-reclaim-temporal-replication": "node scripts/analyze-phase12-reclaim-temporal-replication.mjs"
   }
 }
