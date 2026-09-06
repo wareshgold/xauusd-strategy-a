@@ -16,6 +16,7 @@ const OUT = resolve(ROOT, 'data/reports/strategy-a-delay1-early-mae-recovery-tra
 const PRE = 10000;
 const DEV = 6000;
 const HORIZONS = [3, 5, 10];
+const PATH_END = 20;
 const STATES = ['<0.25R', '0.25-0.50R', '0.50-0.75R', '0.75-1.00R', '>=1.00R'];
 
 const CTX = {
@@ -84,19 +85,20 @@ function candidate(candles, index) {
   return null;
 }
 
-function pathAt(candles, c, horizon) {
-  const end = Math.min(c.entryIndex + horizon, candles.length - 1);
-  if (c.entryIndex + 1 > end) return null;
+function pathAt(candles, c, startOffset, endOffset) {
+  const start = c.entryIndex + startOffset;
+  const end = Math.min(c.entryIndex + endOffset, candles.length - 1);
+  if (start > end) return null;
   let mae = 0;
   let mfe = 0;
-  for (let j = c.entryIndex + 1; j <= end; j++) {
+  for (let j = start; j <= end; j++) {
     const x = candles[j];
     const adverse = (c.direction === 'BUY' ? c.entry - x.low : x.high - c.entry) / c.risk;
     const favorable = (c.direction === 'BUY' ? x.high - c.entry : c.entry - x.low) / c.risk;
     if (finite(adverse)) mae = Math.max(mae, Math.max(0, adverse));
     if (finite(favorable)) mfe = Math.max(mfe, Math.max(0, favorable));
   }
-  return { mae, mfe, pathLength: end - c.entryIndex, complete: end >= c.entryIndex + horizon };
+  return { mae, mfe, pathLength: end - start + 1, complete: end >= c.entryIndex + endOffset };
 }
 
 function maeState(mae) {
@@ -131,10 +133,15 @@ async function load() {
     const t = byKey.get(key(c));
     if (!t) continue;
     matched++;
-    const p3 = pathAt(candles, c, 3);
-    const p5 = pathAt(candles, c, 5);
-    const p10 = pathAt(candles, c, 10);
-    if (!p3 || !p5 || !p10 || !p10.complete) continue;
+    const p1 = pathAt(candles, c, 1, 1);
+    const p3 = pathAt(candles, c, 1, 3);
+    const p5 = pathAt(candles, c, 1, 5);
+    const p10 = pathAt(candles, c, 1, 10);
+    const later3 = pathAt(candles, c, 4, PATH_END);
+    const later5 = pathAt(candles, c, 6, PATH_END);
+    const later10 = pathAt(candles, c, 11, PATH_END);
+    if (!p1 || !p3 || !p5 || !p10 || !later3 || !later5 || !later10) continue;
+    if (!p10.complete || !later3.complete || !later5.complete || !later10.complete) continue;
     rows.push({
       entryIndex: Number(t.entryIndex),
       direction: t.direction,
@@ -145,11 +152,11 @@ async function load() {
       rMultiple: Number(t.rMultiple),
       sameBarSL: c.direction === 'BUY' ? candles[i + 1].low <= c.stopLoss : candles[i + 1].high >= c.stopLoss,
       t3Mae: p3.mae,
-      t3Mfe: p3.mfe,
       t5Mae: p5.mae,
-      t5Mfe: p5.mfe,
       t10Mae: p10.mae,
-      t10Mfe: p10.mfe,
+      t3LaterMfe: later3.mfe,
+      t5LaterMfe: later5.mfe,
+      t10LaterMfe: later10.mfe,
     });
   }
 
@@ -174,17 +181,31 @@ function stateTable(rows, h) {
   return Object.fromEntries(STATES.map(s => {
     const subset = rows.filter(r => maeState(r[`t${h}Mae`]) === s);
     const o = stats(subset);
-    const mfe1 = subset.filter(r => r.t10Mfe >= 1).length;
-    const mfe2 = subset.filter(r => r.t10Mfe >= 2).length;
+    const laterMfe = subset.map(r => r[`t${h}LaterMfe`]).filter(finite);
+    const mfe1 = laterMfe.filter(x => x >= 1).length;
+    const mfe2 = laterMfe.filter(x => x >= 2).length;
     return [s, {
       n: subset.length,
       outcome: o,
-      eventualMfe10: {
-        ge1R: pct(mfe1, subset.length),
-        ge2R: pct(mfe2, subset.length),
+      laterPathMfe: {
+        ge1R: pct(mfe1, laterMfe.length),
+        ge2R: pct(mfe2, laterMfe.length),
+        n: laterMfe.length,
       },
     }];
   }));
+}
+
+function adverseRecovery(rows, h) {
+  const subset = rows.filter(r => r[`t${h}Mae`] >= 1);
+  const later = subset.map(r => r[`t${h}LaterMfe`]).filter(finite);
+  return {
+    n: subset.length,
+    laterMfeGE1R: later.filter(x => x >= 1).length,
+    laterMfeGE2R: later.filter(x => x >= 2).length,
+    laterMfeGE1RPct: pct(later.filter(x => x >= 1).length, later.length),
+    laterMfeGE2RPct: pct(later.filter(x => x >= 2).length, later.length),
+  };
 }
 
 async function run() {
@@ -192,16 +213,49 @@ async function run() {
   const rows = loaded.rows;
   const dev = rows.filter(r => r.entryIndex < DEV);
   const val = rows.filter(r => r.entryIndex >= DEV && r.entryIndex < PRE);
+  const post = rows.filter(r => !r.sameBarSL);
+  const postDev = post.filter(r => r.entryIndex < DEV);
+  const postVal = post.filter(r => r.entryIndex >= DEV && r.entryIndex < PRE);
 
   if (rows.length !== 144 || dev.length !== 91 || val.length !== 53) {
     throw new Error(`Integrity gate failed: rows=${rows.length} dev=${dev.length} val=${val.length}`);
   }
 
+  const makeHorizon = h => ({
+    all: stateTable(rows, h),
+    dev: stateTable(dev, h),
+    val: stateTable(val, h),
+    postEntry: stateTable(post, h),
+    postEntryDev: stateTable(postDev, h),
+    postEntryVal: stateTable(postVal, h),
+    transitionsToLater: Object.fromEntries(HORIZONS.filter(x => x > h).map(toH => [`T${toH}`, {
+      all: transition(rows, h, toH),
+      dev: transition(dev, h, toH),
+      val: transition(val, h, toH),
+    }])),
+    adverseGE1RRecovery: {
+      all: adverseRecovery(rows, h),
+      dev: adverseRecovery(dev, h),
+      val: adverseRecovery(val, h),
+      postEntry: adverseRecovery(post, h),
+      postEntryDev: adverseRecovery(postDev, h),
+      postEntryVal: adverseRecovery(postVal, h),
+    },
+  });
+
   const report = {
     strategy: 'Strategy A',
     mode: 'DELAY1_EARLY_MAE_RECOVERY_TRANSITION',
     timeframe: '5min',
-    scope: { preHoldoutCandles: PRE, devCutoff: DEV, freshHoldoutAccessed: false, freshHoldoutLocked: true, horizons: HORIZONS, fixedStates: STATES },
+    scope: {
+      preHoldoutCandles: PRE,
+      devCutoff: DEV,
+      freshHoldoutAccessed: false,
+      freshHoldoutLocked: true,
+      horizons: HORIZONS,
+      laterRecoveryEnd: PATH_END,
+      fixedStates: STATES,
+    },
     integrity: {
       baselinePre: loaded.baselinePre,
       candidates: loaded.candidates,
@@ -216,27 +270,29 @@ async function run() {
     methodology: {
       purpose: 'Descriptive early-MAE recovery/failure state transition study.',
       outcome: 'Canonical baseline rMultiple; no outcome recomputation.',
-      fixedStates: STATES,
-      horizons: HORIZONS,
+      stateDefinition: 'Fixed existing MAE bands; no threshold selection.',
+      earlyStateHorizon: 'MAE measured from entry+1 through T3/T5/T10.',
+      laterRecoveryWindow: 'MFE measured strictly after the state horizon: T3 uses bars 4-20, T5 uses bars 6-20, T10 uses bars 11-20.',
+      transitions: 'MAE state at an earlier fixed horizon mapped to MAE state at a later fixed horizon.',
+      sameBarSLAnalysis: 'Reported separately because the first post-entry bar can contain ambiguous intrabar ordering under OHLC data.',
+      devValReplication: 'All, DEV, VAL, and post-entry populations reported separately; no new segmentation.',
       noThresholdOptimization: true,
       noExitRuleCreation: true,
       noBrokerExecutionModel: true,
       diagnosticOnly: true,
       freshHoldoutExcluded: true,
       productionUntouched: true,
-      sameBarSLRetainedInPrimaryPopulation: true,
     },
-    baseline: { all: stats(rows), dev: stats(dev), val: stats(val), sameBarSL: stats(rows.filter(r => r.sameBarSL)), postEntry: stats(rows.filter(r => !r.sameBarSL)) },
-    horizons: Object.fromEntries(HORIZONS.map(h => [`T${h}`, {
-      all: stateTable(rows, h),
-      dev: stateTable(dev, h),
-      val: stateTable(val, h),
-      transitionsToLater: Object.fromEntries(HORIZONS.filter(x => x > h).map(toH => [`T${toH}`, transition(rows, h, toH)])),
-      adverseGE1RRecovery: (() => {
-        const subset = rows.filter(r => r[`t${h}Mae`] >= 1);
-        return { n: subset.length, laterMfe10GE1R: subset.filter(r => r.t10Mfe >= 1).length, laterMfe10GE2R: subset.filter(r => r.t10Mfe >= 2).length };
-      })(),
-    }])),
+    baseline: {
+      all: stats(rows),
+      dev: stats(dev),
+      val: stats(val),
+      sameBarSL: stats(rows.filter(r => r.sameBarSL)),
+      postEntry: stats(post),
+      postEntryDev: stats(postDev),
+      postEntryVal: stats(postVal),
+    },
+    horizons: Object.fromEntries(HORIZONS.map(h => [`T${h}`, makeHorizon(h)])),
   };
 
   await mkdir(OUT, { recursive: true });
@@ -247,18 +303,19 @@ async function run() {
   console.log(`BASELINE ALL avgR=${report.baseline.all.avgR.toFixed(4)} PF=${report.baseline.all.PF.toFixed(4)} WR=${(report.baseline.all.WR * 100).toFixed(2)}% | POST_ENTRY avgR=${report.baseline.postEntry.avgR.toFixed(4)} PF=${report.baseline.postEntry.PF.toFixed(4)} WR=${(report.baseline.postEntry.WR * 100).toFixed(2)}%`);
 
   for (const h of HORIZONS) {
-    console.log(`\nT${h} STATE RECOVERY`);
+    console.log(`\nT${h} STATE RECOVERY — LATER BARS ${h + 1}-20`);
     for (const s of STATES) {
       const x = report.horizons[`T${h}`].all[s];
       const o = x.outcome;
-      console.log(`${s} N=${o.n} WR=${o.WR == null ? 'NA' : (o.WR * 100).toFixed(2) + '%'} avgR=${o.avgR == null ? 'NA' : o.avgR.toFixed(4)} PF=${o.PF == null ? 'NA' : o.PF.toFixed(4)} | MFE10>=1R=${x.eventualMfe10.ge1R == null ? 'NA' : (x.eventualMfe10.ge1R * 100).toFixed(2) + '%'} >=2R=${x.eventualMfe10.ge2R == null ? 'NA' : (x.eventualMfe10.ge2R * 100).toFixed(2) + '%'}`);
+      const r = x.laterPathMfe;
+      console.log(`${s} N=${o.n} WR=${o.WR == null ? 'NA' : (o.WR * 100).toFixed(2) + '%'} avgR=${o.avgR == null ? 'NA' : o.avgR.toFixed(4)} PF=${o.PF == null ? 'NA' : o.PF.toFixed(4)} | LATER_MFE>=1R=${r.ge1R == null ? 'NA' : (r.ge1R * 100).toFixed(2) + '%'} >=2R=${r.ge2R == null ? 'NA' : (r.ge2R * 100).toFixed(2) + '%'}`);
     }
   }
 
-  console.log('\n=== ADVERSE >=1R RECOVERY ===');
+  console.log('\n=== ADVERSE >=1R RECOVERY — STRICTLY LATER PATH ===');
   for (const h of HORIZONS) {
-    const r = report.horizons[`T${h}`].adverseGE1RRecovery;
-    console.log(`T${h}: N=${r.n} -> MFE10>=1R ${r.laterMfe10GE1R} (${r.n ? (r.laterMfe10GE1R / r.n * 100).toFixed(2) : 'NA'}%) | MFE10>=2R ${r.laterMfe10GE2R} (${r.n ? (r.laterMfe10GE2R / r.n * 100).toFixed(2) : 'NA'}%)`);
+    const a = report.horizons[`T${h}`].adverseGE1RRecovery;
+    console.log(`T${h}: ALL N=${a.all.n} -> >=1R ${a.all.laterMfeGE1RPct == null ? 'NA' : (a.all.laterMfeGE1RPct * 100).toFixed(2) + '%'} | >=2R ${a.all.laterMfeGE2RPct == null ? 'NA' : (a.all.laterMfeGE2RPct * 100).toFixed(2) + '%'} | DEV >=1R ${a.dev.laterMfeGE1RPct == null ? 'NA' : (a.dev.laterMfeGE1RPct * 100).toFixed(2) + '%'} | VAL >=1R ${a.val.laterMfeGE1RPct == null ? 'NA' : (a.val.laterMfeGE1RPct * 100).toFixed(2) + '%'}`);
   }
 
   console.log('\nSTATUS=DESCRIPTIVE_ONLY NO_OPT NO_RULE NO_FRESH');
