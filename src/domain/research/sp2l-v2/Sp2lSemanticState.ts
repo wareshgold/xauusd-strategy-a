@@ -3,6 +3,7 @@ export type Sp2lDirection = 'BULLISH' | 'BEARISH';
 export type Sp2lPhase =
   | 'CONTEXT'
   | 'IMPULSE'
+  | 'FOLLOW_THROUGH'
   | 'SPIKE'
   | 'CORRECTION'
   | 'PENDING'
@@ -43,6 +44,7 @@ export interface Sp2lSemanticState {
   direction: Sp2lDirection | null;
   contextId: string | null;
   impulseId: string | null;
+  followThroughIndex: number | null;
   spikeId: string | null;
   correctionStartedAt: number | null;
   pendingCreatedAt: number | null;
@@ -57,6 +59,8 @@ export interface Sp2lSemanticState {
 export type Sp2lEvent =
   | { type: 'CONTEXT_IDENTIFIED'; contextId: string }
   | { type: 'STRONG_MOVE_STARTED'; impulseId: string; direction: Sp2lDirection }
+  | { type: 'FOLLOW_THROUGH_CONFIRMED'; index: number }
+  | { type: 'FOLLOW_THROUGH_REJECTED'; reason?: string }
   | { type: 'SPIKE_CONFIRMED'; spikeId: string }
   | {
       type: 'STRUCTURAL_REFERENCE_IDENTIFIED';
@@ -91,6 +95,7 @@ export function createInitialSp2lState(): Sp2lSemanticState {
     direction: null,
     contextId: null,
     impulseId: null,
+    followThroughIndex: null,
     spikeId: null,
     correctionStartedAt: null,
     pendingCreatedAt: null,
@@ -136,8 +141,17 @@ export function applySp2lEvent(state: Sp2lSemanticState, event: Sp2lEvent): Sp2l
       if (!state.contextId) return reject(state, 'STRONG_MOVE_REQUIRES_CONTEXT');
       return { ...state, phase: 'IMPULSE', impulseId: event.impulseId, direction: event.direction };
 
-    case 'SPIKE_CONFIRMED':
+    case 'FOLLOW_THROUGH_CONFIRMED':
       assertPhase(state, 'IMPULSE');
+      return { ...state, phase: 'FOLLOW_THROUGH', followThroughIndex: event.index };
+
+    case 'FOLLOW_THROUGH_REJECTED':
+      assertPhase(state, 'IMPULSE', 'FOLLOW_THROUGH');
+      return reject(state, event.reason ?? 'FOLLOW_THROUGH_REJECTED');
+
+    case 'SPIKE_CONFIRMED':
+      assertPhase(state, 'FOLLOW_THROUGH');
+      if (state.followThroughIndex === null) return reject(state, 'SPIKE_REQUIRES_FOLLOW_THROUGH');
       return { ...state, phase: 'SPIKE', spikeId: event.spikeId };
 
     case 'STRUCTURAL_REFERENCE_IDENTIFIED':
@@ -160,11 +174,15 @@ export function applySp2lEvent(state: Sp2lSemanticState, event: Sp2lEvent): Sp2l
       if (state.geometry.firstStructuralReference.index === null) {
         return reject(state, 'CORRECTION_REQUIRES_STRUCTURAL_REFERENCE');
       }
+      if (event.index <= state.geometry.firstStructuralReference.index) {
+        return reject(state, 'CORRECTION_MUST_BEGIN_AFTER_STRUCTURAL_REFERENCE');
+      }
       return { ...state, phase: 'CORRECTION', correctionStartedAt: event.index };
 
     case 'PENDING_LIMIT_CREATED':
       assertPhase(state, 'CORRECTION');
       if (state.correctionStartedAt === null) return reject(state, 'PENDING_LIMIT_REQUIRES_CORRECTION');
+      if (event.index < state.correctionStartedAt) return reject(state, 'PENDING_LIMIT_CANNOT_PRECEDE_CORRECTION');
       if (event.entryPrice === null) return reject(state, 'PENDING_LIMIT_REQUIRES_EXPLICIT_ENTRY_PRICE');
       if (event.stopLoss === null) return reject(state, 'PENDING_LIMIT_REQUIRES_EXPLICIT_STRUCTURAL_STOP');
       return {
@@ -191,6 +209,7 @@ export function applySp2lEvent(state: Sp2lSemanticState, event: Sp2lEvent): Sp2l
     case 'LIMIT_TOUCHED':
       assertPhase(state, 'PENDING');
       if (state.geometry.pendingEntryPrice.price === null) return reject(state, 'LIMIT_TOUCH_REQUIRES_EXPLICIT_ENTRY_PRICE');
+      if (event.index < (state.pendingCreatedAt ?? event.index)) return reject(state, 'LIMIT_TOUCH_CANNOT_PRECEDE_PENDING_ORDER');
       if (event.price !== state.geometry.pendingEntryPrice.price) return state;
       return {
         ...state,
