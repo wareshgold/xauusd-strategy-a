@@ -5,6 +5,7 @@ const ROOT = resolve(process.cwd());
 const SOURCE = resolve(ROOT, 'data/reports/strategy-a-ny-sell-preentry-discriminative-anatomy/5m.json');
 const OUT = resolve(ROOT, 'data/reports/strategy-a-ny-sell-preentry-conditional-anatomy-replication');
 const FEATURES = ['triggerReclaimToRange', 'triggerReclaimToCorrection'];
+const EXCEPTIONAL_R = 5;
 const p = (n) => Number.isFinite(n) ? Number(n.toFixed(6)) : null;
 
 function median(values) {
@@ -45,8 +46,8 @@ function windows(rows){
     const scoped=rows.filter(x=>x.split===split).sort((a,b)=>new Date(a.time)-new Date(b.time));
     const mid=Math.ceil(scoped.length/2);
     for(const [i,w] of [scoped.slice(0,mid),scoped.slice(mid)].entries()){
-      const nonExceptional=w.filter(x=>Number(x.r)<5);
-      out.push({id:`${split}_H${i+1}`, n:w.length, outcome:stats(w), nonExceptionalOutcome:stats(nonExceptional), features:Object.fromEntries(FEATURES.map(f=>[f,{delta:delta(w,f),deltaNoExceptional:delta(nonExceptional,f),spearman:spearman(w,f),spearmanNoExceptional:spearman(nonExceptional,f)}]))});
+      const nonExceptional=w.filter(x=>Number(x.r)<EXCEPTIONAL_R);
+      out.push({id:`${split}_H${i+1}`, n:w.length, exceptionalN:w.length-nonExceptional.length, outcome:stats(w), nonExceptionalOutcome:stats(nonExceptional), features:Object.fromEntries(FEATURES.map(f=>[f,{delta:delta(w,f),deltaNoExceptional:delta(nonExceptional,f),spearman:spearman(w,f),spearmanNoExceptional:spearman(nonExceptional,f)}]))});
     }
   }
   return out;
@@ -57,11 +58,11 @@ async function main(){
   const rows=(source.cases??[]).filter(x=>x.split==='DEV'||x.split==='VAL');
   if(!rows.length) throw new Error('No DEV/VAL cases found');
   const ws=windows(rows);
-  const result={strategy:'Strategy A / SP2L',mode:'RESEARCH_NY_SELL_PREENTRY_CONDITIONAL_ANATOMY_REPLICATION',timeframe:'5m',scope:{n:rows.length,dev:rows.filter(x=>x.split==='DEV').length,val:rows.filter(x=>x.split==='VAL').length,freshHoldoutExcluded:true,productionUntouched:true},methodology:{features:FEATURES,purpose:'Replication and sensitivity analysis of the two strongest remaining pre-entry descriptors after exceptional-winner attribution.',exceptionalDefinition:'r >= 5R',temporalWindows:'DEV and VAL chronological halves',comparisons:'NORMAL_WIN median minus LOSS median; Spearman feature vs R',noOptimization:true,noThresholdSearch:true,noNewTradingRules:true,holdoutLocked:true},windows:ws};
+  const result={strategy:'Strategy A / SP2L',mode:'RESEARCH_NY_SELL_PREENTRY_CONDITIONAL_ANATOMY_REPLICATION',timeframe:'5m',scope:{n:rows.length,dev:rows.filter(x=>x.split==='DEV').length,val:rows.filter(x=>x.split==='VAL').length,freshHoldoutExcluded:true,productionUntouched:true},methodology:{features:FEATURES,purpose:'Replication and sensitivity analysis of the two strongest remaining pre-entry descriptors after exceptional-winner attribution.',exceptionalDefinition:`r >= ${EXCEPTIONAL_R}R`,temporalWindows:'DEV and VAL chronological halves',comparisons:'NORMAL_WIN median minus LOSS median; Spearman feature vs R',noOptimization:true,noThresholdSearch:true,noNewTradingRules:true,holdoutLocked:true},windows:ws};
   await mkdir(OUT,{recursive:true}); await writeFile(resolve(OUT,'5m.json'),JSON.stringify(result,null,2));
   console.log(`PREENTRY_CONDITIONAL_ANATOMY_REPLICATION N=${rows.length} DEV=${result.scope.dev} VAL=${result.scope.val} FRESH=LOCKED`);
-  for(const w of ws) console.log(`${w.id}: N=${w.n} avgR=${w.outcome.avgR??'-'} PF=${w.outcome.PF??'-'} | noExceptionalAvgR=${w.nonExceptionalOutcome.avgR??'-'} PF=${w.nonExceptionalOutcome.PF??'-'}`);
-  for(const f of FEATURES){console.log(`${f}:`); for(const w of ws){const z=w.features[f]; console.log(`  ${w.id} delta=${z.delta.delta??'-'} deltaNoExceptional=${z.deltaNoExceptional.delta??'-'} spearman=${z.spearman??'-'} spearmanNoExceptional=${z.spearmanNoExceptional??'-'}`);}}
+  for(const w of ws) console.log(`${w.id}: N=${w.n} exceptional=${w.exceptionalN} avgR=${w.outcome.avgR??'-'} PF=${w.outcome.PF??'-'} | noExceptionalAvgR=${w.nonExceptionalOutcome.avgR??'-'} PF=${w.nonExceptionalOutcome.PF??'-'}`);
+  for(const f of FEATURES){console.log(`${f}:`); for(const w of ws){const z=w.features[f]; console.log(`  ${w.id} delta=${z.delta.delta??'-'} (${z.delta.normalN}/${z.delta.lossN}) deltaNoExceptional=${z.deltaNoExceptional.delta??'-'} (${z.deltaNoExceptional.normalN}/${z.deltaNoExceptional.lossN}) spearman=${z.spearman??'-'} spearmanNoExceptional=${z.spearmanNoExceptional??'-'}`);}}
   console.log(`REPORT=${resolve(OUT,'5m.json')}`); console.log('STATUS=DESCRIPTIVE_ONLY NO_OPT NO_RULE NO_FRESH');
 }
 await main();
