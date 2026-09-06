@@ -21,6 +21,7 @@
     "research:phase17-baseline-failure-decomposition": "node scripts/analyze-phase17-baseline-failure-decomposition.mjs",
     "research:phase18-pre-exit-vs-post-exit-path-attribution": "node scripts/analyze-phase18-pre-exit-vs-post-exit-path-attribution.mjs",
     "research:phase19-loss-path-archetypes": "node scripts/analyze-phase19-loss-path-archetypes.mjs",
-    "research:phase20-exit-time-information-audit": "node scripts/analyze-phase20-exit-time-information-audit.mjs"
+    "research:phase20-exit-time-information-audit": "node scripts/analyze-phase20-exit-time-information-audit.mjs",
+    "research:phase21-exit-information-redundancy": "node scripts/analyze-phase21-exit-information-redundancy.mjs"
   }
 }
