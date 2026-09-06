@@ -42,7 +42,8 @@ function composite(result) {
 
 await runGenerator();
 const result = JSON.parse(await readFile(REPORT, 'utf8'));
-console.log(`GEOM_V2_COMPACT N=${result.total} DEV=${result.dev} VAL=${result.val} FRESH=LOCKED`);
+const scope = result.scope ?? {};
+console.log(`GEOM_V2_COMPACT N=${scope.total ?? 0} DEV=${scope.dev ?? 0} VAL=${scope.val ?? 0} FRESH=LOCKED`);
 for (const feature of ['correctionToSpike', 'reclaimToCorrection', 'triggerBodyToRange', 'triggerCloseLocation']) console.log(compactFeature(result, feature));
 console.log(composite(result));
 console.log('STATUS=DESCRIPTIVE_ONLY NO_OPT NO_RULE NO_FRESH');
