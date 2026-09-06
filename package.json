@@ -42,6 +42,7 @@
     "research:post-entry-path-dynamics": "node scripts/analyze-post-entry-path-dynamics.mjs",
     "research:delay1-early-mae-decision-value": "node scripts/analyze-delay1-early-mae-decision-value.mjs",
     "research:delay1-early-mae-retention-test": "node scripts/analyze-delay1-early-mae-retention-test.mjs",
-    "research:delay1-early-mae-recovery-transition": "node scripts/analyze-delay1-early-mae-recovery-transition.mjs"
+    "research:delay1-early-mae-recovery-transition": "node scripts/analyze-delay1-early-mae-recovery-transition.mjs",
+    "research:delay1-fixed-horizon-temporal-stability": "node scripts/analyze-delay1-fixed-horizon-temporal-stability.mjs"
   }
 }
