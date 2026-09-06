@@ -28,7 +28,7 @@ const CONTEXT = {
   avoidWindows: [],
 };
 
-const p = (n) => Number.isFinite(n) ? Number(n.toFixed(6)) : null;
+const p = (n) => Number.isFinite(n) ? Number(n.toFixed(4)) : null;
 
 function utcMinutes(ts) {
   const d = new Date(ts);
@@ -65,7 +65,7 @@ function stats(rows) {
   const losses = r.filter((x) => x < 0);
   const gp = wins.reduce((a, b) => a + b, 0);
   const gl = -losses.reduce((a, b) => a + b, 0);
-  return { n: r.length, wins: wins.length, losses: losses.length, winRate: r.length ? p(wins.length / r.length) : 0, avgR: r.length ? p(r.reduce((a, b) => a + b, 0) / r.length) : 0, totalR: p(r.reduce((a, b) => a + b, 0)), PF: gl ? p(gp / gl) : (gp ? null : 0) };
+  return { n: r.length, wins: wins.length, losses: losses.length, winRate: r.length ? p(100 * wins.length / r.length) : 0, avgR: r.length ? p(r.reduce((a, b) => a + b, 0) / r.length) : 0, totalR: p(r.reduce((a, b) => a + b, 0)), PF: gl ? p(gp / gl) : (gp ? null : 0) };
 }
 
 function classify(r) {
@@ -82,7 +82,6 @@ function range(candles) {
 function buildGeometry(candles, index) {
   const visible = candles.slice(0, index + 1);
   if (visible.length < 60) return null;
-
   const breakouts = detectBreakout(visible, 5);
   const followThrough = detectFollowThrough(visible, breakouts, { maxBarsAfterBreakout: 2, requireCloseBeyondBrokenLevel: true });
   const spikes = detectSpikeCandidates(visible, breakouts, followThrough, { maxCandles: 8, minDirectionalFraction: .5, maxOverlapFraction: .8 });
@@ -92,12 +91,10 @@ function buildGeometry(candles, index) {
     const breakout = breakouts.find((x) => x.index === spike.breakoutIndex && x.direction === spike.direction);
     const ft = followThrough.find((x) => x.breakoutIndex === spike.breakoutIndex && x.direction === spike.direction);
     if (!breakout || !ft || ft.followThroughIndex >= index) continue;
-
     const correction = detectFirstCorrection(visible, spike);
     if (!correction || correction.correctionExtremeIndex >= index) continue;
     const trigger = detectEntryTrigger(visible, correction);
     if (!trigger || trigger.index !== index || trigger.direction !== 'SELL' || !isNySell(trigger.timestamp)) continue;
-
     const projection = projectLeg2(visible, correction);
     if (!projection) continue;
     const inv = getInvalidationRule(correction);
@@ -165,14 +162,78 @@ function buildGeometry(candles, index) {
 }
 
 const FEATURE_NAMES = [
-  'breakoutExtension','breakoutExtensionToPreRange','breakoutToFollowThroughBars','followThroughDistance','followThroughFromLevel','followThroughDistanceToPreRange',
+  'breakoutExtension','breakoutExtensionToPreRange','followThroughDistance','followThroughFromLevel','followThroughDistanceToPreRange',
   'spikeSize','spikeSizeToMedianRange','spikeSizeToPreRange','spikeDurationBars','correctionBars','correctionDepth','entryDelayFromCorrection',
-  'entryDistanceFromStructuralHigh','entryDistanceFromStructuralHighPct','entryDistanceFromSpikeEnd','entryDistanceFromSpikeEndPct','stopDistance','rewardDistance','plannedRR','leg1Size','structureScore','overlapScore',
+  'entryDistanceFromStructuralHigh','entryDistanceFromStructuralHighPct','entryDistanceFromSpikeEnd','entryDistanceFromSpikeEndPct',
+  'stopDistance','rewardDistance','plannedRR','leg1Size','structureScore','overlapScore',
+];
+
+const DISPLAY_FEATURES = [
+  ['breakoutExtension', 'BO extension'],
+  ['breakoutExtensionToPreRange', 'BO / pre-range'],
+  ['followThroughDistanceToPreRange', 'FT / pre-range'],
+  ['spikeSizeToPreRange', 'Spike / pre-range'],
+  ['spikeSizeToMedianRange', 'Spike / median range'],
+  ['correctionBars', 'Correction bars'],
+  ['correctionDepth', 'Correction depth'],
+  ['entryDelayFromCorrection', 'Entry delay'],
+  ['entryDistanceFromStructuralHighPct', 'Entry / structural'],
+  ['entryDistanceFromSpikeEndPct', 'Entry / spike-end'],
+  ['plannedRR', 'Planned RR'],
+  ['structureScore', 'Structure score'],
+  ['overlapScore', 'Overlap score'],
 ];
 
 function featureTable(rows) {
   const groups = { ALL: rows, EXCEPTIONAL_WIN: rows.filter((x) => x.classification === 'EXCEPTIONAL_WIN'), NORMAL_WIN: rows.filter((x) => x.classification === 'NORMAL_WIN'), LOSS: rows.filter((x) => x.classification === 'LOSS') };
   return Object.fromEntries(FEATURE_NAMES.map((f) => [f, Object.fromEntries(Object.entries(groups).map(([g, rs]) => [g, quantiles(rs.map((x) => Number(x.geometry[f])))]))]));
+}
+
+function anomalyRows(rows) {
+  return rows.filter((x) => x.geometry.correctionBars > 200 || x.geometry.entryDelayFromCorrection > 50);
+}
+
+function printStats(statsByName) {
+  console.log('');
+  console.log('STATS');
+  console.table(statsByName);
+}
+
+function printClassCounts(rows) {
+  const groups = ['EXCEPTIONAL_WIN', 'NORMAL_WIN', 'LOSS'];
+  console.log('CLASS COUNTS');
+  console.table(Object.fromEntries(groups.map((g) => {
+    const rs = rows.filter((x) => x.classification === g);
+    return [g, { n: rs.length, DEV: rs.filter((x) => x.split === 'DEV').length, VAL: rs.filter((x) => x.split === 'VAL').length }];
+  })));
+}
+
+function printFeatureMedians(rows) {
+  const groups = ['EXCEPTIONAL_WIN', 'NORMAL_WIN', 'LOSS'];
+  console.log('PRE-ENTRY FEATURE MEDIANS');
+  console.table(Object.fromEntries(DISPLAY_FEATURES.map(([f, label]) => {
+    const out = {};
+    for (const g of groups) {
+      out[g] = p(median(rows.filter((x) => x.classification === g).map((x) => Number(x.geometry[f]))));
+    }
+    return [label, out];
+  })));
+}
+
+function printCompactCases(rows) {
+  console.log('CASES (compact)');
+  console.table(rows.map((x) => ({
+    split: x.split,
+    time: x.entryTime,
+    R: p(x.r),
+    class: x.classification,
+    spikePre: p(x.geometry.spikeSizeToPreRange),
+    corr: p(x.geometry.correctionDepth),
+    corrBars: x.geometry.correctionBars,
+    delay: x.geometry.entryDelayFromCorrection,
+    entryStruct: p(x.geometry.entryDistanceFromStructuralHighPct),
+    RR: p(x.geometry.plannedRR),
+  })));
 }
 
 async function main() {
@@ -204,7 +265,8 @@ async function main() {
 
   const dev = rows.filter((x) => x.split === 'DEV');
   const val = rows.filter((x) => x.split === 'VAL');
-  const groups = { ALL: rows, DEV: dev, VAL: val, EXCEPTIONAL_WIN: rows.filter((x) => x.classification === 'EXCEPTIONAL_WIN'), NORMAL_WIN: rows.filter((x) => x.classification === 'NORMAL_WIN'), LOSS: rows.filter((x) => x.classification === 'LOSS') };
+  const allGroups = { ALL: rows, DEV: dev, VAL: val, EXCEPTIONAL_WIN: rows.filter((x) => x.classification === 'EXCEPTIONAL_WIN'), NORMAL_WIN: rows.filter((x) => x.classification === 'NORMAL_WIN'), LOSS: rows.filter((x) => x.classification === 'LOSS') };
+  const anomalies = anomalyRows(rows);
 
   const output = {
     strategy: 'Strategy A / SP2L',
@@ -223,24 +285,37 @@ async function main() {
       freshHoldout: 'locked and excluded',
       lineageCheck: 'rebuilt entry timestamp must equal baseline entry timestamp',
     },
-    stats: Object.fromEntries(Object.entries(groups).filter(([k]) => ['ALL','DEV','VAL'].includes(k)).map(([k, rs]) => [k, stats(rs)])),
-    featureMedians: Object.fromEntries(FEATURE_NAMES.map((f) => [f, Object.fromEntries(['DEV','VAL','EXCEPTIONAL_WIN','NORMAL_WIN','LOSS'].map((g) => [g, quantiles((groups[g] ?? []).map((x) => Number(x.geometry[f]))).median]))])),
+    stats: Object.fromEntries(['ALL','DEV','VAL'].map((k) => [k, stats(allGroups[k])])),
+    featureMedians: Object.fromEntries(FEATURE_NAMES.map((f) => [f, Object.fromEntries(['DEV','VAL','EXCEPTIONAL_WIN','NORMAL_WIN','LOSS'].map((g) => [g, quantiles((allGroups[g] ?? []).map((x) => Number(x.geometry[f]))).median]))])),
     featureDistributions: featureTable(rows),
+    anomalies: anomalies.map((x) => ({ split: x.split, entryTime: x.entryTime, entryIndex: x.entryIndex, r: x.r, correctionBars: x.geometry.correctionBars, entryDelayFromCorrection: x.geometry.entryDelayFromCorrection })),
     cases: rows.map((x) => ({ split: x.split, entryTime: x.entryTime, entryIndex: x.entryIndex, r: x.r, classification: x.classification, ...x.geometry })),
   };
 
   await mkdir(OUT, { recursive: true });
   await writeFile(resolve(OUT, '5m.json'), JSON.stringify(output, null, 2));
 
-  console.log(`5m expanded NY SELL anatomy: rows=${rows.length} DEV=${dev.length} VAL=${val.length}`);
-  console.log('Stats:');
-  console.table(output.stats);
-  console.log('Class counts:');
-  console.table(Object.fromEntries(['EXCEPTIONAL_WIN','NORMAL_WIN','LOSS'].map((g) => [g, { n: groups[g].length, DEV: groups[g].filter((x) => x.split === 'DEV').length, VAL: groups[g].filter((x) => x.split === 'VAL').length }] )));
-  console.log('Pre-entry feature medians:');
-  console.table(output.featureMedians);
-  console.log('Cases:');
-  console.table(output.cases);
+  console.log('');
+  console.log('════════════════════════════════════════════════════════════');
+  console.log('NY SELL — EXPANDED PRE-ENTRY ANATOMY');
+  console.log('════════════════════════════════════════════════════════════');
+  console.log(`Universe: ${rows.length} canonical NY SELL | DEV=${dev.length} | VAL=${val.length} | Fresh=LOCKED`);
+  printStats(output.stats);
+  printClassCounts(rows);
+  printFeatureMedians(rows);
+
+  if (anomalies.length) {
+    console.log('ANOMALIES — DIAGNOSTIC ONLY');
+    console.table(anomalies.map((x) => ({ split: x.split, time: x.entryTime, R: p(x.r), correctionBars: x.geometry.correctionBars, entryDelay: x.geometry.entryDelayFromCorrection })));
+    console.log('These are detector-lineage diagnostics, not proposed filters.');
+  } else {
+    console.log('ANOMALIES: none');
+  }
+
+  printCompactCases(rows);
+  console.log('');
+  console.log(`Full machine-readable report -> ${resolve(OUT, '5m.json')}`);
+  console.log('No optimization, no new rules, no Fresh Holdout access.');
 }
 
 await main();
