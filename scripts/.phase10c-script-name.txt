@@ -1,0 +1,3 @@
+research:delay1-early-mae-recovery-transition = node scripts/analyze-delay1-early-mae-recovery-transition.mjs
+
+NOTE: temporary marker; package.json still needs the script entry.
