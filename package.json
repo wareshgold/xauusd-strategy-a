@@ -8,6 +8,7 @@
     "build": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:sp2l-v2": "vitest run tests/sp2l-v2-semantic-state.test.ts",
     "lint": "eslint .",
     "download:data": "node scripts/download-xauusd.mjs",
     "audit:data": "node scripts/audit-dataset.mjs",
