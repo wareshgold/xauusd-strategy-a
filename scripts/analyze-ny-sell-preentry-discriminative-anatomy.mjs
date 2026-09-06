@@ -13,6 +13,13 @@ const FEATURES = [
 ];
 const p = (n) => Number.isFinite(n) ? Number(n.toFixed(6)) : null;
 
+function classifyOutcome(r) {
+  if (!Number.isFinite(r)) return null;
+  if (r < 0) return 'LOSS';
+  if (r >= 5) return 'EXCEPTIONAL_WIN';
+  return 'NORMAL_WIN';
+}
+
 function quantiles(values) {
   const a = values.filter(Number.isFinite).sort((x, y) => x - y);
   if (!a.length) return { n: 0 };
@@ -26,10 +33,6 @@ function quantiles(values) {
 
 function values(rows, feature) {
   return rows.map((x) => Number(x[feature])).filter(Number.isFinite);
-}
-
-function median(rows, feature) {
-  return quantiles(values(rows, feature)).median;
 }
 
 function pair(rowsA, rowsB, feature) {
@@ -86,9 +89,11 @@ function directionConsistency(rows) {
 
 async function main() {
   const source = JSON.parse(await readFile(SOURCE, 'utf8'));
-  const rows = (source.cases ?? []).map((x) => ({ ...x, ...x.geometry })).filter((x) => x.split === 'DEV' || x.split === 'VAL');
+  const rows = (source.cases ?? [])
+    .map((x) => ({ ...x, ...x.geometry, classification: classifyOutcome(Number(x.r)) }))
+    .filter((x) => x.split === 'DEV' || x.split === 'VAL');
   if (!rows.length) throw new Error('No DEV/VAL cases found');
-  if (rows.some((x) => !['LOSS', 'NORMAL_WIN', 'EXCEPTIONAL_WIN'].includes(x.classification))) throw new Error('Unexpected outcome classification');
+  if (rows.some((x) => !GROUPS.includes(x.classification))) throw new Error('Unexpected outcome classification');
 
   const result = {
     strategy: 'Strategy A / SP2L',
@@ -103,7 +108,7 @@ async function main() {
       noThresholdSearch: true,
       noNewTradingRules: true,
       holdoutLocked: true,
-      classification: 'LOSS=r<0; NORMAL_WIN=0<r<5R; EXCEPTIONAL_WIN=r>=5R. Descriptive grouping only.',
+      classification: 'LOSS=r<0; NORMAL_WIN=0<=r<5R; EXCEPTIONAL_WIN=r>=5R. Descriptive grouping only.',
       interpretation: 'A feature is interesting only if its direction is materially separated and remains directionally consistent between DEV and VAL. No feature is promoted by this report.',
     },
     groupStats: Object.fromEntries(GROUPS.map((g) => [g, outcomeStats(rows.filter((x) => x.classification === g))])),
