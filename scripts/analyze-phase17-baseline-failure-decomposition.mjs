@@ -11,7 +11,6 @@ const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const candles = JSON.parse(await readFile(resolve(ROOT, 'data/historical/xauusd-5min.json'), 'utf8')).candles ?? [];
 const base = JSON.parse(await readFile(resolve(ROOT, 'data/reports/strategy-a-baseline/5min.json'), 'utf8'));
 const PRE = 10000;
-const DEV = 5000;
 const CFG = {
   breakoutLookback: 5,
   followThrough: { maxBarsAfterBreakout: 2, requireCloseBeyondBrokenLevel: true },
@@ -24,6 +23,7 @@ const WINDOWS = [
   { name: 'VAL_1', start: 6000, end: 7999 },
   { name: 'VAL_2', start: 8000, end: 9999 },
 ];
+const DEV_END = WINDOWS.find(w => w.name === 'DEV_3').end;
 
 const round = x => Number.isFinite(x) ? Number(x.toFixed(6)) : null;
 const pct = x => Number.isFinite(x) ? Number((x * 100).toFixed(4)) : null;
@@ -135,7 +135,7 @@ for (const trade of raw) {
     entryTime: trade.entryTime,
     direction: trade.direction,
     session: session(trade.entryTime),
-    split: entryIndex < DEV ? 'DEV' : 'VAL',
+    split: entryIndex <= DEV_END ? 'DEV' : 'VAL',
     window: WINDOWS.find(w => entryIndex >= w.start && entryIndex <= w.end)?.name ?? 'UNKNOWN',
     r,
     exceptional: r >= 5,
