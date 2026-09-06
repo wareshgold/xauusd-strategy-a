@@ -24,6 +24,7 @@
     "research:phase20-exit-time-information-audit": "node scripts/analyze-phase20-exit-time-information-audit.mjs",
     "research:phase21-exit-information-redundancy": "node scripts/analyze-phase21-exit-information-redundancy.mjs",
     "research:phase22-exit-state-compression-temporal-robustness": "node scripts/analyze-phase22-exit-state-compression-temporal-robustness.mjs",
-    "research:phase23-preentry-setup-quality-state-audit": "node scripts/analyze-phase23-preentry-setup-quality-state-audit.mjs"
+    "research:phase23-preentry-setup-quality-state-audit": "node scripts/analyze-phase23-preentry-setup-quality-state-audit.mjs",
+    "research:phase24-structural-state-decomposition": "node scripts/analyze-phase24-structural-state-decomposition.mjs"
   }
 }
