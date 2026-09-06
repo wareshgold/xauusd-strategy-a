@@ -1,0 +1,45 @@
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { detectBreakout } from '../src/domain/market/BreakoutDetector.js';
+import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.js';
+import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.js';
+import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.js';
+import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
+import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.js';
+import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
+import { buildEMAContext, buildLocationContext, buildSessionContext } from '../src/domain/strategy-a/Context.js';
+import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
+
+const ROOT=resolve(process.cwd()),BASE=resolve(ROOT,'data/reports/strategy-a-baseline'),FIXED=resolve(ROOT,'data/reports/strategy-a-delay1-fixed-horizon-exit-economics'),OUT=resolve(ROOT,'data/reports/strategy-a-delay1-fixed-horizon-exceptional-segment-stability');
+const PRE=10000,DEV=6000,H=[3,5,10,20],SEGMENTS=['SELL+NEW_YORK','SELL+LONDON','BUY+NEW_YORK','BUY+LONDON','OUT_OF_SESSION'];
+const finite=Number.isFinite,mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null,pf=rs=>{const w=rs.filter(x=>x>0).reduce((a,b)=>a+b,0),l=-rs.filter(x=>x<0).reduce((a,b)=>a+b,0);return l?w/l:null},stats=rs=>({n:rs.length,avgR:mean(rs),PF:pf(rs),WR:rs.length?rs.filter(x=>x>0).length/rs.length:null,totalR:rs.reduce((a,b)=>a+b,0),bestR:rs.length?Math.max(...rs):null,worstR:rs.length?Math.min(...rs):null});
+const key=t=>`${t.entryIndex}|${t.direction}|${Number(t.entry).toPrecision(15)}|${Number(t.stopLoss).toPrecision(15)}|${Number(t.tp1).toPrecision(15)}`;
+const CTX={emaPeriod:60,roundStep:50,roundDistance:5,tradingSessions:[{name:'LONDON',startMinutes:420,endMinutes:960},{name:'NEW_YORK',startMinutes:960,endMinutes:1320}],avoidWindows:[]};
+const minutesUTC=ts=>{const d=new Date(ts);return d.getUTCHours()*60+d.getUTCMinutes()};
+const sessionOf=ts=>{const m=minutesUTC(ts);if(m>=420&&m<960)return'LONDON';if(m>=960&&m<1320)return'NEW_YORK';return'OUT_OF_SESSION'};
+function candidate(candles,index){const v=candles.slice(0,index+1);if(v.length<60)return null;const bo=detectBreakout(v,5),ft=detectFollowThrough(v,bo,{maxBarsAfterBreakout:2,requireCloseBeyondBrokenLevel:true}),sp=detectSpikeCandidates(v,bo,ft,{maxCandles:8,minDirectionalFraction:.5,maxOverlapFraction:.8});for(const spike of sp.candidates){if(spike.endIndex>=index)continue;const cor=detectFirstCorrection(v,spike);if(!cor||cor.correctionExtremeIndex>=index||index-cor.correctionExtremeIndex!==1)continue;const tr=detectEntryTrigger(v,cor);if(!tr||tr.index!==index)continue;const pr=projectLeg2(v,cor);if(!pr)continue;const inv=getInvalidationRule(cor),ema=buildEMAContext(v.map(c=>c.close),CTX);if(!ema)continue;const loc=buildLocationContext(tr.entryPrice,CTX),ses=buildSessionContext(tr.timestamp,CTX);if(!scoreSetup(spike,{ema,location:loc,session:ses}).tradeAllowed)continue;const risk=Math.abs(tr.entryPrice-inv.invalidationLevel);if(!(risk>0))continue;if(!(tr.direction==='BUY'?pr.tp1>tr.entryPrice:pr.tp1<tr.entryPrice))continue;return{entryIndex:index,direction:tr.direction,entry:tr.entryPrice,stopLoss:inv.invalidationLevel,tp1:pr.tp1,risk,timestamp:tr.timestamp,session:sessionOf(tr.timestamp)}}return null}
+const horizonR=(candles,c,h)=>{const x=candles[c.entryIndex+h];return(c.direction==='BUY'?x.close-c.entry:c.entry-x.close)/c.risk};
+const format=x=>x==null?'NA':x.toFixed(4);
+const describe=rs=>({all:stats(rs),noExceptional:stats(rs.filter(x=>x.rMultiple<5)),exceptionalCount:rs.filter(x=>x.rMultiple>=5).length});
+async function run(){
+ const raw=JSON.parse(await readFile(resolve(ROOT,'data/historical/xauusd-5min.json'),'utf8')),candles=raw.candles??raw;
+ const baseline=JSON.parse(await readFile(resolve(BASE,'5min.json'),'utf8')).trades??[];
+ const fixed=JSON.parse(await readFile(resolve(FIXED,'5m.json'),'utf8'));
+ if(fixed.integrity?.matched!==144||fixed.integrity?.rows!==144)throw new Error('Phase 10F integrity is not 144/144; refusing Phase 10H.');
+ const indices=[...new Set(fixed.delay1EntryIndices??[])].sort((a,b)=>a-b);if(indices.length!==144)throw new Error(`Expected 144 Phase 10F DELAY1 entry indices, got ${indices.length}.`);
+ const usable=baseline.filter(t=>t.result!=='AMBIGUOUS'&&finite(Number(t.rMultiple))&&Number(t.entryIndex)<PRE),map=new Map(usable.map(t=>[key(t),t]));
+ const rows=[];
+ for(const i of indices){const c=candidate(candles,i);if(!c)throw new Error(`Missing canonical DELAY1 reconstruction at index ${i}.`);const t=map.get(key(c));if(!t)throw new Error(`Missing baseline match at index ${i}.`);if(H.some(h=>i+h>=candles.length))throw new Error(`Incomplete path at index ${i}.`);rows.push({entryIndex:i,direction:c.direction,session:c.session,timestamp:c.timestamp,rMultiple:Number(t.rMultiple),exceptional:Number(t.rMultiple)>=5,horizonR:Object.fromEntries(H.map(h=>[h,horizonR(candles,c,h)]))});}
+ const counts=Object.fromEntries(SEGMENTS.map(s=>[s,0]));for(const r of rows){const s=`${r.direction}+${r.session}`;if(!SEGMENTS.includes(s))throw new Error(`Unknown segment ${s} at index ${r.entryIndex}.`);counts[s]++;}const classified=Object.values(counts).reduce((a,b)=>a+b,0);if(classified!==144)throw new Error(`Phase 10H segmentation coverage failure: classified=${classified}, rows=144.`);
+ const segmentReport={};
+ for(const s of SEGMENTS){const sr=rows.filter(r=>`${r.direction}+${r.session}`===s),dev=sr.filter(r=>r.entryIndex<DEV),val=sr.filter(r=>r.entryIndex>=DEV&&r.entryIndex<PRE),h={};for(const n of H){const all=sr.map(r=>r.horizonR[n]),normal=sr.filter(r=>!r.exceptional).map(r=>r.horizonR[n]),dv=dev.filter(r=>!r.exceptional).map(r=>r.horizonR[n]),va=val.filter(r=>!r.exceptional).map(r=>r.horizonR[n]);h[`H${n}`]={all:stats(all),noExceptional:stats(normal),devNoExceptional:stats(dv),valNoExceptional:stats(va),exceptionalCount:sr.filter(r=>r.exceptional).length};}segmentReport[s]={n:sr.length,devN:dev.length,valN:val.length,exceptionalBaseline:sr.filter(r=>r.exceptional).length,horizons:h};}
+ const global={};for(const n of H){const all=rows.map(r=>r.horizonR[n]),normal=rows.filter(r=>!r.exceptional).map(r=>r.horizonR[n]),dev=rows.filter(r=>r.entryIndex<DEV&&!r.exceptional).map(r=>r.horizonR[n]),val=rows.filter(r=>r.entryIndex>=DEV&&!r.exceptional).map(r=>r.horizonR[n]);global[`H${n}`]={all:stats(all),noExceptional:stats(normal),devNoExceptional:stats(dev),valNoExceptional:stats(val),exceptionalCount:rows.filter(r=>r.exceptional).length};}
+ const report={strategy:'Strategy A',mode:'DELAY1_FIXED_HORIZON_EXCEPTIONAL_SEGMENT_STABILITY',timeframe:'5min',scope:{preHoldoutCandles:PRE,devCutoff:DEV,horizons:H,segments:SEGMENTS,exceptionalDefinition:'canonical baseline rMultiple >= 5R',freshHoldoutAccessed:false},integrity:{baselinePre:usable.length,delay1:indices.length,matched:rows.length,rows:rows.length,devN:91,valN:53,pathComplete:true,deterministic:true,segmentation:{classified,unclassified:144-classified,coveragePass:classified===144}},methodology:{purpose:'Descriptive audit of whether fixed-horizon close-to-close economics survive exceptional-winner removal across exhaustive direction/session segments.',horizonsFixedExAnte:true,noHorizonSelection:true,noOptimization:true,noNewThresholds:true,noRuleCreation:true,noBrokerExecutionModel:true,exceptionalLabelFromCanonicalBaseline:true,freshHoldoutExcluded:true,productionUntouched:true},global,segments:segmentReport};
+ await mkdir(OUT,{recursive:true});await writeFile(resolve(OUT,'5m.json'),JSON.stringify(report,null,2));
+ console.log(`PHASE_10H_EXCEPTIONAL_SEGMENT_STABILITY N=144 DEV=91 VAL=53 FRESH=LOCKED`);console.log(`INTEGRITY baselinePre=${usable.length} delay1=144 matched=144 pathComplete=true deterministic=true segmentation=144/144`);
+ for(const n of H){const x=global[`H${n}`];console.log(`H${n}: ALL avgR=${format(x.all.avgR)} PF=${format(x.all.PF)} WR=${(x.all.WR*100).toFixed(2)}% | NO_EX avgR=${format(x.noExceptional.avgR)} PF=${format(x.noExceptional.PF)} WR=${(x.noExceptional.WR*100).toFixed(2)}% | DEV NO_EX=${format(x.devNoExceptional.avgR)} | VAL NO_EX=${format(x.valNoExceptional.avgR)} | EX=${x.exceptionalCount}`)}
+ console.log('=== SEGMENTS: NO-EXCEPTIONAL DEV / VAL AVG R ===');for(const s of SEGMENTS){const x=segmentReport[s];console.log(`${s} N=${x.n} DEV=${x.devN} VAL=${x.valN} EX=${x.exceptionalBaseline} | ${H.map(n=>`H${n} ${format(x.horizons[`H${n}`].devNoExceptional.avgR)}/${format(x.horizons[`H${n}`].valNoExceptional.avgR)}`).join(' | ')}`)}
+ console.log('=== SEGMENTS: NO-EXCEPTIONAL PF DEV / VAL ===');for(const s of SEGMENTS){const x=segmentReport[s];console.log(`${s} | ${H.map(n=>`H${n} ${format(x.horizons[`H${n}`].devNoExceptional.PF)}/${format(x.horizons[`H${n}`].valNoExceptional.PF)}`).join(' | ')}`)}
+ console.log('STATUS=DESCRIPTIVE_ONLY NO_OPT NO_HORIZON_SELECTION NO_RULE NO_FRESH');
+}
+run().catch(e=>{console.error(e);process.exitCode=1});
