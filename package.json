@@ -19,6 +19,7 @@
     "research:phase15-baseline-edge-concentration": "node scripts/analyze-phase15-baseline-edge-concentration.mjs",
     "research:phase16-sell-edge-deoutlier-stability": "node scripts/analyze-phase16-sell-edge-deoutlier-stability.mjs",
     "research:phase17-baseline-failure-decomposition": "node scripts/analyze-phase17-baseline-failure-decomposition.mjs",
-    "research:phase18-pre-exit-vs-post-exit-path-attribution": "node scripts/analyze-phase18-pre-exit-vs-post-exit-path-attribution.mjs"
+    "research:phase18-pre-exit-vs-post-exit-path-attribution": "node scripts/analyze-phase18-pre-exit-vs-post-exit-path-attribution.mjs",
+    "research:phase19-loss-path-archetypes": "node scripts/analyze-phase19-loss-path-archetypes.mjs"
   }
 }
