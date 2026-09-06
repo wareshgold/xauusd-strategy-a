@@ -13,7 +13,6 @@ export type Sp2lPhase =
   | 'REJECTED';
 
 export type GeometryStatus = 'SOURCE_CONFIRMED' | 'CANDIDATE' | 'TBD';
-
 export type IntrabarTouchPolicy = 'SL_FIRST' | 'TP_FIRST' | 'AMBIGUOUS';
 
 export interface StructuralReference {
@@ -71,7 +70,9 @@ export type Sp2lEvent =
       type: 'PENDING_LIMIT_CREATED';
       index: number;
       entryPrice: number | null;
-      status?: GeometryStatus;
+      stopLoss: number | null;
+      stopStatus?: GeometryStatus;
+      entryStatus?: GeometryStatus;
       rationale?: string;
     }
   | { type: 'LIMIT_TOUCHED'; index: number; price: number }
@@ -81,6 +82,10 @@ export type Sp2lEvent =
   | { type: 'REJECT'; reason: string };
 
 export function createInitialSp2lState(): Sp2lSemanticState {
+  const tbd = (): StructuralReference => ({
+    status: 'TBD', index: null, price: null, rationale: null,
+  });
+
   return {
     phase: 'CONTEXT',
     direction: null,
@@ -93,36 +98,11 @@ export function createInitialSp2lState(): Sp2lSemanticState {
     invalidationIndex: null,
     tp1Index: null,
     geometry: {
-      firstStructuralReference: {
-        status: 'TBD',
-        index: null,
-        price: null,
-        rationale: null,
-      },
-      pendingEntryPrice: {
-        status: 'TBD',
-        index: null,
-        price: null,
-        rationale: null,
-      },
-      structuralStop: {
-        status: 'TBD',
-        index: null,
-        price: null,
-        rationale: null,
-      },
-      leg1Endpoint: {
-        status: 'TBD',
-        index: null,
-        price: null,
-        rationale: null,
-      },
-      leg2ProjectionOrigin: {
-        status: 'TBD',
-        index: null,
-        price: null,
-        rationale: null,
-      },
+      firstStructuralReference: tbd(),
+      pendingEntryPrice: tbd(),
+      structuralStop: tbd(),
+      leg1Endpoint: tbd(),
+      leg2ProjectionOrigin: tbd(),
       leg2EqualityTolerance: null,
     },
     position: {
@@ -145,10 +125,7 @@ function reject(state: Sp2lSemanticState, reason: string): Sp2lSemanticState {
   return { ...state, phase: 'REJECTED', rejectionReason: reason };
 }
 
-export function applySp2lEvent(
-  state: Sp2lSemanticState,
-  event: Sp2lEvent,
-): Sp2lSemanticState {
+export function applySp2lEvent(state: Sp2lSemanticState, event: Sp2lEvent): Sp2lSemanticState {
   switch (event.type) {
     case 'CONTEXT_IDENTIFIED':
       assertPhase(state, 'CONTEXT');
@@ -157,12 +134,7 @@ export function applySp2lEvent(
     case 'STRONG_MOVE_STARTED':
       assertPhase(state, 'CONTEXT');
       if (!state.contextId) return reject(state, 'STRONG_MOVE_REQUIRES_CONTEXT');
-      return {
-        ...state,
-        phase: 'IMPULSE',
-        impulseId: event.impulseId,
-        direction: event.direction,
-      };
+      return { ...state, phase: 'IMPULSE', impulseId: event.impulseId, direction: event.direction };
 
     case 'SPIKE_CONFIRMED':
       assertPhase(state, 'IMPULSE');
@@ -192,9 +164,9 @@ export function applySp2lEvent(
 
     case 'PENDING_LIMIT_CREATED':
       assertPhase(state, 'CORRECTION');
-      if (state.correctionStartedAt === null) {
-        return reject(state, 'PENDING_LIMIT_REQUIRES_CORRECTION');
-      }
+      if (state.correctionStartedAt === null) return reject(state, 'PENDING_LIMIT_REQUIRES_CORRECTION');
+      if (event.entryPrice === null) return reject(state, 'PENDING_LIMIT_REQUIRES_EXPLICIT_ENTRY_PRICE');
+      if (event.stopLoss === null) return reject(state, 'PENDING_LIMIT_REQUIRES_EXPLICIT_STRUCTURAL_STOP');
       return {
         ...state,
         phase: 'PENDING',
@@ -202,9 +174,15 @@ export function applySp2lEvent(
         geometry: {
           ...state.geometry,
           pendingEntryPrice: {
-            status: event.status ?? 'TBD',
+            status: event.entryStatus ?? 'CANDIDATE',
             index: event.index,
             price: event.entryPrice,
+            rationale: event.rationale ?? null,
+          },
+          structuralStop: {
+            status: event.stopStatus ?? 'CANDIDATE',
+            index: event.index,
+            price: event.stopLoss,
             rationale: event.rationale ?? null,
           },
         },
@@ -212,12 +190,8 @@ export function applySp2lEvent(
 
     case 'LIMIT_TOUCHED':
       assertPhase(state, 'PENDING');
-      if (state.geometry.pendingEntryPrice.price === null) {
-        return reject(state, 'LIMIT_TOUCH_REQUIRES_EXPLICIT_ENTRY_PRICE');
-      }
-      if (event.price !== state.geometry.pendingEntryPrice.price) {
-        return state;
-      }
+      if (state.geometry.pendingEntryPrice.price === null) return reject(state, 'LIMIT_TOUCH_REQUIRES_EXPLICIT_ENTRY_PRICE');
+      if (event.price !== state.geometry.pendingEntryPrice.price) return state;
       return {
         ...state,
         phase: 'FILLED',
@@ -231,11 +205,7 @@ export function applySp2lEvent(
 
     case 'STRUCTURAL_INVALIDATION':
       assertPhase(state, 'PENDING', 'FILLED');
-      return {
-        ...state,
-        phase: 'INVALIDATED',
-        invalidationIndex: event.index,
-      };
+      return { ...state, phase: 'INVALIDATED', invalidationIndex: event.index };
 
     case 'TP1_REACHED':
       assertPhase(state, 'FILLED');
