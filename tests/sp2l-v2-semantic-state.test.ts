@@ -1,0 +1,155 @@
+import { describe, expect, it } from 'vitest';
+import {
+  applySp2lEvent,
+  createInitialSp2lState,
+  resolveSameCandleTouch,
+  type Sp2lEvent,
+} from '../src/domain/research/sp2l-v2/Sp2lSemanticState.js';
+
+function replay(events: Sp2lEvent[]) {
+  return events.reduce(applySp2lEvent, createInitialSp2lState());
+}
+
+const bullishSetup: Sp2lEvent[] = [
+  { type: 'CONTEXT_IDENTIFIED', contextId: 'fixture-bull-context' },
+  { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse-bull-1', direction: 'BULLISH' },
+  { type: 'SPIKE_CONFIRMED', spikeId: 'spike-bull-1' },
+  {
+    type: 'STRUCTURAL_REFERENCE_IDENTIFIED',
+    index: 12,
+    price: 2500,
+    status: 'SOURCE_CONFIRMED',
+    rationale: 'Fixture marks the first structural low explicitly; algorithm remains source/TBD.',
+  },
+  { type: 'CORRECTION_BEGAN', index: 13 },
+  {
+    type: 'PENDING_LIMIT_CREATED',
+    index: 13,
+    entryPrice: 2500,
+    stopLoss: 2492,
+    entryStatus: 'CANDIDATE',
+    stopStatus: 'CANDIDATE',
+    rationale: 'Fixture value only; no historical optimization.',
+  },
+];
+
+describe('SP2L V2 semantic state model (non-production)', () => {
+  it('accepts the source-shaped bullish lifecycle up to a pending order', () => {
+    const state = replay(bullishSetup);
+
+    expect(state.phase).toBe('PENDING');
+    expect(state.direction).toBe('BULLISH');
+    expect(state.geometry.firstStructuralReference.price).toBe(2500);
+    expect(state.geometry.pendingEntryPrice.price).toBe(2500);
+    expect(state.geometry.structuralStop.price).toBe(2492);
+  });
+
+  it('accepts the bearish mirror lifecycle', () => {
+    const state = replay([
+      { type: 'CONTEXT_IDENTIFIED', contextId: 'fixture-bear-context' },
+      { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse-bear-1', direction: 'BEARISH' },
+      { type: 'SPIKE_CONFIRMED', spikeId: 'spike-bear-1' },
+      { type: 'STRUCTURAL_REFERENCE_IDENTIFIED', index: 12, price: 2500, status: 'SOURCE_CONFIRMED' },
+      { type: 'CORRECTION_BEGAN', index: 13 },
+      { type: 'PENDING_LIMIT_CREATED', index: 13, entryPrice: 2500, stopLoss: 2508 },
+    ]);
+
+    expect(state.phase).toBe('PENDING');
+    expect(state.direction).toBe('BEARISH');
+  });
+
+  it('requires context before strong-move classification', () => {
+    const state = replay([
+      { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse-1', direction: 'BULLISH' },
+    ]);
+
+    expect(state.phase).toBe('REJECTED');
+    expect(state.rejectionReason).toBe('STRONG_MOVE_REQUIRES_CONTEXT');
+  });
+
+  it('requires the structural reference before correction begins', () => {
+    const state = replay([
+      { type: 'CONTEXT_IDENTIFIED', contextId: 'ctx' },
+      { type: 'STRONG_MOVE_STARTED', impulseId: 'impulse', direction: 'BULLISH' },
+      { type: 'SPIKE_CONFIRMED', spikeId: 'spike' },
+      { type: 'CORRECTION_BEGAN', index: 10 },
+    ]);
+
+    expect(state.phase).toBe('REJECTED');
+    expect(state.rejectionReason).toBe('CORRECTION_REQUIRES_STRUCTURAL_REFERENCE');
+  });
+
+  it('requires an explicit stop before a pending order exists', () => {
+    const state = replay([
+      ...bullishSetup.slice(0, -1),
+      { type: 'PENDING_LIMIT_CREATED', index: 13, entryPrice: 2500, stopLoss: null },
+    ]);
+
+    expect(state.phase).toBe('REJECTED');
+    expect(state.rejectionReason).toBe('PENDING_LIMIT_REQUIRES_EXPLICIT_STRUCTURAL_STOP');
+  });
+
+  it('models pending-before-fill and fills only on an exact limit touch', () => {
+    const pending = replay(bullishSetup);
+    expect(pending.phase).toBe('PENDING');
+    expect(pending.fillIndex).toBeNull();
+
+    const untouched = applySp2lEvent(pending, { type: 'LIMIT_TOUCHED', index: 14, price: 2501 });
+    expect(untouched.phase).toBe('PENDING');
+    expect(untouched.fillIndex).toBeNull();
+
+    const filled = applySp2lEvent(untouched, { type: 'LIMIT_TOUCHED', index: 15, price: 2500 });
+    expect(filled.phase).toBe('FILLED');
+    expect(filled.fillIndex).toBe(15);
+    expect(filled.position.entryPrice).toBe(2500);
+    expect(filled.position.stopLoss).toBe(2492);
+  });
+
+  it('cancels an untouched pending order on structural invalidation', () => {
+    const state = applySp2lEvent(replay(bullishSetup), {
+      type: 'STRUCTURAL_INVALIDATION',
+      index: 14,
+    });
+
+    expect(state.phase).toBe('INVALIDATED');
+    expect(state.fillIndex).toBeNull();
+    expect(state.invalidationIndex).toBe(14);
+  });
+
+  it('keeps Leg 1 and Leg 2 geometry explicit instead of inventing formulas', () => {
+    const state = replay(bullishSetup);
+
+    expect(state.geometry.leg1Endpoint.status).toBe('TBD');
+    expect(state.geometry.leg1Endpoint.index).toBeNull();
+    expect(state.geometry.leg2ProjectionOrigin.status).toBe('TBD');
+    expect(state.geometry.leg2EqualityTolerance).toBeNull();
+    expect(state.position.position2xEnabled).toBe(false);
+  });
+
+  it('does not silently enable the separate 2X position concept', () => {
+    const state = applySp2lEvent(replay(bullishSetup), {
+      type: 'LIMIT_TOUCHED',
+      index: 15,
+      price: 2500,
+    });
+
+    expect(state.position.position2xEnabled).toBe(false);
+  });
+
+  it('makes same-candle entry/SL/TP ordering an explicit simulator policy', () => {
+    const touches = { entry: true, stop: true, tp1: true };
+
+    expect(resolveSameCandleTouch('SL_FIRST', touches)).toBe('STOP');
+    expect(resolveSameCandleTouch('TP_FIRST', touches)).toBe('TP1');
+    expect(resolveSameCandleTouch('AMBIGUOUS', touches)).toBe('AMBIGUOUS');
+    expect(resolveSameCandleTouch('AMBIGUOUS', { entry: true, stop: false, tp1: false })).toBe('FILL');
+  });
+
+  it('preserves the semantic distinction from the old close-reclaim entry model', () => {
+    const state = replay(bullishSetup);
+
+    expect(state.phase).toBe('PENDING');
+    expect(state.pendingCreatedAt).toBe(13);
+    expect(state.fillIndex).toBeNull();
+  });
+});
