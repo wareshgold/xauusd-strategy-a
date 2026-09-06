@@ -1,0 +1,370 @@
+{
+  "strategy": "Strategy A",
+  "mode": "POST_ENTRY_PATH_DYNAMICS",
+  "timeframe": "5min",
+  "scope": {
+    "preHoldoutCandles": 10000,
+    "devCandles": 6000,
+    "valCandles": 4000,
+    "pathHorizon": 20,
+    "freshHoldoutExcluded": true,
+    "delayExactly": 1
+  },
+  "methodology": {
+    "purpose": "Descriptive analysis of post-entry path dynamics. Primary: early-path MAE at fixed horizons (t1/t3/t5/t10). Secondary (retrospective): MAE20/MFE20, timing, sequence.",
+    "earlyPathFeatures": "MAE at fixed bar horizons. Available after each horizon closes. Potential live exit signals.",
+    "retrospectiveFeatures": "Full 20-bar MAE/MFE, barsToMAE/MFE, sequence. Only known after trade resolves. Descriptive only.",
+    "sameBarSLSeparation": "Trades where SL is hit on bar 1 are separated from post-entry path analysis.",
+    "noThresholdOptimization": true,
+    "noExitRuleCreation": true,
+    "diagnosticOnly": true,
+    "productionUntouched": true,
+    "freshHoldoutExcluded": true
+  },
+  "integrity": {
+    "baselineResolvedPreHoldout": 210,
+    "delay1Reconstructed": 144,
+    "nonDelay1Baseline": 66,
+    "unmatchedCandidates": 15,
+    "noPath": 0,
+    "totalRows": 144,
+    "devN": 91,
+    "valN": 53,
+    "replayConsistent": true,
+    "note": "DELAY1 trades only. Of 210 pre-holdout resolved, 144 are DELAY1 (confirmed by existing analyzers). Unmatched candidates are extra reconstructions not in baseline."
+  },
+  "outcome": {
+    "all": {
+      "n": 144,
+      "avgR": 0.34152112091156167,
+      "medianR": -1,
+      "WR": 0.3333333333333333,
+      "PF": 1.512281681367342,
+      "totalR": 49.17904141126488,
+      "exceptional": 6
+    },
+    "dev": {
+      "n": 91,
+      "avgR": 0.5120892313002279,
+      "medianR": -1,
+      "WR": 0.34065934065934067,
+      "PF": 1.7766686674720122,
+      "totalR": 46.60012004832073,
+      "exceptional": 4
+    },
+    "val": {
+      "n": 53,
+      "avgR": 0.04865889364045565,
+      "medianR": -1,
+      "WR": 0.32075471698113206,
+      "PF": 1.0716367045262265,
+      "totalR": 2.578921362944149,
+      "exceptional": 2
+    }
+  },
+  "cells": {
+    "sellNY": {
+      "n": 24,
+      "avgR": 0.9054511415102681,
+      "medianR": 0.03699648322406649,
+      "WR": 0.5,
+      "PF": 2.810902283020537,
+      "totalR": 21.730827396246433,
+      "exceptional": 3
+    },
+    "sellLONDON": {
+      "n": 43,
+      "avgR": 1.2207273001607535,
+      "medianR": -1,
+      "WR": 0.32558139534883723,
+      "PF": 2.810043927824566,
+      "totalR": 52.4912739069124,
+      "exceptional": 2
+    },
+    "buyNY": {
+      "n": 24,
+      "avgR": -0.1290404873833037,
+      "medianR": -1,
+      "WR": 0.4166666666666667,
+      "PF": 0.7787877359143366,
+      "totalR": -3.096971697199289,
+      "exceptional": 0
+    },
+    "buyLONDON": {
+      "n": 34,
+      "avgR": -0.2381630841791329,
+      "medianR": -1,
+      "WR": 0.2647058823529412,
+      "PF": 0.6760982055163792,
+      "totalR": -8.097544862090519,
+      "exceptional": 1
+    }
+  },
+  "sameBarSL": {
+    "sameBarSL": {
+      "n": 51,
+      "avgR": -1,
+      "medianR": -1,
+      "WR": 0,
+      "PF": 0,
+      "totalR": -51,
+      "exceptional": 0
+    },
+    "postEntry": {
+      "n": 93,
+      "avgR": 1.0771939936695147,
+      "medianR": 0.03787022959433223,
+      "WR": 0.5161290322580645,
+      "PF": 3.22620092025033,
+      "totalR": 100.17904141126488,
+      "exceptional": 6
+    }
+  },
+  "earlyPath": {
+    "t1Mae": {
+      "overall": {
+        "n": 144,
+        "medianWin": 0.25969486645378886,
+        "medianLoss": 1.1190553315758633,
+        "delta": -0.8593604651220745,
+        "spearmanAll": -0.5631596383871431,
+        "spearmanNoEx": -0.5381035422161038
+      },
+      "dev": {
+        "n": 91,
+        "medianWin": 0.25969486645378886,
+        "medianLoss": 1,
+        "delta": -0.7403051335462112,
+        "spearmanAll": -0.5873130687821314,
+        "spearmanNoEx": -0.5169634143483905
+      },
+      "val": {
+        "n": 53,
+        "medianWin": 0.2593713215834399,
+        "medianLoss": 1.283617702425626,
+        "delta": -1.024246380842186,
+        "spearmanAll": -0.5242118700797542,
+        "spearmanNoEx": -0.5602550142819139
+      }
+    },
+    "t3Mae": {
+      "overall": {
+        "n": 144,
+        "medianWin": 0.41059724510180795,
+        "medianLoss": 2.2081919012214173,
+        "delta": -1.7975946561196094,
+        "spearmanAll": -0.6016238602626401,
+        "spearmanNoEx": -0.5651259494693774
+      },
+      "dev": {
+        "n": 91,
+        "medianWin": 0.5148592564975125,
+        "medianLoss": 2.0308676736619513,
+        "delta": -1.5160084171644388,
+        "spearmanAll": -0.6078308853035551,
+        "spearmanNoEx": -0.5411524776667885
+      },
+      "val": {
+        "n": 53,
+        "medianWin": 0.28192539158789365,
+        "medianLoss": 3.1355625102907956,
+        "delta": -2.8536371187029017,
+        "spearmanAll": -0.6037923313379758,
+        "spearmanNoEx": -0.6047470460316576
+      }
+    },
+    "t5Mae": {
+      "overall": {
+        "n": 144,
+        "medianWin": 0.5791676373914556,
+        "medianLoss": 2.775594023680201,
+        "delta": -2.196426386288745,
+        "spearmanAll": -0.6147212344088211,
+        "spearmanNoEx": -0.5685180841068868
+      },
+      "dev": {
+        "n": 91,
+        "medianWin": 0.6593339353938459,
+        "medianLoss": 2.50252268264348,
+        "delta": -1.843188747249634,
+        "spearmanAll": -0.5497877609083527,
+        "spearmanNoEx": -0.47242722145590843
+      },
+      "val": {
+        "n": 53,
+        "medianWin": 0.30515154592066945,
+        "medianLoss": 4.578373347917869,
+        "delta": -4.2732218019972,
+        "spearmanAll": -0.7069298498648076,
+        "spearmanNoEx": -0.6943745816589103
+      }
+    },
+    "t10Mae": {
+      "overall": {
+        "n": 144,
+        "medianWin": 0.7751139543211625,
+        "medianLoss": 4.578373347917869,
+        "delta": -3.803259393596706,
+        "spearmanAll": -0.5587810822500653,
+        "spearmanNoEx": -0.4990932149153798
+      },
+      "dev": {
+        "n": 91,
+        "medianWin": 0.8176882756633427,
+        "medianLoss": 3.0175388114980883,
+        "delta": -2.1998505358347455,
+        "spearmanAll": -0.46999400294557747,
+        "spearmanNoEx": -0.3783508531841525
+      },
+      "val": {
+        "n": 53,
+        "medianWin": 0.5927925208659144,
+        "medianLoss": 5.098800150833219,
+        "delta": -4.506007629967304,
+        "spearmanAll": -0.6807562720499795,
+        "spearmanNoEx": -0.6567815902265391
+      }
+    }
+  },
+  "retrospective": {
+    "mae20": {
+      "overall": {
+        "n": 144,
+        "medianWin": 0.9460350671632538,
+        "medianLoss": 5.098800150833219,
+        "delta": -4.152765083669965,
+        "spearmanAll": -0.47871800919991875,
+        "spearmanNoEx": -0.4638117240147778
+      },
+      "dev": {
+        "n": 91,
+        "medianWin": 1.3003085565854007,
+        "medianLoss": 3.497477374135974,
+        "delta": -2.1971688175505735,
+        "spearmanAll": -0.34951267142458126,
+        "spearmanNoEx": -0.34062248334906575
+      },
+      "val": {
+        "n": 53,
+        "medianWin": 0.847578605699352,
+        "medianLoss": 6.371341144277016,
+        "delta": -5.523762538577664,
+        "spearmanAll": -0.6917511207231228,
+        "spearmanNoEx": -0.6608836655248397
+      }
+    },
+    "mfe20": {
+      "overall": {
+        "n": 144,
+        "medianWin": 2.4936526847704057,
+        "medianLoss": 3.4294405616773322,
+        "delta": -0.9357878769069266,
+        "spearmanAll": 0.016839921000123062,
+        "spearmanNoEx": -0.08974550541735031
+      },
+      "dev": {
+        "n": 91,
+        "medianWin": 2.7330774297334552,
+        "medianLoss": 3.5200965507948156,
+        "delta": -0.7870191210613604,
+        "spearmanAll": 0.05091950458930348,
+        "spearmanNoEx": -0.056281301259588794
+      },
+      "val": {
+        "n": 53,
+        "medianWin": 1.7709980862712023,
+        "medianLoss": 3.4294405616773322,
+        "delta": -1.65844247540613,
+        "spearmanAll": -0.04597403538106415,
+        "spearmanNoEx": -0.15110247228945617
+      }
+    },
+    "barsToMAE": {
+      "overall": {
+        "n": 144,
+        "medianWin": 7,
+        "medianLoss": 8,
+        "delta": -1,
+        "spearmanAll": -0.09836091859253633,
+        "spearmanNoEx": -0.10440599480317647
+      },
+      "dev": {
+        "n": 91,
+        "medianWin": 6,
+        "medianLoss": 7,
+        "delta": -1,
+        "spearmanAll": 0.00018165192763018757,
+        "spearmanNoEx": -0.07243041145309422
+      },
+      "val": {
+        "n": 53,
+        "medianWin": 8,
+        "medianLoss": 10,
+        "delta": -2,
+        "spearmanAll": -0.25060165871678775,
+        "spearmanNoEx": -0.15126305178555227
+      }
+    },
+    "barsToMFE": {
+      "overall": {
+        "n": 144,
+        "medianWin": 11,
+        "medianLoss": 10,
+        "delta": 1,
+        "spearmanAll": 0.10972994453235962,
+        "spearmanNoEx": 0.06362127259567725
+      },
+      "dev": {
+        "n": 91,
+        "medianWin": 14,
+        "medianLoss": 11,
+        "delta": 3,
+        "spearmanAll": 0.11076753935705083,
+        "spearmanNoEx": 0.07219110916233844
+      },
+      "val": {
+        "n": 53,
+        "medianWin": 7,
+        "medianLoss": 8,
+        "delta": -1,
+        "spearmanAll": 0.10223375975923626,
+        "spearmanNoEx": 0.04327989707843264
+      }
+    }
+  },
+  "classifications": {
+    "t1Mae": "STABLE_POST_ENTRY_ASSOCIATION",
+    "t3Mae": "STABLE_POST_ENTRY_ASSOCIATION",
+    "t5Mae": "STABLE_POST_ENTRY_ASSOCIATION",
+    "t10Mae": "STABLE_POST_ENTRY_ASSOCIATION"
+  },
+  "sequence": {
+    "all": {
+      "MAE": 76,
+      "MFE": 61,
+      "MFE_ONLY": 4,
+      "MAE_ONLY": 2,
+      "SAME_BAR": 1
+    },
+    "dev": {
+      "MAE": 53,
+      "MFE": 34,
+      "MFE_ONLY": 3,
+      "MAE_ONLY": 1
+    },
+    "val": {
+      "MAE": 23,
+      "MFE": 27,
+      "SAME_BAR": 1,
+      "MAE_ONLY": 1,
+      "MFE_ONLY": 1
+    }
+  },
+  "maeBeforeMfe": {
+    "all": {
+      "yes": 78,
+      "no": 65,
+      "total": 143
+    }
+  }
+}
