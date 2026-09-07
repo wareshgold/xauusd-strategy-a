@@ -1,0 +1,41 @@
+name: Research - Historical Dataset Refresh
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/phase12-preentry-geometry-robustness
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --global pnpm@10
+      - run: pnpm install --frozen-lockfile
+      - name: Download expanded historical dataset
+        env:
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+          XAUUSD_OUTPUTSIZE: "50000"
+          XAUUSD_CHUNK_SIZE: "5000"
+          XAUUSD_TIMEZONE: "UTC"
+        run: pnpm run download:data
+      - name: Audit expanded dataset
+        run: pnpm run audit:data
+      - name: Commit refreshed dataset and audit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/historical/xauusd-1min.json data/historical/xauusd-5min.json data/reports/dataset-audit.json
+          if git diff --cached --quiet; then
+            echo "No dataset changes detected."
+            exit 0
+          fi
+          git commit -m "research: refresh historical XAUUSD dataset coverage"
+          git push origin HEAD:research/phase12-preentry-geometry-robustness
