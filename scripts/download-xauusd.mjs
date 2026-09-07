@@ -35,7 +35,7 @@ function previousMinute(timestamp) {
   const date = new Date(`${timestamp.replace(' ', 'T')}Z`);
   if (Number.isNaN(date.getTime())) throw new Error(`Invalid Twelve Data timestamp: ${timestamp}`);
   date.setUTCMinutes(date.getUTCMinutes() - 1);
-  return date.toISOString().slice(0, 16).replace('T', 'T') + ':00';
+  return date.toISOString().slice(0, 16).replace('T', ' ') + ':00';
 }
 
 async function requestChunk(interval, outputsize, endDate) {
