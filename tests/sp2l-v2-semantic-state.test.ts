@@ -177,6 +177,20 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(state.position.position2xEnabled).toBe(false);
   });
 
+  it('keeps an unresolved Leg 2 origin separate from the pending fill price', () => {
+    const filled = applySp2lEvent(replay(bullishSetup), {
+      type: 'LIMIT_TOUCHED',
+      index: 15,
+      price: 2500,
+    });
+
+    expect(filled.phase).toBe('FILLED');
+    expect(filled.position.entryPrice).toBe(2500);
+    expect(filled.geometry.leg2ProjectionOrigin.status).toBe('TBD');
+    expect(filled.geometry.leg2ProjectionOrigin.price).toBeNull();
+    expect(filled.geometry.leg2ProjectionOrigin.index).toBeNull();
+  });
+
   it('keeps 2X separate from position 1', () => {
     const state = applySp2lEvent(replay(bullishSetup), {
       type: 'LIMIT_TOUCHED',
