@@ -16,6 +16,12 @@ export type Sp2lPhase =
 
 export type GeometryStatus = 'SOURCE_CONFIRMED' | 'CANDIDATE' | 'TBD';
 export type IntrabarTouchPolicy = 'SL_FIRST' | 'TP_FIRST' | 'AMBIGUOUS';
+export type Leg2OriginConcept =
+  | 'CORRECTION_EXTREME'
+  | 'STRUCTURAL_HL_LH'
+  | 'PENDING_LIMIT'
+  | 'ACTUAL_FILL'
+  | 'OTHER_VISUAL_POINT';
 
 export interface StructuralReference {
   status: GeometryStatus;
@@ -24,12 +30,16 @@ export interface StructuralReference {
   rationale: string | null;
 }
 
+export interface Leg2ProjectionOrigin extends StructuralReference {
+  concept: Leg2OriginConcept | null;
+}
+
 export interface Sp2lGeometryState {
   firstStructuralReference: StructuralReference;
   pendingEntryPrice: StructuralReference;
   structuralStop: StructuralReference;
   leg1Endpoint: StructuralReference;
-  leg2ProjectionOrigin: StructuralReference;
+  leg2ProjectionOrigin: Leg2ProjectionOrigin;
   leg2EqualityTolerance: number | null;
 }
 
@@ -85,6 +95,7 @@ export type Sp2lEvent =
       index: number | null;
       price: number | null;
       status?: GeometryStatus;
+      concept?: Leg2OriginConcept;
       rationale?: string;
     }
   | { type: 'LIMIT_TOUCHED'; index: number; price: number }
@@ -116,7 +127,7 @@ export function createInitialSp2lState(): Sp2lSemanticState {
       pendingEntryPrice: tbd(),
       structuralStop: tbd(),
       leg1Endpoint: tbd(),
-      leg2ProjectionOrigin: tbd(),
+      leg2ProjectionOrigin: { ...tbd(), concept: null },
       leg2EqualityTolerance: null,
     },
     position: {
@@ -228,6 +239,7 @@ export function applySp2lEvent(state: Sp2lSemanticState, event: Sp2lEvent): Sp2l
             status: event.status ?? 'CANDIDATE',
             index: event.index,
             price: event.price,
+            concept: event.concept ?? null,
             rationale: event.rationale ?? null,
           },
         },
