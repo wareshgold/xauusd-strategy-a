@@ -129,22 +129,39 @@ function positiveContribution(rows) {
 async function main() {
   const base = JSON.parse(await readFile(BASE, 'utf8'));
   const candles = (JSON.parse(await readFile(CANDLES, 'utf8')).candles ?? []);
+  if (!candles.length) throw new Error('PHASE12: historical 5m candle dataset is empty');
+
+  const candleIndexByTimestamp = new Map();
+  for (let i = 0; i < candles.length; i++) {
+    const timestamp = candles[i]?.timestamp;
+    if (typeof timestamp !== 'string' || !timestamp) throw new Error(`PHASE12: candle ${i} is missing a canonical timestamp`);
+    if (candleIndexByTimestamp.has(timestamp)) throw new Error(`PHASE12: duplicate canonical candle timestamp: ${timestamp}`);
+    candleIndexByTimestamp.set(timestamp, i);
+  }
+
   const targets = (base.trades ?? [])
     .map((t) => ({ entryIndex: Number(t.entryIndex), entryTime: t.entryTime, r: Number(t.rMultiple), direction: t.direction, result: t.result }))
-    .filter((t) => Number.isInteger(t.entryIndex) && t.entryIndex < PRE && t.result !== 'AMBIGUOUS' && Number.isFinite(t.r) && (t.direction === 'BUY' || t.direction === 'SELL'));
+    .filter((t) => typeof t.entryTime === 'string' && t.entryTime && t.result !== 'AMBIGUOUS' && Number.isFinite(t.r) && (t.direction === 'BUY' || t.direction === 'SELL'));
 
   const rows = [];
   let replayMismatch = 0;
   let noReplay = 0;
+  let missingCanonicalTimestamp = 0;
 
   for (const t of targets) {
-    const x = replayAt(candles, t.entryIndex);
+    const canonicalIndex = candleIndexByTimestamp.get(t.entryTime);
+    if (!Number.isInteger(canonicalIndex)) {
+      missingCanonicalTimestamp++;
+      continue;
+    }
+
+    const x = replayAt(candles, canonicalIndex);
     if (!x || x.trigger.timestamp !== t.entryTime || x.trigger.direction !== t.direction) {
       replayMismatch++;
       continue;
     }
     const { visible, spike, correction } = x;
-    const triggerCandle = visible[t.entryIndex];
+    const triggerCandle = visible[canonicalIndex];
     const corr = visible.slice(correction.correctionStartIndex, correction.correctionExtremeIndex + 1);
     if (!corr.length) { noReplay++; continue; }
 
@@ -174,9 +191,10 @@ async function main() {
     const spikeSize = Math.abs(spike.size);
 
     rows.push({
-      entryIndex: t.entryIndex,
+      entryIndex: canonicalIndex,
+      baselineEntryIndex: t.entryIndex,
       time: t.entryTime,
-      split: t.entryIndex < DEV ? 'DEV' : 'VAL',
+      split: canonicalIndex < DEV ? 'DEV' : 'VAL',
       direction: t.direction,
       session: sessionOf(t.entryTime),
       r: t.r,
@@ -193,6 +211,13 @@ async function main() {
       triggerCloseLocation: triggerRange > 0 ? (t.direction === 'BUY' ? (triggerCandle.close - triggerCandle.low) / triggerRange : (triggerCandle.high - triggerCandle.close) / triggerRange) : null,
       triggerReclaimToCorrection: correctionSize > 0 ? reclaim / correctionSize : null,
     });
+  }
+
+  if (missingCanonicalTimestamp > 0) {
+    throw new Error(`PHASE12: ${missingCanonicalTimestamp} baseline trades have no matching canonical entry timestamp in the refreshed dataset`);
+  }
+  if (replayMismatch > 0 || noReplay > 0) {
+    throw new Error(`PHASE12: canonical replay integrity failed: mismatch=${replayMismatch} noReplay=${noReplay}`);
   }
 
   const FEATURES = [
@@ -220,7 +245,7 @@ async function main() {
     mode: 'PHASE_12_PREENTRY_GEOMETRY_ROBUSTNESS',
     timeframe: '5m',
     scope: { baselinePre: targets.length, replayed: rows.length, dev: rows.filter((x) => x.split === 'DEV').length, val: rows.filter((x) => x.split === 'VAL').length, freshHoldoutExcluded: true, productionUntouched: true },
-    integrity: { baselinePre: targets.length, replayMismatch, noReplay, deterministicRerunRequired: true, canonicalEntryTimestampRequired: true },
+    integrity: { baselinePre: targets.length, replayed: rows.length, replayMismatch, noReplay, missingCanonicalTimestamp, deterministicRerunRequired: true, canonicalEntryTimestampRequired: true, canonicalEntryTimestampUsed: true },
     methodology: {
       purpose: 'Audit whether already-defined pre-entry correction/trigger geometry associations survive across direction/session segments and DEV/VAL without creating a new trading rule.',
       features: FEATURES,
@@ -230,7 +255,7 @@ async function main() {
       noFreshHoldoutAccess: true,
       exceptionalDefinition: 'rMultiple >= 5',
       segmentDefinition: 'BUY/SELL × LONDON/NEW_YORK; OUT_OF_SESSION reported separately.',
-      note: 'Existing geometry definitions are reused. BUY reclaim/location calculations are direction-aware; no thresholds are selected from outcomes.',
+      note: 'Existing geometry definitions are reused. Canonical entryTime from the baseline is the only identity key used to locate the corresponding candle in the refreshed dataset; baseline entryIndex is retained only for audit traceability.',
     },
     baseline: outcomeStats(rows),
     baselineNoExceptional: outcomeStats(rows.filter((x) => !x.exceptional)),
@@ -245,7 +270,7 @@ async function main() {
 
   const fmt = (s) => `${s.n} avgR=${p(s.avgR)} PF=${s.PF == null ? '-' : p(s.PF)} WR=${s.WR == null ? '-' : p(s.WR * 100) + '%'}`;
   console.log(`PHASE_12_PREENTRY_GEOMETRY N=${rows.length} DEV=${result.scope.dev} VAL=${result.scope.val} FRESH=LOCKED`);
-  console.log(`INTEGRITY baselinePre=${targets.length} replayed=${rows.length} mismatch=${replayMismatch} noReplay=${noReplay}`);
+  console.log(`INTEGRITY baselinePre=${targets.length} replayed=${rows.length} mismatch=${replayMismatch} noReplay=${noReplay} missingCanonicalTimestamp=${missingCanonicalTimestamp}`);
   console.log(`BASELINE ${fmt(result.baseline)} | NO_EX ${fmt(result.baselineNoExceptional)} | TOP3_POS_SHARE=${p(result.positiveContribution.top3Share)}`);
   console.log('=== SEGMENTS ===');
   for (const [key, d] of Object.entries(segmentDiagnostics)) console.log(`${key}: ${fmt(d.outcome)} | NO_EX ${fmt(d.noExceptionalOutcome)} | TOP3=${p(d.positiveContribution.top3Share)}`);
