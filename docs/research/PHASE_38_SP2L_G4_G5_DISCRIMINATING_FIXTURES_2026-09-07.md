@@ -103,16 +103,32 @@ Asserts: parent magnitudes (70) ≠ nested magnitudes (33); nested TP (2659) ≠
 - `PENDING_LIMIT` and `ACTUAL_FILL` are execution concepts and stay excluded from canonical C.
 - Fresh Holdout remains LOCKED; production Strategy A remains unchanged.
 
+## Source-extraction input layer (schema + wiring)
+
+`src/domain/research/sp2l-v2/G4G5SourceExtraction.ts` is the JSON-serializable provenance schema for the extracted frame coordinates and the input layer for the measurement helpers:
+
+- `G4G5_SOURCE_POINT_REGISTRY` — canonical point IDs (S1-A…S3-F) with segment, category (LEG1_START / LEG1_END / CORRECTION / LEG2_END / EXECUTION / STRUCTURAL_SEQUENCE), gate (G1/G2/G4/G5/G6/NESTED_LEG), purpose, and the measurement anchor concept each point feeds.
+- `ExtractedSourcePoint` — pointId, videoTime, candleTimestamp, price, OHLC element (or UNREADABLE), chart timeframe (M1/M5/UNKNOWN), direction (BUY/SELL/UNKNOWN), notes.
+- `validateExtraction` / `assertValidExtraction` — fail-closed validation (unknown point ID, non-finite price, UNREADABLE-with-price, bad video time/timeframe/direction, missing video URL).
+- `extractionToChart(extraction, segment)` — builds a `G4G5FixtureChart` whose anchors come only from readable points (UNREADABLE and sequence-count points stay in provenance but are excluded from measurement).
+- `reportExtractionCandidates(extraction, segment)` — runs the G4/G5 measurements on the segment and reports `MEASURED`, `MISSING_EVIDENCE` (segment simply did not expose that anchor) or `INVALID_ORDER` per family/candidate, still without selecting a canonical one.
+- `G4G5_EXTRACTION_TEMPLATE` — blank fill-in template matching the frame-request delivery sheet.
+
+Tests: `tests/sp2l-v2-g4g5-source-extraction.test.ts` (11 tests) — validation errors, anchor mapping, end-to-end measurement with hand-computed magnitudes, UNREADABLE handling, SELL→BEARISH mapping, JSON round-trip, template validity.
+
 ## Files
 
 - `src/domain/research/sp2l-v2/G4G5DiscriminatingFixtures.ts` — fixture data + mirror helper.
 - `src/domain/research/sp2l-v2/G4G5CandidateMeasurement.ts` — measurement/report helpers (no selection).
+- `src/domain/research/sp2l-v2/G4G5SourceExtraction.ts` — source-extraction schema + input layer.
 - `tests/sp2l-v2-g4g5-discriminating-fixtures.test.ts` — 11 unit tests.
+- `tests/sp2l-v2-g4g5-source-extraction.test.ts` — 11 unit tests.
 
 ## Validation
 
 ```bash
 pnpm exec vitest run tests/sp2l-v2-g4g5-discriminating-fixtures.test.ts   # 11/11 pass
+pnpm exec vitest run tests/sp2l-v2-g4g5-source-extraction.test.ts         # 11/11 pass
 pnpm run build                                                            # tsc --noEmit clean
-pnpm test                                                                 # 75/75 pass (full suite)
+pnpm test                                                                 # 86/86 pass (full suite)
 ```
