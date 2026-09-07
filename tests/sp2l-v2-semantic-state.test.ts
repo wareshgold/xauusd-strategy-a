@@ -166,19 +166,31 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(invalid.rejectionReason).toBe('LEG2_ORIGIN_CANNOT_PRECEDE_CORRECTION');
   });
 
-  it('preserves candidate identity when the correction-origin concept is explicit', () => {
-    const candidate = applySp2lEvent(replay(bullishSetup), {
-      type: 'LEG2_PROJECTION_ORIGIN_IDENTIFIED',
-      index: 14,
-      price: 2508,
-      status: 'CANDIDATE',
-      concept: 'CORRECTION_EXTREME',
-      rationale: 'Fixture-only candidate; not selected as canonical C.',
-    });
-    expect(candidate.geometry.leg2ProjectionOrigin.status).toBe('CANDIDATE');
-    expect(candidate.geometry.leg2ProjectionOrigin.concept).toBe('CORRECTION_EXTREME');
-    expect(candidate.geometry.leg2ProjectionOrigin.price).toBe(2508);
-    expect(candidate.geometry.pendingEntryPrice.price).toBe(2500);
+  it('preserves every unresolved G5 candidate identity without promoting any to canonical C', () => {
+    const concepts = [
+      'CORRECTION_EXTREME',
+      'STRUCTURAL_HL_LH',
+      'PENDING_LIMIT',
+      'ACTUAL_FILL',
+      'OTHER_VISUAL_POINT',
+    ] as const;
+
+    for (const concept of concepts) {
+      const candidate = applySp2lEvent(replay(bullishSetup), {
+        type: 'LEG2_PROJECTION_ORIGIN_IDENTIFIED',
+        index: 14,
+        price: 2508,
+        status: 'CANDIDATE',
+        concept,
+        rationale: 'Research fixture only; source geometry remains unresolved.',
+      });
+
+      expect(candidate.phase).toBe('PENDING');
+      expect(candidate.geometry.leg2ProjectionOrigin.status).toBe('CANDIDATE');
+      expect(candidate.geometry.leg2ProjectionOrigin.concept).toBe(concept);
+      expect(candidate.geometry.leg2ProjectionOrigin.price).toBe(2508);
+      expect(candidate.geometry.pendingEntryPrice.price).toBe(2500);
+    }
   });
 
   it('does not auto-populate Leg 2 origin when the order fills', () => {
