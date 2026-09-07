@@ -34,6 +34,8 @@
     "research:phase24-structural-state-decomposition": "node scripts/analyze-phase24-structural-state-decomposition.mjs",
     "research:phase24-preentry-loss-archetype-predictability": "node scripts/analyze-phase24-preentry-loss-archetype-predictability.mjs",
     "research:phase25-entry-delay-temporal-validation": "node scripts/analyze-phase25-entry-delay-temporal-validation.mjs",
+    "research:phase25-d-archetype-robustness": "node scripts/analyze-phase25-d-archetype-robustness.mjs",
+    "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
     "research:phase27-structural-regime-decomposition": "node scripts/analyze-phase27-structural-regime-decomposition.mjs",
     "research:phase28-breakout-follow-bars-validation": "node scripts/analyze-phase28-breakout-follow-bars-validation.mjs",
