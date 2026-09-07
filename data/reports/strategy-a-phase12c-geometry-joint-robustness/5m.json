@@ -1,0 +1,907 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_12C_GEOMETRY_JOINT_ROBUSTNESS",
+  "timeframe": "5m",
+  "inputReports": [
+    "strategy-a-phase12-preentry-geometry-robustness/5m.json",
+    "strategy-a-phase12b-geometry-quantile-robustness/5m.json"
+  ],
+  "scope": {
+    "n": 221,
+    "dev": 122,
+    "val": 99,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "methodology": {
+    "purpose": "Descriptive joint-state and redundancy audit for pre-entry geometry features already identified in Phases 12 and 12B.",
+    "partition": "Within each sample, each feature is split at its sample median; this is a descriptive state partition, not a trading threshold.",
+    "pairs": [
+      [
+        "triggerReclaimToRange",
+        "triggerBodyToRange"
+      ],
+      [
+        "triggerReclaimToRange",
+        "pathEfficiency"
+      ],
+      [
+        "triggerBodyToRange",
+        "pathEfficiency"
+      ],
+      [
+        "triggerBodyToRange",
+        "bodyParticipation"
+      ],
+      [
+        "lowerWickShare",
+        "bodyParticipation"
+      ]
+    ],
+    "exceptionalExcludedFromContrast": "rMultiple >= 5 excluded only from the contrast summary; raw cell outcomes retain all cases.",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noNewTradingRules": true,
+    "noFreshHoldoutAccess": true,
+    "note": "Pairs were pre-declared from Phase 12B stability evidence. No pair is selected or promoted to a trading rule by this audit."
+  },
+  "featureDirections": {
+    "triggerReclaimToRange": {
+      "ALL": {
+        "slope": 0.023195,
+        "monotonic": false
+      },
+      "DEV": {
+        "slope": 0.040001,
+        "monotonic": false
+      },
+      "VAL": {
+        "slope": -0.026191,
+        "monotonic": false
+      }
+    },
+    "triggerBodyToRange": {
+      "ALL": {
+        "slope": 0.028313,
+        "monotonic": false
+      },
+      "DEV": {
+        "slope": 0.089265,
+        "monotonic": false
+      },
+      "VAL": {
+        "slope": 0.002006,
+        "monotonic": false
+      }
+    },
+    "pathEfficiency": {
+      "ALL": {
+        "slope": -0.158461,
+        "monotonic": false
+      },
+      "DEV": {
+        "slope": -0.045973,
+        "monotonic": false
+      },
+      "VAL": {
+        "slope": -0.278441,
+        "monotonic": false
+      }
+    },
+    "lowerWickShare": {
+      "ALL": {
+        "slope": 0.180461,
+        "monotonic": false
+      },
+      "DEV": {
+        "slope": 0.204517,
+        "monotonic": false
+      },
+      "VAL": {
+        "slope": 0.14623,
+        "monotonic": false
+      }
+    },
+    "bodyParticipation": {
+      "ALL": {
+        "slope": -0.189199,
+        "monotonic": false
+      },
+      "DEV": {
+        "slope": -0.085989,
+        "monotonic": false
+      },
+      "VAL": {
+        "slope": -0.334478,
+        "monotonic": false
+      }
+    }
+  },
+  "pairs": {
+    "triggerReclaimToRange__triggerBodyToRange": {
+      "ALL": {
+        "n": 221,
+        "medianA": 0.08037646518449611,
+        "medianB": 0.4936116970849421,
+        "cells": {
+          "LOW_LOW": {
+            "n": 61,
+            "wins": 7,
+            "WR": 0.11475409836065574,
+            "avgR": -0.09665674565930656,
+            "PF": 0.8908136761996722,
+            "totalR": -5.8960614852177
+          },
+          "LOW_HIGH": {
+            "n": 49,
+            "wins": 11,
+            "WR": 0.22448979591836735,
+            "avgR": 0.07428951246544817,
+            "PF": 1.0957943713370255,
+            "totalR": 3.64018611080696
+          },
+          "HIGH_LOW": {
+            "n": 49,
+            "wins": 13,
+            "WR": 0.2653061224489796,
+            "avgR": -0.5263329727535896,
+            "PF": 0.2836023426409476,
+            "totalR": -25.79031566492589
+          },
+          "HIGH_HIGH": {
+            "n": 62,
+            "wins": 27,
+            "WR": 0.43548387096774194,
+            "avgR": -0.11242658591431764,
+            "PF": 0.8008443335232086,
+            "totalR": -6.970448326687694
+          }
+        }
+      },
+      "DEV": {
+        "n": 122,
+        "medianA": 0.07238788290534005,
+        "medianB": 0.5653574228848933,
+        "cells": {
+          "LOW_LOW": {
+            "n": 36,
+            "wins": 4,
+            "WR": 0.1111111111111111,
+            "avgR": -0.13232083313705928,
+            "PF": 0.8511390627208083,
+            "totalR": -4.763549992934134
+          },
+          "LOW_HIGH": {
+            "n": 25,
+            "wins": 4,
+            "WR": 0.16,
+            "avgR": -0.07510879932934432,
+            "PF": 0.9105847627031614,
+            "totalR": -1.877719983233608
+          },
+          "HIGH_LOW": {
+            "n": 25,
+            "wins": 6,
+            "WR": 0.24,
+            "avgR": -0.5174543373754488,
+            "PF": 0.3191390297691464,
+            "totalR": -12.936358434386218
+          },
+          "HIGH_HIGH": {
+            "n": 36,
+            "wins": 14,
+            "WR": 0.3888888888888889,
+            "avgR": -0.3039821195306973,
+            "PF": 0.5025747134952225,
+            "totalR": -10.943356303105103
+          }
+        }
+      },
+      "VAL": {
+        "n": 99,
+        "medianA": 0.09276148522209254,
+        "medianB": 0.4525767419152428,
+        "cells": {
+          "LOW_LOW": {
+            "n": 27,
+            "wins": 3,
+            "WR": 0.1111111111111111,
+            "avgR": -0.11601894415865052,
+            "PF": 0.869478687821518,
+            "totalR": -3.132511492283564
+          },
+          "LOW_HIGH": {
+            "n": 22,
+            "wins": 8,
+            "WR": 0.36363636363636365,
+            "avgR": 0.8466699432020381,
+            "PF": 2.330481339317489,
+            "totalR": 18.62673875044484
+          },
+          "HIGH_LOW": {
+            "n": 22,
+            "wins": 7,
+            "WR": 0.3181818181818182,
+            "avgR": -0.3701328557546357,
+            "PF": 0.4571384782265343,
+            "totalR": -8.142922826601986
+          },
+          "HIGH_HIGH": {
+            "n": 28,
+            "wins": 12,
+            "WR": 0.42857142857142855,
+            "avgR": -0.4231056815687337,
+            "PF": 0.25956505725471607,
+            "totalR": -11.846959083924544
+          }
+        }
+      },
+      "contrast": {
+        "ALL": {
+          "n": 212,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.4447475543432296,
+          "highLowMinusLowHighAvgR": -0.10731738551940806,
+          "cellCounts": {
+            "HIGH_HIGH": 59,
+            "HIGH_LOW": 47,
+            "LOW_HIGH": 47,
+            "LOW_LOW": 59
+          }
+        },
+        "DEV": {
+          "n": 119,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.45382949591658095,
+          "highLowMinusLowHighAvgR": 0.17219966312753787,
+          "cellCounts": {
+            "HIGH_HIGH": 35,
+            "HIGH_LOW": 25,
+            "LOW_HIGH": 25,
+            "LOW_LOW": 34
+          }
+        },
+        "VAL": {
+          "n": 93,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.5359728775997257,
+          "highLowMinusLowHighAvgR": 0.025635848153791663,
+          "cellCounts": {
+            "HIGH_HIGH": 27,
+            "HIGH_LOW": 20,
+            "LOW_HIGH": 20,
+            "LOW_LOW": 26
+          }
+        }
+      }
+    },
+    "triggerReclaimToRange__pathEfficiency": {
+      "ALL": {
+        "n": 220,
+        "medianA": 0.07937133935481223,
+        "medianB": 0.17186629270500892,
+        "cells": {
+          "LOW_LOW": {
+            "n": 61,
+            "wins": 15,
+            "WR": 0.2459016393442623,
+            "avgR": 0.2855407579912705,
+            "PF": 1.378651874727554,
+            "totalR": 17.4179862374675
+          },
+          "LOW_HIGH": {
+            "n": 49,
+            "wins": 3,
+            "WR": 0.061224489795918366,
+            "avgR": -0.40150737983424967,
+            "PF": 0.5723073562635167,
+            "totalR": -19.673861611878234
+          },
+          "HIGH_LOW": {
+            "n": 49,
+            "wins": 21,
+            "WR": 0.42857142857142855,
+            "avgR": -0.2553696290857527,
+            "PF": 0.5531031490999327,
+            "totalR": -12.513111825201882
+          },
+          "HIGH_HIGH": {
+            "n": 61,
+            "wins": 19,
+            "WR": 0.3114754098360656,
+            "avgR": -0.3155352814165852,
+            "PF": 0.541722567466388,
+            "totalR": -19.247652166411697
+          }
+        }
+      },
+      "DEV": {
+        "n": 121,
+        "medianA": 0.0719906000447055,
+        "medianB": 0.2380468934046127,
+        "cells": {
+          "LOW_LOW": {
+            "n": 29,
+            "wins": 5,
+            "WR": 0.1724137931034483,
+            "avgR": -0.1368071849755003,
+            "PF": 0.8346913181546037,
+            "totalR": -3.9674083642895086
+          },
+          "LOW_HIGH": {
+            "n": 31,
+            "wins": 3,
+            "WR": 0.0967741935483871,
+            "avgR": -0.053995535867039805,
+            "PF": 0.940219228147206,
+            "totalR": -1.673861611878234
+          },
+          "HIGH_LOW": {
+            "n": 31,
+            "wins": 13,
+            "WR": 0.41935483870967744,
+            "avgR": -0.2120932931394777,
+            "PF": 0.6347282173708995,
+            "totalR": -6.574892087323809
+          },
+          "HIGH_HIGH": {
+            "n": 30,
+            "wins": 7,
+            "WR": 0.23333333333333334,
+            "avgR": -0.5768274216722504,
+            "PF": 0.247616406514456,
+            "totalR": -17.304822650167512
+          }
+        }
+      },
+      "VAL": {
+        "n": 99,
+        "medianA": 0.09276148522209254,
+        "medianB": 0.1461167931288098,
+        "cells": {
+          "LOW_LOW": {
+            "n": 31,
+            "wins": 10,
+            "WR": 0.3225806451612903,
+            "avgR": 0.8399711703530242,
+            "PF": 2.239957441949702,
+            "totalR": 26.03910628094375
+          },
+          "LOW_HIGH": {
+            "n": 18,
+            "wins": 1,
+            "WR": 0.05555555555555555,
+            "avgR": -0.5858266123768041,
+            "PF": 0.3797129986598544,
+            "totalR": -10.544879022782474
+          },
+          "HIGH_LOW": {
+            "n": 18,
+            "wins": 9,
+            "WR": 0.5,
+            "avgR": -0.41347899582651676,
+            "PF": 0.17304200834696645,
+            "totalR": -7.442621924877302
+          },
+          "HIGH_HIGH": {
+            "n": 32,
+            "wins": 10,
+            "WR": 0.3125,
+            "avgR": -0.39210187455153833,
+            "PF": 0.42967000065230787,
+            "totalR": -12.547259985649227
+          }
+        }
+      },
+      "contrast": {
+        "ALL": {
+          "n": 211,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.06978939625298125,
+          "highLowMinusLowHighAvgR": 0.5415103549180766,
+          "cellCounts": {
+            "HIGH_HIGH": 58,
+            "HIGH_LOW": 48,
+            "LOW_HIGH": 48,
+            "LOW_LOW": 57
+          }
+        },
+        "DEV": {
+          "n": 118,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.01329655338976432,
+          "highLowMinusLowHighAvgR": 0.6914552394236151,
+          "cellCounts": {
+            "HIGH_HIGH": 30,
+            "HIGH_LOW": 29,
+            "LOW_HIGH": 29,
+            "LOW_LOW": 30
+          }
+        },
+        "VAL": {
+          "n": 93,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.1405242135339711,
+          "highLowMinusLowHighAvgR": 0.5556514776380368,
+          "cellCounts": {
+            "HIGH_HIGH": 28,
+            "HIGH_LOW": 19,
+            "LOW_HIGH": 19,
+            "LOW_LOW": 27
+          }
+        }
+      }
+    },
+    "triggerBodyToRange__pathEfficiency": {
+      "ALL": {
+        "n": 220,
+        "medianA": 0.4886679594952237,
+        "medianB": 0.17186629270500892,
+        "cells": {
+          "LOW_LOW": {
+            "n": 53,
+            "wins": 12,
+            "WR": 0.22641509433962265,
+            "avgR": -0.00234861980646042,
+            "PF": 0.9969639792745753,
+            "totalR": -0.12447684974240225
+          },
+          "LOW_HIGH": {
+            "n": 57,
+            "wins": 8,
+            "WR": 0.14035087719298245,
+            "avgR": -0.5537175491298454,
+            "PF": 0.35587958570609834,
+            "totalR": -31.561900300401184
+          },
+          "HIGH_LOW": {
+            "n": 57,
+            "wins": 24,
+            "WR": 0.42105263157894735,
+            "avgR": 0.08823423266680726,
+            "PF": 1.1524045836972125,
+            "totalR": 5.029351262008014
+          },
+          "HIGH_HIGH": {
+            "n": 53,
+            "wins": 14,
+            "WR": 0.2641509433962264,
+            "avgR": -0.13886063165827825,
+            "PF": 0.8112919621054169,
+            "totalR": -7.359613477888748
+          }
+        }
+      },
+      "DEV": {
+        "n": 121,
+        "medianA": 0.5607273095624228,
+        "medianB": 0.2380468934046127,
+        "cells": {
+          "LOW_LOW": {
+            "n": 34,
+            "wins": 8,
+            "WR": 0.23529411764705882,
+            "avgR": -0.04076457607615291,
+            "PF": 0.9466924774388771,
+            "totalR": -1.3859955865891989
+          },
+          "LOW_HIGH": {
+            "n": 26,
+            "wins": 1,
+            "WR": 0.038461538461538464,
+            "avgR": -0.6311691388696402,
+            "PF": 0.3435840955755742,
+            "totalR": -16.410397610610644
+          },
+          "HIGH_LOW": {
+            "n": 26,
+            "wins": 10,
+            "WR": 0.38461538461538464,
+            "avgR": -0.3521655717316969,
+            "PF": 0.4277309459359925,
+            "totalR": -9.156304865024119
+          },
+          "HIGH_HIGH": {
+            "n": 35,
+            "wins": 9,
+            "WR": 0.2571428571428571,
+            "avgR": -0.07337961861243146,
+            "PF": 0.9012197441755733,
+            "totalR": -2.568286651435101
+          }
+        }
+      },
+      "VAL": {
+        "n": 99,
+        "medianA": 0.4525767419152428,
+        "medianB": 0.1461167931288098,
+        "cells": {
+          "LOW_LOW": {
+            "n": 22,
+            "wins": 5,
+            "WR": 0.22727272727272727,
+            "avgR": 0.18462910966110233,
+            "PF": 1.2389317889731912,
+            "totalR": 4.061840412544251
+          },
+          "LOW_HIGH": {
+            "n": 27,
+            "wins": 5,
+            "WR": 0.18518518518518517,
+            "avgR": -0.5680472122751777,
+            "PF": 0.3028511485713727,
+            "totalR": -15.3372747314298
+          },
+          "HIGH_LOW": {
+            "n": 27,
+            "wins": 14,
+            "WR": 0.5185185185185185,
+            "avgR": 0.5383201460563777,
+            "PF": 2.118049534117092,
+            "totalR": 14.534643943522196
+          },
+          "HIGH_HIGH": {
+            "n": 23,
+            "wins": 6,
+            "WR": 0.2608695652173913,
+            "avgR": -0.3371680120435609,
+            "PF": 0.5438315131175352,
+            "totalR": -7.754864277001901
+          }
+        }
+      },
+      "contrast": {
+        "ALL": {
+          "n": 211,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.11029497941042488,
+          "highLowMinusLowHighAvgR": 0.4979163994903622,
+          "cellCounts": {
+            "HIGH_HIGH": 51,
+            "HIGH_LOW": 55,
+            "LOW_HIGH": 55,
+            "LOW_LOW": 50
+          }
+        },
+        "DEV": {
+          "n": 118,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": -0.11836651443925822,
+          "highLowMinusLowHighAvgR": 0.6056619371190919,
+          "cellCounts": {
+            "HIGH_HIGH": 33,
+            "HIGH_LOW": 26,
+            "LOW_HIGH": 26,
+            "LOW_LOW": 33
+          }
+        },
+        "VAL": {
+          "n": 93,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.17248028275171268,
+          "highLowMinusLowHighAvgR": 0.4017864444818746,
+          "cellCounts": {
+            "HIGH_HIGH": 22,
+            "HIGH_LOW": 25,
+            "LOW_HIGH": 25,
+            "LOW_LOW": 21
+          }
+        }
+      }
+    },
+    "triggerBodyToRange__bodyParticipation": {
+      "ALL": {
+        "n": 221,
+        "medianA": 0.4936116970849421,
+        "medianB": 0.5786248313283392,
+        "cells": {
+          "LOW_LOW": {
+            "n": 59,
+            "wins": 16,
+            "WR": 0.2711864406779661,
+            "avgR": 0.20130809717134457,
+            "PF": 1.2762134356537052,
+            "totalR": 11.87717773310933
+          },
+          "LOW_HIGH": {
+            "n": 51,
+            "wins": 4,
+            "WR": 0.0784313725490196,
+            "avgR": -0.854187350652018,
+            "PF": 0.07311585354781033,
+            "totalR": -43.56355488325292
+          },
+          "HIGH_LOW": {
+            "n": 51,
+            "wins": 21,
+            "WR": 0.4117647058823529,
+            "avgR": 0.03727519198458193,
+            "PF": 1.0633678263737893,
+            "totalR": 1.9010347912136785
+          },
+          "HIGH_HIGH": {
+            "n": 60,
+            "wins": 17,
+            "WR": 0.2833333333333333,
+            "avgR": -0.0871882834515736,
+            "PF": 0.878341930067572,
+            "totalR": -5.231297007094416
+          }
+        }
+      },
+      "DEV": {
+        "n": 122,
+        "medianA": 0.5653574228848933,
+        "medianB": 0.5800080354134418,
+        "cells": {
+          "LOW_LOW": {
+            "n": 34,
+            "wins": 8,
+            "WR": 0.23529411764705882,
+            "avgR": 0.2093215507982065,
+            "PF": 1.2737281818130393,
+            "totalR": 7.116932727139021
+          },
+          "LOW_HIGH": {
+            "n": 27,
+            "wins": 2,
+            "WR": 0.07407407407407407,
+            "avgR": -0.9191422649799769,
+            "PF": 0.007326353821624947,
+            "totalR": -24.816841154459375
+          },
+          "HIGH_LOW": {
+            "n": 27,
+            "wins": 7,
+            "WR": 0.25925925925925924,
+            "avgR": -0.5215216600066005,
+            "PF": 0.29594575899108927,
+            "totalR": -14.081084820178212
+          },
+          "HIGH_HIGH": {
+            "n": 34,
+            "wins": 11,
+            "WR": 0.3235294117647059,
+            "avgR": 0.03705907452469122,
+            "PF": 1.0547829797321522,
+            "totalR": 1.2600085338395015
+          }
+        }
+      },
+      "VAL": {
+        "n": 99,
+        "medianA": 0.4525767419152428,
+        "medianB": 0.5776126621985967,
+        "cells": {
+          "LOW_LOW": {
+            "n": 25,
+            "wins": 8,
+            "WR": 0.32,
+            "avgR": 0.33645028757920975,
+            "PF": 1.494779834675308,
+            "totalR": 8.411257189480244
+          },
+          "LOW_HIGH": {
+            "n": 24,
+            "wins": 2,
+            "WR": 0.08333333333333333,
+            "avgR": -0.8202788128485747,
+            "PF": 0.10515038598337303,
+            "totalR": -19.686691508365794
+          },
+          "HIGH_LOW": {
+            "n": 24,
+            "wins": 14,
+            "WR": 0.5833333333333334,
+            "avgR": 0.5137961428284148,
+            "PF": 2.2331107427881958,
+            "totalR": 12.331107427881955
+          },
+          "HIGH_HIGH": {
+            "n": 26,
+            "wins": 6,
+            "WR": 0.23076923076923078,
+            "avgR": -0.21351260620621776,
+            "PF": 0.722433611931917,
+            "totalR": -5.551327761361661
+          }
+        }
+      },
+      "contrast": {
+        "ALL": {
+          "n": 212,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": -0.008632626458869308,
+          "highLowMinusLowHighAvgR": 0.6227219074686382,
+          "cellCounts": {
+            "HIGH_HIGH": 55,
+            "HIGH_LOW": 51,
+            "LOW_HIGH": 51,
+            "LOW_LOW": 55
+          }
+        },
+        "DEV": {
+          "n": 119,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.01570120292429167,
+          "highLowMinusLowHighAvgR": 0.39762060497337637,
+          "cellCounts": {
+            "HIGH_HIGH": 33,
+            "HIGH_LOW": 27,
+            "LOW_HIGH": 27,
+            "LOW_LOW": 32
+          }
+        },
+        "VAL": {
+          "n": 93,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": -0.19902278263762085,
+          "highLowMinusLowHighAvgR": 0.7961750670731175,
+          "cellCounts": {
+            "HIGH_HIGH": 24,
+            "HIGH_LOW": 23,
+            "LOW_HIGH": 23,
+            "LOW_LOW": 23
+          }
+        }
+      }
+    },
+    "lowerWickShare__bodyParticipation": {
+      "ALL": {
+        "n": 221,
+        "medianA": 0.21120827421513483,
+        "medianB": 0.5786248313283392,
+        "cells": {
+          "LOW_LOW": {
+            "n": 34,
+            "wins": 9,
+            "WR": 0.2647058823529412,
+            "avgR": 0.3399054888336744,
+            "PF": 1.462271464813797,
+            "totalR": 11.55678662034493
+          },
+          "LOW_HIGH": {
+            "n": 76,
+            "wins": 11,
+            "WR": 0.14473684210526316,
+            "avgR": -0.6916932022820835,
+            "PF": 0.19125102502402522,
+            "totalR": -52.56868337343835
+          },
+          "HIGH_LOW": {
+            "n": 76,
+            "wins": 28,
+            "WR": 0.3684210526315789,
+            "avgR": 0.029229288210237847,
+            "PF": 1.0462797063328766,
+            "totalR": 2.2214259039780764
+          },
+          "HIGH_HIGH": {
+            "n": 35,
+            "wins": 10,
+            "WR": 0.2857142857142857,
+            "avgR": 0.10782375665974368,
+            "PF": 1.1509532593236413,
+            "totalR": 3.773831483091029
+          }
+        }
+      },
+      "DEV": {
+        "n": 122,
+        "medianA": 0.20920814393088386,
+        "medianB": 0.5800080354134418,
+        "cells": {
+          "LOW_LOW": {
+            "n": 19,
+            "wins": 5,
+            "WR": 0.2631578947368421,
+            "avgR": 0.2744602677070138,
+            "PF": 1.3724817918880903,
+            "totalR": 5.214745086433263
+          },
+          "LOW_HIGH": {
+            "n": 42,
+            "wins": 7,
+            "WR": 0.16666666666666666,
+            "avgR": -0.7262159623819618,
+            "PF": 0.12854084514164585,
+            "totalR": -30.501070420042396
+          },
+          "HIGH_LOW": {
+            "n": 42,
+            "wins": 10,
+            "WR": 0.23809523809523808,
+            "avgR": -0.28997374236839174,
+            "PF": 0.6194094631414859,
+            "totalR": -12.178897179472454
+          },
+          "HIGH_HIGH": {
+            "n": 19,
+            "wins": 6,
+            "WR": 0.3157894736842105,
+            "avgR": 0.36548619996960624,
+            "PF": 1.5341721384171172,
+            "totalR": 6.944237799422519
+          }
+        }
+      },
+      "VAL": {
+        "n": 99,
+        "medianA": 0.21395970805535822,
+        "medianB": 0.5776126621985967,
+        "cells": {
+          "LOW_LOW": {
+            "n": 15,
+            "wins": 4,
+            "WR": 0.26666666666666666,
+            "avgR": 0.41377422232110345,
+            "PF": 1.5642375758924139,
+            "totalR": 6.206613334816551
+          },
+          "LOW_HIGH": {
+            "n": 34,
+            "wins": 4,
+            "WR": 0.11764705882352941,
+            "avgR": -0.6490474398057637,
+            "PF": 0.2644129015534678,
+            "totalR": -22.067612953395965
+          },
+          "HIGH_LOW": {
+            "n": 34,
+            "wins": 18,
+            "WR": 0.5294117647058824,
+            "avgR": 0.4275220965454602,
+            "PF": 1.9084844551591027,
+            "totalR": 14.535751282545647
+          },
+          "HIGH_HIGH": {
+            "n": 16,
+            "wins": 4,
+            "WR": 0.25,
+            "avgR": -0.1981503947707181,
+            "PF": 0.7357994736390426,
+            "totalR": -3.1704063163314897
+          }
+        }
+      },
+      "contrast": {
+        "ALL": {
+          "n": 212,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.06788100579398648,
+          "highLowMinusLowHighAvgR": 0.4649432962371071,
+          "cellCounts": {
+            "HIGH_HIGH": 32,
+            "HIGH_LOW": 74,
+            "LOW_HIGH": 74,
+            "LOW_LOW": 32
+          }
+        },
+        "DEV": {
+          "n": 119,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": -0.08739046891548075,
+          "highLowMinusLowHighAvgR": 0.2079183535995378,
+          "cellCounts": {
+            "HIGH_HIGH": 18,
+            "HIGH_LOW": 42,
+            "LOW_HIGH": 42,
+            "LOW_LOW": 17
+          }
+        },
+        "VAL": {
+          "n": 93,
+          "exceptionalExcluded": true,
+          "highHighMinusLowLowAvgR": 0.21704276197537808,
+          "highLowMinusLowHighAvgR": 0.7820806445291049,
+          "cellCounts": {
+            "HIGH_HIGH": 14,
+            "HIGH_LOW": 33,
+            "LOW_HIGH": 33,
+            "LOW_LOW": 13
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,3962 @@
+{
+  "mode": "PHASE_13_POST_ENTRY_RECOVERY_EVENT",
+  "timeframe": "5min",
+  "scope": {
+    "baselinePre": 221,
+    "joined": 221,
+    "dev": 122,
+    "val": 99,
+    "freshLocked": true
+  },
+  "integrity": {
+    "canonicalTimestampReplay": true,
+    "duplicateCanonicalTimestamp": 0,
+    "baselinePre": 221,
+    "joined": 221,
+    "missingCanonicalTimestamp": 0,
+    "noPath": 0
+  },
+  "eventDefinition": {
+    "boundaryR": 0.5,
+    "horizon": 20,
+    "adverseEvent": "first cumulative MAE >= 0.50R after entry",
+    "recoveryEvent": "first strictly later candle close through entry price in trade direction",
+    "noIntrabarInference": true
+  },
+  "overall": {
+    "n": 221,
+    "avgR": -0.15844633197296074,
+    "PF": 0.7851739916194825,
+    "WR": 0.26244343891402716,
+    "totalR": -35.01663936602432
+  },
+  "eventGroups": {
+    "NO_ADVERSE_0_5R": {
+      "stats": {
+        "n": 13,
+        "avgR": 1.922461528409617,
+        "PF": 13.49599993466251,
+        "WR": 0.8461538461538461,
+        "totalR": 24.99199986932502
+      },
+      "noExceptional": {
+        "n": 11,
+        "avgR": 0.7231284025159912,
+        "PF": 4.977206213837952,
+        "WR": 0.8181818181818182,
+        "totalR": 7.954412427675903
+      },
+      "recoveryTiming": null
+    },
+    "RECOVERY_AFTER_0_5R": {
+      "stats": {
+        "n": 155,
+        "avgR": -0.13126658675217923,
+        "PF": 0.8230754700296712,
+        "WR": 0.25806451612903225,
+        "totalR": -20.34632094658778
+      },
+      "noExceptional": {
+        "n": 148,
+        "avgR": -0.5508693144274729,
+        "PF": 0.29105514317160014,
+        "WR": 0.22297297297297297,
+        "totalR": -81.52865853526599
+      },
+      "recoveryTiming": {
+        "mean": 3.4387096774193546
+      }
+    },
+    "NO_RECOVERY_H20": {
+      "stats": {
+        "n": 53,
+        "avgR": -0.7483456280898407,
+        "PF": 0.13777568937474874,
+        "WR": 0.1320754716981132,
+        "totalR": -39.66231828876156
+      },
+      "noExceptional": {
+        "n": 53,
+        "avgR": -0.7483456280898407,
+        "PF": 0.13777568937474874,
+        "WR": 0.1320754716981132,
+        "totalR": -39.66231828876156
+      },
+      "recoveryTiming": null
+    },
+    "NO_PATH": {
+      "stats": {
+        "n": 0,
+        "avgR": null,
+        "PF": null,
+        "WR": null,
+        "totalR": 0
+      },
+      "noExceptional": {
+        "n": 0,
+        "avgR": null,
+        "PF": null,
+        "WR": null,
+        "totalR": 0
+      },
+      "recoveryTiming": null
+    }
+  },
+  "windows": [
+    {
+      "label": "DEV_1",
+      "start": 0,
+      "endExclusive": 2000,
+      "n": 35,
+      "stats": {
+        "n": 35,
+        "avgR": 0.08240403678533223,
+        "PF": 1.10682004768469,
+        "WR": 0.22857142857142856,
+        "totalR": 2.884141287486628
+      },
+      "groups": {
+        "NO_ADVERSE_0_5R": {
+          "n": 1,
+          "avgR": 0.9826606255191156,
+          "PF": null,
+          "WR": 1,
+          "totalR": 0.9826606255191156
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 27,
+          "avgR": 0.32968446896175974,
+          "PF": 1.4450740330983756,
+          "WR": 0.25925925925925924,
+          "totalR": 8.901480661967513
+        },
+        "NO_RECOVERY_H20": {
+          "n": 7,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -7
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "DEV_2",
+      "start": 2000,
+      "endExclusive": 4000,
+      "n": 47,
+      "stats": {
+        "n": 47,
+        "avgR": -0.15440047446533947,
+        "PF": 0.792662220003687,
+        "WR": 0.2553191489361702,
+        "totalR": -7.256822299870955
+      },
+      "groups": {
+        "NO_ADVERSE_0_5R": {
+          "n": 4,
+          "avgR": 0.7182730504942839,
+          "PF": 3.8730922019771357,
+          "WR": 0.75,
+          "totalR": 2.8730922019771357
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 32,
+          "avgR": -0.11652457192578562,
+          "PF": 0.8508485479349944,
+          "WR": 0.21875,
+          "totalR": -3.72878630162514
+        },
+        "NO_RECOVERY_H20": {
+          "n": 11,
+          "avgR": -0.5819207454748138,
+          "PF": 0.28876353330856097,
+          "WR": 0.18181818181818182,
+          "totalR": -6.401128200222951
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "DEV_3",
+      "start": 4000,
+      "endExclusive": 6000,
+      "n": 40,
+      "stats": {
+        "n": 40,
+        "avgR": -0.6537075925318685,
+        "PF": 0.18286550933516443,
+        "WR": 0.2,
+        "totalR": -26.148303701274738
+      },
+      "groups": {
+        "NO_ADVERSE_0_5R": {
+          "n": 1,
+          "avgR": 0.03787022959433223,
+          "PF": null,
+          "WR": 1,
+          "totalR": 0.03787022959433223
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 32,
+          "avgR": -0.7642424556127334,
+          "PF": 0.12658005072830467,
+          "WR": 0.125,
+          "totalR": -24.45575857960747
+        },
+        "NO_RECOVERY_H20": {
+          "n": 7,
+          "avgR": -0.24720219303737162,
+          "PF": 0.5673961621845997,
+          "WR": 0.42857142857142855,
+          "totalR": -1.7304153512616014
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "VAL_1",
+      "start": 6000,
+      "endExclusive": 8000,
+      "n": 51,
+      "stats": {
+        "n": 51,
+        "avgR": 0.33957759566330115,
+        "PF": 1.5093663934949522,
+        "WR": 0.3333333333333333,
+        "totalR": 17.31845737882836
+      },
+      "groups": {
+        "NO_ADVERSE_0_5R": {
+          "n": 5,
+          "avgR": 3.604236130273187,
+          "PF": 19.021180651365935,
+          "WR": 0.8,
+          "totalR": 18.021180651365935
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 31,
+          "avgR": 0.4612024750794331,
+          "PF": 1.7942931515256906,
+          "WR": 0.41935483870967744,
+          "totalR": 14.297276727462426
+        },
+        "NO_RECOVERY_H20": {
+          "n": 15,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -15
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "label": "VAL_2",
+      "start": 8000,
+      "endExclusive": 10000,
+      "n": 48,
+      "stats": {
+        "n": 48,
+        "avgR": -0.4544606673165337,
+        "PF": 0.37673965625161093,
+        "WR": 0.2708333333333333,
+        "totalR": -21.814112031193616
+      },
+      "groups": {
+        "NO_ADVERSE_0_5R": {
+          "n": 2,
+          "avgR": 1.5385980804342512,
+          "PF": null,
+          "WR": 1,
+          "totalR": 3.0771961608685023
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 33,
+          "avgR": -0.46547071075106405,
+          "PF": 0.35997777271728687,
+          "WR": 0.2727272727272727,
+          "totalR": -15.360533454785115
+        },
+        "NO_RECOVERY_H20": {
+          "n": 13,
+          "avgR": -0.7331365182520775,
+          "PF": 0.13356593297481767,
+          "WR": 0.15384615384615385,
+          "totalR": -9.530774737277007
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    }
+  ],
+  "segments": [
+    {
+      "segment": "BUY+LONDON",
+      "n": 57,
+      "all": {
+        "NO_ADVERSE_0_5R": {
+          "n": 3,
+          "avgR": 0.3278644032389394,
+          "PF": 1.983593209716818,
+          "WR": 0.6666666666666666,
+          "totalR": 0.9835932097168182
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 46,
+          "avgR": -0.22432241485898843,
+          "PF": 0.7051762547567582,
+          "WR": 0.2391304347826087,
+          "totalR": -10.318831083513468
+        },
+        "NO_RECOVERY_H20": {
+          "n": 8,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -8
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      },
+      "dev": {
+        "NO_ADVERSE_0_5R": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 22,
+          "avgR": -0.7125887148831223,
+          "PF": 0.21615241362856547,
+          "WR": 0.09090909090909091,
+          "totalR": -15.67695172742869
+        },
+        "NO_RECOVERY_H20": {
+          "n": 6,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -6
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      },
+      "val": {
+        "NO_ADVERSE_0_5R": {
+          "n": 3,
+          "avgR": 0.3278644032389394,
+          "PF": 1.983593209716818,
+          "WR": 0.6666666666666666,
+          "totalR": 0.9835932097168182
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 24,
+          "avgR": 0.223255026829801,
+          "PF": 1.3572080429276816,
+          "WR": 0.375,
+          "totalR": 5.358120643915224
+        },
+        "NO_RECOVERY_H20": {
+          "n": 2,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -2
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "segment": "BUY+NEW_YORK",
+      "n": 44,
+      "all": {
+        "NO_ADVERSE_0_5R": {
+          "n": 4,
+          "avgR": 2.7916653798815685,
+          "PF": 12.166661519526274,
+          "WR": 0.75,
+          "totalR": 11.166661519526274
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 27,
+          "avgR": 0.3320195207284546,
+          "PF": 1.4482263529834136,
+          "WR": 0.25925925925925924,
+          "totalR": 8.964527059668274
+        },
+        "NO_RECOVERY_H20": {
+          "n": 13,
+          "avgR": -0.5346930568982734,
+          "PF": 0.30489902603224456,
+          "WR": 0.23076923076923078,
+          "totalR": -6.951009739677554
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      },
+      "dev": {
+        "NO_ADVERSE_0_5R": {
+          "n": 2,
+          "avgR": -0.48106488520283386,
+          "PF": 0.03787022959433223,
+          "WR": 0.5,
+          "totalR": -0.9621297704056677
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 14,
+          "avgR": 0.3326778909432207,
+          "PF": 1.3881242061004242,
+          "WR": 0.14285714285714285,
+          "totalR": 4.6574904732050895
+        },
+        "NO_RECOVERY_H20": {
+          "n": 6,
+          "avgR": -0.23352136670382526,
+          "PF": 0.6497179499442621,
+          "WR": 0.3333333333333333,
+          "totalR": -1.4011282002229515
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      },
+      "val": {
+        "NO_ADVERSE_0_5R": {
+          "n": 2,
+          "avgR": 6.064395644965971,
+          "PF": null,
+          "WR": 1,
+          "totalR": 12.128791289931941
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 13,
+          "avgR": 0.3313105066510143,
+          "PF": 1.5383795733078982,
+          "WR": 0.38461538461538464,
+          "totalR": 4.307036586463186
+        },
+        "NO_RECOVERY_H20": {
+          "n": 7,
+          "avgR": -0.7928402199220861,
+          "PF": 0.07501974342423283,
+          "WR": 0.14285714285714285,
+          "totalR": -5.549881539454603
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "segment": "SELL+LONDON",
+      "n": 56,
+      "all": {
+        "NO_ADVERSE_0_5R": {
+          "n": 4,
+          "avgR": 1.8921776398844083,
+          "PF": null,
+          "WR": 1,
+          "totalR": 7.568710559537633
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 37,
+          "avgR": -0.4084279706976981,
+          "PF": 0.41877558016096805,
+          "WR": 0.2972972972972973,
+          "totalR": -15.11183491581483
+        },
+        "NO_RECOVERY_H20": {
+          "n": 15,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -15
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      },
+      "dev": {
+        "NO_ADVERSE_0_5R": {
+          "n": 3,
+          "avgR": 1.5628396817748786,
+          "PF": null,
+          "WR": 1,
+          "totalR": 4.688519045324636
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 27,
+          "avgR": -0.382411493172145,
+          "PF": 0.48374448421760424,
+          "WR": 0.25925925925925924,
+          "totalR": -10.325110315647915
+        },
+        "NO_RECOVERY_H20": {
+          "n": 4,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -4
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      },
+      "val": {
+        "NO_ADVERSE_0_5R": {
+          "n": 1,
+          "avgR": 2.880191514212997,
+          "PF": null,
+          "WR": 1,
+          "totalR": 2.880191514212997
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 10,
+          "avgR": -0.47867246001669156,
+          "PF": 0.20221256663884737,
+          "WR": 0.4,
+          "totalR": -4.786724600166916
+        },
+        "NO_RECOVERY_H20": {
+          "n": 11,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -11
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    },
+    {
+      "segment": "SELL+NEW_YORK",
+      "n": 33,
+      "all": {
+        "NO_ADVERSE_0_5R": {
+          "n": 2,
+          "avgR": 2.6365172902721494,
+          "PF": null,
+          "WR": 1,
+          "totalR": 5.273034580544299
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 25,
+          "avgR": 0.41173395200706187,
+          "PF": 1.6054911058927381,
+          "WR": 0.32,
+          "totalR": 10.293348800176547
+        },
+        "NO_RECOVERY_H20": {
+          "n": 6,
+          "avgR": -0.3106548902935879,
+          "PF": 0.5340176645596181,
+          "WR": 0.3333333333333333,
+          "totalR": -1.8639293417615275
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      },
+      "dev": {
+        "NO_ADVERSE_0_5R": {
+          "n": 1,
+          "avgR": 0.16723378217161608,
+          "PF": null,
+          "WR": 1,
+          "totalR": 0.16723378217161608
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 12,
+          "avgR": 1.2279155396210955,
+          "PF": 3.1049980679218776,
+          "WR": 0.4166666666666667,
+          "totalR": 14.734986475453145
+        },
+        "NO_RECOVERY_H20": {
+          "n": 4,
+          "avgR": 0.03401766455961813,
+          "PF": 1.0680353291192362,
+          "WR": 0.5,
+          "totalR": 0.13607065823847253
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      },
+      "val": {
+        "NO_ADVERSE_0_5R": {
+          "n": 1,
+          "avgR": 5.105800798372683,
+          "PF": null,
+          "WR": 1,
+          "totalR": 5.105800798372683
+        },
+        "RECOVERY_AFTER_0_5R": {
+          "n": 13,
+          "avgR": -0.34166443655973827,
+          "PF": 0.5558362324723403,
+          "WR": 0.23076923076923078,
+          "totalR": -4.441637675276597
+        },
+        "NO_RECOVERY_H20": {
+          "n": 2,
+          "avgR": -1,
+          "PF": 0,
+          "WR": 0,
+          "totalR": -2
+        },
+        "NO_PATH": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0
+        }
+      }
+    }
+  ],
+  "cases": [
+    {
+      "entryIndex": 62,
+      "time": "2026-07-23 23:35:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 8.589602389389354,
+      "exceptional": true,
+      "canonicalIndex": 36949,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 16,
+        "recoveryBar": 17,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 225,
+      "time": "2026-07-24 13:10:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 37112,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 235,
+      "time": "2026-07-24 14:00:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 3.682817766586438,
+      "exceptional": false,
+      "canonicalIndex": 37122,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 292,
+      "time": "2026-07-24 18:45:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 37179,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 307,
+      "time": "2026-07-24 20:00:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 37194,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 936,
+      "time": "2026-07-27 00:25:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 37823,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 1049,
+      "time": "2026-07-27 09:50:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 37936,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1075,
+      "time": "2026-07-27 12:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 37962,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 1080,
+      "time": "2026-07-27 12:25:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 37967,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 16,
+        "recoveryDelay": 15
+      }
+    },
+    {
+      "entryIndex": 1139,
+      "time": "2026-07-27 17:20:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38026,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1145,
+      "time": "2026-07-27 17:50:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38032,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1164,
+      "time": "2026-07-27 19:25:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38051,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 3,
+        "recoveryBar": 6,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 1201,
+      "time": "2026-07-27 22:30:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38088,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1312,
+      "time": "2026-07-28 07:45:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38199,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1411,
+      "time": "2026-07-28 16:00:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 1.4677734901523394,
+      "exceptional": false,
+      "canonicalIndex": 38298,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 5,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 1435,
+      "time": "2026-07-28 18:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38322,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 1447,
+      "time": "2026-07-28 19:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38334,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 5,
+        "recoveryBar": 6,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1470,
+      "time": "2026-07-28 20:55:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38357,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 13,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 1488,
+      "time": "2026-07-28 22:25:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38375,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 9,
+        "recoveryDelay": 8
+      }
+    },
+    {
+      "entryIndex": 1594,
+      "time": "2026-07-29 07:15:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38481,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1714,
+      "time": "2026-07-29 17:15:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.08667407566113132,
+      "exceptional": false,
+      "canonicalIndex": 38601,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1716,
+      "time": "2026-07-29 17:25:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38603,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 1724,
+      "time": "2026-07-29 18:05:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38611,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1736,
+      "time": "2026-07-29 19:05:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.4814847414571422,
+      "exceptional": false,
+      "canonicalIndex": 38623,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 3,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1739,
+      "time": "2026-07-29 19:20:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.9826606255191156,
+      "exceptional": false,
+      "canonicalIndex": 38626,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 1744,
+      "time": "2026-07-29 19:45:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38631,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 1801,
+      "time": "2026-07-30 00:30:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38688,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 1806,
+      "time": "2026-07-30 00:55:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 14.36363002934106,
+      "exceptional": true,
+      "canonicalIndex": 38693,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1809,
+      "time": "2026-07-30 01:10:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 0.22949816938004886,
+      "exceptional": false,
+      "canonicalIndex": 38696,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 4,
+        "recoveryBar": 16,
+        "recoveryDelay": 12
+      }
+    },
+    {
+      "entryIndex": 1853,
+      "time": "2026-07-30 04:50:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38740,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 8,
+        "recoveryDelay": 7
+      }
+    },
+    {
+      "entryIndex": 1862,
+      "time": "2026-07-30 05:35:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38749,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 10,
+        "recoveryDelay": 9
+      }
+    },
+    {
+      "entryIndex": 1894,
+      "time": "2026-07-30 08:15:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38781,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 1922,
+      "time": "2026-07-30 10:35:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38809,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 10,
+        "recoveryDelay": 9
+      }
+    },
+    {
+      "entryIndex": 1923,
+      "time": "2026-07-30 10:40:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38810,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 1963,
+      "time": "2026-07-30 14:00:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38850,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 2004,
+      "time": "2026-07-30 17:25:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38891,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 2027,
+      "time": "2026-07-30 19:20:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38914,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 2046,
+      "time": "2026-07-30 20:55:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38933,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 2076,
+      "time": "2026-07-30 23:25:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38963,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 2078,
+      "time": "2026-07-30 23:35:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38965,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 5,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 2079,
+      "time": "2026-07-30 23:40:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 1.149309492187517,
+      "exceptional": false,
+      "canonicalIndex": 38966,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 4,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 2092,
+      "time": "2026-07-31 00:45:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 38979,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 2114,
+      "time": "2026-07-31 02:35:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39001,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 2239,
+      "time": "2026-07-31 13:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39126,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 4,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 2243,
+      "time": "2026-07-31 13:20:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39130,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 18,
+        "recoveryDelay": 16
+      }
+    },
+    {
+      "entryIndex": 2247,
+      "time": "2026-07-31 13:40:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39134,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 5,
+        "recoveryDelay": 4
+      }
+    },
+    {
+      "entryIndex": 2267,
+      "time": "2026-07-31 15:20:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39154,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 11,
+        "recoveryBar": 16,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 2268,
+      "time": "2026-07-31 15:25:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39155,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 2298,
+      "time": "2026-07-31 17:55:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39185,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 2321,
+      "time": "2026-07-31 19:50:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 1.0830902592333151,
+      "exceptional": false,
+      "canonicalIndex": 39208,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 12,
+        "recoveryBar": 13,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 2325,
+      "time": "2026-07-31 20:10:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 1.4495623075895314,
+      "exceptional": false,
+      "canonicalIndex": 39212,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 8,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 2336,
+      "time": "2026-07-31 21:05:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39223,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 2923,
+      "time": "2026-08-02 22:00:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39810,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 3,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 2924,
+      "time": "2026-08-02 22:05:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 0.16723378217161608,
+      "exceptional": false,
+      "canonicalIndex": 39811,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 3090,
+      "time": "2026-08-03 11:55:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39977,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 3096,
+      "time": "2026-08-03 12:25:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39983,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 3102,
+      "time": "2026-08-03 12:55:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 39989,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 3176,
+      "time": "2026-08-03 19:05:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40063,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 3181,
+      "time": "2026-08-03 19:30:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40068,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 5,
+        "recoveryDelay": 4
+      }
+    },
+    {
+      "entryIndex": 3237,
+      "time": "2026-08-04 00:10:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 11.736310887570935,
+      "exceptional": true,
+      "canonicalIndex": 40124,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 3250,
+      "time": "2026-08-04 01:15:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40137,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 4,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 3364,
+      "time": "2026-08-04 10:45:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40251,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 8,
+        "recoveryDelay": 7
+      }
+    },
+    {
+      "entryIndex": 3374,
+      "time": "2026-08-04 11:35:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40261,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 7,
+        "recoveryDelay": 6
+      }
+    },
+    {
+      "entryIndex": 3377,
+      "time": "2026-08-04 11:50:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 2.8766245235539714,
+      "exceptional": false,
+      "canonicalIndex": 40264,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 9,
+        "recoveryBar": 12,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 3392,
+      "time": "2026-08-04 13:05:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40279,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 3441,
+      "time": "2026-08-04 17:10:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40328,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 3452,
+      "time": "2026-08-04 18:05:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40339,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 3539,
+      "time": "2026-08-05 01:20:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40426,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 3547,
+      "time": "2026-08-05 02:00:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40434,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 3,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 3659,
+      "time": "2026-08-05 11:20:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40546,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 3725,
+      "time": "2026-08-05 16:50:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40612,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 9,
+        "recoveryDelay": 8
+      }
+    },
+    {
+      "entryIndex": 3744,
+      "time": "2026-08-05 18:25:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 3.3729059693913523,
+      "exceptional": false,
+      "canonicalIndex": 40631,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 3804,
+      "time": "2026-08-05 23:25:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40691,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 3878,
+      "time": "2026-08-06 05:35:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": 0.923437482638411,
+      "exceptional": false,
+      "canonicalIndex": 40765,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 13,
+        "recoveryBar": 19,
+        "recoveryDelay": 6
+      }
+    },
+    {
+      "entryIndex": 3885,
+      "time": "2026-08-06 06:10:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40772,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 3954,
+      "time": "2026-08-06 11:55:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 0.2891360660197043,
+      "exceptional": false,
+      "canonicalIndex": 40841,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 7,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 3962,
+      "time": "2026-08-06 12:35:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40849,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 3967,
+      "time": "2026-08-06 13:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40854,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 7,
+        "recoveryDelay": 6
+      }
+    },
+    {
+      "entryIndex": 3969,
+      "time": "2026-08-06 13:10:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 4.033912206551605,
+      "exceptional": false,
+      "canonicalIndex": 40856,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 3977,
+      "time": "2026-08-06 13:50:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.3287022728069167,
+      "exceptional": false,
+      "canonicalIndex": 40864,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 4,
+        "recoveryBar": 6,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 3994,
+      "time": "2026-08-06 15:15:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.3329524504141676,
+      "exceptional": false,
+      "canonicalIndex": 40881,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 3999,
+      "time": "2026-08-06 15:40:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40886,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 4040,
+      "time": "2026-08-06 19:05:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40927,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 4050,
+      "time": "2026-08-06 19:55:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40937,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 4099,
+      "time": "2026-08-07 00:00:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 0.09648476987949235,
+      "exceptional": false,
+      "canonicalIndex": 40986,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 4104,
+      "time": "2026-08-07 00:25:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40991,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 8,
+        "recoveryDelay": 7
+      }
+    },
+    {
+      "entryIndex": 4105,
+      "time": "2026-08-07 00:30:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40992,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 7,
+        "recoveryDelay": 6
+      }
+    },
+    {
+      "entryIndex": 4112,
+      "time": "2026-08-07 01:05:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 40999,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 7,
+        "recoveryDelay": 6
+      }
+    },
+    {
+      "entryIndex": 4116,
+      "time": "2026-08-07 01:25:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 0.8811216791275872,
+      "exceptional": false,
+      "canonicalIndex": 41003,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 3,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 4120,
+      "time": "2026-08-07 01:45:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 41007,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 10,
+        "recoveryDelay": 8
+      }
+    },
+    {
+      "entryIndex": 4121,
+      "time": "2026-08-07 01:50:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 41008,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 9,
+        "recoveryDelay": 8
+      }
+    },
+    {
+      "entryIndex": 4247,
+      "time": "2026-08-07 12:20:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 41134,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5024,
+      "time": "2026-08-10 05:05:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 41911,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 5,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 5035,
+      "time": "2026-08-10 06:00:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 41922,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 3,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5131,
+      "time": "2026-08-10 14:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42018,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5138,
+      "time": "2026-08-10 14:35:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42025,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5161,
+      "time": "2026-08-10 16:30:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42048,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5264,
+      "time": "2026-08-11 01:05:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 0.03787022959433223,
+      "exceptional": false,
+      "canonicalIndex": 42151,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 5340,
+      "time": "2026-08-11 07:25:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42227,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 8,
+        "recoveryDelay": 7
+      }
+    },
+    {
+      "entryIndex": 5411,
+      "time": "2026-08-11 13:20:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42298,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 5417,
+      "time": "2026-08-11 13:50:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.7508128141341462,
+      "exceptional": false,
+      "canonicalIndex": 42304,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 14,
+        "recoveryBar": 17,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 5527,
+      "time": "2026-08-11 23:00:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42414,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 5546,
+      "time": "2026-08-12 00:35:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42433,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5547,
+      "time": "2026-08-12 00:40:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42434,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5591,
+      "time": "2026-08-12 04:20:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42478,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 4,
+        "recoveryBar": 5,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5604,
+      "time": "2026-08-12 05:25:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42491,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5669,
+      "time": "2026-08-12 10:50:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42556,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 3,
+        "recoveryBar": 4,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5676,
+      "time": "2026-08-12 11:25:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42563,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 12,
+        "recoveryDelay": 11
+      }
+    },
+    {
+      "entryIndex": 5744,
+      "time": "2026-08-12 17:05:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42631,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 5760,
+      "time": "2026-08-12 18:25:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42647,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 5804,
+      "time": "2026-08-12 22:05:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 1.2549489791108852,
+      "exceptional": false,
+      "canonicalIndex": 42691,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 13,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 5809,
+      "time": "2026-08-12 22:30:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 2.2938604438640295,
+      "exceptional": false,
+      "canonicalIndex": 42696,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 4,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 5821,
+      "time": "2026-08-12 23:30:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42708,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5832,
+      "time": "2026-08-13 00:25:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42719,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 5852,
+      "time": "2026-08-13 02:05:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42739,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 3,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 5859,
+      "time": "2026-08-13 02:40:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": 0.13351399049992616,
+      "exceptional": false,
+      "canonicalIndex": 42746,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 14,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 5880,
+      "time": "2026-08-13 04:25:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": 0.40308339251486314,
+      "exceptional": false,
+      "canonicalIndex": 42767,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 3,
+        "recoveryBar": 6,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 5924,
+      "time": "2026-08-13 08:05:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42811,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5958,
+      "time": "2026-08-13 10:55:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42845,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 4,
+        "recoveryBar": 5,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5965,
+      "time": "2026-08-13 11:30:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42852,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5969,
+      "time": "2026-08-13 11:50:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42856,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 5991,
+      "time": "2026-08-13 13:40:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 42878,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 13,
+        "recoveryDelay": 12
+      }
+    },
+    {
+      "entryIndex": 6023,
+      "time": "2026-08-13 16:20:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 0.6194853238131292,
+      "exceptional": false,
+      "canonicalIndex": 42910,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 6024,
+      "time": "2026-08-13 16:25:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 1.9472959917054329,
+      "exceptional": false,
+      "canonicalIndex": 42911,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 6059,
+      "time": "2026-08-13 19:20:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 2.118186056665126,
+      "exceptional": false,
+      "canonicalIndex": 42946,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 8,
+        "recoveryBar": 9,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 6104,
+      "time": "2026-08-13 23:05:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 1.0364625494517479,
+      "exceptional": false,
+      "canonicalIndex": 42991,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 6122,
+      "time": "2026-08-14 00:35:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43009,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 6153,
+      "time": "2026-08-14 03:10:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43040,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 6242,
+      "time": "2026-08-14 10:35:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 6.455120977217525,
+      "exceptional": true,
+      "canonicalIndex": 43129,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 6251,
+      "time": "2026-08-14 11:20:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43138,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 6256,
+      "time": "2026-08-14 11:45:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43143,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 6258,
+      "time": "2026-08-14 11:55:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43145,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 6298,
+      "time": "2026-08-14 15:15:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.8133601738917923,
+      "exceptional": false,
+      "canonicalIndex": 43185,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 6,
+        "recoveryBar": 14,
+        "recoveryDelay": 8
+      }
+    },
+    {
+      "entryIndex": 6341,
+      "time": "2026-08-14 18:50:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43228,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 4,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 6975,
+      "time": "2026-08-16 23:40:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 11.931786643276435,
+      "exceptional": true,
+      "canonicalIndex": 43862,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 6976,
+      "time": "2026-08-16 23:45:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43863,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 6983,
+      "time": "2026-08-17 00:20:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43870,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 6993,
+      "time": "2026-08-17 01:10:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 43880,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 7122,
+      "time": "2026-08-17 11:55:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44009,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7133,
+      "time": "2026-08-17 12:50:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 6.599971595193364,
+      "exceptional": true,
+      "canonicalIndex": 44020,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 3,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7148,
+      "time": "2026-08-17 14:05:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44035,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7217,
+      "time": "2026-08-17 19:50:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44104,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 7,
+        "recoveryDelay": 6
+      }
+    },
+    {
+      "entryIndex": 7273,
+      "time": "2026-08-18 00:30:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44160,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7280,
+      "time": "2026-08-18 01:05:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 5.105800798372683,
+      "exceptional": true,
+      "canonicalIndex": 44167,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7284,
+      "time": "2026-08-18 01:25:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44171,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7290,
+      "time": "2026-08-18 01:55:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44177,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7294,
+      "time": "2026-08-18 02:15:00",
+      "direction": "BUY",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44181,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 3,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7338,
+      "time": "2026-08-18 05:55:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": 1.4999483177424144,
+      "exceptional": false,
+      "canonicalIndex": 44225,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7357,
+      "time": "2026-08-18 07:30:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44244,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 4,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 7401,
+      "time": "2026-08-18 11:10:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44288,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 9,
+        "recoveryDelay": 8
+      }
+    },
+    {
+      "entryIndex": 7402,
+      "time": "2026-08-18 11:15:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44289,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 7416,
+      "time": "2026-08-18 12:25:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.10103136679754991,
+      "exceptional": false,
+      "canonicalIndex": 44303,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 7432,
+      "time": "2026-08-18 13:45:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.24913384990429424,
+      "exceptional": false,
+      "canonicalIndex": 44319,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 3,
+        "recoveryBar": 5,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 7447,
+      "time": "2026-08-18 15:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44334,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7450,
+      "time": "2026-08-18 15:15:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44337,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7452,
+      "time": "2026-08-18 15:25:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44339,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7453,
+      "time": "2026-08-18 15:30:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44340,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7511,
+      "time": "2026-08-18 20:20:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44398,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 3,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7517,
+      "time": "2026-08-18 20:50:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 2.609381302620941,
+      "exceptional": false,
+      "canonicalIndex": 44404,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 14,
+        "recoveryBar": 15,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7550,
+      "time": "2026-08-18 23:35:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 8.31621654062687,
+      "exceptional": true,
+      "canonicalIndex": 44437,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7556,
+      "time": "2026-08-19 00:05:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44443,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 10,
+        "recoveryDelay": 9
+      }
+    },
+    {
+      "entryIndex": 7559,
+      "time": "2026-08-19 00:20:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44446,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 7568,
+      "time": "2026-08-19 01:05:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 0.2766769955745809,
+      "exceptional": false,
+      "canonicalIndex": 44455,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 3,
+        "recoveryBar": 4,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 7641,
+      "time": "2026-08-19 07:10:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44528,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 2,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7647,
+      "time": "2026-08-19 07:40:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44534,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7707,
+      "time": "2026-08-19 12:40:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44594,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7711,
+      "time": "2026-08-19 13:00:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44598,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7777,
+      "time": "2026-08-19 18:30:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 1.364107885903689,
+      "exceptional": false,
+      "canonicalIndex": 44664,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7780,
+      "time": "2026-08-19 18:45:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44667,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 7856,
+      "time": "2026-08-20 01:05:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44743,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 7985,
+      "time": "2026-08-20 11:50:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44872,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 11,
+        "recoveryDelay": 10
+      }
+    },
+    {
+      "entryIndex": 7989,
+      "time": "2026-08-20 12:10:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 0.27449101007078774,
+      "exceptional": false,
+      "canonicalIndex": 44876,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 3,
+        "recoveryBar": 7,
+        "recoveryDelay": 4
+      }
+    },
+    {
+      "entryIndex": 7999,
+      "time": "2026-08-20 13:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44886,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 7,
+        "recoveryDelay": 6
+      }
+    },
+    {
+      "entryIndex": 8009,
+      "time": "2026-08-20 13:50:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44896,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 3,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 8012,
+      "time": "2026-08-20 14:05:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44899,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 8016,
+      "time": "2026-08-20 14:25:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44903,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 8019,
+      "time": "2026-08-20 14:40:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 44906,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 8123,
+      "time": "2026-08-20 23:20:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 5.121485169339085,
+      "exceptional": true,
+      "canonicalIndex": 45010,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 8135,
+      "time": "2026-08-21 00:20:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45022,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 10,
+        "recoveryDelay": 9
+      }
+    },
+    {
+      "entryIndex": 8203,
+      "time": "2026-08-21 06:00:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45090,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 8280,
+      "time": "2026-08-21 12:25:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45167,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 9,
+        "recoveryDelay": 8
+      }
+    },
+    {
+      "entryIndex": 8284,
+      "time": "2026-08-21 12:45:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45171,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 8317,
+      "time": "2026-08-21 15:30:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45204,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 8376,
+      "time": "2026-08-21 20:25:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45263,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 8377,
+      "time": "2026-08-21 20:30:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45264,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 8379,
+      "time": "2026-08-21 20:40:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45266,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 8971,
+      "time": "2026-08-23 22:00:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 45858,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 8972,
+      "time": "2026-08-23 22:05:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 0.03180558307650024,
+      "exceptional": false,
+      "canonicalIndex": 45859,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 3,
+        "recoveryBar": 4,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 9001,
+      "time": "2026-08-24 00:30:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 0.06829919818904523,
+      "exceptional": false,
+      "canonicalIndex": 45888,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 9128,
+      "time": "2026-08-24 11:05:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 0.1446018955883683,
+      "exceptional": false,
+      "canonicalIndex": 46015,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 9185,
+      "time": "2026-08-24 15:50:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46072,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 9204,
+      "time": "2026-08-24 17:25:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 0.13722031009093164,
+      "exceptional": false,
+      "canonicalIndex": 46091,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 9214,
+      "time": "2026-08-24 18:15:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46101,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 9275,
+      "time": "2026-08-24 23:20:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46162,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 4,
+        "recoveryBar": 20,
+        "recoveryDelay": 16
+      }
+    },
+    {
+      "entryIndex": 9296,
+      "time": "2026-08-25 01:05:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 0.450118460545397,
+      "exceptional": false,
+      "canonicalIndex": 46183,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 3,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 9358,
+      "time": "2026-08-25 06:15:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46245,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 9385,
+      "time": "2026-08-25 08:30:00",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "rMultiple": 1.0191068021775973,
+      "exceptional": false,
+      "canonicalIndex": 46272,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 15,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 9419,
+      "time": "2026-08-25 11:20:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46306,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 8,
+        "recoveryDelay": 7
+      }
+    },
+    {
+      "entryIndex": 9445,
+      "time": "2026-08-25 13:30:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46332,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 7,
+        "recoveryDelay": 6
+      }
+    },
+    {
+      "entryIndex": 9459,
+      "time": "2026-08-25 14:40:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46346,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 5,
+        "recoveryDelay": 4
+      }
+    },
+    {
+      "entryIndex": 9502,
+      "time": "2026-08-25 18:15:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 0.04975000923944779,
+      "exceptional": false,
+      "canonicalIndex": 46389,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 9512,
+      "time": "2026-08-25 19:05:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 2.669496859330682,
+      "exceptional": false,
+      "canonicalIndex": 46399,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 6,
+        "recoveryBar": 7,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 9517,
+      "time": "2026-08-25 19:30:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46404,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 17,
+        "recoveryDelay": 16
+      }
+    },
+    {
+      "entryIndex": 9565,
+      "time": "2026-08-25 23:30:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46452,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 9568,
+      "time": "2026-08-25 23:45:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46455,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 9574,
+      "time": "2026-08-26 00:15:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46461,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 20,
+        "recoveryDelay": 19
+      }
+    },
+    {
+      "entryIndex": 9583,
+      "time": "2026-08-26 01:00:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": 0.1970046466555051,
+      "exceptional": false,
+      "canonicalIndex": 46470,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 9717,
+      "time": "2026-08-26 12:10:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46604,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 9722,
+      "time": "2026-08-26 12:35:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46609,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 2,
+        "recoveryDelay": 1
+      }
+    },
+    {
+      "entryIndex": 9727,
+      "time": "2026-08-26 13:00:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46614,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    },
+    {
+      "entryIndex": 9753,
+      "time": "2026-08-26 15:10:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46640,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 5,
+        "recoveryDelay": 4
+      }
+    },
+    {
+      "entryIndex": 9758,
+      "time": "2026-08-26 15:35:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46645,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 4,
+        "recoveryBar": 6,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 9772,
+      "time": "2026-08-26 16:45:00",
+      "direction": "BUY",
+      "session": "LONDON",
+      "rMultiple": 0.011735948053007081,
+      "exceptional": false,
+      "canonicalIndex": 46659,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 4,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 9789,
+      "time": "2026-08-26 18:10:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": 2.880191514212997,
+      "exceptional": false,
+      "canonicalIndex": 46676,
+      "event": {
+        "state": "NO_ADVERSE_0_5R",
+        "adverseBar": null,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 9808,
+      "time": "2026-08-26 19:45:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46695,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 1,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 9836,
+      "time": "2026-08-26 22:05:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46723,
+      "event": {
+        "state": "NO_RECOVERY_H20",
+        "adverseBar": 2,
+        "recoveryBar": null
+      }
+    },
+    {
+      "entryIndex": 9853,
+      "time": "2026-08-26 23:30:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46740,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 8,
+        "recoveryDelay": 7
+      }
+    },
+    {
+      "entryIndex": 9856,
+      "time": "2026-08-26 23:45:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46743,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 4,
+        "recoveryDelay": 3
+      }
+    },
+    {
+      "entryIndex": 9861,
+      "time": "2026-08-27 00:10:00",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "rMultiple": 0.40507157230781776,
+      "exceptional": false,
+      "canonicalIndex": 46748,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 2,
+        "recoveryBar": 4,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 9868,
+      "time": "2026-08-27 00:45:00",
+      "direction": "BUY",
+      "session": "NEW_YORK",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46755,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 3,
+        "recoveryDelay": 2
+      }
+    },
+    {
+      "entryIndex": 9998,
+      "time": "2026-08-27 11:35:00",
+      "direction": "SELL",
+      "session": "LONDON",
+      "rMultiple": -1,
+      "exceptional": false,
+      "canonicalIndex": 46885,
+      "event": {
+        "state": "RECOVERY_AFTER_0_5R",
+        "adverseBar": 1,
+        "recoveryBar": 6,
+        "recoveryDelay": 5
+      }
+    }
+  ],
+  "methodology": {
+    "canonicalEntryTimestampLocatesPostEntryPath": true,
+    "baselineEntryIndexUsedOnlyForDevValAndAuditTrace": true,
+    "fixedChronologicalWindows": true,
+    "noThresholdSearch": true,
+    "noHorizonSelection": true,
+    "noNewRule": true,
+    "noFresh": true,
+    "diagnosticOnly": true,
+    "productionUnchanged": true
+  }
+}

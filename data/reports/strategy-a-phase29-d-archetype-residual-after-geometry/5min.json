@@ -1,0 +1,351 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_29_D_ARCHETYPE_RESIDUAL_AFTER_GEOMETRY",
+  "timeframe": "5min",
+  "source": "Phase24 loss-archetype report; same canonical universe as Phase27/28.",
+  "scope": {
+    "cases": 163,
+    "dCases": 48,
+    "nonDCases": 115,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 221,
+    "canonicalReplayed": 221,
+    "replayMismatch": 0,
+    "missingCanonicalTimestamp": 0,
+    "exitMismatch": 0
+  },
+  "methodology": {
+    "purpose": "Analyze residual LOSS_D after explaining Candidate C geometry (Phase28).",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noTradingRules": true,
+    "thresholds": {
+      "spikeSizeR": 15.81569621847631,
+      "correctionEfficiency": 0.8171813809520624
+    },
+    "thresholdOrigin": "Inherited from Phase28 Candidate C validation (q66 descriptive quantiles, recomputed and asserted equal)."
+  },
+  "populations": {
+    "candidateC": {
+      "name": "Candidate C",
+      "definition": "All cases with spikeSizeR >= q66 AND correctionEfficiency >= q66 (Phase28 validated geometry; N=31, D=22, D rate=70.97%).",
+      "n": 31,
+      "dCount": 22,
+      "dRate": 0.7096774193548387,
+      "features": {
+        "spikeSizeR": {
+          "median": 56.6883917493774,
+          "q33": 35.84981359778813,
+          "q66": 72.06704993841413
+        },
+        "correctionSizeR": {
+          "median": 62.54975715960823,
+          "q33": 37.71560949433086,
+          "q66": 84.76066355687477
+        },
+        "correctionEfficiency": {
+          "median": 6.070603415138622,
+          "q33": 2.551263548677524,
+          "q66": 6.753462445366637
+        },
+        "entryTriggerBodyR": {
+          "median": 3.8955254942719137,
+          "q33": 1.6975406459932514,
+          "q66": 7.491774438995897
+        },
+        "correctionToSpike": {
+          "median": 1.083355461512147,
+          "q33": 1.0432700900733134,
+          "q66": 1.106885074281124
+        },
+        "entryTriggerReclaimR": {
+          "median": 1,
+          "q33": 1,
+          "q66": 1
+        }
+      }
+    },
+    "residualD": {
+      "name": "Residual D",
+      "definition": "LOSS_D cases NOT inside Candidate C geometry (D rate is 1.0 by construction).",
+      "n": 26,
+      "dCount": 26,
+      "dRate": 1,
+      "features": {
+        "spikeSizeR": {
+          "median": 12.961981923554351,
+          "q33": 12.512437287546918,
+          "q66": 17.180741006588995
+        },
+        "correctionSizeR": {
+          "median": 16.64445193107706,
+          "q33": 13.140443179007134,
+          "q66": 20.21960128564648
+        },
+        "correctionEfficiency": {
+          "median": 0.3105658218092292,
+          "q33": 0.21307438662522463,
+          "q66": 0.5017137943142211
+        },
+        "entryTriggerBodyR": {
+          "median": 1.1719849572605163,
+          "q33": 0.5059501706222276,
+          "q66": 1.8748586027908025
+        },
+        "correctionToSpike": {
+          "median": 1.0473902155497323,
+          "q33": 1.0345004731690035,
+          "q66": 1.1219271770366408
+        },
+        "entryTriggerReclaimR": {
+          "median": 1,
+          "q33": 1,
+          "q66": 1
+        }
+      }
+    },
+    "nonD": {
+      "name": "NON_D",
+      "definition": "All non-D archetype cases.",
+      "n": 115,
+      "dCount": 0,
+      "dRate": 0,
+      "features": {
+        "spikeSizeR": {
+          "median": 5.640873146985796,
+          "q33": 4.275678463110278,
+          "q66": 7.644506921182653
+        },
+        "correctionSizeR": {
+          "median": 6.75554009887478,
+          "q33": 5.039147729939875,
+          "q66": 8.699376604741738
+        },
+        "correctionEfficiency": {
+          "median": 0.25290799388128954,
+          "q33": 0.11110131179485762,
+          "q66": 0.4810339517578383
+        },
+        "entryTriggerBodyR": {
+          "median": 0.781061390865804,
+          "q33": 0.5012632648786794,
+          "q66": 1.0570572270551966
+        },
+        "correctionToSpike": {
+          "median": 1.086319925113927,
+          "q33": 1.0529343068942298,
+          "q66": 1.131004399749003
+        },
+        "entryTriggerReclaimR": {
+          "median": 1,
+          "q33": 1,
+          "q66": 1
+        }
+      }
+    }
+  },
+  "residualD": {
+    "byDirection": {
+      "BUY": {
+        "n": 15,
+        "dCount": 15,
+        "dRate": 1,
+        "share": 0.5769230769230769,
+        "features": {
+          "spikeSizeR": {
+            "median": 12.761155468394604,
+            "q33": 10.401902017599902,
+            "q66": 13.044959733860978
+          },
+          "correctionSizeR": {
+            "median": 13.015439448410367,
+            "q33": 11.215707533086755,
+            "q66": 16.84424232238551
+          },
+          "correctionEfficiency": {
+            "median": 0.3026846383351248,
+            "q33": 0.195198497885453,
+            "q66": 0.5404317950376057
+          },
+          "entryTriggerBodyR": {
+            "median": 0.5393972242753295,
+            "q33": 0.40670658181333713,
+            "q66": 1.365922309501489
+          },
+          "correctionToSpike": {
+            "median": 1.049752454977004,
+            "q33": 1.0381344503067242,
+            "q66": 1.1204113793967494
+          },
+          "entryTriggerReclaimR": {
+            "median": 1,
+            "q33": 1,
+            "q66": 1
+          }
+        }
+      },
+      "SELL": {
+        "n": 11,
+        "dCount": 11,
+        "dRate": 1,
+        "share": 0.4230769230769231,
+        "features": {
+          "spikeSizeR": {
+            "median": 16.46951491537944,
+            "q33": 13.911381680144457,
+            "q66": 19.25149085179867
+          },
+          "correctionSizeR": {
+            "median": 18.511216069031057,
+            "q33": 17.16535406299924,
+            "q66": 23.540117159293278
+          },
+          "correctionEfficiency": {
+            "median": 0.31844700528333353,
+            "q33": 0.22935758180034646,
+            "q66": 0.429055452871003
+          },
+          "entryTriggerBodyR": {
+            "median": 1.820562896696633,
+            "q33": 1.105599853302871,
+            "q66": 2.9722779427769845
+          },
+          "correctionToSpike": {
+            "median": 1.0387770022225447,
+            "q33": 1.0321528015466874,
+            "q66": 1.1187273908067297
+          },
+          "entryTriggerReclaimR": {
+            "median": 1,
+            "q33": 1,
+            "q66": 1
+          }
+        }
+      }
+    },
+    "bySession": {
+      "LONDON": {
+        "n": 13,
+        "dCount": 13,
+        "dRate": 1,
+        "share": 0.5,
+        "features": {
+          "spikeSizeR": {
+            "median": 12.507594136971381,
+            "q33": 10.605738364266886,
+            "q66": 12.75329711424261
+          },
+          "correctionSizeR": {
+            "median": 14.250353803384936,
+            "q33": 11.319297917557208,
+            "q66": 18.380807754783667
+          },
+          "correctionEfficiency": {
+            "median": 0.22168039436332704,
+            "q33": 0.14543689237652474,
+            "q66": 0.3148948660966437
+          },
+          "entryTriggerBodyR": {
+            "median": 0.9874112050050329,
+            "q33": 0.5356035186233573,
+            "q66": 1.6736337073522807
+          },
+          "correctionToSpike": {
+            "median": 1.0758192304797032,
+            "q33": 1.039270832471405,
+            "q66": 1.1381766063206737
+          },
+          "entryTriggerReclaimR": {
+            "median": 1,
+            "q33": 1,
+            "q66": 1
+          }
+        }
+      },
+      "NEW_YORK": {
+        "n": 9,
+        "dCount": 9,
+        "dRate": 1,
+        "share": 0.34615384615384615,
+        "features": {
+          "spikeSizeR": {
+            "median": 16.46951491537944,
+            "q33": 12.999296110799758,
+            "q66": 30.38325223615562
+          },
+          "correctionSizeR": {
+            "median": 16.682652189198073,
+            "q33": 15.493564644178948,
+            "q66": 31.05447696464076
+          },
+          "correctionEfficiency": {
+            "median": 0.45404496309141085,
+            "q33": 0.29962113957435876,
+            "q66": 0.6171944737243057
+          },
+          "entryTriggerBodyR": {
+            "median": 1.3565587095159999,
+            "q33": 0.6685165421600006,
+            "q66": 2.278541169751563
+          },
+          "correctionToSpike": {
+            "median": 1.019926407185113,
+            "q33": 1.0172877928613682,
+            "q66": 1.0339613170945006
+          },
+          "entryTriggerReclaimR": {
+            "median": 1,
+            "q33": 1,
+            "q66": 1
+          }
+        }
+      },
+      "OUT_OF_SESSION": {
+        "n": 4,
+        "dCount": 4,
+        "dRate": 1,
+        "share": 0.15384615384615385,
+        "features": {
+          "spikeSizeR": {
+            "median": 16.9437842550245,
+            "q33": 13.674480954225423,
+            "q66": 20.02927779048778
+          },
+          "correctionSizeR": {
+            "median": 18.968487829170275,
+            "q33": 15.935031191218119,
+            "q66": 21.809606555338238
+          },
+          "correctionEfficiency": {
+            "median": 0.4491147899474252,
+            "q33": 0.38917538759604486,
+            "q66": 0.5043566482581779
+          },
+          "entryTriggerBodyR": {
+            "median": 1.333022984429058,
+            "q33": 0.43070712553319335,
+            "q66": 2.1986234921590597
+          },
+          "correctionToSpike": {
+            "median": 1.1034132375671253,
+            "q33": 1.0874336751731197,
+            "q66": 1.1183882238149838
+          },
+          "entryTriggerReclaimR": {
+            "median": 1,
+            "q33": 1,
+            "q66": 1
+          }
+        }
+      }
+    }
+  },
+  "notes": [
+    "Descriptive only. No production rule inference.",
+    "Candidate C population is defined on the full universe as in Phase28; its 9 non-D members are also counted in NON_D, so populations are not mutually exclusive.",
+    "Residual D is the D-archetype subset not explained by Candidate C geometry; D rate is 1.0 by construction."
+  ]
+}

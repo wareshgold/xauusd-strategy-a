@@ -1,0 +1,1642 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_16_SELL_EDGE_DEOUTLIER_STABILITY",
+  "timeframe": "5min",
+  "scope": {
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "dev": 122,
+    "val": 99,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 221,
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "mismatch": 0,
+    "noReplay": 0,
+    "missingCanonicalTimestamp": 0,
+    "canonicalTimestampReplay": true,
+    "canonicalPopulationMatch": true
+  },
+  "methodology": {
+    "purpose": "Descriptive stability audit of the existing SELL baseline edge across London/New York and fixed chronological windows, with exceptional-trade concentration removed diagnostically only.",
+    "population": "Exact baseline candidate-selection semantics replayed on the refreshed dataset using canonical entryTime; baseline entryIndex is retained only for DEV/VAL split and chronological audit.",
+    "fixedWindows": [
+      {
+        "name": "DEV_1",
+        "start": 0,
+        "end": 1999
+      },
+      {
+        "name": "DEV_2",
+        "start": 2000,
+        "end": 3999
+      },
+      {
+        "name": "DEV_3",
+        "start": 4000,
+        "end": 5999
+      },
+      {
+        "name": "VAL_1",
+        "start": 6000,
+        "end": 7999
+      },
+      {
+        "name": "VAL_2",
+        "start": 8000,
+        "end": 9999
+      }
+    ],
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noNewTradingRules": true,
+    "noFreshHoldoutAccess": true,
+    "exceptionalDefinition": "rMultiple >= 5R",
+    "tests": [
+      "SELL vs SELL without exceptional",
+      "SELL DEV/VAL",
+      "SELL London/NY",
+      "fixed chronological window outcomes",
+      "top-1/top-2/top-3 exclusion diagnostics",
+      "window concentration"
+    ]
+  },
+  "segments": {
+    "SELL": {
+      "n": 107,
+      "wins": 29,
+      "losses": 78,
+      "WR": 0.27102803738317754,
+      "avgR": -0.20861322614390534,
+      "PF": 0.7138254461872069,
+      "totalR": -22.321615197397872
+    },
+    "SELL_NO_EXCEPTIONAL": {
+      "n": 103,
+      "wins": 25,
+      "losses": 78,
+      "WR": 0.24271844660194175,
+      "avgR": -0.5133477130298051,
+      "PF": 0.32211776356320604,
+      "totalR": -52.874814442069926
+    },
+    "SELL_DEV": {
+      "n": 62,
+      "wins": 18,
+      "losses": 44,
+      "WR": 0.2903225806451613,
+      "avgR": -0.0902951670074201,
+      "PF": 0.872765901034999,
+      "totalR": -5.598300354460046
+    },
+    "SELL_VAL": {
+      "n": 45,
+      "wins": 11,
+      "losses": 34,
+      "WR": 0.24444444444444444,
+      "avgR": -0.3716292187319515,
+      "PF": 0.508137798737123,
+      "totalR": -16.723314842937818
+    },
+    "SELL_LONDON": {
+      "n": 56,
+      "wins": 15,
+      "losses": 41,
+      "WR": 0.26785714285714285,
+      "avgR": -0.4025557920763786,
+      "PF": 0.45016769862738537,
+      "totalR": -22.5431243562772
+    },
+    "SELL_LONDON_NO_EXCEPTIONAL": {
+      "n": 56,
+      "wins": 15,
+      "losses": 41,
+      "WR": 0.26785714285714285,
+      "avgR": -0.4025557920763786,
+      "PF": 0.45016769862738537,
+      "totalR": -22.5431243562772
+    },
+    "SELL_NEW_YORK": {
+      "n": 33,
+      "wins": 12,
+      "losses": 21,
+      "WR": 0.36363636363636365,
+      "avgR": 0.4152258799684644,
+      "PF": 1.6524978113790154,
+      "totalR": 13.702454038959324
+    },
+    "SELL_NEW_YORK_NO_EXCEPTIONAL": {
+      "n": 29,
+      "wins": 8,
+      "losses": 21,
+      "WR": 0.27586206896551724,
+      "avgR": -0.5810601795073358,
+      "PF": 0.19758356163272678,
+      "totalR": -16.850745205712737
+    }
+  },
+  "windows": {
+    "DEV_1": {
+      "outcome": {
+        "n": 19,
+        "wins": 7,
+        "losses": 12,
+        "WR": 0.3684210526315789,
+        "avgR": 0.18529006621818778,
+        "PF": 1.2933759381787973,
+        "totalR": 3.520511258145568
+      },
+      "noExceptional": {
+        "n": 18,
+        "wins": 6,
+        "losses": 12,
+        "WR": 0.3333333333333333,
+        "avgR": -0.28161617395798805,
+        "PF": 0.577575739063018,
+        "totalR": -5.069091131243785
+      },
+      "top1Excluded": {
+        "n": 18,
+        "wins": 6,
+        "losses": 12,
+        "WR": 0.3333333333333333,
+        "avgR": -0.28161617395798805,
+        "PF": 0.577575739063018,
+        "totalR": -5.069091131243785
+      },
+      "top2Excluded": {
+        "n": 17,
+        "wins": 5,
+        "losses": 12,
+        "WR": 0.29411764705882354,
+        "avgR": -0.5148181704606013,
+        "PF": 0.2706742585141481,
+        "totalR": -8.751908897830223
+      },
+      "top3Excluded": {
+        "n": 16,
+        "wins": 4,
+        "losses": 12,
+        "WR": 0.25,
+        "avgR": -0.6387301492489101,
+        "PF": 0.14835980100145316,
+        "totalR": -10.219682387982562
+      },
+      "concentration": {
+        "k1": {
+          "sTotal": 3.520511258145568,
+          "topR": 8.589602389389354,
+          "topShare": 2.4398735750426015
+        },
+        "k2": {
+          "sTotal": 3.520511258145568,
+          "topR": 12.27242015597579,
+          "topShare": 3.4859766823868354
+        },
+        "k3": {
+          "sTotal": 3.520511258145568,
+          "topR": 13.74019364612813,
+          "topShare": 3.902897232422369
+        }
+      }
+    },
+    "DEV_2": {
+      "outcome": {
+        "n": 24,
+        "wins": 7,
+        "losses": 17,
+        "WR": 0.2916666666666667,
+        "avgR": 0.12074250604759477,
+        "PF": 1.1704600085377812,
+        "totalR": 2.8978201451422745
+      },
+      "noExceptional": {
+        "n": 23,
+        "wins": 6,
+        "losses": 17,
+        "WR": 0.2608695652173913,
+        "avgR": -0.38428220619255055,
+        "PF": 0.4800887798571376,
+        "totalR": -8.838490742428663
+      },
+      "top1Excluded": {
+        "n": 23,
+        "wins": 6,
+        "losses": 17,
+        "WR": 0.2608695652173913,
+        "avgR": -0.38428220619255055,
+        "PF": 0.4800887798571376,
+        "totalR": -8.838490742428663
+      },
+      "top2Excluded": {
+        "n": 22,
+        "wins": 5,
+        "losses": 17,
+        "WR": 0.22727272727272727,
+        "avgR": -0.5550634869009098,
+        "PF": 0.28168254636352863,
+        "totalR": -12.211396711820015
+      },
+      "top3Excluded": {
+        "n": 21,
+        "wins": 4,
+        "losses": 17,
+        "WR": 0.19047619047619047,
+        "avgR": -0.7184772016844756,
+        "PF": 0.11246933909564798,
+        "totalR": -15.088021235373986
+      },
+      "concentration": {
+        "k1": {
+          "sTotal": 2.8978201451422745,
+          "topR": 11.736310887570935,
+          "topShare": 4.050048070528103
+        },
+        "k2": {
+          "sTotal": 2.8978201451422745,
+          "topR": 15.109216856962288,
+          "topShare": 5.21399400245403
+        },
+        "k3": {
+          "sTotal": 2.8978201451422745,
+          "topR": 17.98584138051626,
+          "topShare": 6.206679669428969
+        }
+      }
+    },
+    "DEV_3": {
+      "outcome": {
+        "n": 19,
+        "wins": 4,
+        "losses": 15,
+        "WR": 0.21052631578947367,
+        "avgR": -0.6324543030393626,
+        "PF": 0.19889121615014074,
+        "totalR": -12.016631757747888
+      },
+      "noExceptional": {
+        "n": 19,
+        "wins": 4,
+        "losses": 15,
+        "WR": 0.21052631578947367,
+        "avgR": -0.6324543030393626,
+        "PF": 0.19889121615014074,
+        "totalR": -12.016631757747888
+      },
+      "top1Excluded": {
+        "n": 18,
+        "wins": 3,
+        "losses": 15,
+        "WR": 0.16666666666666666,
+        "avgR": -0.7373100409365985,
+        "PF": 0.11522795087608172,
+        "totalR": -13.271580736858773
+      },
+      "top2Excluded": {
+        "n": 17,
+        "wins": 2,
+        "losses": 15,
+        "WR": 0.11764705882352941,
+        "avgR": -0.8325119068227271,
+        "PF": 0.056486505600909245,
+        "totalR": -14.152702415986361
+      },
+      "top3Excluded": {
+        "n": 16,
+        "wins": 1,
+        "losses": 15,
+        "WR": 0.0625,
+        "avgR": -0.9314697018825318,
+        "PF": 0.006432317991966157,
+        "totalR": -14.903515230120508
+      },
+      "concentration": {
+        "k1": {
+          "sTotal": -12.016631757747888,
+          "topR": 1.2549489791108852,
+          "topShare": -0.10443433770879595
+        },
+        "k2": {
+          "sTotal": -12.016631757747888,
+          "topR": 2.1360706582384723,
+          "topShare": -0.1777595170844119
+        },
+        "k3": {
+          "sTotal": -12.016631757747888,
+          "topR": 2.8868834723726184,
+          "topShare": -0.24024065400117306
+        }
+      }
+    },
+    "VAL_1": {
+      "outcome": {
+        "n": 23,
+        "wins": 5,
+        "losses": 18,
+        "WR": 0.21739130434782608,
+        "avgR": -0.44481415188222895,
+        "PF": 0.4316263614838185,
+        "totalR": -10.230725493291265
+      },
+      "noExceptional": {
+        "n": 22,
+        "wins": 4,
+        "losses": 18,
+        "WR": 0.18181818181818182,
+        "avgR": -0.6971148314392704,
+        "PF": 0.14797076157422506,
+        "totalR": -15.336526291663949
+      },
+      "top1Excluded": {
+        "n": 22,
+        "wins": 4,
+        "losses": 18,
+        "WR": 0.18181818181818182,
+        "avgR": -0.6971148314392704,
+        "PF": 0.14797076157422506,
+        "totalR": -15.336526291663949
+      },
+      "top2Excluded": {
+        "n": 21,
+        "wins": 3,
+        "losses": 18,
+        "WR": 0.14285714285714285,
+        "avgR": -0.8017368861622077,
+        "PF": 0.06464029947742425,
+        "totalR": -16.836474609406363
+      },
+      "top3Excluded": {
+        "n": 20,
+        "wins": 2,
+        "losses": 18,
+        "WR": 0.1,
+        "avgR": -0.8824917391649076,
+        "PF": 0.01945362315010245,
+        "totalR": -17.649834783298154
+      },
+      "concentration": {
+        "k1": {
+          "sTotal": -10.230725493291265,
+          "topR": 5.105800798372683,
+          "topShare": -0.4990653694814488
+        },
+        "k2": {
+          "sTotal": -10.230725493291265,
+          "topR": 6.605749116115097,
+          "topShare": -0.6456774859658562
+        },
+        "k3": {
+          "sTotal": -10.230725493291265,
+          "topR": 7.419109290006889,
+          "topShare": -0.7251791962233689
+        }
+      }
+    },
+    "VAL_2": {
+      "outcome": {
+        "n": 22,
+        "wins": 6,
+        "losses": 16,
+        "WR": 0.2727272727272727,
+        "avgR": -0.29511769771120705,
+        "PF": 0.5942131656470904,
+        "totalR": -6.492589349646555
+      },
+      "noExceptional": {
+        "n": 21,
+        "wins": 5,
+        "losses": 16,
+        "WR": 0.23809523809523808,
+        "avgR": -0.5530511675707447,
+        "PF": 0.2741203425633975,
+        "totalR": -11.614074518985639
+      },
+      "top1Excluded": {
+        "n": 21,
+        "wins": 5,
+        "losses": 16,
+        "WR": 0.23809523809523808,
+        "avgR": -0.5530511675707447,
+        "PF": 0.2741203425633975,
+        "totalR": -11.614074518985639
+      },
+      "top2Excluded": {
+        "n": 20,
+        "wins": 4,
+        "losses": 16,
+        "WR": 0.2,
+        "avgR": -0.7247133016599319,
+        "PF": 0.0941083729250852,
+        "totalR": -14.494266033198636
+      },
+      "top3Excluded": {
+        "n": 19,
+        "wins": 3,
+        "losses": 16,
+        "WR": 0.15789473684210525,
+        "avgR": -0.8164933071250648,
+        "PF": 0.03041419778898536,
+        "totalR": -15.513372835376233
+      },
+      "concentration": {
+        "k1": {
+          "sTotal": -6.492589349646555,
+          "topR": 5.121485169339085,
+          "topShare": -0.7888201291550788
+        },
+        "k2": {
+          "sTotal": -6.492589349646555,
+          "topR": 8.001676683552082,
+          "topShare": -1.2324322781923178
+        },
+        "k3": {
+          "sTotal": -6.492589349646555,
+          "topR": 9.02078348572968,
+          "topShare": -1.3893968954344473
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "entryIndex": 62,
+      "canonicalIndex": 36949,
+      "entryTime": "2026-07-23 23:35:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 8.589602389389354,
+      "exceptional": true
+    },
+    {
+      "entryIndex": 235,
+      "canonicalIndex": 37122,
+      "entryTime": "2026-07-24 14:00:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 3.682817766586438,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 936,
+      "canonicalIndex": 37823,
+      "entryTime": "2026-07-27 00:25:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1049,
+      "canonicalIndex": 37936,
+      "entryTime": "2026-07-27 09:50:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1164,
+      "canonicalIndex": 38051,
+      "entryTime": "2026-07-27 19:25:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1312,
+      "canonicalIndex": 38199,
+      "entryTime": "2026-07-28 07:45:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1411,
+      "canonicalIndex": 38298,
+      "entryTime": "2026-07-28 16:00:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 1.4677734901523394,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1594,
+      "canonicalIndex": 38481,
+      "entryTime": "2026-07-29 07:15:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1714,
+      "canonicalIndex": 38601,
+      "entryTime": "2026-07-29 17:15:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.08667407566113132,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1716,
+      "canonicalIndex": 38603,
+      "entryTime": "2026-07-29 17:25:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1724,
+      "canonicalIndex": 38611,
+      "entryTime": "2026-07-29 18:05:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1736,
+      "canonicalIndex": 38623,
+      "entryTime": "2026-07-29 19:05:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.4814847414571422,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1739,
+      "canonicalIndex": 38626,
+      "entryTime": "2026-07-29 19:20:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.9826606255191156,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1809,
+      "canonicalIndex": 38696,
+      "entryTime": "2026-07-30 01:10:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 0.22949816938004886,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1862,
+      "canonicalIndex": 38749,
+      "entryTime": "2026-07-30 05:35:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1894,
+      "canonicalIndex": 38781,
+      "entryTime": "2026-07-30 08:15:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1922,
+      "canonicalIndex": 38809,
+      "entryTime": "2026-07-30 10:35:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1923,
+      "canonicalIndex": 38810,
+      "entryTime": "2026-07-30 10:40:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 1963,
+      "canonicalIndex": 38850,
+      "entryTime": "2026-07-30 14:00:00",
+      "split": "DEV",
+      "window": "DEV_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 2004,
+      "canonicalIndex": 38891,
+      "entryTime": "2026-07-30 17:25:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 2027,
+      "canonicalIndex": 38914,
+      "entryTime": "2026-07-30 19:20:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 2247,
+      "canonicalIndex": 39134,
+      "entryTime": "2026-07-31 13:40:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 2267,
+      "canonicalIndex": 39154,
+      "entryTime": "2026-07-31 15:20:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 2268,
+      "canonicalIndex": 39155,
+      "entryTime": "2026-07-31 15:25:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 2298,
+      "canonicalIndex": 39185,
+      "entryTime": "2026-07-31 17:55:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 2321,
+      "canonicalIndex": 39208,
+      "entryTime": "2026-07-31 19:50:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 1.0830902592333151,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 2924,
+      "canonicalIndex": 39811,
+      "entryTime": "2026-08-02 22:05:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 0.16723378217161608,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3090,
+      "canonicalIndex": 39977,
+      "entryTime": "2026-08-03 11:55:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3176,
+      "canonicalIndex": 40063,
+      "entryTime": "2026-08-03 19:05:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3181,
+      "canonicalIndex": 40068,
+      "entryTime": "2026-08-03 19:30:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3237,
+      "canonicalIndex": 40124,
+      "entryTime": "2026-08-04 00:10:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 11.736310887570935,
+      "exceptional": true
+    },
+    {
+      "entryIndex": 3374,
+      "canonicalIndex": 40261,
+      "entryTime": "2026-08-04 11:35:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3377,
+      "canonicalIndex": 40264,
+      "entryTime": "2026-08-04 11:50:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 2.8766245235539714,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3441,
+      "canonicalIndex": 40328,
+      "entryTime": "2026-08-04 17:10:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3539,
+      "canonicalIndex": 40426,
+      "entryTime": "2026-08-05 01:20:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3547,
+      "canonicalIndex": 40434,
+      "entryTime": "2026-08-05 02:00:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3659,
+      "canonicalIndex": 40546,
+      "entryTime": "2026-08-05 11:20:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3744,
+      "canonicalIndex": 40631,
+      "entryTime": "2026-08-05 18:25:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 3.3729059693913523,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3804,
+      "canonicalIndex": 40691,
+      "entryTime": "2026-08-05 23:25:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3885,
+      "canonicalIndex": 40772,
+      "entryTime": "2026-08-06 06:10:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3962,
+      "canonicalIndex": 40849,
+      "entryTime": "2026-08-06 12:35:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3977,
+      "canonicalIndex": 40864,
+      "entryTime": "2026-08-06 13:50:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.3287022728069167,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 3994,
+      "canonicalIndex": 40881,
+      "entryTime": "2026-08-06 15:15:00",
+      "split": "DEV",
+      "window": "DEV_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.3329524504141676,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 4040,
+      "canonicalIndex": 40927,
+      "entryTime": "2026-08-06 19:05:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 4050,
+      "canonicalIndex": 40937,
+      "entryTime": "2026-08-06 19:55:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 4099,
+      "canonicalIndex": 40986,
+      "entryTime": "2026-08-07 00:00:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 0.09648476987949235,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 4116,
+      "canonicalIndex": 41003,
+      "entryTime": "2026-08-07 01:25:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 0.8811216791275872,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 4120,
+      "canonicalIndex": 41007,
+      "entryTime": "2026-08-07 01:45:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 4121,
+      "canonicalIndex": 41008,
+      "entryTime": "2026-08-07 01:50:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5024,
+      "canonicalIndex": 41911,
+      "entryTime": "2026-08-10 05:05:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5035,
+      "canonicalIndex": 41922,
+      "entryTime": "2026-08-10 06:00:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5138,
+      "canonicalIndex": 42025,
+      "entryTime": "2026-08-10 14:35:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5161,
+      "canonicalIndex": 42048,
+      "entryTime": "2026-08-10 16:30:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5417,
+      "canonicalIndex": 42304,
+      "entryTime": "2026-08-11 13:50:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.7508128141341462,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5546,
+      "canonicalIndex": 42433,
+      "entryTime": "2026-08-12 00:35:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5547,
+      "canonicalIndex": 42434,
+      "entryTime": "2026-08-12 00:40:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5760,
+      "canonicalIndex": 42647,
+      "entryTime": "2026-08-12 18:25:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5804,
+      "canonicalIndex": 42691,
+      "entryTime": "2026-08-12 22:05:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 1.2549489791108852,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5821,
+      "canonicalIndex": 42708,
+      "entryTime": "2026-08-12 23:30:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5832,
+      "canonicalIndex": 42719,
+      "entryTime": "2026-08-13 00:25:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5958,
+      "canonicalIndex": 42845,
+      "entryTime": "2026-08-13 10:55:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 5965,
+      "canonicalIndex": 42852,
+      "entryTime": "2026-08-13 11:30:00",
+      "split": "DEV",
+      "window": "DEV_3",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 6122,
+      "canonicalIndex": 43009,
+      "entryTime": "2026-08-14 00:35:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 6251,
+      "canonicalIndex": 43138,
+      "entryTime": "2026-08-14 11:20:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 6256,
+      "canonicalIndex": 43143,
+      "entryTime": "2026-08-14 11:45:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 6258,
+      "canonicalIndex": 43145,
+      "entryTime": "2026-08-14 11:55:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 6298,
+      "canonicalIndex": 43185,
+      "entryTime": "2026-08-14 15:15:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.8133601738917923,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 6983,
+      "canonicalIndex": 43870,
+      "entryTime": "2026-08-17 00:20:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 6993,
+      "canonicalIndex": 43880,
+      "entryTime": "2026-08-17 01:10:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7148,
+      "canonicalIndex": 44035,
+      "entryTime": "2026-08-17 14:05:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7217,
+      "canonicalIndex": 44104,
+      "entryTime": "2026-08-17 19:50:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7273,
+      "canonicalIndex": 44160,
+      "entryTime": "2026-08-18 00:30:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7280,
+      "canonicalIndex": 44167,
+      "entryTime": "2026-08-18 01:05:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 5.105800798372683,
+      "exceptional": true
+    },
+    {
+      "entryIndex": 7338,
+      "canonicalIndex": 44225,
+      "entryTime": "2026-08-18 05:55:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": 1.4999483177424144,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7357,
+      "canonicalIndex": 44244,
+      "entryTime": "2026-08-18 07:30:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7416,
+      "canonicalIndex": 44303,
+      "entryTime": "2026-08-18 12:25:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.10103136679754991,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7432,
+      "canonicalIndex": 44319,
+      "entryTime": "2026-08-18 13:45:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.24913384990429424,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7450,
+      "canonicalIndex": 44337,
+      "entryTime": "2026-08-18 15:15:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7511,
+      "canonicalIndex": 44398,
+      "entryTime": "2026-08-18 20:20:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7556,
+      "canonicalIndex": 44443,
+      "entryTime": "2026-08-19 00:05:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7641,
+      "canonicalIndex": 44528,
+      "entryTime": "2026-08-19 07:10:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7647,
+      "canonicalIndex": 44534,
+      "entryTime": "2026-08-19 07:40:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7707,
+      "canonicalIndex": 44594,
+      "entryTime": "2026-08-19 12:40:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7711,
+      "canonicalIndex": 44598,
+      "entryTime": "2026-08-19 13:00:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 7780,
+      "canonicalIndex": 44667,
+      "entryTime": "2026-08-19 18:45:00",
+      "split": "VAL",
+      "window": "VAL_1",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 8009,
+      "canonicalIndex": 44896,
+      "entryTime": "2026-08-20 13:50:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 8012,
+      "canonicalIndex": 44899,
+      "entryTime": "2026-08-20 14:05:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 8016,
+      "canonicalIndex": 44903,
+      "entryTime": "2026-08-20 14:25:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 8019,
+      "canonicalIndex": 44906,
+      "entryTime": "2026-08-20 14:40:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 8123,
+      "canonicalIndex": 45010,
+      "entryTime": "2026-08-20 23:20:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 5.121485169339085,
+      "exceptional": true
+    },
+    {
+      "entryIndex": 8203,
+      "canonicalIndex": 45090,
+      "entryTime": "2026-08-21 06:00:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 8317,
+      "canonicalIndex": 45204,
+      "entryTime": "2026-08-21 15:30:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 8972,
+      "canonicalIndex": 45859,
+      "entryTime": "2026-08-23 22:05:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 0.03180558307650024,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9275,
+      "canonicalIndex": 46162,
+      "entryTime": "2026-08-24 23:20:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9358,
+      "canonicalIndex": 46245,
+      "entryTime": "2026-08-25 06:15:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9385,
+      "canonicalIndex": 46272,
+      "entryTime": "2026-08-25 08:30:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "OUTSIDE",
+      "r": 1.0191068021775973,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9419,
+      "canonicalIndex": 46306,
+      "entryTime": "2026-08-25 11:20:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9459,
+      "canonicalIndex": 46346,
+      "entryTime": "2026-08-25 14:40:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9502,
+      "canonicalIndex": 46389,
+      "entryTime": "2026-08-25 18:15:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 0.04975000923944779,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9517,
+      "canonicalIndex": 46404,
+      "entryTime": "2026-08-25 19:30:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9717,
+      "canonicalIndex": 46604,
+      "entryTime": "2026-08-26 12:10:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9789,
+      "canonicalIndex": 46676,
+      "entryTime": "2026-08-26 18:10:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": 2.880191514212997,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9836,
+      "canonicalIndex": 46723,
+      "entryTime": "2026-08-26 22:05:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9853,
+      "canonicalIndex": 46740,
+      "entryTime": "2026-08-26 23:30:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9856,
+      "canonicalIndex": 46743,
+      "entryTime": "2026-08-26 23:45:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": -1,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9861,
+      "canonicalIndex": 46748,
+      "entryTime": "2026-08-27 00:10:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "NEW_YORK",
+      "r": 0.40507157230781776,
+      "exceptional": false
+    },
+    {
+      "entryIndex": 9998,
+      "canonicalIndex": 46885,
+      "entryTime": "2026-08-27 11:35:00",
+      "split": "VAL",
+      "window": "VAL_2",
+      "direction": "SELL",
+      "session": "LONDON",
+      "r": -1,
+      "exceptional": false
+    }
+  ]
+}

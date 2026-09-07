@@ -1,0 +1,243 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_27_D_ARCHETYPE_CONDITIONAL_RESIDUAL_DECOMPOSITION",
+  "timeframe": "5min",
+  "source": "Phase24 loss-archetype report; same canonical universe as Phase26.",
+  "scope": {
+    "cases": 163,
+    "dCases": 48,
+    "nonDCases": 115,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "sourceExpectedCanonical": 221,
+    "sourceCanonicalReplayed": 221,
+    "replayMismatch": 0,
+    "missingCanonicalTimestamp": 0,
+    "exitMismatch": 0
+  },
+  "methodology": {
+    "purpose": "Conditional decomposition of D archetype geometry.",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noTradingRules": true
+  },
+  "baseline": {
+    "n": 163,
+    "dCount": 48,
+    "dRate": 0.294478527607362
+  },
+  "singleFeatureConditioning": [
+    {
+      "feature": "spikeSizeR",
+      "q33": 5.2717660310115795,
+      "q66": 16.304685569162483,
+      "buckets": {
+        "LOW": {
+          "n": 54,
+          "dCount": 1,
+          "dRate": 0.018518518518518517
+        },
+        "MID": {
+          "n": 53,
+          "dCount": 15,
+          "dRate": 0.2830188679245283
+        },
+        "HIGH": {
+          "n": 56,
+          "dCount": 32,
+          "dRate": 0.5714285714285714
+        }
+      }
+    },
+    {
+      "feature": "correctionSizeR",
+      "q33": 5.977198689135864,
+      "q66": 18.20947086450402,
+      "buckets": {
+        "LOW": {
+          "n": 54,
+          "dCount": 1,
+          "dRate": 0.018518518518518517
+        },
+        "MID": {
+          "n": 53,
+          "dCount": 14,
+          "dRate": 0.2641509433962264
+        },
+        "HIGH": {
+          "n": 56,
+          "dCount": 33,
+          "dRate": 0.5892857142857143
+        }
+      }
+    },
+    {
+      "feature": "correctionEfficiency",
+      "q33": 0.147773292583164,
+      "q66": 0.8320235324313076,
+      "buckets": {
+        "LOW": {
+          "n": 54,
+          "dCount": 5,
+          "dRate": 0.09259259259259259
+        },
+        "MID": {
+          "n": 53,
+          "dCount": 17,
+          "dRate": 0.32075471698113206
+        },
+        "HIGH": {
+          "n": 56,
+          "dCount": 26,
+          "dRate": 0.4642857142857143
+        }
+      }
+    },
+    {
+      "feature": "entryTriggerBodyR",
+      "q33": 0.5744621855477717,
+      "q66": 1.6680063008100892,
+      "buckets": {
+        "LOW": {
+          "n": 54,
+          "dCount": 12,
+          "dRate": 0.2222222222222222
+        },
+        "MID": {
+          "n": 53,
+          "dCount": 7,
+          "dRate": 0.1320754716981132
+        },
+        "HIGH": {
+          "n": 56,
+          "dCount": 29,
+          "dRate": 0.5178571428571429
+        }
+      }
+    },
+    {
+      "feature": "correctionToSpike",
+      "q33": 1.0433513031105606,
+      "q66": 1.1247784273587522,
+      "buckets": {
+        "LOW": {
+          "n": 54,
+          "dCount": 20,
+          "dRate": 0.37037037037037035
+        },
+        "MID": {
+          "n": 53,
+          "dCount": 13,
+          "dRate": 0.24528301886792453
+        },
+        "HIGH": {
+          "n": 56,
+          "dCount": 15,
+          "dRate": 0.26785714285714285
+        }
+      }
+    },
+    {
+      "feature": "entryTriggerReclaimR",
+      "q33": 1,
+      "q66": 1,
+      "buckets": {
+        "LOW": {
+          "n": 163,
+          "dCount": 48,
+          "dRate": 0.294478527607362
+        },
+        "MID": {
+          "n": 0,
+          "dCount": 0,
+          "dRate": null
+        },
+        "HIGH": {
+          "n": 163,
+          "dCount": 48,
+          "dRate": 0.294478527607362
+        }
+      }
+    }
+  ],
+  "interactionConditioning": [
+    {
+      "features": [
+        "spikeSizeR",
+        "correctionSizeR"
+      ],
+      "thresholds": {
+        "spikeSizeR": 16.304685569162483,
+        "correctionSizeR": 18.20947086450402
+      },
+      "HIGH_HIGH": {
+        "n": 54,
+        "dCount": 31,
+        "dRate": 0.5740740740740741
+      }
+    },
+    {
+      "features": [
+        "spikeSizeR",
+        "correctionEfficiency"
+      ],
+      "thresholds": {
+        "spikeSizeR": 16.304685569162483,
+        "correctionEfficiency": 0.8320235324313076
+      },
+      "HIGH_HIGH": {
+        "n": 30,
+        "dCount": 22,
+        "dRate": 0.7333333333333333
+      }
+    },
+    {
+      "features": [
+        "correctionSizeR",
+        "correctionEfficiency"
+      ],
+      "thresholds": {
+        "correctionSizeR": 18.20947086450402,
+        "correctionEfficiency": 0.8320235324313076
+      },
+      "HIGH_HIGH": {
+        "n": 30,
+        "dCount": 22,
+        "dRate": 0.7333333333333333
+      }
+    },
+    {
+      "features": [
+        "spikeSizeR",
+        "entryTriggerBodyR"
+      ],
+      "thresholds": {
+        "spikeSizeR": 16.304685569162483,
+        "entryTriggerBodyR": 1.6680063008100892
+      },
+      "HIGH_HIGH": {
+        "n": 34,
+        "dCount": 25,
+        "dRate": 0.7352941176470589
+      }
+    },
+    {
+      "features": [
+        "correctionSizeR",
+        "entryTriggerBodyR"
+      ],
+      "thresholds": {
+        "correctionSizeR": 18.20947086450402,
+        "entryTriggerBodyR": 1.6680063008100892
+      },
+      "HIGH_HIGH": {
+        "n": 35,
+        "dCount": 26,
+        "dRate": 0.7428571428571429
+      }
+    }
+  ],
+  "interpretation": "Descriptive only. No production rule inference."
+}

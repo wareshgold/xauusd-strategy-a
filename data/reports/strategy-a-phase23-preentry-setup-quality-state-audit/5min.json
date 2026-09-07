@@ -1,0 +1,563 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_23_PREENTRY_SETUP_QUALITY_STATE_AUDIT",
+  "timeframe": "5min",
+  "scope": {
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "dev": 122,
+    "val": 99,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 221,
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "replayMismatch": 0,
+    "missingCanonicalTimestamp": 0,
+    "canonicalTimestampReplay": true,
+    "exactBaselineSelectionSemantics": true
+  },
+  "methodology": {
+    "purpose": "Descriptive audit of deterministic setup-quality information available at or before canonical entry, testing whether fixed impulse, correction, and trigger families separate winners from losers across time, direction, and session.",
+    "families": {
+      "impulse_quality": [
+        "spikeSizeR",
+        "spikeStructureScore",
+        "spikeOverlapScore",
+        "spikeBars",
+        "breakoutToFollowThrough"
+      ],
+      "correction_quality": [
+        "correctionSizeR",
+        "correctionToSpike",
+        "correctionBars",
+        "correctionEfficiency",
+        "correctionDelay"
+      ],
+      "trigger_quality": [
+        "entryTriggerReclaimR",
+        "entryTriggerBodyR",
+        "entryTriggerCloseLocation",
+        "entryTriggerUpperWickShare",
+        "entryTriggerLowerWickShare"
+      ]
+    },
+    "compression": "Within each evaluated population, each feature is percentile-ranked and each family score is the unweighted mean member rank.",
+    "futureLeakageGuard": "Only candles at or before canonical entry are used for features; trade outcome is label only.",
+    "exactBaselineSemantics": "Breakout -> FollowThrough -> Spike -> Correction -> Trigger -> Projection/Invalidation/Context/Quality -> first trade-allowed positive-RR candidate.",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noNewTradingRules": true,
+    "noFreshHoldoutAccess": true
+  },
+  "overall": {
+    "n": 221,
+    "avgR": -0.15844633197296074,
+    "PF": 0.7851739916194825,
+    "WR": 0.26244343891402716,
+    "totalR": -35.01663936602432
+  },
+  "allSetupQuality": {
+    "n": 221,
+    "stats": {
+      "n": 221,
+      "avgR": -0.15844633197296074,
+      "PF": 0.7851739916194825,
+      "WR": 0.26244343891402716,
+      "totalR": -35.01663936602432
+    },
+    "families": {
+      "impulse_quality": {
+        "targetN": 58,
+        "nonTargetN": 163,
+        "targetMeanRank": 0.43934169278996865,
+        "nonTargetMeanRank": 0.5215839375348575,
+        "delta": -0.08224224474488889,
+        "standardizedDelta": -0.6744180693918885,
+        "aucTargetGreater": 0.3012481489316691,
+        "targetMedianRank": 0.4335227272727273,
+        "nonTargetMedianRank": 0.5125000000000001
+      },
+      "correction_quality": {
+        "targetN": 58,
+        "nonTargetN": 163,
+        "targetMeanRank": 0.44158307210031333,
+        "nonTargetMeanRank": 0.520786391522588,
+        "delta": -0.07920331942227465,
+        "standardizedDelta": -0.6594439591929507,
+        "aucTargetGreater": 0.33112968055849373,
+        "targetMedianRank": 0.43500000000000005,
+        "nonTargetMedianRank": 0.5227272727272727
+      },
+      "trigger_quality": {
+        "targetN": 58,
+        "nonTargetN": 163,
+        "targetMeanRank": 0.4774137931034483,
+        "nonTargetMeanRank": 0.5080368098159509,
+        "delta": -0.030623016712502615,
+        "standardizedDelta": -0.4489946416343998,
+        "aucTargetGreater": 0.36376137084831817,
+        "targetMedianRank": 0.4740909090909091,
+        "nonTargetMedianRank": 0.5081818181818182
+      }
+    }
+  },
+  "temporalRobustness": {
+    "DEV_1": {
+      "n": 35,
+      "stats": {
+        "n": 35,
+        "avgR": 0.08240403678533223,
+        "PF": 1.10682004768469,
+        "WR": 0.22857142857142856,
+        "totalR": 2.884141287486628
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 8,
+          "nonTargetN": 27,
+          "targetMeanRank": 0.4154411764705882,
+          "nonTargetMeanRank": 0.5250544662309369,
+          "delta": -0.10961328976034868,
+          "standardizedDelta": -0.9671032676965182,
+          "aucTargetGreater": 0.2037037037037037,
+          "targetMedianRank": 0.43382352941176466,
+          "nonTargetMedianRank": 0.5294117647058824
+        },
+        "correction_quality": {
+          "targetN": 8,
+          "nonTargetN": 27,
+          "targetMeanRank": 0.45000000000000007,
+          "nonTargetMeanRank": 0.5148148148148147,
+          "delta": -0.06481481481481466,
+          "standardizedDelta": -0.4661886101847551,
+          "aucTargetGreater": 0.375,
+          "targetMedianRank": 0.4676470588235294,
+          "nonTargetMedianRank": 0.5176470588235293
+        },
+        "trigger_quality": {
+          "targetN": 8,
+          "nonTargetN": 27,
+          "targetMeanRank": 0.4551470588235294,
+          "nonTargetMeanRank": 0.5132897603485839,
+          "delta": -0.05814270152505446,
+          "standardizedDelta": -0.9373333959213385,
+          "aucTargetGreater": 0.2175925925925926,
+          "targetMedianRank": 0.4632352941176471,
+          "nonTargetMedianRank": 0.5352941176470588
+        }
+      }
+    },
+    "DEV_2": {
+      "n": 47,
+      "stats": {
+        "n": 47,
+        "avgR": -0.15440047446533947,
+        "PF": 0.792662220003687,
+        "WR": 0.2553191489361702,
+        "totalR": -7.256822299870955
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 12,
+          "nonTargetN": 35,
+          "targetMeanRank": 0.453804347826087,
+          "nonTargetMeanRank": 0.5158385093167702,
+          "delta": -0.06203416149068325,
+          "standardizedDelta": -0.507435329996516,
+          "aucTargetGreater": 0.38333333333333336,
+          "targetMedianRank": 0.45108695652173914,
+          "nonTargetMedianRank": 0.5244565217391305
+        },
+        "correction_quality": {
+          "targetN": 12,
+          "nonTargetN": 35,
+          "targetMeanRank": 0.47789855072463777,
+          "nonTargetMeanRank": 0.5075776397515529,
+          "delta": -0.02967908902691513,
+          "standardizedDelta": -0.25745219875654723,
+          "aucTargetGreater": 0.44166666666666665,
+          "targetMedianRank": 0.4456521739130435,
+          "nonTargetMedianRank": 0.5173913043478262
+        },
+        "trigger_quality": {
+          "targetN": 12,
+          "nonTargetN": 35,
+          "targetMeanRank": 0.47427536231884054,
+          "nonTargetMeanRank": 0.5088198757763975,
+          "delta": -0.03454451345755699,
+          "standardizedDelta": -0.43075186353640255,
+          "aucTargetGreater": 0.37976190476190474,
+          "targetMedianRank": 0.49130434782608695,
+          "nonTargetMedianRank": 0.517391304347826
+        }
+      }
+    },
+    "DEV_3": {
+      "n": 40,
+      "stats": {
+        "n": 40,
+        "avgR": -0.6537075925318685,
+        "PF": 0.18286550933516443,
+        "WR": 0.2,
+        "totalR": -26.148303701274738
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 8,
+          "nonTargetN": 32,
+          "targetMeanRank": 0.4282852564102564,
+          "nonTargetMeanRank": 0.5179286858974359,
+          "delta": -0.08964342948717952,
+          "standardizedDelta": -0.7225456663781193,
+          "aucTargetGreater": 0.291015625,
+          "targetMedianRank": 0.41346153846153844,
+          "nonTargetMedianRank": 0.49679487179487175
+        },
+        "correction_quality": {
+          "targetN": 8,
+          "nonTargetN": 32,
+          "targetMeanRank": 0.41858974358974355,
+          "nonTargetMeanRank": 0.520352564102564,
+          "delta": -0.10176282051282048,
+          "standardizedDelta": -0.7679616467343253,
+          "aucTargetGreater": 0.28515625,
+          "targetMedianRank": 0.3846153846153846,
+          "nonTargetMedianRank": 0.5282051282051281
+        },
+        "trigger_quality": {
+          "targetN": 8,
+          "nonTargetN": 32,
+          "targetMeanRank": 0.433974358974359,
+          "nonTargetMeanRank": 0.5165064102564102,
+          "delta": -0.08253205128205121,
+          "standardizedDelta": -1.258747982433507,
+          "aucTargetGreater": 0.13671875,
+          "targetMedianRank": 0.42692307692307696,
+          "nonTargetMedianRank": 0.5205128205128204
+        }
+      }
+    },
+    "VAL_1": {
+      "n": 51,
+      "stats": {
+        "n": 51,
+        "avgR": 0.33957759566330115,
+        "PF": 1.5093663934949522,
+        "WR": 0.3333333333333333,
+        "totalR": 17.31845737882836
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 17,
+          "nonTargetN": 34,
+          "targetMeanRank": 0.4613235294117647,
+          "nonTargetMeanRank": 0.5193382352941177,
+          "delta": -0.058014705882353024,
+          "standardizedDelta": -0.4447275513185652,
+          "aucTargetGreater": 0.33391003460207613,
+          "targetMedianRank": 0.4175,
+          "nonTargetMedianRank": 0.5162500000000001
+        },
+        "correction_quality": {
+          "targetN": 17,
+          "nonTargetN": 34,
+          "targetMeanRank": 0.44235294117647056,
+          "nonTargetMeanRank": 0.5288235294117647,
+          "delta": -0.08647058823529413,
+          "standardizedDelta": -0.657321817244635,
+          "aucTargetGreater": 0.35899653979238755,
+          "targetMedianRank": 0.472,
+          "nonTargetMedianRank": 0.484
+        },
+        "trigger_quality": {
+          "targetN": 17,
+          "nonTargetN": 34,
+          "targetMeanRank": 0.48388235294117654,
+          "nonTargetMeanRank": 0.5080588235294117,
+          "delta": -0.024176470588235133,
+          "standardizedDelta": -0.34847784034262475,
+          "aucTargetGreater": 0.4039792387543253,
+          "targetMedianRank": 0.496,
+          "nonTargetMedianRank": 0.498
+        }
+      }
+    },
+    "VAL_2": {
+      "n": 48,
+      "stats": {
+        "n": 48,
+        "avgR": -0.4544606673165337,
+        "PF": 0.37673965625161093,
+        "WR": 0.2708333333333333,
+        "totalR": -21.814112031193616
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 13,
+          "nonTargetN": 35,
+          "targetMeanRank": 0.41346153846153844,
+          "nonTargetMeanRank": 0.5321428571428573,
+          "delta": -0.11868131868131881,
+          "standardizedDelta": -0.9021932603629172,
+          "aucTargetGreater": 0.24505494505494504,
+          "targetMedianRank": 0.40691489361702127,
+          "nonTargetMedianRank": 0.523936170212766
+        },
+        "correction_quality": {
+          "targetN": 13,
+          "nonTargetN": 35,
+          "targetMeanRank": 0.4003273322422257,
+          "nonTargetMeanRank": 0.5370212765957448,
+          "delta": -0.13669394435351911,
+          "standardizedDelta": -1.249391048128661,
+          "aucTargetGreater": 0.18021978021978022,
+          "targetMedianRank": 0.4127659574468085,
+          "nonTargetMedianRank": 0.5404255319148936
+        },
+        "trigger_quality": {
+          "targetN": 13,
+          "nonTargetN": 35,
+          "targetMeanRank": 0.48739770867430443,
+          "nonTargetMeanRank": 0.5046808510638296,
+          "delta": -0.01728314238952522,
+          "standardizedDelta": -0.251947750349373,
+          "aucTargetGreater": 0.4087912087912088,
+          "targetMedianRank": 0.4787234042553192,
+          "nonTargetMedianRank": 0.5085106382978724
+        }
+      }
+    }
+  },
+  "directionRobustness": {
+    "BUY": {
+      "n": 114,
+      "stats": {
+        "n": 114,
+        "avgR": -0.11135986112830219,
+        "PF": 0.8506467744867473,
+        "WR": 0.2543859649122807,
+        "totalR": -12.69502416862645
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 29,
+          "nonTargetN": 85,
+          "targetMeanRank": 0.4472841013121758,
+          "nonTargetMeanRank": 0.5179854242581987,
+          "delta": -0.07070132294602294,
+          "standardizedDelta": -0.5525706168563703,
+          "aucTargetGreater": 0.32413793103448274,
+          "targetMedianRank": 0.4336283185840708,
+          "nonTargetMedianRank": 0.504424778761062
+        },
+        "correction_quality": {
+          "targetN": 29,
+          "nonTargetN": 85,
+          "targetMeanRank": 0.4701861458651207,
+          "nonTargetMeanRank": 0.5101717855283704,
+          "delta": -0.039985639663249695,
+          "standardizedDelta": -0.3202135524426615,
+          "aucTargetGreater": 0.4243407707910751,
+          "targetMedianRank": 0.48141592920353987,
+          "nonTargetMedianRank": 0.5079646017699115
+        },
+        "trigger_quality": {
+          "targetN": 29,
+          "nonTargetN": 85,
+          "targetMeanRank": 0.476716509002136,
+          "nonTargetMeanRank": 0.5079437792816242,
+          "delta": -0.03122727027948813,
+          "standardizedDelta": -0.449357288084294,
+          "aucTargetGreater": 0.3669371196754564,
+          "targetMedianRank": 0.4663716814159292,
+          "nonTargetMedianRank": 0.5088495575221239
+        }
+      }
+    },
+    "SELL": {
+      "n": 107,
+      "stats": {
+        "n": 107,
+        "avgR": -0.20861322614390534,
+        "PF": 0.7138254461872069,
+        "WR": 0.27102803738317754,
+        "totalR": -22.321615197397872
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 29,
+          "nonTargetN": 78,
+          "targetMeanRank": 0.4317664281067013,
+          "nonTargetMeanRank": 0.525368892114175,
+          "delta": -0.09360246400747374,
+          "standardizedDelta": -0.8008628120090803,
+          "aucTargetGreater": 0.2807250221043324,
+          "targetMedianRank": 0.43160377358490565,
+          "nonTargetMedianRank": 0.5330188679245282
+        },
+        "correction_quality": {
+          "targetN": 29,
+          "nonTargetN": 78,
+          "targetMeanRank": 0.41275211450878324,
+          "nonTargetMeanRank": 0.5324383164005804,
+          "delta": -0.11968620189179713,
+          "standardizedDelta": -1.030141804188299,
+          "aucTargetGreater": 0.2424845269672856,
+          "targetMedianRank": 0.3849056603773585,
+          "nonTargetMedianRank": 0.5358490566037736
+        },
+        "trigger_quality": {
+          "targetN": 29,
+          "nonTargetN": 78,
+          "targetMeanRank": 0.4785946649316851,
+          "nonTargetMeanRank": 0.5079583938074506,
+          "delta": -0.029363728875765438,
+          "standardizedDelta": -0.46849801295249194,
+          "aucTargetGreater": 0.3552166224580018,
+          "targetMedianRank": 0.47924528301886793,
+          "nonTargetMedianRank": 0.5150943396226415
+        }
+      }
+    }
+  },
+  "sessionRobustness": {
+    "LONDON": {
+      "n": 113,
+      "stats": {
+        "n": 113,
+        "avgR": -0.3529058604431313,
+        "PF": 0.5308427972932489,
+        "WR": 0.24778761061946902,
+        "totalR": -39.87836223007384
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 28,
+          "nonTargetN": 85,
+          "targetMeanRank": 0.4411670918367347,
+          "nonTargetMeanRank": 0.5193802521008403,
+          "delta": -0.07821316026410557,
+          "standardizedDelta": -0.6766912770799286,
+          "aucTargetGreater": 0.303781512605042,
+          "targetMedianRank": 0.43917410714285715,
+          "nonTargetMedianRank": 0.5145089285714286
+        },
+        "correction_quality": {
+          "targetN": 28,
+          "nonTargetN": 85,
+          "targetMeanRank": 0.4557397959183674,
+          "nonTargetMeanRank": 0.5145798319327732,
+          "delta": -0.05884003601440585,
+          "standardizedDelta": -0.5096946427200393,
+          "aucTargetGreater": 0.3640756302521008,
+          "targetMedianRank": 0.44553571428571426,
+          "nonTargetMedianRank": 0.5089285714285714
+        },
+        "trigger_quality": {
+          "targetN": 28,
+          "nonTargetN": 85,
+          "targetMeanRank": 0.48912627551020416,
+          "nonTargetMeanRank": 0.503581932773109,
+          "delta": -0.014455657262904875,
+          "standardizedDelta": -0.22031538346871504,
+          "aucTargetGreater": 0.43403361344537816,
+          "targetMedianRank": 0.5,
+          "nonTargetMedianRank": 0.5053571428571428
+        }
+      }
+    },
+    "NEW_YORK": {
+      "n": 77,
+      "stats": {
+        "n": 77,
+        "avgR": 0.34912510231787425,
+        "PF": 1.5169737092014672,
+        "WR": 0.3246753246753247,
+        "totalR": 26.88263287847632
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 25,
+          "nonTargetN": 52,
+          "targetMeanRank": 0.44361842105263155,
+          "nonTargetMeanRank": 0.527106528340081,
+          "delta": -0.08348810728744943,
+          "standardizedDelta": -0.6108235005588043,
+          "aucTargetGreater": 0.3280769230769231,
+          "targetMedianRank": 0.45723684210526316,
+          "nonTargetMedianRank": 0.4934210526315789
+        },
+        "correction_quality": {
+          "targetN": 25,
+          "nonTargetN": 52,
+          "targetMeanRank": 0.44442105263157894,
+          "nonTargetMeanRank": 0.5267206477732793,
+          "delta": -0.08229959514170038,
+          "standardizedDelta": -0.6342558917134632,
+          "aucTargetGreater": 0.3303846153846154,
+          "targetMedianRank": 0.4394736842105263,
+          "nonTargetMedianRank": 0.5421052631578948
+        },
+        "trigger_quality": {
+          "targetN": 25,
+          "nonTargetN": 52,
+          "targetMeanRank": 0.466421052631579,
+          "nonTargetMeanRank": 0.5161437246963563,
+          "delta": -0.04972267206477726,
+          "standardizedDelta": -0.7089816785271577,
+          "aucTargetGreater": 0.2919230769230769,
+          "targetMedianRank": 0.4552631578947368,
+          "nonTargetMedianRank": 0.5263157894736843
+        }
+      }
+    },
+    "OUT_OF_SESSION": {
+      "n": 31,
+      "stats": {
+        "n": 31,
+        "avgR": -0.7103519359492512,
+        "PF": 0.1530419225220466,
+        "WR": 0.16129032258064516,
+        "totalR": -22.020910014426786
+      },
+      "families": {
+        "impulse_quality": {
+          "targetN": 5,
+          "nonTargetN": 26,
+          "targetMeanRank": 0.45,
+          "nonTargetMeanRank": 0.5096153846153846,
+          "delta": -0.05961538461538457,
+          "standardizedDelta": -0.5389572237167461,
+          "aucTargetGreater": 0.38846153846153847,
+          "targetMedianRank": 0.44166666666666665,
+          "nonTargetMedianRank": 0.5020833333333333
+        },
+        "correction_quality": {
+          "targetN": 5,
+          "nonTargetN": 26,
+          "targetMeanRank": 0.3426666666666666,
+          "nonTargetMeanRank": 0.5302564102564103,
+          "delta": -0.18758974358974373,
+          "standardizedDelta": -1.3907324705802944,
+          "aucTargetGreater": 0.2076923076923077,
+          "targetMedianRank": 0.2666666666666667,
+          "nonTargetMedianRank": 0.52
+        },
+        "trigger_quality": {
+          "targetN": 5,
+          "nonTargetN": 26,
+          "targetMeanRank": 0.4413333333333334,
+          "nonTargetMeanRank": 0.5112820512820513,
+          "delta": -0.06994871794871788,
+          "standardizedDelta": -0.892903710491033,
+          "aucTargetGreater": 0.22692307692307692,
+          "targetMedianRank": 0.4666666666666667,
+          "nonTargetMedianRank": 0.5266666666666666
+        }
+      }
+    }
+  }
+}

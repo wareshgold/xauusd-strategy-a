@@ -1,0 +1,62 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_28_D_ARCHETYPE_CONDITIONAL_VALIDATION",
+  "timeframe": "5min",
+  "scope": {
+    "cases": 163,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 221,
+    "canonicalReplayed": 221,
+    "replayMismatch": 0
+  },
+  "methodology": {
+    "purpose": "Validate Phase27 descriptive candidates.",
+    "noOptimization": true,
+    "noTradingRuleChange": true,
+    "noEntryModification": true,
+    "candidates": [
+      {
+        "candidate": "A_spikeSizeR_HIGH",
+        "threshold": {
+          "spikeSizeR": 15.81569621847631
+        },
+        "result": {
+          "n": 57,
+          "dCount": 33,
+          "dRate": 0.5789473684210527
+        }
+      },
+      {
+        "candidate": "B_correctionSizeR_HIGH",
+        "threshold": {
+          "correctionSizeR": 18.165772730633268
+        },
+        "result": {
+          "n": 57,
+          "dCount": 33,
+          "dRate": 0.5789473684210527
+        }
+      },
+      {
+        "candidate": "C_spikeSizeR_HIGH_plus_correctionEfficiency_HIGH",
+        "threshold": {
+          "spikeSizeR": 15.81569621847631,
+          "correctionEfficiency": 0.8171813809520624
+        },
+        "result": {
+          "n": 31,
+          "dCount": 22,
+          "dRate": 0.7096774193548387
+        }
+      }
+    ]
+  },
+  "notes": [
+    "Validation only.",
+    "Thresholds are inherited descriptive quantiles, not optimized.",
+    "Session and direction slices remain required for interpretation."
+  ]
+}

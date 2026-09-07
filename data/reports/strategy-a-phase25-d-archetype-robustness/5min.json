@@ -1,0 +1,329 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_25_D_ARCHETYPE_ROBUSTNESS",
+  "timeframe": "5min",
+  "scope": {
+    "sourceMode": "Phase24 canonical loss cases",
+    "totalBaselineTrades": 221,
+    "totalLosses": 163,
+    "dLosses": 48,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 221,
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "replayMismatch": 0,
+    "missingCanonicalTimestamp": 0,
+    "exitMismatch": 0,
+    "canonicalTimestampReplay": true,
+    "exactBaselineSelectionSemantics": true,
+    "exactBaselineExitSemantics": true
+  },
+  "methodology": {
+    "purpose": "Descriptive robustness audit of the Phase24 LOSS_D pre-entry separation finding.",
+    "target": "LOSS_D_PRE_GE_2R versus all other loss archetypes.",
+    "targetDefinition": "A losing trade whose pre-exit MFE reaches at least 2R before the eventual SL.",
+    "featureGuard": "Only Phase24 pre-entry feature families are used as predictors; the post-entry MFE/archetype label is never used as a predictor.",
+    "compression": "Feature percentile ranks are computed once across the complete loss population, then family scores are unweighted means of member ranks. This global ranking is retained across every subgroup to avoid subgroup-local rank inflation.",
+    "dimensions": [
+      "DEV/VAL",
+      "BUY/SELL",
+      "LONDON/NEW_YORK/OUT_OF_SESSION"
+    ],
+    "interpretation": "AUC, standardized deltas and sample counts are descriptive only. No threshold, cutoff, filter or production rule is selected.",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noNewTradingRules": true,
+    "noFreshHoldoutAccess": true
+  },
+  "overall": {
+    "dN": 48,
+    "nonDN": 115,
+    "dShareOfLosses": 0.294478527607362,
+    "familyAudit": {
+      "impulse_quality": {
+        "n": 48,
+        "meanRank": 0.5714377572016461,
+        "medianRank": 0.5817901234567902,
+        "restMeanRank": 0.4701825013419217,
+        "deltaVsRest": 0.10125525585972445,
+        "standardizedDeltaVsRest": 0.8342452176449694,
+        "aucVsRest": 0.7403079710144927
+      },
+      "correction_quality": {
+        "n": 48,
+        "meanRank": 0.5724279835390947,
+        "medianRank": 0.5685185185185184,
+        "restMeanRank": 0.4697691894793344,
+        "deltaVsRest": 0.10265879405976036,
+        "standardizedDeltaVsRest": 0.8838139886336699,
+        "aucVsRest": 0.727626811594203
+      },
+      "trigger_quality": {
+        "n": 48,
+        "meanRank": 0.5088734567901234,
+        "medianRank": 0.49320987654320986,
+        "restMeanRank": 0.4962962962962965,
+        "deltaVsRest": 0.0125771604938269,
+        "standardizedDeltaVsRest": 0.18191391192921813,
+        "aucVsRest": 0.5251811594202899
+      }
+    }
+  },
+  "dimensions": {
+    "split": {
+      "DEV": {
+        "nD": 32,
+        "nNonD": 62,
+        "audit": {
+          "impulse_quality": {
+            "n": 32,
+            "meanRank": 0.5551938657407407,
+            "medianRank": 0.5520833333333334,
+            "restMeanRank": 0.4557696136997213,
+            "deltaVsRest": 0.0994242520410194,
+            "standardizedDeltaVsRest": 0.8574893323605844,
+            "aucVsRest": 0.7310987903225806
+          },
+          "correction_quality": {
+            "n": 32,
+            "meanRank": 0.5637731481481482,
+            "medianRank": 0.5512345679012345,
+            "restMeanRank": 0.4618478693747512,
+            "deltaVsRest": 0.10192527877339697,
+            "standardizedDeltaVsRest": 0.8749819643958973,
+            "aucVsRest": 0.7139616935483871
+          },
+          "trigger_quality": {
+            "n": 32,
+            "meanRank": 0.5079089506172839,
+            "medianRank": 0.4922839506172839,
+            "restMeanRank": 0.49387694145758654,
+            "deltaVsRest": 0.014032009159697378,
+            "standardizedDeltaVsRest": 0.20258194525788548,
+            "aucVsRest": 0.5196572580645161
+          }
+        }
+      },
+      "VAL": {
+        "nD": 16,
+        "nNonD": 53,
+        "audit": {
+          "impulse_quality": {
+            "n": 16,
+            "meanRank": 0.6039255401234568,
+            "medianRank": 0.6049382716049383,
+            "restMeanRank": 0.48704286047053336,
+            "deltaVsRest": 0.11688267965292343,
+            "standardizedDeltaVsRest": 0.9199056500990207,
+            "aucVsRest": 0.7883254716981132
+          },
+          "correction_quality": {
+            "n": 16,
+            "meanRank": 0.5897376543209877,
+            "medianRank": 0.6111111111111112,
+            "restMeanRank": 0.4790356394129979,
+            "deltaVsRest": 0.11070201490798975,
+            "standardizedDeltaVsRest": 0.9508536866653082,
+            "aucVsRest": 0.7582547169811321
+          },
+          "trigger_quality": {
+            "n": 16,
+            "meanRank": 0.5108024691358024,
+            "medianRank": 0.5033950617283951,
+            "restMeanRank": 0.4991264849755416,
+            "deltaVsRest": 0.011675984160260833,
+            "standardizedDeltaVsRest": 0.16704945654832867,
+            "aucVsRest": 0.5424528301886793
+          }
+        }
+      }
+    },
+    "direction": {
+      "BUY": {
+        "nD": 24,
+        "nNonD": 61,
+        "audit": {
+          "impulse_quality": {
+            "n": 24,
+            "meanRank": 0.5577417695473251,
+            "medianRank": 0.5520833333333334,
+            "restMeanRank": 0.47385397692774733,
+            "deltaVsRest": 0.0838877926195778,
+            "standardizedDeltaVsRest": 0.6195272172978561,
+            "aucVsRest": 0.7004781420765027
+          },
+          "correction_quality": {
+            "n": 24,
+            "meanRank": 0.5335390946502058,
+            "medianRank": 0.519753086419753,
+            "restMeanRank": 0.45873304998988046,
+            "deltaVsRest": 0.07480604466032531,
+            "standardizedDeltaVsRest": 0.5939206894778546,
+            "aucVsRest": 0.667691256830601
+          },
+          "trigger_quality": {
+            "n": 24,
+            "meanRank": 0.5022376543209875,
+            "medianRank": 0.48518518518518516,
+            "restMeanRank": 0.500809552722121,
+            "deltaVsRest": 0.0014281015988665269,
+            "standardizedDeltaVsRest": 0.020354770523667656,
+            "aucVsRest": 0.48975409836065575
+          }
+        }
+      },
+      "SELL": {
+        "nD": 24,
+        "nNonD": 54,
+        "audit": {
+          "impulse_quality": {
+            "n": 24,
+            "meanRank": 0.585133744855967,
+            "medianRank": 0.6107253086419753,
+            "restMeanRank": 0.4660350937357111,
+            "deltaVsRest": 0.11909865112025592,
+            "standardizedDeltaVsRest": 1.133373649504466,
+            "aucVsRest": 0.7878086419753086
+          },
+          "correction_quality": {
+            "n": 24,
+            "meanRank": 0.6113168724279837,
+            "medianRank": 0.6074074074074074,
+            "restMeanRank": 0.48223593964334704,
+            "deltaVsRest": 0.12908093278463667,
+            "standardizedDeltaVsRest": 1.2848679453232992,
+            "aucVsRest": 0.8036265432098766
+          },
+          "trigger_quality": {
+            "n": 24,
+            "meanRank": 0.5155092592592593,
+            "medianRank": 0.5037037037037037,
+            "restMeanRank": 0.4911979881115682,
+            "deltaVsRest": 0.024311271147691105,
+            "standardizedDeltaVsRest": 0.35508267224271073,
+            "aucVsRest": 0.5640432098765432
+          }
+        }
+      }
+    },
+    "session": {
+      "LONDON": {
+        "nD": 26,
+        "nNonD": 59,
+        "audit": {
+          "impulse_quality": {
+            "n": 26,
+            "meanRank": 0.553656220322887,
+            "medianRank": 0.5462962962962963,
+            "restMeanRank": 0.44263967357187695,
+            "deltaVsRest": 0.11101654675101003,
+            "standardizedDeltaVsRest": 0.9932032772490618,
+            "aucVsRest": 0.7679269882659713
+          },
+          "correction_quality": {
+            "n": 26,
+            "meanRank": 0.581576448243115,
+            "medianRank": 0.5629629629629629,
+            "restMeanRank": 0.4651600753295666,
+            "deltaVsRest": 0.11641637291354845,
+            "standardizedDeltaVsRest": 1.024713564235373,
+            "aucVsRest": 0.7395697522816167
+          },
+          "trigger_quality": {
+            "n": 26,
+            "meanRank": 0.5091880341880342,
+            "medianRank": 0.4842592592592593,
+            "restMeanRank": 0.4880518937016111,
+            "deltaVsRest": 0.02113614048642304,
+            "standardizedDeltaVsRest": 0.33520363624571514,
+            "aucVsRest": 0.5273794002607562
+          }
+        }
+      },
+      "NEW_YORK": {
+        "nD": 16,
+        "nNonD": 36,
+        "audit": {
+          "impulse_quality": {
+            "n": 16,
+            "meanRank": 0.5900848765432098,
+            "medianRank": 0.6060956790123457,
+            "restMeanRank": 0.47927383401920437,
+            "deltaVsRest": 0.11081104252400548,
+            "standardizedDeltaVsRest": 0.8181633774015131,
+            "aucVsRest": 0.7578125
+          },
+          "correction_quality": {
+            "n": 16,
+            "meanRank": 0.5588734567901235,
+            "medianRank": 0.5666666666666667,
+            "restMeanRank": 0.47030178326474625,
+            "deltaVsRest": 0.0885716735253772,
+            "standardizedDeltaVsRest": 0.6939092330223053,
+            "aucVsRest": 0.7057291666666666
+          },
+          "trigger_quality": {
+            "n": 16,
+            "meanRank": 0.513233024691358,
+            "medianRank": 0.5280864197530863,
+            "restMeanRank": 0.5137002743484226,
+            "deltaVsRest": -0.00046724965706457233,
+            "standardizedDeltaVsRest": -0.005988800990516627,
+            "aucVsRest": 0.5173611111111112
+          }
+        }
+      },
+      "OUT_OF_SESSION": {
+        "nD": 6,
+        "nNonD": 20,
+        "audit": {
+          "impulse_quality": {
+            "n": 6,
+            "meanRank": 0.5987654320987654,
+            "medianRank": 0.5771604938271605,
+            "restMeanRank": 0.5350694444444445,
+            "deltaVsRest": 0.06369598765432094,
+            "standardizedDeltaVsRest": 0.6034536833478688,
+            "aucVsRest": 0.625
+          },
+          "correction_quality": {
+            "n": 6,
+            "meanRank": 0.5689300411522634,
+            "medianRank": 0.5703703703703703,
+            "restMeanRank": 0.48240740740740745,
+            "deltaVsRest": 0.08652263374485597,
+            "standardizedDeltaVsRest": 0.8058914950306966,
+            "aucVsRest": 0.7375
+          },
+          "trigger_quality": {
+            "n": 6,
+            "meanRank": 0.4958847736625514,
+            "medianRank": 0.4891975308641975,
+            "restMeanRank": 0.4892901234567901,
+            "deltaVsRest": 0.006594650205761277,
+            "standardizedDeltaVsRest": 0.09404329919498114,
+            "aucVsRest": 0.5
+          }
+        }
+      }
+    }
+  },
+  "dCounts": {
+    "split": {
+      "DEV": 32,
+      "VAL": 16
+    },
+    "direction": {
+      "BUY": 24,
+      "SELL": 24
+    },
+    "session": {
+      "LONDON": 26,
+      "NEW_YORK": 16,
+      "OUT_OF_SESSION": 6
+    }
+  }
+}

@@ -1,0 +1,614 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_22_EXIT_STATE_COMPRESSION_TEMPORAL_ROBUSTNESS",
+  "timeframe": "5min",
+  "scope": {
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "dev": 122,
+    "val": 99,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 221,
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "replayMismatch": 0,
+    "missingCanonicalTimestamp": 0,
+    "exitMismatch": 0,
+    "totalMismatch": 0,
+    "canonicalTimestampReplay": true
+  },
+  "methodology": {
+    "purpose": "Descriptive compression of exit-state information and temporal robustness; no trading rule is produced.",
+    "label": "Loss with post-exit MFE >=1R within 500 bars.",
+    "families": {
+      "directional_displacement": [
+        "exitVsEntryR",
+        "recentNetMoveR",
+        "exitSignedBodyToRange"
+      ],
+      "exit_candle_intensity": [
+        "exitRangeR",
+        "exitBodyR",
+        "exitCloseLocation",
+        "exitUpperWickShare",
+        "exitLowerWickShare"
+      ],
+      "prior_bar_expansion": [
+        "previousRangeR"
+      ]
+    },
+    "compression": "Within each loss population, each feature is percentile-ranked and family score is the unweighted mean member rank.",
+    "futureLeakageGuard": "Post-exit continuation is retrospective label only; future candles are never used as exit-state features.",
+    "exactBaselineSemantics": "Breakout -> FollowThrough -> Spike -> Correction -> Trigger -> Projection/Invalidation/Context/Quality -> first trade-allowed positive-RR candidate.",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noNewTradingRules": true,
+    "noFreshHoldoutAccess": true
+  },
+  "overall": {
+    "n": 221,
+    "avgR": -0.15844633197296074,
+    "PF": 0.7851739916194825,
+    "WR": 0.26244343891402716,
+    "totalR": -35.01663936602432
+  },
+  "lossPopulation": {
+    "n": 163,
+    "continuation1R": 0.9141104294478528,
+    "targetN": 149,
+    "nonTargetN": 14,
+    "families": {
+      "directional_displacement": {
+        "features": [
+          "exitVsEntryR",
+          "recentNetMoveR",
+          "exitSignedBodyToRange"
+        ],
+        "targetMeanRank": 0.4770348275195406,
+        "nonTargetMeanRank": 0.7444150499706055,
+        "delta": -0.26738022245106485,
+        "standardizedDelta": -0.9889795187051558,
+        "aucTargetGreater": 0.22938638542665388,
+        "targetMedianRank": 0.45267489711934156,
+        "nonTargetMedianRank": 0.8415637860082305
+      },
+      "exit_candle_intensity": {
+        "features": [
+          "exitRangeR",
+          "exitBodyR",
+          "exitCloseLocation",
+          "exitUpperWickShare",
+          "exitLowerWickShare"
+        ],
+        "targetMeanRank": 0.49489601458281535,
+        "nonTargetMeanRank": 0.554320987654321,
+        "delta": -0.05942497307150568,
+        "standardizedDelta": -0.4682268966039274,
+        "aucTargetGreater": 0.362895493767977,
+        "targetMedianRank": 0.4864197530864197,
+        "nonTargetMedianRank": 0.5348765432098765
+      },
+      "prior_bar_expansion": {
+        "features": [
+          "previousRangeR"
+        ],
+        "targetMeanRank": 0.5033971331510483,
+        "nonTargetMeanRank": 0.46384479717813054,
+        "delta": 0.03955233597291774,
+        "standardizedDelta": 0.1354359188022414,
+        "aucTargetGreater": 0.5393096836049857,
+        "targetMedianRank": 0.5061728395061729,
+        "nonTargetMedianRank": 0.35802469135802467
+      }
+    }
+  },
+  "temporalRobustness": {
+    "DEV_1": {
+      "n": 27,
+      "continuation1R": 0.9629629629629629,
+      "targetN": 26,
+      "nonTargetN": 1,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.5118343195266273,
+          "nonTargetMeanRank": 0.19230769230769232,
+          "delta": 0.319526627218935,
+          "standardizedDelta": null,
+          "aucTargetGreater": 0.8461538461538461,
+          "targetMedianRank": 0.4935897435897436,
+          "nonTargetMedianRank": 0.19230769230769232
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.5038461538461538,
+          "nonTargetMeanRank": 0.4,
+          "delta": 0.10384615384615381,
+          "standardizedDelta": null,
+          "aucTargetGreater": 0.7884615384615384,
+          "targetMedianRank": 0.5134615384615384,
+          "nonTargetMedianRank": 0.4
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.5133136094674556,
+          "nonTargetMeanRank": 0.15384615384615385,
+          "delta": 0.3594674556213018,
+          "standardizedDelta": null,
+          "aucTargetGreater": 0.8461538461538461,
+          "targetMedianRank": 0.5192307692307692,
+          "nonTargetMedianRank": 0.15384615384615385
+        }
+      }
+    },
+    "DEV_2": {
+      "n": 35,
+      "continuation1R": 0.9142857142857143,
+      "targetN": 32,
+      "nonTargetN": 3,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.46875,
+          "nonTargetMeanRank": 0.8333333333333334,
+          "delta": -0.36458333333333337,
+          "standardizedDelta": -1.4003252973618463,
+          "aucTargetGreater": 0.13541666666666666,
+          "targetMedianRank": 0.4019607843137255,
+          "nonTargetMedianRank": 0.823529411764706
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.48694852941176464,
+          "nonTargetMeanRank": 0.6392156862745099,
+          "delta": -0.15226715686274522,
+          "standardizedDelta": -1.1347659620914565,
+          "aucTargetGreater": 0.16666666666666666,
+          "targetMedianRank": 0.5147058823529412,
+          "nonTargetMedianRank": 0.6941176470588235
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.4825367647058823,
+          "nonTargetMeanRank": 0.6862745098039215,
+          "delta": -0.20373774509803916,
+          "standardizedDelta": -0.6786253897989517,
+          "aucTargetGreater": 0.3020833333333333,
+          "targetMedianRank": 0.4852941176470588,
+          "nonTargetMedianRank": 0.7647058823529411
+        }
+      }
+    },
+    "DEV_3": {
+      "n": 32,
+      "continuation1R": 1,
+      "targetN": 32,
+      "nonTargetN": 0,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.5,
+          "nonTargetMeanRank": null,
+          "delta": null,
+          "standardizedDelta": null,
+          "aucTargetGreater": null,
+          "targetMedianRank": 0.521505376344086,
+          "nonTargetMedianRank": null
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.5000000000000001,
+          "nonTargetMeanRank": null,
+          "delta": null,
+          "standardizedDelta": null,
+          "aucTargetGreater": null,
+          "targetMedianRank": 0.4967741935483871,
+          "nonTargetMedianRank": null
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.5000000000000001,
+          "nonTargetMeanRank": null,
+          "delta": null,
+          "standardizedDelta": null,
+          "aucTargetGreater": null,
+          "targetMedianRank": 0.5,
+          "nonTargetMedianRank": null
+        }
+      }
+    },
+    "VAL_1": {
+      "n": 34,
+      "continuation1R": 0.8235294117647058,
+      "targetN": 28,
+      "nonTargetN": 6,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.43145743145743143,
+          "nonTargetMeanRank": 0.81986531986532,
+          "delta": -0.38840788840788854,
+          "standardizedDelta": -1.5208348464641863,
+          "aucTargetGreater": 0.13095238095238096,
+          "targetMedianRank": 0.36868686868686873,
+          "nonTargetMedianRank": 0.8080808080808081
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.4888528138528138,
+          "nonTargetMeanRank": 0.552020202020202,
+          "delta": -0.06316738816738815,
+          "standardizedDelta": -0.47327841416634653,
+          "aucTargetGreater": 0.3244047619047619,
+          "targetMedianRank": 0.43787878787878787,
+          "nonTargetMedianRank": 0.5348484848484848
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.514069264069264,
+          "nonTargetMeanRank": 0.4343434343434343,
+          "delta": 0.0797258297258297,
+          "standardizedDelta": 0.26153486741605264,
+          "aucTargetGreater": 0.5773809523809523,
+          "targetMedianRank": 0.5303030303030303,
+          "nonTargetMedianRank": 0.40909090909090906
+        }
+      }
+    },
+    "VAL_2": {
+      "n": 35,
+      "continuation1R": 0.8857142857142857,
+      "targetN": 31,
+      "nonTargetN": 4,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.47596457938013914,
+          "nonTargetMeanRank": 0.6862745098039215,
+          "delta": -0.21030993042378232,
+          "standardizedDelta": -0.7312662174341538,
+          "aucTargetGreater": 0.2903225806451613,
+          "targetMedianRank": 0.4705882352941177,
+          "nonTargetMedianRank": 0.8676470588235293
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.4925996204933586,
+          "nonTargetMeanRank": 0.5573529411764706,
+          "delta": -0.06475332068311201,
+          "standardizedDelta": -0.5366222012846603,
+          "aucTargetGreater": 0.3709677419354839,
+          "targetMedianRank": 0.4764705882352942,
+          "nonTargetMedianRank": 0.5852941176470587
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.4943074003795066,
+          "nonTargetMeanRank": 0.5441176470588236,
+          "delta": -0.049810246679316994,
+          "standardizedDelta": -0.16305698917681244,
+          "aucTargetGreater": 0.45161290322580644,
+          "targetMedianRank": 0.5,
+          "nonTargetMedianRank": 0.5
+        }
+      }
+    }
+  },
+  "directionRobustness": {
+    "BUY": {
+      "n": 85,
+      "continuation1R": 0.9764705882352941,
+      "targetN": 83,
+      "nonTargetN": 2,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.5078886976477339,
+          "nonTargetMeanRank": 0.17261904761904762,
+          "delta": 0.3352696500286863,
+          "standardizedDelta": 1.2642853212587546,
+          "aucTargetGreater": 0.8975903614457831,
+          "targetMedianRank": 0.47222222222222215,
+          "nonTargetMedianRank": 0.17261904761904762
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.4989386115892139,
+          "nonTargetMeanRank": 0.5440476190476191,
+          "delta": -0.04510900745840524,
+          "standardizedDelta": -0.32759375535088797,
+          "aucTargetGreater": 0.4367469879518072,
+          "targetMedianRank": 0.4785714285714285,
+          "nonTargetMedianRank": 0.5440476190476191
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.4974182444061963,
+          "nonTargetMeanRank": 0.6071428571428572,
+          "delta": -0.1097246127366609,
+          "standardizedDelta": -0.3718089674556807,
+          "aucTargetGreater": 0.39156626506024095,
+          "targetMedianRank": 0.5,
+          "nonTargetMedianRank": 0.6071428571428572
+        }
+      }
+    },
+    "SELL": {
+      "n": 78,
+      "continuation1R": 0.8461538461538461,
+      "targetN": 66,
+      "nonTargetN": 12,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.4597927325200053,
+          "nonTargetMeanRank": 0.7211399711399711,
+          "delta": -0.2613472386199658,
+          "standardizedDelta": -0.9933307204304714,
+          "aucTargetGreater": 0.22853535353535354,
+          "targetMedianRank": 0.4588744588744589,
+          "nonTargetMedianRank": 0.751082251082251
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.4934671389216846,
+          "nonTargetMeanRank": 0.5359307359307358,
+          "delta": -0.042463597009051224,
+          "standardizedDelta": -0.34895426500007304,
+          "aucTargetGreater": 0.3977272727272727,
+          "targetMedianRank": 0.48896103896103893,
+          "nonTargetMedianRank": 0.512987012987013
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.5171192443919717,
+          "nonTargetMeanRank": 0.40584415584415584,
+          "delta": 0.11127508854781581,
+          "standardizedDelta": 0.3792388382377277,
+          "aucTargetGreater": 0.6098484848484849,
+          "targetMedianRank": 0.5389610389610389,
+          "nonTargetMedianRank": 0.3116883116883117
+        }
+      }
+    }
+  },
+  "sessionRobustness": {
+    "LONDON": {
+      "n": 85,
+      "continuation1R": 0.8823529411764706,
+      "targetN": 75,
+      "nonTargetN": 10,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.45952380952380945,
+          "nonTargetMeanRank": 0.8035714285714286,
+          "delta": -0.34404761904761916,
+          "standardizedDelta": -1.3306445815328043,
+          "aucTargetGreater": 0.15533333333333332,
+          "targetMedianRank": 0.44047619047619047,
+          "nonTargetMedianRank": 0.8809523809523809
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.49393650793650795,
+          "nonTargetMeanRank": 0.5454761904761904,
+          "delta": -0.051539682539682496,
+          "standardizedDelta": -0.4046201837855862,
+          "aucTargetGreater": 0.39066666666666666,
+          "targetMedianRank": 0.48809523809523814,
+          "nonTargetMedianRank": 0.5345238095238095
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.508095238095238,
+          "nonTargetMeanRank": 0.4392857142857142,
+          "delta": 0.06880952380952382,
+          "standardizedDelta": 0.2334606737222377,
+          "aucTargetGreater": 0.568,
+          "targetMedianRank": 0.5119047619047619,
+          "nonTargetMedianRank": 0.35714285714285715
+        }
+      }
+    },
+    "NEW_YORK": {
+      "n": 52,
+      "continuation1R": 0.9615384615384616,
+      "targetN": 50,
+      "nonTargetN": 2,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.5014379084967319,
+          "nonTargetMeanRank": 0.46405228758169936,
+          "delta": 0.0373856209150325,
+          "standardizedDelta": 0.12952048438917904,
+          "aucTargetGreater": 0.54,
+          "targetMedianRank": 0.4607843137254902,
+          "nonTargetMedianRank": 0.46405228758169936
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.49309803921568635,
+          "nonTargetMeanRank": 0.6725490196078431,
+          "delta": -0.17945098039215673,
+          "standardizedDelta": -1.4870061646511032,
+          "aucTargetGreater": 0.1,
+          "targetMedianRank": 0.4843137254901961,
+          "nonTargetMedianRank": 0.6725490196078431
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.48666666666666664,
+          "nonTargetMeanRank": 0.8333333333333334,
+          "delta": -0.34666666666666673,
+          "standardizedDelta": -1.1859694214337801,
+          "aucTargetGreater": 0.16,
+          "targetMedianRank": 0.48039215686274506,
+          "nonTargetMedianRank": 0.8333333333333334
+        }
+      }
+    },
+    "OUT_OF_SESSION": {
+      "n": 26,
+      "continuation1R": 0.9230769230769231,
+      "targetN": 24,
+      "nonTargetN": 2,
+      "families": {
+        "directional_displacement": {
+          "features": [
+            "exitVsEntryR",
+            "recentNetMoveR",
+            "exitSignedBodyToRange"
+          ],
+          "targetMeanRank": 0.4872222222222223,
+          "nonTargetMeanRank": 0.6533333333333333,
+          "delta": -0.16611111111111104,
+          "standardizedDelta": -0.5584124206664866,
+          "aucTargetGreater": 0.3958333333333333,
+          "targetMedianRank": 0.5266666666666667,
+          "nonTargetMedianRank": 0.6533333333333333
+        },
+        "exit_candle_intensity": {
+          "features": [
+            "exitRangeR",
+            "exitBodyR",
+            "exitCloseLocation",
+            "exitUpperWickShare",
+            "exitLowerWickShare"
+          ],
+          "targetMeanRank": 0.49666666666666676,
+          "nonTargetMeanRank": 0.54,
+          "delta": -0.04333333333333328,
+          "standardizedDelta": -0.27454279583374747,
+          "aucTargetGreater": 0.3958333333333333,
+          "targetMedianRank": 0.44000000000000006,
+          "nonTargetMedianRank": 0.54
+        },
+        "prior_bar_expansion": {
+          "features": [
+            "previousRangeR"
+          ],
+          "targetMeanRank": 0.5183333333333333,
+          "nonTargetMeanRank": 0.28,
+          "delta": 0.23833333333333329,
+          "standardizedDelta": 0.7809778025232993,
+          "aucTargetGreater": 0.7291666666666666,
+          "targetMedianRank": 0.54,
+          "nonTargetMedianRank": 0.28
+        }
+      }
+    }
+  }
+}

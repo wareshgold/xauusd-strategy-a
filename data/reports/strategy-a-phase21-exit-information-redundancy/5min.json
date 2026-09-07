@@ -1,0 +1,862 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_21_EXIT_INFORMATION_REDUNDANCY",
+  "timeframe": "5min",
+  "scope": {
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "dev": 122,
+    "val": 99,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 221,
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 221,
+    "replayMismatch": 0,
+    "exitMismatch": 0,
+    "totalMismatch": 0
+  },
+  "methodology": {
+    "purpose": "Descriptive redundancy audit of information available at canonical exit. Measures whether exit-time features carry distinct information beyond one another when retrospectively separating losses by post-exit continuation.",
+    "label": "Loss with future post-exit MFE >=1R within 500 bars.",
+    "featuresUseOnlyExitTimeInformation": true,
+    "futureLeakageGuard": "Post-exit continuation is a retrospective label only; no future candle enters any exit feature.",
+    "noOptimization": true,
+    "noThresholdSearch": true,
+    "noNewTradingRules": true,
+    "noFreshHoldoutAccess": true
+  },
+  "overall": {
+    "n": 221,
+    "avgR": -0.15844633197296074,
+    "PF": 0.7851739916194825,
+    "WR": 0.26244343891402716,
+    "totalR": -35.01663936602432
+  },
+  "losses": {
+    "n": 163,
+    "continuation1R": 149,
+    "continuation1RShare": 0.9141104294478528,
+    "nonContinuation1R": 14,
+    "featureTargetStats": {
+      "exitBars": {
+        "targetMean": 6.510067114093959,
+        "nonTargetMean": 1.7142857142857142,
+        "delta": 4.795781399808245,
+        "targetMedian": 1,
+        "nonTargetMedian": 1,
+        "standardizedDelta": 0.10535125398640278,
+        "aucTargetGreater": 0.47531160115052734
+      },
+      "exitRangeR": {
+        "targetMean": 8.184021387446881,
+        "nonTargetMean": 17.472687464639147,
+        "delta": -9.288666077192266,
+        "targetMedian": 2.7622449690128077,
+        "nonTargetMedian": 3.845043889266881,
+        "standardizedDelta": -0.49453795619318097,
+        "aucTargetGreater": 0.41658676893576224
+      },
+      "exitBodyR": {
+        "targetMean": 5.010575389334887,
+        "nonTargetMean": 13.741918228256667,
+        "delta": -8.73134283892178,
+        "targetMedian": 1.3425385437228519,
+        "nonTargetMedian": 2.655753943507975,
+        "standardizedDelta": -0.547052811023858,
+        "aucTargetGreater": 0.3072866730584851
+      },
+      "exitCloseLocation": {
+        "targetMean": 0.4389584858798972,
+        "nonTargetMean": 0.7611825228042551,
+        "delta": -0.3222240369243579,
+        "targetMedian": 0.36043868313893657,
+        "nonTargetMedian": 0.9194115529848204,
+        "standardizedDelta": -0.9384385730773644,
+        "aucTargetGreater": 0.25119846596356665
+      },
+      "exitUpperWickShare": {
+        "targetMean": 0.23290150370601984,
+        "nonTargetMean": 0.13699516110541396,
+        "delta": 0.09590634260060588,
+        "targetMedian": 0.15128737577762985,
+        "nonTargetMedian": 0.08058844701517959,
+        "standardizedDelta": 0.42181650768475865,
+        "aucTargetGreater": 0.5647171620325983
+      },
+      "exitLowerWickShare": {
+        "targetMean": 0.22994094523257022,
+        "nonTargetMean": 0.11036566127804884,
+        "delta": 0.11957528395452138,
+        "targetMedian": 0.1260058413303944,
+        "nonTargetMedian": 0.06925196021140494,
+        "standardizedDelta": 0.5393635059647962,
+        "aucTargetGreater": 0.664908916586769
+      },
+      "exitSignedBodyToRange": {
+        "targetMean": -0.1191224697667556,
+        "nonTargetMean": 0.5489945454358752,
+        "delta": -0.6681170152026308,
+        "targetMedian": -0.276347731630396,
+        "nonTargetMedian": 0.6884319402180502,
+        "standardizedDelta": -1.147976579549461,
+        "aucTargetGreater": 0.19894534995206137
+      },
+      "previousRangeR": {
+        "targetMean": 6.659048452032475,
+        "nonTargetMean": 6.640540603883946,
+        "delta": 0.018507848148528794,
+        "targetMedian": 2.6410942480920596,
+        "nonTargetMedian": 1.6551813493860101,
+        "standardizedDelta": 0.0014079162702845887,
+        "aucTargetGreater": 0.5393096836049857
+      },
+      "recentNetMoveR": {
+        "targetMean": -2.7777583011941362,
+        "nonTargetMean": 6.142070714746235,
+        "delta": -8.91982901594037,
+        "targetMedian": -0.6206320447658564,
+        "nonTargetMedian": 1.490649432864684,
+        "standardizedDelta": -0.5461272636751922,
+        "aucTargetGreater": 0.2526366251198466
+      },
+      "recentPathEfficiency": {
+        "targetMean": 0.899715540543329,
+        "nonTargetMean": 0.8310034897273907,
+        "delta": 0.06871205081593834,
+        "targetMedian": 1,
+        "nonTargetMedian": 1,
+        "standardizedDelta": 0.27214646509357376,
+        "aucTargetGreater": 0.5532118887823586
+      },
+      "recentRangeR": {
+        "targetMean": 9.110038771962552,
+        "nonTargetMean": 19.006094607896213,
+        "delta": -9.89605583593366,
+        "targetMedian": 3.6247500106792017,
+        "nonTargetMedian": 4.402018913598795,
+        "standardizedDelta": -0.5278354471427956,
+        "aucTargetGreater": 0.3950143815915628
+      },
+      "exitVsEntryR": {
+        "targetMean": -2.691178453624652,
+        "nonTargetMean": 6.137810774713527,
+        "delta": -8.828989228338179,
+        "targetMedian": -0.5625751841941163,
+        "nonTargetMedian": 1.490649432864684,
+        "standardizedDelta": -0.5405126563988991,
+        "aucTargetGreater": 0.25119846596356665
+      },
+      "exitVsEntryAbsR": {
+        "targetMean": 4.947069834442403,
+        "nonTargetMean": 13.392738279763547,
+        "delta": -8.445668445321143,
+        "targetMedian": 1.308224353814785,
+        "nonTargetMedian": 2.580953473380393,
+        "standardizedDelta": -0.5468231903494489,
+        "aucTargetGreater": 0.34276126558005754
+      }
+    },
+    "pairwiseFeatureCorrelations": [
+      {
+        "a": "recentNetMoveR",
+        "b": "exitVsEntryR",
+        "spearman": 0.9863275039745628
+      },
+      {
+        "a": "exitRangeR",
+        "b": "recentRangeR",
+        "spearman": 0.8924088629970983
+      },
+      {
+        "a": "exitRangeR",
+        "b": "exitBodyR",
+        "spearman": 0.8547844841962489
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "exitSignedBodyToRange",
+        "spearman": 0.8522807875749052
+      },
+      {
+        "a": "exitSignedBodyToRange",
+        "b": "exitVsEntryR",
+        "spearman": 0.8324068618186266
+      },
+      {
+        "a": "exitSignedBodyToRange",
+        "b": "recentNetMoveR",
+        "spearman": 0.8270225799637564
+      },
+      {
+        "a": "exitBodyR",
+        "b": "exitVsEntryAbsR",
+        "spearman": 0.7887656064126652
+      },
+      {
+        "a": "exitBodyR",
+        "b": "recentRangeR",
+        "spearman": 0.78354920119626
+      },
+      {
+        "a": "exitRangeR",
+        "b": "previousRangeR",
+        "spearman": 0.7628458981400158
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "exitVsEntryR",
+        "spearman": 0.7507243154301978
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "recentNetMoveR",
+        "spearman": 0.7427440603911192
+      },
+      {
+        "a": "recentRangeR",
+        "b": "exitVsEntryAbsR",
+        "spearman": 0.7155046860929214
+      },
+      {
+        "a": "exitRangeR",
+        "b": "exitVsEntryAbsR",
+        "spearman": 0.7056210879740291
+      },
+      {
+        "a": "previousRangeR",
+        "b": "recentRangeR",
+        "spearman": 0.6452588746706394
+      },
+      {
+        "a": "exitBars",
+        "b": "recentPathEfficiency",
+        "spearman": -0.6172761719850378
+      },
+      {
+        "a": "exitBodyR",
+        "b": "previousRangeR",
+        "spearman": 0.5956652250769898
+      },
+      {
+        "a": "exitBars",
+        "b": "previousRangeR",
+        "spearman": -0.5210697440657794
+      },
+      {
+        "a": "previousRangeR",
+        "b": "exitVsEntryAbsR",
+        "spearman": 0.4885332473567768
+      },
+      {
+        "a": "exitBars",
+        "b": "exitRangeR",
+        "spearman": -0.3507234446733275
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "exitUpperWickShare",
+        "spearman": -0.34390556355366064
+      },
+      {
+        "a": "exitUpperWickShare",
+        "b": "exitLowerWickShare",
+        "spearman": -0.3140081574810231
+      },
+      {
+        "a": "previousRangeR",
+        "b": "recentPathEfficiency",
+        "spearman": 0.28441244940690097
+      },
+      {
+        "a": "exitBars",
+        "b": "exitBodyR",
+        "spearman": -0.2560335252867825
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "exitLowerWickShare",
+        "spearman": 0.254472464538428
+      },
+      {
+        "a": "recentPathEfficiency",
+        "b": "exitVsEntryAbsR",
+        "spearman": 0.2542253344861128
+      },
+      {
+        "a": "exitBodyR",
+        "b": "exitLowerWickShare",
+        "spearman": -0.2511889919963037
+      },
+      {
+        "a": "exitLowerWickShare",
+        "b": "exitVsEntryAbsR",
+        "spearman": -0.21649749460646558
+      },
+      {
+        "a": "exitBodyR",
+        "b": "exitUpperWickShare",
+        "spearman": -0.20058912715609542
+      },
+      {
+        "a": "exitBars",
+        "b": "exitUpperWickShare",
+        "spearman": -0.16415751242202475
+      },
+      {
+        "a": "exitUpperWickShare",
+        "b": "exitVsEntryAbsR",
+        "spearman": -0.16247858462351622
+      },
+      {
+        "a": "exitRangeR",
+        "b": "recentPathEfficiency",
+        "spearman": 0.16173164022200673
+      },
+      {
+        "a": "recentPathEfficiency",
+        "b": "exitVsEntryR",
+        "spearman": -0.16096181831140136
+      },
+      {
+        "a": "exitBodyR",
+        "b": "recentPathEfficiency",
+        "spearman": 0.1557586536330666
+      },
+      {
+        "a": "exitBars",
+        "b": "exitVsEntryAbsR",
+        "spearman": -0.14105791713182025
+      },
+      {
+        "a": "recentNetMoveR",
+        "b": "recentPathEfficiency",
+        "spearman": -0.13435582286675624
+      },
+      {
+        "a": "exitLowerWickShare",
+        "b": "exitSignedBodyToRange",
+        "spearman": -0.12839079569703085
+      },
+      {
+        "a": "exitVsEntryR",
+        "b": "exitVsEntryAbsR",
+        "spearman": -0.11202152378622966
+      },
+      {
+        "a": "recentNetMoveR",
+        "b": "recentRangeR",
+        "spearman": -0.11161461749697044
+      },
+      {
+        "a": "recentNetMoveR",
+        "b": "exitVsEntryAbsR",
+        "spearman": -0.10665947724771255
+      },
+      {
+        "a": "recentRangeR",
+        "b": "exitVsEntryR",
+        "spearman": -0.09987770576005871
+      },
+      {
+        "a": "previousRangeR",
+        "b": "exitVsEntryR",
+        "spearman": -0.09199306258129787
+      },
+      {
+        "a": "exitUpperWickShare",
+        "b": "previousRangeR",
+        "spearman": 0.08984678412031841
+      },
+      {
+        "a": "previousRangeR",
+        "b": "recentNetMoveR",
+        "spearman": -0.08685114567467508
+      },
+      {
+        "a": "exitLowerWickShare",
+        "b": "recentNetMoveR",
+        "spearman": -0.0860644168701698
+      },
+      {
+        "a": "exitUpperWickShare",
+        "b": "exitSignedBodyToRange",
+        "spearman": 0.08568080929685172
+      },
+      {
+        "a": "exitBars",
+        "b": "exitVsEntryR",
+        "spearman": 0.08565185794829319
+      },
+      {
+        "a": "exitSignedBodyToRange",
+        "b": "recentRangeR",
+        "spearman": -0.08506009094244388
+      },
+      {
+        "a": "exitSignedBodyToRange",
+        "b": "recentPathEfficiency",
+        "spearman": -0.07930947330716133
+      },
+      {
+        "a": "exitBars",
+        "b": "exitCloseLocation",
+        "spearman": 0.07825064987226221
+      },
+      {
+        "a": "exitLowerWickShare",
+        "b": "exitVsEntryR",
+        "spearman": -0.07665075568645481
+      },
+      {
+        "a": "exitRangeR",
+        "b": "exitVsEntryR",
+        "spearman": -0.07372675019733843
+      },
+      {
+        "a": "exitRangeR",
+        "b": "recentNetMoveR",
+        "spearman": -0.07110742993095934
+      },
+      {
+        "a": "exitUpperWickShare",
+        "b": "recentPathEfficiency",
+        "spearman": -0.06599135664485194
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "recentPathEfficiency",
+        "spearman": -0.06205789049080787
+      },
+      {
+        "a": "recentPathEfficiency",
+        "b": "recentRangeR",
+        "spearman": -0.06191684308192164
+      },
+      {
+        "a": "exitBodyR",
+        "b": "exitVsEntryR",
+        "spearman": -0.058047516871046284
+      },
+      {
+        "a": "exitSignedBodyToRange",
+        "b": "exitVsEntryAbsR",
+        "spearman": -0.05585400291282644
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "previousRangeR",
+        "spearman": -0.05537594361123773
+      },
+      {
+        "a": "exitBodyR",
+        "b": "exitSignedBodyToRange",
+        "spearman": -0.054935684347449054
+      },
+      {
+        "a": "exitBodyR",
+        "b": "recentNetMoveR",
+        "spearman": -0.05492456668927257
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "recentRangeR",
+        "spearman": -0.05140026904732787
+      },
+      {
+        "a": "exitUpperWickShare",
+        "b": "recentRangeR",
+        "spearman": -0.051073827098171404
+      },
+      {
+        "a": "exitLowerWickShare",
+        "b": "recentPathEfficiency",
+        "spearman": -0.050480506241351135
+      },
+      {
+        "a": "exitCloseLocation",
+        "b": "exitVsEntryAbsR",
+        "spearman": -0.048527466174525
+      },
+      {
+        "a": "exitLowerWickShare",
+        "b": "previousRangeR",
+        "spearman": -0.04662987821401918
+      },
+      {
+        "a": "exitBars",
+        "b": "exitLowerWickShare",
+        "spearman": 0.043687615301709455
+      },
+      {
+        "a": "exitBars",
+        "b": "recentNetMoveR",
+        "spearman": 0.04361798481829931
+      },
+      {
+        "a": "exitRangeR",
+        "b": "exitSignedBodyToRange",
+        "spearman": -0.042001400824930236
+      },
+      {
+        "a": "exitRangeR",
+        "b": "exitCloseLocation",
+        "spearman": -0.03595228301110654
+      },
+      {
+        "a": "exitBodyR",
+        "b": "exitCloseLocation",
+        "spearman": -0.03224899107252049
+      },
+      {
+        "a": "exitRangeR",
+        "b": "exitLowerWickShare",
+        "spearman": -0.02534134415824425
+      },
+      {
+        "a": "exitSignedBodyToRange",
+        "b": "previousRangeR",
+        "spearman": -0.01688216394098747
+      },
+      {
+        "a": "exitBars",
+        "b": "exitSignedBodyToRange",
+        "spearman": 0.01272005076782656
+      },
+      {
+        "a": "exitRangeR",
+        "b": "exitUpperWickShare",
+        "spearman": 0.011983579102029754
+      },
+      {
+        "a": "exitLowerWickShare",
+        "b": "recentRangeR",
+        "spearman": -0.009219237716256328
+      },
+      {
+        "a": "exitBars",
+        "b": "recentRangeR",
+        "spearman": 0.0069668648790808104
+      },
+      {
+        "a": "exitUpperWickShare",
+        "b": "recentNetMoveR",
+        "spearman": 0.004436507127609492
+      },
+      {
+        "a": "exitUpperWickShare",
+        "b": "exitVsEntryR",
+        "spearman": -0.0025939928751142075
+      }
+    ],
+    "familySummary": {
+      "exit_timing": {
+        "features": [
+          "exitBars"
+        ],
+        "targetEffects": [
+          {
+            "feature": "exitBars",
+            "targetMean": 6.510067114093959,
+            "nonTargetMean": 1.7142857142857142,
+            "delta": 4.795781399808245,
+            "targetMedian": 1,
+            "nonTargetMedian": 1,
+            "standardizedDelta": 0.10535125398640278,
+            "aucTargetGreater": 0.47531160115052734
+          }
+        ],
+        "withinFamilyCorrelations": []
+      },
+      "exit_candle_intensity": {
+        "features": [
+          "exitRangeR",
+          "exitBodyR",
+          "exitSignedBodyToRange",
+          "exitCloseLocation",
+          "exitUpperWickShare",
+          "exitLowerWickShare"
+        ],
+        "targetEffects": [
+          {
+            "feature": "exitRangeR",
+            "targetMean": 8.184021387446881,
+            "nonTargetMean": 17.472687464639147,
+            "delta": -9.288666077192266,
+            "targetMedian": 2.7622449690128077,
+            "nonTargetMedian": 3.845043889266881,
+            "standardizedDelta": -0.49453795619318097,
+            "aucTargetGreater": 0.41658676893576224
+          },
+          {
+            "feature": "exitBodyR",
+            "targetMean": 5.010575389334887,
+            "nonTargetMean": 13.741918228256667,
+            "delta": -8.73134283892178,
+            "targetMedian": 1.3425385437228519,
+            "nonTargetMedian": 2.655753943507975,
+            "standardizedDelta": -0.547052811023858,
+            "aucTargetGreater": 0.3072866730584851
+          },
+          {
+            "feature": "exitSignedBodyToRange",
+            "targetMean": -0.1191224697667556,
+            "nonTargetMean": 0.5489945454358752,
+            "delta": -0.6681170152026308,
+            "targetMedian": -0.276347731630396,
+            "nonTargetMedian": 0.6884319402180502,
+            "standardizedDelta": -1.147976579549461,
+            "aucTargetGreater": 0.19894534995206137
+          },
+          {
+            "feature": "exitCloseLocation",
+            "targetMean": 0.4389584858798972,
+            "nonTargetMean": 0.7611825228042551,
+            "delta": -0.3222240369243579,
+            "targetMedian": 0.36043868313893657,
+            "nonTargetMedian": 0.9194115529848204,
+            "standardizedDelta": -0.9384385730773644,
+            "aucTargetGreater": 0.25119846596356665
+          },
+          {
+            "feature": "exitUpperWickShare",
+            "targetMean": 0.23290150370601984,
+            "nonTargetMean": 0.13699516110541396,
+            "delta": 0.09590634260060588,
+            "targetMedian": 0.15128737577762985,
+            "nonTargetMedian": 0.08058844701517959,
+            "standardizedDelta": 0.42181650768475865,
+            "aucTargetGreater": 0.5647171620325983
+          },
+          {
+            "feature": "exitLowerWickShare",
+            "targetMean": 0.22994094523257022,
+            "nonTargetMean": 0.11036566127804884,
+            "delta": 0.11957528395452138,
+            "targetMedian": 0.1260058413303944,
+            "nonTargetMedian": 0.06925196021140494,
+            "standardizedDelta": 0.5393635059647962,
+            "aucTargetGreater": 0.664908916586769
+          }
+        ],
+        "withinFamilyCorrelations": [
+          {
+            "a": "exitRangeR",
+            "b": "exitBodyR",
+            "spearman": 0.8547844841962489
+          },
+          {
+            "a": "exitCloseLocation",
+            "b": "exitSignedBodyToRange",
+            "spearman": 0.8522807875749052
+          },
+          {
+            "a": "exitCloseLocation",
+            "b": "exitUpperWickShare",
+            "spearman": -0.34390556355366064
+          },
+          {
+            "a": "exitUpperWickShare",
+            "b": "exitLowerWickShare",
+            "spearman": -0.3140081574810231
+          },
+          {
+            "a": "exitCloseLocation",
+            "b": "exitLowerWickShare",
+            "spearman": 0.254472464538428
+          },
+          {
+            "a": "exitBodyR",
+            "b": "exitLowerWickShare",
+            "spearman": -0.2511889919963037
+          },
+          {
+            "a": "exitBodyR",
+            "b": "exitUpperWickShare",
+            "spearman": -0.20058912715609542
+          },
+          {
+            "a": "exitLowerWickShare",
+            "b": "exitSignedBodyToRange",
+            "spearman": -0.12839079569703085
+          },
+          {
+            "a": "exitUpperWickShare",
+            "b": "exitSignedBodyToRange",
+            "spearman": 0.08568080929685172
+          },
+          {
+            "a": "exitBodyR",
+            "b": "exitSignedBodyToRange",
+            "spearman": -0.054935684347449054
+          }
+        ]
+      },
+      "recent_path": {
+        "features": [
+          "previousRangeR",
+          "recentNetMoveR",
+          "recentPathEfficiency",
+          "recentRangeR"
+        ],
+        "targetEffects": [
+          {
+            "feature": "previousRangeR",
+            "targetMean": 6.659048452032475,
+            "nonTargetMean": 6.640540603883946,
+            "delta": 0.018507848148528794,
+            "targetMedian": 2.6410942480920596,
+            "nonTargetMedian": 1.6551813493860101,
+            "standardizedDelta": 0.0014079162702845887,
+            "aucTargetGreater": 0.5393096836049857
+          },
+          {
+            "feature": "recentNetMoveR",
+            "targetMean": -2.7777583011941362,
+            "nonTargetMean": 6.142070714746235,
+            "delta": -8.91982901594037,
+            "targetMedian": -0.6206320447658564,
+            "nonTargetMedian": 1.490649432864684,
+            "standardizedDelta": -0.5461272636751922,
+            "aucTargetGreater": 0.2526366251198466
+          },
+          {
+            "feature": "recentPathEfficiency",
+            "targetMean": 0.899715540543329,
+            "nonTargetMean": 0.8310034897273907,
+            "delta": 0.06871205081593834,
+            "targetMedian": 1,
+            "nonTargetMedian": 1,
+            "standardizedDelta": 0.27214646509357376,
+            "aucTargetGreater": 0.5532118887823586
+          },
+          {
+            "feature": "recentRangeR",
+            "targetMean": 9.110038771962552,
+            "nonTargetMean": 19.006094607896213,
+            "delta": -9.89605583593366,
+            "targetMedian": 3.6247500106792017,
+            "nonTargetMedian": 4.402018913598795,
+            "standardizedDelta": -0.5278354471427956,
+            "aucTargetGreater": 0.3950143815915628
+          }
+        ],
+        "withinFamilyCorrelations": [
+          {
+            "a": "previousRangeR",
+            "b": "recentRangeR",
+            "spearman": 0.6452588746706394
+          },
+          {
+            "a": "previousRangeR",
+            "b": "recentPathEfficiency",
+            "spearman": 0.28441244940690097
+          },
+          {
+            "a": "recentNetMoveR",
+            "b": "recentPathEfficiency",
+            "spearman": -0.13435582286675624
+          },
+          {
+            "a": "recentNetMoveR",
+            "b": "recentRangeR",
+            "spearman": -0.11161461749697044
+          },
+          {
+            "a": "previousRangeR",
+            "b": "recentNetMoveR",
+            "spearman": -0.08685114567467508
+          },
+          {
+            "a": "recentPathEfficiency",
+            "b": "recentRangeR",
+            "spearman": -0.06191684308192164
+          }
+        ]
+      },
+      "displacement_from_entry": {
+        "features": [
+          "exitVsEntryR",
+          "exitVsEntryAbsR"
+        ],
+        "targetEffects": [
+          {
+            "feature": "exitVsEntryR",
+            "targetMean": -2.691178453624652,
+            "nonTargetMean": 6.137810774713527,
+            "delta": -8.828989228338179,
+            "targetMedian": -0.5625751841941163,
+            "nonTargetMedian": 1.490649432864684,
+            "standardizedDelta": -0.5405126563988991,
+            "aucTargetGreater": 0.25119846596356665
+          },
+          {
+            "feature": "exitVsEntryAbsR",
+            "targetMean": 4.947069834442403,
+            "nonTargetMean": 13.392738279763547,
+            "delta": -8.445668445321143,
+            "targetMedian": 1.308224353814785,
+            "nonTargetMedian": 2.580953473380393,
+            "standardizedDelta": -0.5468231903494489,
+            "aucTargetGreater": 0.34276126558005754
+          }
+        ],
+        "withinFamilyCorrelations": [
+          {
+            "a": "exitVsEntryR",
+            "b": "exitVsEntryAbsR",
+            "spearman": -0.11202152378622966
+          }
+        ]
+      }
+    }
+  },
+  "direction": {
+    "BUY": {
+      "n": 85,
+      "continuation1R": 0.9764705882352941
+    },
+    "SELL": {
+      "n": 78,
+      "continuation1R": 0.8461538461538461
+    }
+  },
+  "session": {
+    "LONDON": {
+      "n": 85,
+      "continuation1R": 0.8823529411764706
+    },
+    "NEW_YORK": {
+      "n": 52,
+      "continuation1R": 0.9615384615384616
+    },
+    "OUT_OF_SESSION": {
+      "n": 26,
+      "continuation1R": 0.9230769230769231
+    }
+  },
+  "window": {
+    "DEV_1": {
+      "n": 27,
+      "continuation1R": 0.9629629629629629
+    },
+    "DEV_2": {
+      "n": 35,
+      "continuation1R": 0.9142857142857143
+    },
+    "DEV_3": {
+      "n": 32,
+      "continuation1R": 1
+    },
+    "VAL_1": {
+      "n": 34,
+      "continuation1R": 0.8235294117647058
+    },
+    "VAL_2": {
+      "n": 35,
+      "continuation1R": 0.8857142857142857
+    }
+  }
+}
