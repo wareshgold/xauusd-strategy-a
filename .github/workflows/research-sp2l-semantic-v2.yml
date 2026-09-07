@@ -1,0 +1,36 @@
+name: Research - SP2L Semantic V2
+
+on:
+  push:
+    branches:
+      - research/phase12-preentry-geometry-robustness
+    paths:
+      - 'src/domain/research/sp2l-v2/**'
+      - 'tests/sp2l-v2-*.test.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/research-sp2l-semantic-v2.yml'
+  pull_request:
+    paths:
+      - 'src/domain/research/sp2l-v2/**'
+      - 'tests/sp2l-v2-*.test.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/research-sp2l-semantic-v2.yml'
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run test:sp2l-v2
+      - run: pnpm run test:sp2l-g1
+      - run: pnpm run test:sp2l-g2
+      - run: pnpm run test:sp2l-g3
+      - run: pnpm run build
