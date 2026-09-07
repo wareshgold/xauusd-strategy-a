@@ -1,5 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  G4G5_37_22_FRAME_EVIDENCE,
   G4G5_EXTRACTION_TEMPLATE,
   G4G5_SOURCE_POINT_REGISTRY,
   assertValidExtraction,
@@ -10,8 +14,10 @@ import {
   reportExtractionCandidates,
   unreadablePointIds,
   validateExtraction,
+  validateFrameEvidence,
   type ExtractedSourcePoint,
   type G4G5SourceExtraction,
+  type SourceFrameEvidence,
 } from '../src/domain/research/sp2l-v2/G4G5SourceExtraction.js';
 import { measureLeg1, measureLeg2 } from '../src/domain/research/sp2l-v2/G4G5CandidateMeasurement.js';
 
@@ -301,5 +307,74 @@ describe('SP2L V2 G4/G5 source-fit checker (non-production)', () => {
     expect(Object.keys(all.segments)).toEqual(['SEGMENT_1', 'SEGMENT_2', 'SEGMENT_3']);
     expect(all.segments.SEGMENT_3!.impliedLeg1).toBe(17);
     expect(all.segments.SEGMENT_1!.unresolvedReasons).toContain('TEACHER_LEG1_NOT_EXTRACTED');
+  });
+});
+
+describe('SP2L V2 source-frame evidence (37:22)', () => {
+  it('accepts the supplied 37:22 frame as valid provenance evidence', () => {
+    expect(validateFrameEvidence(G4G5_37_22_FRAME_EVIDENCE)).toEqual({ valid: true, errors: [] });
+    expect(G4G5_37_22_FRAME_EVIDENCE).toMatchObject({
+      frameId: 'FRAME_37_22',
+      videoTime: '37:22',
+      status: 'SUPPLIED',
+      semanticFact: 'LEVEL_BREAK_AND_GAP_CAN_OCCUR_IN_SAME_TRANSITION',
+    });
+  });
+
+  it('rejects malformed frame evidence', () => {
+    const base = G4G5_37_22_FRAME_EVIDENCE;
+    const cases: Array<{ label: string; error: string; frame: SourceFrameEvidence }> = [
+      {
+        label: 'unknown frame ID',
+        error: 'SOURCE_FRAME_UNKNOWN_ID',
+        frame: { ...base, frameId: 'FRAME_99_99' },
+      },
+      {
+        label: 'invalid video time',
+        error: 'SOURCE_FRAME_INVALID_VIDEO_TIME',
+        frame: { ...base, videoTime: 'later' },
+      },
+      {
+        label: 'missing semantic fact',
+        error: 'SOURCE_FRAME_SEMANTIC_FACT_REQUIRED',
+        frame: { ...base, semanticFact: '' },
+      },
+      {
+        label: 'invalid status',
+        error: 'SOURCE_FRAME_INVALID_STATUS',
+        frame: { ...base, status: 'REJECTED' as never },
+      },
+      {
+        label: 'missing source basis',
+        error: 'SOURCE_FRAME_SOURCE_BASIS_REQUIRED',
+        frame: { ...base, sourceBasis: '' },
+      },
+    ];
+
+    for (const c of cases) {
+      const result = validateFrameEvidence(c.frame);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.startsWith(c.error))).toBe(true);
+    }
+  });
+
+  it('stored frames.json matches the typed 37:22 evidence record exactly', () => {
+    const path = resolve(
+      fileURLToPath(new URL('../data/reports/strategy-a-sp2l-g4g5-source-evidence/frames.json', import.meta.url)),
+    );
+    const stored = JSON.parse(readFileSync(path, 'utf8')) as {
+      schemaVersion: number;
+      frames: SourceFrameEvidence[];
+    };
+    expect(stored.schemaVersion).toBe(1);
+    expect(stored.frames).toHaveLength(1);
+    expect(stored.frames[0]).toEqual(G4G5_37_22_FRAME_EVIDENCE);
+    expect(validateFrameEvidence(stored.frames[0]!).valid).toBe(true);
+  });
+
+  it('round-trips the 37:22 frame record through JSON', () => {
+    const copy = JSON.parse(JSON.stringify(G4G5_37_22_FRAME_EVIDENCE)) as SourceFrameEvidence;
+    expect(copy).toEqual(G4G5_37_22_FRAME_EVIDENCE);
+    expect(validateFrameEvidence(copy).valid).toBe(true);
   });
 });

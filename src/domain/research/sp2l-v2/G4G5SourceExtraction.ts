@@ -298,6 +298,64 @@ export function reportExtractionCandidates(
   };
 }
 
+/**
+ * Source-frame evidence: a supplied visual frame that records a semantic fact
+ * but carries no measurable G4/G5 coordinate (e.g. the user-supplied 37:22
+ * level-break + gap image). Registered alongside the coordinate extraction.
+ */
+export type SourceFrameStatus = 'SUPPLIED' | 'PENDING';
+
+export interface SourceFrameEvidence {
+  frameId: string;
+  videoTime: string;
+  semanticFact: string;
+  status: SourceFrameStatus;
+  sourceBasis: string;
+  notes: string | null;
+}
+
+/** Frame IDs the schema recognizes. Unknown frame IDs fail validation. */
+export const G4G5_SOURCE_FRAME_IDS: readonly string[] = ['FRAME_37_22'];
+
+/**
+ * First real source-visual evidence entry: the user-supplied 37:22 frame.
+ * Recorded semantic fact (SP2L_SOURCE_EVIDENCE_REGISTER item 7):
+ * `LEVEL BREAK + GAP can occur in the same transition/event.`
+ * The frame does NOT establish any numeric gap formula, minimum gap size,
+ * wick/body rule, overlap threshold, or candle-count rule.
+ */
+export const G4G5_37_22_FRAME_EVIDENCE: SourceFrameEvidence = {
+  frameId: 'FRAME_37_22',
+  videoTime: '37:22',
+  semanticFact: 'LEVEL_BREAK_AND_GAP_CAN_OCCUR_IN_SAME_TRANSITION',
+  status: 'SUPPLIED',
+  sourceBasis: 'USER_SUPPLIED_SOURCE_IMAGE_37_22',
+  notes:
+    'Does not establish a numeric gap formula, minimum gap size, wick/body rule, overlap threshold, or candle-count rule (SP2L_SOURCE_EVIDENCE_REGISTER item 7).',
+};
+
+export function validateFrameEvidence(frame: SourceFrameEvidence): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  if (typeof frame.frameId !== 'string' || !G4G5_SOURCE_FRAME_IDS.includes(frame.frameId)) {
+    errors.push(`SOURCE_FRAME_UNKNOWN_ID:${String(frame.frameId)}`);
+  }
+  if (typeof frame.videoTime !== 'string' || !VIDEO_TIME_PATTERN.test(frame.videoTime)) {
+    errors.push(`SOURCE_FRAME_INVALID_VIDEO_TIME:${String(frame.videoTime)}`);
+  }
+  if (typeof frame.semanticFact !== 'string' || frame.semanticFact.length === 0) {
+    errors.push('SOURCE_FRAME_SEMANTIC_FACT_REQUIRED');
+  }
+  if (frame.status !== 'SUPPLIED' && frame.status !== 'PENDING') {
+    errors.push(`SOURCE_FRAME_INVALID_STATUS:${String(frame.status)}`);
+  }
+  if (typeof frame.sourceBasis !== 'string' || frame.sourceBasis.length === 0) {
+    errors.push('SOURCE_FRAME_SOURCE_BASIS_REQUIRED');
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
 /** Non-teacher anchors a user may supply from the frames for G4 discrimination. */
 export type ExtraAnchorConcept =
   | 'spikeExtreme'
