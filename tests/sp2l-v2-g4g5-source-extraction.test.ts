@@ -360,7 +360,7 @@ describe('SP2L V2 source-frame evidence (37:22)', () => {
 
   it('stored frames.json matches the typed 37:22 evidence record exactly', () => {
     const path = resolve(
-      fileURLToPath(new URL('../data/reports/strategy-a-sp2l-g4g5-source-evidence/frames.json', import.meta.url)),
+      fileURLToPath(new URL('../docs/strategy/source/G4G5_SOURCE_EVIDENCE_FRAMES.json', import.meta.url)),
     );
     const stored = JSON.parse(readFileSync(path, 'utf8')) as {
       schemaVersion: number;

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "SOURCE_VISUAL_FRAME",
+  "video": {
+    "url": "https://youtu.be/7HEC5mO3d3U",
+    "lesson": "SP2L"
+  },
+  "purpose": "Stored source-visual frame evidence; tracked with the source material so CI can validate it.",
+  "frames": [
+    {
+      "frameId": "FRAME_37_22",
+      "videoTime": "37:22",
+      "semanticFact": "LEVEL_BREAK_AND_GAP_CAN_OCCUR_IN_SAME_TRANSITION",
+      "status": "SUPPLIED",
+      "sourceBasis": "USER_SUPPLIED_SOURCE_IMAGE_37_22",
+      "notes": "Does not establish a numeric gap formula, minimum gap size, wick/body rule, overlap threshold, or candle-count rule (SP2L_SOURCE_EVIDENCE_REGISTER item 7)."
+    }
+  ]
+}

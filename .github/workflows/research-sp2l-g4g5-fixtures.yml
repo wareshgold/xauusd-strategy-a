@@ -1,0 +1,43 @@
+name: Research - SP2L G4/G5 Fixture Suite
+
+on:
+  push:
+    branches:
+      - research/phase29-d-archetype-residual-after-geometry
+    paths:
+      - 'src/domain/research/sp2l-v2/**'
+      - 'tests/sp2l-v2-*.test.ts'
+      - 'tsconfig.json'
+      - 'docs/strategy/source/G4G5_SOURCE_EVIDENCE_FRAMES.json'
+      - '.github/workflows/research-sp2l-g4g5-fixtures.yml'
+  pull_request:
+    paths:
+      - 'src/domain/research/sp2l-v2/**'
+      - 'tests/sp2l-v2-*.test.ts'
+      - 'tsconfig.json'
+      - 'docs/strategy/source/G4G5_SOURCE_EVIDENCE_FRAMES.json'
+      - '.github/workflows/research-sp2l-g4g5-fixtures.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g4g5-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run G4/G5 discriminating fixture tests
+        run: pnpm exec vitest run tests/sp2l-v2-g4g5-discriminating-fixtures.test.ts
+      - name: Run G4/G5 source-extraction tests
+        run: pnpm exec vitest run tests/sp2l-v2-g4g5-source-extraction.test.ts
+      - name: Typecheck
+        run: pnpm run build
