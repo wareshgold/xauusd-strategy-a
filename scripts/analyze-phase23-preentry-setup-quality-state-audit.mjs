@@ -133,7 +133,7 @@ function familyScores(rows) {
 }
 
 function summarize(rows) {
-  if (!rows.length) return { n: 0, stats: stats(rows), families: Object.fromEntries(Object.keys(FAMILIES).map(k => [k, { targetN: 0, nonTargetN: 0 }]));
+  if (!rows.length) return { n: 0, stats: stats(rows), families: Object.fromEntries(Object.keys(FAMILIES).map(k => [k, { targetN: 0, nonTargetN: 0 }])) };
   const scores = familyScores(rows);
   const result = { n: rows.length, stats: stats(rows), families: {} };
   for (const name of Object.keys(FAMILIES)) {
