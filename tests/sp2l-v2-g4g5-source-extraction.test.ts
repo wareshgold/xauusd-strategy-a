@@ -3,6 +3,8 @@ import {
   G4G5_EXTRACTION_TEMPLATE,
   G4G5_SOURCE_POINT_REGISTRY,
   assertValidExtraction,
+  checkAllSegmentsSourceFit,
+  checkSourceFit,
   extractionToChart,
   pointsForSegment,
   reportExtractionCandidates,
@@ -182,5 +184,122 @@ describe('SP2L V2 G4/G5 source-extraction schema (non-production)', () => {
   it('template validates clean and is ready to fill in', () => {
     expect(validateExtraction(G4G5_EXTRACTION_TEMPLATE).valid).toBe(true);
     expect(pointsForSegment(G4G5_EXTRACTION_TEMPLATE, 'SEGMENT_3').length).toBe(7);
+  });
+});
+
+describe('SP2L V2 G4/G5 source-fit checker (non-production)', () => {
+  it('identifies the structural-point family and the visual C candidate on segment 3', () => {
+    const report = checkSourceFit(SEGMENT_3_EXTRACTION, 'SEGMENT_3');
+
+    expect(report.impliedLeg1).toBe(17);
+    expect(report.impliedTp1).toBe(2519);
+
+    const g4ById = Object.fromEntries(report.g4.map((r) => [r.id, r]));
+    expect(g4ById.STRUCTURAL_POINT_TO_STRUCTURAL_POINT).toMatchObject({ computed: 17, fit: true });
+    expect(g4ById.STRUCTURAL_LOW_HIGH_TO_SPIKE_EXTREME!.fit).toBeNull();
+    expect(report.g4Identified).toBe('STRUCTURAL_POINT_TO_STRUCTURAL_POINT');
+    expect(report.g4Ambiguous).toBe(false);
+
+    const g5ById = Object.fromEntries(report.g5.map((r) => [r.id, r]));
+    expect(g5ById.OTHER_VISUAL_POINT).toMatchObject({ computed: 17, fit: true });
+    expect(g5ById.CORRECTION_EXTREME!.fit).toBeNull();
+    expect(report.g5Identified).toBe('OTHER_VISUAL_POINT');
+    expect(report.g5Ambiguous).toBe(false);
+  });
+
+  it('discriminates non-teacher G4 families when extra anchors are supplied', () => {
+    const report = checkSourceFit(SEGMENT_3_EXTRACTION, 'SEGMENT_3', {
+      spikeExtreme: 2518,
+      firstStructuralLow: 2497,
+      breakoutLevel: 2500,
+      relevantCandleOpen: 2510,
+      spikeStart: 2504,
+    });
+
+    const g4ById = Object.fromEntries(report.g4.map((r) => [r.id, r]));
+    expect(g4ById.STRUCTURAL_LOW_HIGH_TO_SPIKE_EXTREME!).toMatchObject({ computed: 21, fit: false });
+    expect(g4ById.BREAKOUT_LEVEL_TO_SPIKE_EXTREME).toMatchObject({ computed: 18, fit: false });
+    expect(g4ById.SPIKE_START_TO_SPIKE_END).toMatchObject({ computed: 14, fit: false });
+    expect(g4ById.RELEVANT_CANDLE_OPEN_TO_SPIKE_EXTREME).toMatchObject({ computed: 8, fit: false });
+    expect(g4ById.STRUCTURAL_POINT_TO_STRUCTURAL_POINT).toMatchObject({ computed: 17, fit: true });
+    expect(report.g4Identified).toBe('STRUCTURAL_POINT_TO_STRUCTURAL_POINT');
+    expect(report.g4Ambiguous).toBe(false);
+  });
+
+  it('flags ambiguity instead of picking when more than one family fits', () => {
+    const extraction: G4G5SourceExtraction = {
+      ...SEGMENT_3_EXTRACTION,
+      points: SEGMENT_3_EXTRACTION.points.map((p) =>
+        p.pointId === 'S3-B' ? pt('S3-B', 2500, { videoTime: '1:04:19' }) : p,
+      ),
+    };
+    // teacher Leg 1 now 2500 -> 2518 (implied 18); breakout level 2500 also reproduces 18.
+    const report = checkSourceFit(extraction, 'SEGMENT_3', {
+      spikeExtreme: 2518,
+      breakoutLevel: 2500,
+    });
+
+    expect(report.impliedLeg1).toBe(18);
+    const g4ById = Object.fromEntries(report.g4.map((r) => [r.id, r]));
+    expect(g4ById.BREAKOUT_LEVEL_TO_SPIKE_EXTREME!.fit).toBe(true);
+    expect(g4ById.STRUCTURAL_POINT_TO_STRUCTURAL_POINT!.fit).toBe(true);
+    expect(report.g4Identified).toBeNull();
+    expect(report.g4Ambiguous).toBe(true);
+  });
+
+  it('never identifies a non-canonical execution candidate as C', () => {
+    // teacher Leg 1 2501 -> 2520 (implied 19) matches the pending/fill distance 19.
+    const extraction: G4G5SourceExtraction = {
+      ...SEGMENT_3_EXTRACTION,
+      points: SEGMENT_3_EXTRACTION.points.map((p) =>
+        p.pointId === 'S3-C' ? pt('S3-C', 2520, { videoTime: '1:04:19', ohlcElement: 'HIGH' }) : p,
+      ),
+    };
+    const report = checkSourceFit(extraction, 'SEGMENT_3');
+
+    const g5ById = Object.fromEntries(report.g5.map((r) => [r.id, r]));
+    expect(g5ById.PENDING_LIMIT).toMatchObject({ computed: 19, fit: true, canonicalStatus: 'EXCLUDED_NON_CANONICAL' });
+    expect(g5ById.ACTUAL_FILL).toMatchObject({ computed: 19, fit: true, canonicalStatus: 'EXCLUDED_NON_CANONICAL' });
+    expect(report.g5Identified).toBeNull();
+    expect(report.g5Ambiguous).toBe(false);
+  });
+
+  it('reports unresolved reasons when the teacher Leg 1 is not extracted', () => {
+    const extraction: G4G5SourceExtraction = {
+      ...SEGMENT_3_EXTRACTION,
+      points: SEGMENT_3_EXTRACTION.points.map((p) => (p.pointId === 'S3-B' ? pt('S3-B', null) : p)),
+    };
+    const report = checkSourceFit(extraction, 'SEGMENT_3');
+
+    expect(report.impliedLeg1).toBeNull();
+    expect(report.unresolvedReasons).toContain('TEACHER_LEG1_NOT_EXTRACTED');
+    expect(report.g4.every((r) => r.fit === null)).toBe(true);
+    expect(report.g4Identified).toBeNull();
+  });
+
+  it('can identify the correction-extreme candidate on segment 1 when the numbers agree', () => {
+    const extraction: G4G5SourceExtraction = {
+      schemaVersion: 1,
+      video: { url: 'https://youtu.be/7HEC5mO3d3U', lesson: 'SP2L' },
+      points: [
+        pt('S1-A', 2700, { videoTime: '37:00', direction: 'SELL' }),
+        pt('S1-B', 2630, { videoTime: '37:05', direction: 'SELL' }),
+        pt('S1-C', 2658, { videoTime: '37:06', direction: 'SELL' }),
+        pt('S1-D', 2588, { videoTime: '37:08', direction: 'SELL' }),
+      ],
+    };
+    const report = checkSourceFit(extraction, 'SEGMENT_1');
+
+    expect(report.impliedLeg1).toBe(70);
+    const g5ById = Object.fromEntries(report.g5.map((r) => [r.id, r]));
+    expect(g5ById.CORRECTION_EXTREME!).toMatchObject({ computed: 70, fit: true });
+    expect(report.g5Identified).toBe('CORRECTION_EXTREME');
+  });
+
+  it('runs the fit checker across all three segments', () => {
+    const all = checkAllSegmentsSourceFit(SEGMENT_3_EXTRACTION);
+    expect(Object.keys(all.segments)).toEqual(['SEGMENT_1', 'SEGMENT_2', 'SEGMENT_3']);
+    expect(all.segments.SEGMENT_3!.impliedLeg1).toBe(17);
+    expect(all.segments.SEGMENT_1!.unresolvedReasons).toContain('TEACHER_LEG1_NOT_EXTRACTED');
   });
 });

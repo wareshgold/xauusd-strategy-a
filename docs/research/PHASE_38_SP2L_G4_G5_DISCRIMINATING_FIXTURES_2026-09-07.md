@@ -113,8 +113,9 @@ Asserts: parent magnitudes (70) ≠ nested magnitudes (33); nested TP (2659) ≠
 - `extractionToChart(extraction, segment)` — builds a `G4G5FixtureChart` whose anchors come only from readable points (UNREADABLE and sequence-count points stay in provenance but are excluded from measurement).
 - `reportExtractionCandidates(extraction, segment)` — runs the G4/G5 measurements on the segment and reports `MEASURED`, `MISSING_EVIDENCE` (segment simply did not expose that anchor) or `INVALID_ORDER` per family/candidate, still without selecting a canonical one.
 - `G4G5_EXTRACTION_TEMPLATE` — blank fill-in template matching the frame-request delivery sheet.
+- `checkSourceFit(extraction, segment, extraAnchors?)` — the **source-fit checker**: computes the teacher's implied Leg 1 (`|teacherPointB - teacherPointA|`) and TP1, then reports which G4 family reproduces that Leg 1 and which G5 candidate reproduces `|TP1 - C| == impliedLeg1` (exact equality only, no tolerance fitted). Ambiguity is flagged, never resolved by picking; `PENDING_LIMIT`/`ACTUAL_FILL` can never be identified as canonical C; `extraAnchors` accepts non-teacher structural points (spike extreme, breakout level, …) visible in the frames so the non-teacher families can be discriminated. `checkAllSegmentsSourceFit` runs all three segments.
 
-Tests: `tests/sp2l-v2-g4g5-source-extraction.test.ts` (11 tests) — validation errors, anchor mapping, end-to-end measurement with hand-computed magnitudes, UNREADABLE handling, SELL→BEARISH mapping, JSON round-trip, template validity.
+Tests: `tests/sp2l-v2-g4g5-source-extraction.test.ts` (18 tests) — validation errors, anchor mapping, end-to-end measurement with hand-computed magnitudes, UNREADABLE handling, SELL→BEARISH mapping, JSON round-trip, template validity, and source-fit identification / ambiguity / non-canonical exclusion / unresolved-reason cases.
 
 ## Files
 
@@ -122,13 +123,13 @@ Tests: `tests/sp2l-v2-g4g5-source-extraction.test.ts` (11 tests) — validation 
 - `src/domain/research/sp2l-v2/G4G5CandidateMeasurement.ts` — measurement/report helpers (no selection).
 - `src/domain/research/sp2l-v2/G4G5SourceExtraction.ts` — source-extraction schema + input layer.
 - `tests/sp2l-v2-g4g5-discriminating-fixtures.test.ts` — 11 unit tests.
-- `tests/sp2l-v2-g4g5-source-extraction.test.ts` — 11 unit tests.
+- `tests/sp2l-v2-g4g5-source-extraction.test.ts` — 18 unit tests.
 
 ## Validation
 
 ```bash
 pnpm exec vitest run tests/sp2l-v2-g4g5-discriminating-fixtures.test.ts   # 11/11 pass
-pnpm exec vitest run tests/sp2l-v2-g4g5-source-extraction.test.ts         # 11/11 pass
+pnpm exec vitest run tests/sp2l-v2-g4g5-source-extraction.test.ts         # 18/18 pass
 pnpm run build                                                            # tsc --noEmit clean
-pnpm test                                                                 # 86/86 pass (full suite)
+pnpm test                                                                 # 93/93 pass (full suite)
 ```

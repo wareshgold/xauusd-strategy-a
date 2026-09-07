@@ -23,6 +23,7 @@ import {
 import {
   G4_ENDPOINT_FAMILIES,
   G5_ORIGIN_CANDIDATES,
+  NON_CANONICAL_G5_CANDIDATES,
   measureLeg1,
   measureLeg2,
   type G4EndpointFamily,
@@ -294,6 +295,141 @@ export function reportExtractionCandidates(
       'PENDING_LIMIT and ACTUAL_FILL are execution concepts and are excluded from canonical C candidates.',
       'No Leg 2 equality tolerance is fitted; G6 remains separate.',
     ],
+  };
+}
+
+/** Non-teacher anchors a user may supply from the frames for G4 discrimination. */
+export type ExtraAnchorConcept =
+  | 'spikeExtreme'
+  | 'firstStructuralLow'
+  | 'breakoutLevel'
+  | 'relevantCandleOpen'
+  | 'spikeStart';
+
+export interface SourceFitItem<T extends string> {
+  id: T;
+  computed: number | null;
+  /** true = exact match with the teacher's implied magnitude; null = cannot judge. */
+  fit: boolean | null;
+}
+
+export interface SourceFitReport {
+  segment: SourceSegment;
+  /** |teacher Leg 1 end - teacher Leg 1 start| measured from the frames. */
+  impliedLeg1: number | null;
+  /** Teacher TP1 price (Leg 2 end) from the frames. */
+  impliedTp1: number | null;
+  g4: SourceFitItem<G4EndpointFamily>[];
+  g5: Array<SourceFitItem<G5OriginCandidate> & { canonicalStatus: 'ALIVE' | 'EXCLUDED_NON_CANONICAL' }>;
+  g4Identified: G4EndpointFamily | null;
+  g5Identified: G5OriginCandidate | null;
+  g4Ambiguous: boolean;
+  g5Ambiguous: boolean;
+  unresolvedReasons: string[];
+}
+
+/**
+ * Source-fit checker: identifies which G4 family and which G5 candidate
+ * reproduce the teacher's implied magnitudes on a filled extraction record.
+ *
+ * Teacher's implied Leg 1 = |S*-B end - S*-A start| (the segment the teacher
+ * points to). Each G4 family is compared against that magnitude with exact
+ * equality (no tolerance fitted). Each G5 candidate origin C is compared via
+ * |TP1 - C| == impliedLeg1 (the source-established Leg2 ~= Leg1 relationship
+ * tested at exact equality only). PENDING_LIMIT and ACTUAL_FILL can never be
+ * identified as canonical C.
+ *
+ * `extraAnchors` accepts non-teacher structural points (spike extreme,
+ * breakout level, ...) when they are visible in the frames, so the non-teacher
+ * G4 families can actually be computed and discriminated.
+ */
+export function checkSourceFit(
+  extraction: G4G5SourceExtraction,
+  segment: SourceSegment,
+  extraAnchors: Partial<Record<ExtraAnchorConcept, number>> = {},
+): SourceFitReport {
+  const chart = extractionToChart(extraction, segment);
+  const unresolvedReasons: string[] = [];
+
+  const teacherA = chart.anchors.find((a) => a.concept === 'teacherPointA');
+  const teacherB = chart.anchors.find((a) => a.concept === 'teacherPointB');
+  const leg2End = chart.anchors.find((a) => a.concept === 'leg2End');
+
+  if (!teacherA || !teacherB) unresolvedReasons.push('TEACHER_LEG1_NOT_EXTRACTED');
+  if (!leg2End) unresolvedReasons.push('TP1_NOT_EXTRACTED');
+
+  const impliedLeg1 = teacherA && teacherB ? Math.abs(teacherB.price - teacherA.price) : null;
+  const impliedTp1 = leg2End?.price ?? null;
+
+  const anchors = [...chart.anchors];
+  let extraIndex = 100;
+  for (const [concept, price] of Object.entries(extraAnchors) as [ExtraAnchorConcept, number][]) {
+    if (Number.isFinite(price)) {
+      anchors.push({ index: extraIndex++, price, element: 'LEVEL', concept });
+    }
+  }
+  const chartWithExtras: G4G5FixtureChart = { ...chart, anchors };
+
+  const g4: SourceFitReport['g4'] = G4_ENDPOINT_FAMILIES.map((family) => {
+    try {
+      const computed = measureLeg1(chartWithExtras, family);
+      return { id: family, computed, fit: impliedLeg1 !== null ? computed === impliedLeg1 : null };
+    } catch {
+      return { id: family, computed: null, fit: null };
+    }
+  });
+
+  const g5: SourceFitReport['g5'] = G5_ORIGIN_CANDIDATES.map((candidate) => {
+    try {
+      const computed = measureLeg2(chartWithExtras, candidate);
+      return {
+        id: candidate,
+        canonicalStatus: NON_CANONICAL_G5_CANDIDATES.includes(candidate) ? 'EXCLUDED_NON_CANONICAL' : 'ALIVE',
+        computed,
+        fit: impliedLeg1 !== null ? computed === impliedLeg1 : null,
+      };
+    } catch {
+      return {
+        id: candidate,
+        canonicalStatus: NON_CANONICAL_G5_CANDIDATES.includes(candidate) ? 'EXCLUDED_NON_CANONICAL' : 'ALIVE',
+        computed: null,
+        fit: null,
+      };
+    }
+  });
+
+  const g4Fits = g4.filter((r) => r.fit === true);
+  const g5AliveFits = g5.filter((r) => r.fit === true && r.canonicalStatus === 'ALIVE');
+
+  return {
+    segment,
+    impliedLeg1,
+    impliedTp1,
+    g4,
+    g5,
+    g4Identified: g4Fits.length === 1 ? g4Fits[0]!.id : null,
+    g5Identified: g5AliveFits.length === 1 ? g5AliveFits[0]!.id : null,
+    g4Ambiguous: g4Fits.length > 1,
+    g5Ambiguous: g5AliveFits.length > 1,
+    unresolvedReasons,
+  };
+}
+
+export interface AllSegmentsSourceFitReport {
+  segments: Partial<Record<SourceSegment, SourceFitReport>>;
+}
+
+/** Runs the source-fit checker over all three source segments. */
+export function checkAllSegmentsSourceFit(
+  extraction: G4G5SourceExtraction,
+  extraAnchors: Partial<Record<ExtraAnchorConcept, number>> = {},
+): AllSegmentsSourceFitReport {
+  return {
+    segments: {
+      SEGMENT_1: checkSourceFit(extraction, 'SEGMENT_1', extraAnchors),
+      SEGMENT_2: checkSourceFit(extraction, 'SEGMENT_2', extraAnchors),
+      SEGMENT_3: checkSourceFit(extraction, 'SEGMENT_3', extraAnchors),
+    },
   };
 }
 
