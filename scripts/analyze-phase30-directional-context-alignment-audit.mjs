@@ -10,6 +10,13 @@ import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
 const ROOT=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const candles=JSON.parse(await readFile(resolve(ROOT,'data/historical/xauusd-5min.json'),'utf8')).candles??[];
 const base=JSON.parse(await readFile(resolve(ROOT,'data/reports/strategy-a-baseline/5min.json'),'utf8'));
+
+const phase29=JSON.parse(
+  await readFile(
+    resolve(ROOT,'data/reports/strategy-a-phase29-d-archetype-residual-after-geometry/5min.json'),
+    'utf8'
+  )
+);
 const PRE=10000;
 const WINDOWS=[['DEV_1',0,1999],['DEV_2',2000,3999],['DEV_3',4000,5999],['VAL_1',6000,7999],['VAL_2',8000,9999]];
 const CFG={breakoutLookback:5,followThrough:{maxBarsAfterBreakout:2,requireCloseBeyondBrokenLevel:true},spike:{maxCandles:8,minDirectionalFraction:.5,maxOverlapFraction:.8}};
