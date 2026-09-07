@@ -9,6 +9,7 @@ export type Sp2lPhase =
   | 'PENDING'
   | 'FILLED'
   | 'INVALIDATED'
+  | 'STOPPED'
   | 'TP1_REACHED'
   | 'COMPLETED'
   | 'REJECTED';
@@ -81,6 +82,7 @@ export type Sp2lEvent =
     }
   | { type: 'LIMIT_TOUCHED'; index: number; price: number }
   | { type: 'STRUCTURAL_INVALIDATION'; index: number }
+  | { type: 'STOP_HIT'; index: number; price: number }
   | { type: 'TP1_REACHED'; index: number }
   | { type: 'COMPLETE'; index: number }
   | { type: 'REJECT'; reason: string };
@@ -223,8 +225,14 @@ export function applySp2lEvent(state: Sp2lSemanticState, event: Sp2lEvent): Sp2l
       };
 
     case 'STRUCTURAL_INVALIDATION':
-      assertPhase(state, 'PENDING', 'FILLED');
+      assertPhase(state, 'PENDING');
       return { ...state, phase: 'INVALIDATED', invalidationIndex: event.index };
+
+    case 'STOP_HIT':
+      assertPhase(state, 'FILLED');
+      if (state.position.stopLoss === null) return reject(state, 'STOP_HIT_REQUIRES_EXPLICIT_STOP');
+      if (event.price !== state.position.stopLoss) return state;
+      return { ...state, phase: 'STOPPED', invalidationIndex: event.index };
 
     case 'TP1_REACHED':
       assertPhase(state, 'FILLED');
