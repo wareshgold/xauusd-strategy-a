@@ -11,7 +11,13 @@ const FAMILIES = {
   correction_quality: ['correctionSizeR', 'correctionToSpike', 'correctionBars', 'correctionDelay', 'correctionEfficiency'],
   trigger_quality: ['entryTriggerReclaimR', 'entryTriggerBodyR', 'entryTriggerCloseLocation', 'entryTriggerUpperWickShare', 'entryTriggerLowerWickShare'],
 };
-const ARCS = ['LOSS_A_NO_PRE_FAVORABLE', 'LOSS_B_PRE_0_5_TO_LT_1R', 'LOSS_C_PRE_1_TO_LT_2R', 'LOSS_D_PRE_GE_2R'];
+const ARCS = [
+  'LOSS_A_NO_PRE_FAVORABLE',
+  'LOSS_B_PRE_0_5_TO_LT_1R',
+  'LOSS_C_PRE_1_TO_LT_2R',
+  'LOSS_D_PRE_GE_2R',
+];
+const D_ARC = 'LOSS_D_PRE_GE_2R';
 const GROUPS = {
   DEV: rows => rows.filter(x => x.split === 'DEV'),
   VAL: rows => rows.filter(x => x.split === 'VAL'),
@@ -32,8 +38,8 @@ const spearman = (a, b) => pearson(rankValues(a), rankValues(b));
 const finite = v => Number.isFinite(v);
 
 function featureAudit(rows, feature) {
-  const d = rows.filter(x => x.archetype === 'LOSS_D');
-  const nonD = rows.filter(x => x.archetype !== 'LOSS_D');
+  const d = rows.filter(x => x.archetype === D_ARC);
+  const nonD = rows.filter(x => x.archetype !== D_ARC);
   const dv = d.map(x => x.features[feature]);
   const nv = nonD.map(x => x.features[feature]);
   const dm = mean(dv), nm = mean(nv), ds = sd(dv), ns = sd(nv);
@@ -42,8 +48,8 @@ function featureAudit(rows, feature) {
     : null;
   const av = auc(dv, nv);
   return {
-    nD: d.length,
-    nNonD: nonD.length,
+    nD: dv.filter(finite).length,
+    nNonD: nv.filter(finite).length,
     dMean: dm,
     nonDMean: nm,
     dMedian: median(dv),
@@ -117,8 +123,9 @@ for (const [family, features] of Object.entries(FAMILIES)) {
 const ranking = allFeatures.map(feature => {
   const family = Object.entries(FAMILIES).find(([, fs]) => fs.includes(feature))?.[0] ?? 'UNKNOWN';
   const o = featureAudit(rows, feature);
-  const dev = o && groupedAudit(rows, feature).DEV;
-  const val = groupedAudit(rows, feature).VAL;
+  const groups = groupedAudit(rows, feature);
+  const dev = groups.DEV;
+  const val = groups.VAL;
   const sameDirection = dev?.direction && val?.direction && dev.direction === val.direction && dev.direction !== 'NONE';
   return {
     family,
@@ -145,8 +152,8 @@ const result = {
   scope: {
     cases: rows.length,
     losses: rows.length,
-    dCases: rows.filter(x => x.archetype === 'LOSS_D_PRE_GE_2R').length,
-    nonDCases: rows.filter(x => x.archetype !== 'LOSS_D_PRE_GE_2R').length,
+    dCases: rows.filter(x => x.archetype === D_ARC).length,
+    nonDCases: rows.filter(x => x.archetype !== D_ARC).length,
     freshHoldoutExcluded: true,
     productionUntouched: true,
   },
@@ -161,7 +168,7 @@ const result = {
   },
   methodology: {
     purpose: 'Decompose the Phase25 D-vs-non-D family separation into individual pre-entry features.',
-    target: 'LOSS_D_PRE_GE_2R versus all other losing archetypes.',
+    target: `${D_ARC} versus all other losing archetypes.`,
     metric: 'One-vs-rest AUC where AUC > 0.5 means the feature is higher in D and AUC < 0.5 means lower in D.',
     validation: 'Each feature is audited overall and separately in DEV, VAL, BUY, SELL, LONDON, NEW_YORK and OUT_OF_SESSION. DEV/VAL direction agreement is reported descriptively.',
     redundancy: 'Within-family pairwise Spearman correlation is reported to identify features carrying overlapping information.',
