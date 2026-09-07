@@ -35,7 +35,69 @@ Corroborating source/research records:
 - `docs/research/PHASE_33_SP2L_G1_STRUCTURAL_REFERENCE_RESOLUTION.md`
 - `docs/research/PHASE_33_G2_PENDING_LIMIT_RESOLUTION.md`
 - `docs/research/PHASE_33_G3_STRUCTURAL_STOP_RESOLUTION.md`
-- `docs/research/RESEARCH_CHECKPOINT_2026-09-07_SP2L_G4_G5.md`
+- `docs/research/PHASE_34_SP2L_G4_SOURCE_ANCHOR_2026-09-07.md`
+- `docs/research/PHASE_35_SP2L_G5_SOURCE_EVIDENCE_2026-09-07.md`
+- `docs/research/PHASE_36_SP2L_G5_CANDIDATE_DISCRIMINATION_MATRIX_2026-09-07.md`
+- `docs/research/PHASE_37_SP2L_G5_SOURCE_VISUAL_GATE_2026-09-07.md`
+
+## Source-media recovery checkpoint — 2026-09-07
+
+A fresh public-source audit was performed against the original Pour Samadi Telegram channel and the linked SP2L YouTube recording.
+
+### What was verified
+
+- The original Telegram source channel contains the SP2L recording post.
+- The source post identifies a **1:09:16 SP2L recording** and links the YouTube video.
+- The same source area also exposes a **1:09:15 720p version**.
+- The public Telegram index exposes the lesson sequence and source-media metadata, including the SP2L sections covering spike types, P-GAP, combining 2L with Spike, order placement, 2X, levels/context, entry examples, and initial trades.
+- The public web representation confirms the source media exists and is the correct lesson source.
+
+### What was NOT recovered
+
+The public web/Telegram representation did **not** expose the raw video bytes or chart pixels/OHLC coordinates needed to identify the exact visual A/B/C points for G4/G5. The YouTube page likewise did not expose a usable chart transcript/image layer for those coordinates.
+
+Therefore:
+
+- We did **not** pretend to inspect chart pixels that were unavailable.
+- We did **not** promote any G4/G5 candidate based on coding convenience or historical performance.
+- G4 exact Leg1 endpoints remain `TBD / VISUAL SOURCE REQUIRED`.
+- G5 exact Leg2 projection origin remains `TBD / VISUAL SOURCE REQUIRED`.
+
+### Source evidence already recovered from the text
+
+- Around **36:59–37:08**, the source describes spike → correction → Leg2 and the approximate equality of Leg1 and Leg2.
+- Around **1:02:41–1:03:32**, the source distinguishes a larger parent leg from nested 2-leg structures and describes the next leg after a deep correction.
+- Around **1:04:00–1:04:32**, the teacher visually identifies where a deep leg starts, describes Leg1 as a segment between two chart locations, discusses order placement/activation, and derives TP1 from the Leg1 reference. The transcript does not encode the exact chart coordinates.
+- At **37:22**, the user-provided source frame establishes the semantic fact that a level break and a gap can occur in the same transition/event. It does **not** establish a universal numerical gap formula, minimum gap size, wick/body rule, overlap threshold, or candle-count rule.
+
+### Current G5 candidate boundary
+
+The unresolved executable C/origin candidates remain explicitly separated:
+
+1. `STRUCTURAL_HL_LH`
+2. `OTHER_VISUAL_POINT`
+3. `CORRECTION_EXTREME` only if future source visual evidence explicitly identifies that point
+
+The following are **not canonical geometric C points** merely because they occur in execution:
+
+- `ACTUAL_FILL`
+- `PENDING_LIMIT`
+
+The source phrase "Leg2 starts from the deep correction" must not be silently converted into `Leg2Origin = correction.low/high`, and a fill price must not be silently converted into the geometric C point.
+
+### Gate status after media audit
+
+```text
+G1  structural reference        candidate / source semantic role confirmed
+G2  pending limit               source mechanism confirmed / exact universal mapping candidate
+G3  structural stop              source concept confirmed / exact universal level candidate
+G4  Leg1 endpoints               SEMANTIC RESOLVED / EXECUTABLE TBD
+G5  Leg2 origin                  SEMANTIC RESOLVED / EXECUTABLE TBD
+G6  Leg2 equality                BLOCKED by unresolved G4/G5 tolerance
+G7  execution semantics          RESEARCH-RESOLVED / dependent on G4/G5
+Fresh Holdout                    LOCKED
+Production SP2L                  BLOCKED
+```
 
 ## Canonical semantic lifecycle — source-backed architecture
 
@@ -232,7 +294,9 @@ Safe:
 - explicit TBD/candidate fields;
 - deterministic synthetic fixtures for already frozen candidate definitions;
 - rejection of close-reclaim as the only canonical entry mechanism;
-- separate 2X module boundary.
+- separate 2X module boundary;
+- provenance/audit records for source-media recovery attempts;
+- side-by-side measurement of explicitly supplied A/B/C candidates without selecting a canonical candidate.
 
 Not safe yet:
 
@@ -246,13 +310,13 @@ Not safe yet:
 
 ## Required next evidence
 
-Highest-value evidence is visual source material for the chart examples around:
+Highest-value evidence remains the actual chart visual source for:
 
 - 36:59–37:22;
 - 1:02:41–1:03:32;
 - 1:04:00–1:04:32.
 
-The visual frames are required to resolve the actual A/B/C geometry faithfully.
+The public source audit confirmed the media exists but did not expose the chart pixels/OHLC coordinates through the accessible web representation.
 
 Until those coordinates are source-resolved, G4 and G5 stay `TBD`.
 
@@ -281,10 +345,12 @@ SOURCE RESOLUTION
 
 ## Current decision
 
-**SYNC COMPLETE THROUGH G5 SOURCE REVIEW.**
+**SYNC COMPLETE THROUGH G5 SOURCE + MEDIA AUDIT.**
 
-We are aligned with the preserved Poorsamadi source as far as the text allows.
+We are aligned with the preserved Poorsamadi source as far as the accessible source text/media metadata allows.
 
-G4 Leg1 exact endpoints and G5 exact projection origin remain intentionally unresolved because the transcript refers to visual chart points that are not machine-readable in text.
+The original source media was located and verified, but its public representation did not expose the chart pixels needed to freeze the exact G4/G5 geometry. Therefore we deliberately preserve the unresolved boundary instead of guessing.
+
+G4 Leg1 exact endpoints and G5 exact projection origin remain intentionally unresolved.
 
 The correct next action is source/visual resolution, not strategy optimization.
