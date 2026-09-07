@@ -131,6 +131,41 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(state.invalidationIndex).toBe(14);
   });
 
+  it('records a post-fill stop as a stop outcome, not as pending invalidation', () => {
+    const filled = applySp2lEvent(replay(bullishSetup), {
+      type: 'LIMIT_TOUCHED',
+      index: 15,
+      price: 2500,
+    });
+
+    const stopped = applySp2lEvent(filled, {
+      type: 'STOP_HIT',
+      index: 16,
+      price: 2492,
+    });
+
+    expect(stopped.phase).toBe('STOPPED');
+    expect(stopped.fillIndex).toBe(15);
+    expect(stopped.invalidationIndex).toBe(16);
+    expect(stopped.position.stopLoss).toBe(2492);
+  });
+
+  it('ignores a non-matching post-fill stop price', () => {
+    const filled = applySp2lEvent(replay(bullishSetup), {
+      type: 'LIMIT_TOUCHED',
+      index: 15,
+      price: 2500,
+    });
+
+    const unchanged = applySp2lEvent(filled, {
+      type: 'STOP_HIT',
+      index: 16,
+      price: 2491,
+    });
+
+    expect(unchanged.phase).toBe('FILLED');
+  });
+
   it('keeps Leg 1 and Leg 2 geometry explicit instead of inventing formulas', () => {
     const state = replay(bullishSetup);
 
