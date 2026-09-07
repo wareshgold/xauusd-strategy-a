@@ -221,6 +221,37 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(invalid.rejectionReason).toBe('LEG2_ORIGIN_CANNOT_PRECEDE_CORRECTION');
   });
 
+  it('preserves candidate identity when the correction-origin concept is represented explicitly', () => {
+    const pending = replay(bullishSetup);
+    const candidate = applySp2lEvent(pending, {
+      type: 'LEG2_PROJECTION_ORIGIN_IDENTIFIED',
+      index: 14,
+      price: 2508,
+      status: 'CANDIDATE',
+      rationale: 'Fixture-only CORRECTION_EXTREME candidate; not selected as canonical C.',
+    });
+
+    expect(candidate.geometry.leg2ProjectionOrigin.status).toBe('CANDIDATE');
+    expect(candidate.geometry.leg2ProjectionOrigin.index).toBe(14);
+    expect(candidate.geometry.leg2ProjectionOrigin.price).toBe(2508);
+    expect(candidate.geometry.leg2ProjectionOrigin.rationale).toContain('CORRECTION_EXTREME');
+    expect(candidate.geometry.pendingEntryPrice.price).toBe(2500);
+  });
+
+  it('does not auto-populate Leg 2 origin when the order fills', () => {
+    const pending = replay(bullishSetup);
+    const filled = applySp2lEvent(pending, {
+      type: 'LIMIT_TOUCHED',
+      index: 15,
+      price: 2500,
+    });
+
+    expect(filled.fillIndex).toBe(15);
+    expect(filled.position.entryPrice).toBe(2500);
+    expect(filled.geometry.leg2ProjectionOrigin.status).toBe('TBD');
+    expect(filled.geometry.leg2ProjectionOrigin.price).toBeNull();
+  });
+
   it('keeps 2X separate from position 1', () => {
     const state = applySp2lEvent(replay(bullishSetup), {
       type: 'LIMIT_TOUCHED',
