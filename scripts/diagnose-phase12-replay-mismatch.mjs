@@ -81,6 +81,7 @@ async function main() {
   const target = rows.find((r) => r.entryTime === '2026-08-26 12:35:00');
 
   console.log(JSON.stringify({
+    diagnostic: 'OLD_DATASET_VS_REFRESHED_DATASET_REPLAY',
     oldDatasetRef: OLD_REF,
     oldCount: old.length,
     currentCount: current.length,
