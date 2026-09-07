@@ -80,6 +80,13 @@ export type Sp2lEvent =
       entryStatus?: GeometryStatus;
       rationale?: string;
     }
+  | {
+      type: 'LEG2_PROJECTION_ORIGIN_IDENTIFIED';
+      index: number | null;
+      price: number | null;
+      status?: GeometryStatus;
+      rationale?: string;
+    }
   | { type: 'LIMIT_TOUCHED'; index: number; price: number }
   | { type: 'STRUCTURAL_INVALIDATION'; index: number }
   | { type: 'STOP_HIT'; index: number; price: number }
@@ -203,6 +210,24 @@ export function applySp2lEvent(state: Sp2lSemanticState, event: Sp2lEvent): Sp2l
             status: event.stopStatus ?? 'CANDIDATE',
             index: event.index,
             price: event.stopLoss,
+            rationale: event.rationale ?? null,
+          },
+        },
+      };
+
+    case 'LEG2_PROJECTION_ORIGIN_IDENTIFIED':
+      assertPhase(state, 'CORRECTION', 'PENDING', 'FILLED');
+      if (event.index !== null && state.correctionStartedAt !== null && event.index < state.correctionStartedAt) {
+        return reject(state, 'LEG2_ORIGIN_CANNOT_PRECEDE_CORRECTION');
+      }
+      return {
+        ...state,
+        geometry: {
+          ...state.geometry,
+          leg2ProjectionOrigin: {
+            status: event.status ?? 'CANDIDATE',
+            index: event.index,
+            price: event.price,
             rationale: event.rationale ?? null,
           },
         },
