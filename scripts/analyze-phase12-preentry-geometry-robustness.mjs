@@ -5,6 +5,10 @@ import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.
 import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.js';
 import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.js';
 import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
+import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.js';
+import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
+import { buildEMAContext, buildLocationContext, buildSessionContext } from '../src/domain/strategy-a/Context.js';
+import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
 
 const ROOT = resolve(process.cwd());
 const BASE = resolve(ROOT, 'data/reports/strategy-a-baseline/5min.json');
@@ -12,6 +16,16 @@ const CANDLES = resolve(ROOT, 'data/historical/xauusd-5min.json');
 const OUT = resolve(ROOT, 'data/reports/strategy-a-phase12-preentry-geometry-robustness');
 const PRE = 10000;
 const DEV = 6000;
+const CONTEXT = {
+  emaPeriod: 60,
+  roundStep: 50,
+  roundDistance: 5,
+  tradingSessions: [
+    { name: 'LONDON', startMinutes: 7 * 60, endMinutes: 16 * 60 },
+    { name: 'NEW_YORK', startMinutes: 13 * 60, endMinutes: 22 * 60 },
+  ],
+  avoidWindows: [],
+};
 
 const p = (n) => Number.isFinite(n) ? Number(n.toFixed(6)) : null;
 const utcMinutes = (ts) => { const d = new Date(ts); return d.getUTCHours() * 60 + d.getUTCMinutes(); };
@@ -24,24 +38,33 @@ const sessionOf = (ts) => {
 
 function replayAt(candles, index) {
   const visible = candles.slice(0, index + 1);
-  if (visible.length < 60) return null;
+  if (visible.length < Math.max(5 + 2, CONTEXT.emaPeriod)) return null;
   const breakouts = detectBreakout(visible, 5);
   const ft = detectFollowThrough(visible, breakouts, { maxBarsAfterBreakout: 2, requireCloseBeyondBrokenLevel: true });
   const spikes = detectSpikeCandidates(visible, breakouts, ft, { maxCandles: 8, minDirectionalFraction: .5, maxOverlapFraction: .8 });
 
+  const candidates = [];
   for (const spike of spikes.candidates) {
     if (spike.endIndex >= index) continue;
     const correction = detectFirstCorrection(visible, spike);
     if (!correction || correction.correctionExtremeIndex >= index) continue;
     const trigger = detectEntryTrigger(visible, correction);
     if (!trigger || trigger.index !== index) continue;
-    if (trigger.direction !== (spike.direction === 'BULLISH' ? 'BUY' : 'SELL')) continue;
-    const breakout = breakouts.find((x) => x.index === spike.breakoutIndex && x.direction === spike.direction);
-    const followThrough = ft.find((x) => x.breakoutIndex === spike.breakoutIndex && x.direction === spike.direction);
-    if (!breakout || !followThrough) continue;
-    return { visible, spike, breakout, followThrough, correction, trigger };
+    const projection = projectLeg2(visible, correction);
+    if (!projection) continue;
+    const invalidation = getInvalidationRule(correction);
+    const emaContext = buildEMAContext(visible.map((c) => c.close), CONTEXT);
+    if (!emaContext) continue;
+    const location = buildLocationContext(trigger.entryPrice, CONTEXT);
+    const session = buildSessionContext(trigger.timestamp, CONTEXT);
+    const quality = scoreSetup(spike, { ema: emaContext, location, session });
+    if (!quality.tradeAllowed) continue;
+    const risk = Math.abs(trigger.entryPrice - invalidation.invalidationLevel);
+    const reward = Math.abs(projection.tp1 - trigger.entryPrice);
+    if (risk <= 0 || reward <= 0) continue;
+    candidates.push({ visible, spike, breakout: breakouts.find((x) => x.index === spike.breakoutIndex && x.direction === spike.direction), followThrough: ft.find((x) => x.breakoutIndex === spike.breakoutIndex && x.direction === spike.direction), correction, trigger, projection, invalidation, quality, risk, reward });
   }
-  return null;
+  return candidates.length ? candidates[0] : null;
 }
 
 function outcomeStats(rows) {
@@ -50,13 +73,7 @@ function outcomeStats(rows) {
   const losses = finite.filter((x) => x.r <= 0);
   const grossWin = wins.reduce((s, x) => s + x.r, 0);
   const grossLoss = losses.reduce((s, x) => s + Math.abs(x.r), 0);
-  return {
-    n: finite.length,
-    WR: finite.length ? wins.length / finite.length : null,
-    avgR: finite.length ? finite.reduce((s, x) => s + x.r, 0) / finite.length : null,
-    PF: grossLoss ? grossWin / grossLoss : null,
-    totalR: finite.reduce((s, x) => s + x.r, 0),
-  };
+  return { n: finite.length, WR: finite.length ? wins.length / finite.length : null, avgR: finite.length ? finite.reduce((s, x) => s + x.r, 0) / finite.length : null, PF: grossLoss ? grossWin / grossLoss : null, totalR: finite.reduce((s, x) => s + x.r, 0) };
 }
 
 function rank(values) {
@@ -100,14 +117,7 @@ function featureDiagnostic(rows, feature) {
   };
   const winMedian = med(wins);
   const lossMedian = med(losses);
-  return {
-    n: finite.length,
-    spearman: spearman(finite, feature),
-    noExceptionalSpearman: spearman(finite.filter((x) => x.r < 5), feature),
-    winMedianExcludingExceptional: winMedian,
-    lossMedian: lossMedian,
-    medianWinMinusLoss: Number.isFinite(winMedian) && Number.isFinite(lossMedian) ? winMedian - lossMedian : null,
-  };
+  return { n: finite.length, spearman: spearman(finite, feature), noExceptionalSpearman: spearman(finite.filter((x) => x.r < 5), feature), winMedianExcludingExceptional: winMedian, lossMedian, medianWinMinusLoss: Number.isFinite(winMedian) && Number.isFinite(lossMedian) ? winMedian - lossMedian : null };
 }
 
 function segmentRows(rows) {
@@ -128,7 +138,7 @@ function positiveContribution(rows) {
 
 async function main() {
   const base = JSON.parse(await readFile(BASE, 'utf8'));
-  const candles = (JSON.parse(await readFile(CANDLES, 'utf8')).candles ?? []);
+  const candles = JSON.parse(await readFile(CANDLES, 'utf8')).candles ?? [];
   if (!candles.length) throw new Error('PHASE12: historical 5m candle dataset is empty');
 
   const candleIndexByTimestamp = new Map();
@@ -139,8 +149,7 @@ async function main() {
     candleIndexByTimestamp.set(timestamp, i);
   }
 
-  const targets = (base.trades ?? [])
-    .map((t) => ({ entryIndex: Number(t.entryIndex), entryTime: t.entryTime, r: Number(t.rMultiple), direction: t.direction, result: t.result }))
+  const targets = (base.trades ?? []).map((t) => ({ entryIndex: Number(t.entryIndex), entryTime: t.entryTime, r: Number(t.rMultiple), direction: t.direction, result: t.result }))
     .filter((t) => typeof t.entryTime === 'string' && t.entryTime && t.result !== 'AMBIGUOUS' && Number.isFinite(t.r) && (t.direction === 'BUY' || t.direction === 'SELL'));
 
   const rows = [];
@@ -150,16 +159,9 @@ async function main() {
 
   for (const t of targets) {
     const canonicalIndex = candleIndexByTimestamp.get(t.entryTime);
-    if (!Number.isInteger(canonicalIndex)) {
-      missingCanonicalTimestamp++;
-      continue;
-    }
-
+    if (!Number.isInteger(canonicalIndex)) { missingCanonicalTimestamp++; continue; }
     const x = replayAt(candles, canonicalIndex);
-    if (!x || x.trigger.timestamp !== t.entryTime || x.trigger.direction !== t.direction) {
-      replayMismatch++;
-      continue;
-    }
+    if (!x || x.trigger.timestamp !== t.entryTime || x.trigger.direction !== t.direction) { replayMismatch++; continue; }
     const { visible, spike, correction } = x;
     const triggerCandle = visible[canonicalIndex];
     const corr = visible.slice(correction.correctionStartIndex, correction.correctionExtremeIndex + 1);
@@ -190,84 +192,29 @@ async function main() {
     const reclaim = Math.max(0, directionSign * (triggerCandle.close - correction.extremePrice));
     const spikeSize = Math.abs(spike.size);
 
-    rows.push({
-      entryIndex: canonicalIndex,
-      baselineEntryIndex: t.entryIndex,
-      time: t.entryTime,
-      split: canonicalIndex < DEV ? 'DEV' : 'VAL',
-      direction: t.direction,
-      session: sessionOf(t.entryTime),
-      r: t.r,
-      exceptional: t.r >= 5,
-      correctionBars: corr.length,
-      correctionToSpike: spikeSize > 0 ? correctionSize / spikeSize : null,
-      pathEfficiency: pathLength > 0 ? netCloseMove / pathLength : null,
-      bodyParticipation: totalRange > 0 ? totalBody / totalRange : null,
-      upperWickShare: totalRange > 0 ? totalUpper / totalRange : null,
-      lowerWickShare: totalRange > 0 ? totalLower / totalRange : null,
-      secondHalfProgress: firstHalfAdverse > 0 ? secondHalfAdverse / Math.max(firstHalfAdverse, correctionSize) : null,
-      triggerReclaimToRange: correctionRange > 0 ? reclaim / correctionRange : null,
-      triggerBodyToRange: triggerRange > 0 ? triggerBody / triggerRange : null,
-      triggerCloseLocation: triggerRange > 0 ? (t.direction === 'BUY' ? (triggerCandle.close - triggerCandle.low) / triggerRange : (triggerCandle.high - triggerCandle.close) / triggerRange) : null,
-      triggerReclaimToCorrection: correctionSize > 0 ? reclaim / correctionSize : null,
-    });
+    rows.push({ entryIndex: canonicalIndex, baselineEntryIndex: t.entryIndex, time: t.entryTime, split: canonicalIndex < DEV ? 'DEV' : 'VAL', direction: t.direction, session: sessionOf(t.entryTime), r: t.r, exceptional: t.r >= 5, correctionBars: corr.length, correctionToSpike: spikeSize > 0 ? correctionSize / spikeSize : null, pathEfficiency: pathLength > 0 ? netCloseMove / pathLength : null, bodyParticipation: totalRange > 0 ? totalBody / totalRange : null, upperWickShare: totalRange > 0 ? totalUpper / totalRange : null, lowerWickShare: totalRange > 0 ? totalLower / totalRange : null, secondHalfProgress: firstHalfAdverse > 0 ? secondHalfAdverse / Math.max(firstHalfAdverse, correctionSize) : null, triggerReclaimToRange: correctionRange > 0 ? reclaim / correctionRange : null, triggerBodyToRange: triggerRange > 0 ? triggerBody / triggerRange : null, triggerCloseLocation: triggerRange > 0 ? (t.direction === 'BUY' ? (triggerCandle.close - triggerCandle.low) / triggerRange : (triggerCandle.high - triggerCandle.close) / triggerRange) : null, triggerReclaimToCorrection: correctionSize > 0 ? reclaim / correctionSize : null });
   }
 
-  if (missingCanonicalTimestamp > 0) {
-    throw new Error(`PHASE12: ${missingCanonicalTimestamp} baseline trades have no matching canonical entry timestamp in the refreshed dataset`);
-  }
-  if (replayMismatch > 0 || noReplay > 0) {
-    throw new Error(`PHASE12: canonical replay integrity failed: mismatch=${replayMismatch} noReplay=${noReplay}`);
-  }
+  if (missingCanonicalTimestamp > 0) throw new Error(`PHASE12: ${missingCanonicalTimestamp} baseline trades have no matching canonical entry timestamp in the refreshed dataset`);
+  if (replayMismatch > 0 || noReplay > 0) throw new Error(`PHASE12: canonical replay integrity failed: mismatch=${replayMismatch} noReplay=${noReplay}`);
 
-  const FEATURES = [
-    'correctionBars', 'correctionToSpike', 'pathEfficiency', 'bodyParticipation',
-    'upperWickShare', 'lowerWickShare', 'secondHalfProgress',
-    'triggerReclaimToRange', 'triggerBodyToRange', 'triggerCloseLocation', 'triggerReclaimToCorrection',
-  ];
-
+  const FEATURES = ['correctionBars', 'correctionToSpike', 'pathEfficiency', 'bodyParticipation', 'upperWickShare', 'lowerWickShare', 'secondHalfProgress', 'triggerReclaimToRange', 'triggerBodyToRange', 'triggerCloseLocation', 'triggerReclaimToCorrection'];
   const groups = segmentRows(rows);
-  const segmentDiagnostics = Object.fromEntries(Object.entries(groups).sort().map(([key, group]) => [key, {
-    outcome: outcomeStats(group),
-    noExceptionalOutcome: outcomeStats(group.filter((x) => !x.exceptional)),
-    positiveContribution: positiveContribution(group),
-    features: Object.fromEntries(FEATURES.map((f) => [f, featureDiagnostic(group, f)])),
-  }]));
-
-  const allFeatureDiagnostics = Object.fromEntries(FEATURES.map((f) => [f, {
-    ALL: featureDiagnostic(rows, f),
-    DEV: featureDiagnostic(rows.filter((x) => x.split === 'DEV'), f),
-    VAL: featureDiagnostic(rows.filter((x) => x.split === 'VAL'), f),
-  }]));
+  const segmentDiagnostics = Object.fromEntries(Object.entries(groups).sort().map(([key, group]) => [key, { outcome: outcomeStats(group), noExceptionalOutcome: outcomeStats(group.filter((x) => !x.exceptional)), positiveContribution: positiveContribution(group), features: Object.fromEntries(FEATURES.map((f) => [f, featureDiagnostic(group, f)])) }]));
+  const allFeatureDiagnostics = Object.fromEntries(FEATURES.map((f) => [f, { ALL: featureDiagnostic(rows, f), DEV: featureDiagnostic(rows.filter((x) => x.split === 'DEV'), f), VAL: featureDiagnostic(rows.filter((x) => x.split === 'VAL'), f) }]));
 
   const result = {
     strategy: 'Strategy A / SP2L',
     mode: 'PHASE_12_PREENTRY_GEOMETRY_ROBUSTNESS',
     timeframe: '5m',
     scope: { baselinePre: targets.length, replayed: rows.length, dev: rows.filter((x) => x.split === 'DEV').length, val: rows.filter((x) => x.split === 'VAL').length, freshHoldoutExcluded: true, productionUntouched: true },
-    integrity: { baselinePre: targets.length, replayed: rows.length, replayMismatch, noReplay, missingCanonicalTimestamp, deterministicRerunRequired: true, canonicalEntryTimestampRequired: true, canonicalEntryTimestampUsed: true },
-    methodology: {
-      purpose: 'Audit whether already-defined pre-entry correction/trigger geometry associations survive across direction/session segments and DEV/VAL without creating a new trading rule.',
-      features: FEATURES,
-      noOptimization: true,
-      noThresholdSearch: true,
-      noNewTradingRules: true,
-      noFreshHoldoutAccess: true,
-      exceptionalDefinition: 'rMultiple >= 5',
-      segmentDefinition: 'BUY/SELL × LONDON/NEW_YORK; OUT_OF_SESSION reported separately.',
-      note: 'Existing geometry definitions are reused. Canonical entryTime from the baseline is the only identity key used to locate the corresponding candle in the refreshed dataset; baseline entryIndex is retained only for audit traceability.',
-    },
-    baseline: outcomeStats(rows),
-    baselineNoExceptional: outcomeStats(rows.filter((x) => !x.exceptional)),
-    positiveContribution: positiveContribution(rows),
-    featureDiagnostics: allFeatureDiagnostics,
-    segmentDiagnostics,
-    cases: rows,
+    integrity: { baselinePre: targets.length, replayed: rows.length, replayMismatch, noReplay, missingCanonicalTimestamp, deterministicRerunRequired: true, canonicalEntryTimestampRequired: true, canonicalEntryTimestampUsed: true, baselineSelectionSemantics: 'EXACT_BASELINE_DECIDE_FIRST_TRADE_ALLOWED_CANDIDATE' },
+    methodology: { purpose: 'Audit whether already-defined pre-entry correction/trigger geometry associations survive across direction/session segments and DEV/VAL without creating a new trading rule.', features: FEATURES, noOptimization: true, noThresholdSearch: true, noNewTradingRules: true, noFreshHoldoutAccess: true, exceptionalDefinition: 'rMultiple >= 5', segmentDefinition: 'BUY/SELL × LONDON/NEW_YORK; OUT_OF_SESSION reported separately.', note: 'Existing geometry definitions are reused. Canonical entryTime from the baseline is the only identity key used to locate the corresponding candle in the refreshed dataset; baseline entryIndex is retained only for audit traceability. Replay mirrors baseline decide semantics: first trade-allowed candidate after projection, invalidation, context, quality and positive risk/reward checks.' },
+    baseline: outcomeStats(rows), baselineNoExceptional: outcomeStats(rows.filter((x) => !x.exceptional)), positiveContribution: positiveContribution(rows), featureDiagnostics: allFeatureDiagnostics, segmentDiagnostics, cases: rows,
   };
 
   await mkdir(OUT, { recursive: true });
   await writeFile(resolve(OUT, '5m.json'), JSON.stringify(result, null, 2));
-
   const fmt = (s) => `${s.n} avgR=${p(s.avgR)} PF=${s.PF == null ? '-' : p(s.PF)} WR=${s.WR == null ? '-' : p(s.WR * 100) + '%'}`;
   console.log(`PHASE_12_PREENTRY_GEOMETRY N=${rows.length} DEV=${result.scope.dev} VAL=${result.scope.val} FRESH=LOCKED`);
   console.log(`INTEGRITY baselinePre=${targets.length} replayed=${rows.length} mismatch=${replayMismatch} noReplay=${noReplay} missingCanonicalTimestamp=${missingCanonicalTimestamp}`);
@@ -275,10 +222,7 @@ async function main() {
   console.log('=== SEGMENTS ===');
   for (const [key, d] of Object.entries(segmentDiagnostics)) console.log(`${key}: ${fmt(d.outcome)} | NO_EX ${fmt(d.noExceptionalOutcome)} | TOP3=${p(d.positiveContribution.top3Share)}`);
   console.log('=== FEATURE REPLICATION: ALL / DEV / VAL ===');
-  for (const f of FEATURES) {
-    const d = allFeatureDiagnostics[f];
-    console.log(`${f}: ALL sp=${p(d.ALL.spearman)} noExSp=${p(d.ALL.noExceptionalSpearman)} delta=${p(d.ALL.medianWinMinusLoss)} | DEV sp=${p(d.DEV.spearman)} delta=${p(d.DEV.medianWinMinusLoss)} | VAL sp=${p(d.VAL.spearman)} delta=${p(d.VAL.medianWinMinusLoss)}`);
-  }
+  for (const f of FEATURES) { const d = allFeatureDiagnostics[f]; console.log(`${f}: ALL sp=${p(d.ALL.spearman)} noExSp=${p(d.ALL.noExceptionalSpearman)} delta=${p(d.ALL.medianWinMinusLoss)} | DEV sp=${p(d.DEV.spearman)} delta=${p(d.DEV.medianWinMinusLoss)} | VAL sp=${p(d.VAL.spearman)} delta=${p(d.VAL.medianWinMinusLoss)}`); }
   console.log(`REPORT=${resolve(OUT, '5m.json')}`);
   console.log('STATUS=DESCRIPTIVE_ONLY NO_OPT NO_NEW_RULE NO_FRESH PRODUCTION_UNCHANGED');
 }
