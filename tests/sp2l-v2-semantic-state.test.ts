@@ -5,6 +5,7 @@ import {
   resolveSameCandleTouch,
   type Sp2lEvent,
 } from '../src/domain/research/sp2l-v2/Sp2lSemanticState.js';
+import { measureSp2lLegs } from '../src/domain/research/sp2l-v2/Sp2lGeometryMeasurement.js';
 
 function replay(events: Sp2lEvent[]) {
   return events.reduce(applySp2lEvent, createInitialSp2lState());
@@ -201,5 +202,43 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(state.phase).toBe('PENDING');
     expect(state.pendingCreatedAt).toBe(13);
     expect(state.fillIndex).toBeNull();
+  });
+
+  it('measures explicit leg endpoints without selecting them or fitting tolerance', () => {
+    const measurement = measureSp2lLegs({
+      leg1StartPrice: 2500,
+      leg1EndPrice: 2520,
+      leg2StartPrice: 2508,
+      leg2EndPrice: 2528,
+    });
+
+    expect(measurement.leg1Magnitude).toBe(20);
+    expect(measurement.leg2Magnitude).toBe(20);
+    expect(measurement.leg2ToLeg1Ratio).toBe(1);
+    expect(measurement.equalityRelation).toBe('APPROXIMATELY_EQUAL_CANDIDATE');
+    expect(measurement.equalityTolerance).toBeNull();
+  });
+
+  it('returns an undetermined equality relation when Leg 1 has zero magnitude', () => {
+    const measurement = measureSp2lLegs({
+      leg1StartPrice: 2500,
+      leg1EndPrice: 2500,
+      leg2StartPrice: 2508,
+      leg2EndPrice: 2528,
+    });
+
+    expect(measurement.leg1Magnitude).toBe(0);
+    expect(measurement.leg2ToLeg1Ratio).toBeNull();
+    expect(measurement.equalityRelation).toBe('UNDETERMINED');
+    expect(measurement.equalityTolerance).toBeNull();
+  });
+
+  it('rejects non-finite explicit endpoint prices', () => {
+    expect(() => measureSp2lLegs({
+      leg1StartPrice: Number.NaN,
+      leg1EndPrice: 2520,
+      leg2StartPrice: 2508,
+      leg2EndPrice: 2528,
+    })).toThrow('LEG1_START_PRICE_MUST_BE_FINITE');
   });
 });
