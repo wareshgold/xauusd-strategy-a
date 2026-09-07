@@ -10,14 +10,33 @@ import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
 const ROOT = resolve(process.cwd());
 const BASE = resolve(ROOT, 'data/reports/strategy-a-baseline/5min.json');
 const CANDLES = resolve(ROOT, 'data/historical/xauusd-5min.json');
-const OLD_REF = '0017947aac1be7a6f315717d38fec6e2fc58ecb7';
+const BASELINE_REF = '3a96629838fb0a15e5b71f1927dc4f7fe63819e1';
+const PRE_REFRESH_REF = '0017947aac1be7a6f315717d38fec6e2fc58ecb7';
+const TARGET_TIME = '2026-08-26 12:35:00';
+
+function loadGitDataset(ref) {
+  const raw = execFileSync('git', ['show', `${ref}:data/historical/xauusd-5min.json`], {
+    cwd: ROOT,
+    maxBuffer: 256 * 1024 * 1024,
+  });
+  return JSON.parse(raw.toString('utf8')).candles ?? [];
+}
 
 function replayAt(candles, index) {
   const visible = candles.slice(0, index + 1);
   if (visible.length < 60) return null;
+
   const breakouts = detectBreakout(visible, 5);
-  const ft = detectFollowThrough(visible, breakouts, { maxBarsAfterBreakout: 2, requireCloseBeyondBrokenLevel: true });
-  const spikes = detectSpikeCandidates(visible, breakouts, ft, { maxCandles: 8, minDirectionalFraction: .5, maxOverlapFraction: .8 });
+  const ft = detectFollowThrough(visible, breakouts, {
+    maxBarsAfterBreakout: 2,
+    requireCloseBeyondBrokenLevel: true,
+  });
+  const spikes = detectSpikeCandidates(visible, breakouts, ft, {
+    maxCandles: 8,
+    minDirectionalFraction: 0.5,
+    maxOverlapFraction: 0.8,
+  });
+
   for (const spike of spikes.candidates) {
     if (spike.endIndex >= index) continue;
     const correction = detectFirstCorrection(visible, spike);
@@ -25,74 +44,102 @@ function replayAt(candles, index) {
     const trigger = detectEntryTrigger(visible, correction);
     if (!trigger || trigger.index !== index) continue;
     if (trigger.direction !== (spike.direction === 'BULLISH' ? 'BUY' : 'SELL')) continue;
-    const breakout = breakouts.find((x) => x.index === spike.breakoutIndex && x.direction === spike.direction);
-    const followThrough = ft.find((x) => x.breakoutIndex === spike.breakoutIndex && x.direction === spike.direction);
+
+    const breakout = breakouts.find((x) =>
+      x.index === spike.breakoutIndex && x.direction === spike.direction,
+    );
+    const followThrough = ft.find((x) =>
+      x.breakoutIndex === spike.breakoutIndex && x.direction === spike.direction,
+    );
     if (!breakout || !followThrough) continue;
+
     return { trigger, spike, correction, breakout, followThrough };
   }
+
   return null;
 }
 
-function loadOldDataset() {
-  const raw = execFileSync('git', ['show', `${OLD_REF}:data/historical/xauusd-5min.json`], {
-    cwd: ROOT,
-    maxBuffer: 256 * 1024 * 1024,
+function candidateChainsAt(candles, index) {
+  const visible = candles.slice(0, index + 1);
+  const breakouts = detectBreakout(visible, 5);
+  const ft = detectFollowThrough(visible, breakouts, {
+    maxBarsAfterBreakout: 2,
+    requireCloseBeyondBrokenLevel: true,
   });
-  return JSON.parse(raw.toString('utf8')).candles ?? [];
+  const spikes = detectSpikeCandidates(visible, breakouts, ft, {
+    maxCandles: 8,
+    minDirectionalFraction: 0.5,
+    maxOverlapFraction: 0.8,
+  });
+
+  const chains = [];
+  for (const spike of spikes.candidates) {
+    if (spike.endIndex >= index) continue;
+    const correction = detectFirstCorrection(visible, spike);
+    if (!correction || correction.correctionExtremeIndex >= index) continue;
+    const trigger = detectEntryTrigger(visible, correction);
+    if (!trigger || trigger.index !== index) continue;
+    const breakout = breakouts.find((x) =>
+      x.index === spike.breakoutIndex && x.direction === spike.direction,
+    );
+    const followThrough = ft.find((x) =>
+      x.breakoutIndex === spike.breakoutIndex && x.direction === spike.direction,
+    );
+    chains.push({ breakout, followThrough, spike, correction, trigger });
+  }
+  return chains;
 }
 
 async function main() {
   const base = JSON.parse(await readFile(BASE, 'utf8'));
   const current = JSON.parse(await readFile(CANDLES, 'utf8')).candles ?? [];
-  const old = loadOldDataset();
-  const currentByTime = new Map(current.map((c, i) => [c.timestamp, i]));
-  const oldByTime = new Map(old.map((c, i) => [c.timestamp, i]));
-  const targets = (base.trades ?? []).filter((t) =>
-    t.result !== 'AMBIGUOUS' &&
-    typeof t.entryTime === 'string' &&
-    Number.isFinite(Number(t.rMultiple)) &&
-    (t.direction === 'BUY' || t.direction === 'SELL'),
-  );
+  const baselineSnapshot = loadGitDataset(BASELINE_REF);
+  const preRefresh = loadGitDataset(PRE_REFRESH_REF);
 
-  const rows = targets.map((t) => {
-    const oldIndex = oldByTime.get(t.entryTime);
-    const currentIndex = currentByTime.get(t.entryTime);
-    const oldReplay = Number.isInteger(oldIndex) ? replayAt(old, oldIndex) : null;
-    const currentReplay = Number.isInteger(currentIndex) ? replayAt(current, currentIndex) : null;
-    const oldCandle = Number.isInteger(oldIndex) ? old[oldIndex] : null;
-    const currentCandle = Number.isInteger(currentIndex) ? current[currentIndex] : null;
+  const targetTrade = (base.trades ?? []).find((t) => t.entryTime === TARGET_TIME);
+  if (!targetTrade) throw new Error(`PHASE12 FORENSIC: target trade not found: ${TARGET_TIME}`);
+
+  const datasets = [
+    ['BASELINE_SNAPSHOT', baselineSnapshot],
+    ['PRE_REFRESH_15K', preRefresh],
+    ['CURRENT_REFRESHED_50K', current],
+  ];
+
+  const results = datasets.map(([name, candles]) => {
+    const index = candles.findIndex((c) => c.timestamp === TARGET_TIME);
+    const replay = index >= 0 ? replayAt(candles, index) : null;
+    const chains = index >= 0 ? candidateChainsAt(candles, index) : [];
     return {
-      entryTime: t.entryTime,
-      baselineDirection: t.direction,
-      baselineEntryIndex: Number(t.entryIndex),
-      oldIndex,
-      currentIndex,
-      oldDirection: oldReplay?.trigger?.direction ?? null,
-      currentDirection: currentReplay?.trigger?.direction ?? null,
-      oldCandle,
-      currentCandle,
+      dataset: name,
+      count: candles.length,
+      targetIndex: index,
+      targetCandle: index >= 0 ? candles[index] : null,
+      replay,
+      candidateChainsAtTarget: chains,
     };
   });
 
-  const mismatches = rows.filter((r) =>
-    r.oldDirection !== r.baselineDirection || r.currentDirection !== r.baselineDirection,
+  const exact = results[0];
+  const mismatches = results.filter((r) =>
+    r.replay?.trigger?.direction !== targetTrade.direction,
   );
-  const candleChanges = rows.filter((r) => JSON.stringify(r.oldCandle) !== JSON.stringify(r.currentCandle));
-  const target = rows.find((r) => r.entryTime === '2026-08-26 12:35:00');
 
   console.log(JSON.stringify({
-    diagnostic: 'OLD_DATASET_VS_REFRESHED_DATASET_REPLAY',
-    oldDatasetRef: OLD_REF,
-    oldCount: old.length,
-    currentCount: current.length,
-    targetCount: rows.length,
-    baselineReplayMatchesOnOld: rows.filter((r) => r.oldDirection === r.baselineDirection).length,
-    baselineReplayMatchesOnCurrent: rows.filter((r) => r.currentDirection === r.baselineDirection).length,
-    oldVsCurrentCandleChangesAtBaselineTimestamps: candleChanges.length,
-    mismatchCount: mismatches.length,
-    target,
-    mismatches,
+    diagnostic: 'PHASE12_TARGET_FORENSIC_EXACT_BASELINE_SNAPSHOT',
+    baselineSnapshotRef: BASELINE_REF,
+    preRefreshRef: PRE_REFRESH_REF,
+    targetTime: TARGET_TIME,
+    baselineTrade: targetTrade,
+    baselineSnapshotReplayMatchesBaseline: exact.replay?.trigger?.direction === targetTrade.direction,
+    datasetResults: results,
+    mismatchDatasets: mismatches.map((r) => ({
+      dataset: r.dataset,
+      direction: r.replay?.trigger?.direction ?? null,
+    })),
   }, null, 2));
 }
 
-main().catch((error) => { console.error(error); process.exitCode = 1; });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
