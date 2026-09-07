@@ -11,7 +11,8 @@
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
     "research:phase27-d-archetype-conditional-residual-decomposition": "node scripts/analyze-phase27-d-archetype-conditional-residual-decomposition.mjs",
-    "research:phase28-d-archetype-conditional-validation": "node scripts/analyze-phase28-d-archetype-conditional-validation.mjs"
+    "research:phase28-d-archetype-conditional-validation": "node scripts/analyze-phase28-d-archetype-conditional-validation.mjs",
+    "research:phase29-d-archetype-residual-after-geometry": "node scripts/analyze-phase29-d-archetype-residual-after-geometry.mjs"
   },
   "devDependencies": {
     "@types/node": "latest",
