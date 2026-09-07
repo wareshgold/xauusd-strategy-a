@@ -1,0 +1,43 @@
+name: Research - Phase 12 Replay Context Diagnostic
+
+on:
+  push:
+    branches:
+      - research/phase12-preentry-geometry-robustness
+    paths:
+      - scripts/diagnose-phase12-replay-mismatch.mjs
+      - data/historical/xauusd-5min.json
+      - data/reports/strategy-a-baseline/5min.json
+      - src/domain/market/**
+      - src/domain/strategy-a/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          ref: research/phase12-preentry-geometry-robustness
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run old-vs-new replay comparison
+        run: node scripts/diagnose-phase12-replay-mismatch.mjs
