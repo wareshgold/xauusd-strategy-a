@@ -6,6 +6,10 @@ import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.
 import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.js';
 import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.js';
 import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
+import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.js';
+import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
+import { buildEMAContext, buildLocationContext, buildSessionContext } from '../src/domain/strategy-a/Context.js';
+import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
 
 const ROOT = resolve(process.cwd());
 const BASE = resolve(ROOT, 'data/reports/strategy-a-baseline/5min.json');
@@ -13,6 +17,16 @@ const CANDLES = resolve(ROOT, 'data/historical/xauusd-5min.json');
 const BASELINE_REF = '3a96629838fb0a15e5b71f1927dc4f7fe63819e1';
 const PRE_REFRESH_REF = '0017947aac1be7a6f315717d38fec6e2fc58ecb7';
 const TARGET_TIME = '2026-08-26 12:35:00';
+const CONTEXT = {
+  emaPeriod: 60,
+  roundStep: 50,
+  roundDistance: 5,
+  tradingSessions: [
+    { name: 'LONDON', startMinutes: 7 * 60, endMinutes: 16 * 60 },
+    { name: 'NEW_YORK', startMinutes: 13 * 60, endMinutes: 22 * 60 },
+  ],
+  avoidWindows: [],
+};
 
 function loadGitDataset(ref) {
   const raw = execFileSync('git', ['show', `${ref}:data/historical/xauusd-5min.json`], {
@@ -22,45 +36,10 @@ function loadGitDataset(ref) {
   return JSON.parse(raw.toString('utf8')).candles ?? [];
 }
 
-function replayAt(candles, index) {
+function detectChains(candles, index) {
   const visible = candles.slice(0, index + 1);
-  if (visible.length < 60) return null;
+  if (visible.length < Math.max(5 + 2, CONTEXT.emaPeriod)) return [];
 
-  const breakouts = detectBreakout(visible, 5);
-  const ft = detectFollowThrough(visible, breakouts, {
-    maxBarsAfterBreakout: 2,
-    requireCloseBeyondBrokenLevel: true,
-  });
-  const spikes = detectSpikeCandidates(visible, breakouts, ft, {
-    maxCandles: 8,
-    minDirectionalFraction: 0.5,
-    maxOverlapFraction: 0.8,
-  });
-
-  for (const spike of spikes.candidates) {
-    if (spike.endIndex >= index) continue;
-    const correction = detectFirstCorrection(visible, spike);
-    if (!correction || correction.correctionExtremeIndex >= index) continue;
-    const trigger = detectEntryTrigger(visible, correction);
-    if (!trigger || trigger.index !== index) continue;
-    if (trigger.direction !== (spike.direction === 'BULLISH' ? 'BUY' : 'SELL')) continue;
-
-    const breakout = breakouts.find((x) =>
-      x.index === spike.breakoutIndex && x.direction === spike.direction,
-    );
-    const followThrough = ft.find((x) =>
-      x.breakoutIndex === spike.breakoutIndex && x.direction === spike.direction,
-    );
-    if (!breakout || !followThrough) continue;
-
-    return { trigger, spike, correction, breakout, followThrough };
-  }
-
-  return null;
-}
-
-function candidateChainsAt(candles, index) {
-  const visible = candles.slice(0, index + 1);
   const breakouts = detectBreakout(visible, 5);
   const ft = detectFollowThrough(visible, breakouts, {
     maxBarsAfterBreakout: 2,
@@ -79,15 +58,48 @@ function candidateChainsAt(candles, index) {
     if (!correction || correction.correctionExtremeIndex >= index) continue;
     const trigger = detectEntryTrigger(visible, correction);
     if (!trigger || trigger.index !== index) continue;
+
     const breakout = breakouts.find((x) =>
       x.index === spike.breakoutIndex && x.direction === spike.direction,
     );
     const followThrough = ft.find((x) =>
       x.breakoutIndex === spike.breakoutIndex && x.direction === spike.direction,
     );
-    chains.push({ breakout, followThrough, spike, correction, trigger });
+    if (!breakout || !followThrough) continue;
+
+    const projection = projectLeg2(visible, correction);
+    if (!projection) continue;
+    const invalidation = getInvalidationRule(correction);
+    const ema = buildEMAContext(visible.map((c) => c.close), CONTEXT);
+    if (!ema) continue;
+    const location = buildLocationContext(trigger.entryPrice, CONTEXT);
+    const session = buildSessionContext(trigger.timestamp, CONTEXT);
+    const quality = scoreSetup(spike, { ema, location, session });
+    const risk = Math.abs(trigger.entryPrice - invalidation.invalidationLevel);
+    const reward = Math.abs(projection.tp1 - trigger.entryPrice);
+    if (risk <= 0 || reward <= 0) continue;
+
+    chains.push({
+      breakout,
+      followThrough,
+      spike,
+      correction,
+      trigger,
+      projection,
+      invalidation,
+      quality,
+      risk,
+      reward,
+    });
   }
   return chains;
+}
+
+function replayAt(candles, index) {
+  const chains = detectChains(candles, index);
+  const selected = chains.find((chain) => chain.quality.tradeAllowed);
+  if (!selected) return null;
+  return selected;
 }
 
 async function main() {
@@ -107,8 +119,8 @@ async function main() {
 
   const results = datasets.map(([name, candles]) => {
     const index = candles.findIndex((c) => c.timestamp === TARGET_TIME);
-    const replay = index >= 0 ? replayAt(candles, index) : null;
-    const chains = index >= 0 ? candidateChainsAt(candles, index) : [];
+    const chains = index >= 0 ? detectChains(candles, index) : [];
+    const replay = chains.find((chain) => chain.quality.tradeAllowed) ?? null;
     return {
       dataset: name,
       count: candles.length,
@@ -116,6 +128,7 @@ async function main() {
       targetCandle: index >= 0 ? candles[index] : null,
       replay,
       candidateChainsAtTarget: chains,
+      allowedCandidates: chains.filter((chain) => chain.quality.tradeAllowed),
     };
   });
 
@@ -126,11 +139,14 @@ async function main() {
 
   console.log(JSON.stringify({
     diagnostic: 'PHASE12_TARGET_FORENSIC_EXACT_BASELINE_SNAPSHOT',
+    selectionSemantics: 'EXACT_BASELINE_DECIDE_FIRST_TRADE_ALLOWED_CANDIDATE',
     baselineSnapshotRef: BASELINE_REF,
     preRefreshRef: PRE_REFRESH_REF,
     targetTime: TARGET_TIME,
     baselineTrade: targetTrade,
-    baselineSnapshotReplayMatchesBaseline: exact.replay?.trigger?.direction === targetTrade.direction,
+    baselineSnapshotReplayMatchesBaseline: exact.replay?.trigger?.direction === targetTrade.direction &&
+      exact.replay?.spike?.structureScore === targetTrade.structureScore &&
+      exact.replay?.spike?.overlapScore === targetTrade.overlapScore,
     datasetResults: results,
     mismatchDatasets: mismatches.map((r) => ({
       dataset: r.dataset,
