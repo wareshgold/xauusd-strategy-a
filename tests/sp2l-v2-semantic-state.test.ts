@@ -191,6 +191,36 @@ describe('SP2L V2 semantic state model (non-production)', () => {
     expect(filled.geometry.leg2ProjectionOrigin.index).toBeNull();
   });
 
+  it('accepts a source-shaped correction-origin classification without equating it to fill', () => {
+    const pending = replay(bullishSetup);
+    const classified = applySp2lEvent(pending, {
+      type: 'LEG2_PROJECTION_ORIGIN_IDENTIFIED',
+      index: 14,
+      price: null,
+      status: 'SOURCE_CONFIRMED',
+      rationale: 'Source confirms the parent Leg 2 begins from the intervening deep correction; exact OHLC coordinate remains unresolved.',
+    });
+
+    expect(classified.phase).toBe('PENDING');
+    expect(classified.geometry.leg2ProjectionOrigin.status).toBe('SOURCE_CONFIRMED');
+    expect(classified.geometry.leg2ProjectionOrigin.index).toBe(14);
+    expect(classified.geometry.leg2ProjectionOrigin.price).toBeNull();
+    expect(classified.geometry.pendingEntryPrice.price).toBe(2500);
+  });
+
+  it('rejects a Leg 2 origin placed before the correction begins', () => {
+    const pending = replay(bullishSetup);
+    const invalid = applySp2lEvent(pending, {
+      type: 'LEG2_PROJECTION_ORIGIN_IDENTIFIED',
+      index: 12,
+      price: 2498,
+      status: 'CANDIDATE',
+    });
+
+    expect(invalid.phase).toBe('REJECTED');
+    expect(invalid.rejectionReason).toBe('LEG2_ORIGIN_CANNOT_PRECEDE_CORRECTION');
+  });
+
   it('keeps 2X separate from position 1', () => {
     const state = applySp2lEvent(replay(bullishSetup), {
       type: 'LIMIT_TOUCHED',
