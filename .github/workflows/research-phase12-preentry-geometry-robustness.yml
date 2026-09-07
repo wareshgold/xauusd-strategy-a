@@ -1,0 +1,57 @@
+name: Research - Phase 12 Pre-entry Geometry Robustness
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout research branch
+        uses: actions/checkout@v4
+        with:
+          ref: research/phase12-preentry-geometry-robustness
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Phase 12 pre-entry geometry robustness analysis
+        run: pnpm run research:phase12-preentry-geometry-robustness
+
+      - name: Verify Phase 12 output
+        run: |
+          test -s data/reports/strategy-a-phase12-preentry-geometry-robustness/5m.json
+          node -e "const fs=require('fs'); const p='data/reports/strategy-a-phase12-preentry-geometry-robustness/5m.json'; const x=JSON.parse(fs.readFileSync(p,'utf8')); if(x.freshHoldoutExcluded!==true || x.noOptimization!==true || x.noThresholdSearch!==true || x.noNewTradingRules!==true || x.productionUntouched!==true) process.exit(1); console.log('Phase 12 safeguards verified:', {freshHoldoutExcluded:x.freshHoldoutExcluded,noOptimization:x.noOptimization,noThresholdSearch:x.noThresholdSearch,noNewTradingRules:x.noNewTradingRules,productionUntouched:x.productionUntouched});"
+
+      - name: Upload Phase 12 report
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase12-preentry-geometry-robustness-5m
+          path: data/reports/strategy-a-phase12-preentry-geometry-robustness/5m.json
+          if-no-files-found: error
+
+      - name: Commit Phase 12 report to research branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reports/strategy-a-phase12-preentry-geometry-robustness/5m.json
+          if git diff --cached --quiet; then
+            echo "No Phase 12 report changes to commit."
+          else
+            git commit -m "research: record Phase 12 pre-entry geometry robustness report"
+            git push origin HEAD:research/phase12-preentry-geometry-robustness
+          fi
