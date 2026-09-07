@@ -17,6 +17,7 @@
     "audit:data": "node scripts/audit-dataset.mjs",
     "backtest:baseline": "tsc -p tsconfig.backtest.json && node dist/scripts/run-baseline-backtest.js",
     "research:phase12-preentry-geometry-robustness": "node scripts/analyze-phase12-preentry-geometry-robustness.mjs",
+    "research:phase12b-geometry-quantile-robustness": "node scripts/analyze-phase12b-geometry-quantile-robustness.mjs",
     "research:phase12-reclaim-temporal-replication": "node scripts/analyze-phase12-reclaim-temporal-replication.mjs",
     "research:phase13-post-entry-recovery-event": "node scripts/analyze-phase13-post-entry-recovery-event.mjs",
     "research:phase14-preentry-setup-timing": "node scripts/analyze-phase14-preentry-setup-timing.mjs",
