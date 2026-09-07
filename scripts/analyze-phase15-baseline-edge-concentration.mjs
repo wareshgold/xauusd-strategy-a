@@ -7,12 +7,12 @@ import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetect
 import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
 import { getInvalidationRule } from '../src/domain/strategy-a/Invalidation.js';
 import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
-import { buildEMAContext, buildLocationContext, buildSessionContext, type ContextConfig } from '../src/domain/strategy-a/Context.js';
+import { buildEMAContext, buildLocationContext, buildSessionContext } from '../src/domain/strategy-a/Context.js';
 import { scoreSetup } from '../src/domain/strategy-a/QualityScore.js';
 
 const ROOT=resolve(process.cwd()),PRE=10000,DEV=6000;
 const CFG={breakoutLookback:5,followThrough:{maxBarsAfterBreakout:2,requireCloseBeyondBrokenLevel:true},spike:{maxCandles:8,minDirectionalFraction:.5,maxOverlapFraction:.8}};
-const CONTEXT: ContextConfig={emaPeriod:60,roundStep:50,roundDistance:5,tradingSessions:[{name:'LONDON',startMinutes:420,endMinutes:960},{name:'NEW_YORK',startMinutes:780,endMinutes:1320}],avoidWindows:[]};
+const CONTEXT={emaPeriod:60,roundStep:50,roundDistance:5,tradingSessions:[{name:'LONDON',startMinutes:420,endMinutes:960},{name:'NEW_YORK',startMinutes:780,endMinutes:1320}],avoidWindows:[]};
 const round=n=>Number.isFinite(n)?Number(n.toFixed(6)):null;
 const pct=n=>Number.isFinite(n)?Number((n*100).toFixed(4)):null;
 const stats=rows=>{const r=rows.filter(x=>Number.isFinite(x.r)),w=r.filter(x=>x.r>0),l=r.filter(x=>x.r<=0),gw=w.reduce((s,x)=>s+x.r,0),gl=l.reduce((s,x)=>s+Math.abs(x.r),0);return{n:r.length,wins:w.length,losses:l.length,WR:r.length?w.length/r.length:null,avgR:r.length?r.reduce((s,x)=>s+x.r,0)/r.length:null,PF:gl?gw/gl:null,totalR:r.reduce((s,x)=>s+x.r,0)};};
