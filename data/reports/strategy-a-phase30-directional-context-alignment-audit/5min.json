@@ -1,0 +1,1204 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_30_DIRECTIONAL_CONTEXT_ALIGNMENT_AUDIT",
+  "timeframe": "5min",
+  "scope": {
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 0,
+    "dev": 0,
+    "val": 0,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 210,
+    "rawBaselinePre": 221,
+    "canonicalReplayed": 0,
+    "replayMismatch": 221
+  },
+  "overall": {
+    "n": 0,
+    "avgR": null,
+    "PF": null,
+    "WR": null,
+    "totalR": 0,
+    "maxConsecLoss": 0
+  },
+  "ema": {
+    "EMA50": {
+      "bull": {
+        "all": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "BUY": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "SELL": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      },
+      "bear": {
+        "all": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "BUY": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "SELL": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      },
+      "aligned": {
+        "BUY": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "SELL": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      },
+      "misaligned": {
+        "BUY": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "SELL": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      },
+      "alignedBuy": [
+        {
+          "removeTop": 1,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        {
+          "removeTop": 2,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        {
+          "removeTop": 3,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      ],
+      "alignedSell": [
+        {
+          "removeTop": 1,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        {
+          "removeTop": 2,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        {
+          "removeTop": 3,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      ],
+      "windows": {
+        "alignedBuy": {
+          "overall": {
+            "n": 0,
+            "avgR": null,
+            "PF": null,
+            "WR": null,
+            "totalR": 0,
+            "maxConsecLoss": 0
+          },
+          "perWindow": [
+            {
+              "window": "DEV_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_3",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            }
+          ],
+          "observedWindows": 0,
+          "positiveWindows": 0,
+          "negativeWindows": 0,
+          "signConsistency": null
+        },
+        "misalignedBuy": {
+          "overall": {
+            "n": 0,
+            "avgR": null,
+            "PF": null,
+            "WR": null,
+            "totalR": 0,
+            "maxConsecLoss": 0
+          },
+          "perWindow": [
+            {
+              "window": "DEV_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_3",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            }
+          ],
+          "observedWindows": 0,
+          "positiveWindows": 0,
+          "negativeWindows": 0,
+          "signConsistency": null
+        },
+        "alignedSell": {
+          "overall": {
+            "n": 0,
+            "avgR": null,
+            "PF": null,
+            "WR": null,
+            "totalR": 0,
+            "maxConsecLoss": 0
+          },
+          "perWindow": [
+            {
+              "window": "DEV_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_3",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            }
+          ],
+          "observedWindows": 0,
+          "positiveWindows": 0,
+          "negativeWindows": 0,
+          "signConsistency": null
+        },
+        "misalignedSell": {
+          "overall": {
+            "n": 0,
+            "avgR": null,
+            "PF": null,
+            "WR": null,
+            "totalR": 0,
+            "maxConsecLoss": 0
+          },
+          "perWindow": [
+            {
+              "window": "DEV_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_3",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            }
+          ],
+          "observedWindows": 0,
+          "positiveWindows": 0,
+          "negativeWindows": 0,
+          "signConsistency": null
+        }
+      }
+    },
+    "EMA100": {
+      "bull": {
+        "all": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "BUY": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "SELL": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      },
+      "bear": {
+        "all": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "BUY": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "SELL": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      },
+      "aligned": {
+        "BUY": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "SELL": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      },
+      "misaligned": {
+        "BUY": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "SELL": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      },
+      "alignedBuy": [
+        {
+          "removeTop": 1,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        {
+          "removeTop": 2,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        {
+          "removeTop": 3,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      ],
+      "alignedSell": [
+        {
+          "removeTop": 1,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        {
+          "removeTop": 2,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        {
+          "removeTop": 3,
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        }
+      ],
+      "windows": {
+        "alignedBuy": {
+          "overall": {
+            "n": 0,
+            "avgR": null,
+            "PF": null,
+            "WR": null,
+            "totalR": 0,
+            "maxConsecLoss": 0
+          },
+          "perWindow": [
+            {
+              "window": "DEV_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_3",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            }
+          ],
+          "observedWindows": 0,
+          "positiveWindows": 0,
+          "negativeWindows": 0,
+          "signConsistency": null
+        },
+        "misalignedBuy": {
+          "overall": {
+            "n": 0,
+            "avgR": null,
+            "PF": null,
+            "WR": null,
+            "totalR": 0,
+            "maxConsecLoss": 0
+          },
+          "perWindow": [
+            {
+              "window": "DEV_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_3",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            }
+          ],
+          "observedWindows": 0,
+          "positiveWindows": 0,
+          "negativeWindows": 0,
+          "signConsistency": null
+        },
+        "alignedSell": {
+          "overall": {
+            "n": 0,
+            "avgR": null,
+            "PF": null,
+            "WR": null,
+            "totalR": 0,
+            "maxConsecLoss": 0
+          },
+          "perWindow": [
+            {
+              "window": "DEV_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_3",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            }
+          ],
+          "observedWindows": 0,
+          "positiveWindows": 0,
+          "negativeWindows": 0,
+          "signConsistency": null
+        },
+        "misalignedSell": {
+          "overall": {
+            "n": 0,
+            "avgR": null,
+            "PF": null,
+            "WR": null,
+            "totalR": 0,
+            "maxConsecLoss": 0
+          },
+          "perWindow": [
+            {
+              "window": "DEV_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "DEV_3",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_1",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            {
+              "window": "VAL_2",
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            }
+          ],
+          "observedWindows": 0,
+          "positiveWindows": 0,
+          "negativeWindows": 0,
+          "signConsistency": null
+        }
+      }
+    },
+    "slope": {
+      "EMA50": {
+        "bull": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "bear": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "windows": {
+          "bull": {
+            "overall": {
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            "perWindow": [
+              {
+                "window": "DEV_1",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "DEV_2",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "DEV_3",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "VAL_1",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "VAL_2",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              }
+            ],
+            "observedWindows": 0,
+            "positiveWindows": 0,
+            "negativeWindows": 0,
+            "signConsistency": null
+          },
+          "bear": {
+            "overall": {
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            "perWindow": [
+              {
+                "window": "DEV_1",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "DEV_2",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "DEV_3",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "VAL_1",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "VAL_2",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              }
+            ],
+            "observedWindows": 0,
+            "positiveWindows": 0,
+            "negativeWindows": 0,
+            "signConsistency": null
+          }
+        }
+      },
+      "EMA100": {
+        "bull": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "bear": {
+          "n": 0,
+          "avgR": null,
+          "PF": null,
+          "WR": null,
+          "totalR": 0,
+          "maxConsecLoss": 0
+        },
+        "windows": {
+          "bull": {
+            "overall": {
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            "perWindow": [
+              {
+                "window": "DEV_1",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "DEV_2",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "DEV_3",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "VAL_1",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "VAL_2",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              }
+            ],
+            "observedWindows": 0,
+            "positiveWindows": 0,
+            "negativeWindows": 0,
+            "signConsistency": null
+          },
+          "bear": {
+            "overall": {
+              "n": 0,
+              "avgR": null,
+              "PF": null,
+              "WR": null,
+              "totalR": 0,
+              "maxConsecLoss": 0
+            },
+            "perWindow": [
+              {
+                "window": "DEV_1",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "DEV_2",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "DEV_3",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "VAL_1",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              },
+              {
+                "window": "VAL_2",
+                "n": 0,
+                "avgR": null,
+                "PF": null,
+                "WR": null,
+                "totalR": 0,
+                "maxConsecLoss": 0
+              }
+            ],
+            "observedWindows": 0,
+            "positiveWindows": 0,
+            "negativeWindows": 0,
+            "signConsistency": null
+          }
+        }
+      }
+    }
+  },
+  "temporalWindows": {
+    "DEV_1": {
+      "n": 0,
+      "avgR": null,
+      "PF": null,
+      "WR": null,
+      "totalR": 0,
+      "maxConsecLoss": 0
+    },
+    "DEV_2": {
+      "n": 0,
+      "avgR": null,
+      "PF": null,
+      "WR": null,
+      "totalR": 0,
+      "maxConsecLoss": 0
+    },
+    "DEV_3": {
+      "n": 0,
+      "avgR": null,
+      "PF": null,
+      "WR": null,
+      "totalR": 0,
+      "maxConsecLoss": 0
+    },
+    "VAL_1": {
+      "n": 0,
+      "avgR": null,
+      "PF": null,
+      "WR": null,
+      "totalR": 0,
+      "maxConsecLoss": 0
+    },
+    "VAL_2": {
+      "n": 0,
+      "avgR": null,
+      "PF": null,
+      "WR": null,
+      "totalR": 0,
+      "maxConsecLoss": 0
+    }
+  },
+  "methodology": {
+    "purpose": "Descriptive audit of whether existing canonical BUY/SELL outcomes align with entry-time directional context. EMA50 and EMA100 are research diagnostics only and are not treated as Poorsamadi-canonical rules.",
+    "regimes": [
+      "close>EMA50",
+      "close<EMA50",
+      "close>EMA100",
+      "close<EMA100",
+      "EMA50 slope>0",
+      "EMA50 slope<0",
+      "EMA100 slope>0",
+      "EMA100 slope<0"
+    ],
+    "alignment": "BUY aligned when close is above EMA; SELL aligned when close is below EMA. Opposite side is misaligned.",
+    "emaCalculation": "Causal recursive EMA using candles through the entry candle only; no future candles.",
+    "fixedChronologicalWindows": [
+      [
+        "DEV_1",
+        0,
+        1999
+      ],
+      [
+        "DEV_2",
+        2000,
+        3999
+      ],
+      [
+        "DEV_3",
+        4000,
+        5999
+      ],
+      [
+        "VAL_1",
+        6000,
+        7999
+      ],
+      [
+        "VAL_2",
+        8000,
+        9999
+      ]
+    ],
+    "metrics": [
+      "N",
+      "avgR",
+      "PF",
+      "WR",
+      "totalR",
+      "maxConsecLoss",
+      "positiveWindows",
+      "negativeWindows",
+      "signConsistency"
+    ],
+    "topWinnerSensitivity": true,
+    "noThresholdSearch": true,
+    "noOptimization": true,
+    "noNewTradingRule": true,
+    "noFreshHoldoutAccess": true,
+    "productionUntouched": true
+  }
+}
