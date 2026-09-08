@@ -14,7 +14,13 @@ Final source-only audit of executable geometry for P-Gap, Entry, SL, and Leg-1 /
 ### 1. P-Gap
 Source explicitly links a valid breakout to P-Gap and describes a gap/non-overlap relationship in the breakout/follow-through context. The source slide states `Valid BO = P-Gap` and shows three accepted-looking constructions plus one rejected construction.
 
-A deeper visual inspection confirms an important semantic invariant: the three accepted-looking constructions are deliberately different candle arrangements, yet each is illustrated with a gap/non-overlap region; the red-X construction does not provide the same visible gap/non-overlap evidence. This strengthens the semantic rule without resolving the executable formula.
+A deeper frame-by-frame inspection around 34:14–35:37 confirms an important semantic invariant: the accepted-looking constructions are deliberately different candle arrangements, yet each is illustrated with gap/non-overlap evidence. The source narration also describes variants where breakout/follow-through precedes the gap and variants where directional higher-lows precede the gap. The instructor treats these as the same Spike hierarchy rather than separate strategy modules.
+
+The strongest source-safe timing statement is therefore relational:
+
+`P-Gap evidence is associated with the valid breakout / follow-through structure inside the source-defined Spike sequence.`
+
+This does **not** establish a universal candle index.
 
 The visual rectangles do not uniquely identify an OHLC boundary pair. The audit cannot defensibly distinguish:
 - prior High -> next Low;
@@ -24,12 +30,9 @@ The visual rectangles do not uniquely identify an OHLC boundary pair. The audit 
 - a multi-candle boundary;
 - another manually illustrated boundary;
 - equality/touch behavior;
-- minimum gap size;
-- a universal candle index/timing rule.
+- minimum gap size.
 
-The three accepted variants also show that a single rigid three-candle timing formula must not be imported merely because it is convenient to code.
-
-Decision: semantic meaning + non-overlap invariant resolved; executable formula unresolved.
+Decision: semantic meaning + non-overlap invariant + relational timing context resolved; executable formula and exact candle identity unresolved.
 
 ### 2. Entry
 Source transcript states that when the correction reaches the low of the relevant previous candle in bullish structure, an order can be placed manually or as a pre-set limit; bearish logic is mirrored to the previous high. Source diagrams explicitly show `Buy Limit` / `Entry` as a separate execution level.
@@ -95,6 +98,8 @@ A dedicated research fixture set records three accepted-looking source construct
 - minimum gap size;
 - equality/touch convention.
 
+A dedicated timing fixture set now records the additional source-safe invariant that P-Gap occurs within the source-defined Spike/breakout sequence while preserving exact candle identity as `UNRESOLVED`.
+
 No generic FVG formula is promoted.
 
 ## Entry geometry hypothesis matrix
@@ -126,8 +131,9 @@ The authoritative material is sufficient to define the **semantic contract** but
 `Spike -> source-defined P-Gap-valid breakout context -> correction -> relevant prior Low/High -> pending limit -> structural invalidation behind Spike-origin -> Leg 2 with source-confirmed equal/approximately equal Leg-1 magnitude.`
 
 ### Explicitly unresolved
-- exact P-Gap boundaries and timing;
-- exact relevant Entry candle across all variants;
+- exact P-Gap boundaries;
+- exact P-Gap candle identity/index;
+- exact Entry candle across all variants;
 - exact Entry price convention/buffer;
 - whether Entry uses wick or body boundary;
 - whether the pending level is fixed at first qualification or revised as correction evolves;
