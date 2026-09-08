@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SP2L_SEMANTIC_FIXTURES } from './fixtures/SP2LSemanticContract.fixtures';
+import { SP2L_SEMANTIC_FIXTURES } from './fixtures/SP2LSemanticContract.fixtures.js';
 
 describe('SP2L frozen semantic contract', () => {
   it('contains both directional canonical examples', () => {
