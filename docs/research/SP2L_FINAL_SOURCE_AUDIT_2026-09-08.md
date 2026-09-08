@@ -34,14 +34,31 @@ The primary-source entry cross-check also reviewed the real entry sequence aroun
 
 A secondary TradingFinder implementation does use a later last-Spike-candle breakout, but this conflicts with the primary video semantics and therefore remains a secondary hypothesis only.
 
-The audit does not establish one universal candle index across all Spike variants, nor does it establish a numeric buffer, body-vs-wick substitution, or equivalence to P-Gap boundary / classical C / 50% retracement.
+The four real trade examples were also cross-checked. Their observed execution prices are 3229.08, 3223.84, 3228.88, and 3232.41. The charts show horizontal order/reference levels associated with the corrective structure, but the source visuals do not uniquely map each fill to one universal candle index or wick/body boundary.
 
 Decision: direction + pending-limit semantics resolved; last-Spike-candle breakout rejected as a canonical entry prerequisite; exact executable candle/price convention unresolved.
 
 ### 3. SL
 Source semantics: stop is placed behind the candle from which the Spike originated. The visual entry diagram places SL structurally below/behind the origin in bullish structure; bearish mirror is consistent.
 
-Exact executable OHLC price is not source-resolved: wick/body, strict beyond vs touch, tick/spread buffer, and origin identity across every variant remain open.
+The four source-visible trade records provide the following descriptive fill-to-stop distances:
+
+| Trade | Entry | SL | Absolute distance |
+|---|---:|---:|---:|
+| T1 | 3229.08 | 3237.73 | 8.65 |
+| T2 | 3223.84 | 3235.50 | 11.66 |
+| T3 | 3228.88 | 3235.50 | 6.62 |
+| T4 | 3232.41 | 3237.80 | 5.39 |
+
+The variation is consistent with a structural stop rather than a single fixed entry-to-stop distance, but it does **not** prove the exact OHLC boundary.
+
+The real-trade frames support an invalidation level on the far side of the originating structure. They do not uniquely resolve:
+- wick extreme vs body edge;
+- strict beyond vs touch;
+- tick/spread/point buffer;
+- exact origin candle identity for every Spike variant.
+
+The source also allows deletion/replacement of a pending order when the resulting stop distance changes materially, so observed stop prices must not be reverse-engineered into a universal fixed formula.
 
 Decision: structural anchor resolved; exact price unresolved.
 
@@ -51,6 +68,17 @@ Source confirms Spike -> correction -> second leg and explicitly describes AB=CD
 Strongest candidate for Leg-1 magnitude is source-defined Spike-origin -> source-defined Spike extreme, but exact OHLC anchor remains unresolved. No classical A/B/C mapping or Fibonacci ratio is imported.
 
 Decision: equal-leg semantic resolved; exact geometry and tolerance unresolved.
+
+## Four-trade SL/origin audit
+
+A dedicated research audit and fixture set preserves the four source-visible Entry/SL observations without promoting them into executable geometry. The fixture contract requires:
+
+- `BEHIND_SPIKE_ORIGIN_CANDLE` as the semantic stop anchor;
+- exact stop boundary remains unresolved;
+- fixed stop buffer remains unresolved;
+- observed risk distances remain descriptive only.
+
+This is a source-evidence preservation layer, not a trading-rule implementation.
 
 ## Entry geometry hypothesis matrix
 
