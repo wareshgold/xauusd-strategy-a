@@ -1,9 +1,11 @@
 # SP2L Subtitle Source Resolution
 
-Date: 2026-09-08
+Date: 2026-09-08  
 Branch: `research/source-resolution-entry-level-v2`
 
-## Purpose
+> **SUPERSEDED (2026-09-08):** This document records the earlier state in which the Persian subtitle/transcript had not yet been recovered. The full timestamped Persian transcript is now recovered and registered at `docs/strategy/source/POORSAMADI_SP2L_SOURCE.txt`. Use `docs/source/treasure_path/SP2L_SOURCE_TRANSCRIPT_REGISTRY_2026-09-08.md` and `docs/research/SP2L_SOURCE_RESOLUTION_SNAPSHOT_2026-09-08.md` as the current source-resolution entry points.
+
+## Historical purpose
 
 Determine whether the Persian subtitle/transcript referenced by the public distribution of the SP2L source video can be recovered or directly inspected, and whether it can be used to resolve the remaining Spike / P-Gap / A-B-C-D geometry questions.
 
@@ -22,58 +24,68 @@ The public Telegram distribution identifies the same 1:09:16 SP2L video and link
 
 The same public channel later explicitly states that a **"دقیق فارسی مخصوص ناشنوایان"** Persian subtitle was prepared and added.
 
-## Retrieval result
+## Historical retrieval result
 
-The indexed Telegram page exposes the subtitle announcement and surrounding post text, but it does not expose the subtitle file contents, an `.srt`/`.vtt` attachment, or timestamped transcript text through the accessible web representation.
+At the time this document was written, the indexed Telegram page exposed the subtitle announcement but not the subtitle file contents, and the accessible YouTube page did not expose caption-track contents. The uploaded local MP4 also contains no embedded subtitle stream.
 
-The YouTube page is also identifiable as the same SP2L video, but the accessible page representation does not expose caption-track contents or a transcript.
+That historical state is now superseded by the later discovery of the full timestamped Persian transcript in the repository.
 
-The uploaded local MP4 was independently checked previously with `ffprobe`: it contains no embedded subtitle stream. Therefore the local asset cannot currently supply the Persian subtitle as an embedded track.
+## Current recovered source artifact
 
-## Evidence status
+- Raw transcript: `docs/strategy/source/POORSAMADI_SP2L_SOURCE.txt`
+- Transcript SHA: `47f867385338738a23b2d06dc48e67b852127243`
+- Transcript registry: `docs/source/treasure_path/SP2L_SOURCE_TRANSCRIPT_REGISTRY_2026-09-08.md`
+- Durable snapshot: `docs/research/SP2L_SOURCE_RESOLUTION_SNAPSHOT_2026-09-08.md`
+
+The transcript is now the primary semantic research artifact. It is source material, not by itself a frozen executable geometry specification.
+
+## What the recovered transcript materially resolves
+
+The recovered wording directly confirms:
+
+- around 30:53–31:18, a valid breakout is described as a close beyond a prior level followed by a follow-through/key bar that cannot return into the prior range;
+- around 34:14–34:35, P-GAP is presented as a visual marker for where breakout occurred, and a gap is described when the referenced high and low do not overlap, associated with breakout + follow-through;
+- around 35:50–36:15, multiple spike constructions are treated as a hierarchy/sequence of movements and are all treated as Spike for this strategy;
+- around 36:15–36:59, SP2L is explicitly tied to 2Leg / AB=CD, with the source emphasizing candle-level work rather than a generic classical implementation;
+- around 36:59, the expected second leg is stated to match the first leg;
+- around 38:38–39:26, correction is described as moving below the first low for the bullish example, and the order may be placed manually or as a pre-set Limit during correction;
+- around 39:26, Buy Limit is explicitly named and the stop/invalidation distance is known before activation; returning to the invalidation area invalidates the scenario;
+- around 39:48–40:07, pending-order management can involve deleting/replacing the order if the risk distance changes materially.
+
+These statements strengthen semantic resolution but still do not freeze the exact P-Gap formula, A/B/C/D OHLC anchors, AB=CD tolerance, or historical intrabar fill semantics.
+
+## Evidence status after recovery
 
 | Artifact | Status | Use |
 |---|---|---|
 | Original uploaded MP4 | AVAILABLE | Primary visual/audio source |
-| Embedded subtitle stream | ABSENT | Cannot extract from MP4 |
+| Embedded subtitle stream | ABSENT | Not available inside MP4 |
 | Public Telegram subtitle announcement | CONFIRMED | Proves subtitle version exists publicly |
-| Subtitle text/file through indexed Telegram page | NOT EXPOSED | Cannot treat as recovered transcript |
-| YouTube transcript/caption text through accessible page | NOT EXPOSED | No direct transcript evidence |
+| Full timestamped Persian transcript | **RECOVERED / REGISTERED** | Primary semantic source artifact |
+| Transcript registry | **CONFIRMED** | Provenance/navigation |
+| YouTube transcript via page | NOT NEEDED | Recovered repository transcript supersedes this retrieval path |
 
-## Important source boundary
+## Remaining source blockers
 
-The existence of the Persian subtitle is now a **confirmed research lead**, not a recovered source artifact. We must not reconstruct missing subtitle wording from third-party summaries and then label it as source-confirmed.
-
-In particular, the following remain unresolved despite third-party claims:
+The following remain unresolved despite the recovered transcript:
 
 - exact names/rules of the four Spike variants;
 - executable P-Gap candle/price boundaries;
 - exact A/B anchors;
 - exact C anchor and whether C equals the Buy Limit level;
 - exact D construction;
-- numeric AB=CD tolerance.
-
-## What the public distribution confirms
-
-The public syllabus confirms that the source explicitly teaches four Spike types, P-Gap, SP2L order placement, 2X, Level/context combinations, ten entries on 13 May 2025, and a detailed review of the four initial trades. This makes those video regions high-value targets for manual source resolution.
-
-## Next highest-value action
-
-Obtain the actual subtitle artifact (SRT/VTT/text) from the subtitle-bearing distribution or from the subtitle-bearing video itself, then align its timestamps to approximately:
-
-- 29:00–35:30 — four Spike examples / P-Gap teaching;
-- 36:00–41:50 — AB=CD / Limit / Buy Limit / SL;
-- 42:00–54:00 — real-chart examples and execution;
-- 54:00–65:00 — additional examples / order history / 13 May 2025 examples.
-
-Only after direct timestamped wording is available should unresolved geometry be promoted from hypothesis to canonical candidate.
+- numeric AB=CD tolerance;
+- exact intrabar fill semantics;
+- exact target relationship among base 1:1, TP1/TP2 and the separate 2X module;
+- exact rejection predicate represented by visual invalid examples.
 
 ## Gate impact
 
-Source Resolution remains OPEN but materially narrowed. The missing subtitle artifact is now a tracked external-source recovery item. No production or canonical strategy code is changed by this document.
+The subtitle-retrieval blocker is **CLOSED** because the full timestamped transcript is now recovered and registered. The overall Source Resolution gate remains **OPEN** because executable geometry is still unresolved. No production or canonical strategy code is changed by this document.
 
 ### Sources
 
 - Public SP2L Telegram distribution: https://t.me/s/pur_samadi?after=1512
 - YouTube source video: https://youtu.be/7HEC5mO3d3U
 - Official SP2L page: https://poursamadi.com/sp2l-strategy/
+- Recovered transcript: `docs/strategy/source/POORSAMADI_SP2L_SOURCE.txt`
