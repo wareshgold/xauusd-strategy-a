@@ -14,16 +14,22 @@ Final source-only audit of executable geometry for P-Gap, Entry, SL, and Leg-1 /
 ### 1. P-Gap
 Source explicitly links a valid breakout to P-Gap and describes a gap/non-overlap relationship in the breakout/follow-through context. The source slide states `Valid BO = P-Gap` and shows three accepted-looking constructions plus one rejected construction.
 
+A deeper visual inspection confirms an important semantic invariant: the three accepted-looking constructions are deliberately different candle arrangements, yet each is illustrated with a gap/non-overlap region; the red-X construction does not provide the same visible gap/non-overlap evidence. This strengthens the semantic rule without resolving the executable formula.
+
 The visual rectangles do not uniquely identify an OHLC boundary pair. The audit cannot defensibly distinguish:
 - prior High -> next Low;
+- prior Low -> next High for bearish symmetry;
 - body top -> body bottom;
 - wick-to-wick;
+- a multi-candle boundary;
 - another manually illustrated boundary;
 - equality/touch behavior;
 - minimum gap size;
 - a universal candle index/timing rule.
 
-Decision: semantic meaning resolved; executable formula unresolved.
+The three accepted variants also show that a single rigid three-candle timing formula must not be imported merely because it is convenient to code.
+
+Decision: semantic meaning + non-overlap invariant resolved; executable formula unresolved.
 
 ### 2. Entry
 Source transcript states that when the correction reaches the low of the relevant previous candle in bullish structure, an order can be placed manually or as a pre-set limit; bearish logic is mirrored to the previous high. Source diagrams explicitly show `Buy Limit` / `Entry` as a separate execution level.
@@ -79,6 +85,17 @@ A dedicated research audit and fixture set preserves the four source-visible Ent
 - observed risk distances remain descriptive only.
 
 This is a source-evidence preservation layer, not a trading-rule implementation.
+
+## P-Gap visual resolution audit
+
+A dedicated research fixture set records three accepted-looking source constructions and one red-X rejected construction. The fixtures encode only the source-safe observation that accepted-looking constructions show a non-overlap/gap relationship in breakout context. They intentionally keep the following unresolved:
+
+- exact OHLC boundary;
+- exact candle timing/index;
+- minimum gap size;
+- equality/touch convention.
+
+No generic FVG formula is promoted.
 
 ## Entry geometry hypothesis matrix
 
