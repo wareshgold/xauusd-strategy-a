@@ -15,6 +15,9 @@ const correction = {
   direction: 'BULLISH' as const,
   correctionExtremeIndex: 3,
   extremePrice: 99,
+  spikeStartIndex: 0,
+  spikeEndIndex: 2,
+  correctionStartIndex: 3,
 };
 
 describe('Strategy A entry reclaim regression', () => {
