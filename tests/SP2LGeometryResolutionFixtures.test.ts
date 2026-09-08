@@ -55,15 +55,35 @@ const fixtures: readonly Fixture[] = [
     expectedResearchState: 'UNRESOLVED',
   },
   {
+    name: 'early-breakout-pgap-context',
+    purpose: 'Gap/non-overlap occurs in the early clean breakout/trend construction described as P-Gap rather than later extension.',
+    expectedResearchState: 'UNRESOLVED',
+  },
+  {
+    name: 'late-extension-egap-candidate',
+    purpose: 'Gap-like separation appears after multiple continuation pushes; source describes this context as likely E-Gap rather than the P-Gap signal.',
+    expectedResearchState: 'UNRESOLVED',
+  },
+  {
+    name: 'generic-gap-without-breakout-context',
+    purpose: 'Visible separation exists but there is no source-confirmed breakout/follow-through context.',
+    expectedResearchState: 'UNRESOLVED',
+  },
+  {
     name: 'pending-limit-before-fill',
     purpose: 'Limit exists during correction before any later confirmation candle closes.',
+    expectedResearchState: 'UNRESOLVED',
+  },
+  {
+    name: 'two-x-as-separate-management-module',
+    purpose: 'Optional secondary/2X position is present without changing the base pending-limit signal.',
     expectedResearchState: 'UNRESOLVED',
   },
 ];
 
 describe('SP2L geometry resolution fixtures', () => {
   it('keeps every unresolved geometry fixture out of canonical P-Gap classification', () => {
-    expect(fixtures).toHaveLength(9);
+    expect(fixtures).toHaveLength(13);
     for (const fixture of fixtures) {
       expect(fixture.expectedResearchState).toBe('UNRESOLVED');
     }
