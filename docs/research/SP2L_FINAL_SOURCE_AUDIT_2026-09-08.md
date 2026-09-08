@@ -45,7 +45,9 @@ A secondary TradingFinder implementation does use a later last-Spike-candle brea
 
 The four real trade examples were also cross-checked. Their observed execution prices are 3229.08, 3223.84, 3228.88, and 3232.41. The charts show horizontal order/reference levels associated with the corrective structure, but the source visuals do not uniquely map each fill to one universal candle index or wick/body boundary.
 
-Decision: direction + pending-limit semantics resolved; last-Spike-candle breakout rejected as a canonical entry prerequisite; exact executable candle/price convention unresolved.
+A finer candle-level cross-check was performed against the clearest real-trade frames. The repeated source-safe observation is that the SELL entries sit in the corrective/reference-high context. However, the rendered frames do not provide a reliable candle-to-price mapping sufficient to prove that every execution price equals the exact High field of one specific previous candle. T1/T3 are particularly informative: their entries are close but distinct (3229.08 and 3228.88) while their observed SL is the same (3235.50). This is compatible with separate structural reference levels, but does not identify the exact candle field. T2 and T4 further show materially different structural Entry-to-SL distances.
+
+Decision: direction + pending-limit semantics resolved; previous/relevant High/Low context strongly supported; last-Spike-candle breakout rejected as a canonical entry prerequisite; exact executable candle/price convention unresolved.
 
 ### 3. SL
 Source semantics: stop is placed behind the candle from which the Spike originated. The visual entry diagram places SL structurally below/behind the origin in bullish structure; bearish mirror is consistent.
@@ -115,6 +117,23 @@ The four trades do not resolve a universal Entry candle index, wick/body convent
 The materially different entry-to-SL distances (8.65, 11.66, 6.62, 5.39) remain descriptive evidence consistent with structural invalidation. They do not establish a fixed SL distance, buffer, or exact OHLC field.
 
 Importantly, the real-trade charts do not expose a machine-readable P-Gap rectangle whose boundaries can be uniquely mapped to OHLC fields. Therefore the real trades strengthen cross-component semantic consistency but do **not** unlock Frozen Geometry.
+
+## Real-trade Entry candle cross-check
+
+A dedicated research document and hypothesis fixture matrix now record the finer comparison of the four observed executions against candidate candle/price interpretations.
+
+The strongest supported interpretation is **semantic**, not executable:
+
+`SELL correction -> relevant/previous HIGH context -> pending SELL LIMIT`
+
+The following remain explicitly unresolved:
+- `EntryPrice = High(previous candle)` as a universal exact formula;
+- `EntryPrice = High(first correction candle)`;
+- `EntryPrice = High(Spike-origin candle)`;
+- wick versus body edge;
+- any fixed entry buffer.
+
+The four trades therefore add evidence for the semantic meaning of the entry level, but not enough source evidence to freeze the exact OHLC formula.
 
 ## Entry geometry hypothesis matrix
 
