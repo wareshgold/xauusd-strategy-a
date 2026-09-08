@@ -102,6 +102,20 @@ A dedicated timing fixture set now records the additional source-safe invariant 
 
 No generic FVG formula is promoted.
 
+## Four-trade cross-component audit
+
+A dedicated research fixture set now preserves the four source-visible XAUUSD trades as source observations. All four are SELL trades with entries 3229.08, 3223.84, 3228.88, and 3232.41. Their chart annotations are consistent with the source-confirmed bearish correction / previous-High entry context and pending-order semantics.
+
+The cross-reference strengthens the following source-safe relationship:
+
+`bearish SPIKE -> correction -> previous/relevant HIGH context -> pending SELL LIMIT`
+
+The four trades do not resolve a universal Entry candle index, wick/body convention, or exact P-Gap boundary. They also do not justify reverse-engineering a P-Gap formula from the order prices.
+
+The materially different entry-to-SL distances (8.65, 11.66, 6.62, 5.39) remain descriptive evidence consistent with structural invalidation. They do not establish a fixed SL distance, buffer, or exact OHLC field.
+
+Importantly, the real-trade charts do not expose a machine-readable P-Gap rectangle whose boundaries can be uniquely mapped to OHLC fields. Therefore the real trades strengthen cross-component semantic consistency but do **not** unlock Frozen Geometry.
+
 ## Entry geometry hypothesis matrix
 
 A research-only fixture matrix now separates candidate executable Entry interpretations:
