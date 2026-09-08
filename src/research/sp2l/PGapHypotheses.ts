@@ -32,27 +32,31 @@ export function evaluatePGapHypothesis(
   side: 'BUY' | 'SELL',
   candles: readonly ResearchCandle[],
 ): boolean {
-  if (candles.length < (hypothesis.startsWith('H2_') || hypothesis.startsWith('H4_') ? 3 : 2)) {
-    return false;
-  }
+  const needsThree = hypothesis.startsWith('H2_') || hypothesis.startsWith('H4_');
+  if (candles.length < (needsThree ? 3 : 2)) return false;
 
-  const a = candles[candles.length - 3];
-  const previous = candles[candles.length - 2];
-  const current = candles[candles.length - 1];
+  const previousIndex = candles.length - 2;
+  const currentIndex = candles.length - 1;
+  const previous = candles[previousIndex];
+  const current = candles[currentIndex];
+  if (!previous || !current) return false;
+
+  const a = needsThree ? candles[candles.length - 3] : undefined;
+  if (needsThree && !a) return false;
 
   switch (hypothesis) {
     case 'H1_ADJACENT_WICK':
       return side === 'BUY' ? current.low > previous.high : current.high < previous.low;
     case 'H2_THREE_CANDLE_OUTER_WICK':
-      return side === 'BUY' ? current.low > a.high : current.high < a.low;
+      return side === 'BUY' ? current.low > a!.high : current.high < a!.low;
     case 'H3_ADJACENT_BODY':
       return side === 'BUY'
         ? bodyLow(current) > bodyHigh(previous)
         : bodyHigh(current) < bodyLow(previous);
     case 'H4_THREE_CANDLE_OUTER_BODY':
       return side === 'BUY'
-        ? bodyLow(current) > bodyHigh(a)
-        : bodyHigh(current) < bodyLow(a);
+        ? bodyLow(current) > bodyHigh(a!)
+        : bodyHigh(current) < bodyLow(a!);
   }
 }
 
