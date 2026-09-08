@@ -89,7 +89,19 @@ The fixture suite must distinguish:
 
 A fixture may only become a canonical expected result if the source evidence resolves the corresponding ambiguity.
 
-## 6. Gate decision
+## 6. Frame-by-frame boundary inspection result — 2026-09-08
+
+Direct inspection of the source video at approximately `34:10–35:40` and the supporting entry drawings at `38:20–40:20` was completed.
+
+The P-Gap slide visibly labels the concept `Valid BO = P-Gap` and uses translucent shaded rectangles around the breakout area. The rectangles establish **contextual placement**, but their pixel boundaries are schematic and do not uniquely identify wick High/Low versus body Open/Close versus another candle-level boundary.
+
+The entry drawings separately show a horizontal Limit level and structural SL/invalidation handling. They do not establish a numeric P-Gap boundary or prove that the Limit is the same geometric point as a P-Gap edge.
+
+**New negative result:** the primary visual source is insufficient to promote wick-to-wick into a frozen executable formula. This is a deliberate resolution outcome, not a reason to fit the rule to historical performance.
+
+See `docs/research/SP2L_PGAP_BOUNDARY_RESOLUTION_2026-09-08.md` for the detailed frame inspection record.
+
+## 7. Gate decision
 
 **P-Gap semantic role:** `SOURCE-CONFIRMED`  
 **P-Gap non-overlap relationship:** `STRONG SOURCE EVIDENCE`  
