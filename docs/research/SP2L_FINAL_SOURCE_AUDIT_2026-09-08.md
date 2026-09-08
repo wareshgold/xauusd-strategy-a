@@ -28,9 +28,15 @@ Decision: semantic meaning resolved; executable formula unresolved.
 ### 2. Entry
 Source transcript states that when the correction reaches the low of the relevant previous candle in bullish structure, an order can be placed manually or as a pre-set limit; bearish logic is mirrored to the previous high. Source diagrams explicitly show `Buy Limit` / `Entry` as a separate execution level.
 
+The primary-source entry cross-check also reviewed the real entry sequence around the first trade examples. It does not show a source-required later last-Spike-candle breakout/reclaim before the pending order is prepared. The strongest source sequence remains:
+
+`SPIKE -> CORRECTION -> PENDING LIMIT -> FILL`
+
+A secondary TradingFinder implementation does use a later last-Spike-candle breakout, but this conflicts with the primary video semantics and therefore remains a secondary hypothesis only.
+
 The audit does not establish one universal candle index across all Spike variants, nor does it establish a numeric buffer, body-vs-wick substitution, or equivalence to P-Gap boundary / classical C / 50% retracement.
 
-Decision: direction + pending-limit semantics resolved; exact executable candle/price convention unresolved.
+Decision: direction + pending-limit semantics resolved; last-Spike-candle breakout rejected as a canonical entry prerequisite; exact executable candle/price convention unresolved.
 
 ### 3. SL
 Source semantics: stop is placed behind the candle from which the Spike originated. The visual entry diagram places SL structurally below/behind the origin in bullish structure; bearish mirror is consistent.
@@ -45,6 +51,18 @@ Source confirms Spike -> correction -> second leg and explicitly describes AB=CD
 Strongest candidate for Leg-1 magnitude is source-defined Spike-origin -> source-defined Spike extreme, but exact OHLC anchor remains unresolved. No classical A/B/C mapping or Fibonacci ratio is imported.
 
 Decision: equal-leg semantic resolved; exact geometry and tolerance unresolved.
+
+## Entry geometry hypothesis matrix
+
+A research-only fixture matrix now separates candidate executable Entry interpretations:
+
+- previous/relevant candle extreme;
+- first correction candle extreme;
+- Spike-origin candle extreme;
+- previous/relevant candle body edge;
+- first correction candle body edge.
+
+Synthetic fixtures deliberately separate these anchors and mirror BUY/SELL cases. The fixtures are guardrails, not evidence selecting a winner. All candidates remain `UNRESOLVED` until primary-source visual evidence establishes a repeated relationship.
 
 ## External cross-check
 TradingView/TradingFinder public material corroborates some concepts (previous low/high entry context, spike-origin stop, gap/imbalance terminology), but the implementation is protected/closed-source and contains additional third-party rules. Those rules are not canonical Strategy A rules.
@@ -66,6 +84,9 @@ The authoritative material is sufficient to define the **semantic contract** but
 - exact P-Gap boundaries and timing;
 - exact relevant Entry candle across all variants;
 - exact Entry price convention/buffer;
+- whether Entry uses wick or body boundary;
+- whether the pending level is fixed at first qualification or revised as correction evolves;
+- exact fill/touch semantics;
 - exact SL price convention/buffer;
 - exact Leg-1 OHLC anchors;
 - exact AB=CD tolerance;
