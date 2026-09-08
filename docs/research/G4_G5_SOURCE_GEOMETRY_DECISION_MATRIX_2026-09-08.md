@@ -21,6 +21,22 @@ The supplied SP2L video excerpt and extracted visual frames around the initial t
 - a marked horizontal structural/reference line in the drawing;
 - a circled visual point near the upper portion of the illustrated move.
 
+## Additional supplied video segment — 2026-09-08
+
+A second uploaded video was inspected. Its duration is approximately **14:52**, so it does not contain the previously requested 01:02:00–01:07:00 source-video timestamps. The useful educational material in this file is approximately **02:20–08:45**, followed by MetaTrader/chart examples from approximately **08:50 onward**.
+
+The additional segment provides stronger visual evidence for the source's teaching grammar:
+
+- approximately 02:40–03:40: a hand-drawn sequence of successive directional waves;
+- approximately 04:20–05:40: a more developed two-move illustration with circled regions and directional annotations;
+- approximately 07:40–08:45: an explicit worked drawing with numbered points/steps (`1`, `2`, `3`), two large circled move regions, a horizontal reference line, a correction/return path, and a continuation toward a later marked point.
+
+The numbered marks in the available raster frames appear to identify teaching steps/points, but they do **not** unambiguously establish source labels `A/B/C/D` or exact OHLC candle coordinates. The frame also does not expose a unique executable P-Gap boundary.
+
+The chart/order-history material after approximately 08:50 is treated as execution/example evidence only. It is not used to infer geometric anchors without an explicit source statement connecting the order price or chart point to A/B/C/D.
+
+**Decision impact:** the second segment materially strengthens the existence of a repeatable spike → correction → continuation / two-leg teaching structure, but it does **not** freeze G4, G5, or the executable P-Gap formula.
+
 ## G4 — Leg 1 A/B geometry
 
 ### Source-confirmed
