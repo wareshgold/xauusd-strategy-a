@@ -7,8 +7,15 @@ export function twelveDataToDataset(data: TwelveDataResponse, timeframe: '1min'|
   const rows: Array<Candle> = data.values.map((v) => {
     const timestamp = v.datetime;
     const open = Number(v.open), high = Number(v.high), low = Number(v.low), close = Number(v.close);
-    if (!timestamp || [open,high,low,close].some((n)=>!Number.isFinite(n))) throw new Error(`Invalid Twelve Data candle at ${timestamp ?? 'unknown'}`);
-    return { timestamp, open, high, low, close, volume: v.volume === undefined ? undefined : Number(v.volume) };
+    if (!timestamp || [open, high, low, close].some((n) => !Number.isFinite(n))) throw new Error(`Invalid Twelve Data candle at ${timestamp ?? 'unknown'}`);
+    return {
+      timestamp,
+      open,
+      high,
+      low,
+      close,
+      ...(v.volume === undefined ? {} : { volume: Number(v.volume) }),
+    };
   }).sort((a,b)=>a.timestamp.localeCompare(b.timestamp));
   const deduped = rows.filter((c,i)=>i===0 || c.timestamp!==rows[i-1]!.timestamp);
   return normalizeHistoricalCandles(deduped, timeframe, 'twelvedata');
