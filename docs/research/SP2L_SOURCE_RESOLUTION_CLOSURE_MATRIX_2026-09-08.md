@@ -90,13 +90,16 @@ PRODUCTION: **UNCHANGED**.
 
 ## Promotion rule
 
-No unresolved field may be promoted by inference from profitable backtests. A new primary-source visual or textual observation must first discriminate the relevant competing hypotheses. If source evidence cannot discriminate them, the ambiguity remains part of the research record and the executable geometry stays blocked.
+No unresolved field may be promoted by inference from profitable backtests. A new primary-source observation must first discriminate the relevant competing hypotheses. If source evidence cannot discriminate them, the ambiguity remains part of the research record and executable geometry stays blocked.
+
+## Synthetic discrimination gate
+
+A research-only synthetic discrimination matrix is now established at `tests/fixtures/SP2LSyntheticDiscrimination.fixtures.ts` with a dedicated guard test at `tests/SP2LSyntheticDiscrimination.test.ts`. It covers all currently unresolved executable fields and deliberately records no selected hypothesis, no production price, and no profitability metric.
+
+The synthetic gate is **READY / NO HYPOTHESIS SELECTED**. Its purpose is to ensure that any future primary-source observation can be mapped to a mechanically distinct candidate without changing the source meaning by inference.
 
 ## Next research action
 
-The source-resolution pass is now consolidated. The next valid gate work is **not optimization**. It is either:
-
-1. obtain a genuinely discriminating primary-source observation for one or more unresolved fields; or
-2. if no such evidence remains available, formally freeze the semantic contract while keeping executable geometry blocked and do not enter DEV.
+The next permitted action is to obtain or identify a genuinely discriminating **primary-source** observation for one or more unresolved fields and map it to the synthetic gate. If no such observation exists in the authoritative material, the ambiguity must remain unresolved; do not enter DEV merely to choose a convenient implementation.
 
 No production implementation change is authorized by this document.
