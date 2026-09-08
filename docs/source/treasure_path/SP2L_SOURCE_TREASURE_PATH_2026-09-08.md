@@ -56,6 +56,22 @@ Future visual evidence should be registered as:
 | Confidence | direct / strong / weak |
 | Rule impact | canonical / research-only / blocker |
 
+## Newly indexed high-value frames
+
+| Timestamp | Zero-based frame | Visible evidence | Status |
+|---|---:|---|---|
+| 36:00 | 64,800 | SP2L Strategy / Spike-2Leg; bullish candle examples; shaded P-Gap region; `Valid BO = P-Gap` | direct source evidence |
+| 36:10 | 65,100 | three illustrated examples visibly numbered 1 / 2 / 3; P-Gap region shown | direct source evidence |
+| 36:30 | 65,700 | `AB=CD` explicitly handwritten above SP2L example; `Valid BO = P-Gap` visible | direct source evidence |
+| 37:00 | 66,600 | `AB=CD` plus `1M / 5M` explicitly visible | direct source evidence |
+| 37:20 | 67,200 | hand-drawn multi-wave sequence following the SP2L example | strong structural evidence |
+| 38:40 | 69,600 | bullish sequence with horizontal reference level and correction/continuation annotation | strong execution/geometry evidence |
+| 39:40 | 71,400 | handwritten `Buy Limit` pointing to a horizontal entry level; lower line marked `SL` | direct pending-limit evidence |
+| 40:00 | 72,000 | clean chart representation of horizontal entry/reference level | execution evidence |
+| 40:20 | 72,600 | `Delete` annotation and order-line handling | execution-management evidence |
+| 42:30 | 76,500 | TP1 / TP2 / Entry / SL levels shown together | target/stop evidence |
+| 44:30 | 80,700 | round-number / point-distance target discussion | target research evidence |
+
 ## Current source map
 
 The full video is now available for frame-by-frame source resolution. Priority regions remain:
@@ -74,15 +90,46 @@ The full video is now available for frame-by-frame source resolution. Priority r
 
 These topic labels are a navigation aid from the published source description; they are **not** by themselves canonical geometric rules.
 
+## High-value visual findings from the full-video pass
+
+### 25:00–35:30 — spike/candle taxonomy
+
+The source presents multiple candle constructions and repeatedly annotates candle/body/wick structures. Several handwritten labels and arrows are present, including material around 29:30–34:50. This section is important for resolving the source's spike grammar and should be examined at finer frame spacing before any deterministic threshold is proposed.
+
+At approximately 30:00–32:30 the source repeatedly draws/marks specific candle structures and later explicitly writes `P-GAP` around the 31:30–32:30 area. Around 33:00–34:30 the source demonstrates both sell/buy examples and a red-X invalid example. These are source evidence, not yet frozen executable formulas.
+
+### 36:00–37:20 — P-Gap + AB=CD
+
+This is currently the highest-value educational window. The source directly displays `Valid BO = P-Gap`, three numbered constructions, `AB=CD`, and `1M / 5M`.
+
+The shaded P-Gap region is visually clear enough to establish that P-Gap is a specific source-defined breakout condition, but not yet clear enough at 640×360 resolution to uniquely derive its candle/price boundaries. Do not substitute a generic three-candle imbalance.
+
+`AB=CD` is direct source evidence. The relationship is confirmed, but the exact A/B/C/D OHLC anchor identities and any numeric tolerance remain unresolved.
+
+### 37:20–38:40 — two-leg wave grammar
+
+The teacher draws a multi-wave sequence showing an initial directional movement, correction/pullback and continuation. This strongly supports the Spike → correction → second-leg sequence. Exact A/B/C labels are not unambiguously visible.
+
+### 38:40–40:20 — pending-limit entry and SL
+
+The source explicitly annotates `Buy Limit` at a horizontal level during the illustrated bullish structure. A lower horizontal level is marked `SL`.
+
+This directly supports pending-limit semantics. A later close-reclaim must not replace this source behavior. The exact mapping from the pending-limit price to geometric C remains unresolved.
+
+### 40:20–44:30 — execution, stop and target handling
+
+The source shows order-line handling, deletion, SL placement and TP1/TP2. These frames are useful for execution semantics and target research. They must not be used to infer A/B/C/D geometry unless the source explicitly connects them to those anchors.
+
 ## Current geometry status
 
 ### Confirmed
 
 - SP2L / Spike → 2 Leg naming and concept.
-- `AB = CD` relationship is explicitly shown in the source material already inspected.
+- `AB = CD` relationship is explicitly shown.
 - Valid breakout is associated with P-Gap.
 - Correction precedes the second leg.
-- Pending-limit order placement is demonstrated in the source material already inspected.
+- Pending-limit order placement is explicitly demonstrated.
+- A structural SL is explicitly demonstrated in the educational entry example.
 
 ### Still unresolved
 
@@ -91,6 +138,7 @@ These topic labels are a navigation aid from the published source description; t
 - Executable P-Gap boundaries/formula.
 - Any numerical AB=CD tolerance.
 - Whether any execution price is identical to a geometric source anchor.
+- Exact deterministic spike classification/thresholds.
 
 ### Explicit prohibitions
 
@@ -99,6 +147,7 @@ These topic labels are a navigation aid from the published source description; t
 - Do not assume fill price = C.
 - Do not invent an AB=CD tolerance.
 - Do not replace pending-limit semantics with a close-reclaim trigger.
+- Do not convert visually similar candle examples into numeric thresholds without source evidence.
 
 ## Transcript status
 
@@ -118,10 +167,10 @@ If a complete Persian subtitle/transcript file is later supplied, it should be s
 
 Backtest results never determine what the source means.
 
-## Gate state at registration
+## Gate state
 
 - Source asset recovery: **COMPLETE**
-- Frame-addressable source: **COMPLETE**
+- Full-video frame indexing: **IN PROGRESS / HIGH-VALUE WINDOWS IDENTIFIED**
 - Transcript: **NOT YET REGISTERED**
 - G4 A/B: **UNRESOLVED**
 - G5 C: **UNRESOLVED**
