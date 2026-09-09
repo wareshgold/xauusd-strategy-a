@@ -4,12 +4,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Iterable, Optional
 
-from .models import Candle, Fill, Order, OrderStatus, OrderType, Side, Trade
+from .models import Candle, Order, OrderStatus, OrderType, Side, Trade
 
 
 class IntrabarPolicy(str, Enum):
-    """Explicit policy for OHLC bars that touch multiple executable levels."""
-
     OHLC_PATH = "OHLC_PATH"
     OLHC_PATH = "OLHC_PATH"
     UNRESOLVED = "UNRESOLVED"
@@ -53,6 +51,7 @@ def _crossed(a: float, b: float, level: float) -> bool:
 
 
 def _first_cross(path: tuple[float, ...], levels: Iterable[float]) -> Optional[float]:
+    levels = tuple(levels)
     for start, end in zip(path, path[1:]):
         hits = [level for level in levels if _crossed(start, end, level)]
         if hits:
@@ -60,11 +59,20 @@ def _first_cross(path: tuple[float, ...], levels: Iterable[float]) -> Optional[f
     return None
 
 
+def _tail_from_level(path: tuple[float, ...], level: float) -> tuple[float, ...]:
+    """Return the price path starting at the first occurrence of level."""
+    for index, (start, end) in enumerate(zip(path, path[1:])):
+        if _crossed(start, end, level):
+            return (level,) + path[index + 1 :]
+    return (level,)
+
+
 class SyntheticExecutionRunner:
     """Strategy-neutral OHLC event runner.
 
-    It deliberately refuses to resolve same-bar ambiguity unless an explicit
-    intrabar policy is supplied. It does not create or infer Strategy A setups.
+    Same-bar outcomes are only resolved when an explicit intrabar path policy
+    is supplied. With UNRESOLVED, a touched pending order emits an ambiguity
+    event instead of manufacturing an execution result.
     """
 
     def __init__(self, config: ExecutionConfig = ExecutionConfig()) -> None:
@@ -93,12 +101,8 @@ class SyntheticExecutionRunner:
                     continue
 
                 if self.config.intrabar_policy is IntrabarPolicy.UNRESOLVED:
-                    # A LIMIT fill can be inferred from a simple touch, but once
-                    # post-fill SL/TP outcomes can also be touched in the same bar,
-                    # the ordering is not knowable from OHLC alone.
-                    if not (candle.low <= order.price <= candle.high):
-                        continue
-                    events.append(ExecutionEvent(candle.timestamp, EventType.UNRESOLVED, order_id, order.price, "intrabar_ordering"))
+                    if candle.low <= order.price <= candle.high:
+                        events.append(ExecutionEvent(candle.timestamp, EventType.UNRESOLVED, order_id, order.price, "intrabar_ordering"))
                     continue
 
                 path = _path(candle, self.config.intrabar_policy)
@@ -109,9 +113,10 @@ class SyntheticExecutionRunner:
                 order.status = OrderStatus.FILLED
                 events.append(ExecutionEvent(candle.timestamp, EventType.FILL, order_id, fill))
                 pending.pop(order_id)
-                trades.append(Trade(order_id, order.side, candle.timestamp, fill, order.quantity,
-                                    order.stop_loss, order.take_profit, setup_id=order.setup_id,
-                                    metadata={"intrabar_policy": self.config.intrabar_policy.value}))
+                trade = Trade(order_id, order.side, candle.timestamp, fill, order.quantity,
+                              order.stop_loss, order.take_profit, setup_id=order.setup_id,
+                              metadata={"intrabar_policy": self.config.intrabar_policy.value})
+                trades.append(trade)
 
                 exit_levels = []
                 if order.stop_loss is not None:
@@ -121,11 +126,11 @@ class SyntheticExecutionRunner:
                 if not exit_levels:
                     continue
 
-                hit = _first_cross(path, (level for level, _ in exit_levels if level != fill))
+                post_fill_path = _tail_from_level(path, fill)
+                hit = _first_cross(post_fill_path, (level for level, _ in exit_levels if level != fill))
                 if hit is None:
                     continue
                 event_type = next(kind for level, kind in exit_levels if level == hit)
-                trade = trades[-1]
                 trade.exit_time = candle.timestamp
                 trade.exit_price = hit
                 trade.exit_reason = event_type.value
