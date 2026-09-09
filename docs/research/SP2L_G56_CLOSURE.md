@@ -1,0 +1,1 @@
+G56 closure: no canonical geometry selected. Proceed to direct source-frame discrimination.
