@@ -1,0 +1,1 @@
+G56 complete. Next step is direct source-frame discrimination; do not optimize unresolved geometry.
