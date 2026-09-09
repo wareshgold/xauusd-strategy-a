@@ -1,0 +1,1 @@
+G56 submission: explicit B1-B6 source discrimination and execution guard. Frozen Geometry remains blocked.
