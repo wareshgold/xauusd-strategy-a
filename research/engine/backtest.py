@@ -8,22 +8,12 @@ from .models import Candle, Order, OrderStatus, OrderType, Side, Trade
 
 @dataclass(frozen=True)
 class ExecutionPolicy:
-    """Explicit intrabar policy for deterministic research mechanics.
-
-    When both protective levels are touched by one candle and tick ordering is
-    unavailable, stop-first is conservative. This is an execution convention,
-    not a Strategy A rule.
-    """
-
+    """Explicit intrabar policy for deterministic research mechanics."""
     stop_first_on_conflict: bool = True
 
 
 class BacktestEngine:
-    """Strategy-neutral candle backtester.
-
-    A strategy supplies already-resolved orders. The engine never decides
-    whether a market pattern is valid and never creates a Strategy A order.
-    """
+    """Strategy-neutral candle backtester; it never detects Strategy A patterns."""
 
     def __init__(self, policy: ExecutionPolicy | None = None) -> None:
         self.policy = policy or ExecutionPolicy()
@@ -32,7 +22,6 @@ class BacktestEngine:
         bars = sorted(candles, key=lambda c: c.timestamp)
         pending = [o for o in orders if o.status is OrderStatus.PENDING]
         trades: list[Trade] = []
-
         for bar in bars:
             still_pending: list[Order] = []
             for order in pending:
@@ -49,13 +38,10 @@ class BacktestEngine:
                               metadata=dict(order.metadata))
                 self._resolve_exit(trade, bar)
                 trades.append(trade)
-            pending = still_pending + [o for o in pending if o.status is OrderStatus.FILLED]
-
-            # Existing trades may span multiple candles.
+            pending = still_pending
             for trade in trades:
                 if trade.exit_time is None and trade.entry_time < bar.timestamp:
                     self._resolve_exit(trade, bar)
-
         return trades
 
     @staticmethod
