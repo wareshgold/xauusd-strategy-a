@@ -1,0 +1,8 @@
+{
+  "gate": "G56",
+  "source_resolution": "PARTIAL",
+  "frozen_geometry": "BLOCKED",
+  "production": "LOCKED",
+  "unresolved_blockers": ["B1", "B2", "B4", "B6"],
+  "performance_selects_source_meaning": false
+}
