@@ -1,4 +1,4 @@
-from sp2l_engine.acquisition_manifest import AcquisitionManifest, fingerprint_bytes
+from research.engine.acquisition_manifest import AcquisitionManifest, fingerprint_bytes
 
 
 def test_raw_fingerprint_is_stable():

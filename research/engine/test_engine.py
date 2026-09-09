@@ -47,8 +47,8 @@ def test_limit_fill_and_stop_first_conflict():
 def test_metrics_are_r_based_and_directional():
     t0 = datetime(2026, 1, 1, tzinfo=timezone.utc)
     trades = [
-        Trade("win", Side.BUY, t0, 100, 1, 99, 102, t0 + timedelta(minutes=2), 102, "TARGET"),
-        Trade("loss", Side.SELL, t0, 100, 1, 101, 98, t0 + timedelta(minutes=3), 101, "STOP"),
+        Trade("win", Side.BUY, t0, 100, 1, 99, 101, t0 + timedelta(minutes=2), 101, "TARGET"),
+        Trade("loss", Side.SELL, t0, 100, 1, 101, 99, t0 + timedelta(minutes=3), 101, "STOP"),
     ]
     summary = summarize_trades(trades)
     assert summary["tradeCount"] == 2

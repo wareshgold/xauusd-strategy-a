@@ -1,2 +1,4 @@
+# Research/test dependencies
+pytest==8.4.2
 # Cross-platform IANA timezone database for Python zoneinfo (required on Windows).
 tzdata==2026.3

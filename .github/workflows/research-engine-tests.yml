@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - 'research/engine/**'
+      - 'requirements-research.txt'
       - '.github/workflows/research-engine-tests.yml'
   pull_request:
     paths:
       - 'research/engine/**'
+      - 'requirements-research.txt'
       - '.github/workflows/research-engine-tests.yml'
 
 jobs:
@@ -18,5 +20,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install --upgrade pip pytest
-      - run: python -m pytest -q research/engine/test_engine.py
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements-research.txt
+      - run: python -m pytest -q research/engine
