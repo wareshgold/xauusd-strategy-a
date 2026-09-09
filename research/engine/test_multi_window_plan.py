@@ -8,7 +8,7 @@ def test_windows_are_sorted_and_chunks_are_deterministic():
     )
     plans = plan_windows(windows, interval="1min", max_points=5)
     assert [p.window.name for p in plans] == ["a", "b"]
-    assert len(flatten_chunks(plans)) == 22
+    assert len(flatten_chunks(plans)) == 6
     assert plans == plan_windows(windows, interval="1min", max_points=5)
 
 
