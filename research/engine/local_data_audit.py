@@ -1,7 +1,8 @@
 """Local, strategy-neutral audit for Twelve Data-shaped OHLC JSON.
 
 Usage:
-    python -m research.engine.local_data_audit path/to/time_series.json --output-dir reports
+    python -m research.engine.local_data_audit path/to/time_series.json \
+        --source-timezone Australia/Sydney --output-dir reports
 
 This module deliberately contains no Strategy A detection logic.
 """
@@ -14,6 +15,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 @dataclass(frozen=True)
@@ -21,6 +23,7 @@ class AuditResult:
     status: str
     symbol: str
     interval: str
+    source_timezone: str | None
     row_count: int
     first_timestamp_utc: str | None
     last_timestamp_utc: str | None
@@ -35,12 +38,15 @@ class AuditResult:
     normalized_sha256: str
 
 
-def _parse_dt(value: str) -> datetime:
+def _parse_dt(value: str, source_timezone: str | None) -> datetime:
     dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
     if dt.tzinfo is None:
-        # Twelve Data may return naive timestamps; this local audit requires
-        # the source timezone to be supplied explicitly rather than guessing.
-        raise ValueError("naive timestamp requires explicit source timezone")
+        if not source_timezone:
+            raise ValueError("naive timestamp requires explicit source timezone")
+        try:
+            dt = dt.replace(tzinfo=ZoneInfo(source_timezone))
+        except ZoneInfoNotFoundError as exc:
+            raise ValueError(f"unknown source timezone: {source_timezone}") from exc
     return dt.astimezone(timezone.utc)
 
 
@@ -55,7 +61,7 @@ def _expected_seconds(interval: str) -> int | None:
     return None
 
 
-def audit_file(path: str | Path) -> AuditResult:
+def audit_file(path: str | Path, source_timezone: str | None = None) -> AuditResult:
     p = Path(path)
     raw = p.read_bytes()
     payload: dict[str, Any] = json.loads(raw.decode("utf-8"))
@@ -70,7 +76,7 @@ def audit_file(path: str | Path) -> AuditResult:
     invalid: list[int] = []
     for idx, row in enumerate(values):
         try:
-            dt = _parse_dt(str(row["datetime"]))
+            dt = _parse_dt(str(row["datetime"]), source_timezone)
             o, h, l, c = (float(row[k]) for k in ("open", "high", "low", "close"))
             if not (l <= o <= h and l <= c <= h):
                 invalid.append(idx)
@@ -78,7 +84,6 @@ def audit_file(path: str | Path) -> AuditResult:
         except (KeyError, TypeError, ValueError):
             invalid.append(idx)
 
-    # Provider payload is commonly newest-first; normalize ascending UTC.
     candles.sort(key=lambda x: x[0])
     timestamps = [x[0] for x in candles]
     duplicate_timestamps = sorted({t.isoformat() for t in timestamps if timestamps.count(t) > 1})
@@ -106,6 +111,7 @@ def audit_file(path: str | Path) -> AuditResult:
         status=status,
         symbol=symbol,
         interval=interval,
+        source_timezone=source_timezone,
         row_count=len(candles),
         first_timestamp_utc=timestamps[0].isoformat() if timestamps else None,
         last_timestamp_utc=timestamps[-1].isoformat() if timestamps else None,
@@ -124,14 +130,16 @@ def audit_file(path: str | Path) -> AuditResult:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("input")
+    parser.add_argument("--source-timezone", default=None)
     parser.add_argument("--output-dir", default="reports")
     args = parser.parse_args()
-    result = audit_file(args.input)
+    result = audit_file(args.input, source_timezone=args.source_timezone)
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     (out / "quality_audit.json").write_text(json.dumps(asdict(result), indent=2), encoding="utf-8")
     print(f"STATUS: {result.status}")
     print(f"SYMBOL: {result.symbol} | INTERVAL: {result.interval}")
+    print(f"SOURCE_TIMEZONE: {result.source_timezone}")
     print(f"ROWS: {result.row_count}")
     print(f"UTC: {result.first_timestamp_utc} -> {result.last_timestamp_utc}")
     print(f"DUPLICATES: {len(result.duplicate_timestamps)} | INVALID_OHLC: {len(result.invalid_ohlc_rows)}")
