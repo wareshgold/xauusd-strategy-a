@@ -1,0 +1,1 @@
+When multiple geometries remain source-consistent, G56 records UNRESOLVED rather than selecting by performance or convention.
