@@ -4,6 +4,7 @@ from .backtest import BacktestEngine, ExecutionPolicy
 from .data import aggregate_ohlc, audit_candles, dataset_fingerprint
 from .models import Candle, Order, OrderType, Side, Trade
 from .metrics import summarize_trades
+from .excursions import trade_excursion
 
 
 def c(ts, o, h, l, cl):
@@ -62,3 +63,14 @@ def test_dataset_fingerprint_is_order_independent():
     a = dataset_fingerprint(bars, provider="test", symbol="XAUUSD", timeframe="1m")
     b = dataset_fingerprint(list(reversed(bars)), provider="test", symbol="XAUUSD", timeframe="1m")
     assert a == b
+
+
+def test_excursion_reports_directional_mae_mfe():
+    t0 = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    trade = Trade("x", Side.BUY, t0, 100, 1, 98, 104, t0 + timedelta(minutes=2), 104, "TARGET")
+    bars = [c("2026-01-01T00:00:00", 100, 102, 99, 101), c("2026-01-01T00:01:00", 101, 105, 97, 103), c("2026-01-01T00:02:00", 103, 104, 102, 104)]
+    ex = trade_excursion(trade, bars)
+    assert ex["maePrice"] == -3
+    assert ex["mfePrice"] == 5
+    assert ex["maeR"] == -1.5
+    assert ex["mfeR"] == 2.5
