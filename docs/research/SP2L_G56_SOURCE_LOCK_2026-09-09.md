@@ -1,0 +1,1 @@
+G56 preserves source-first interpretation. Unresolved geometry remains explicitly unresolved.
