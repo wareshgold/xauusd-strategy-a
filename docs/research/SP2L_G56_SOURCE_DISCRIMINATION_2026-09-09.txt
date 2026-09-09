@@ -1,0 +1,8 @@
+G56 source discrimination remains research-only.
+B1 P-Gap: concept supported; exact boundaries unresolved.
+B2 Entry: pending Limit and structural Low/High semantics supported; universal exact anchor unresolved.
+B3 SL: structural invalidation supported; exact OHLC boundary unresolved.
+B4 Trigger: 1/2/3 candle and Key-Bar family supported; acceptance and precedence unresolved.
+B5 AB=CD: magnitude relationship supported; endpoints and tolerance unresolved.
+B6 Leg2: continuation relationship supported; executable projection unresolved.
+No candidate is canonical. Production remains blocked.
