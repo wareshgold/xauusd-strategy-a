@@ -1,0 +1,1 @@
+G83-G85 provenance: derived from the demo execution safety architecture. No source strategy geometry is inferred or promoted.
