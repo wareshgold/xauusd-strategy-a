@@ -1,0 +1,1 @@
+Next: direct source-frame discrimination for unresolved B1/B2/B4/B6; B3/B5 endpoint ambiguity remains explicit.
