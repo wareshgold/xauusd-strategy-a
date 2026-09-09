@@ -1,0 +1,1 @@
+G56 source-discrimination scaffold is complete. Critical geometry remains unresolved by source evidence, so Frozen Geometry and production remain blocked.
