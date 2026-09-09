@@ -1,0 +1,1 @@
+Closure requires CI green on the full branch head and review of the demo-only recovery invariants.
