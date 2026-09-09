@@ -1,0 +1,1 @@
+Review ready. G56 remains research-only and production-locked.
