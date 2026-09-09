@@ -1,0 +1,1 @@
+G83 journal, G84 ordering, and G85 restart recovery implementations are present on the research branch. CI validation remains the gate before promotion.
