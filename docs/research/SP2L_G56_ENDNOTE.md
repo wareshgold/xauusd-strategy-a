@@ -1,0 +1,1 @@
+Endnote: unresolved source geometry is preserved explicitly.
