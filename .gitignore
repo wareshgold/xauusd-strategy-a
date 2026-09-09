@@ -9,5 +9,7 @@ coverage/
 .vscode/
 .idea/
 
+# Local research data and generated audit reports.
 data/raw/
 data/processed/
+reports/
