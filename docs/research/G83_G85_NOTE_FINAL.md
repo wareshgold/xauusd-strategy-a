@@ -1,0 +1,1 @@
+G83-G85: demo recovery durability only; no Strategy A geometry or production authorization.
