@@ -1,0 +1,1 @@
+G83 recovery journal; G84 event ordering guard; G85 restart recovery. Validation pending.
