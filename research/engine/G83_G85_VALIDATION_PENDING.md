@@ -1,0 +1,1 @@
+Run CI on complete branch head before promotion.
