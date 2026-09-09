@@ -156,8 +156,8 @@ def main() -> int:
         ordered = sorted(values, key=lambda r: r["datetime"])
         page_oldest = ordered[0]["datetime"]
         page_newest = ordered[-1]["datetime"]
-        invalid, gaps, _ = validate(ordered)
-        print(f"  rows={len(values)} oldest={page_oldest} newest={page_newest} duplicates={duplicates} gaps={gaps} invalid_ohlc={invalid}")
+        invalid, page_gap_count, _ = validate(ordered)
+        print(f"  rows={len(values)} oldest={page_oldest} newest={page_newest} duplicates={duplicates} gaps={page_gap_count} invalid_ohlc={invalid}")
 
         requests.append({
             "request_number": n,
@@ -168,7 +168,7 @@ def main() -> int:
             "returned_newest": page_newest,
             "duplicates_against_accumulator": duplicates,
             "invalid_ohlc": invalid,
-            "non_1min_gaps": gaps,
+            "non_1min_gaps": page_gap_count,
             "http_status": http,
             "api_credits_used": credits_used,
             "api_credits_left": credits_left,
@@ -189,7 +189,6 @@ def main() -> int:
         }
         checkpoint_path.write_text(json.dumps(checkpoint, indent=2), encoding="utf-8")
 
-        # If the oldest returned candle has reached the requested start, coverage is complete.
         if parse_dt(page_oldest) <= start:
             completed = True
             break
@@ -201,9 +200,8 @@ def main() -> int:
         time.sleep(0.25)
 
     ordered_all = sorted(all_rows.values(), key=lambda r: r["datetime"])
-    # Retain only the requested interval. The final page can straddle the start boundary.
     final_rows = [r for r in ordered_all if start <= parse_dt(r["datetime"]) <= end]
-    invalid, gaps, gap_detail = validate(final_rows)
+    invalid, gap_count, gap_detail = validate(final_rows)
 
     with csv_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["datetime", "open", "high", "low", "close"])
@@ -223,7 +221,7 @@ def main() -> int:
         "first_written": final_rows[0]["datetime"] if final_rows else None,
         "last_written": final_rows[-1]["datetime"] if final_rows else None,
         "invalid_ohlc": invalid,
-        "non_1min_gaps": len(gaps),
+        "non_1min_gaps": gap_count,
         "gap_examples": gap_detail[:20],
         "requests_completed": len(requests),
         "request_budget": args.requests,
@@ -243,13 +241,13 @@ def main() -> int:
     print("\nFINAL")
     print(f"rows written:     {len(final_rows)}")
     print(f"completed range:  {completed}")
-    print(f"gaps:             {len(gaps)}")
+    print(f"gaps:             {gap_count}")
     print(f"invalid OHLC:     {invalid}")
     print(f"csv sha256:       {sha256_file(csv_path)}")
     print(f"csv:              {csv_path}")
     print(f"manifest:         {manifest_path}")
     print("API key value was never printed or persisted.")
-    return 0 if completed and not gaps and not invalid else 7
+    return 0 if completed and gap_count == 0 and invalid == 0 else 7
 
 
 if __name__ == "__main__":
