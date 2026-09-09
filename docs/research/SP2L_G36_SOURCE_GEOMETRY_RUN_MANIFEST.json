@@ -1,0 +1,15 @@
+{
+  "gate": "G36",
+  "date": "2026-09-09",
+  "purpose": "source_geometry_resolution",
+  "source": {
+    "youtube": "https://youtu.be/7HEC5mO3d3U",
+    "creator_site": "https://poursamadi.com/sp2l-strategy/"
+  },
+  "critical_blockers": ["B1", "B2", "B3", "B4", "B5", "B6"],
+  "source_resolution": "PARTIAL_PASS",
+  "frozen_geometry": "BLOCKED",
+  "historical_optimization_used": false,
+  "production_detector_changed": false,
+  "decision_rule": "multiple source-consistent geometries remain unresolved"
+}
