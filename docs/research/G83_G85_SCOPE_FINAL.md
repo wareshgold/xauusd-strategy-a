@@ -1,0 +1,1 @@
+G83-G85 are infrastructure-only demo gates. No production signal or strategy rule changes.
