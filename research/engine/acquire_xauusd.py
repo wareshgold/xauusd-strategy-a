@@ -12,11 +12,12 @@ import json
 import os
 from pathlib import Path
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 from .acquisition_manifest import AcquisitionManifest
 from .acquisition_request import AcquisitionRequest
 from .dataset_artifact import DatasetArtifact, canonicalize_json
+from .provider_http import read_with_retries
 from .providers import parse_twelve_data_time_series
 from .quality_audit import audit_candles
 
@@ -38,8 +39,7 @@ def acquire(request: AcquisitionRequest, *, api_key: str, output_dir: Path) -> t
     url = f"{API_URL}?{urlencode(params)}"
     http_request = Request(url, headers={"User-Agent": "sp2l-research-data-acquisition/1.0"})
     retrieval_timestamp = _utc_now()
-    with urlopen(http_request, timeout=30) as response:
-        raw_bytes = response.read()
+    raw_bytes = read_with_retries(http_request, timeout=30)
 
     raw_sha = hashlib.sha256(raw_bytes).hexdigest()
     raw_path = raw_dir / "time_series.json"
@@ -84,20 +84,12 @@ def acquire(request: AcquisitionRequest, *, api_key: str, output_dir: Path) -> t
 
     status = "PASS" if audit.passed else "BLOCKED"
     manifest = AcquisitionManifest(
-        provider="Twelve Data",
-        instrument=batch.symbol,
-        interval=batch.interval,
-        requested_start_utc=request.start_date or "UNSPECIFIED",
-        requested_end_utc=request.end_date or "UNSPECIFIED",
-        actual_first_timestamp_utc=actual_start,
-        actual_last_timestamp_utc=actual_end,
-        row_count=len(ordered),
-        request_timestamp_utc=retrieval_timestamp,
-        source_timezone=batch.source_timezone,
-        source_version=source_version,
-        raw_sha256=raw_sha,
-        normalized_sha256=normalized_sha,
-        response_metadata=response_metadata,
+        provider="Twelve Data", instrument=batch.symbol, interval=batch.interval,
+        requested_start_utc=request.start_date or "UNSPECIFIED", requested_end_utc=request.end_date or "UNSPECIFIED",
+        actual_first_timestamp_utc=actual_start, actual_last_timestamp_utc=actual_end,
+        row_count=len(ordered), request_timestamp_utc=retrieval_timestamp,
+        source_timezone=batch.source_timezone, source_version=source_version,
+        raw_sha256=raw_sha, normalized_sha256=normalized_sha, response_metadata=response_metadata,
     )
     artifact = DatasetArtifact(
         provider="Twelve Data", instrument=batch.symbol, interval=batch.interval,
@@ -123,12 +115,11 @@ def main() -> int:
     parser.add_argument("--output-dir", default="data/acquired/xauusd")
     parser.add_argument("--api-key-env", default="TWELVE_DATA_API_KEY")
     args = parser.parse_args()
-
     api_key = os.environ.get(args.api_key_env)
     if not api_key:
         raise SystemExit(f"missing API key environment variable: {args.api_key_env}")
     request = AcquisitionRequest(args.symbol, args.interval, args.outputsize, args.start_date, args.end_date, args.source_timezone)
-    manifest, artifact = acquire(request, api_key=api_key, output_dir=Path(args.output_dir))
+    _, artifact = acquire(request, api_key=api_key, output_dir=Path(args.output_dir))
     print(f"STATUS: {artifact.quality_status}")
     print(f"ROWS: {artifact.row_count}")
     print(f"UTC: {artifact.actual_start_utc} -> {artifact.actual_end_utc}")
