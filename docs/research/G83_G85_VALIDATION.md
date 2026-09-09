@@ -1,0 +1,1 @@
+Validation gate: run the full research engine test suite on the branch head before considering G83-G85 green.
