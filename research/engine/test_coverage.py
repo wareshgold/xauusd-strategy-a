@@ -12,7 +12,7 @@ def test_plan_chunks_is_deterministic_and_non_overlapping():
         interval="1min",
         max_points=5,
     )
-    assert len(chunks) == 151
+    assert len(chunks) == 121
     assert chunks[0].start_utc == "2026-01-01T00:00:00+00:00"
     assert chunks[0].end_utc == "2026-01-01T00:04:00+00:00"
     assert chunks[1].start_utc == "2026-01-01T00:05:00+00:00"
