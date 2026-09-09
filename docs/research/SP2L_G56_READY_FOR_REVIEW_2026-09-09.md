@@ -1,0 +1,1 @@
+G56 is ready for CI/review. It is source-discrimination infrastructure only and keeps production execution blocked.
