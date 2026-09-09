@@ -34,7 +34,13 @@ def test_gap_is_reported_without_fabrication():
 
 
 def test_invalid_ohlc_is_blocked():
-    candles = (candle(0, o=3500, h=3499, l=3498, c=3498.5),)
-    audit = audit_candles(candles, 60)
+    class InvalidCandle:
+        timestamp = datetime.fromisoformat("2026-09-09T00:00:00+00:00")
+        open = 3500.0
+        high = 3499.0
+        low = 3498.0
+        close = 3498.5
+
+    audit = audit_candles((InvalidCandle(),), 60)
     assert audit.invalid_ohlc_rows == 1
     assert not audit.passed
