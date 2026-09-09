@@ -2,23 +2,24 @@
 
 ## Purpose
 
-These fixtures are designed to distinguish source-supported interpretations before historical optimization. They are not backtest data and do not select the winning interpretation by performance.
+These fixtures distinguish source-supported interpretations before historical optimization. They are not backtest data and do not select the winning interpretation by performance.
 
-## Fixture F1 — First-low entry
+## Fixture F1 — Relevant higher-low entry
 
-Construct a bullish Spike with three source-recognized candles, then a correction that first trades below the first low.
+Construct a bullish Spike with a chain of successively higher lows. Show the source-style state where a pending Buy Limit is placed at the currently relevant/latest completed higher-low while the structural invalidation remains below the original/base low.
 
 Expected source behavior:
-- setup remains valid before structural invalidation;
-- a pending Buy Limit opportunity exists at the source-relevant first-low / first-pullback location;
+- a pending Buy Limit exists during correction;
+- the entry level and invalidation level are distinct;
 - a later close-reclaim must not replace the pending-limit event.
 
 Discrimination:
-- candidate A: exact first-low price;
-- candidate B: interior correction price;
-- candidate C: later higher-low.
+- candidate A: latest/relevant completed higher-low;
+- candidate B: original/base low;
+- candidate C: interior correction price;
+- candidate D: later market close-reclaim.
 
-Status: source semantics favor first-low / first-pullback; exact price remains unresolved.
+Status: direct visual evidence favors candidate A for the demonstrated sequence; universal rule across all Spike variants remains unresolved.
 
 ## Fixture F2 — P-Gap temporal variants
 
@@ -49,21 +50,22 @@ No historical performance is allowed to decide this fixture.
 
 ## Fixture F4 — SL anchor
 
-Construct a Spike whose origin candle wick is materially below its body and whose structural swing low is materially separated from that wick.
+Construct a Spike whose origin candle wick is materially below its body and whose structural/base low is materially separated from that wick.
 
 Candidates:
 - origin wick extreme;
 - origin body boundary;
-- structural swing extreme;
+- structural/base swing extreme;
 - source-defined invalidation line.
 
-Source semantics favor the Spike-origin structural invalidation concept, but exact OHLC convention is unresolved.
+Current source evidence favors a structural/base invalidation below the entry level, but exact OHLC convention is unresolved.
 
 ## Fixture F5 — AB=CD anchor discrimination
 
 Construct a Spike with:
 - a clear origin;
 - a clear extreme;
+- multiple higher lows;
 - a correction extreme;
 - a continuation extreme;
 while deliberately separating all candidate candle-level anchors.
@@ -72,7 +74,8 @@ Candidates:
 - A=origin / B=spike extreme;
 - A=breakout reference / B=spike extreme;
 - A=source-marked candle / B=source-marked extreme;
-- C=correction extreme vs entry level.
+- C=correction extreme;
+- C=entry level/current higher-low.
 
 Expected result before source freeze: multiple candidates must remain representable without choosing by profitability.
 
@@ -86,18 +89,30 @@ Create a setup where:
 Purpose:
 - keep base TP, AB=CD projection, and 2X as independently versioned modules.
 
-Source evidence currently supports base TP1 around 1R in the demonstrated management context and treats 2X separately, but exact 2X geometry remains unresolved.
+Source evidence supports a distinct 2X management module, but exact target linkage remains unresolved.
 
 ## Fixture F7 — Pending-order invalidation / replacement
 
 Create a setup where a pending order is placed, then the next candle materially changes the entry-to-SL distance.
 
 Expected source behavior:
-- pending order may be deleted/replaced when risk distance changes materially;
+- pending order may be deleted/replaced when the structure changes and the risk distance is materially different;
 - exact deterministic replacement threshold is intentionally unresolved.
+
+## Fixture F8 — Moving higher-low / pending-limit refresh
+
+Construct a bullish Spike with at least three successively higher lows. Place a pending Buy Limit at the current relevant higher-low. Then add another higher-low before price retraces.
+
+Candidates:
+- retain original order;
+- move order to newest relevant higher-low;
+- move order to original/base low;
+- replace with market-entry logic.
+
+Source evidence currently favors the relevant/current higher-low for the demonstrated sequence and rejects replacing the pending-limit model with a close-reclaim. The universal refresh rule is still unresolved because the source describes qualitative handling when the distance to SL changes.
 
 ## Gate rule
 
-A fixture is passed only when the implementation can represent the source-supported semantics and explicitly preserve unresolved candidates. Passing a fixture does not freeze unresolved geometry.
+A fixture passes only when the implementation can represent the source-supported semantics and explicitly preserve unresolved candidates. Passing a fixture does not freeze unresolved geometry.
 
 Historical DEV remains blocked until the source-resolution gate explicitly freezes the required geometry.
