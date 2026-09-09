@@ -1,0 +1,1 @@
+G56 complete: explicit source-discrimination matrix, tests, and production guard added. Frozen Geometry remains blocked.
