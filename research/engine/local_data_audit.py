@@ -1,0 +1,145 @@
+"""Local, strategy-neutral audit for Twelve Data-shaped OHLC JSON.
+
+Usage:
+    python -m research.engine.local_data_audit path/to/time_series.json --output-dir reports
+
+This module deliberately contains no Strategy A detection logic.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+@dataclass(frozen=True)
+class AuditResult:
+    status: str
+    symbol: str
+    interval: str
+    row_count: int
+    first_timestamp_utc: str | None
+    last_timestamp_utc: str | None
+    duplicate_timestamps: list[str]
+    non_monotonic_pairs: int
+    expected_cadence_seconds: int | None
+    cadence_mode_seconds: int | None
+    cadence_anomalies: int
+    missing_bar_count: int
+    invalid_ohlc_rows: list[int]
+    raw_sha256: str
+    normalized_sha256: str
+
+
+def _parse_dt(value: str) -> datetime:
+    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        # Twelve Data may return naive timestamps; this local audit requires
+        # the source timezone to be supplied explicitly rather than guessing.
+        raise ValueError("naive timestamp requires explicit source timezone")
+    return dt.astimezone(timezone.utc)
+
+
+def _expected_seconds(interval: str) -> int | None:
+    units = {"min": 60, "h": 3600, "day": 86400, "week": 604800}
+    for suffix, multiplier in units.items():
+        if interval.endswith(suffix):
+            try:
+                return int(interval[: -len(suffix)]) * multiplier
+            except ValueError:
+                return None
+    return None
+
+
+def audit_file(path: str | Path) -> AuditResult:
+    p = Path(path)
+    raw = p.read_bytes()
+    payload: dict[str, Any] = json.loads(raw.decode("utf-8"))
+    meta = payload.get("meta") or {}
+    values = payload.get("values") or []
+    symbol = str(meta.get("symbol", ""))
+    interval = str(meta.get("interval", ""))
+    if not symbol or not interval:
+        raise ValueError("missing meta.symbol or meta.interval")
+
+    candles = []
+    invalid: list[int] = []
+    for idx, row in enumerate(values):
+        try:
+            dt = _parse_dt(str(row["datetime"]))
+            o, h, l, c = (float(row[k]) for k in ("open", "high", "low", "close"))
+            if not (l <= o <= h and l <= c <= h):
+                invalid.append(idx)
+            candles.append((dt, o, h, l, c))
+        except (KeyError, TypeError, ValueError):
+            invalid.append(idx)
+
+    # Provider payload is commonly newest-first; normalize ascending UTC.
+    candles.sort(key=lambda x: x[0])
+    timestamps = [x[0] for x in candles]
+    duplicate_timestamps = sorted({t.isoformat() for t in timestamps if timestamps.count(t) > 1})
+    non_monotonic_pairs = sum(1 for a, b in zip(timestamps, timestamps[1:]) if b <= a)
+
+    deltas = [int((b - a).total_seconds()) for a, b in zip(timestamps, timestamps[1:]) if b > a]
+    cadence_mode = None
+    if deltas:
+        counts: dict[int, int] = {}
+        for d in deltas:
+            counts[d] = counts.get(d, 0) + 1
+        cadence_mode = max(counts, key=counts.get)
+    expected = _expected_seconds(interval)
+    cadence_anomalies = sum(1 for d in deltas if expected is not None and d != expected)
+    missing = sum(max(d // expected - 1, 0) for d in deltas) if expected else 0
+
+    normalized = [
+        {"datetime": t.isoformat().replace("+00:00", "Z"), "open": o, "high": h, "low": l, "close": c}
+        for t, o, h, l, c in candles
+    ]
+    normalized_bytes = json.dumps(normalized, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    blocked = bool(invalid or duplicate_timestamps or non_monotonic_pairs)
+    status = "BLOCKED" if blocked else ("WARN" if cadence_anomalies else "PASS")
+    return AuditResult(
+        status=status,
+        symbol=symbol,
+        interval=interval,
+        row_count=len(candles),
+        first_timestamp_utc=timestamps[0].isoformat() if timestamps else None,
+        last_timestamp_utc=timestamps[-1].isoformat() if timestamps else None,
+        duplicate_timestamps=duplicate_timestamps,
+        non_monotonic_pairs=non_monotonic_pairs,
+        expected_cadence_seconds=expected,
+        cadence_mode_seconds=cadence_mode,
+        cadence_anomalies=cadence_anomalies,
+        missing_bar_count=missing,
+        invalid_ohlc_rows=invalid,
+        raw_sha256=hashlib.sha256(raw).hexdigest(),
+        normalized_sha256=hashlib.sha256(normalized_bytes).hexdigest(),
+    )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input")
+    parser.add_argument("--output-dir", default="reports")
+    args = parser.parse_args()
+    result = audit_file(args.input)
+    out = Path(args.output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "quality_audit.json").write_text(json.dumps(asdict(result), indent=2), encoding="utf-8")
+    print(f"STATUS: {result.status}")
+    print(f"SYMBOL: {result.symbol} | INTERVAL: {result.interval}")
+    print(f"ROWS: {result.row_count}")
+    print(f"UTC: {result.first_timestamp_utc} -> {result.last_timestamp_utc}")
+    print(f"DUPLICATES: {len(result.duplicate_timestamps)} | INVALID_OHLC: {len(result.invalid_ohlc_rows)}")
+    print(f"CADENCE: mode={result.cadence_mode_seconds}s anomalies={result.cadence_anomalies} missing={result.missing_bar_count}")
+    print(f"RAW_SHA256: {result.raw_sha256}")
+    print(f"NORMALIZED_SHA256: {result.normalized_sha256}")
+    return 0 if result.status != "BLOCKED" else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
