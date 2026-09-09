@@ -1,0 +1,1 @@
+Checks: monotonic journal sequence; reject gaps; reconstruct terminal state; never interpret unknown events as success.
