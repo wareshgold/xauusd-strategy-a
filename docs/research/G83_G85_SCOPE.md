@@ -1,0 +1,1 @@
+Demo/research infrastructure only. No Strategy A signal generation or production authorization.
