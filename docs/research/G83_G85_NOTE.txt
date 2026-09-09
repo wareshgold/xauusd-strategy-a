@@ -1,0 +1,1 @@
+G83-G85 demo infrastructure: recovery journal, strict event ordering, deterministic restart reconstruction. No production execution, strategy geometry, or BUY/SELL generation.
