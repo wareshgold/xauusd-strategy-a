@@ -1,0 +1,1 @@
+Acceptance: journal sequences are monotonic; event gaps are rejected; known lifecycle state is reconstructable after restart; unknown events remain non-success.
