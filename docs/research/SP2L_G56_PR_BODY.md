@@ -1,0 +1,1 @@
+G56 adds source-discrimination scaffolding for B1-B6 and an execution guard. It does not freeze geometry or authorize production.
