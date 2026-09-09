@@ -1,0 +1,1 @@
+G83-G85: recovery journal, event ordering, restart reconstruction. Demo/research infrastructure only. Production remains blocked.
