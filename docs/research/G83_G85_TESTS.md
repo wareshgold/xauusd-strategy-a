@@ -1,0 +1,1 @@
+Tests cover monotonic journal sequencing, rejection of event gaps, and deterministic reconstruction of FILLED state after restart.
