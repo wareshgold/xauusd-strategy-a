@@ -1,0 +1,1 @@
+End G56: source-discrimination layer only; production locked.
