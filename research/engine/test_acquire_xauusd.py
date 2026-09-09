@@ -1,10 +1,12 @@
+import io
 import json
-from pathlib import Path
 
 import pytest
+from urllib.error import HTTPError
 
 from .acquisition_request import AcquisitionRequest
 from . import acquire_xauusd
+from . import provider_http
 
 
 def payload():
@@ -19,19 +21,16 @@ def payload():
 
 def test_acquisition_never_prints_api_key(monkeypatch, tmp_path, capsys):
     class Response:
-        def __enter__(self):
-            return self
-        def __exit__(self, *args):
-            return False
-        def read(self):
-            return json.dumps(payload(), separators=(",", ":")).encode()
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def read(self): return json.dumps(payload(), separators=(",", ":")).encode()
 
     seen = {}
     def fake_urlopen(request, timeout):
         seen["url"] = request.full_url
         return Response()
 
-    monkeypatch.setattr(acquire_xauusd, "urlopen", fake_urlopen)
+    monkeypatch.setattr(provider_http, "urlopen", fake_urlopen)
     request = AcquisitionRequest("XAU/USD", "1min", 2, source_timezone="Australia/Sydney")
     manifest, artifact = acquire_xauusd.acquire(request, api_key="SECRET", output_dir=tmp_path)
     output = capsys.readouterr().out
@@ -52,7 +51,26 @@ def test_acquisition_blocks_bad_ohlc(monkeypatch, tmp_path):
         def __exit__(self, *args): return False
         def read(self): return json.dumps(bad).encode()
 
-    monkeypatch.setattr(acquire_xauusd, "urlopen", lambda request, timeout: Response())
+    monkeypatch.setattr(provider_http, "urlopen", lambda request, timeout: Response())
     request = AcquisitionRequest("XAU/USD", "1min", 2, source_timezone="Australia/Sydney")
-    with pytest.raises(ValueError, match="invalid provider OHLC row"):
+    with pytest.raises(ValueError, match="OHLC invariant violated"):
         acquire_xauusd.acquire(request, api_key="SECRET", output_dir=tmp_path)
+
+
+def test_acquisition_429_retries(monkeypatch, tmp_path):
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def read(self): return json.dumps(payload()).encode()
+
+    calls = {"n": 0}
+    def fake_urlopen(request, timeout):
+        calls["n"] += 1
+        if calls["n"] < 2:
+            raise HTTPError(request.full_url, 429, "rate limited", {}, io.BytesIO())
+        return Response()
+
+    monkeypatch.setattr(provider_http, "urlopen", fake_urlopen)
+    request = AcquisitionRequest("XAU/USD", "1min", 2, source_timezone="Australia/Sydney")
+    acquire_xauusd.acquire(request, api_key="SECRET", output_dir=tmp_path)
+    assert calls["n"] == 2
