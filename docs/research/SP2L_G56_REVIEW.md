@@ -1,0 +1,1 @@
+G56 review: candidates remain hypotheses; unresolved source geometry is preserved; production execution is blocked.
