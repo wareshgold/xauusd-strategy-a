@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
-from research.engine.models import Candle
-from research.engine.quality_audit import audit_candles
+from .models import Candle
+from .quality_audit import audit_candles
 
 
 def candle(minute, o=3500.0, h=3501.0, l=3499.0, c=3500.5):
