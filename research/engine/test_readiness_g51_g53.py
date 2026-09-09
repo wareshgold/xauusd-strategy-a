@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from .baselines import flat_baseline, price_baseline
 from .dataset_package import SplitSummary, _splits_are_contiguous
 from .models import Candle
@@ -47,5 +49,5 @@ def test_baselines_are_strategy_neutral():
     assert result.candle_count == 3
     assert result.first_open == 100
     assert result.last_close == 102.5
-    assert result.buy_hold_return == 0.025
+    assert result.buy_hold_return == pytest.approx(0.025)
     assert flat_baseline() == {"tradeCount": 0, "return": 0.0, "maxDrawdown": 0.0}
