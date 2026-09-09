@@ -1,4 +1,4 @@
-from sp2l_engine.providers import parse_twelve_data_time_series
+from research.engine.providers import parse_twelve_data_time_series
 
 
 def payload():
