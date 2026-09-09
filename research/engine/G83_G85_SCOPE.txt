@@ -1,0 +1,1 @@
+Demo-only recovery durability primitives. No live broker, no Strategy A signal generation, no geometry changes, no production promotion.
