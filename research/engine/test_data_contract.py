@@ -1,4 +1,4 @@
-from sp2l_data_contract import QualityState, aggregate_fixed_bucket, audit_ohlc
+from research.engine.data_contract import QualityState, aggregate_fixed_bucket, audit_ohlc
 
 
 def row(ts, o, h, l, c):
