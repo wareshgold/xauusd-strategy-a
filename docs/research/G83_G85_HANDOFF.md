@@ -1,0 +1,1 @@
+Handoff: run full research-engine CI against branch head; only then mark G83-G85 validated.
