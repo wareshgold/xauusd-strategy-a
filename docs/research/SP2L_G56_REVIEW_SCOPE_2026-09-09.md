@@ -1,0 +1,1 @@
+Review scope: source discrimination matrix, candidate isolation, and production lock. No geometry freeze.
