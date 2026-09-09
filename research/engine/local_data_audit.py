@@ -1,11 +1,4 @@
-"""Local, strategy-neutral audit for Twelve Data-shaped OHLC JSON.
-
-Usage:
-    python -m research.engine.local_data_audit path/to/time_series.json \
-        --source-timezone Australia/Sydney --output-dir reports
-
-This module deliberately contains no Strategy A detection logic.
-"""
+"""Local, strategy-neutral audit for Twelve Data-shaped OHLC JSON."""
 from __future__ import annotations
 
 import argparse
@@ -77,12 +70,13 @@ def audit_file(path: str | Path, source_timezone: str | None = None) -> AuditRes
     for idx, row in enumerate(values):
         try:
             dt = _parse_dt(str(row["datetime"]), source_timezone)
-            o, h, l, c = (float(row[k]) for k in ("open", "high", "low", "close"))
-            if not (l <= o <= h and l <= c <= h):
-                invalid.append(idx)
-            candles.append((dt, o, h, l, c))
-        except (KeyError, TypeError, ValueError):
+        except (KeyError, TypeError):
             invalid.append(idx)
+            continue
+        o, h, l, c = (float(row[k]) for k in ("open", "high", "low", "close"))
+        if not (l <= o <= h and l <= c <= h):
+            invalid.append(idx)
+        candles.append((dt, o, h, l, c))
 
     candles.sort(key=lambda x: x[0])
     timestamps = [x[0] for x in candles]
@@ -107,24 +101,12 @@ def audit_file(path: str | Path, source_timezone: str | None = None) -> AuditRes
     normalized_bytes = json.dumps(normalized, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
     blocked = bool(invalid or duplicate_timestamps or non_monotonic_pairs)
     status = "BLOCKED" if blocked else ("WARN" if cadence_anomalies else "PASS")
-    return AuditResult(
-        status=status,
-        symbol=symbol,
-        interval=interval,
-        source_timezone=source_timezone,
-        row_count=len(candles),
-        first_timestamp_utc=timestamps[0].isoformat() if timestamps else None,
-        last_timestamp_utc=timestamps[-1].isoformat() if timestamps else None,
-        duplicate_timestamps=duplicate_timestamps,
-        non_monotonic_pairs=non_monotonic_pairs,
-        expected_cadence_seconds=expected,
-        cadence_mode_seconds=cadence_mode,
-        cadence_anomalies=cadence_anomalies,
-        missing_bar_count=missing,
-        invalid_ohlc_rows=invalid,
-        raw_sha256=hashlib.sha256(raw).hexdigest(),
-        normalized_sha256=hashlib.sha256(normalized_bytes).hexdigest(),
-    )
+    return AuditResult(status, symbol, interval, source_timezone, len(candles),
+                       timestamps[0].isoformat() if timestamps else None,
+                       timestamps[-1].isoformat() if timestamps else None,
+                       duplicate_timestamps, non_monotonic_pairs, expected,
+                       cadence_mode, cadence_anomalies, missing, invalid,
+                       hashlib.sha256(raw).hexdigest(), hashlib.sha256(normalized_bytes).hexdigest())
 
 
 def main() -> int:
