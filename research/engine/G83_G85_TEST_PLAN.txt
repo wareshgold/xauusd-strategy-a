@@ -1,0 +1,1 @@
+Validate journal ordering, reject gaps, rebuild FILLED/CANCELLED/EXPIRED states, and preserve UNKNOWN as non-success.
