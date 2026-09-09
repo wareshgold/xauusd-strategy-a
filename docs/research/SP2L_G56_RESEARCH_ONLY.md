@@ -1,0 +1,1 @@
+G56 is research-only. No candidate can authorize production execution.
