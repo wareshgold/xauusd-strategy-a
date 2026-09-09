@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from .backtest import BacktestEngine, ExecutionPolicy
 from .data import aggregate_ohlc, audit_candles, dataset_fingerprint
-from .models import Candle, Order, OrderType, Side
+from .models import Candle, Order, OrderType, Side, Trade
 from .metrics import summarize_trades
 
 
@@ -44,16 +44,11 @@ def test_limit_fill_and_stop_first_conflict():
 
 
 def test_metrics_are_r_based_and_directional():
-    bars = [
-        c("2026-01-01T00:00:00", 100, 101, 99, 100),
-        c("2026-01-01T00:01:00", 100, 103, 99, 102),
-        c("2026-01-01T00:02:00", 100, 101, 97, 98),
+    t0 = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    trades = [
+        Trade("win", Side.BUY, t0, 100, 1, 99, 102, t0 + timedelta(minutes=2), 102, "TARGET"),
+        Trade("loss", Side.SELL, t0, 100, 1, 101, 98, t0 + timedelta(minutes=3), 101, "STOP"),
     ]
-    orders = [
-        Order("win", Side.BUY, OrderType.LIMIT, 1, bars[0].timestamp, price=100, stop_loss=99, take_profit=102),
-        Order("loss", Side.SELL, OrderType.LIMIT, 1, bars[0].timestamp, price=100, stop_loss=101, take_profit=98),
-    ]
-    trades = BacktestEngine().run(bars, orders)
     summary = summarize_trades(trades)
     assert summary["tradeCount"] == 2
     assert summary["winRate"] == 0.5
