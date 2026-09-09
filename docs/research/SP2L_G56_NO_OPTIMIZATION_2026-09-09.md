@@ -1,0 +1,1 @@
+No parameter optimization is permitted in G56. Backtest performance cannot select between source interpretations.
