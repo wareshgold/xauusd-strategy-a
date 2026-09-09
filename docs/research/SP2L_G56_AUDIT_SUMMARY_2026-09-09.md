@@ -1,0 +1,1 @@
+G56 audit summary: all critical B1-B6 families are represented; unresolved cases remain blocked; no production execution path is opened.
