@@ -1,0 +1,1 @@
+G83-G85 are demo-only. Recovery state is derived only from explicit known events. Unknown or out-of-order events are not repaired into success. No Strategy A decision is produced.
