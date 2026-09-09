@@ -41,12 +41,7 @@ def _parse_timestamp(value: str, source_timezone: str) -> datetime:
 def parse_twelve_data_time_series(payload: dict, *, requested_symbol: str,
                                   requested_interval: str,
                                   source_timezone: str | None = None) -> ProviderBatch:
-    """Parse a Twelve Data /time_series JSON response deterministically.
-
-    The adapter accepts the provider's ``meta`` + ``values`` structure. It
-    does not perform network I/O and therefore remains deterministic and easy
-    to fixture-test.
-    """
+    """Parse a Twelve Data /time_series JSON response deterministically."""
     if payload.get("status") == "error":
         raise ValueError(payload.get("message", "provider returned an error"))
 
@@ -69,11 +64,10 @@ def parse_twelve_data_time_series(payload: dict, *, requested_symbol: str,
             h = float(item["high"])
             l = float(item["low"])
             c = float(item["close"])
+            candles.append(Candle(timestamp, o, h, l, c, symbol=symbol, timeframe=interval))
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("invalid provider OHLC row") from exc
-        candles.append(Candle(timestamp, o, h, l, c, symbol=symbol, timeframe=interval))
 
-    # Preserve payload metadata, but never use it as a trading rule.
     retrieval = {
         "provider": "Twelve Data",
         "source_timezone": provider_tz,
