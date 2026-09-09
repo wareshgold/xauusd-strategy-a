@@ -15,6 +15,7 @@ Define exactly what research/implementation work is allowed while source geometr
 7. Reporting infrastructure for trade statistics, MAE/MFE, drawdown, clustering and regime slices.
 8. Live-delivery plumbing tests using mocked deterministic signals only.
 9. Source documentation and review artifacts.
+10. Candidate geometry code may exist only as explicitly named research hypotheses and must not be imported by production Strategy A signal generation.
 
 ## Not allowed now
 
