@@ -1,0 +1,1 @@
+G56 uses the previously indexed authoritative video evidence and source-derived semantic findings. No external heuristic is promoted to canonical Strategy A geometry.
