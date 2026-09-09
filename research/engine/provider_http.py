@@ -16,8 +16,17 @@ class RetryPolicy:
         return self.backoff_seconds * (2 ** (retry_number - 1))
 
 
-def read_with_retries(request: Request, *, timeout: int = 30, policy: RetryPolicy = RetryPolicy(), sleep=time.sleep, opener=urlopen) -> bytes:
+def read_with_retries(
+    request: Request,
+    *,
+    timeout: int = 30,
+    policy: RetryPolicy = RetryPolicy(),
+    sleep=time.sleep,
+    opener=None,
+) -> bytes:
     """Read an HTTP response, retrying only provider rate-limit responses."""
+    if opener is None:
+        opener = urlopen
     for attempt in range(policy.max_retries + 1):
         try:
             with opener(request, timeout=timeout) as response:
