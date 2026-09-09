@@ -142,6 +142,14 @@ Status: **STRUCTURAL MIRROR STRONGLY SUPPORTED / OHLC GEOMETRY UNRESOLVED**.
 9. Pending order replacement is qualitative in the source; the numeric/algorithmic threshold is unresolved.
 10. Bearish structural symmetry is supported, but exact OHLC geometry remains incomplete.
 
+## Additional source-resolution findings from recovered transcript
+
+11. The source explicitly says the chart should be read candle-by-candle and describes OHLC components as important observables. This strengthens the requirement that any production rule must be candle-indexed and OHLC-deterministic once frozen.
+12. The source explicitly describes the correction for the bullish example as moving below the first Low, while the visual entry line is later associated with the evolving structural sequence. This supports a correction/structure relationship but does not uniquely define the order-line coordinate.
+13. The source explicitly states that two P-Gap constructions can be treated as one strategy branch despite different ordering of breakout, higher lows and gap formation. Therefore a production detector must support multiple source-confirmed construction families if/when their exact geometry becomes resolvable.
+14. The source explicitly warns against confirmation bias and asks viewers to inspect losses as well as wins. This is a methodological source principle, not a trading filter.
+15. The source uses M1/M5 examples and states that lower timeframes are where this style is applied; this does not by itself authorize a production timeframe restriction because the broader source discussion also distinguishes strategy/timeframe contexts.
+
 ## Resolution decision
 
 The atlas **does not justify Frozen Geometry**.
