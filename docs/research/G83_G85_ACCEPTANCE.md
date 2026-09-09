@@ -1,0 +1,1 @@
+Acceptance requires CI green on the complete branch head. Until CI completes, G83-G85 remain validation pending.
