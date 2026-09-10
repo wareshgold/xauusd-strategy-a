@@ -1,7 +1,8 @@
 """G251 source-confirmed target-reference fixtures.
 
-Research-only. Encodes the G250 schematic target geometry without deciding
-terminal TP selection, round-level behavior, or execution semantics.
+Research-only. Encodes the G250 bullish schematic target geometry without
+freezing bearish mirror geometry, terminal TP selection, round-level behavior,
+or execution semantics.
 """
 from dataclasses import dataclass
 from enum import Enum
@@ -34,20 +35,30 @@ def risk(entry: float | None, stop: float | None) -> float | None:
 
 
 def tp1_reference(case: TargetCase) -> Decision:
-    """G250 reference: one risk distance from Entry in trade direction."""
+    """G250 bullish source reference: one risk distance from Entry.
+
+    Bearish mirroring remains UNKNOWN until source-equivalent evidence is frozen.
+    """
     r = risk(case.entry, case.stop)
+    if case.direction != "bullish":
+        return Decision.UNKNOWN
     if r is None or case.tp1 is None or case.entry is None:
         return Decision.UNKNOWN
-    expected = case.entry + r if case.direction == "bullish" else case.entry - r
+    expected = case.entry + r
     return Decision.PASS if case.tp1 == expected else Decision.FAIL
 
 
 def tp2_reference(case: TargetCase) -> Decision:
-    """G250 reference: two risk distances from Entry in trade direction."""
+    """G250 bullish source reference: two risk distances from Entry.
+
+    Bearish mirroring remains UNKNOWN until source-equivalent evidence is frozen.
+    """
     r = risk(case.entry, case.stop)
+    if case.direction != "bullish":
+        return Decision.UNKNOWN
     if r is None or case.tp2 is None or case.entry is None:
         return Decision.UNKNOWN
-    expected = case.entry + 2 * r if case.direction == "bullish" else case.entry - 2 * r
+    expected = case.entry + 2 * r
     return Decision.PASS if case.tp2 == expected else Decision.FAIL
 
 
@@ -63,7 +74,7 @@ def fixtures() -> tuple[TargetCase, ...]:
         TargetCase("T1", "bullish", 100.0, 90.0, 110.0, 120.0, None,
                    Decision.PASS, Decision.PASS, Decision.UNKNOWN),
         TargetCase("T2", "bearish", 100.0, 110.0, 90.0, 80.0, None,
-                   Decision.PASS, Decision.PASS, Decision.UNKNOWN),
+                   Decision.UNKNOWN, Decision.UNKNOWN, Decision.UNKNOWN),
         TargetCase("T3", "bullish", 3220.0, 3210.0, 3230.0, 3240.0, 3230.0,
                    Decision.PASS, Decision.PASS, Decision.PASS),
         TargetCase("T4", "bullish", 3220.0, 3210.0, 3230.0, 3240.0, 3240.0,
