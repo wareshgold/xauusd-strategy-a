@@ -8,11 +8,18 @@ from research.fixtures.sp2l_target_reference_fixtures_g251 import (
 )
 
 
-def test_source_reference_targets_are_one_r_and_two_r():
+def test_source_reference_targets_are_one_r_and_two_r_for_bullish_cases():
     cases = fixtures()
     for case in cases:
-        assert tp1_reference(case) is case.expected_tp1
-        assert tp2_reference(case) is case.expected_tp2
+        if case.direction == "bullish":
+            assert tp1_reference(case) is case.expected_tp1
+            assert tp2_reference(case) is case.expected_tp2
+
+
+def test_bearish_target_mirror_is_not_frozen():
+    case = next(case for case in fixtures() if case.case_id == "T2")
+    assert tp1_reference(case) is Decision.UNKNOWN
+    assert tp2_reference(case) is Decision.UNKNOWN
 
 
 def test_terminal_tp_selection_remains_separate_from_reference_geometry():
