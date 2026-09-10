@@ -41,7 +41,7 @@ The screenshot therefore establishes that the source uses an explicit entry-rela
 
 Reference frame:
 
-- 21:40 → frame 39,600
+- 21:40 → frame 39,000
 
 Important boundary: the screenshot alone does **not** uniquely prove which of `E` or `2x` is the source's canonical pending-limit anchor, nor does it identify the A/B/C/D construction behind the measured levels. It also does not prove that the visible `2x` label is mathematically identical to a particular multiple of risk.
 
