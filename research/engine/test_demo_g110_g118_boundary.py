@@ -1,7 +1,7 @@
-from .demo_recovery_batch_audit import BatchDecision, RecoveryAuditBoundary, decide_audit
+from .demo_recovery_audit_boundary import AuditDecision, RecoveryAuditBoundary, decide_audit
+from .demo_recovery_batch_audit import BatchDecision, audit_batch, guard_batch
 from .demo_recovery_batch_v2 import BatchProductionBoundary, ProductionDecision, production_decision
 from .demo_recovery_fingerprint import RecoveryFingerprint
-from .demo_recovery_batch_audit import audit_batch, guard_batch
 
 
 def test_g110_to_g118_valid_batch_is_audit_only():
