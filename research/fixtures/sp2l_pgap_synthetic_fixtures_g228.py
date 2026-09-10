@@ -121,7 +121,7 @@ def fixtures() -> tuple[Fixture, ...]:
                 Candle(106, 109, 105, 108),
             ),
             Decision.FAIL,
-            Decision.FAIL,
+            Decision.PASS,
             None,
         ),
     )
