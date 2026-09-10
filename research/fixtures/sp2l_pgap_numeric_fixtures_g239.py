@@ -174,7 +174,7 @@ def fixtures() -> tuple[NumericFixture, ...]:
             (
                 Candle(100.0, 105.0, 99.0, 104.0),
                 Candle(104.0, 115.0, 103.0, 113.0),
-                Candle(105.0, 112.0, 101.0, 110.0),
+                Candle(103.0, 112.0, 101.0, 104.0),
             ),
             None,
             True,
