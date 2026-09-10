@@ -13,16 +13,24 @@ class FreshHoldoutResultDecision(str, Enum):
 @dataclass(frozen=True)
 class FreshHoldoutResultInput:
     window_id: str
+    dataset_fingerprint: str
+    expected_dataset_fingerprint: str
     result_fingerprint: str
-    source_result_fingerprint: str
+    expected_result_fingerprint: str
     optimization_applied: bool = False
 
 
 def decide_fresh_holdout_result(value: FreshHoldoutResultInput) -> FreshHoldoutResultDecision:
     if value.optimization_applied:
         return FreshHoldoutResultDecision.BLOCK
-    if not value.window_id or not value.result_fingerprint or not value.source_result_fingerprint:
+    if not value.window_id:
         return FreshHoldoutResultDecision.UNKNOWN
-    if value.result_fingerprint != value.source_result_fingerprint:
+    if not value.dataset_fingerprint or not value.expected_dataset_fingerprint:
+        return FreshHoldoutResultDecision.UNKNOWN
+    if value.dataset_fingerprint != value.expected_dataset_fingerprint:
+        return FreshHoldoutResultDecision.BLOCK
+    if not value.result_fingerprint or not value.expected_result_fingerprint:
+        return FreshHoldoutResultDecision.UNKNOWN
+    if value.result_fingerprint != value.expected_result_fingerprint:
         return FreshHoldoutResultDecision.BLOCK
     return FreshHoldoutResultDecision.PASS
