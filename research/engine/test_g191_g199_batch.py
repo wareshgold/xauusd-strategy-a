@@ -11,8 +11,8 @@ def test_g191_g199_optimization_is_blocked():
 
 
 def test_g191_g199_result_boundary_passes():
-    assert decide_fresh_holdout_result(FreshHoldoutResultInput("FRESH_HOLDOUT_01", "r", "r")) is FreshHoldoutResultDecision.PASS
+    assert decide_fresh_holdout_result(FreshHoldoutResultInput("FRESH_HOLDOUT_01", "d", "d", "r", "r")) is FreshHoldoutResultDecision.PASS
 
 
 def test_g191_g199_result_mismatch_blocks():
-    assert decide_fresh_holdout_result(FreshHoldoutResultInput("FRESH_HOLDOUT_01", "r1", "r2")) is FreshHoldoutResultDecision.BLOCK
+    assert decide_fresh_holdout_result(FreshHoldoutResultInput("FRESH_HOLDOUT_01", "d", "d", "r1", "r2")) is FreshHoldoutResultDecision.BLOCK
