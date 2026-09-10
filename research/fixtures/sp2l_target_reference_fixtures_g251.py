@@ -1,8 +1,9 @@
-"""G251 source-confirmed target-reference fixtures.
+"""G251 source-schematic target-reference fixtures.
 
-Research-only. Encodes the G250 bullish schematic target geometry without
-freezing bearish mirror geometry, terminal TP selection, round-level behavior,
-or execution semantics.
+Research-only. Encodes the observed bullish target schematic as a fixture
+without promoting it to full executable strategy geometry. Bearish mirroring,
+terminal TP selection, round-level behavior, and execution semantics remain
+unresolved.
 """
 from dataclasses import dataclass
 from enum import Enum
@@ -35,9 +36,10 @@ def risk(entry: float | None, stop: float | None) -> float | None:
 
 
 def tp1_reference(case: TargetCase) -> Decision:
-    """G250 bullish source reference: one risk distance from Entry.
+    """Observed bullish schematic: TP1 is one risk distance from Entry.
 
-    Bearish mirroring remains UNKNOWN until source-equivalent evidence is frozen.
+    This remains a research fixture and does not freeze terminal TP selection
+    or bearish mirror geometry.
     """
     r = risk(case.entry, case.stop)
     if case.direction != "bullish":
@@ -49,10 +51,7 @@ def tp1_reference(case: TargetCase) -> Decision:
 
 
 def tp2_reference(case: TargetCase) -> Decision:
-    """G250 bullish source reference: two risk distances from Entry.
-
-    Bearish mirroring remains UNKNOWN until source-equivalent evidence is frozen.
-    """
+    """Observed bullish schematic: TP2 is two risk distances from Entry."""
     r = risk(case.entry, case.stop)
     if case.direction != "bullish":
         return Decision.UNKNOWN
@@ -63,7 +62,7 @@ def tp2_reference(case: TargetCase) -> Decision:
 
 
 def terminal_tp_is_reference(case: TargetCase) -> Decision:
-    """Do not infer terminal TP selection from reference geometry."""
+    """Do not infer terminal TP selection from schematic reference geometry."""
     if case.terminal_tp is None or case.tp1 is None or case.tp2 is None:
         return Decision.UNKNOWN
     return Decision.PASS if case.terminal_tp in (case.tp1, case.tp2) else Decision.FAIL
