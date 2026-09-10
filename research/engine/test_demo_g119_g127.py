@@ -1,5 +1,6 @@
 from .demo_batch_quality_gate import BatchQualityDecision, BatchQualityInput, decide_batch_quality
 from .demo_batch_replay_boundary import ReplayBoundaryDecision, ReplayBoundaryInput, decide_replay_boundary
+from .demo_batch_production_boundary import BatchProductionDecision, production_decision
 
 
 def test_g119_g127_valid_batch_passes_quality():
@@ -32,6 +33,20 @@ def test_g119_g127_uncertain_replay_requires_review():
     assert decide_replay_boundary(value) is ReplayBoundaryDecision.REQUIRE_REVIEW
 
 
-def test_g119_g127_valid_replay_passes():
+def test_g119_g127_unrecovered_state_requires_review():
+    value = ReplayBoundaryInput(True, True, False, True)
+    assert decide_replay_boundary(value) is ReplayBoundaryDecision.REQUIRE_REVIEW
+
+
+def test_g119_g127_reconciliation_mismatch_requires_review():
+    value = ReplayBoundaryInput(True, True, True, False)
+    assert decide_replay_boundary(value) is ReplayBoundaryDecision.REQUIRE_REVIEW
+
+
+def test_g119_g127_valid_replay_passes_audit_only():
     value = ReplayBoundaryInput(True, True, True, True)
     assert decide_replay_boundary(value) is ReplayBoundaryDecision.PASS
+
+
+def test_g119_g127_production_is_always_blocked():
+    assert production_decision() is BatchProductionDecision.BLOCK
