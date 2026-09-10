@@ -76,7 +76,7 @@ def fixtures() -> tuple[Fixture, ...]:
                 Candle(107, 110, 105.5, 109),
             ),
             Decision.FAIL,
-            Decision.FAIL,
+            Decision.PASS,
             None,
         ),
         Fixture(
@@ -88,7 +88,7 @@ def fixtures() -> tuple[Fixture, ...]:
                 Candle(108, 112, 106.5, 111),
             ),
             Decision.PASS,
-            Decision.FAIL,
+            Decision.PASS,
             True,
         ),
         Fixture(
@@ -106,11 +106,11 @@ def fixtures() -> tuple[Fixture, ...]:
             "PG-05",
             (
                 Candle(100, 106, 99, 105),
-                Candle(106.5, 108, 106.2, 107.5),
-                Candle(107, 109, 106.5, 108.5),
+                Candle(107, 109, 106.5, 108),
+                Candle(106, 110, 105.5, 109),
             ),
             Decision.FAIL,
-            Decision.FAIL,
+            Decision.PASS,
             None,
         ),
         Fixture(
