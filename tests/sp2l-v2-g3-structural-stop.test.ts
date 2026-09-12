@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveStructuralStopCandidate } from '../src/domain/research/sp2l-v2/StructuralStopCandidate';
+import { resolveStructuralStopCandidate } from '../src/domain/research/sp2l-v2/StructuralStopCandidate.js';
 
 describe('G3 structural-stop candidate', () => {
   it('uses the bullish spike-origin low without inventing a buffer', () => {
