@@ -10,7 +10,7 @@
     "test:sp2l-v2": "vitest run tests/sp2l-v2-semantic-state.test.ts",
     "test:sp2l-g1": "vitest run tests/sp2l-v2-structural-reference.test.ts",
     "test:sp2l-g2": "vitest run tests/sp2l-v2-pending-limit.test.ts",
-    "test:sp2l-g3": "vitest run tests/sp2l-v2-structural-stop.test.ts",
+    "test:sp2l-g3": "vitest run tests/sp2l-v2-g3-structural-stop.test.ts",
     "test:sp2l-g4g5": "vitest run tests/sp2l-v2-g4g5-discriminating-fixtures.test.ts tests/sp2l-v2-g4g5-source-extraction.test.ts",
     "lint": "eslint .",
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
@@ -18,7 +18,8 @@
     "research:phase27-d-archetype-conditional-residual-decomposition": "node scripts/analyze-phase27-d-archetype-conditional-residual-decomposition.mjs",
     "research:phase28-d-archetype-conditional-validation": "node scripts/analyze-phase28-d-archetype-conditional-validation.mjs",
     "research:phase29-d-archetype-residual-after-geometry": "node scripts/analyze-phase29-d-archetype-residual-after-geometry.mjs",
-    "research:phase30-directional-context-alignment-audit": "node scripts/analyze-phase30-directional-context-alignment-audit.mjs"
+    "research:phase30-directional-context-alignment-audit": "node scripts/analyze-phase30-directional-context-alignment-audit.mjs",
+    "research:phase31-counterfactual-direction-flip-snapshot": "node scripts/research-phase31-counterfactual-direction-flip-snapshot.mjs"
   },
   "devDependencies": {
     "@types/node": "latest",
