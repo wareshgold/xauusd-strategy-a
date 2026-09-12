@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "gate": "SOURCE_RESOLUTION",
+  "source": {
+    "filename": "gap پورصمدی دوره جامع.mp4",
+    "sha256": "3345965612b52ebbefffe724f7bd16cc1085bafa29dc612f29a4d725e017c0a6",
+    "durationSeconds": 1955.793560,
+    "resolution": "854x480",
+    "fps": 30
+  },
+  "frames": [
+    {"timestamp":"10:30","second":630,"sha256":"da9f1daf3342e3ea0c6b2a7ec8871bee317778e58f62fd57b7028b0c62915e47","purpose":"reward guidance slide: 1:1 after gap with stated confidence context; 1:2 after breakout when direction remains uncertain"},
+    {"timestamp":"19:00","second":1140,"sha256":"b880cfef72c63a3015ba877eb8b3314daef8dfb0b195029f538c521c895f40d","purpose":"generic gap geometry slide; high of candle two bars earlier vs current low"},
+    {"timestamp":"20:00","second":1200,"sha256":"cad370d8d698ab4207de3aa14befdedf3dbbb2a5ffbf70a2a86c82ff23bf19cd","purpose":"Breakout Gap definition slide"},
+    {"timestamp":"22:00","second":1320,"sha256":"6d11b16c8d2610f1360128542be2e856401332f3649079d4e0b50b24aa074a89","purpose":"Breakout Gap chart example"},
+    {"timestamp":"22:30","second":1350,"sha256":"ab983c724a21e62090beb3b410f91ac25bf8914b50053da77b35001c99f6681b","purpose":"Pressure Gap definition/context slide"},
+    {"timestamp":"25:00","second":1500,"sha256":"39ff344c45972e0d86c748aed087cc75eef75488c010ca121ee1d59c53fa2152","purpose":"Exhaustion Gap definition/context slide"},
+    {"timestamp":"26:00","second":1560,"sha256":"5fa771310d2e0d2432e5d8d05b256c58d65507f58fe3e7086bd2cee40a436138","purpose":"Exhaustion Gap chart example"},
+    {"timestamp":"28:00","second":1680,"sha256":"4fb6f2f08034abe1e3252823014b747e6f105fe18205675a46b1f510298de28c","purpose":"Exhaustion Gap extended example"},
+    {"timestamp":"31:00","second":1860,"sha256":"39cae1b3bc2682873e079973c202447c92924d992ac7e1e282c0041add98470d","purpose":"Gap taxonomy slide: Breakout / Pressure / Exhaustion / Common"}
+  ]
+}
