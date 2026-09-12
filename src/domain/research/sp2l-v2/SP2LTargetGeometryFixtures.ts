@@ -31,6 +31,7 @@ export interface TargetGeometryFixture {
 const ENTRY = 3000;
 const P250 = 250;
 const P500 = 500;
+const P750 = P250 + P500;
 const P1000 = 1000;
 
 /** C1: equal-ladder hypothesis from G315/G316, explicitly NOT frozen. */
