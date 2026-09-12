@@ -13,6 +13,8 @@
     "test:sp2l-g3": "vitest run tests/sp2l-v2-g3-structural-stop.test.ts",
     "test:sp2l-g4g5": "vitest run tests/sp2l-v2-g4g5-discriminating-fixtures.test.ts tests/sp2l-v2-g4g5-source-extraction.test.ts",
     "test:sp2l-g339": "vitest run tests/sp2l-v2-g339-structural-model-discrimination.test.ts",
+    "test:sp2l-g341": "vitest run tests/sp2l-v2-g341-abcd-competing-models.test.ts",
+    "test:sp2l-g342": "vitest run tests/sp2l-v2-g342-abcd-adversarial-discrimination.test.ts",
     "lint": "eslint .",
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
