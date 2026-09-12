@@ -20,12 +20,12 @@ export const G342_BASELINE: G342Fixture = {
 
 export const G342_NEAREST_SWING_DISTRACTOR: G342Fixture = {
   id: 'NEAREST_SWING_DISTRACTOR',
-  candles: [
-    ...G341_SOURCE_SEMANTIC_FIXTURE.slice(0, 5),
-    { id: 'distractor', index: 5.5, open: 113, high: 119, low: 112, close: 118 },
-    ...G341_SOURCE_SEMANTIC_FIXTURE.slice(5).map((candle) => ({ ...candle, index: candle.index + 1 })),
-  ],
-  purpose: 'Adds an attractive local swing candidate without changing the source semantic deep-origin, parent-B, correction, or fill events.',
+  candles: G341_SOURCE_SEMANTIC_FIXTURE.map((candle) =>
+    candle.id === 'swing-near-b'
+      ? { ...candle, open: 118, high: 124, low: 104, close: 119 }
+      : candle,
+  ),
+  purpose: 'Perturbs the candidate local swing while leaving source-semantic deep-origin, parent-B, correction, pending, and fill events unchanged.',
 };
 
 export const G342_PRICE_FIELD_DISCRIMINATOR: G342Fixture = {
