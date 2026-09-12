@@ -50,6 +50,5 @@ export function g355KeepsTaxonomySeparated(fixtures: readonly G355Fixture[] = G3
   const breakout = fixtures.find((fixture) => fixture.id === 'PG-03');
   const pressure = fixtures.find((fixture) => fixture.id === 'PG-04');
   return breakout?.expected === 'BREAKOUT_GAP_CANDIDATE'
-    && pressure?.expected === 'PRESSURE_GAP_CANDIDATE'
-    && breakout?.expected !== pressure?.expected;
+    && pressure?.expected === 'PRESSURE_GAP_CANDIDATE';
 }
