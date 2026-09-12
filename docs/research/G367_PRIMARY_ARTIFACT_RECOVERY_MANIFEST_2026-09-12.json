@@ -1,0 +1,27 @@
+{
+  "gate": "G367",
+  "date": "2026-09-12",
+  "status": "PASS_ARTIFACT_RECOVERY_BLOCKED_FROZEN_GEOMETRY",
+  "authoritative_corpus": [
+    "docs/strategy/source/POORSAMADI_SP2L_SOURCE.txt",
+    "original SP2L lesson video",
+    "original Poursamadi Gap lesson video",
+    "official Poursamadi SP2L web material"
+  ],
+  "unresolved_dimensions": [
+    "pgap_endpoints",
+    "ohlc_wick_body_convention",
+    "gap_minimum_overlap_tolerance",
+    "pressure_gap_universal_candle_count",
+    "breakout_ft_pgap_machine_relation",
+    "abcd_anchors",
+    "parent_nested_scale_selection",
+    "pending_limit_price",
+    "fill_semantics",
+    "sl_boundary_offset",
+    "tp1_tp2_r1_r2_mapping",
+    "secondary_entry_scope"
+  ],
+  "canonical_promotions": 0,
+  "production_authorized": false
+}
