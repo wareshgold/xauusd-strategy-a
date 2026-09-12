@@ -1,9 +1,9 @@
 """G251 source-schematic target-reference fixtures.
 
-Research-only. Encodes the observed bullish target schematic as a fixture
-without promoting it to full executable strategy geometry. Bearish mirroring,
-terminal TP selection, round-level behavior, and execution semantics remain
-unresolved.
+Research-only. Encodes the observed bullish target schematic as ordered
+reference levels without promoting visual spacing to an executable R-multiple
+rule. Bearish mirroring, terminal TP selection, point units, round-level
+behavior, and execution semantics remain unresolved.
 """
 from dataclasses import dataclass
 from enum import Enum
@@ -24,41 +24,22 @@ class TargetCase:
     tp1: float | None
     tp2: float | None
     terminal_tp: float | None
-    expected_tp1: Decision
-    expected_tp2: Decision
+    expected_tp_order: Decision
     expected_terminal_is_reference: Decision
 
 
-def risk(entry: float | None, stop: float | None) -> float | None:
-    if entry is None or stop is None:
-        return None
-    return abs(entry - stop)
+def ordered_bullish_targets(case: TargetCase) -> Decision:
+    """Research-only schematic ordering check.
 
-
-def tp1_reference(case: TargetCase) -> Decision:
-    """Observed bullish schematic: TP1 is one risk distance from Entry.
-
-    This remains a research fixture and does not freeze terminal TP selection
-    or bearish mirror geometry.
+    The source visual shows TP1 and TP2 successively above Entry in the
+    bullish schematic. This function deliberately does not encode a distance
+    formula, R multiple, point unit, or target selector.
     """
-    r = risk(case.entry, case.stop)
     if case.direction != "bullish":
         return Decision.UNKNOWN
-    if r is None or case.tp1 is None or case.entry is None:
+    if case.entry is None or case.tp1 is None or case.tp2 is None:
         return Decision.UNKNOWN
-    expected = case.entry + r
-    return Decision.PASS if case.tp1 == expected else Decision.FAIL
-
-
-def tp2_reference(case: TargetCase) -> Decision:
-    """Observed bullish schematic: TP2 is two risk distances from Entry."""
-    r = risk(case.entry, case.stop)
-    if case.direction != "bullish":
-        return Decision.UNKNOWN
-    if r is None or case.tp2 is None or case.entry is None:
-        return Decision.UNKNOWN
-    expected = case.entry + 2 * r
-    return Decision.PASS if case.tp2 == expected else Decision.FAIL
+    return Decision.PASS if case.entry < case.tp1 < case.tp2 else Decision.FAIL
 
 
 def terminal_tp_is_reference(case: TargetCase) -> Decision:
@@ -71,15 +52,15 @@ def terminal_tp_is_reference(case: TargetCase) -> Decision:
 def fixtures() -> tuple[TargetCase, ...]:
     return (
         TargetCase("T1", "bullish", 100.0, 90.0, 110.0, 120.0, None,
-                   Decision.PASS, Decision.PASS, Decision.UNKNOWN),
+                   Decision.PASS, Decision.UNKNOWN),
         TargetCase("T2", "bearish", 100.0, 110.0, 90.0, 80.0, None,
-                   Decision.UNKNOWN, Decision.UNKNOWN, Decision.UNKNOWN),
+                   Decision.UNKNOWN, Decision.UNKNOWN),
         TargetCase("T3", "bullish", 3220.0, 3210.0, 3230.0, 3240.0, 3230.0,
-                   Decision.PASS, Decision.PASS, Decision.PASS),
+                   Decision.PASS, Decision.PASS),
         TargetCase("T4", "bullish", 3220.0, 3210.0, 3230.0, 3240.0, 3240.0,
-                   Decision.PASS, Decision.PASS, Decision.PASS),
+                   Decision.PASS, Decision.PASS),
         TargetCase("T5", "bullish", 3220.0, 3210.0, 3230.0, 3240.0, 3235.0,
-                   Decision.PASS, Decision.PASS, Decision.FAIL),
+                   Decision.PASS, Decision.FAIL),
         TargetCase("T6", "bullish", 3220.0, 3210.0, 3230.0, 3240.0, None,
-                   Decision.PASS, Decision.PASS, Decision.UNKNOWN),
+                   Decision.PASS, Decision.UNKNOWN),
     )
