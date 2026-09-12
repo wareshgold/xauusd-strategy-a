@@ -1,0 +1,38 @@
+{
+  "audit": "G355",
+  "date": "2026-09-12",
+  "gate": "SOURCE_RESOLUTION -> SYNTHETIC_FIXTURES",
+  "canonical": false,
+  "source_confirmed": [
+    "P-GAP semantic identity = Pressure Gap",
+    "Breakout/Pressure/Exhaustion/Common are distinct gap categories",
+    "generic bullish gap example uses High[i-2] vs Low[i]",
+    "SP2L timing variant A: breakout -> follow-through -> P-GAP",
+    "SP2L timing variant B: higher-lows -> P-GAP"
+  ],
+  "fixtures": [
+    {"id":"PG-01","family":"generic_gap","condition":"High[i-2] < Low[i]","expected":"generic-gap-positive; P-GAP unresolved"},
+    {"id":"PG-02","family":"generic_gap","condition":"bearish mirrored separation","expected":"candidate only"},
+    {"id":"PG-03","family":"taxonomy","condition":"movement-origin gap without sustained pressure","expected":"Breakout-gap candidate"},
+    {"id":"PG-04","family":"taxonomy","condition":"sustained pressure -> pause -> trend bar + gap","expected":"Pressure-gap candidate"},
+    {"id":"PG-05","family":"timing","condition":"breakout -> FT -> P-GAP","expected":"source-supported SP2L variant"},
+    {"id":"PG-06","family":"timing","condition":"higher-lows -> P-GAP","expected":"source-supported SP2L variant"},
+    {"id":"PG-07","family":"endpoint","condition":"wick overlap; body separation","expected":"wick/body discriminator"},
+    {"id":"PG-08","family":"endpoint","condition":"body overlap; wick separation","expected":"wick/body discriminator"},
+    {"id":"PG-09","family":"threshold","condition":"very small positive gap","expected":"minimum-size unresolved"},
+    {"id":"PG-10","family":"tolerance","condition":"varying overlap","expected":"tolerance unresolved"},
+    {"id":"PG-11","family":"context","condition":"pressure-like sequence near resistance + reversal","expected":"Pressure/Exhaustion discriminator"},
+    {"id":"PG-12","family":"context","condition":"range gap with weak follow-through","expected":"Common-gap candidate"},
+    {"id":"PG-13","family":"context","condition":"P-GAP adjacent to E-GAP","expected":"classification-boundary discriminator"},
+    {"id":"PG-14","family":"anchors","condition":"same candles with alternate A/B/C/D labels","expected":"anchor hypotheses only"}
+  ],
+  "promotion_forbidden": [
+    "generic gap formula -> canonical P-GAP formula",
+    "minimum gap threshold",
+    "overlap/tolerance threshold",
+    "wick/body convention",
+    "A/B/C/D anchors",
+    "fill price = C",
+    "fixed TP1/TP2 mapping"
+  ]
+}
