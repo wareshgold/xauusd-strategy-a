@@ -10,8 +10,8 @@ const BASELINE_PATH = resolve(ROOT, `data/reports/strategy-a-baseline/${TIMEFRAM
 const REPORT_DIR = resolve(ROOT, 'data/reports/strategy-a-phase-counterfactual-direction-flip-audit');
 const REPORT_PATH = resolve(REPORT_DIR, `dataset-provenance-${TIMEFRAME}.json`);
 
-function loadJson(path) {
-  return JSON.parse(require('node:fs').readFileSync(path, 'utf8'));
+async function loadJson(path) {
+  return JSON.parse(await readFile(path, 'utf8'));
 }
 
 function loadGitJson(commit, path) {
@@ -27,8 +27,8 @@ function findTimestamp(dataset, timestamp) {
   return dataset.candles.findIndex((c) => c.timestamp === timestamp);
 }
 
-const baseline = loadJson(BASELINE_PATH);
-const current = loadJson(resolve(ROOT, DATA_PATH));
+const baseline = await loadJson(BASELINE_PATH);
+const current = await loadJson(resolve(ROOT, DATA_PATH));
 const snapshot = loadGitJson(BASELINE_COMMIT, DATA_PATH);
 const trades = baseline.trades ?? [];
 
@@ -66,7 +66,6 @@ const summary = {
   canonicalTrades: trades.length,
   currentIndexTimeMatches: rows.filter((r) => r.currentIndexTimeMatch).length,
   snapshotIndexTimeMatches: rows.filter((r) => r.snapshotIndexTimeMatch).length,
-  snapshotEntryTimeFoundAtSameIndex: rows.filter((r) => r.snapshotIndexTimeMatch).length,
   snapshotEntryTimeMissing: rows.filter((r) => r.snapshotIndexByEntryTime < 0).length,
   sample: rows.slice(0, 10),
   status: rows.every((r) => r.snapshotIndexTimeMatch) ? 'BASELINE_SNAPSHOT_ALIGNS_CURRENT_DOES_NOT' : 'BASELINE_SNAPSHOT_ALSO_MISMATCHES',
