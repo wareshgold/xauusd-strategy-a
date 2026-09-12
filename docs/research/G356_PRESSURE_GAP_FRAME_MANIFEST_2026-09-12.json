@@ -1,0 +1,75 @@
+{
+  "gate": "G356",
+  "date": "2026-09-12",
+  "source_video": "gap پورصمدی دوره جامع.mp4",
+  "source_sha256": "3345965612b52ebbefffe724f7bd16cc1085bafa29dc612f29a4d725e017c0a6",
+  "frames": [
+    {
+      "label": "GENERIC_GAP_CONTEXT",
+      "time_seconds": 1140,
+      "evidence": "Generic bullish gap teaching: distance between the high of the candle two bars earlier and the low of the current candle is described as a gap when separated.",
+      "canonical_scope": "GENERIC_GAP_ONLY"
+    },
+    {
+      "label": "BREAKOUT_GAP_EXAMPLE",
+      "time_seconds": 1200,
+      "evidence": "Breakout Gap is shown as a distinct named category associated with the beginning of a movement.",
+      "canonical_scope": "BREAKOUT_GAP_CATEGORY"
+    },
+    {
+      "label": "BREAKOUT_GAP_CHART",
+      "time_seconds": 1320,
+      "evidence": "Chart example visually marks a gap near the beginning of directional movement.",
+      "canonical_scope": "BREAKOUT_GAP_CATEGORY"
+    },
+    {
+      "label": "PRESSURE_GAP_DEFINITION",
+      "time_seconds": 1350,
+      "frame_sha256": "f8a20c90c781ce16ab7080e42f8a8acb7a062a7ebbc4a65bf4a0f7d3166c7af4",
+      "evidence": "Pressure Gap definition slide: sustained pressure, temporary pause, then trend bar; increased probability of trend start/continuation.",
+      "canonical_scope": "PRESSURE_GAP_SEMANTIC"
+    },
+    {
+      "label": "PRESSURE_GAP_CHART_A",
+      "time_seconds": 1400,
+      "frame_sha256": "3eebf9b4d5014c516714b546441194888ed194790a744760dc7916566df9364e",
+      "evidence": "Pressure Gap chart with blue highlighted region; endpoints are not labeled as OHLC fields or candle indices.",
+      "canonical_scope": "VISUAL_CONTEXT_ONLY"
+    },
+    {
+      "label": "PRESSURE_GAP_CHART_B",
+      "time_seconds": 1412,
+      "frame_sha256": "1cf8e72909aa611ed6efa2a75d535469961fc8c9e21ada43500996b258bccb11",
+      "evidence": "Annotated Pressure Gap chart; visual zone is explicit but executable endpoint semantics remain unlabeled.",
+      "canonical_scope": "VISUAL_CONTEXT_ONLY"
+    },
+    {
+      "label": "PRESSURE_GAP_CHART_C",
+      "time_seconds": 1420,
+      "frame_sha256": "402bcbdd2ec9c2218533a99c1abe69c6238ece312f8f2b90ddae54f1f8e20030",
+      "evidence": "Continuation of annotated Pressure Gap example; no wick/body/open/close endpoint labels.",
+      "canonical_scope": "VISUAL_CONTEXT_ONLY"
+    },
+    {
+      "label": "PRESSURE_GAP_CHART_D",
+      "time_seconds": 1440,
+      "frame_sha256": "1d831aae1cd7b89db97f1aae206477793d9f0d2fabac0fc03ad248f4dcdd879e",
+      "evidence": "Pressure Gap example contains multiple highlighted contextual regions; no explicit executable gap formula.",
+      "canonical_scope": "VISUAL_CONTEXT_ONLY"
+    }
+  ],
+  "resolved": [
+    "P-GAP semantic identity is Pressure Gap.",
+    "Generic bullish gap example uses High[i-2] versus current Low as displayed source geometry.",
+    "Breakout Gap and Pressure Gap remain distinct taxonomy categories."
+  ],
+  "unresolved": [
+    "Canonical P-GAP endpoint candle indices",
+    "Wick/body/open/close convention",
+    "Minimum gap size",
+    "Overlap/tolerance",
+    "Universal candle-count threshold",
+    "Exact machine relation between Pressure Gap and SP2L breakout/follow-through"
+  ],
+  "canonical_promotions": 0
+}
