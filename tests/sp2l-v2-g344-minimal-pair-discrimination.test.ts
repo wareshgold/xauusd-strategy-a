@@ -15,18 +15,18 @@ describe('G344 — minimal-pair synthetic discrimination', () => {
     );
   });
 
-  it('changes exactly one model dimension in every pair', () => {
+  it('changes exactly one model dimension in every pair, excluding the research-only identity field', () => {
     for (const pair of G344_MINIMAL_PAIRS) {
-      const differingKeys = (Object.keys(pair.left) as Array<keyof typeof pair.left>).filter(
-        (key) => pair.left[key] !== pair.right[key],
-      );
-      expect(differingKeys).toEqual([
+      const differingKeys = (Object.keys(pair.left) as Array<keyof typeof pair.left>)
+        .filter((key) => key !== 'id')
+        .filter((key) => pair.left[key] !== pair.right[key]);
+      const expectedKey =
         pair.dimension === 'A_SELECTOR' ? 'aSelector' :
         pair.dimension === 'B_SELECTOR' ? 'bSelector' :
         pair.dimension === 'C_SELECTOR' ? 'cSelector' :
         pair.dimension === 'PRICE_FIELD' ? 'priceField' :
-        pair.dimension === 'SCALE' ? 'scale' : 'projection',
-      ]);
+        pair.dimension === 'SCALE' ? 'scale' : 'projection';
+      expect(differingKeys).toEqual([expectedKey]);
     }
   });
 
