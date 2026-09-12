@@ -14,26 +14,29 @@ describe('SP2L G342 adversarial AB=CD discrimination (research only)', () => {
     expect(everyModelIsResearchOnly()).toBe(true);
   });
 
-  it('shows that a local distractor can change a nearest-swing hypothesis while source anchors remain explicit', () => {
+  it('shows local-swing sensitivity while source semantic anchors remain fixed', () => {
     const baseline = evaluateFixture(G342_BASELINE);
     const distracted = evaluateFixture(G342_NEAREST_SWING_DISTRACTOR);
     const baselineNearest = baseline.find((r) => r.modelId.startsWith('NEAREST_SWING'))!;
     const distractedNearest = distracted.find((r) => r.modelId.startsWith('NEAREST_SWING'))!;
+    const baselineSource = baseline.find((r) => r.modelId.startsWith('SOURCE_DEEP_LOW'))!;
+    const distractedSource = distracted.find((r) => r.modelId.startsWith('SOURCE_DEEP_LOW'))!;
     expect(baselineNearest.aId).toBe('swing-near-b');
     expect(distractedNearest.aId).toBe('swing-near-b');
     expect(distractedNearest.projectedD).not.toBe(baselineNearest.projectedD);
+    expect(distractedSource.projectedD).toBe(baselineSource.projectedD);
   });
 
-  it('shows explicit price-field sensitivity at the same semantic anchors', () => {
+  it('shows explicit price-field sensitivity without selecting wick or body semantics', () => {
     const results = evaluateFixture(G342_PRICE_FIELD_DISCRIMINATOR);
-    const wick = results.find((r) => r.modelId === 'SOURCE_DEEP_LOW_TO_PARENT_HIGH__CORRECTION_LOW__WICK')!;
+    const low = results.find((r) => r.modelId === 'SOURCE_DEEP_LOW_TO_PARENT_HIGH__CORRECTION_LOW__WICK')!;
     const close = results.find((r) => r.modelId === 'BREAKOUT_CLOSE_TO_PARENT_CLOSE__CORRECTION_CLOSE__BODY')!;
-    expect(wick.aId).toBe('deep-origin');
+    expect(low.aId).toBe('deep-origin');
     expect(close.aId).toBe('breakout');
-    expect(wick.projectedD).not.toBe(close.projectedD);
+    expect(low.projectedD).not.toBe(close.projectedD);
   });
 
-  it('shows parent/nested scale remains a distinct unresolved dimension', () => {
+  it('shows parent and nested scale divergence', () => {
     const results = evaluateFixture(G342_NESTED_PARENT_DISCRIMINATOR);
     const parent = results.find((r) => r.modelId.startsWith('SOURCE_DEEP_LOW_TO_PARENT_HIGH'))!;
     const nested = results.find((r) => r.modelId.startsWith('NEAREST_SWING_TO_NESTED_HIGH'))!;
@@ -42,9 +45,19 @@ describe('SP2L G342 adversarial AB=CD discrimination (research only)', () => {
     expect(parent.projectedD).not.toBe(nested.projectedD);
   });
 
-  it('identifies divergence without ranking models or introducing optimization criteria', () => {
+  it('keeps correction reference distinct from fill-as-C', () => {
+    const results = evaluateFixture(G342_BASELINE);
+    const correction = results.find((r) => r.modelId === 'SOURCE_DEEP_LOW_TO_PARENT_HIGH__CORRECTION_LOW__WICK')!;
+    const fill = results.find((r) => r.modelId === 'SOURCE_ORIGIN_TO_PARENT_HIGH__FILL_AS_C__WICK')!;
+    expect(correction.cId).toBe('correction');
+    expect(fill.cId).toBe('fill');
+    expect(correction.cId).not.toBe(fill.cId);
+    expect(correction.projectedD).not.toBe(fill.projectedD);
+  });
+
+  it('reports divergence only; it does not create a ranking or optimization score', () => {
     const differing = differingModelIds(G342_BASELINE);
     expect(differing.length).toBeGreaterThan(0);
-    expect(differing).not.toContain('CANONICAL');
+    expect(differing.some((id) => id.includes('CANONICAL'))).toBe(false);
   });
 });
