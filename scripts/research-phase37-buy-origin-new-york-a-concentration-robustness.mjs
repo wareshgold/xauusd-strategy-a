@@ -76,6 +76,6 @@ console.log(`A_NY N=${report.stats.n} WR=${(report.stats.WR*100).toFixed(2)}% av
 console.log(`MEDIAN_R=${report.concentration.medianR.toFixed(6)} MAX_R=${report.concentration.maxR.toFixed(6)} MIN_R=${report.concentration.minR.toFixed(6)} POSITIVE_N=${report.concentration.positiveCount}`);
 console.log(`TOP1_R=${report.concentration.top1R.toFixed(6)} TOP3_R=${report.concentration.top3R.toFixed(6)} TOP5_R=${report.concentration.top5R.toFixed(6)}`);
 console.log(`WITHOUT_TOP1 N=${report.robustness.withoutTop1.n} avgR=${report.robustness.withoutTop1.avgR?.toFixed(6)} PF=${report.robustness.withoutTop1.PF?.toFixed(6)} totalR=${report.robustness.withoutTop1.totalR.toFixed(6)}`);
-console.log(`WITHOUT_TOP3 N=${report.robustness.withoutTop3.n} avgR=${report.robustness.withoutTop3.avgR?.toFixed(6)} PF=${report.robustness.withoutTop3.PF?.toFixed(6)} totalR=${report.robustness.withoutTop3.PF?.toFixed(6)} totalR=${report.robustness.withoutTop3.totalR.toFixed(6)}`);
+console.log(`WITHOUT_TOP3 N=${report.robustness.withoutTop3.n} avgR=${report.robustness.withoutTop3.avgR?.toFixed(6)} PF=${report.robustness.withoutTop3.PF?.toFixed(6)} totalR=${report.robustness.withoutTop3.totalR.toFixed(6)}`);
 console.log(`WITHOUT_TOP5 N=${report.robustness.withoutTop5.n} avgR=${report.robustness.withoutTop5.avgR?.toFixed(6)} PF=${report.robustness.withoutTop5.PF?.toFixed(6)} totalR=${report.robustness.withoutTop5.totalR.toFixed(6)}`);
 console.log(`REPORT=${resolve(OUT,'5min.json')}`); console.log('STATUS=COUNTERFACTUAL_ONLY_ROBUSTNESS_AUDIT');
