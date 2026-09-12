@@ -205,3 +205,7 @@ G339 should construct deterministic fixtures for the remaining source-compatible
 6. no invented wick/body or tolerance semantics.
 
 Historical data must remain untouched for this stage.
+
+## Reproducibility note
+
+The source-video hash and representative frame hashes above are the immutable evidence identifiers for this gate. Visual proximity observations are treated as evidence constraints only; they are not converted into candle/OHLC formulas without an explicit source bridge.
