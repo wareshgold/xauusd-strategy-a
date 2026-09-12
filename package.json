@@ -24,7 +24,8 @@
     "research:phase33-counterfactual-phase27-archetype-decomposition": "node scripts/research-phase33-counterfactual-phase27-archetype-decomposition.mjs",
     "research:phase34-non-d-counterfactual-decomposition": "node scripts/research-phase34-non-d-counterfactual-decomposition.mjs",
     "research:phase35-buy-origin-session-geometry-decomposition": "node scripts/research-phase35-buy-origin-session-geometry-decomposition.mjs",
-    "research:phase36-buy-origin-new-york-archetype-decomposition": "node scripts/research-phase36-buy-origin-new-york-archetype-decomposition.mjs"
+    "research:phase36-buy-origin-new-york-archetype-decomposition": "node scripts/research-phase36-buy-origin-new-york-archetype-decomposition.mjs",
+    "research:phase37-buy-origin-new-york-a-concentration-robustness": "node scripts/research-phase37-buy-origin-new-york-a-concentration-robustness.mjs"
   },
   "devDependencies": {
     "@types/node": "latest",
