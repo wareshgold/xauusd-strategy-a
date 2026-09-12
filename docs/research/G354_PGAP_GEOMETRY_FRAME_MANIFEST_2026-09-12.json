@@ -3,60 +3,16 @@
   "audit": "G354",
   "date": "2026-09-12",
   "source_videos": [
-    {
-      "role": "gap_lesson",
-      "path": "gap پورصمدی دوره جامع.mp4",
-      "sha256": "3345965612b52ebbefffe724f7bd16cc1085bafa29dc612f29a4d725e017c0a6"
-    },
-    {
-      "role": "sp2l_lesson",
-      "path": "strtjy_sp2l_strategy_subtitle_7hec5mo3d3u_7899aa08.mp4",
-      "sha256": "ef50f60bb55b388fd18762811f3e4e5173ccc188f77606ea6fe95623806a71d9"
-    }
+    {"role":"gap_lesson","path":"gap پورصمدی دوره جامع.mp4","sha256":"3345965612b52ebbefffe724f7bd16cc1085bafa29dc612f29a4d725e017c0a6"},
+    {"role":"sp2l_lesson","path":"strtjy_sp2l_strategy_subtitle_7hec5mo3d3u_7899aa08.mp4","sha256":"ef50f60bb55b388fd18762811f3e4e5173ccc188f77606ea6fe95623806a71d9"}
   ],
   "frames": [
-    {
-      "source": "gap_lesson",
-      "time_sec": 1140,
-      "file": "gap_1140.jpg",
-      "sha256": "b880cfef72c63a3015ba877eb8b3314daef8dfb0b195029f538c521c895f40d7",
-      "fact": "generic bullish gap slide explicitly references distance between high of candle two bars before and current low"
-    },
-    {
-      "source": "gap_lesson",
-      "time_sec": 1410,
-      "file": "gap_1410.jpg",
-      "sha256": "0013bd88b58ecddf70507a454c629b51159157f451f05f2b03bd9226506bf46e",
-      "fact": "Pressure Gap chart with blue pressure region and red annotations; exact OHLC endpoints not labeled"
-    },
-    {
-      "source": "gap_lesson",
-      "time_sec": 1440,
-      "file": "gap_1440.jpg",
-      "sha256": "2614acb69b81fbd17cf56f78c4c0a031b86991ff2bc5818214f4ea96f269fe22",
-      "fact": "second Pressure Gap example; contextual pressure region is highlighted but exact gap formula is not labeled"
-    },
-    {
-      "source": "sp2l_lesson",
-      "time_sec": 2160,
-      "file": "sp_2160.jpg",
-      "sha256": "657dec3f8bc8ec514c95a63dfec4a2a10d708bc735ea03026576c5db64f2e143",
-      "fact": "SP2L slide explicitly labels Valid BO = P-Gap; several candle-sequence variants are shown"
-    },
-    {
-      "source": "sp2l_lesson",
-      "time_sec": 2172,
-      "file": "sp2_2172.jpg",
-      "sha256": "67c0bfe2a56aa411fc9a3d615092d5ee124315f1f7cd7e79962bc3984df26531f7cd7e79962bc3984df26531f1f7cd7e79962bc3984df26531f",
-      "fact": "SP2L slide continues the three sequence variants marked 1/2/3; P-Gap label remains visible"
-    },
-    {
-      "source": "sp2l_lesson",
-      "time_sec": 2180,
-      "file": "sp2_2180.jpg",
-      "sha256": "a00fb71382eefbf3dd07681807db4b96aa3804f911d9b7844bebc446f15a08f3",
-      "fact": "SP2L transition to AB=CD slide; no executable P-Gap boundary formula"
-    }
+    {"source":"gap_lesson","time_sec":1140,"file":"gap_1140.jpg","sha256":"b880cfef72c63a3015ba877eb8b3314daef8dfb0b195029f538c521c895f40d7","fact":"generic bullish gap slide explicitly references distance between high of candle two bars before and current low"},
+    {"source":"gap_lesson","time_sec":1410,"file":"gap_1410.jpg","sha256":"0013bd88b58ecddf70507a454c629b51159157f451f05f2b03bd9226506bf46e","fact":"Pressure Gap chart with blue pressure region and red annotations; exact OHLC endpoints not labeled"},
+    {"source":"gap_lesson","time_sec":1440,"file":"gap_1440.jpg","sha256":"2614acb69b81fbd17cf56f78c4c0a031b86991ff2bc5818214f4ea96f269fe22","fact":"second Pressure Gap example; contextual pressure region is highlighted but exact gap formula is not labeled"},
+    {"source":"sp2l_lesson","time_sec":2160,"file":"sp_2160.jpg","sha256":"657dec3f8bc8ec514c95a63dfec4a2a10d708bc735ea03026576c5db64f2e143","fact":"SP2L slide explicitly labels Valid BO = P-Gap; several candle-sequence variants are shown"},
+    {"source":"sp2l_lesson","time_sec":2172,"file":"sp2_2172.jpg","sha256":"67c0bfe2a56aa411fc9a3d615092d5ee124315f1f7cd7e79962bc3984df26531","fact":"SP2L slide continues the three sequence variants marked 1/2/3; P-Gap label remains visible"},
+    {"source":"sp2l_lesson","time_sec":2180,"file":"sp2_2180.jpg","sha256":"a00fb71382eefbf3dd07681807db4b96aa3804f911d9b7844bebc446f15a08f3","fact":"SP2L transition to AB=CD slide; no executable P-Gap boundary formula"}
   ],
-  "note": "The 2172 frame hash above is retained as the locally extracted frame hash. No frame is treated as machine-readable OHLC geometry unless the source explicitly labels the endpoints."
+  "note":"No frame is treated as machine-readable OHLC geometry unless the source explicitly labels the endpoints."
 }
