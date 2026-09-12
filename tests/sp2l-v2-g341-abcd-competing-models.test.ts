@@ -19,8 +19,8 @@ describe('SP2L G341 competing AB=CD models (research only)', () => {
   });
 
   it('keeps fill separate from the source correction reference', () => {
-    const sourceModel = G341_MODELS[0];
-    const fillModel = G341_MODELS[3];
+    const sourceModel = G341_MODELS[0]!;
+    const fillModel = G341_MODELS[3]!;
     const source = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, sourceModel);
     const fill = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, fillModel);
     expect(source.cId).toBe('correction');
@@ -29,8 +29,8 @@ describe('SP2L G341 competing AB=CD models (research only)', () => {
   });
 
   it('demonstrates parent and nested B-scale divergence', () => {
-    const parent = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[0]);
-    const nested = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[2]);
+    const parent = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[0]!);
+    const nested = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[2]!);
     expect(parent.bId).toBe('parent-b');
     expect(nested.bId).toBe('nested-b');
     expect(parent.bId).not.toBe(nested.bId);
@@ -38,16 +38,16 @@ describe('SP2L G341 competing AB=CD models (research only)', () => {
   });
 
   it('demonstrates price-field divergence without selecting wick or body semantics', () => {
-    const wickLike = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[0]);
-    const closeLike = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[1]);
+    const wickLike = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[0]!);
+    const closeLike = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[1]!);
     expect(wickLike.aPrice).not.toBe(closeLike.aPrice);
     expect(wickLike.bPrice).not.toBe(closeLike.bPrice);
     expect(wickLike.projectedD).not.toBe(closeLike.projectedD);
   });
 
   it('uses only translation of the AB price delta and introduces no tolerance', () => {
-    const result = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[0]);
+    const result = evaluateModel(G341_SOURCE_SEMANTIC_FIXTURE, G341_MODELS[0]!);
     expect(result.projectedD).toBe(result.cPrice + (result.bPrice - result.aPrice));
-    expect(Object.keys(G341_MODELS[0])).not.toContain('tolerance');
+    expect(Object.keys(G341_MODELS[0]!)).not.toContain('tolerance');
   });
 });
