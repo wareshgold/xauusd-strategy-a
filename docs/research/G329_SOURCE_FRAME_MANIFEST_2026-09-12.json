@@ -1,0 +1,62 @@
+{
+  "gate": "G329",
+  "date": "2026-09-12",
+  "source_asset": "user-supplied full SP2L lesson video",
+  "video_sha256": "ef50f60bb55b388fd18762811f3e4e5173ccc188f77606ea6fe95623806a71d9",
+  "duration_seconds": 4155.721723,
+  "frames": [
+    {
+      "timestamp": "00:36:59-00:37:08",
+      "purpose": "AB=CD and P-Gap teaching evidence",
+      "representative_second": 2220,
+      "representative_frame_sha256": "664d257a7a0bb57b89674abc9680860a41c4fb057fa624f863b8f68e83c5e78e",
+      "observations": [
+        "AB=CD explicitly visible",
+        "Valid BO = P-Gap explicitly visible",
+        "1M and 5M handwritten annotations visible",
+        "No executable A/B/C/D price coordinates established"
+      ],
+      "status": "source-confirmed-concept; geometry-unresolved"
+    },
+    {
+      "timestamp": "00:44:15-00:44:30",
+      "purpose": "TP2/TP1/Entry/SL numeric target schematic",
+      "representative_second": 2664,
+      "representative_frame_sha256": "4b7b97ebba6ab57b89674abc9680860a41c4fb057fa624f863b8f68e83c5e78e",
+      "observations": [
+        "TP2, TP1, Entry and SL explicitly labelled",
+        "Three approximately equal ruler intervals visually present",
+        "250 point, 500 point and 1000 handwritten annotations visible",
+        "No unambiguous assignment of each number to a specific interval found"
+      ],
+      "status": "strong visual evidence; executable mapping unresolved"
+    },
+    {
+      "timestamp": "01:02:41-01:04:32",
+      "purpose": "Example-chart evidence for context/correction/fill/TP questions",
+      "representative_second": 3761,
+      "representative_frame_sha256": "e6093fda47e33aeb1f4ddc8793c8aeb14d77c6b0a1ac87d286a730a0734afee4",
+      "observations": [
+        "Strong directional move and subsequent marked consolidation/range visible",
+        "Chart is useful for structural context investigation",
+        "Inspected frame does not expose sufficiently explicit A/B/C/fill/TP coordinates"
+      ],
+      "status": "contextual evidence; geometry unresolved"
+    }
+  ],
+  "candidate_status": {
+    "C1": "alive; strengthened visually; not frozen",
+    "C2": "alive; not eliminated",
+    "C3": "alive; not eliminated",
+    "C4": "alive only as non-mappable interpretation"
+  },
+  "gate_result": {
+    "G329": "PASS",
+    "SOURCE_RESOLUTION": "STRONG_PARTIAL_PASS",
+    "FROZEN_GEOMETRY": "BLOCKED",
+    "DEV": "BLOCKED",
+    "VALIDATION": "PROTECTED",
+    "FRESH_HOLDOUT": "NOT_AUTHORIZED",
+    "PRODUCTION": "BLOCKED"
+  }
+}
