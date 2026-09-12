@@ -1,0 +1,27 @@
+{
+  "gate": "G358",
+  "date": "2026-09-12",
+  "canonical_promotions": 0,
+  "fixtures": [
+    {"id":"ES-01","family":"TRIGGER","interpretation":"CORRECTIVE_TOUCH_PREVIOUS_LOW_HIGH","canonical":false},
+    {"id":"ES-02","family":"ENTRY","interpretation":"PENDING_LIMIT_BEFORE_TOUCH","canonical":false},
+    {"id":"ES-03","family":"ENTRY","interpretation":"STRUCTURAL_CORRECTION_POINT_LIMIT","canonical":false},
+    {"id":"ES-04","family":"FILL","interpretation":"TRIGGER_AND_FILL_ARE_DISTINCT_EVENTS","canonical":false},
+    {"id":"ES-05","family":"FILL","interpretation":"FILL_BEFORE_NOMINAL_GEOMETRIC_POINT","canonical":false},
+    {"id":"ES-06","family":"SL","interpretation":"STRUCTURAL_INVALIDATION_LEVEL","canonical":false},
+    {"id":"ES-07","family":"SL","interpretation":"SPIKE_ORIGIN_CANDLE_BOUNDARY","canonical":false},
+    {"id":"ES-08","family":"SL","interpretation":"ORIGIN_CANDLE_PLUS_EXPLICIT_OFFSET","canonical":false},
+    {"id":"ES-09","family":"SECONDARY_ENTRY","interpretation":"NO_SECONDARY_ENTRY","canonical":false},
+    {"id":"ES-10","family":"SECONDARY_ENTRY","interpretation":"OPTIONAL_50_PERCENT_ENTRY_TO_SL_ADDON","canonical":false},
+    {"id":"ES-11","family":"TP","interpretation":"PUBLIC_PAGE_DEFAULT_1_TO_1","canonical":false},
+    {"id":"ES-12","family":"TP","interpretation":"LESSON_TP1_TP2_R1_R2_ABCD","canonical":false}
+  ],
+  "blocked_dimensions": [
+    "exact_pending_limit_price",
+    "fill_semantics",
+    "structural_invalidation_vs_spike_origin_sl",
+    "mandatory_or_optional_status_of_50_percent_secondary_entry",
+    "tp1_tp2_numeric_mapping",
+    "public_page_1_to_1_vs_lesson_abcd_scope"
+  ]
+}
