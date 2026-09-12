@@ -1,0 +1,34 @@
+{
+  "gate": "G364",
+  "date": "2026-09-12",
+  "status": "BLOCKED",
+  "authoritative_sources": [
+    "full SP2L lesson/transcript",
+    "Poursamadi Gap lesson/video",
+    "official Poursamadi SP2L web page",
+    "official Poursamadi related educational material where provenance is explicit"
+  ],
+  "dimensions": {
+    "p_gap_endpoints": "unresolved",
+    "gap_ohlc_convention": "unresolved",
+    "gap_tolerance": "unresolved",
+    "pressure_candle_count": "unresolved",
+    "breakout_ft_p_gap_sequence": "semantic variants confirmed; executable ordering unresolved",
+    "abcd_anchors": "unresolved",
+    "parent_nested_scale": "unresolved",
+    "pending_limit_price": "unresolved",
+    "fill_semantics": "unresolved",
+    "sl_boundary": "semantic spike-origin claim; executable boundary unresolved",
+    "tp_mapping": "unresolved",
+    "default_1_to_1_scope": "unresolved",
+    "secondary_50_percent_scope": "unresolved"
+  },
+  "forbidden_promotions": [
+    "generic gap formula to canonical P-Gap",
+    "third-party implementation geometry",
+    "Pro BTB entry mechanics into SP2L",
+    "fill_price_equals_C",
+    "fixed numeric TP mapping",
+    "pixel-inferred wick/body rules"
+  ]
+}
