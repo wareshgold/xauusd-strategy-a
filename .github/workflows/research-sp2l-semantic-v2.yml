@@ -37,4 +37,5 @@ jobs:
       - run: pnpm run test:sp2l-g3
       - run: pnpm run test:sp2l-g341
       - run: pnpm run test:sp2l-g342
+      - run: pnpm run test:sp2l-g343
       - run: pnpm run build
