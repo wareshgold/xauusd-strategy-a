@@ -16,6 +16,7 @@
     "test:sp2l-g341": "vitest run tests/sp2l-v2-g341-abcd-competing-models.test.ts",
     "test:sp2l-g342": "vitest run tests/sp2l-v2-g342-abcd-adversarial-discrimination.test.ts",
     "test:sp2l-g343": "vitest run tests/sp2l-v2-g343-abcd-model-completeness-matrix.test.ts",
+    "test:sp2l-g344": "vitest run tests/sp2l-v2-g344-minimal-pair-discrimination.test.ts",
     "lint": "eslint .",
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
