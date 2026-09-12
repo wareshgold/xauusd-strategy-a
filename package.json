@@ -26,7 +26,8 @@
     "research:phase35-buy-origin-session-geometry-decomposition": "node scripts/research-phase35-buy-origin-session-geometry-decomposition.mjs",
     "research:phase36-buy-origin-new-york-archetype-decomposition": "node scripts/research-phase36-buy-origin-new-york-archetype-decomposition.mjs",
     "research:phase37-buy-origin-new-york-a-concentration-robustness": "node scripts/research-phase37-buy-origin-new-york-a-concentration-robustness.mjs",
-    "research:phase38-a-ny-temporal-stability": "node scripts/research-phase38-a-ny-temporal-stability.mjs"
+    "research:phase38-a-ny-temporal-stability": "node scripts/research-phase38-a-ny-temporal-stability.mjs",
+    "research:phase39-a-ny-regime-volatility-stability": "node scripts/research-phase39-a-ny-regime-volatility-stability.mjs"
   },
   "devDependencies": {
     "@types/node": "latest",
