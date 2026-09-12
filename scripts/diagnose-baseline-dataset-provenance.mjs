@@ -15,7 +15,11 @@ async function loadJson(path) {
 }
 
 function loadGitJson(commit, path) {
-  const raw = execFileSync('git', ['show', `${commit}:${path}`], { cwd: ROOT, encoding: 'utf8' });
+  const raw = execFileSync('git', ['show', `${commit}:${path}`], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
   return JSON.parse(raw);
 }
 
@@ -68,7 +72,9 @@ const summary = {
   snapshotIndexTimeMatches: rows.filter((r) => r.snapshotIndexTimeMatch).length,
   snapshotEntryTimeMissing: rows.filter((r) => r.snapshotIndexByEntryTime < 0).length,
   sample: rows.slice(0, 10),
-  status: rows.every((r) => r.snapshotIndexTimeMatch) ? 'BASELINE_SNAPSHOT_ALIGNS_CURRENT_DOES_NOT' : 'BASELINE_SNAPSHOT_ALSO_MISMATCHES',
+  status: rows.every((r) => r.snapshotIndexTimeMatch)
+    ? 'BASELINE_SNAPSHOT_ALIGNS_CURRENT_DOES_NOT'
+    : 'BASELINE_SNAPSHOT_ALSO_MISMATCHES',
 };
 
 await mkdir(REPORT_DIR, { recursive: true });
