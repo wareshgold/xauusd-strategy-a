@@ -17,7 +17,8 @@
     "research:phase43-contribution-audit": "node scripts/research-phase43-contribution-audit.mjs",
     "research:phase44-baseline-counterfactual-audit": "node scripts/research-phase44-baseline-counterfactual-audit.mjs",
     "research:phase45-fresh-holdout-audit": "node scripts/research-phase45-fresh-holdout-audit.mjs",
-    "research:phase46-extended-fresh-holdout-audit": "node scripts/research-phase46-extended-fresh-holdout-audit.mjs"
+    "research:phase46-extended-fresh-holdout-audit": "node scripts/research-phase46-extended-fresh-holdout-audit.mjs",
+    "research:phase47-cross-window-stability-audit": "node scripts/research-phase47-cross-window-stability-audit.mjs"
   },
   "devDependencies": {
     "@types/node": "latest",
