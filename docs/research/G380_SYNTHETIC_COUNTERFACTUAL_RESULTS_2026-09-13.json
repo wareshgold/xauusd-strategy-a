@@ -1,0 +1,24 @@
+{
+  "gate": "SOURCE_RESOLUTION",
+  "layer": "NON_CANONICAL_HYPOTHESIS",
+  "date": "2026-09-13",
+  "fixture_count": 10,
+  "expected_classifications_match": true,
+  "distinct": 7,
+  "equivalent": 3,
+  "canonical_promotions": 0,
+  "frozen_geometry": "BLOCKED",
+  "results": [
+    {"id":"G380-PG-01","family":"PGAP","a":"PG-H01","b":"PG-H02","classification":"EQUIVALENT"},
+    {"id":"G380-PG-02","family":"PGAP","a":"PG-H01","b":"PG-H03","classification":"EQUIVALENT"},
+    {"id":"G380-PG-03","family":"PGAP","a":"PG-H03","b":"PG-H04","classification":"DISTINCT"},
+    {"id":"G380-AB-01","family":"ABCD","a":"ABCD-H01","b":"ABCD-H02","classification":"DISTINCT"},
+    {"id":"G380-AB-02","family":"ABCD","a":"ABCD-H02","b":"ABCD-H03","classification":"DISTINCT"},
+    {"id":"G380-EN-01","family":"ENTRY","a":"EN-H01","b":"EN-H02","classification":"DISTINCT"},
+    {"id":"G380-EN-02","family":"ENTRY","a":"EN-H02","b":"EN-H03","classification":"DISTINCT"},
+    {"id":"G380-SL-01","family":"SL","a":"SL-H01","b":"SL-H02","classification":"DISTINCT"},
+    {"id":"G380-TP-01","family":"TP","a":"TP-H01","b":"TP-H04","classification":"DISTINCT"},
+    {"id":"G380-TP-02","family":"TP","a":"TP-H01","b":"TP-H04","classification":"EQUIVALENT"}
+  ],
+  "next_permitted_layer": "NON_CANONICAL_SYNTHETIC_DISCRIMINATION_EXPANSION"
+}
