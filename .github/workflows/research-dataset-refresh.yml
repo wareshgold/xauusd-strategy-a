@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: research/phase12-preentry-geometry-robustness
+          ref: research/sp2l-g385-semantic-core-dev-harness-2026-09-13
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -38,4 +38,4 @@ jobs:
             exit 0
           fi
           git commit -m "research: refresh historical XAUUSD dataset coverage"
-          git push origin HEAD:research/phase12-preentry-geometry-robustness
+          git push origin HEAD:research/sp2l-g385-semantic-core-dev-harness-2026-09-13
