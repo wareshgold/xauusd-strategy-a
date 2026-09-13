@@ -1,0 +1,26 @@
+name: Research - SP2L G383 Minimal-Pair Coverage
+
+on:
+  push:
+    branches:
+      - 'research/sp2l-g383-minimal-pair-coverage-2026-09-13'
+  pull_request:
+    branches:
+      - 'research/sp2l-g382-state-matrix-2026-09-13'
+      - 'research/sp2l-g381-discrimination-consolidation-2026-09-13'
+
+jobs:
+  g383-minimal-pairs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec vitest run tests/sp2l-v2/g383-minimal-pair-coverage.test.ts
