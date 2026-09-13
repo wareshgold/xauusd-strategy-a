@@ -1,0 +1,25 @@
+name: Research - SP2L G379 Hypothesis Execution
+
+on:
+  push:
+    branches:
+      - 'research/sp2l-g379-hypothesis-execution-2026-09-13'
+  pull_request:
+    branches:
+      - 'research/sp2l-g379-hypothesis-execution-2026-09-13'
+
+jobs:
+  g379-hypothesis-execution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run tests/sp2l-v2/g379-hypothesis-execution.test.ts
+      - run: pnpm run build

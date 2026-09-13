@@ -1,0 +1,23 @@
+{
+  "gate": "SOURCE_RESOLUTION",
+  "layer": "NON_CANONICAL_HYPOTHESIS",
+  "date": "2026-09-13",
+  "canonical_strategy_a": false,
+  "hypothesis_count": 23,
+  "families": {
+    "PGAP": 4,
+    "ABCD": 6,
+    "ENTRY": 4,
+    "SL": 4,
+    "TP": 5
+  },
+  "registry_complete": true,
+  "all_non_canonical": true,
+  "unresolved_geometry_present": true,
+  "gate_decision": "FROZEN-GEOMETRY-BLOCKED",
+  "historical_optimization_authorized": false,
+  "dev_promotion_authorized": false,
+  "production_authorized": false,
+  "next_permitted_layer": "NON_CANONICAL_SYNTHETIC_DISCRIMINATION",
+  "reopen_condition": "new_authoritative_source_artifact"
+}
