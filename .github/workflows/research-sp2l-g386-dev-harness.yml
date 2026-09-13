@@ -1,0 +1,27 @@
+name: Research - SP2L G386 DEV Harness
+
+on:
+  push:
+    branches:
+      - research/sp2l-g386-dev-harness-2026-09-13
+  pull_request:
+    branches:
+      - research/sp2l-g386-dev-harness-2026-09-13
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --global pnpm@10
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm exec vitest run tests/sp2l-v2/g386-dev-harness.test.ts
