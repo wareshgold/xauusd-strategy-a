@@ -15,7 +15,8 @@
     "lint": "eslint .",
     "research:phase42-full-history-expansion": "node scripts/research-phase42-full-history-expansion.mjs",
     "research:phase43-contribution-audit": "node scripts/research-phase43-contribution-audit.mjs",
-    "research:phase44-baseline-counterfactual-audit": "node scripts/research-phase44-baseline-counterfactual-audit.mjs"
+    "research:phase44-baseline-counterfactual-audit": "node scripts/research-phase44-baseline-counterfactual-audit.mjs",
+    "research:phase45-fresh-holdout-audit": "node scripts/research-phase45-fresh-holdout-audit.mjs"
   },
   "devDependencies": {
     "@types/node": "latest",
