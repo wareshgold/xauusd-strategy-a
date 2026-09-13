@@ -24,6 +24,7 @@
     "test:sp2l-g346": "vitest run tests/sp2l-v2-g346-source-evidence-gap-hunt.test.ts",
     "test:sp2l-g347": "vitest run tests/sp2l-v2-g347-parameterized-geometry-research.test.ts",
     "test:sp2l-g355": "vitest run tests/sp2l-v2-g355-pgap-synthetic-discrimination.test.ts",
+    "test:sp2l-g393": "vitest run tests/sp2l-v2/g393-hypothesis-batch.test.ts",
     "lint": "eslint .",
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
