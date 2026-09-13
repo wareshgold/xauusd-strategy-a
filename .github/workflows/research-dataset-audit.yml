@@ -3,7 +3,7 @@ name: Research - Historical Dataset Audit
 on:
   push:
     branches:
-      - research/phase12-preentry-geometry-robustness
+      - research/sp2l-g385-semantic-core-dev-harness-2026-09-13
     paths:
       - 'data/historical/xauusd-1min.json'
       - 'data/historical/xauusd-5min.json'
