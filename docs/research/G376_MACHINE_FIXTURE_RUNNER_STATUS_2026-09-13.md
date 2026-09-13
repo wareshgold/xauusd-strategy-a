@@ -1,7 +1,7 @@
 # G376 — Machine Fixture Runner Status
 
 Date: 2026-09-13
-Status: IMPLEMENTED / RESEARCH-ONLY
+Status: IMPLEMENTED / CI-EXECUTED / RESEARCH-ONLY
 Canonical: false
 
 ## Scope
@@ -10,6 +10,7 @@ G376 converts the existing G369 16-case minimal-pair research set into a determi
 ## Implemented artifacts
 - `src/domain/research/sp2l-v2/G376HypothesisFixtureRunner.ts`
 - `tests/sp2l-v2-g376-hypothesis-fixture-runner.test.ts`
+- `.github/workflows/research-sp2l-g376-fixture-runner.yml`
 
 ## Guardrails
 - All fixtures remain `canonical=false`.
@@ -23,14 +24,22 @@ G376 converts the existing G369 16-case minimal-pair research set into a determi
 ## Classification set
 The runner records the declared research classification for each minimal pair as `DISTINCT`, `EQUIVALENT`, `SOURCE-CONFLICT`, or `UNDERDETERMINED`.
 
-## Execution honesty
-The runner and Vitest test file have been committed, but this GitHub-only step does not itself execute Node/Vitest. Therefore no claim of green local test execution is made in this status artifact.
+## CI execution
+GitHub Actions executed the G376 target successfully on commit `cb3e06deb654b2fc2cca263caed8f349be913a11`.
+
+- Workflow: `Research - SP2L G376 Hypothesis Fixture Runner`
+- Run: `#3` / run ID `34740570213`
+- Conclusion: `success`
+- The same commit also passed `Research - SP2L Semantic V2 #40` and `Research - SP2L G4/G5 Fixture Suite #26`.
+
+This establishes CI execution of the TypeScript build/test target. It does not turn the declared fixture classifications into source-confirmed Strategy A rules.
 
 ## Gate decision
 G376 implementation: PASS.
-G376 runtime execution: PENDING until an executable CI/runner environment produces a recorded result artifact.
+G376 CI runtime execution: PASS.
 Frozen geometry: BLOCKED.
+Canonical Strategy A DEV: BLOCKED.
 Production/live: BLOCKED.
 
 ## Next step
-Run the new test target in CI or an available code-execution environment, capture the machine-generated JSON result matrix, then reconcile the resulting classifications against G372/G373 primary-source acquisition before any canonical freeze.
+Proceed with G372/G373 primary-source acquisition against the remaining geometry blockers. A machine-generated fixture-result artifact may be added later if needed for auditability; it is not treated as evidence for source interpretation.
