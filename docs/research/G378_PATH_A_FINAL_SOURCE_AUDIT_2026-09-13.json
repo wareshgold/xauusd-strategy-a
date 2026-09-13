@@ -1,0 +1,29 @@
+{
+  "gate": "SOURCE_RESOLUTION",
+  "path": "A",
+  "date": "2026-09-13",
+  "authoritative_corpus_complete_for_currently_available_artifacts": true,
+  "frozen_geometry": "BLOCKED",
+  "canonical_promotion": false,
+  "dimensions": {
+    "pgap": {"semantic": "RESOLVED", "executable_geometry": "UNRESOLVED"},
+    "abcd": {"semantic": "RESOLVED", "executable_geometry": "UNRESOLVED"},
+    "parent_nested_scale": {"semantic": "RESOLVED_AS_EXISTING_STRUCTURE", "selection_rule": "UNRESOLVED"},
+    "pending_limit": {"mechanism": "RESOLVED", "exact_price": "UNRESOLVED", "fill_semantics": "UNRESOLVED"},
+    "sl": {"structural_origin_reference": "RESOLVED", "exact_boundary": "UNRESOLVED"},
+    "tp": {"multiple_target_concepts": "RESOLVED", "mapping_to_canonical_exit": "UNRESOLVED"},
+    "secondary_50pct": {"existence": "RESOLVED", "mandatory_core_scope": "UNRESOLVED"}
+  },
+  "prohibited_promotions": [
+    "generic_gap_to_pgap",
+    "third_party_geometry",
+    "pixel_inference",
+    "invented_ohlc_anchor",
+    "fill_equals_C",
+    "invented_sl_offset",
+    "fixed_2R_or_3R",
+    "generalized_ma_session_or_candle_filters"
+  ],
+  "next_permitted_layer": "NON_CANONICAL_HYPOTHESIS_LAYER",
+  "reopen_condition": "new_authoritative_source_artifact"
+}
