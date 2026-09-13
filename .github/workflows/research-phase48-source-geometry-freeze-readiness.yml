@@ -1,0 +1,41 @@
+name: Research Phase 48 - Source Geometry Freeze Readiness
+
+on:
+  push:
+    branches:
+      - research/phase42-full-history-expansion
+  workflow_dispatch:
+
+jobs:
+  phase48-source-geometry-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Run Phase 48 readiness audit
+        run: pnpm run research:phase48-source-geometry-freeze-readiness
+
+      - name: Upload Phase 48 report
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase48-source-geometry-freeze-readiness
+          path: artifacts/phase48/phase48-source-geometry-freeze-readiness.json
+          if-no-files-found: error
