@@ -1,0 +1,31 @@
+name: Research - SP2L G395 Component Census
+
+on:
+  push:
+    branches: [research/sp2l-g388-dataset-runner-2026-09-13]
+    paths:
+      - 'scripts/research-g395-component-census.mjs'
+      - 'data/historical/xauusd-5min.json'
+      - 'package.json'
+      - '.github/workflows/research-sp2l-g395-component-census.yml'
+  workflow_dispatch:
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run audit:data
+      - run: pnpm run research:g395-census
+      - uses: actions/upload-artifact@v4
+        with:
+          name: g395-component-census
+          path: data/reports/g395-component-census.json
