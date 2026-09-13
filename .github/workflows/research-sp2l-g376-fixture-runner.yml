@@ -1,0 +1,44 @@
+name: Research - SP2L G376 Hypothesis Fixture Runner
+
+on:
+  pull_request:
+    paths:
+      - 'src/domain/research/sp2l-v2/G376HypothesisFixtureRunner.ts'
+      - 'tests/sp2l-v2-g376-hypothesis-fixture-runner.test.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/research-sp2l-g376-fixture-runner.yml'
+  push:
+    branches:
+      - 'research/sp2l-g376-machine-fixture-runner-2026-09-13'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g376-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm build
+
+      - name: Run G376 hypothesis fixture tests
+        run: pnpm exec vitest run tests/sp2l-v2-g376-hypothesis-fixture-runner.test.ts

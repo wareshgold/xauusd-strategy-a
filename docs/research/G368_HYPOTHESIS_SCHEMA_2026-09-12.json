@@ -1,0 +1,9 @@
+{
+  "schema_version": "G368.1",
+  "canonical": false,
+  "promotion_allowed": false,
+  "hypothesis_fields": ["id", "domain", "description", "source_basis", "unresolved_dimension", "parameters", "expected_discriminators", "status"],
+  "domains": ["pgap", "abcd", "entry", "sl", "tp"],
+  "required_status": ["candidate", "discriminated", "rejected", "source_confirmed"],
+  "promotion_rule": "Only explicit primary-source evidence may set source_confirmed; performance cannot promote a hypothesis."
+}

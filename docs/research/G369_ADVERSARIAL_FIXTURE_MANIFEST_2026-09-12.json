@@ -1,0 +1,13 @@
+{
+  "gate": "G369",
+  "status": "RESEARCH_ONLY",
+  "canonical": false,
+  "fixture_families": [
+    "PG-MP", "AB-MP", "EN-MP", "SL-MP", "TP-MP"
+  ],
+  "minimal_pair_rule": "change exactly one unresolved geometric variable per pair",
+  "fixture_count": 16,
+  "promotion_allowed": false,
+  "next_gate": "G370",
+  "objective": "hypothesis discrimination"
+}

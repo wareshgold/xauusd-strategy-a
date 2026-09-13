@@ -1,0 +1,17 @@
+{
+  "gate": "G368",
+  "status": "COMPLETE_RESEARCH_ONLY",
+  "canonical": false,
+  "production_authorized": false,
+  "hypothesis_count": 25,
+  "domains": {
+    "pgap": 4,
+    "abcd": 6,
+    "entry": 4,
+    "sl": 4,
+    "tp": 5
+  },
+  "next_gate": "G369",
+  "next_gate_objective": "minimal-pair adversarial fixture expansion",
+  "promotion_policy": "primary-source evidence only"
+}
