@@ -1,0 +1,17 @@
+{
+  "gate": "DATASET_RUNNER",
+  "status": "INFRASTRUCTURE_PASS",
+  "provider": "twelvedata",
+  "symbol": "XAU/USD",
+  "timezone": "UTC",
+  "datasets": {
+    "1min": {"candleCount": 50000,"firstTimestamp":"2026-08-03 13:44:00","lastTimestamp":"2026-09-07 07:03:00","audit":"PASS"},
+    "5min": {"candleCount": 50000,"firstTimestamp":"2026-03-17 15:15:00","lastTimestamp":"2026-09-07 07:05:00","audit":"PASS","ordinaryGaps":4,"largestGapMinutes":65}
+  },
+  "splitPolicy":"chronological_non_random",
+  "strategyExecution":"disabled",
+  "canonicalTradesGenerated":0,
+  "lookAheadProtection":"structural ordering and duplicate checks; no future-data strategy evaluation is performed",
+  "reproducibility":"same candle input and configuration produce identical runner output",
+  "canonicalStrategyStatus":"FROZEN_GEOMETRY_BLOCKED"
+}
