@@ -5,6 +5,8 @@ on:
     paths:
       - 'src/domain/research/sp2l-v2/G376HypothesisFixtureRunner.ts'
       - 'tests/sp2l-v2-g376-hypothesis-fixture-runner.test.ts'
+      - 'src/domain/research/sp2l-v2/G379HypothesisExecution.ts'
+      - 'tests/sp2l-v2/g379-hypothesis-execution.test.ts'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - '.github/workflows/research-sp2l-g376-fixture-runner.yml'
@@ -42,3 +44,6 @@ jobs:
 
       - name: Run G376 hypothesis fixture tests
         run: pnpm exec vitest run tests/sp2l-v2-g376-hypothesis-fixture-runner.test.ts
+
+      - name: Run G379 non-canonical hypothesis gate tests
+        run: pnpm exec vitest run tests/sp2l-v2/g379-hypothesis-execution.test.ts
