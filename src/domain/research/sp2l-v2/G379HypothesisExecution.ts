@@ -18,7 +18,7 @@ export const G379_HYPOTHESES: readonly G379Hypothesis[] = [
   { id:'ABCD-H02', family:'ABCD', status:'SOURCE-UNRESOLVED', canonical:false, unresolvedDimensions:['A/B/C/D anchor definition'] },
   { id:'ABCD-H03', family:'ABCD', status:'SOURCE-UNRESOLVED', canonical:false, unresolvedDimensions:['A/B/C/D anchor definition','wick/body field'] },
   { id:'ABCD-H04', family:'ABCD', status:'SOURCE-UNRESOLVED', canonical:false, unresolvedDimensions:['A/B/C/D anchor definition'] },
-  { id:'ABCD-H05', family:'SOURCE-UNRESOLVED' as HypothesisFamily, status:'SOURCE-CONSISTENT', canonical:false, unresolvedDimensions:['parent-leg selection rule'] },
+  { id:'ABCD-H05', family:'ABCD', status:'SOURCE-CONSISTENT', canonical:false, unresolvedDimensions:['parent-leg selection rule'] },
   { id:'ABCD-H06', family:'ABCD', status:'SOURCE-CONSISTENT', canonical:false, unresolvedDimensions:['nested/deeper-leg selection rule'] },
   { id:'EN-H01', family:'ENTRY', status:'SOURCE-SUPPORTED-CONCEPT', canonical:false, unresolvedDimensions:['exact limit price'] },
   { id:'EN-H02', family:'ENTRY', status:'SOURCE-UNRESOLVED', canonical:false, unresolvedDimensions:['exact structural correction point'] },
@@ -33,8 +33,6 @@ export const G379_HYPOTHESES: readonly G379Hypothesis[] = [
   { id:'TP-H03', family:'TP', status:'SOURCE-CONSISTENT', canonical:false, unresolvedDimensions:['TP2/R2 mapping'] },
   { id:'TP-H04', family:'TP', status:'SOURCE-SUPPORTED-CONCEPT', canonical:false, unresolvedDimensions:['mapping to AB=CD/TP1/TP2'] },
   { id:'TP-H05', family:'TP', status:'SOURCE-CONSISTENT', canonical:false, unresolvedDimensions:['whether example outcomes are selectable or fixed'] },
-  { id:'PG-H03', family:'PGAP', status:'SOURCE-CONSISTENT', canonical:false, unresolvedDimensions:['exact endpoints','exact sequence boundary'] },
-  { id:'PG-H04', family:'PGAP', status:'SOURCE-CONSISTENT', canonical:false, unresolvedDimensions:['exact endpoints','exact sequence boundary'] },
 ] as const;
 
 export const G379_REQUIRED_IDS = [
