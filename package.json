@@ -10,7 +10,7 @@
     "test:sp2l-v2": "vitest run tests/sp2l-v2-semantic-state.test.ts",
     "test:sp2l-g1": "vitest run tests/sp2l-v2-structural-reference.test.ts",
     "test:sp2l-g2": "vitest run tests/sp2l-v2-pending-limit.test.ts",
-    "test:sp2l-g3": "vitest run tests/sp2l-v2-g3-structural-stop.test.ts",
+    "test:sp2l-g3": "vitest run tests/sp2l-v2-structural-stop.test.ts",
     "test:sp2l-g4g5": "vitest run tests/sp2l-v2-g4g5-discriminating-fixtures.test.ts tests/sp2l-v2-g4g5-source-extraction.test.ts",
     "lint": "eslint .",
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
@@ -30,7 +30,8 @@
     "research:phase39-a-ny-regime-volatility-stability": "node scripts/research-phase39-a-ny-regime-volatility-stability.mjs",
     "research:phase40-a-ny-leave-one-out-robustness": "node scripts/research-phase40-a-ny-leave-one-out-robustness.mjs",
     "research:phase41-a-ny-chronological-holdout-audit": "node scripts/research-phase41-a-ny-chronological-holdout-audit.mjs",
-    "research:phase42-full-history-expansion": "node scripts/research-phase42-full-history-expansion.mjs"
+    "research:phase42-full-history-expansion": "node scripts/research-phase42-full-history-expansion.mjs",
+    "research:phase43-contribution-audit": "node scripts/research-phase43-contribution-audit.mjs"
   },
   "devDependencies": {
     "@types/node": "latest",
