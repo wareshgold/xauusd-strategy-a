@@ -1,0 +1,40 @@
+name: Research - SP2L Phase45 Fresh Holdout Audit
+
+on:
+  push:
+    branches:
+      - research/phase42-full-history-expansion
+    paths:
+      - 'scripts/research-phase45-fresh-holdout-audit.mjs'
+      - 'src/domain/market/**'
+      - 'src/domain/strategy-a/**'
+      - 'data/acquired/xauusd/**'
+      - 'package.json'
+      - '.github/workflows/research-phase45-fresh-holdout-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase45:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm run build
+      - name: Run Phase45
+        run: pnpm run research:phase45-fresh-holdout-audit
+      - name: Upload Phase45 report
+        uses: actions/upload-artifact@v4
+        with:
+          name: strategy-a-phase45-fresh-holdout-audit
+          path: data/reports/strategy-a-phase45-fresh-holdout-audit/5min.json
