@@ -1,0 +1,41 @@
+name: Research - SP2L Phase42 Full History Expansion
+
+on:
+  push:
+    branches:
+      - research/phase42-full-history-expansion
+    paths:
+      - 'scripts/research-phase42-full-history-expansion.mjs'
+      - 'src/domain/market/**'
+      - 'src/domain/strategy-a/**'
+      - 'data/acquired/g50/**'
+      - 'data/reports/strategy-a-baseline/**'
+      - 'package.json'
+      - '.github/workflows/research-phase42-full-history-expansion.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase42:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm run build
+      - name: Run Phase42
+        run: pnpm run research:phase42-full-history-expansion
+      - name: Upload Phase42 report
+        uses: actions/upload-artifact@v4
+        with:
+          name: strategy-a-phase42-full-history-expansion
+          path: data/reports/strategy-a-phase42-full-history-expansion/5min.json
