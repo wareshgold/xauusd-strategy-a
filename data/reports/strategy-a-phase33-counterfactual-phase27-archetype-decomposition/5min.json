@@ -1,0 +1,262 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE33_COUNTERFACTUAL_PHASE27_ARCHETYPE_DECOMPOSITION",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232
+  },
+  "phase27Mapping": {
+    "mapped": 163,
+    "unmapped": 69,
+    "sourceCases": 163,
+    "dCases": 48,
+    "nonDCases": 115,
+    "spikeQ66": 16.304685569162483,
+    "correctionEfficiencyQ66": 0.8320235324313076
+  },
+  "overall": {
+    "n": 156,
+    "winRate": 0.30128205128205127,
+    "avgR": 0.7011316614090978,
+    "totalR": 109.37653917981926,
+    "profitFactor": 2.0034544878882494
+  },
+  "byArchetype": [
+    {
+      "name": "D",
+      "n": 44,
+      "winRate": 0,
+      "avgR": -1,
+      "totalR": -44,
+      "profitFactor": 0,
+      "buyOrigin": {
+        "n": 23,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -23,
+        "profitFactor": 0
+      },
+      "sellOrigin": {
+        "n": 21,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -21,
+        "profitFactor": 0
+      }
+    },
+    {
+      "name": "NON_D",
+      "n": 112,
+      "winRate": 0.41964285714285715,
+      "avgR": 1.3694333855341008,
+      "totalR": 153.37653917981928,
+      "profitFactor": 3.3596390643049108,
+      "buyOrigin": {
+        "n": 60,
+        "winRate": 0.48333333333333334,
+        "avgR": 2.0100256437499215,
+        "totalR": 120.60153862499529,
+        "profitFactor": 4.890372213709526
+      },
+      "sellOrigin": {
+        "n": 52,
+        "winRate": 0.34615384615384615,
+        "avgR": 0.6302884722081531,
+        "totalR": 32.77500055482396,
+        "profitFactor": 1.9639706045536462
+      }
+    }
+  ],
+  "byOriginAndArchetype": [
+    {
+      "name": "BUY_ORIGIN_D",
+      "n": 23,
+      "winRate": 0,
+      "avgR": -1,
+      "totalR": -23,
+      "profitFactor": 0,
+      "buyOrigin": {
+        "n": 23,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -23,
+        "profitFactor": 0
+      },
+      "sellOrigin": {
+        "n": 0,
+        "winRate": null,
+        "avgR": null,
+        "totalR": 0,
+        "profitFactor": null
+      }
+    },
+    {
+      "name": "BUY_ORIGIN_NON_D",
+      "n": 60,
+      "winRate": 0.48333333333333334,
+      "avgR": 2.0100256437499215,
+      "totalR": 120.60153862499529,
+      "profitFactor": 4.890372213709526,
+      "buyOrigin": {
+        "n": 60,
+        "winRate": 0.48333333333333334,
+        "avgR": 2.0100256437499215,
+        "totalR": 120.60153862499529,
+        "profitFactor": 4.890372213709526
+      },
+      "sellOrigin": {
+        "n": 0,
+        "winRate": null,
+        "avgR": null,
+        "totalR": 0,
+        "profitFactor": null
+      }
+    },
+    {
+      "name": "SELL_ORIGIN_D",
+      "n": 21,
+      "winRate": 0,
+      "avgR": -1,
+      "totalR": -21,
+      "profitFactor": 0,
+      "buyOrigin": {
+        "n": 0,
+        "winRate": null,
+        "avgR": null,
+        "totalR": 0,
+        "profitFactor": null
+      },
+      "sellOrigin": {
+        "n": 21,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -21,
+        "profitFactor": 0
+      }
+    },
+    {
+      "name": "SELL_ORIGIN_NON_D",
+      "n": 52,
+      "winRate": 0.34615384615384615,
+      "avgR": 0.6302884722081531,
+      "totalR": 32.77500055482396,
+      "profitFactor": 1.9639706045536462,
+      "buyOrigin": {
+        "n": 0,
+        "winRate": null,
+        "avgR": null,
+        "totalR": 0,
+        "profitFactor": null
+      },
+      "sellOrigin": {
+        "n": 52,
+        "winRate": 0.34615384615384615,
+        "avgR": 0.6302884722081531,
+        "totalR": 32.77500055482396,
+        "profitFactor": 1.9639706045536462
+      }
+    }
+  ],
+  "geometry": [
+    {
+      "name": "D_SPIKE_HIGH",
+      "n": 29,
+      "winRate": 0,
+      "avgR": -1,
+      "totalR": -29,
+      "profitFactor": 0,
+      "buyOrigin": {
+        "n": 13,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -13,
+        "profitFactor": 0
+      },
+      "sellOrigin": {
+        "n": 16,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -16,
+        "profitFactor": 0
+      }
+    },
+    {
+      "name": "D_CORR_EFF_HIGH",
+      "n": 23,
+      "winRate": 0,
+      "avgR": -1,
+      "totalR": -23,
+      "profitFactor": 0,
+      "buyOrigin": {
+        "n": 12,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -12,
+        "profitFactor": 0
+      },
+      "sellOrigin": {
+        "n": 11,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -11,
+        "profitFactor": 0
+      }
+    },
+    {
+      "name": "D_SPIKE_HIGH_CORR_EFF_HIGH",
+      "n": 20,
+      "winRate": 0,
+      "avgR": -1,
+      "totalR": -20,
+      "profitFactor": 0,
+      "buyOrigin": {
+        "n": 9,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -9,
+        "profitFactor": 0
+      },
+      "sellOrigin": {
+        "n": 11,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -11,
+        "profitFactor": 0
+      }
+    },
+    {
+      "name": "NON_D_SPIKE_HIGH_CORR_EFF_HIGH",
+      "n": 8,
+      "winRate": 0.125,
+      "avgR": 7.364197153480674,
+      "totalR": 58.913577227845394,
+      "profitFactor": 9.416225318263628,
+      "buyOrigin": {
+        "n": 7,
+        "winRate": 0.14285714285714285,
+        "avgR": 8.55908246112077,
+        "totalR": 59.913577227845394,
+        "profitFactor": 10.985596204640899
+      },
+      "sellOrigin": {
+        "n": 1,
+        "winRate": 0,
+        "avgR": -1,
+        "totalR": -1,
+        "profitFactor": 0
+      }
+    }
+  ],
+  "methodology": {
+    "researchOnly": true,
+    "noOptimization": true,
+    "noTradingRules": true,
+    "archetypeSource": "Phase24 case population used by Phase27; Phase27 publishes aggregate scope/thresholds but not raw cases. Archetype and pre-entry geometry features are taken from the same Phase24 case keyed by canonical entryTime.",
+    "directionSource": "Baseline candidate generation; direction is counterfactually mirrored with preserved absolute risk/reward.",
+    "note": "Only baseline trades present in the Phase24/Phase27 canonical case population can be mapped; unmapped baseline trades remain excluded from archetype-conditioned groups."
+  },
+  "status": "COUNTERFACTUAL_ONLY_DECOMPOSITION"
+}

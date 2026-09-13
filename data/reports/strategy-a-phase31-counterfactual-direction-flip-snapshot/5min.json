@@ -1,0 +1,68 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE31_COUNTERFACTUAL_DIRECTION_FLIP_SNAPSHOT",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "snapshot": {
+    "candles": 10000,
+    "from": "2026-07-23 18:25:00",
+    "to": "2026-08-27 11:40:00"
+  },
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232,
+    "missing": 0,
+    "extraGenerated": 0,
+    "matchRate": 1,
+    "mismatchReasons": {}
+  },
+  "original": {
+    "n": 221,
+    "wins": 58,
+    "losses": 163,
+    "winRate": 0.26244343891402716,
+    "avgR": -0.15844633197296074,
+    "totalR": -35.01663936602432,
+    "profitFactor": 0.7851739916194825,
+    "maxDrawdownR": 46.289059522000116,
+    "maxConsecutiveLosses": 11
+  },
+  "flipped": {
+    "n": 219,
+    "wins": 68,
+    "losses": 151,
+    "winRate": 0.3105022831050228,
+    "avgR": 0.32639030241002037,
+    "totalR": 71.47947622779446,
+    "profitFactor": 1.4733740147536054,
+    "maxDrawdownR": 39.93108836605964,
+    "maxConsecutiveLosses": 13
+  },
+  "byOriginalDirection": {
+    "BUY": {
+      "n": 116,
+      "wins": 39,
+      "losses": 77,
+      "winRate": 0.33620689655172414,
+      "avgR": 0.6592897024162802,
+      "totalR": 76.4776054802885,
+      "profitFactor": 1.993215655588162,
+      "maxDrawdownR": 21.832614273614226,
+      "maxConsecutiveLosses": 13
+    },
+    "SELL": {
+      "n": 103,
+      "wins": 29,
+      "losses": 74,
+      "winRate": 0.2815533980582524,
+      "avgR": -0.04852552672324299,
+      "totalR": -4.998129252494028,
+      "profitFactor": 0.932457712804135,
+      "maxDrawdownR": 29.79774965061395,
+      "maxConsecutiveLosses": 11
+    }
+  },
+  "methodology": "Research-only counterfactual. Original candidate generation must exactly reproduce the baseline snapshot before mirrored direction/geometry is evaluated. Mirroring preserves entry and absolute risk/reward distances while reversing direction and price-side geometry. No production rules changed.",
+  "status": "COUNTERFACTUAL_ONLY_VALIDATED_GENERATION_PARITY"
+}

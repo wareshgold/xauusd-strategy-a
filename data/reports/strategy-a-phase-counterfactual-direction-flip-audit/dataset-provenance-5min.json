@@ -1,0 +1,2445 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "BASELINE_DATASET_PROVENANCE_DIAGNOSTIC",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "baselineDataset": {
+    "candles": 10000,
+    "from": "2026-07-23 18:25:00",
+    "to": "2026-08-27 11:40:00"
+  },
+  "currentDataset": {
+    "candles": 50000,
+    "from": "2026-03-17 15:15:00",
+    "to": "2026-09-07 07:05:00"
+  },
+  "canonicalTrades": 232,
+  "currentIndexTimeMatches": 0,
+  "snapshotIndexTimeMatches": 232,
+  "snapshotEntryTimeMissing": 0,
+  "sample": [
+    {
+      "entryIndex": 62,
+      "entryTime": "2026-07-23 23:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-17 20:25:00",
+      "snapshotTimestampAtIndex": "2026-07-23 23:35:00",
+      "snapshotIndexByEntryTime": 62,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 210,
+      "entryTime": "2026-07-24 11:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 08:45:00",
+      "snapshotTimestampAtIndex": "2026-07-24 11:55:00",
+      "snapshotIndexByEntryTime": 210,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 225,
+      "entryTime": "2026-07-24 13:10:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 10:00:00",
+      "snapshotTimestampAtIndex": "2026-07-24 13:10:00",
+      "snapshotIndexByEntryTime": 225,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 227,
+      "entryTime": "2026-07-24 13:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 10:10:00",
+      "snapshotTimestampAtIndex": "2026-07-24 13:20:00",
+      "snapshotIndexByEntryTime": 227,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 235,
+      "entryTime": "2026-07-24 14:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-18 10:50:00",
+      "snapshotTimestampAtIndex": "2026-07-24 14:00:00",
+      "snapshotIndexByEntryTime": 235,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 292,
+      "entryTime": "2026-07-24 18:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 15:35:00",
+      "snapshotTimestampAtIndex": "2026-07-24 18:45:00",
+      "snapshotIndexByEntryTime": 292,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 307,
+      "entryTime": "2026-07-24 20:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 16:50:00",
+      "snapshotTimestampAtIndex": "2026-07-24 20:00:00",
+      "snapshotIndexByEntryTime": 307,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 936,
+      "entryTime": "2026-07-27 00:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-20 21:15:00",
+      "snapshotTimestampAtIndex": "2026-07-27 00:25:00",
+      "snapshotIndexByEntryTime": 936,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1049,
+      "entryTime": "2026-07-27 09:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-21 06:40:00",
+      "snapshotTimestampAtIndex": "2026-07-27 09:50:00",
+      "snapshotIndexByEntryTime": 1049,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1075,
+      "entryTime": "2026-07-27 12:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-21 08:50:00",
+      "snapshotTimestampAtIndex": "2026-07-27 12:00:00",
+      "snapshotIndexByEntryTime": 1075,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    }
+  ],
+  "status": "BASELINE_SNAPSHOT_ALIGNS_CURRENT_DOES_NOT",
+  "rows": [
+    {
+      "entryIndex": 62,
+      "entryTime": "2026-07-23 23:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-17 20:25:00",
+      "snapshotTimestampAtIndex": "2026-07-23 23:35:00",
+      "snapshotIndexByEntryTime": 62,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 210,
+      "entryTime": "2026-07-24 11:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 08:45:00",
+      "snapshotTimestampAtIndex": "2026-07-24 11:55:00",
+      "snapshotIndexByEntryTime": 210,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 225,
+      "entryTime": "2026-07-24 13:10:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 10:00:00",
+      "snapshotTimestampAtIndex": "2026-07-24 13:10:00",
+      "snapshotIndexByEntryTime": 225,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 227,
+      "entryTime": "2026-07-24 13:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 10:10:00",
+      "snapshotTimestampAtIndex": "2026-07-24 13:20:00",
+      "snapshotIndexByEntryTime": 227,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 235,
+      "entryTime": "2026-07-24 14:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-18 10:50:00",
+      "snapshotTimestampAtIndex": "2026-07-24 14:00:00",
+      "snapshotIndexByEntryTime": 235,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 292,
+      "entryTime": "2026-07-24 18:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 15:35:00",
+      "snapshotTimestampAtIndex": "2026-07-24 18:45:00",
+      "snapshotIndexByEntryTime": 292,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 307,
+      "entryTime": "2026-07-24 20:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-18 16:50:00",
+      "snapshotTimestampAtIndex": "2026-07-24 20:00:00",
+      "snapshotIndexByEntryTime": 307,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 936,
+      "entryTime": "2026-07-27 00:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-20 21:15:00",
+      "snapshotTimestampAtIndex": "2026-07-27 00:25:00",
+      "snapshotIndexByEntryTime": 936,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1049,
+      "entryTime": "2026-07-27 09:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-21 06:40:00",
+      "snapshotTimestampAtIndex": "2026-07-27 09:50:00",
+      "snapshotIndexByEntryTime": 1049,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1075,
+      "entryTime": "2026-07-27 12:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-21 08:50:00",
+      "snapshotTimestampAtIndex": "2026-07-27 12:00:00",
+      "snapshotIndexByEntryTime": 1075,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1080,
+      "entryTime": "2026-07-27 12:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-21 09:15:00",
+      "snapshotTimestampAtIndex": "2026-07-27 12:25:00",
+      "snapshotIndexByEntryTime": 1080,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1139,
+      "entryTime": "2026-07-27 17:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-21 14:10:00",
+      "snapshotTimestampAtIndex": "2026-07-27 17:20:00",
+      "snapshotIndexByEntryTime": 1139,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1145,
+      "entryTime": "2026-07-27 17:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-21 14:40:00",
+      "snapshotTimestampAtIndex": "2026-07-27 17:50:00",
+      "snapshotIndexByEntryTime": 1145,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1164,
+      "entryTime": "2026-07-27 19:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-21 16:15:00",
+      "snapshotTimestampAtIndex": "2026-07-27 19:25:00",
+      "snapshotIndexByEntryTime": 1164,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1201,
+      "entryTime": "2026-07-27 22:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-21 19:20:00",
+      "snapshotTimestampAtIndex": "2026-07-27 22:30:00",
+      "snapshotIndexByEntryTime": 1201,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1312,
+      "entryTime": "2026-07-28 07:45:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-22 04:40:00",
+      "snapshotTimestampAtIndex": "2026-07-28 07:45:00",
+      "snapshotIndexByEntryTime": 1312,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1411,
+      "entryTime": "2026-07-28 16:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-22 12:55:00",
+      "snapshotTimestampAtIndex": "2026-07-28 16:00:00",
+      "snapshotIndexByEntryTime": 1411,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1435,
+      "entryTime": "2026-07-28 18:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-22 14:55:00",
+      "snapshotTimestampAtIndex": "2026-07-28 18:00:00",
+      "snapshotIndexByEntryTime": 1435,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1447,
+      "entryTime": "2026-07-28 19:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-22 15:55:00",
+      "snapshotTimestampAtIndex": "2026-07-28 19:00:00",
+      "snapshotIndexByEntryTime": 1447,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1470,
+      "entryTime": "2026-07-28 20:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-22 17:50:00",
+      "snapshotTimestampAtIndex": "2026-07-28 20:55:00",
+      "snapshotIndexByEntryTime": 1470,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1488,
+      "entryTime": "2026-07-28 22:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-22 19:20:00",
+      "snapshotTimestampAtIndex": "2026-07-28 22:25:00",
+      "snapshotIndexByEntryTime": 1488,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1594,
+      "entryTime": "2026-07-29 07:15:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-23 04:10:00",
+      "snapshotTimestampAtIndex": "2026-07-29 07:15:00",
+      "snapshotIndexByEntryTime": 1594,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1714,
+      "entryTime": "2026-07-29 17:15:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-23 14:10:00",
+      "snapshotTimestampAtIndex": "2026-07-29 17:15:00",
+      "snapshotIndexByEntryTime": 1714,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1716,
+      "entryTime": "2026-07-29 17:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-23 14:20:00",
+      "snapshotTimestampAtIndex": "2026-07-29 17:25:00",
+      "snapshotIndexByEntryTime": 1716,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1724,
+      "entryTime": "2026-07-29 18:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-23 15:00:00",
+      "snapshotTimestampAtIndex": "2026-07-29 18:05:00",
+      "snapshotIndexByEntryTime": 1724,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1735,
+      "entryTime": "2026-07-29 19:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-23 15:55:00",
+      "snapshotTimestampAtIndex": "2026-07-29 19:00:00",
+      "snapshotIndexByEntryTime": 1735,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1736,
+      "entryTime": "2026-07-29 19:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-23 16:00:00",
+      "snapshotTimestampAtIndex": "2026-07-29 19:05:00",
+      "snapshotIndexByEntryTime": 1736,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1739,
+      "entryTime": "2026-07-29 19:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-23 16:15:00",
+      "snapshotTimestampAtIndex": "2026-07-29 19:20:00",
+      "snapshotIndexByEntryTime": 1739,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1744,
+      "entryTime": "2026-07-29 19:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-23 16:40:00",
+      "snapshotTimestampAtIndex": "2026-07-29 19:45:00",
+      "snapshotIndexByEntryTime": 1744,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1801,
+      "entryTime": "2026-07-30 00:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-23 21:25:00",
+      "snapshotTimestampAtIndex": "2026-07-30 00:30:00",
+      "snapshotIndexByEntryTime": 1801,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1806,
+      "entryTime": "2026-07-30 00:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-23 21:50:00",
+      "snapshotTimestampAtIndex": "2026-07-30 00:55:00",
+      "snapshotIndexByEntryTime": 1806,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1809,
+      "entryTime": "2026-07-30 01:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-23 22:05:00",
+      "snapshotTimestampAtIndex": "2026-07-30 01:10:00",
+      "snapshotIndexByEntryTime": 1809,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1853,
+      "entryTime": "2026-07-30 04:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-24 01:45:00",
+      "snapshotTimestampAtIndex": "2026-07-30 04:50:00",
+      "snapshotIndexByEntryTime": 1853,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1862,
+      "entryTime": "2026-07-30 05:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-24 02:30:00",
+      "snapshotTimestampAtIndex": "2026-07-30 05:35:00",
+      "snapshotIndexByEntryTime": 1862,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1894,
+      "entryTime": "2026-07-30 08:15:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-24 05:10:00",
+      "snapshotTimestampAtIndex": "2026-07-30 08:15:00",
+      "snapshotIndexByEntryTime": 1894,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1922,
+      "entryTime": "2026-07-30 10:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-24 07:30:00",
+      "snapshotTimestampAtIndex": "2026-07-30 10:35:00",
+      "snapshotIndexByEntryTime": 1922,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1923,
+      "entryTime": "2026-07-30 10:40:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-24 07:35:00",
+      "snapshotTimestampAtIndex": "2026-07-30 10:40:00",
+      "snapshotIndexByEntryTime": 1923,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1963,
+      "entryTime": "2026-07-30 14:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-24 10:55:00",
+      "snapshotTimestampAtIndex": "2026-07-30 14:00:00",
+      "snapshotIndexByEntryTime": 1963,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 1984,
+      "entryTime": "2026-07-30 15:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-24 12:40:00",
+      "snapshotTimestampAtIndex": "2026-07-30 15:45:00",
+      "snapshotIndexByEntryTime": 1984,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2004,
+      "entryTime": "2026-07-30 17:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-24 14:20:00",
+      "snapshotTimestampAtIndex": "2026-07-30 17:25:00",
+      "snapshotIndexByEntryTime": 2004,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2027,
+      "entryTime": "2026-07-30 19:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-24 16:15:00",
+      "snapshotTimestampAtIndex": "2026-07-30 19:20:00",
+      "snapshotIndexByEntryTime": 2027,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2046,
+      "entryTime": "2026-07-30 20:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-24 17:50:00",
+      "snapshotTimestampAtIndex": "2026-07-30 20:55:00",
+      "snapshotIndexByEntryTime": 2046,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2076,
+      "entryTime": "2026-07-30 23:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-24 20:20:00",
+      "snapshotTimestampAtIndex": "2026-07-30 23:25:00",
+      "snapshotIndexByEntryTime": 2076,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2078,
+      "entryTime": "2026-07-30 23:35:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-24 20:30:00",
+      "snapshotTimestampAtIndex": "2026-07-30 23:35:00",
+      "snapshotIndexByEntryTime": 2078,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2079,
+      "entryTime": "2026-07-30 23:40:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-24 20:35:00",
+      "snapshotTimestampAtIndex": "2026-07-30 23:40:00",
+      "snapshotIndexByEntryTime": 2079,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2092,
+      "entryTime": "2026-07-31 00:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-24 21:40:00",
+      "snapshotTimestampAtIndex": "2026-07-31 00:45:00",
+      "snapshotIndexByEntryTime": 2092,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2114,
+      "entryTime": "2026-07-31 02:35:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-24 23:30:00",
+      "snapshotTimestampAtIndex": "2026-07-31 02:35:00",
+      "snapshotIndexByEntryTime": 2114,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2239,
+      "entryTime": "2026-07-31 13:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-25 09:55:00",
+      "snapshotTimestampAtIndex": "2026-07-31 13:00:00",
+      "snapshotIndexByEntryTime": 2239,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2243,
+      "entryTime": "2026-07-31 13:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-25 10:15:00",
+      "snapshotTimestampAtIndex": "2026-07-31 13:20:00",
+      "snapshotIndexByEntryTime": 2243,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2247,
+      "entryTime": "2026-07-31 13:40:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-25 10:35:00",
+      "snapshotTimestampAtIndex": "2026-07-31 13:40:00",
+      "snapshotIndexByEntryTime": 2247,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2267,
+      "entryTime": "2026-07-31 15:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-25 12:15:00",
+      "snapshotTimestampAtIndex": "2026-07-31 15:20:00",
+      "snapshotIndexByEntryTime": 2267,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2268,
+      "entryTime": "2026-07-31 15:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-25 12:20:00",
+      "snapshotTimestampAtIndex": "2026-07-31 15:25:00",
+      "snapshotIndexByEntryTime": 2268,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2274,
+      "entryTime": "2026-07-31 15:55:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-25 12:50:00",
+      "snapshotTimestampAtIndex": "2026-07-31 15:55:00",
+      "snapshotIndexByEntryTime": 2274,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2298,
+      "entryTime": "2026-07-31 17:55:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-25 14:50:00",
+      "snapshotTimestampAtIndex": "2026-07-31 17:55:00",
+      "snapshotIndexByEntryTime": 2298,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2321,
+      "entryTime": "2026-07-31 19:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-25 16:45:00",
+      "snapshotTimestampAtIndex": "2026-07-31 19:50:00",
+      "snapshotIndexByEntryTime": 2321,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2325,
+      "entryTime": "2026-07-31 20:10:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-25 17:05:00",
+      "snapshotTimestampAtIndex": "2026-07-31 20:10:00",
+      "snapshotIndexByEntryTime": 2325,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2336,
+      "entryTime": "2026-07-31 21:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-25 18:00:00",
+      "snapshotTimestampAtIndex": "2026-07-31 21:05:00",
+      "snapshotIndexByEntryTime": 2336,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2923,
+      "entryTime": "2026-08-02 22:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-27 18:55:00",
+      "snapshotTimestampAtIndex": "2026-08-02 22:00:00",
+      "snapshotIndexByEntryTime": 2923,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 2924,
+      "entryTime": "2026-08-02 22:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-27 19:00:00",
+      "snapshotTimestampAtIndex": "2026-08-02 22:05:00",
+      "snapshotIndexByEntryTime": 2924,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3090,
+      "entryTime": "2026-08-03 11:55:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-28 08:50:00",
+      "snapshotTimestampAtIndex": "2026-08-03 11:55:00",
+      "snapshotIndexByEntryTime": 3090,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3096,
+      "entryTime": "2026-08-03 12:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-28 09:20:00",
+      "snapshotTimestampAtIndex": "2026-08-03 12:25:00",
+      "snapshotIndexByEntryTime": 3096,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3102,
+      "entryTime": "2026-08-03 12:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-28 09:50:00",
+      "snapshotTimestampAtIndex": "2026-08-03 12:55:00",
+      "snapshotIndexByEntryTime": 3102,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3176,
+      "entryTime": "2026-08-03 19:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-28 16:00:00",
+      "snapshotTimestampAtIndex": "2026-08-03 19:05:00",
+      "snapshotIndexByEntryTime": 3176,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3181,
+      "entryTime": "2026-08-03 19:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-28 16:25:00",
+      "snapshotTimestampAtIndex": "2026-08-03 19:30:00",
+      "snapshotIndexByEntryTime": 3181,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3237,
+      "entryTime": "2026-08-04 00:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-28 21:05:00",
+      "snapshotTimestampAtIndex": "2026-08-04 00:10:00",
+      "snapshotIndexByEntryTime": 3237,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3250,
+      "entryTime": "2026-08-04 01:15:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-28 22:10:00",
+      "snapshotTimestampAtIndex": "2026-08-04 01:15:00",
+      "snapshotIndexByEntryTime": 3250,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3364,
+      "entryTime": "2026-08-04 10:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-29 07:45:00",
+      "snapshotTimestampAtIndex": "2026-08-04 10:45:00",
+      "snapshotIndexByEntryTime": 3364,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3374,
+      "entryTime": "2026-08-04 11:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-29 08:35:00",
+      "snapshotTimestampAtIndex": "2026-08-04 11:35:00",
+      "snapshotIndexByEntryTime": 3374,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3377,
+      "entryTime": "2026-08-04 11:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-29 08:50:00",
+      "snapshotTimestampAtIndex": "2026-08-04 11:50:00",
+      "snapshotIndexByEntryTime": 3377,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3392,
+      "entryTime": "2026-08-04 13:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-29 10:05:00",
+      "snapshotTimestampAtIndex": "2026-08-04 13:05:00",
+      "snapshotIndexByEntryTime": 3392,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3441,
+      "entryTime": "2026-08-04 17:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-29 14:10:00",
+      "snapshotTimestampAtIndex": "2026-08-04 17:10:00",
+      "snapshotIndexByEntryTime": 3441,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3452,
+      "entryTime": "2026-08-04 18:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-29 15:05:00",
+      "snapshotTimestampAtIndex": "2026-08-04 18:05:00",
+      "snapshotIndexByEntryTime": 3452,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3539,
+      "entryTime": "2026-08-05 01:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-29 22:20:00",
+      "snapshotTimestampAtIndex": "2026-08-05 01:20:00",
+      "snapshotIndexByEntryTime": 3539,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3547,
+      "entryTime": "2026-08-05 02:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-29 23:00:00",
+      "snapshotTimestampAtIndex": "2026-08-05 02:00:00",
+      "snapshotIndexByEntryTime": 3547,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3659,
+      "entryTime": "2026-08-05 11:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-30 08:20:00",
+      "snapshotTimestampAtIndex": "2026-08-05 11:20:00",
+      "snapshotIndexByEntryTime": 3659,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3725,
+      "entryTime": "2026-08-05 16:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-30 13:50:00",
+      "snapshotTimestampAtIndex": "2026-08-05 16:50:00",
+      "snapshotIndexByEntryTime": 3725,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3744,
+      "entryTime": "2026-08-05 18:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-30 15:25:00",
+      "snapshotTimestampAtIndex": "2026-08-05 18:25:00",
+      "snapshotIndexByEntryTime": 3744,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3804,
+      "entryTime": "2026-08-05 23:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-30 20:25:00",
+      "snapshotTimestampAtIndex": "2026-08-05 23:25:00",
+      "snapshotIndexByEntryTime": 3804,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3878,
+      "entryTime": "2026-08-06 05:35:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-31 02:35:00",
+      "snapshotTimestampAtIndex": "2026-08-06 05:35:00",
+      "snapshotIndexByEntryTime": 3878,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3885,
+      "entryTime": "2026-08-06 06:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 03:10:00",
+      "snapshotTimestampAtIndex": "2026-08-06 06:10:00",
+      "snapshotIndexByEntryTime": 3885,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3952,
+      "entryTime": "2026-08-06 11:45:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 08:45:00",
+      "snapshotTimestampAtIndex": "2026-08-06 11:45:00",
+      "snapshotIndexByEntryTime": 3952,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3954,
+      "entryTime": "2026-08-06 11:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-31 08:55:00",
+      "snapshotTimestampAtIndex": "2026-08-06 11:55:00",
+      "snapshotIndexByEntryTime": 3954,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3962,
+      "entryTime": "2026-08-06 12:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 09:35:00",
+      "snapshotTimestampAtIndex": "2026-08-06 12:35:00",
+      "snapshotIndexByEntryTime": 3962,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3967,
+      "entryTime": "2026-08-06 13:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-31 10:00:00",
+      "snapshotTimestampAtIndex": "2026-08-06 13:00:00",
+      "snapshotIndexByEntryTime": 3967,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3969,
+      "entryTime": "2026-08-06 13:10:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-31 10:10:00",
+      "snapshotTimestampAtIndex": "2026-08-06 13:10:00",
+      "snapshotIndexByEntryTime": 3969,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3977,
+      "entryTime": "2026-08-06 13:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 10:50:00",
+      "snapshotTimestampAtIndex": "2026-08-06 13:50:00",
+      "snapshotIndexByEntryTime": 3977,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3994,
+      "entryTime": "2026-08-06 15:15:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 12:15:00",
+      "snapshotTimestampAtIndex": "2026-08-06 15:15:00",
+      "snapshotIndexByEntryTime": 3994,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 3999,
+      "entryTime": "2026-08-06 15:40:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-31 12:40:00",
+      "snapshotTimestampAtIndex": "2026-08-06 15:40:00",
+      "snapshotIndexByEntryTime": 3999,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4040,
+      "entryTime": "2026-08-06 19:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 16:05:00",
+      "snapshotTimestampAtIndex": "2026-08-06 19:05:00",
+      "snapshotIndexByEntryTime": 4040,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4050,
+      "entryTime": "2026-08-06 19:55:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 16:55:00",
+      "snapshotTimestampAtIndex": "2026-08-06 19:55:00",
+      "snapshotIndexByEntryTime": 4050,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4099,
+      "entryTime": "2026-08-07 00:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 21:00:00",
+      "snapshotTimestampAtIndex": "2026-08-07 00:00:00",
+      "snapshotIndexByEntryTime": 4099,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4104,
+      "entryTime": "2026-08-07 00:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-31 21:25:00",
+      "snapshotTimestampAtIndex": "2026-08-07 00:25:00",
+      "snapshotIndexByEntryTime": 4104,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4105,
+      "entryTime": "2026-08-07 00:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-31 21:30:00",
+      "snapshotTimestampAtIndex": "2026-08-07 00:30:00",
+      "snapshotIndexByEntryTime": 4105,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4112,
+      "entryTime": "2026-08-07 01:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-03-31 22:05:00",
+      "snapshotTimestampAtIndex": "2026-08-07 01:05:00",
+      "snapshotIndexByEntryTime": 4112,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4116,
+      "entryTime": "2026-08-07 01:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 22:25:00",
+      "snapshotTimestampAtIndex": "2026-08-07 01:25:00",
+      "snapshotIndexByEntryTime": 4116,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4120,
+      "entryTime": "2026-08-07 01:45:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 22:45:00",
+      "snapshotTimestampAtIndex": "2026-08-07 01:45:00",
+      "snapshotIndexByEntryTime": 4120,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4121,
+      "entryTime": "2026-08-07 01:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-03-31 22:50:00",
+      "snapshotTimestampAtIndex": "2026-08-07 01:50:00",
+      "snapshotIndexByEntryTime": 4121,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 4247,
+      "entryTime": "2026-08-07 12:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-01 09:20:00",
+      "snapshotTimestampAtIndex": "2026-08-07 12:20:00",
+      "snapshotIndexByEntryTime": 4247,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5024,
+      "entryTime": "2026-08-10 05:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-04 02:05:00",
+      "snapshotTimestampAtIndex": "2026-08-10 05:05:00",
+      "snapshotIndexByEntryTime": 5024,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5035,
+      "entryTime": "2026-08-10 06:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-04 03:00:00",
+      "snapshotTimestampAtIndex": "2026-08-10 06:00:00",
+      "snapshotIndexByEntryTime": 5035,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5131,
+      "entryTime": "2026-08-10 14:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-04 11:00:00",
+      "snapshotTimestampAtIndex": "2026-08-10 14:00:00",
+      "snapshotIndexByEntryTime": 5131,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5138,
+      "entryTime": "2026-08-10 14:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-04 11:35:00",
+      "snapshotTimestampAtIndex": "2026-08-10 14:35:00",
+      "snapshotIndexByEntryTime": 5138,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5161,
+      "entryTime": "2026-08-10 16:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-04 13:30:00",
+      "snapshotTimestampAtIndex": "2026-08-10 16:30:00",
+      "snapshotIndexByEntryTime": 5161,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5247,
+      "entryTime": "2026-08-10 23:40:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-04 21:40:00",
+      "snapshotTimestampAtIndex": "2026-08-10 23:40:00",
+      "snapshotIndexByEntryTime": 5247,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5264,
+      "entryTime": "2026-08-11 01:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-04 23:05:00",
+      "snapshotTimestampAtIndex": "2026-08-11 01:05:00",
+      "snapshotIndexByEntryTime": 5264,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5340,
+      "entryTime": "2026-08-11 07:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-05 05:25:00",
+      "snapshotTimestampAtIndex": "2026-08-11 07:25:00",
+      "snapshotIndexByEntryTime": 5340,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5411,
+      "entryTime": "2026-08-11 13:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-05 11:20:00",
+      "snapshotTimestampAtIndex": "2026-08-11 13:20:00",
+      "snapshotIndexByEntryTime": 5411,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5417,
+      "entryTime": "2026-08-11 13:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-05 11:50:00",
+      "snapshotTimestampAtIndex": "2026-08-11 13:50:00",
+      "snapshotIndexByEntryTime": 5417,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5527,
+      "entryTime": "2026-08-11 23:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-05 21:00:00",
+      "snapshotTimestampAtIndex": "2026-08-11 23:00:00",
+      "snapshotIndexByEntryTime": 5527,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5546,
+      "entryTime": "2026-08-12 00:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-05 22:35:00",
+      "snapshotTimestampAtIndex": "2026-08-12 00:35:00",
+      "snapshotIndexByEntryTime": 5546,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5547,
+      "entryTime": "2026-08-12 00:40:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-05 22:40:00",
+      "snapshotTimestampAtIndex": "2026-08-12 00:40:00",
+      "snapshotIndexByEntryTime": 5547,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5591,
+      "entryTime": "2026-08-12 04:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-06 02:20:00",
+      "snapshotTimestampAtIndex": "2026-08-12 04:20:00",
+      "snapshotIndexByEntryTime": 5591,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5604,
+      "entryTime": "2026-08-12 05:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-06 03:25:00",
+      "snapshotTimestampAtIndex": "2026-08-12 05:25:00",
+      "snapshotIndexByEntryTime": 5604,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5669,
+      "entryTime": "2026-08-12 10:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-06 08:50:00",
+      "snapshotTimestampAtIndex": "2026-08-12 10:50:00",
+      "snapshotIndexByEntryTime": 5669,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5676,
+      "entryTime": "2026-08-12 11:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-06 09:25:00",
+      "snapshotTimestampAtIndex": "2026-08-12 11:25:00",
+      "snapshotIndexByEntryTime": 5676,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5744,
+      "entryTime": "2026-08-12 17:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-06 15:05:00",
+      "snapshotTimestampAtIndex": "2026-08-12 17:05:00",
+      "snapshotIndexByEntryTime": 5744,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5760,
+      "entryTime": "2026-08-12 18:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-06 16:25:00",
+      "snapshotTimestampAtIndex": "2026-08-12 18:25:00",
+      "snapshotIndexByEntryTime": 5760,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5804,
+      "entryTime": "2026-08-12 22:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-06 20:05:00",
+      "snapshotTimestampAtIndex": "2026-08-12 22:05:00",
+      "snapshotIndexByEntryTime": 5804,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5809,
+      "entryTime": "2026-08-12 22:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-06 20:30:00",
+      "snapshotTimestampAtIndex": "2026-08-12 22:30:00",
+      "snapshotIndexByEntryTime": 5809,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5821,
+      "entryTime": "2026-08-12 23:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-06 21:30:00",
+      "snapshotTimestampAtIndex": "2026-08-12 23:30:00",
+      "snapshotIndexByEntryTime": 5821,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5832,
+      "entryTime": "2026-08-13 00:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-06 22:25:00",
+      "snapshotTimestampAtIndex": "2026-08-13 00:25:00",
+      "snapshotIndexByEntryTime": 5832,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5852,
+      "entryTime": "2026-08-13 02:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 00:05:00",
+      "snapshotTimestampAtIndex": "2026-08-13 02:05:00",
+      "snapshotIndexByEntryTime": 5852,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5859,
+      "entryTime": "2026-08-13 02:40:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 00:40:00",
+      "snapshotTimestampAtIndex": "2026-08-13 02:40:00",
+      "snapshotIndexByEntryTime": 5859,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5880,
+      "entryTime": "2026-08-13 04:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 02:25:00",
+      "snapshotTimestampAtIndex": "2026-08-13 04:25:00",
+      "snapshotIndexByEntryTime": 5880,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5924,
+      "entryTime": "2026-08-13 08:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 06:05:00",
+      "snapshotTimestampAtIndex": "2026-08-13 08:05:00",
+      "snapshotIndexByEntryTime": 5924,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5958,
+      "entryTime": "2026-08-13 10:55:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-07 08:55:00",
+      "snapshotTimestampAtIndex": "2026-08-13 10:55:00",
+      "snapshotIndexByEntryTime": 5958,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5965,
+      "entryTime": "2026-08-13 11:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-07 09:30:00",
+      "snapshotTimestampAtIndex": "2026-08-13 11:30:00",
+      "snapshotIndexByEntryTime": 5965,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5969,
+      "entryTime": "2026-08-13 11:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 09:50:00",
+      "snapshotTimestampAtIndex": "2026-08-13 11:50:00",
+      "snapshotIndexByEntryTime": 5969,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 5991,
+      "entryTime": "2026-08-13 13:40:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 11:40:00",
+      "snapshotTimestampAtIndex": "2026-08-13 13:40:00",
+      "snapshotIndexByEntryTime": 5991,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6023,
+      "entryTime": "2026-08-13 16:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 14:20:00",
+      "snapshotTimestampAtIndex": "2026-08-13 16:20:00",
+      "snapshotIndexByEntryTime": 6023,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6024,
+      "entryTime": "2026-08-13 16:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 14:25:00",
+      "snapshotTimestampAtIndex": "2026-08-13 16:25:00",
+      "snapshotIndexByEntryTime": 6024,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6059,
+      "entryTime": "2026-08-13 19:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 17:20:00",
+      "snapshotTimestampAtIndex": "2026-08-13 19:20:00",
+      "snapshotIndexByEntryTime": 6059,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6104,
+      "entryTime": "2026-08-13 23:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 21:05:00",
+      "snapshotTimestampAtIndex": "2026-08-13 23:05:00",
+      "snapshotIndexByEntryTime": 6104,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6122,
+      "entryTime": "2026-08-14 00:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-07 22:35:00",
+      "snapshotTimestampAtIndex": "2026-08-14 00:35:00",
+      "snapshotIndexByEntryTime": 6122,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6128,
+      "entryTime": "2026-08-14 01:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-07 23:05:00",
+      "snapshotTimestampAtIndex": "2026-08-14 01:05:00",
+      "snapshotIndexByEntryTime": 6128,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6153,
+      "entryTime": "2026-08-14 03:10:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-08 01:10:00",
+      "snapshotTimestampAtIndex": "2026-08-14 03:10:00",
+      "snapshotIndexByEntryTime": 6153,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6242,
+      "entryTime": "2026-08-14 10:35:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-08 08:35:00",
+      "snapshotTimestampAtIndex": "2026-08-14 10:35:00",
+      "snapshotIndexByEntryTime": 6242,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6251,
+      "entryTime": "2026-08-14 11:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-08 09:20:00",
+      "snapshotTimestampAtIndex": "2026-08-14 11:20:00",
+      "snapshotIndexByEntryTime": 6251,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6256,
+      "entryTime": "2026-08-14 11:45:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-08 09:45:00",
+      "snapshotTimestampAtIndex": "2026-08-14 11:45:00",
+      "snapshotIndexByEntryTime": 6256,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6258,
+      "entryTime": "2026-08-14 11:55:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-08 09:55:00",
+      "snapshotTimestampAtIndex": "2026-08-14 11:55:00",
+      "snapshotIndexByEntryTime": 6258,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6298,
+      "entryTime": "2026-08-14 15:15:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-08 13:15:00",
+      "snapshotTimestampAtIndex": "2026-08-14 15:15:00",
+      "snapshotIndexByEntryTime": 6298,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6341,
+      "entryTime": "2026-08-14 18:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-08 16:50:00",
+      "snapshotTimestampAtIndex": "2026-08-14 18:50:00",
+      "snapshotIndexByEntryTime": 6341,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6975,
+      "entryTime": "2026-08-16 23:40:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-10 21:40:00",
+      "snapshotTimestampAtIndex": "2026-08-16 23:40:00",
+      "snapshotIndexByEntryTime": 6975,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6976,
+      "entryTime": "2026-08-16 23:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-10 21:45:00",
+      "snapshotTimestampAtIndex": "2026-08-16 23:45:00",
+      "snapshotIndexByEntryTime": 6976,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6983,
+      "entryTime": "2026-08-17 00:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-10 22:20:00",
+      "snapshotTimestampAtIndex": "2026-08-17 00:20:00",
+      "snapshotIndexByEntryTime": 6983,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 6993,
+      "entryTime": "2026-08-17 01:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-10 23:10:00",
+      "snapshotTimestampAtIndex": "2026-08-17 01:10:00",
+      "snapshotIndexByEntryTime": 6993,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7122,
+      "entryTime": "2026-08-17 11:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-11 09:55:00",
+      "snapshotTimestampAtIndex": "2026-08-17 11:55:00",
+      "snapshotIndexByEntryTime": 7122,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7133,
+      "entryTime": "2026-08-17 12:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-11 10:50:00",
+      "snapshotTimestampAtIndex": "2026-08-17 12:50:00",
+      "snapshotIndexByEntryTime": 7133,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7148,
+      "entryTime": "2026-08-17 14:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-11 12:05:00",
+      "snapshotTimestampAtIndex": "2026-08-17 14:05:00",
+      "snapshotIndexByEntryTime": 7148,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7217,
+      "entryTime": "2026-08-17 19:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-11 17:50:00",
+      "snapshotTimestampAtIndex": "2026-08-17 19:50:00",
+      "snapshotIndexByEntryTime": 7217,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7273,
+      "entryTime": "2026-08-18 00:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-11 22:30:00",
+      "snapshotTimestampAtIndex": "2026-08-18 00:30:00",
+      "snapshotIndexByEntryTime": 7273,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7280,
+      "entryTime": "2026-08-18 01:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-11 23:10:00",
+      "snapshotTimestampAtIndex": "2026-08-18 01:05:00",
+      "snapshotIndexByEntryTime": 7280,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7284,
+      "entryTime": "2026-08-18 01:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-11 23:30:00",
+      "snapshotTimestampAtIndex": "2026-08-18 01:25:00",
+      "snapshotIndexByEntryTime": 7284,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7290,
+      "entryTime": "2026-08-18 01:55:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 00:00:00",
+      "snapshotTimestampAtIndex": "2026-08-18 01:55:00",
+      "snapshotIndexByEntryTime": 7290,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7294,
+      "entryTime": "2026-08-18 02:15:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 00:20:00",
+      "snapshotTimestampAtIndex": "2026-08-18 02:15:00",
+      "snapshotIndexByEntryTime": 7294,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7338,
+      "entryTime": "2026-08-18 05:55:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-12 04:00:00",
+      "snapshotTimestampAtIndex": "2026-08-18 05:55:00",
+      "snapshotIndexByEntryTime": 7338,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7357,
+      "entryTime": "2026-08-18 07:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-12 05:35:00",
+      "snapshotTimestampAtIndex": "2026-08-18 07:30:00",
+      "snapshotIndexByEntryTime": 7357,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7401,
+      "entryTime": "2026-08-18 11:10:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 09:15:00",
+      "snapshotTimestampAtIndex": "2026-08-18 11:10:00",
+      "snapshotIndexByEntryTime": 7401,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7402,
+      "entryTime": "2026-08-18 11:15:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 09:20:00",
+      "snapshotTimestampAtIndex": "2026-08-18 11:15:00",
+      "snapshotIndexByEntryTime": 7402,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7416,
+      "entryTime": "2026-08-18 12:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-12 10:30:00",
+      "snapshotTimestampAtIndex": "2026-08-18 12:25:00",
+      "snapshotIndexByEntryTime": 7416,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7432,
+      "entryTime": "2026-08-18 13:45:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-12 11:50:00",
+      "snapshotTimestampAtIndex": "2026-08-18 13:45:00",
+      "snapshotIndexByEntryTime": 7432,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7447,
+      "entryTime": "2026-08-18 15:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 13:05:00",
+      "snapshotTimestampAtIndex": "2026-08-18 15:00:00",
+      "snapshotIndexByEntryTime": 7447,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7450,
+      "entryTime": "2026-08-18 15:15:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-12 13:20:00",
+      "snapshotTimestampAtIndex": "2026-08-18 15:15:00",
+      "snapshotIndexByEntryTime": 7450,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7452,
+      "entryTime": "2026-08-18 15:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 13:30:00",
+      "snapshotTimestampAtIndex": "2026-08-18 15:25:00",
+      "snapshotIndexByEntryTime": 7452,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7453,
+      "entryTime": "2026-08-18 15:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 13:35:00",
+      "snapshotTimestampAtIndex": "2026-08-18 15:30:00",
+      "snapshotIndexByEntryTime": 7453,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7511,
+      "entryTime": "2026-08-18 20:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-12 18:25:00",
+      "snapshotTimestampAtIndex": "2026-08-18 20:20:00",
+      "snapshotIndexByEntryTime": 7511,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7517,
+      "entryTime": "2026-08-18 20:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 18:55:00",
+      "snapshotTimestampAtIndex": "2026-08-18 20:50:00",
+      "snapshotIndexByEntryTime": 7517,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7550,
+      "entryTime": "2026-08-18 23:35:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 21:40:00",
+      "snapshotTimestampAtIndex": "2026-08-18 23:35:00",
+      "snapshotIndexByEntryTime": 7550,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7556,
+      "entryTime": "2026-08-19 00:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-12 22:10:00",
+      "snapshotTimestampAtIndex": "2026-08-19 00:05:00",
+      "snapshotIndexByEntryTime": 7556,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7559,
+      "entryTime": "2026-08-19 00:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 22:25:00",
+      "snapshotTimestampAtIndex": "2026-08-19 00:20:00",
+      "snapshotIndexByEntryTime": 7559,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7568,
+      "entryTime": "2026-08-19 01:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-12 23:10:00",
+      "snapshotTimestampAtIndex": "2026-08-19 01:05:00",
+      "snapshotIndexByEntryTime": 7568,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7641,
+      "entryTime": "2026-08-19 07:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-13 05:15:00",
+      "snapshotTimestampAtIndex": "2026-08-19 07:10:00",
+      "snapshotIndexByEntryTime": 7641,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7647,
+      "entryTime": "2026-08-19 07:40:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-13 05:45:00",
+      "snapshotTimestampAtIndex": "2026-08-19 07:40:00",
+      "snapshotIndexByEntryTime": 7647,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7707,
+      "entryTime": "2026-08-19 12:40:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-13 10:45:00",
+      "snapshotTimestampAtIndex": "2026-08-19 12:40:00",
+      "snapshotIndexByEntryTime": 7707,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7708,
+      "entryTime": "2026-08-19 12:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-13 10:50:00",
+      "snapshotTimestampAtIndex": "2026-08-19 12:45:00",
+      "snapshotIndexByEntryTime": 7708,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7711,
+      "entryTime": "2026-08-19 13:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-13 11:05:00",
+      "snapshotTimestampAtIndex": "2026-08-19 13:00:00",
+      "snapshotIndexByEntryTime": 7711,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7777,
+      "entryTime": "2026-08-19 18:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-13 16:35:00",
+      "snapshotTimestampAtIndex": "2026-08-19 18:30:00",
+      "snapshotIndexByEntryTime": 7777,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7780,
+      "entryTime": "2026-08-19 18:45:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-13 16:50:00",
+      "snapshotTimestampAtIndex": "2026-08-19 18:45:00",
+      "snapshotIndexByEntryTime": 7780,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7856,
+      "entryTime": "2026-08-20 01:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-13 23:10:00",
+      "snapshotTimestampAtIndex": "2026-08-20 01:05:00",
+      "snapshotIndexByEntryTime": 7856,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7985,
+      "entryTime": "2026-08-20 11:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-14 09:55:00",
+      "snapshotTimestampAtIndex": "2026-08-20 11:50:00",
+      "snapshotIndexByEntryTime": 7985,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7989,
+      "entryTime": "2026-08-20 12:10:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-14 10:15:00",
+      "snapshotTimestampAtIndex": "2026-08-20 12:10:00",
+      "snapshotIndexByEntryTime": 7989,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 7999,
+      "entryTime": "2026-08-20 13:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-14 11:05:00",
+      "snapshotTimestampAtIndex": "2026-08-20 13:00:00",
+      "snapshotIndexByEntryTime": 7999,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8009,
+      "entryTime": "2026-08-20 13:50:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-14 11:55:00",
+      "snapshotTimestampAtIndex": "2026-08-20 13:50:00",
+      "snapshotIndexByEntryTime": 8009,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8012,
+      "entryTime": "2026-08-20 14:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-14 12:10:00",
+      "snapshotTimestampAtIndex": "2026-08-20 14:05:00",
+      "snapshotIndexByEntryTime": 8012,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8016,
+      "entryTime": "2026-08-20 14:25:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-14 12:30:00",
+      "snapshotTimestampAtIndex": "2026-08-20 14:25:00",
+      "snapshotIndexByEntryTime": 8016,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8019,
+      "entryTime": "2026-08-20 14:40:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-14 12:45:00",
+      "snapshotTimestampAtIndex": "2026-08-20 14:40:00",
+      "snapshotIndexByEntryTime": 8019,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8123,
+      "entryTime": "2026-08-20 23:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-14 21:25:00",
+      "snapshotTimestampAtIndex": "2026-08-20 23:20:00",
+      "snapshotIndexByEntryTime": 8123,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8135,
+      "entryTime": "2026-08-21 00:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-14 22:25:00",
+      "snapshotTimestampAtIndex": "2026-08-21 00:20:00",
+      "snapshotIndexByEntryTime": 8135,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8203,
+      "entryTime": "2026-08-21 06:00:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-15 04:05:00",
+      "snapshotTimestampAtIndex": "2026-08-21 06:00:00",
+      "snapshotIndexByEntryTime": 8203,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8280,
+      "entryTime": "2026-08-21 12:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-15 10:30:00",
+      "snapshotTimestampAtIndex": "2026-08-21 12:25:00",
+      "snapshotIndexByEntryTime": 8280,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8284,
+      "entryTime": "2026-08-21 12:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-15 10:50:00",
+      "snapshotTimestampAtIndex": "2026-08-21 12:45:00",
+      "snapshotIndexByEntryTime": 8284,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8317,
+      "entryTime": "2026-08-21 15:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-15 13:35:00",
+      "snapshotTimestampAtIndex": "2026-08-21 15:30:00",
+      "snapshotIndexByEntryTime": 8317,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8376,
+      "entryTime": "2026-08-21 20:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-15 18:30:00",
+      "snapshotTimestampAtIndex": "2026-08-21 20:25:00",
+      "snapshotIndexByEntryTime": 8376,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8377,
+      "entryTime": "2026-08-21 20:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-15 18:35:00",
+      "snapshotTimestampAtIndex": "2026-08-21 20:30:00",
+      "snapshotIndexByEntryTime": 8377,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8379,
+      "entryTime": "2026-08-21 20:40:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-15 18:45:00",
+      "snapshotTimestampAtIndex": "2026-08-21 20:40:00",
+      "snapshotIndexByEntryTime": 8379,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8971,
+      "entryTime": "2026-08-23 22:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-17 20:05:00",
+      "snapshotTimestampAtIndex": "2026-08-23 22:00:00",
+      "snapshotIndexByEntryTime": 8971,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 8972,
+      "entryTime": "2026-08-23 22:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-17 20:10:00",
+      "snapshotTimestampAtIndex": "2026-08-23 22:05:00",
+      "snapshotIndexByEntryTime": 8972,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9001,
+      "entryTime": "2026-08-24 00:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-17 22:35:00",
+      "snapshotTimestampAtIndex": "2026-08-24 00:30:00",
+      "snapshotIndexByEntryTime": 9001,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9128,
+      "entryTime": "2026-08-24 11:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-18 09:10:00",
+      "snapshotTimestampAtIndex": "2026-08-24 11:05:00",
+      "snapshotIndexByEntryTime": 9128,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9185,
+      "entryTime": "2026-08-24 15:50:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-18 13:55:00",
+      "snapshotTimestampAtIndex": "2026-08-24 15:50:00",
+      "snapshotIndexByEntryTime": 9185,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9204,
+      "entryTime": "2026-08-24 17:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-18 15:30:00",
+      "snapshotTimestampAtIndex": "2026-08-24 17:25:00",
+      "snapshotIndexByEntryTime": 9204,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9214,
+      "entryTime": "2026-08-24 18:15:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-18 16:20:00",
+      "snapshotTimestampAtIndex": "2026-08-24 18:15:00",
+      "snapshotIndexByEntryTime": 9214,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9275,
+      "entryTime": "2026-08-24 23:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-18 21:25:00",
+      "snapshotTimestampAtIndex": "2026-08-24 23:20:00",
+      "snapshotIndexByEntryTime": 9275,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9296,
+      "entryTime": "2026-08-25 01:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-18 23:10:00",
+      "snapshotTimestampAtIndex": "2026-08-25 01:05:00",
+      "snapshotIndexByEntryTime": 9296,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9311,
+      "entryTime": "2026-08-25 02:20:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-19 00:25:00",
+      "snapshotTimestampAtIndex": "2026-08-25 02:20:00",
+      "snapshotIndexByEntryTime": 9311,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9358,
+      "entryTime": "2026-08-25 06:15:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-19 04:20:00",
+      "snapshotTimestampAtIndex": "2026-08-25 06:15:00",
+      "snapshotIndexByEntryTime": 9358,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9385,
+      "entryTime": "2026-08-25 08:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-19 06:35:00",
+      "snapshotTimestampAtIndex": "2026-08-25 08:30:00",
+      "snapshotIndexByEntryTime": 9385,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9419,
+      "entryTime": "2026-08-25 11:20:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-19 09:25:00",
+      "snapshotTimestampAtIndex": "2026-08-25 11:20:00",
+      "snapshotIndexByEntryTime": 9419,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9445,
+      "entryTime": "2026-08-25 13:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-19 11:35:00",
+      "snapshotTimestampAtIndex": "2026-08-25 13:30:00",
+      "snapshotIndexByEntryTime": 9445,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9459,
+      "entryTime": "2026-08-25 14:40:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-19 12:45:00",
+      "snapshotTimestampAtIndex": "2026-08-25 14:40:00",
+      "snapshotIndexByEntryTime": 9459,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9502,
+      "entryTime": "2026-08-25 18:15:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-19 16:20:00",
+      "snapshotTimestampAtIndex": "2026-08-25 18:15:00",
+      "snapshotIndexByEntryTime": 9502,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9512,
+      "entryTime": "2026-08-25 19:05:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-19 17:10:00",
+      "snapshotTimestampAtIndex": "2026-08-25 19:05:00",
+      "snapshotIndexByEntryTime": 9512,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9517,
+      "entryTime": "2026-08-25 19:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-19 17:35:00",
+      "snapshotTimestampAtIndex": "2026-08-25 19:30:00",
+      "snapshotIndexByEntryTime": 9517,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9565,
+      "entryTime": "2026-08-25 23:30:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-19 21:35:00",
+      "snapshotTimestampAtIndex": "2026-08-25 23:30:00",
+      "snapshotIndexByEntryTime": 9565,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9568,
+      "entryTime": "2026-08-25 23:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-19 21:50:00",
+      "snapshotTimestampAtIndex": "2026-08-25 23:45:00",
+      "snapshotIndexByEntryTime": 9568,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9574,
+      "entryTime": "2026-08-26 00:15:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-19 22:20:00",
+      "snapshotTimestampAtIndex": "2026-08-26 00:15:00",
+      "snapshotIndexByEntryTime": 9574,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9576,
+      "entryTime": "2026-08-26 00:25:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-19 22:30:00",
+      "snapshotTimestampAtIndex": "2026-08-26 00:25:00",
+      "snapshotIndexByEntryTime": 9576,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9583,
+      "entryTime": "2026-08-26 01:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-19 23:05:00",
+      "snapshotTimestampAtIndex": "2026-08-26 01:00:00",
+      "snapshotIndexByEntryTime": 9583,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9717,
+      "entryTime": "2026-08-26 12:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-20 10:15:00",
+      "snapshotTimestampAtIndex": "2026-08-26 12:10:00",
+      "snapshotIndexByEntryTime": 9717,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9722,
+      "entryTime": "2026-08-26 12:35:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-20 10:40:00",
+      "snapshotTimestampAtIndex": "2026-08-26 12:35:00",
+      "snapshotIndexByEntryTime": 9722,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9727,
+      "entryTime": "2026-08-26 13:00:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-20 11:05:00",
+      "snapshotTimestampAtIndex": "2026-08-26 13:00:00",
+      "snapshotIndexByEntryTime": 9727,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9753,
+      "entryTime": "2026-08-26 15:10:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-20 13:15:00",
+      "snapshotTimestampAtIndex": "2026-08-26 15:10:00",
+      "snapshotIndexByEntryTime": 9753,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9758,
+      "entryTime": "2026-08-26 15:35:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-20 13:40:00",
+      "snapshotTimestampAtIndex": "2026-08-26 15:35:00",
+      "snapshotIndexByEntryTime": 9758,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9772,
+      "entryTime": "2026-08-26 16:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-20 14:50:00",
+      "snapshotTimestampAtIndex": "2026-08-26 16:45:00",
+      "snapshotIndexByEntryTime": 9772,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9789,
+      "entryTime": "2026-08-26 18:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-20 16:15:00",
+      "snapshotTimestampAtIndex": "2026-08-26 18:10:00",
+      "snapshotIndexByEntryTime": 9789,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9808,
+      "entryTime": "2026-08-26 19:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-20 17:50:00",
+      "snapshotTimestampAtIndex": "2026-08-26 19:45:00",
+      "snapshotIndexByEntryTime": 9808,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9836,
+      "entryTime": "2026-08-26 22:05:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-20 20:10:00",
+      "snapshotTimestampAtIndex": "2026-08-26 22:05:00",
+      "snapshotIndexByEntryTime": 9836,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9853,
+      "entryTime": "2026-08-26 23:30:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-20 21:35:00",
+      "snapshotTimestampAtIndex": "2026-08-26 23:30:00",
+      "snapshotIndexByEntryTime": 9853,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9856,
+      "entryTime": "2026-08-26 23:45:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-20 21:50:00",
+      "snapshotTimestampAtIndex": "2026-08-26 23:45:00",
+      "snapshotIndexByEntryTime": 9856,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9861,
+      "entryTime": "2026-08-27 00:10:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-20 22:15:00",
+      "snapshotTimestampAtIndex": "2026-08-27 00:10:00",
+      "snapshotIndexByEntryTime": 9861,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9868,
+      "entryTime": "2026-08-27 00:45:00",
+      "direction": "BUY",
+      "currentTimestampAtIndex": "2026-04-20 22:50:00",
+      "snapshotTimestampAtIndex": "2026-08-27 00:45:00",
+      "snapshotIndexByEntryTime": 9868,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    },
+    {
+      "entryIndex": 9998,
+      "entryTime": "2026-08-27 11:35:00",
+      "direction": "SELL",
+      "currentTimestampAtIndex": "2026-04-21 09:40:00",
+      "snapshotTimestampAtIndex": "2026-08-27 11:35:00",
+      "snapshotIndexByEntryTime": 9998,
+      "currentIndexTimeMatch": false,
+      "snapshotIndexTimeMatch": true
+    }
+  ]
+}

@@ -1,0 +1,556 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE32_DIRECTIONAL_COUNTERFACTUAL_DECOMPOSITION",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "canonicalN": 232,
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232
+  },
+  "phase27FeatureProvenance": {
+    "source": "Phase24 loss-archetype report",
+    "mappedRows": 163,
+    "totalRows": 232,
+    "unmappedRows": 69,
+    "thresholds": {
+      "spikeSizeRHigh": 16.304685569162483,
+      "correctionEfficiencyHigh": 0.8320235324313076
+    },
+    "semantics": "Uses exact Phase24/27 feature names and Phase27 q66 thresholds; unmapped non-loss rows are excluded from these two feature-conditioned groups."
+  },
+  "thresholds": {
+    "spikeSizeRHigh": 16.304685569162483,
+    "correctionEfficiencyHigh": 0.8320235324313076
+  },
+  "overallFlipped": {
+    "n": 219,
+    "wins": 68,
+    "losses": 151,
+    "winRate": 0.3105022831050228,
+    "avgR": 0.32639030241002037,
+    "totalR": 71.47947622779446,
+    "profitFactor": 1.4733740147536054
+  },
+  "byDimension": {
+    "originalDirection": {
+      "BUY": {
+        "n": 121,
+        "flipped": {
+          "n": 116,
+          "wins": 39,
+          "losses": 77,
+          "winRate": 0.33620689655172414,
+          "avgR": 0.6592897024162802,
+          "totalR": 76.4776054802885,
+          "profitFactor": 1.993215655588162
+        },
+        "flippedFromBUY": {
+          "n": 116,
+          "wins": 39,
+          "losses": 77,
+          "winRate": 0.33620689655172414,
+          "avgR": 0.6592897024162802,
+          "totalR": 76.4776054802885,
+          "profitFactor": 1.993215655588162
+        },
+        "flippedFromSELL": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": null,
+          "avgR": null,
+          "totalR": 0,
+          "profitFactor": null
+        }
+      },
+      "SELL": {
+        "n": 111,
+        "flipped": {
+          "n": 103,
+          "wins": 29,
+          "losses": 74,
+          "winRate": 0.2815533980582524,
+          "avgR": -0.04852552672324299,
+          "totalR": -4.998129252494028,
+          "profitFactor": 0.932457712804135
+        },
+        "flippedFromBUY": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": null,
+          "avgR": null,
+          "totalR": 0,
+          "profitFactor": null
+        },
+        "flippedFromSELL": {
+          "n": 103,
+          "wins": 29,
+          "losses": 74,
+          "winRate": 0.2815533980582524,
+          "avgR": -0.04852552672324299,
+          "totalR": -4.998129252494028,
+          "profitFactor": 0.932457712804135
+        }
+      }
+    },
+    "session": {
+      "NEW_YORK": {
+        "n": 80,
+        "flipped": {
+          "n": 77,
+          "wins": 23,
+          "losses": 54,
+          "winRate": 0.2987012987012987,
+          "avgR": 0.7198447646543596,
+          "totalR": 55.42804687838569,
+          "profitFactor": 2.0264453125626978
+        },
+        "flippedFromBUY": {
+          "n": 45,
+          "wins": 15,
+          "losses": 30,
+          "winRate": 0.3333333333333333,
+          "avgR": 1.5886410249273977,
+          "totalR": 71.48884612173289,
+          "profitFactor": 3.3829615373910964
+        },
+        "flippedFromSELL": {
+          "n": 32,
+          "wins": 8,
+          "losses": 24,
+          "winRate": 0.25,
+          "avgR": -0.5018999763546002,
+          "totalR": -16.060799243347205,
+          "profitFactor": 0.3308000315271998
+        }
+      },
+      "LONDON": {
+        "n": 120,
+        "flipped": {
+          "n": 111,
+          "wins": 37,
+          "losses": 74,
+          "winRate": 0.3333333333333333,
+          "avgR": -0.08710595605863947,
+          "totalR": -9.66876112250898,
+          "profitFactor": 0.8693410659120406
+        },
+        "flippedFromBUY": {
+          "n": 57,
+          "wins": 20,
+          "losses": 37,
+          "winRate": 0.3508771929824561,
+          "avgR": 0.021857779594183894,
+          "totalR": 1.245893436868482,
+          "profitFactor": 1.03367279559104
+        },
+        "flippedFromSELL": {
+          "n": 54,
+          "wins": 17,
+          "losses": 37,
+          "winRate": 0.3148148148148148,
+          "avgR": -0.20212323258106418,
+          "totalR": -10.914654559377466,
+          "profitFactor": 0.7050093362330413
+        }
+      },
+      "OUTSIDE": {
+        "n": 32,
+        "flipped": {
+          "n": 31,
+          "wins": 8,
+          "losses": 23,
+          "winRate": 0.25806451612903225,
+          "avgR": 0.8296835636102509,
+          "totalR": 25.72019047191778,
+          "profitFactor": 2.118269150952947
+        },
+        "flippedFromBUY": {
+          "n": 14,
+          "wins": 4,
+          "losses": 10,
+          "winRate": 0.2857142857142857,
+          "avgR": 0.26734756583479513,
+          "totalR": 3.742865921687132,
+          "profitFactor": 1.3742865921687133
+        },
+        "flippedFromSELL": {
+          "n": 17,
+          "wins": 4,
+          "losses": 13,
+          "winRate": 0.23529411764705882,
+          "avgR": 1.292783797072391,
+          "totalR": 21.977324550230648,
+          "profitFactor": 2.690563426940819
+        }
+      }
+    },
+    "qualityGrade": {
+      "B": {
+        "n": 232,
+        "flipped": {
+          "n": 219,
+          "wins": 68,
+          "losses": 151,
+          "winRate": 0.3105022831050228,
+          "avgR": 0.32639030241002037,
+          "totalR": 71.47947622779446,
+          "profitFactor": 1.4733740147536054
+        },
+        "flippedFromBUY": {
+          "n": 116,
+          "wins": 39,
+          "losses": 77,
+          "winRate": 0.33620689655172414,
+          "avgR": 0.6592897024162802,
+          "totalR": 76.4776054802885,
+          "profitFactor": 1.993215655588162
+        },
+        "flippedFromSELL": {
+          "n": 103,
+          "wins": 29,
+          "losses": 74,
+          "winRate": 0.2815533980582524,
+          "avgR": -0.04852552672324299,
+          "totalR": -4.998129252494028,
+          "profitFactor": 0.932457712804135
+        }
+      }
+    },
+    "emaAligned": {
+      "true": {
+        "n": 232,
+        "flipped": {
+          "n": 219,
+          "wins": 68,
+          "losses": 151,
+          "winRate": 0.3105022831050228,
+          "avgR": 0.32639030241002037,
+          "totalR": 71.47947622779446,
+          "profitFactor": 1.4733740147536054
+        },
+        "flippedFromBUY": {
+          "n": 116,
+          "wins": 39,
+          "losses": 77,
+          "winRate": 0.33620689655172414,
+          "avgR": 0.6592897024162802,
+          "totalR": 76.4776054802885,
+          "profitFactor": 1.993215655588162
+        },
+        "flippedFromSELL": {
+          "n": 103,
+          "wins": 29,
+          "losses": 74,
+          "winRate": 0.2815533980582524,
+          "avgR": -0.04852552672324299,
+          "totalR": -4.998129252494028,
+          "profitFactor": 0.932457712804135
+        }
+      },
+      "false": {
+        "n": 0,
+        "flipped": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": null,
+          "avgR": null,
+          "totalR": 0,
+          "profitFactor": null
+        },
+        "flippedFromBUY": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": null,
+          "avgR": null,
+          "totalR": 0,
+          "profitFactor": null
+        },
+        "flippedFromSELL": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": null,
+          "avgR": null,
+          "totalR": 0,
+          "profitFactor": null
+        }
+      }
+    },
+    "nearRoundLevel": {
+      "true": {
+        "n": 75,
+        "flipped": {
+          "n": 69,
+          "wins": 20,
+          "losses": 49,
+          "winRate": 0.2898550724637681,
+          "avgR": 1.0116789102744772,
+          "totalR": 69.80584480893893,
+          "profitFactor": 2.424609077733448
+        },
+        "flippedFromBUY": {
+          "n": 34,
+          "wins": 10,
+          "losses": 24,
+          "winRate": 0.29411764705882354,
+          "avgR": 1.585089314677808,
+          "totalR": 53.893036699045474,
+          "profitFactor": 3.245543195793562
+        },
+        "flippedFromSELL": {
+          "n": 35,
+          "wins": 10,
+          "losses": 25,
+          "winRate": 0.2857142857142857,
+          "avgR": 0.45465166028266984,
+          "totalR": 15.912808109893444,
+          "profitFactor": 1.6365123243957378
+        }
+      },
+      "false": {
+        "n": 157,
+        "flipped": {
+          "n": 150,
+          "wins": 48,
+          "losses": 102,
+          "winRate": 0.32,
+          "avgR": 0.011157542792370372,
+          "totalR": 1.6736314188555559,
+          "profitFactor": 1.0164081511652503
+        },
+        "flippedFromBUY": {
+          "n": 82,
+          "wins": 29,
+          "losses": 53,
+          "winRate": 0.35365853658536583,
+          "avgR": 0.27542157050296373,
+          "totalR": 22.584568781243025,
+          "profitFactor": 1.4261239392687366
+        },
+        "flippedFromSELL": {
+          "n": 68,
+          "wins": 19,
+          "losses": 49,
+          "winRate": 0.27941176470588236,
+          "avgR": -0.3075137847409922,
+          "totalR": -20.91093736238747,
+          "profitFactor": 0.5732461762778067
+        }
+      }
+    },
+    "hasPGAPEvidence": {
+      "true": {
+        "n": 0,
+        "flipped": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": null,
+          "avgR": null,
+          "totalR": 0,
+          "profitFactor": null
+        },
+        "flippedFromBUY": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": null,
+          "avgR": null,
+          "totalR": 0,
+          "profitFactor": null
+        },
+        "flippedFromSELL": {
+          "n": 0,
+          "wins": 0,
+          "losses": 0,
+          "winRate": null,
+          "avgR": null,
+          "totalR": 0,
+          "profitFactor": null
+        }
+      },
+      "false": {
+        "n": 232,
+        "flipped": {
+          "n": 219,
+          "wins": 68,
+          "losses": 151,
+          "winRate": 0.3105022831050228,
+          "avgR": 0.32639030241002037,
+          "totalR": 71.47947622779446,
+          "profitFactor": 1.4733740147536054
+        },
+        "flippedFromBUY": {
+          "n": 116,
+          "wins": 39,
+          "losses": 77,
+          "winRate": 0.33620689655172414,
+          "avgR": 0.6592897024162802,
+          "totalR": 76.4776054802885,
+          "profitFactor": 1.993215655588162
+        },
+        "flippedFromSELL": {
+          "n": 103,
+          "wins": 29,
+          "losses": 74,
+          "winRate": 0.2815533980582524,
+          "avgR": -0.04852552672324299,
+          "totalR": -4.998129252494028,
+          "profitFactor": 0.932457712804135
+        }
+      }
+    },
+    "spikeSizeR": {
+      "HIGH": {
+        "n": 56,
+        "flipped": {
+          "n": 53,
+          "wins": 3,
+          "losses": 50,
+          "winRate": 0.05660377358490566,
+          "avgR": 0.8616228281535652,
+          "totalR": 45.66600989213895,
+          "profitFactor": 1.9133201978427792
+        },
+        "flippedFromBUY": {
+          "n": 26,
+          "wins": 1,
+          "losses": 25,
+          "winRate": 0.038461538461538464,
+          "avgR": 1.5735991241478997,
+          "totalR": 40.913577227845394,
+          "profitFactor": 2.636543089113816
+        },
+        "flippedFromSELL": {
+          "n": 27,
+          "wins": 2,
+          "losses": 25,
+          "winRate": 0.07407407407407407,
+          "avgR": 0.1760160246034651,
+          "totalR": 4.752432664293558,
+          "profitFactor": 1.1900973065717424
+        }
+      },
+      "LOW": {
+        "n": 107,
+        "flipped": {
+          "n": 103,
+          "wins": 44,
+          "losses": 59,
+          "winRate": 0.42718446601941745,
+          "avgR": 0.6185488280357311,
+          "totalR": 63.7105292876803,
+          "profitFactor": 2.079839479452209
+        },
+        "flippedFromBUY": {
+          "n": 57,
+          "wins": 28,
+          "losses": 29,
+          "winRate": 0.49122807017543857,
+          "avgR": 0.9945256385464893,
+          "totalR": 56.68796139714989,
+          "profitFactor": 2.954757289556894
+        },
+        "flippedFromSELL": {
+          "n": 46,
+          "wins": 16,
+          "losses": 30,
+          "winRate": 0.34782608695652173,
+          "avgR": 0.15266451935935668,
+          "totalR": 7.022567890530407,
+          "profitFactor": 1.2340855963510136
+        }
+      }
+    },
+    "correctionEfficiency": {
+      "HIGH": {
+        "n": 56,
+        "flipped": {
+          "n": 53,
+          "wins": 11,
+          "losses": 42,
+          "winRate": 0.20754716981132076,
+          "avgR": 1.1851974548639297,
+          "totalR": 62.81546510778828,
+          "profitFactor": 2.4956063120901972
+        },
+        "flippedFromBUY": {
+          "n": 31,
+          "wins": 9,
+          "losses": 22,
+          "winRate": 0.2903225806451613,
+          "avgR": 2.4977719876177913,
+          "totalR": 77.43093161615153,
+          "profitFactor": 4.519587800734161
+        },
+        "flippedFromSELL": {
+          "n": 22,
+          "wins": 2,
+          "losses": 20,
+          "winRate": 0.09090909090909091,
+          "avgR": -0.6643393867437841,
+          "totalR": -14.615466508363252,
+          "profitFactor": 0.26922667458183736
+        }
+      },
+      "LOW": {
+        "n": 107,
+        "flipped": {
+          "n": 103,
+          "wins": 36,
+          "losses": 67,
+          "winRate": 0.34951456310679613,
+          "avgR": 0.4520492628352522,
+          "totalR": 46.561074072030976,
+          "profitFactor": 1.6949414040601636
+        },
+        "flippedFromBUY": {
+          "n": 52,
+          "wins": 20,
+          "losses": 32,
+          "winRate": 0.38461538461538464,
+          "avgR": 0.3878962886316107,
+          "totalR": 20.170607008843756,
+          "profitFactor": 1.6303314690263673
+        },
+        "flippedFromSELL": {
+          "n": 51,
+          "wins": 16,
+          "losses": 35,
+          "winRate": 0.3137254901960784,
+          "avgR": 0.517460138493867,
+          "totalR": 26.390467063187216,
+          "profitFactor": 1.754013344662492
+        }
+      }
+    }
+  },
+  "temporal": {
+    "firstHalf": {
+      "n": 91,
+      "wins": 29,
+      "losses": 62,
+      "winRate": 0.31868131868131866,
+      "avgR": 0.17828321644729475,
+      "totalR": 16.223772696703822,
+      "profitFactor": 1.2616737531726425
+    },
+    "secondHalf": {
+      "n": 128,
+      "wins": 39,
+      "losses": 89,
+      "winRate": 0.3046875,
+      "avgR": 0.4316851838366458,
+      "totalR": 55.25570353109066,
+      "profitFactor": 1.6208506014729285
+    }
+  },
+  "methodology": "Research-only decomposition. Uses exact baseline snapshot and requires candidate-generation parity. Direction is mirrored with preserved absolute risk/reward distances. Phase27 feature-conditioned groups reuse exact Phase24 feature provenance and Phase27 q66 thresholds; no threshold optimization is performed. First/second half are descriptive stability checks, not DEV/VAL claims.",
+  "status": "COUNTERFACTUAL_ONLY_DECOMPOSITION"
+}

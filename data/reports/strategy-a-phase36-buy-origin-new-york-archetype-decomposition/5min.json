@@ -1,0 +1,111 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE36_BUY_ORIGIN_NEW_YORK_ARCHETYPE_DECOMPOSITION",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232
+  },
+  "mapping": {
+    "mappedBuyNonDNewYork": 22,
+    "sourcePhase24Cases": 163
+  },
+  "overall": {
+    "n": 22,
+    "WR": 0.45454545454545453,
+    "avgR": 4.020858026871547,
+    "PF": 8.371573049264503,
+    "totalR": 88.45887659117403
+  },
+  "archetypes": [
+    {
+      "name": "LOSS_A_NO_PRE_FAVORABLE",
+      "n": 15,
+      "WR": 0.5333333333333333,
+      "avgR": 5.6151850156018694,
+      "PF": 13.032539319146863,
+      "totalR": 84.22777523402804
+    },
+    {
+      "name": "LOSS_B_PRE_0_5_TO_LT_1R",
+      "n": 6,
+      "WR": 0.3333333333333333,
+      "avgR": 0.8718502261909972,
+      "PF": 2.3077753392864957,
+      "totalR": 5.231101357145983
+    },
+    {
+      "name": "LOSS_C_PRE_1_TO_LT_2R",
+      "n": 1,
+      "WR": 0,
+      "avgR": -1,
+      "PF": 0,
+      "totalR": -1
+    }
+  ],
+  "cross": [
+    {
+      "name": "LOSS_A_NO_PRE_FAVORABLE_SPIKE_HIGH",
+      "n": 2,
+      "WR": 0.5,
+      "avgR": 32.4567886139227,
+      "PF": 65.9135772278454,
+      "totalR": 64.9135772278454
+    },
+    {
+      "name": "LOSS_B_PRE_0_5_TO_LT_1R_SPIKE_HIGH",
+      "n": 2,
+      "WR": 0,
+      "avgR": -1,
+      "PF": 0,
+      "totalR": -2
+    },
+    {
+      "name": "LOSS_C_PRE_1_TO_LT_2R_SPIKE_HIGH",
+      "n": 1,
+      "WR": 0,
+      "avgR": -1,
+      "PF": 0,
+      "totalR": -1
+    },
+    {
+      "name": "LOSS_A_NO_PRE_FAVORABLE_CORR_EFF_HIGH",
+      "n": 8,
+      "WR": 0.75,
+      "avgR": 10.714885945654585,
+      "PF": 43.85954378261834,
+      "totalR": 85.71908756523668
+    },
+    {
+      "name": "LOSS_B_PRE_0_5_TO_LT_1R_CORR_EFF_HIGH",
+      "n": 2,
+      "WR": 0,
+      "avgR": -1,
+      "PF": 0,
+      "totalR": -2
+    },
+    {
+      "name": "LOSS_C_PRE_1_TO_LT_2R_CORR_EFF_HIGH",
+      "n": 1,
+      "WR": 0,
+      "avgR": -1,
+      "PF": 0,
+      "totalR": -1
+    }
+  ],
+  "methodology": {
+    "researchOnly": true,
+    "noOptimization": true,
+    "noTradingRules": true,
+    "archetypeSource": "Phase24 post-entry loss archetype attribution; used descriptively only.",
+    "scope": "Original BUY, NON-D, NEW_YORK; counterfactual direction flip with preserved absolute risk/reward.",
+    "thresholdPolicy": "Only fixed Phase27 q66 thresholds; no threshold search.",
+    "fixedThresholds": {
+      "spikeSizeR": 16.304685569162483,
+      "correctionEfficiency": 0.8320235324313076
+    }
+  },
+  "status": "COUNTERFACTUAL_ONLY_DECOMPOSITION"
+}

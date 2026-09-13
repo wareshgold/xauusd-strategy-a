@@ -1,0 +1,228 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE40_A_NY_LEAVE_ONE_OUT_ROBUSTNESS",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232
+  },
+  "scope": {
+    "archetype": "LOSS_A_NO_PRE_FAVORABLE",
+    "direction": "Original BUY flipped to SELL",
+    "session": "NEW_YORK",
+    "counterfactual": true
+  },
+  "overall": {
+    "n": 15,
+    "WR": 0.5333333333333333,
+    "avgR": 5.6151850156018694,
+    "PF": 13.032539319146863,
+    "totalR": 84.22777523402804,
+    "positiveN": 8,
+    "negativeN": 7
+  },
+  "leaveOneOut": [
+    {
+      "removedIndex": 1,
+      "removedEntryTime": "2026-07-24 20:00:00",
+      "removedR": 0.3977284550980642,
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 5.987860484209285,
+      "PF": 12.97572096841857,
+      "totalR": 83.83004677892998,
+      "positiveN": 7,
+      "negativeN": 7
+    },
+    {
+      "removedIndex": 2,
+      "removedEntryTime": "2026-07-28 20:55:00",
+      "removedR": 0.7488755472670245,
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 5.962778549054359,
+      "PF": 12.925557098108717,
+      "totalR": 83.47889968676103,
+      "positiveN": 7,
+      "negativeN": 7
+    },
+    {
+      "removedIndex": 3,
+      "removedEntryTime": "2026-07-28 22:25:00",
+      "removedR": -1,
+      "n": 14,
+      "WR": 0.5714285714285714,
+      "avgR": 6.087698231002003,
+      "PF": 15.20462920567134,
+      "totalR": 85.22777523402804,
+      "positiveN": 8,
+      "negativeN": 6
+    },
+    {
+      "removedIndex": 4,
+      "removedEntryTime": "2026-08-02 22:00:00",
+      "removedR": 1.130113271385066,
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 5.935547283045928,
+      "PF": 12.871094566091855,
+      "totalR": 83.09766196264299,
+      "positiveN": 7,
+      "negativeN": 7
+    },
+    {
+      "removedIndex": 5,
+      "removedEntryTime": "2026-08-07 00:25:00",
+      "removedR": 5.203051247473528,
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 5.644623141896751,
+      "PF": 12.289246283793503,
+      "totalR": 79.02472398655452,
+      "positiveN": 7,
+      "negativeN": 7
+    },
+    {
+      "removedIndex": 6,
+      "removedEntryTime": "2026-08-07 01:05:00",
+      "removedR": -1,
+      "n": 14,
+      "WR": 0.5714285714285714,
+      "avgR": 6.087698231002003,
+      "PF": 15.20462920567134,
+      "totalR": 85.22777523402804,
+      "positiveN": 8,
+      "negativeN": 6
+    },
+    {
+      "removedIndex": 7,
+      "removedEntryTime": "2026-08-11 23:00:00",
+      "removedR": -1,
+      "n": 14,
+      "WR": 0.5714285714285714,
+      "avgR": 6.087698231002003,
+      "PF": 15.20462920567134,
+      "totalR": 85.22777523402804,
+      "positiveN": 8,
+      "negativeN": 6
+    },
+    {
+      "removedIndex": 8,
+      "removedEntryTime": "2026-08-16 23:45:00",
+      "removedR": -1,
+      "n": 14,
+      "WR": 0.5714285714285714,
+      "avgR": 6.087698231002003,
+      "PF": 15.20462920567134,
+      "totalR": 85.22777523402804,
+      "positiveN": 8,
+      "negativeN": 6
+    },
+    {
+      "removedIndex": 9,
+      "removedEntryTime": "2026-08-18 01:25:00",
+      "removedR": 2.378574397406313,
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 5.846371488330123,
+      "PF": 12.692742976660247,
+      "totalR": 81.84920083662173,
+      "positiveN": 7,
+      "negativeN": 7
+    },
+    {
+      "removedIndex": 10,
+      "removedEntryTime": "2026-08-19 00:20:00",
+      "removedR": -1,
+      "n": 14,
+      "WR": 0.5714285714285714,
+      "avgR": 6.087698231002003,
+      "PF": 15.20462920567134,
+      "totalR": 85.22777523402804,
+      "positiveN": 8,
+      "negativeN": 6
+    },
+    {
+      "removedIndex": 11,
+      "removedEntryTime": "2026-08-20 01:05:00",
+      "removedR": -1,
+      "n": 14,
+      "WR": 0.5714285714285714,
+      "avgR": 6.087698231002003,
+      "PF": 15.20462920567134,
+      "totalR": 85.22777523402804,
+      "positiveN": 8,
+      "negativeN": 6
+    },
+    {
+      "removedIndex": 12,
+      "removedEntryTime": "2026-08-25 23:30:00",
+      "removedR": 12.880168538666405,
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 5.09625762109726,
+      "PF": 11.19251524219452,
+      "totalR": 71.34760669536165,
+      "positiveN": 7,
+      "negativeN": 7
+    },
+    {
+      "removedIndex": 13,
+      "removedEntryTime": "2026-08-26 00:15:00",
+      "removedR": 65.9135772278454,
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 1.3081570004416179,
+      "PF": 3.6163140008832357,
+      "totalR": 18.31419800618265,
+      "positiveN": 7,
+      "negativeN": 7
+    },
+    {
+      "removedIndex": 14,
+      "removedEntryTime": "2026-08-26 19:45:00",
+      "removedR": 2.5756865488862513,
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 5.832292048938699,
+      "PF": 12.664584097877398,
+      "totalR": 81.65208868514179,
+      "positiveN": 7,
+      "negativeN": 7
+    },
+    {
+      "removedIndex": 15,
+      "removedEntryTime": "2026-08-27 00:45:00",
+      "removedR": -1,
+      "n": 14,
+      "WR": 0.5714285714285714,
+      "avgR": 6.087698231002003,
+      "PF": 15.20462920567134,
+      "totalR": 85.22777523402804,
+      "positiveN": 8,
+      "negativeN": 6
+    }
+  ],
+  "robustnessSummary": {
+    "nRows": 15,
+    "positiveTotalRAfterSingleRemoval": 15,
+    "positiveTotalRRate": 1,
+    "pfAbove1AfterSingleRemoval": 15,
+    "pfAbove1Rate": 1,
+    "minAvgRAfterRemoval": 1.3081570004416179,
+    "maxAvgRAfterRemoval": 6.087698231002003,
+    "minPFAfterRemoval": 3.6163140008832357,
+    "maxPFAfterRemoval": 15.20462920567134,
+    "minTotalRAfterRemoval": 18.31419800618265,
+    "maxTotalRAfterRemoval": 85.22777523402804
+  },
+  "methodology": {
+    "researchOnly": true,
+    "noOptimization": true,
+    "noTradingRules": true,
+    "purpose": "Leave-one-out sensitivity audit of the A/New York counterfactual edge."
+  },
+  "status": "COUNTERFACTUAL_ONLY_LEAVE_ONE_OUT_ROBUSTNESS_AUDIT"
+}

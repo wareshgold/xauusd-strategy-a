@@ -1,0 +1,142 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE41_A_NY_CHRONOLOGICAL_HOLDOUT_AUDIT",
+  "timeframe": "5min",
+  "sourcePhase": "Phase40 fixed A/New York counterfactual hypothesis",
+  "hypothesis": {
+    "archetype": "LOSS_A_NO_PRE_FAVORABLE",
+    "originalDirection": "BUY",
+    "session": "NEW_YORK",
+    "counterfactualDirection": "SELL",
+    "ruleChanged": false
+  },
+  "overall": {
+    "n": 15,
+    "WR": 0.5333333333333333,
+    "avgR": 5.6151850156018694,
+    "PF": 13.032539319146863,
+    "totalR": 84.22777523402804,
+    "positiveN": 8,
+    "negativeN": 7
+  },
+  "slices": {
+    "FIRST_60": {
+      "name": "FIRST_60",
+      "n": 9,
+      "WR": 0.5555555555555556,
+      "avgR": 0.6509269909588858,
+      "PF": 2.464585729657493,
+      "totalR": 5.8583429186299725,
+      "positiveN": 5,
+      "negativeN": 4,
+      "from": "2026-07-24 20:00:00",
+      "to": "2026-08-18 01:25:00"
+    },
+    "MIDDLE_20": {
+      "name": "MIDDLE_20",
+      "n": 3,
+      "WR": 0.3333333333333333,
+      "avgR": 3.626722846222132,
+      "PF": 6.440084269333198,
+      "totalR": 10.880168538666396,
+      "positiveN": 1,
+      "negativeN": 2,
+      "from": "2026-08-19 00:20:00",
+      "to": "2026-08-25 23:30:00"
+    },
+    "LAST_20": {
+      "name": "LAST_20",
+      "n": 3,
+      "WR": 0.6666666666666666,
+      "avgR": 22.496421258910548,
+      "PF": 68.48926377673165,
+      "totalR": 67.48926377673165,
+      "positiveN": 2,
+      "negativeN": 1,
+      "from": "2026-08-26 00:15:00",
+      "to": "2026-08-27 00:45:00"
+    },
+    "LAST_40": {
+      "name": "LAST_40",
+      "n": 6,
+      "WR": 0.5,
+      "avgR": 13.06157205256634,
+      "PF": 27.12314410513268,
+      "totalR": 78.36943231539804,
+      "positiveN": 3,
+      "negativeN": 3,
+      "from": "2026-08-19 00:20:00",
+      "to": "2026-08-27 00:45:00"
+    }
+  },
+  "observations": [
+    {
+      "entryTime": "2026-07-24 20:00:00",
+      "r": 0.3977284550980613
+    },
+    {
+      "entryTime": "2026-07-28 20:55:00",
+      "r": 0.7488755472670192
+    },
+    {
+      "entryTime": "2026-07-28 22:25:00",
+      "r": -1
+    },
+    {
+      "entryTime": "2026-08-02 22:00:00",
+      "r": 1.1301132713850564
+    },
+    {
+      "entryTime": "2026-08-07 00:25:00",
+      "r": 5.203051247473525
+    },
+    {
+      "entryTime": "2026-08-07 01:05:00",
+      "r": -1
+    },
+    {
+      "entryTime": "2026-08-11 23:00:00",
+      "r": -1
+    },
+    {
+      "entryTime": "2026-08-16 23:45:00",
+      "r": -1
+    },
+    {
+      "entryTime": "2026-08-18 01:25:00",
+      "r": 2.378574397406311
+    },
+    {
+      "entryTime": "2026-08-19 00:20:00",
+      "r": -1
+    },
+    {
+      "entryTime": "2026-08-20 01:05:00",
+      "r": -1
+    },
+    {
+      "entryTime": "2026-08-25 23:30:00",
+      "r": 12.880168538666396
+    },
+    {
+      "entryTime": "2026-08-26 00:15:00",
+      "r": 65.9135772278454
+    },
+    {
+      "entryTime": "2026-08-26 19:45:00",
+      "r": 2.575686548886253
+    },
+    {
+      "entryTime": "2026-08-27 00:45:00",
+      "r": -1
+    }
+  ],
+  "methodology": {
+    "researchOnly": true,
+    "noOptimization": true,
+    "noRuleChange": true,
+    "chronologicalOnly": true,
+    "warning": "This is a chronological holdout audit inside the existing 15-case sample, not a true external out-of-sample validation. The hypothesis was selected before this audit, but the available history is too short for a strong OOS claim."
+  },
+  "status": "COUNTERFACTUAL_ONLY_CHRONOLOGICAL_HOLDOUT_AUDIT"
+}

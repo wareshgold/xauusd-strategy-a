@@ -1,0 +1,21 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_BASELINE_SNAPSHOT_EXIT_REPLAY",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "baselineDataset": {
+    "candles": 10000,
+    "from": "2026-07-23 18:25:00",
+    "to": "2026-08-27 11:40:00"
+  },
+  "canonicalTrades": 232,
+  "exactExitSemantics": true,
+  "parity": {
+    "same": 232,
+    "mismatch": 0,
+    "matchRate": 1,
+    "transitions": {}
+  },
+  "samples": [],
+  "status": "BASELINE_EXIT_REPLAY_MATCHES_SNAPSHOT"
+}

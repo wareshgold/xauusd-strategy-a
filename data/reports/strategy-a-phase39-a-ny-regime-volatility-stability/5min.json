@@ -1,0 +1,271 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE39_A_NY_REGIME_VOLATILITY_STABILITY",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232
+  },
+  "scope": {
+    "archetype": "LOSS_A_NO_PRE_FAVORABLE",
+    "direction": "Original BUY flipped to SELL",
+    "session": "NEW_YORK",
+    "counterfactual": true
+  },
+  "overall": {
+    "n": 15,
+    "WR": 0.5333333333333333,
+    "avgR": 5.6151850156018694,
+    "PF": 13.032539319146863,
+    "totalR": 84.22777523402804,
+    "positiveN": 8,
+    "negativeN": 7
+  },
+  "regimeDefinitions": {
+    "atr20": "20-candle average true range at entry",
+    "range20": "20-candle high-low realized range at entry",
+    "body20": "20-candle mean absolute candle body at entry",
+    "cutPolicy": "Fixed descriptive tertiles computed within the A/NY sample; no outcome-based threshold optimization."
+  },
+  "cuts": {
+    "atr20": {
+      "q33": 2.733179166666711,
+      "q50": 3.210772499999939,
+      "q67": 3.5910281666666526,
+      "mean": 3.271714566666684
+    },
+    "range20": {
+      "q33": 13.696836666666968,
+      "q50": 17.56696000000011,
+      "q67": 19.73702333333373,
+      "mean": 20.195148666666775
+    },
+    "body20": {
+      "q33": 1.6264493333333576,
+      "q50": 1.7120980000000146,
+      "q67": 1.875149666666607,
+      "mean": 1.9051239999999825
+    }
+  },
+  "regimes": [
+    {
+      "name": "atr20_LOW",
+      "n": 5,
+      "WR": 0.6,
+      "avgR": 15.508524262755765,
+      "PF": 39.77131065688941,
+      "totalR": 77.54262131377882,
+      "positiveN": 3,
+      "negativeN": 2,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 2.1663764000000496,
+        "range20Mean": 14.669634000000134,
+        "body20Mean": 1.29078690000003
+      }
+    },
+    {
+      "name": "atr20_MID",
+      "n": 5,
+      "WR": 0.6,
+      "avgR": 1.2352932502915688,
+      "PF": 4.088233125728921,
+      "totalR": 6.1764662514578434,
+      "positiveN": 3,
+      "negativeN": 2,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 3.1712220000000024,
+        "range20Mean": 14.731176000000232,
+        "body20Mean": 1.7269141999999555
+      }
+    },
+    {
+      "name": "atr20_HIGH",
+      "n": 5,
+      "WR": 0.4,
+      "avgR": 0.10173753375827577,
+      "PF": 1.169562556263793,
+      "totalR": 0.5086876687913788,
+      "positiveN": 2,
+      "negativeN": 3,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 4.477545300000002,
+        "range20Mean": 31.184635999999955,
+        "body20Mean": 2.697670899999962
+      }
+    },
+    {
+      "name": "range20_LOW",
+      "n": 5,
+      "WR": 0.6,
+      "avgR": 0.344458110250268,
+      "PF": 1.86114527562567,
+      "totalR": 1.72229055125134,
+      "positiveN": 3,
+      "negativeN": 2,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 2.3383008000000065,
+        "range20Mean": 11.114842000000044,
+        "body20Mean": 1.3578028999999516
+      }
+    },
+    {
+      "name": "range20_MID",
+      "n": 5,
+      "WR": 0.6,
+      "avgR": 3.692358836709249,
+      "PF": 10.230897091773123,
+      "totalR": 18.461794183546246,
+      "positiveN": 3,
+      "negativeN": 2,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 3.355237400000033,
+        "range20Mean": 17.401460000000224,
+        "body20Mean": 1.93474949999998
+      }
+    },
+    {
+      "name": "range20_HIGH",
+      "n": 5,
+      "WR": 0.4,
+      "avgR": 12.808738099846092,
+      "PF": 22.34789683307682,
+      "totalR": 64.04369049923046,
+      "positiveN": 2,
+      "negativeN": 3,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 4.121605500000014,
+        "range20Mean": 32.06914400000005,
+        "body20Mean": 2.4228196000000164
+      }
+    },
+    {
+      "name": "body20_LOW",
+      "n": 5,
+      "WR": 0.6,
+      "avgR": 15.508524262755765,
+      "PF": 39.77131065688941,
+      "totalR": 77.54262131377882,
+      "positiveN": 3,
+      "negativeN": 2,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 2.1663764000000496,
+        "range20Mean": 14.669634000000134,
+        "body20Mean": 1.29078690000003
+      }
+    },
+    {
+      "name": "body20_MID",
+      "n": 5,
+      "WR": 0.6,
+      "avgR": 1.2352932502915688,
+      "PF": 4.088233125728921,
+      "totalR": 6.1764662514578434,
+      "positiveN": 3,
+      "negativeN": 2,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 3.1712220000000024,
+        "range20Mean": 14.731176000000232,
+        "body20Mean": 1.7269141999999555
+      }
+    },
+    {
+      "name": "body20_HIGH",
+      "n": 5,
+      "WR": 0.4,
+      "avgR": 0.10173753375827577,
+      "PF": 1.169562556263793,
+      "totalR": 0.5086876687913788,
+      "positiveN": 2,
+      "negativeN": 3,
+      "regime": {
+        "n": 5,
+        "atr20Mean": 4.477545300000002,
+        "range20Mean": 31.184635999999955,
+        "body20Mean": 2.697670899999962
+      }
+    }
+  ],
+  "timeQuartiles": [
+    {
+      "name": "TIME_Q1",
+      "n": 3,
+      "WR": 0.6666666666666666,
+      "avgR": 0.04886800078836292,
+      "PF": 1.1466040023650887,
+      "totalR": 0.14660400236508875,
+      "positiveN": 2,
+      "negativeN": 1,
+      "regime": {
+        "n": 3,
+        "atr20Mean": 2.168164833333367,
+        "range20Mean": 10.031833333333301,
+        "body20Mean": 1.2927788333333259
+      }
+    },
+    {
+      "name": "TIME_Q2",
+      "n": 3,
+      "WR": 0.6666666666666666,
+      "avgR": 1.7777215062861982,
+      "PF": 6.333164518858594,
+      "totalR": 5.333164518858594,
+      "positiveN": 2,
+      "negativeN": 1,
+      "regime": {
+        "n": 3,
+        "atr20Mean": 3.7829183333332517,
+        "range20Mean": 34.216120000000046,
+        "body20Mean": 2.086887166666649
+      }
+    },
+    {
+      "name": "TIME_Q3",
+      "n": 3,
+      "WR": 0.3333333333333333,
+      "avgR": 0.12619146580210439,
+      "PF": 1.1892871987031566,
+      "totalR": 0.37857439740631316,
+      "positiveN": 1,
+      "negativeN": 2,
+      "regime": {
+        "n": 3,
+        "atr20Mean": 3.266592000000052,
+        "range20Mean": 16.189056666666755,
+        "body20Mean": 1.945269499999904
+      }
+    },
+    {
+      "name": "TIME_Q4",
+      "n": 6,
+      "WR": 0.5,
+      "avgR": 13.061572052566342,
+      "PF": 27.123144105132685,
+      "totalR": 78.36943231539806,
+      "positiveN": 3,
+      "negativeN": 3,
+      "regime": {
+        "n": 6,
+        "atr20Mean": 3.570448833333376,
+        "range20Mean": 20.269366666666883,
+        "body20Mean": 2.100342250000017
+      }
+    }
+  ],
+  "methodology": {
+    "researchOnly": true,
+    "noOptimization": true,
+    "noTradingRules": true,
+    "purpose": "Audit whether the Phase38 temporal concentration is associated with contemporaneous volatility/range/body regime rather than arbitrary calendar timing."
+  },
+  "status": "COUNTERFACTUAL_ONLY_REGIME_VOLATILITY_AUDIT"
+}

@@ -1,0 +1,330 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE35_BUY_ORIGIN_SESSION_GEOMETRY_DECOMPOSITION",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232
+  },
+  "mapping": {
+    "mappedBuyNonD": 61,
+    "sourcePhase24Cases": 163,
+    "phase27D": 48,
+    "phase27NonD": 115,
+    "spikeQ66": 16.304685569162483,
+    "correctionEfficiencyQ66": 0.8320235324313076
+  },
+  "overall": {
+    "n": 60,
+    "WR": 0.48333333333333334,
+    "avgR": 2.0100256437499215,
+    "PF": 4.890372213709526,
+    "totalR": 120.60153862499529
+  },
+  "sessions": [
+    {
+      "name": "ALL_BUY_NON_D",
+      "n": 60,
+      "WR": 0.48333333333333334,
+      "avgR": 2.0100256437499215,
+      "PF": 4.890372213709526,
+      "totalR": 120.60153862499529,
+      "LONDON": {
+        "n": 31,
+        "WR": 0.5161290322580645,
+        "avgR": 0.7268809710527112,
+        "PF": 2.5022206735089365,
+        "totalR": 22.533310102634047
+      },
+      "NEW_YORK": {
+        "n": 22,
+        "WR": 0.45454545454545453,
+        "avgR": 4.020858026871547,
+        "PF": 8.371573049264503,
+        "totalR": 88.45887659117403
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    },
+    {
+      "name": "BUY_NON_D_LONDON",
+      "n": 31,
+      "WR": 0.5161290322580645,
+      "avgR": 0.7268809710527112,
+      "PF": 2.5022206735089365,
+      "totalR": 22.533310102634047,
+      "LONDON": {
+        "n": 31,
+        "WR": 0.5161290322580645,
+        "avgR": 0.7268809710527112,
+        "PF": 2.5022206735089365,
+        "totalR": 22.533310102634047
+      },
+      "NEW_YORK": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    },
+    {
+      "name": "BUY_NON_D_NEW_YORK",
+      "n": 22,
+      "WR": 0.45454545454545453,
+      "avgR": 4.020858026871547,
+      "PF": 8.371573049264503,
+      "totalR": 88.45887659117403,
+      "LONDON": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      },
+      "NEW_YORK": {
+        "n": 22,
+        "WR": 0.45454545454545453,
+        "avgR": 4.020858026871547,
+        "PF": 8.371573049264503,
+        "totalR": 88.45887659117403
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    },
+    {
+      "name": "BUY_NON_D_OUT_OF_SESSION",
+      "n": 0,
+      "WR": null,
+      "avgR": null,
+      "PF": null,
+      "totalR": 0,
+      "LONDON": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      },
+      "NEW_YORK": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    }
+  ],
+  "geometry": [
+    {
+      "name": "BUY_NON_D_SPIKE_HIGH",
+      "n": 13,
+      "WR": 0.07692307692307693,
+      "avgR": 4.147198248295799,
+      "PF": 5.4927981023204495,
+      "totalR": 53.913577227845394,
+      "LONDON": {
+        "n": 5,
+        "WR": 0,
+        "avgR": -1,
+        "PF": 0,
+        "totalR": -5
+      },
+      "NEW_YORK": {
+        "n": 5,
+        "WR": 0.2,
+        "avgR": 12.38271544556908,
+        "PF": 16.47839430696135,
+        "totalR": 61.913577227845394
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    },
+    {
+      "name": "BUY_NON_D_CORR_EFF_HIGH",
+      "n": 19,
+      "WR": 0.47368421052631576,
+      "avgR": 4.706891137692186,
+      "PF": 9.943093161615154,
+      "totalR": 89.43093161615154,
+      "LONDON": {
+        "n": 8,
+        "WR": 0.375,
+        "avgR": 0.8389805063643576,
+        "PF": 2.3423688101829723,
+        "totalR": 6.711844050914861
+      },
+      "NEW_YORK": {
+        "n": 11,
+        "WR": 0.5454545454545454,
+        "avgR": 7.5199170513851525,
+        "PF": 17.543817513047337,
+        "totalR": 82.71908756523668
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    },
+    {
+      "name": "BUY_NON_D_SPIKE_HIGH_CORR_EFF_HIGH",
+      "n": 7,
+      "WR": 0.14285714285714285,
+      "avgR": 8.55908246112077,
+      "PF": 10.985596204640899,
+      "totalR": 59.913577227845394,
+      "LONDON": {
+        "n": 3,
+        "WR": 0,
+        "avgR": -1,
+        "PF": 0,
+        "totalR": -3
+      },
+      "NEW_YORK": {
+        "n": 4,
+        "WR": 0.25,
+        "avgR": 15.728394306961349,
+        "PF": 21.971192409281798,
+        "totalR": 62.913577227845394
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    }
+  ],
+  "intersections": [
+    {
+      "name": "BUY_NON_D_NEW_YORK_SPIKE_HIGH",
+      "n": 5,
+      "WR": 0.2,
+      "avgR": 12.38271544556908,
+      "PF": 16.47839430696135,
+      "totalR": 61.913577227845394,
+      "LONDON": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      },
+      "NEW_YORK": {
+        "n": 5,
+        "WR": 0.2,
+        "avgR": 12.38271544556908,
+        "PF": 16.47839430696135,
+        "totalR": 61.913577227845394
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    },
+    {
+      "name": "BUY_NON_D_NEW_YORK_CORR_EFF_HIGH",
+      "n": 11,
+      "WR": 0.5454545454545454,
+      "avgR": 7.5199170513851525,
+      "PF": 17.543817513047337,
+      "totalR": 82.71908756523668,
+      "LONDON": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      },
+      "NEW_YORK": {
+        "n": 11,
+        "WR": 0.5454545454545454,
+        "avgR": 7.5199170513851525,
+        "PF": 17.543817513047337,
+        "totalR": 82.71908756523668
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    },
+    {
+      "name": "BUY_NON_D_NEW_YORK_SPIKE_HIGH_CORR_EFF_HIGH",
+      "n": 4,
+      "WR": 0.25,
+      "avgR": 15.728394306961349,
+      "PF": 21.971192409281798,
+      "totalR": 62.913577227845394,
+      "LONDON": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      },
+      "NEW_YORK": {
+        "n": 4,
+        "WR": 0.25,
+        "avgR": 15.728394306961349,
+        "PF": 21.971192409281798,
+        "totalR": 62.913577227845394
+      },
+      "OUT_OF_SESSION": {
+        "n": 0,
+        "WR": null,
+        "avgR": null,
+        "PF": null,
+        "totalR": 0
+      }
+    }
+  ],
+  "methodology": {
+    "researchOnly": true,
+    "noOptimization": true,
+    "noTradingRules": true,
+    "source": "Phase24 cases keyed by canonical entryTime; D excluded; only original BUY direction retained; counterfactual mirror preserves absolute risk/reward.",
+    "thresholdPolicy": "Fixed Phase27 q66 thresholds only; no threshold search."
+  },
+  "status": "COUNTERFACTUAL_ONLY_DECOMPOSITION"
+}

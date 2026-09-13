@@ -1,0 +1,158 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE38_A_NY_TEMPORAL_STABILITY",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232
+  },
+  "scope": {
+    "archetype": "LOSS_A_NO_PRE_FAVORABLE",
+    "direction": "Original BUY flipped to SELL",
+    "session": "NEW_YORK",
+    "counterfactual": true
+  },
+  "overall": {
+    "n": 15,
+    "WR": 0.5333333333333333,
+    "avgR": 5.6151850156018694,
+    "PF": 13.032539319146863,
+    "totalR": 84.22777523402804,
+    "positiveN": 8,
+    "negativeN": 7
+  },
+  "coverage": {
+    "minEntryIndex": 307,
+    "maxEntryIndex": 9868,
+    "rowN": 15,
+    "positiveQuarterCount": 4
+  },
+  "halves": [
+    {
+      "name": "FIRST_HALF",
+      "startIndex": 307,
+      "endIndexExclusive": 5088,
+      "n": 6,
+      "WR": 0.6666666666666666,
+      "avgR": 0.9132947535372805,
+      "PF": 3.7398842606118414,
+      "totalR": 5.479768521223683,
+      "positiveN": 4,
+      "negativeN": 2,
+      "entryTimes": [
+        "2026-07-24 20:00:00",
+        "2026-07-28 20:55:00",
+        "2026-07-28 22:25:00",
+        "2026-08-02 22:00:00",
+        "2026-08-07 00:25:00",
+        "2026-08-07 01:05:00"
+      ]
+    },
+    {
+      "name": "SECOND_HALF",
+      "startIndex": 5088,
+      "endIndexExclusive": 9869,
+      "n": 9,
+      "WR": 0.4444444444444444,
+      "avgR": 8.74977852364493,
+      "PF": 16.749601342560872,
+      "totalR": 78.74800671280437,
+      "positiveN": 4,
+      "negativeN": 5,
+      "entryTimes": [
+        "2026-08-11 23:00:00",
+        "2026-08-16 23:45:00",
+        "2026-08-18 01:25:00",
+        "2026-08-19 00:20:00",
+        "2026-08-20 01:05:00",
+        "2026-08-25 23:30:00",
+        "2026-08-26 00:15:00",
+        "2026-08-26 19:45:00",
+        "2026-08-27 00:45:00"
+      ]
+    }
+  ],
+  "quarters": [
+    {
+      "name": "Q1",
+      "startIndex": 307,
+      "endIndexExclusive": 2697,
+      "n": 3,
+      "WR": 0.6666666666666666,
+      "avgR": 0.04886800078836292,
+      "PF": 1.1466040023650887,
+      "totalR": 0.14660400236508875,
+      "positiveN": 2,
+      "negativeN": 1,
+      "entryTimes": [
+        "2026-07-24 20:00:00",
+        "2026-07-28 20:55:00",
+        "2026-07-28 22:25:00"
+      ]
+    },
+    {
+      "name": "Q2",
+      "startIndex": 2697,
+      "endIndexExclusive": 5088,
+      "n": 3,
+      "WR": 0.6666666666666666,
+      "avgR": 1.7777215062861982,
+      "PF": 6.333164518858594,
+      "totalR": 5.333164518858594,
+      "positiveN": 2,
+      "negativeN": 1,
+      "entryTimes": [
+        "2026-08-02 22:00:00",
+        "2026-08-07 00:25:00",
+        "2026-08-07 01:05:00"
+      ]
+    },
+    {
+      "name": "Q3",
+      "startIndex": 5088,
+      "endIndexExclusive": 7478,
+      "n": 3,
+      "WR": 0.3333333333333333,
+      "avgR": 0.12619146580210439,
+      "PF": 1.1892871987031566,
+      "totalR": 0.37857439740631316,
+      "positiveN": 1,
+      "negativeN": 2,
+      "entryTimes": [
+        "2026-08-11 23:00:00",
+        "2026-08-16 23:45:00",
+        "2026-08-18 01:25:00"
+      ]
+    },
+    {
+      "name": "Q4",
+      "startIndex": 7478,
+      "endIndexExclusive": 9869,
+      "n": 6,
+      "WR": 0.5,
+      "avgR": 13.061572052566342,
+      "PF": 27.123144105132685,
+      "totalR": 78.36943231539806,
+      "positiveN": 3,
+      "negativeN": 3,
+      "entryTimes": [
+        "2026-08-19 00:20:00",
+        "2026-08-20 01:05:00",
+        "2026-08-25 23:30:00",
+        "2026-08-26 00:15:00",
+        "2026-08-26 19:45:00",
+        "2026-08-27 00:45:00"
+      ]
+    }
+  ],
+  "methodology": {
+    "researchOnly": true,
+    "noOptimization": true,
+    "noTradingRules": true,
+    "temporalPolicy": "Fixed chronological halves and quarters over the full canonical entry-index span; bins are defined before inspecting outcomes.",
+    "purpose": "Audit whether the Phase37 A/New York counterfactual edge persists across time rather than being concentrated in one temporal segment."
+  },
+  "status": "COUNTERFACTUAL_ONLY_TEMPORAL_STABILITY_AUDIT"
+}

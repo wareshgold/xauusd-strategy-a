@@ -1,0 +1,118 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE_COUNTERFACTUAL_DIRECTION_FLIP_AUDIT",
+  "timeframe": "5min",
+  "scope": {
+    "canonicalBaseline": 221,
+    "simulated": 221,
+    "resolved": 221,
+    "ambiguous": 0,
+    "openEnd": 0,
+    "dev": 122,
+    "val": 99,
+    "freshHoldoutExcluded": true,
+    "productionUntouched": true
+  },
+  "integrity": {
+    "expectedCanonical": 221,
+    "actualCanonical": 221,
+    "replayMismatch": 0,
+    "canonicalSource": "direct baseline trades; no detector replay"
+  },
+  "overall": {
+    "n": 221,
+    "avgR": 8.2058328144739,
+    "PF": 16.907798701743264,
+    "WR": 0.4841628959276018,
+    "totalR": 1813.489051998732,
+    "maxConsecLoss": 8
+  },
+  "byWindow": {
+    "DEV_1": {
+      "n": 35,
+      "avgR": 17.84678021673633,
+      "PF": 40.039831724110726,
+      "WR": 0.5428571428571428,
+      "totalR": 624.6373075857716,
+      "maxConsecLoss": 4
+    },
+    "DEV_2": {
+      "n": 47,
+      "avgR": 9.905902020600466,
+      "PF": 21.242495433400954,
+      "WR": 0.5106382978723404,
+      "totalR": 465.57739496822194,
+      "maxConsecLoss": 8
+    },
+    "DEV_3": {
+      "n": 40,
+      "avgR": 4.663471918904108,
+      "PF": 9.882803655055444,
+      "WR": 0.475,
+      "totalR": 186.5388767561643,
+      "maxConsecLoss": 5
+    },
+    "VAL_1": {
+      "n": 51,
+      "avgR": 7.650887131353737,
+      "PF": 14.935544417822879,
+      "WR": 0.45098039215686275,
+      "totalR": 390.1952436990406,
+      "maxConsecLoss": 4
+    },
+    "VAL_2": {
+      "n": 48,
+      "avgR": 3.0529214372819538,
+      "PF": 6.636162653443606,
+      "WR": 0.4583333333333333,
+      "totalR": 146.54022898953377,
+      "maxConsecLoss": 5
+    }
+  },
+  "byOriginalDirection": {
+    "BUY": {
+      "n": 114,
+      "avgR": -1,
+      "PF": 0,
+      "WR": 0,
+      "totalR": -114,
+      "maxConsecLoss": 114
+    },
+    "SELL": {
+      "n": 107,
+      "avgR": 18.013916373819924,
+      "PF": null,
+      "WR": 1,
+      "totalR": 1927.489051998732,
+      "maxConsecLoss": 0
+    }
+  },
+  "byFlippedDirection": {
+    "BUY": {
+      "n": 107,
+      "avgR": 18.013916373819924,
+      "PF": null,
+      "WR": 1,
+      "totalR": 1927.489051998732,
+      "maxConsecLoss": 0
+    },
+    "SELL": {
+      "n": 114,
+      "avgR": -1,
+      "PF": 0,
+      "WR": 0,
+      "totalR": -114,
+      "maxConsecLoss": 114
+    }
+  },
+  "methodology": {
+    "purpose": "Counterfactual audit of reversing every canonical BUY/SELL direction while preserving each trade entry and mirroring its original SL/TP distances.",
+    "entry": "Original canonical baseline entry price and entryIndex are unchanged.",
+    "direction": "BUY becomes SELL; SELL becomes BUY.",
+    "riskReward": "Original absolute stop distance and target distance are mirrored around the same entry.",
+    "path": "Future 5min OHLC candles after entry are scanned until mirrored SL or TP is touched.",
+    "ambiguity": "If mirrored SL and TP are both touched in the same candle, outcome is AMBIGUOUS and excluded from performance statistics.",
+    "openEnd": "If neither level is touched before the dataset ends, outcome is OPEN_END and excluded.",
+    "warning": "This is a counterfactual diagnostic, not a production strategy or a claim that simply inverting the signal is valid."
+  }
+}

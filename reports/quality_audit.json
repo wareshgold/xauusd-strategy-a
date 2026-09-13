@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "symbol": "XAU/USD",
+  "interval": "1min",
+  "source_timezone": "Australia/Sydney",
+  "row_count": 5000,
+  "first_timestamp_utc": "2026-09-05T21:17:00+00:00",
+  "last_timestamp_utc": "2026-09-09T08:36:00+00:00",
+  "duplicate_timestamps": [],
+  "non_monotonic_pairs": 0,
+  "expected_cadence_seconds": 60,
+  "cadence_mode_seconds": 60,
+  "cadence_anomalies": 0,
+  "missing_bar_count": 0,
+  "invalid_ohlc_rows": [],
+  "raw_sha256": "3060db7473b5f43610b265f43c6c827052c89334420dbaf5163e7925f9d94979",
+  "normalized_sha256": "dbcf0b681b79e925cb320d7164dac0980e97eeb338ae1996ab4e852e35622f5f"
+}

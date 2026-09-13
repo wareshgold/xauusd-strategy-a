@@ -1,0 +1,94 @@
+{
+  "strategy": "Strategy A / SP2L",
+  "mode": "PHASE37_BUY_ORIGIN_NEW_YORK_A_CONCENTRATION_ROBUSTNESS",
+  "timeframe": "5min",
+  "baselineCommit": "3a96629838fb0a15e5b71f1927dc4f7fe63819e1",
+  "generationParity": {
+    "stored": 232,
+    "generated": 232,
+    "exact": 232
+  },
+  "scope": {
+    "archetype": "LOSS_A_NO_PRE_FAVORABLE",
+    "direction": "Original BUY flipped to SELL",
+    "session": "NEW_YORK",
+    "phase24Source": true
+  },
+  "stats": {
+    "n": 15,
+    "WR": 0.5333333333333333,
+    "avgR": 5.6151850156018694,
+    "PF": 13.032539319146863,
+    "totalR": 84.22777523402804
+  },
+  "concentration": {
+    "n": 15,
+    "totalR": 84.22777523402804,
+    "medianR": 0.3977284550980642,
+    "maxR": 65.9135772278454,
+    "minR": -1,
+    "positiveCount": 8,
+    "positiveTotalR": 91.22777523402804,
+    "top1R": 65.9135772278454,
+    "top2R": 78.7937457665118,
+    "top3R": 83.99679701398533,
+    "top5R": 88.9510579602779,
+    "top1ShareOfTotal": 0.782563436404483,
+    "top3ShareOfTotal": 0.9972576953457344,
+    "trimTop1": {
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 1.3081570004416185,
+      "PF": 3.616314000883237,
+      "totalR": 18.31419800618266
+    },
+    "trimTop3": {
+      "n": 12,
+      "WR": 0.4166666666666667,
+      "avgR": 0.019248185003559886,
+      "PF": 1.0329968885775311,
+      "totalR": 0.23097822004271862
+    },
+    "trimTop5": {
+      "n": 10,
+      "WR": 0.3,
+      "avgR": -0.47232827262498456,
+      "PF": 0.3252453248214507,
+      "totalR": -4.723282726249845
+    }
+  },
+  "robustness": {
+    "withoutTop1": {
+      "n": 14,
+      "WR": 0.5,
+      "avgR": 1.3081570004416185,
+      "PF": 3.616314000883237,
+      "totalR": 18.31419800618266
+    },
+    "withoutTop3": {
+      "n": 12,
+      "WR": 0.4166666666666667,
+      "avgR": 0.019248185003559886,
+      "PF": 1.0329968885775311,
+      "totalR": 0.23097822004271862
+    },
+    "withoutTop5": {
+      "n": 10,
+      "WR": 0.3,
+      "avgR": -0.47232827262498456,
+      "PF": 0.3252453248214507,
+      "totalR": -4.723282726249845
+    },
+    "negativeCount": 7,
+    "positiveCount": 8
+  },
+  "methodology": {
+    "researchOnly": true,
+    "noOptimization": true,
+    "noTradingRules": true,
+    "purpose": "Test whether the observed counterfactual A/New York edge is broad or concentrated in a few extreme outcomes.",
+    "counterfactualOnly": true,
+    "topKPolicy": "Fixed descriptive top-1/top-3/top-5 and trimmed-result audit; no threshold search."
+  },
+  "status": "COUNTERFACTUAL_ONLY_ROBUSTNESS_AUDIT"
+}
