@@ -27,6 +27,7 @@
     "test:sp2l-g393": "vitest run tests/sp2l-v2/g393-hypothesis-batch.test.ts",
     "test:sp2l-g396": "vitest run tests/sp2l-v2/g396-hypothesis-provenance.test.ts",
     "test:sp2l-g397": "vitest run tests/sp2l-v2/g397-synthetic-geometry-discrimination.test.ts",
+    "test:sp2l-g399": "vitest run tests/sp2l-v2/g399-semantic-core.test.ts",
     "lint": "eslint .",
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
@@ -41,7 +42,7 @@
     "research:phase35-buy-origin-session-geometry-decomposition": "node scripts/research-phase35-buy-origin-session-geometry-decomposition.mjs",
     "research:phase36-buy-origin-new-york-archetype-decomposition": "node scripts/research-phase36-buy-origin-new-york-archetype-decomposition.mjs",
     "research:phase37-buy-origin-new-york-a-concentration-robustness": "node scripts/research-phase37-buy-origin-new-york-a-concentration-robustness.mjs",
-    "research:phase38-a-ny-temporal-stability": "node scripts/research-phase38-a-ny-temporal-stability.mjs",
+    "research:phase38-a-ny-temporal-stability": "node scripts/research-phase38-a-ny-temporal-stability.test.mjs",
     "research:phase39-a-ny-regime-volatility-stability": "node scripts/research-phase39-a-ny-regime-volatility-stability.mjs",
     "research:phase40-a-ny-leave-one-out-robustness": "node scripts/research-phase40-a-ny-leave-one-out-robustness.mjs",
     "research:phase41-a-ny-chronological-holdout-audit": "node scripts/research-phase41-a-ny-chronological-holdout-audit.mjs"
