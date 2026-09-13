@@ -54,7 +54,8 @@ describe('G397 synthetic geometry discrimination', () => {
     ];
     const h = hypotheses(fixture);
     expect(h.ab01).toBe(60);
-    expect(h.ab02).toBe(50);
+    // H02 uses bodyHigh(b1) - bodyLow(b0) = 140 - 100 = 40.
+    expect(h.ab02).toBe(40);
     expect(h.ab03).toBe(20);
     expect(new Set([h.ab01, h.ab02, h.ab03]).size).toBe(3);
   });
