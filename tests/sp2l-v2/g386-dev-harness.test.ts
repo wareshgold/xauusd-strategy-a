@@ -7,7 +7,7 @@ import {
   canonicalExecutionAllowed,
   type DevConfig,
   type RawCandle
-} from '../../src/domain/research/sp2l-v2/G386DevHarness';
+} from '../../src/domain/research/sp2l-v2/G386DevHarness.js';
 
 const config: DevConfig = {
   devStart: '2026-01-01 00:00:00',
