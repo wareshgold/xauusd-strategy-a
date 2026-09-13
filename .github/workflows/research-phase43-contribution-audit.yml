@@ -1,0 +1,37 @@
+name: Research - SP2L Phase43 Contribution Audit
+
+on:
+  push:
+    branches: [research/phase42-full-history-expansion]
+    paths:
+      - 'scripts/research-phase43-contribution-audit.mjs'
+      - 'src/**'
+      - 'data/acquired/g50/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/research-phase43-contribution-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase43:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run research:phase43-contribution-audit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: strategy-a-phase43-contribution-audit
+          path: data/reports/strategy-a-phase43-contribution-audit/5min.json
+          if-no-files-found: error
