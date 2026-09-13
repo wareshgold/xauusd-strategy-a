@@ -21,12 +21,15 @@ const counters = {
 const bodyHigh = (b) => Math.max(b.open, b.close);
 const bodyLow = (b) => Math.min(b.open, b.close);
 const observations = [];
+let candlesEvaluated = 0;
 
 for (let i = 2; i < candles.length; i += 1) {
   const b0 = candles[i - 2];
   const b1 = candles[i - 1];
   const b2 = candles[i];
-  if (!inDev(b2.datetime ?? b2.timestamp)) continue;
+  const timestamp = b2.datetime ?? b2.timestamp;
+  if (!inDev(timestamp)) continue;
+  candlesEvaluated++;
 
   const pg01 = b2.low > b0.high;
   const pg02 = b0.close > b0.open && b1.close > b1.open && pg01;
@@ -58,7 +61,7 @@ for (let i = 2; i < candles.length; i += 1) {
   if (tp01 !== 0) counters['TP-H01']++;
   if (tp04 !== 0) counters['TP-H04']++;
 
-  if (pg01) observations.push({ timestamp: b2.datetime ?? b2.timestamp, pgH01: pg01, pgH02: pg02, pgH04: pg04 });
+  if (pg01) observations.push({ timestamp, pgH01: pg01, pgH02: pg02, pgH04: pg04 });
 }
 
 const total = Object.values(counters).reduce((a, b) => a + b, 0);
@@ -67,11 +70,11 @@ const result = {
   canonical: false,
   dataset: { symbol: raw.symbol, source: raw.source, timeframe: raw.timeframe, timezone: raw.timezone },
   split: { name: 'DEV', start: DEV_START, end: DEV_END },
-  candlesEvaluated: observations.length,
+  candlesEvaluated,
   componentCounts: counters,
   pgapSample: observations.slice(0, 20),
   note: 'Counts are component/counterfactual observations only. They do not constitute Strategy A trades, profitability, canonical geometry, or promotion evidence.'
 };
 fs.mkdirSync(new URL('../data/reports/', import.meta.url), { recursive: true });
 fs.writeFileSync(output, JSON.stringify(result, null, 2) + '\n');
-console.log(JSON.stringify({ output, candlesEvaluated: observations.length, totalComponentObservations: total, canonical: false }));
+console.log(JSON.stringify({ output, candlesEvaluated, totalComponentObservations: total, canonical: false }));
