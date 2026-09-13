@@ -5,7 +5,7 @@ import {
   g379GateDecision,
   g379HasUnresolvedGeometry,
   g379HypothesisRegistryIsComplete,
-} from '../../src/domain/research/sp2l-v2/G379HypothesisExecution';
+} from '../../src/domain/research/sp2l-v2/G379HypothesisExecution.js';
 
 describe('G379 non-canonical hypothesis execution gate', () => {
   it('contains exactly the registered 23 unresolved/candidate hypotheses', () => {
