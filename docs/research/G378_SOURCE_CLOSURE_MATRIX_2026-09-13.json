@@ -1,0 +1,26 @@
+{
+  "gate": "SOURCE_RESOLUTION",
+  "date": "2026-09-13",
+  "frozen_geometry": "BLOCKED",
+  "canonical_promotion": false,
+  "dimensions": [
+    {"id":"PGAP","status":"PARTIALLY_RESOLVED","semantic":"P-Gap is Pressure Gap; valid Spike requires P-Gap","executable_geometry":false},
+    {"id":"ABCD","status":"PARTIALLY_RESOLVED","semantic":"AB=CD / Spike-2Leg","executable_geometry":false},
+    {"id":"SCALE","status":"UNRESOLVED","semantic":"nested/parent/deeper structures exist","executable_geometry":false},
+    {"id":"ENTRY_FILL","status":"PARTIALLY_RESOLVED","semantic":"pending-limit during correction; trigger/activation context exists","executable_geometry":false},
+    {"id":"SL","status":"PARTIALLY_RESOLVED","semantic":"SL behind Spike-origin candle","executable_geometry":false},
+    {"id":"TP","status":"PARTIALLY_RESOLVED","semantic":"AB=CD and TP1/TP2/R1/R2 appear in lesson; official page states default 1:1","reconciliation":false},
+    {"id":"SECONDARY_50PCT","status":"PARTIALLY_RESOLVED","semantic":"official source describes 50% secondary entry","core_scope":false}
+  ],
+  "prohibited_promotions": [
+    "generic_gap_to_pgap",
+    "third_party_geometry",
+    "pixel_inference",
+    "invented_ohlc_anchor",
+    "fill_equals_C",
+    "invented_sl_offset",
+    "fixed_2R_or_3R",
+    "generalized_ma_session_or_candle_filters"
+  ],
+  "next_gate": "SOURCE_RESOLUTION_REOPENS_ONLY_WITH_NEW_AUTHORITATIVE_EVIDENCE"
+}
