@@ -1,0 +1,33 @@
+name: Research - SP2L Phase47 Cross-Window Stability Audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [research/phase42-full-history-expansion]
+    paths:
+      - 'scripts/research-phase47-cross-window-stability-audit.mjs'
+      - 'src/**'
+      - 'data/acquired/g50/**'
+      - 'data/acquired/xauusd/**'
+      - 'data/historical/xauusd-1min.json'
+      - 'package.json'
+      - '.github/workflows/research-phase47-cross-window-stability-audit.yml'
+jobs:
+  phase47:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm build
+      - run: node scripts/research-phase47-cross-window-stability-audit.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: strategy-a-phase47-cross-window-stability-audit
+          path: data/reports/strategy-a-phase47-cross-window-stability-audit/5min.json
+          if-no-files-found: error
