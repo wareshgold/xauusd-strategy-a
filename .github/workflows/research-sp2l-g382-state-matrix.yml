@@ -1,0 +1,28 @@
+name: Research - SP2L G382 State Matrix
+
+on:
+  push:
+    branches:
+      - 'research/sp2l-g382-state-matrix-2026-09-13'
+  pull_request:
+    branches:
+      - 'research/sp2l-g382-state-matrix-2026-09-13'
+
+permissions:
+  contents: read
+
+jobs:
+  g382-state-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec vitest run tests/sp2l-v2/g382-state-matrix.test.ts
