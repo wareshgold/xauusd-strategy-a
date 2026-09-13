@@ -1,0 +1,25 @@
+name: Research - SP2L G380 Synthetic Counterfactuals
+
+on:
+  push:
+    branches:
+      - 'research/sp2l-g380-synthetic-counterfactuals-2026-09-13'
+  pull_request:
+    branches:
+      - 'research/sp2l-g380-synthetic-counterfactuals-2026-09-13'
+
+jobs:
+  g380-counterfactuals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec vitest run tests/sp2l-v2/g380-synthetic-counterfactuals.test.ts
