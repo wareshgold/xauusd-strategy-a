@@ -1,0 +1,30 @@
+{
+  "gate": "SOURCE_RESOLUTION",
+  "status": "COMPLETE_FOR_CURRENT_PRIMARY_CORPUS",
+  "frozen_geometry": "BLOCKED",
+  "canonical_promotion": false,
+  "loop_closure": true,
+  "dimensions": [
+    {"id":"TRIGGER_TIMING","status":"SOURCE_REQUIRED"},
+    {"id":"PENDING_PERSISTENCE","status":"SOURCE_REQUIRED"},
+    {"id":"FILL_TIMING_SEMANTICS","status":"SOURCE_REQUIRED"},
+    {"id":"INVALIDATION_BEFORE_FILL","status":"SOURCE_REQUIRED"},
+    {"id":"C_TIMING","status":"SOURCE_REQUIRED"},
+    {"id":"TARGET_MAPPING","status":"SOURCE_REQUIRED"},
+    {"id":"ENTRY_C_COUPLING","status":"SOURCE_REQUIRED"}
+  ],
+  "primary_corpus_reaudited": true,
+  "new_authoritative_geometry_found": false,
+  "prohibited_inference": [
+    "generic_gap_to_pgap",
+    "third_party_geometry",
+    "pixel_inference",
+    "invented_ohlc_anchor",
+    "fill_equals_C",
+    "invented_sl_offset",
+    "fixed_2R_or_3R",
+    "generalized_candle_or_session_filters"
+  ],
+  "next_gate": "FREEZE_SOURCE_CONFIRMED_SEMANTIC_CORE",
+  "canonical_dev_val": "BLOCKED"
+}
