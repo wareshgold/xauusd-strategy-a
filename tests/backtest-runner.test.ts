@@ -259,7 +259,7 @@ describe("runBacktest", () => {
     const ledger = new TradeLedger();
     const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
 
-    const result = runBacktest(engine, simulator, candles);
+    const result = runBacktest(engine, simulator, ledger, candles);
 
     expect(historyLengths).toEqual([1, 2, 3]);
     expect(result.executionEvents).toEqual([]);
