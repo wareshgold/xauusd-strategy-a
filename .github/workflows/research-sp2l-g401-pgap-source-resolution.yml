@@ -1,0 +1,31 @@
+name: Research - SP2L G401 P-Gap Source Resolution
+
+on:
+  push:
+    branches:
+      - research/sp2l-g388-dataset-runner-2026-09-13
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - research/sp2l-g386-dev-harness-2026-09-13
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run test:sp2l-g401
