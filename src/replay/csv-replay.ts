@@ -10,10 +10,6 @@ export interface CsvReplayOptions {
 
 export type CandleSink = (candle: Candle) => void | Promise<void>;
 
-/**
- * Streaming CSV replay adapter. It only maps OHLC data into the domain candle
- * contract; it contains no Strategy A detection or execution assumptions.
- */
 export async function replayCsv(
   path: string,
   options: CsvReplayOptions,
@@ -41,7 +37,11 @@ export async function replayCsv(
       throw new Error(`CSV_COLUMN_COUNT:${count + 2}`);
     }
 
-    const row = Object.fromEntries(headers.map((header, index) => [header, values[index]]));
+    const row: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      const value = values[index];
+      if (value !== undefined) row[header] = value;
+    });
     const candle = parseCandle(row, options.timeframe);
     await sink(candle);
     count += 1;
@@ -57,22 +57,28 @@ function requireColumns(headers: readonly string[]): void {
 }
 
 function parseCandle(row: Record<string, string>, timeframe: string): Candle {
+  const timestamp = required(row.timestamp, "timestamp");
   const candle: Candle = {
-    timestamp: row.timestamp,
-    open: number(row.open, "open"),
-    high: number(row.high, "high"),
-    low: number(row.low, "low"),
-    close: number(row.close, "close"),
+    timestamp,
+    open: number(required(row.open, "open"), "open"),
+    high: number(required(row.high, "high"), "high"),
+    low: number(required(row.low, "low"), "low"),
+    close: number(required(row.close, "close"), "close"),
     timeframe,
   };
 
-  if (!candle.timestamp || Number.isNaN(Date.parse(candle.timestamp))) {
+  if (Number.isNaN(Date.parse(candle.timestamp))) {
     throw new Error(`CSV_INVALID_TIMESTAMP:${candle.timestamp}`);
   }
   if (candle.high < Math.max(candle.open, candle.close) || candle.low > Math.min(candle.open, candle.close)) {
     throw new Error(`CSV_INVALID_OHLC:${candle.timestamp}`);
   }
   return candle;
+}
+
+function required(value: string | undefined, field: string): string {
+  if (value === undefined || value === "") throw new Error(`CSV_MISSING_VALUE:${field}`);
+  return value;
 }
 
 function number(value: string, field: string): number {
