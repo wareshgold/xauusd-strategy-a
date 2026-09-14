@@ -2,6 +2,7 @@ export interface ReplayRunManifest {
   readonly runId: string;
   readonly datasetId: string;
   readonly datasetVersion: string;
+  readonly datasetFingerprint: string;
   readonly strategyId: string;
   readonly strategyVersion: string;
   readonly executionPolicy: string;
