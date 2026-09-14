@@ -37,6 +37,7 @@ export interface ExecutionEvent {
 export class ExecutionSimulator {
   private readonly pending = new Map<string, PendingOrder>();
   private readonly active = new Set<string>();
+  private readonly usedIds = new Set<string>();
 
   public constructor(
     private readonly ledger: TradeLedger,
@@ -44,10 +45,11 @@ export class ExecutionSimulator {
   ) {}
 
   public submit(candidate: SignalCandidate, id: string): ExecutionEvent {
-    if (this.pending.has(id) || this.active.has(id)) throw new Error(`DUPLICATE_EXECUTION_ID:${id}`);
+    if (this.usedIds.has(id)) throw new Error(`DUPLICATE_EXECUTION_ID:${id}`);
     if (this.config.fillRule === "UNRESOLVED") throw new Error("FILL_RULE_UNRESOLVED");
     const order: PendingOrder = { id, candidate, createdAt: candidate.timestamp };
     this.pending.set(id, order);
+    this.usedIds.add(id);
     return { type: "PENDING", tradeId: id, timestamp: candidate.timestamp };
   }
 
