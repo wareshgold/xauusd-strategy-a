@@ -1,6 +1,6 @@
 import pytest
 
-from .sp2l_synthetic_fixture_contract import (
+from research.fixtures.sp2l_synthetic_fixture_contract import (
     BLOCKED_EXECUTABLE_GEOMETRY,
     EXAMPLE_BEARISH,
     EXAMPLE_BULLISH,
@@ -8,7 +8,6 @@ from .sp2l_synthetic_fixture_contract import (
     Direction,
     EvidenceStatus,
     GeometryDimension,
-    SyntheticFixture,
     make_fixture,
 )
 
