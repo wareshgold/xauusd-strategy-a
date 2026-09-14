@@ -39,6 +39,14 @@ export class DeterministicEngine {
       };
     }
 
+    const previous = this.history[this.history.length - 1];
+    if (previous && candle.timestamp <= previous.candle.timestamp) {
+      return {
+        status: "BLOCKED",
+        reason: `NON_MONOTONIC_TIMESTAMP:${candle.timestamp}`,
+      };
+    }
+
     const snapshot: MarketSnapshot = {
       symbol: this.config.symbol,
       candle,
@@ -47,19 +55,27 @@ export class DeterministicEngine {
     this.history.push(snapshot);
 
     const decision = this.config.strategy.evaluate(this.history);
-    return this.guardCanonicalBoundary(decision);
+    return this.guardCanonicalBoundary(decision, candle);
   }
 
   public snapshots(): readonly MarketSnapshot[] {
     return this.history;
   }
 
-  private guardCanonicalBoundary(decision: EngineDecision): EngineDecision {
+  private guardCanonicalBoundary(decision: EngineDecision, candle: Candle): EngineDecision {
     if (decision.status !== "SIGNAL") return decision;
 
     const candidate = decision.candidate;
     if (!candidate) {
       return { status: "BLOCKED", reason: "SIGNAL_WITHOUT_CANDIDATE" };
+    }
+
+    if (candidate.symbol !== this.config.symbol) {
+      return { status: "BLOCKED", reason: "SIGNAL_SYMBOL_MISMATCH" };
+    }
+
+    if (candidate.timestamp !== candle.timestamp) {
+      return { status: "BLOCKED", reason: "SIGNAL_TIMESTAMP_MISMATCH" };
     }
 
     if (!candidate.provenance.canonical) {
