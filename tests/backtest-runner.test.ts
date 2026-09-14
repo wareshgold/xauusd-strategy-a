@@ -52,7 +52,14 @@ describe("runBacktest", () => {
     const detector = {
       id: "test-detector",
       provenance,
-      evaluate: () => ({ status: "SIGNAL" as const, reason: "TEST", candidate }),
+      evaluate: (_history: readonly MarketSnapshot[]) => ({
+        status: "SIGNAL" as const,
+        reason: "TEST",
+        candidate: {
+          ...candidate,
+          timestamp: _history[_history.length - 1]!.candle.timestamp,
+        },
+      }),
     };
     const engine = new DeterministicEngine({ symbol: "XAUUSD", timeframe: "1m", strategy: detector });
     const ledger = new TradeLedger();
