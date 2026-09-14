@@ -27,9 +27,16 @@ export function calculateTradeMetrics(trades: readonly TradeRecord[]): TradeMetr
   const grossLossR = returns.filter((value) => value < 0).reduce((sum, value) => sum + Math.abs(value), 0);
   const totalR = returns.reduce((sum, value) => sum + value, 0);
   const ordered = [...returns].sort((a, b) => a - b);
-  const medianR = ordered.length === 0 ? 0 : ordered.length % 2 === 1
-    ? ordered[(ordered.length - 1) / 2]
-    : (ordered[ordered.length / 2 - 1] + ordered[ordered.length / 2]) / 2;
+  let medianR = 0;
+  if (ordered.length > 0) {
+    if (ordered.length % 2 === 1) {
+      medianR = ordered[(ordered.length - 1) / 2]!;
+    } else {
+      const lower = ordered[ordered.length / 2 - 1]!;
+      const upper = ordered[ordered.length / 2]!;
+      medianR = (lower + upper) / 2;
+    }
+  }
 
   let equity = 0;
   let peak = 0;
