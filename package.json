@@ -22,7 +22,7 @@
     "test:sp2l-g344": "vitest run tests/sp2l-v2-g344-minimal-pair-discrimination.test.ts",
     "test:sp2l-g345": "vitest run tests/sp2l-v2-g345-source-evidence-discrimination-matrix.test.ts",
     "test:sp2l-g346": "vitest run tests/sp2l-v2-g346-source-evidence-gap-hunt.test.ts",
-    "test:sp2l-g347": "vitest run tests/sp2l-v2/g347-parameterized-geometry-research.test.ts",
+    "test:sp2l-g347": "vitest run tests/sp2l-v2-g347-parameterized-geometry-research.test.ts",
     "test:sp2l-g355": "vitest run tests/sp2l-v2/g355-pgap-synthetic-discrimination.test.ts",
     "test:sp2l-g393": "vitest run tests/sp2l-v2/g393-hypothesis-batch.test.ts",
     "test:sp2l-g396": "vitest run tests/sp2l-v2/g396-hypothesis-provenance.test.ts",
