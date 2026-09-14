@@ -1,1 +1,0 @@
-This note is intentionally empty of strategy rules. See the direct-video extraction and F8-F15 adjudication records.
