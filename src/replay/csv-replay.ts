@@ -73,13 +73,18 @@ function parseCandle(row: Record<string, string>, timeframe: string): Candle {
     timeframe,
   };
 
-  if (Number.isNaN(Date.parse(candle.timestamp))) {
-    throw new Error(`CSV_INVALID_TIMESTAMP:${candle.timestamp}`);
-  }
+  validateTimestamp(candle.timestamp);
   if (candle.high < Math.max(candle.open, candle.close) || candle.low > Math.min(candle.open, candle.close)) {
     throw new Error(`CSV_INVALID_OHLC:${candle.timestamp}`);
   }
   return candle;
+}
+
+function validateTimestamp(timestamp: string): void {
+  const isoWithTimezone = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
+  if (!isoWithTimezone.test(timestamp) || Number.isNaN(Date.parse(timestamp))) {
+    throw new Error(`CSV_INVALID_TIMESTAMP:${timestamp}`);
+  }
 }
 
 function required(value: string | undefined, field: string): string {
