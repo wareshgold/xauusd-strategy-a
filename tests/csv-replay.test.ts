@@ -25,6 +25,45 @@ describe("replayCsv", () => {
     expect(candles[1]).toMatchObject({ timestamp: "2026-01-01T00:05:00Z", open: 2602 });
   });
 
+  it("preserves valid market gaps without synthesizing candles", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
+    const path = join(dir, "gap.csv");
+    await writeFile(path, [
+      "timestamp,open,high,low,close",
+      "2026-01-02T21:55:00Z,2600,2605,2595,2602",
+      "2026-01-05T00:00:00Z,2602,2610,2600,2608",
+    ].join("\n"));
+
+    const candles: Array<{ timestamp: string; timeframe: string }> = [];
+    const count = await replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, (candle) => {
+      candles.push(candle);
+    });
+
+    expect(count).toBe(2);
+    expect(candles).toEqual([
+      { timestamp: "2026-01-02T21:55:00Z", timeframe: "5m" },
+      { timestamp: "2026-01-05T00:00:00Z", timeframe: "5m" },
+    ]);
+  });
+
+  it("propagates the configured timeframe without inferring it from timestamp spacing", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
+    const path = join(dir, "timeframe.csv");
+    await writeFile(path, [
+      "timestamp,open,high,low,close",
+      "2026-01-01T00:00:00Z,2600,2605,2595,2602",
+      "2026-01-01T00:05:00Z,2602,2610,2600,2608",
+    ].join("\n"));
+
+    const candles: unknown[] = [];
+    await replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, (candle) => {
+      candles.push(candle);
+    });
+
+    expect(candles[0]).toMatchObject({ timeframe: "5m" });
+    expect(candles[1]).toMatchObject({ timeframe: "5m" });
+  });
+
   it("accepts a boundary-valid candle when high equals the body maximum and low equals the body minimum", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
     const path = join(dir, "boundary.csv");
