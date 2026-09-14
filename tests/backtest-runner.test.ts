@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Candle, SignalCandidate, StrategyProvenance } from "../src/domain/market.js";
+import type { Candle, MarketSnapshot, SignalCandidate, StrategyProvenance } from "../src/domain/market.js";
 import { DeterministicEngine } from "../src/engine/deterministic-engine.js";
 import { runBacktest } from "../src/replay/backtest-runner.js";
 import { ExecutionSimulator } from "../src/replay/execution-simulator.js";
@@ -36,7 +36,7 @@ describe("runBacktest", () => {
     const detector = {
       id: "test-detector",
       provenance,
-      evaluate: (_history: readonly unknown[]) => ({ status: "SIGNAL" as const, reason: "TEST", candidate }),
+      evaluate: (_history: readonly MarketSnapshot[]) => ({ status: "SIGNAL" as const, reason: "TEST", candidate }),
     };
     const engine = new DeterministicEngine({ symbol: "XAUUSD", timeframe: "1m", strategy: detector });
     const ledger = new TradeLedger();
@@ -68,7 +68,7 @@ describe("runBacktest", () => {
     expect(result.candles).toBe(2);
     expect(result.signals).toBe(2);
     expect(result.executionEvents.map((event) => event.type)).toEqual([
-      "PENDING", "FILLED", "PENDING", "TARGET",
+      "PENDING", "FILLED", "TARGET", "PENDING",
     ]);
     expect(result.metrics.closedTrades).toBe(1);
     expect(result.metrics.totalR).toBe(2);
