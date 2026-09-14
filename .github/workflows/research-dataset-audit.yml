@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - research/sp2l-g385-semantic-core-dev-harness-2026-09-13
+      - dev/sp2l-deterministic-engine-foundation-2026-09-14
     paths:
       - 'data/historical/xauusd-1min.json'
       - 'data/historical/xauusd-5min.json'
       - 'scripts/audit-dataset.mjs'
+      - 'scripts/audit-dataset-provenance.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - '.github/workflows/research-dataset-audit.yml'
@@ -28,8 +30,11 @@ jobs:
       - run: npm install --global pnpm@10
       - run: pnpm install --frozen-lockfile
       - run: pnpm run audit:data
+      - run: node scripts/audit-dataset-provenance.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: historical-dataset-audit
-          path: data/reports/dataset-audit.json
+          path: |
+            data/reports/dataset-audit.json
+            data/reports/dataset-provenance-audit.json
           if-no-files-found: error
