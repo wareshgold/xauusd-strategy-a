@@ -1,0 +1,39 @@
+name: research-replay-backtest-scope-guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/replay/replay-runner.ts'
+      - 'src/replay/backtest-runner.ts'
+      - 'src/replay/execution-simulator.ts'
+      - 'scripts/research-replay-backtest-scope-guard.mjs'
+      - '.github/workflows/research-replay-backtest-scope-guard.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  scope-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run replay/backtest scope guard
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/research-replay-backtest-scope-guard.mjs
+
+      - name: Comment manual-review warning when triggered
+        if: contains(steps.scope-guard.outputs.stdout, 'MANUAL REVIEW REQUIRED')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body-file scope-guard-report.md
