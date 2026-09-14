@@ -38,7 +38,7 @@
     "research:phase28-d-archetype-conditional-validation": "node scripts/research-phase28-d-archetype-conditional-validation.mjs",
     "research:phase29-d-archetype-residual-after-geometry": "node scripts/research-phase29-d-archetype-residual-after-geometry.mjs",
     "research:phase30-directional-context-alignment-audit": "node scripts/research-phase30-directional-context-alignment-audit.mjs",
-    "research:phase31-counterfactual-direction-flip-snapshot": "node scripts/research-phase31-counterfactual-phase31-directional-counterfactual-decomposition.mjs",
+    "research:phase31-counterfactual-direction-flip-snapshot": "node scripts/research-phase31-counterfactual-direction-flip-snapshot.mjs",
     "research:phase32-directional-counterfactual-decomposition": "node scripts/research-phase32-directional-counterfactual-decomposition.mjs",
     "research:phase33-counterfactual-phase27-archetype-decomposition": "node scripts/research-phase33-counterfactual-phase27-archetype-decomposition.mjs",
     "research:phase34-non-d-counterfactual-decomposition": "node scripts/research-phase34-non-d-counterfactual-decomposition.mjs",
