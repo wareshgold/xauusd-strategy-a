@@ -91,6 +91,28 @@ describe("replayCsv", () => {
       .rejects.toThrow("CSV_NON_MONOTONIC_TIMESTAMP");
   });
 
+  it("rejects timestamps without an explicit timezone", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
+    const path = join(dir, "timezone-less.csv");
+    await writeFile(path, "timestamp,open,high,low,close\n2026-01-01T00:00:00,2600,2605,2595,2602\n");
+
+    await expect(replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, () => undefined))
+      .rejects.toThrow("CSV_INVALID_TIMESTAMP");
+  });
+
+  it("accepts an explicit numeric timezone offset deterministically", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
+    const path = join(dir, "offset.csv");
+    await writeFile(path, "timestamp,open,high,low,close\n2026-01-01T03:30:00+03:30,2600,2605,2595,2602\n");
+
+    const candles: unknown[] = [];
+    await replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, (candle) => {
+      candles.push(candle);
+    });
+
+    expect(candles[0]).toMatchObject({ timestamp: "2026-01-01T03:30:00+03:30" });
+  });
+
   it("rejects malformed OHLC rows", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
     const path = join(dir, "bad.csv");
