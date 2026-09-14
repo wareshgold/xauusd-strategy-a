@@ -28,6 +28,7 @@
     "test:sp2l-g396": "vitest run tests/sp2l-v2/g396-hypothesis-provenance.test.ts",
     "test:sp2l-g397": "vitest run tests/sp2l-v2/g397-synthetic-geometry-discrimination.test.ts",
     "test:sp2l-g399": "vitest run tests/sp2l-v2/g399-semantic-core.test.ts",
+    "test:sp2l-g400": "vitest run tests/sp2l-v2/g400-geometry-freeze-gate.test.ts",
     "lint": "eslint .",
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
