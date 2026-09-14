@@ -36,6 +36,11 @@ export class TradeLedger {
 
   public open(candidate: SignalCandidate, id: string): TradeRecord {
     if (this.trades.has(id)) throw new Error(`DUPLICATE_TRADE_ID:${id}`);
+    this.assertFinite("ENTRY_PRICE", candidate.entryPrice);
+    this.assertFinite("STOP_PRICE", candidate.stopPrice);
+    this.assertFinite("TARGET_PRICE", candidate.targetPrice);
+    this.assertFinite("RISK_PRICE", candidate.riskPrice);
+    this.assertFinite("EXPECTED_R", candidate.expectedR);
     if (candidate.riskPrice <= 0) throw new Error("NON_POSITIVE_RISK");
 
     const trade: TradeRecord = {
@@ -61,6 +66,7 @@ export class TradeLedger {
     if (exit.reason !== "CANCELLED" && exit.price === undefined) {
       throw new Error("EXIT_PRICE_REQUIRED");
     }
+    if (exit.price !== undefined) this.assertFinite("EXIT_PRICE", exit.price);
 
     const realizedR = exit.reason === "CANCELLED"
       ? undefined
@@ -95,5 +101,9 @@ export class TradeLedger {
       ? exitPrice - trade.entryPrice
       : trade.entryPrice - exitPrice;
     return signedMove / trade.riskPrice;
+  }
+
+  private assertFinite(field: string, value: number): void {
+    if (!Number.isFinite(value)) throw new Error(`NON_FINITE_${field}`);
   }
 }
