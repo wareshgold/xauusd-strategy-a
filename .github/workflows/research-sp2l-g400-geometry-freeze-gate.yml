@@ -5,8 +5,9 @@ on:
     branches:
       - research/sp2l-g388-dataset-runner-2026-09-13
   pull_request:
+    types: [opened, synchronize, reopened]
     branches:
-      - research/sp2l-g388-dataset-runner-2026-09-13
+      - research/sp2l-g386-dev-harness-2026-09-13
   workflow_dispatch:
 
 permissions:
