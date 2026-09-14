@@ -29,7 +29,6 @@ const candles: Candle[] = [
   { timestamp: "2026-01-01T00:00:00Z", open: 101, high: 101, low: 100, close: 101, timeframe: "1m" },
   { timestamp: "2026-01-01T00:01:00Z", open: 101, high: 102, low: 100, close: 102, timeframe: "1m" },
   { timestamp: "2026-01-01T00:02:00Z", open: 102, high: 102, low: 102, close: 102, timeframe: "1m" },
-  { timestamp: "2026-01-01T00:03:00Z", open: 102, high: 102, low: 102, close: 102, timeframe: "1m" },
 ];
 
 describe("runBacktest", () => {
@@ -73,11 +72,15 @@ describe("runBacktest", () => {
     const detector = {
       id: "test-detector",
       provenance,
-      evaluate: () => ({
-        status: "SIGNAL" as const,
-        reason: "TEST",
-        candidate: { ...candidate, timestamp: candles[Math.min(call++, 2)]!.timestamp },
-      }),
+      evaluate: () => {
+        if (call >= 2) return { status: "NO_SIGNAL" as const, reason: "TEST_DONE" };
+        const timestamp = candles[call++]!.timestamp;
+        return {
+          status: "SIGNAL" as const,
+          reason: "TEST",
+          candidate: { ...candidate, timestamp },
+        };
+      },
     };
     const engine = new DeterministicEngine({ symbol: "XAUUSD", timeframe: "1m", strategy: detector });
     const ledger = new TradeLedger();
@@ -86,7 +89,7 @@ describe("runBacktest", () => {
     const result = runBacktest(engine, simulator, ledger, candles);
 
     expect(result.executionEvents.map((event) => event.type)).toEqual([
-      "PENDING", "PENDING", "FILLED", "PENDING", "TARGET",
+      "PENDING", "PENDING", "FILLED", "TARGET",
     ]);
     expect(result.metrics.closedTrades).toBe(1);
     expect(result.metrics.totalR).toBe(2);
