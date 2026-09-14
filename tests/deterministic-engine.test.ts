@@ -97,4 +97,48 @@ describe("DeterministicEngine", () => {
     });
     expect(engine.snapshots()).toHaveLength(0);
   });
+
+  it("blocks a non-monotonic candle without mutating history", () => {
+    const engine = new DeterministicEngine({
+      symbol: "XAUUSD",
+      timeframe: "5m",
+      strategy: detector({ status: "NO_SIGNAL", reason: "unused" }),
+    });
+
+    expect(engine.push(candle).status).toBe("NO_SIGNAL");
+    expect(engine.push({ ...candle, timestamp: "2025-12-31T23:55:00Z" })).toEqual({
+      status: "BLOCKED",
+      reason: "NON_MONOTONIC_TIMESTAMP:2025-12-31T23:55:00Z",
+    });
+    expect(engine.snapshots()).toHaveLength(1);
+  });
+
+  it("blocks a signal whose identity does not match the current engine candle", () => {
+    const decision: EngineDecision = {
+      status: "SIGNAL",
+      reason: "mismatched fixture",
+      candidate: {
+        symbol: "OTHER",
+        direction: "LONG",
+        timestamp: "2026-01-01T00:01:00Z",
+        entryType: "PENDING_LIMIT",
+        entryPrice: 2600,
+        stopPrice: 2590,
+        targetPrice: 2620,
+        riskPrice: 10,
+        expectedR: 2,
+        provenance: canonical,
+      },
+    };
+    const engine = new DeterministicEngine({
+      symbol: "XAUUSD",
+      timeframe: "5m",
+      strategy: detector(decision),
+    });
+
+    expect(engine.push(candle)).toEqual({
+      status: "BLOCKED",
+      reason: "SIGNAL_SYMBOL_MISMATCH",
+    });
+  });
 });
