@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc --noEmit",
     "test": "vitest run",
+    "test:replay": "vitest run tests/csv-replay.test.ts tests/trade-ledger.test.ts tests/deterministic-engine.test.ts",
     "download:data": "node scripts/download-xauusd.mjs",
     "audit:data": "node scripts/audit-dataset.mjs",
     "research:g395-census": "node scripts/research-g395-component-census.mjs",
