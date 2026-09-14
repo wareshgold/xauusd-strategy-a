@@ -69,9 +69,7 @@ describe("runBacktest", () => {
 
     const result = runBacktest(engine, simulator, ledger, candles.slice(0, 2));
 
-    expect(result.executionEvents.map((event) => event.type)).toEqual([
-      "PENDING", "PENDING", "FILLED",
-    ]);
+    expect(result.executionEvents.map((event) => event.type)).toEqual(["PENDING", "PENDING", "FILLED"]);
     expect(result.metrics.closedTrades).toBe(0);
     expect(result.metrics.totalR).toBe(0);
   });
@@ -97,9 +95,7 @@ describe("runBacktest", () => {
 
     const result = runBacktest(engine, simulator, ledger, candles);
 
-    expect(result.executionEvents.map((event) => event.type)).toEqual([
-      "PENDING", "PENDING", "FILLED", "TARGET",
-    ]);
+    expect(result.executionEvents.map((event) => event.type)).toEqual(["PENDING", "PENDING", "FILLED", "TARGET"]);
     expect(result.metrics.closedTrades).toBe(1);
     expect(result.metrics.totalR).toBe(2);
   });
@@ -247,5 +243,73 @@ describe("runBacktest", () => {
     } as const;
 
     expect(serializeRunManifest(manifest)).toBe(JSON.stringify(manifest, null, 2) + "\n");
+  });
+
+  it("evaluates each candle only with history available through that candle", () => {
+    const historyLengths: number[] = [];
+    const detector = {
+      id: "history-detector",
+      provenance,
+      evaluate: (history: readonly MarketSnapshot[]) => {
+        historyLengths.push(history.length);
+        return { status: "NO_SIGNAL" as const, reason: "TEST_NO_SIGNAL" };
+      },
+    };
+    const engine = new DeterministicEngine({ symbol: "XAUUSD", timeframe: "1m", strategy: detector });
+    const ledger = new TradeLedger();
+    const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
+
+    const result = runBacktest(engine, simulator, candles);
+
+    expect(historyLengths).toEqual([1, 2, 3]);
+    expect(result.executionEvents).toEqual([]);
+    expect(result.noSignals).toBe(3);
+  });
+
+  it("does not submit blocked decisions to execution", () => {
+    const detector = {
+      id: "blocked-detector",
+      provenance,
+      evaluate: () => ({
+        status: "SIGNAL" as const,
+        reason: "TEST",
+        candidate: { ...candidate, symbol: "XAGUSD" },
+      }),
+    };
+    const engine = new DeterministicEngine({ symbol: "XAUUSD", timeframe: "1m", strategy: detector });
+    const ledger = new TradeLedger();
+    const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
+
+    const result = runBacktest(engine, simulator, ledger, candles.slice(0, 1));
+
+    expect(result.blocked).toBe(1);
+    expect(result.signals).toBe(0);
+    expect(result.executionEvents).toEqual([]);
+    expect(ledger.all()).toHaveLength(0);
+  });
+
+  it("leaves pending orders and open trades unresolved at end of series", () => {
+    const detector = {
+      id: "end-of-series-detector",
+      provenance,
+      evaluate: (history: readonly MarketSnapshot[]) => ({
+        status: "SIGNAL" as const,
+        reason: "TEST",
+        candidate: { ...candidate, timestamp: history[history.length - 1]!.candle.timestamp },
+      }),
+    };
+    const engine = new DeterministicEngine({ symbol: "XAUUSD", timeframe: "1m", strategy: detector });
+    const ledger = new TradeLedger();
+    const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
+
+    const result = runBacktest(engine, simulator, ledger, candles.slice(0, 1));
+
+    expect(result.executionEvents).toEqual([{
+      type: "PENDING",
+      tradeId: "BT-1",
+      timestamp: "2026-01-01T00:00:00Z",
+    }]);
+    expect(result.metrics.closedTrades).toBe(0);
+    expect(result.trades).toEqual([]);
   });
 });
