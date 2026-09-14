@@ -32,6 +32,7 @@
     "test:sp2l-g401": "vitest run tests/sp2l-v2/g401-pgap-source-resolution.test.ts",
     "test:sp2l-g402": "vitest run tests/sp2l-v2/g402-abcd-anchor-source-resolution.test.ts",
     "test:sp2l-g403": "vitest run tests/sp2l-v2/g403-entry-execution-source-resolution.test.ts",
+    "test:sp2l-g404": "vitest run tests/sp2l-v2/g404-structural-stop-boundary-source-resolution.test.ts",
     "lint": "eslint .",
     "research:phase26-d-archetype-feature-decomposition": "node scripts/analyze-phase26-d-archetype-feature-decomposition.mjs",
     "research:phase26-sell-delay1-stability": "node scripts/analyze-phase26-sell-delay1-stability.mjs",
