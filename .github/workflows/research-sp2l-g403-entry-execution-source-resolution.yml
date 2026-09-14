@@ -1,0 +1,32 @@
+name: Research - SP2L G403 Entry Execution Source Resolution
+
+on:
+  push:
+    branches:
+      - research/sp2l-g388-dataset-runner-2026-09-13
+  pull_request:
+    branches:
+      - research/sp2l-g386-dev-harness-2026-09-13
+  workflow_dispatch:
+
+jobs:
+  g403-entry-execution-source-resolution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm run build
+      - name: Test G403
+        run: pnpm run test:sp2l-g403
