@@ -65,6 +65,32 @@ describe("replayCsv", () => {
       .rejects.toThrow("CSV_INVALID_NUMBER:high");
   });
 
+  it("rejects duplicate timestamps", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
+    const path = join(dir, "duplicate.csv");
+    await writeFile(path, [
+      "timestamp,open,high,low,close",
+      "2026-01-01T00:00:00Z,2600,2605,2595,2602",
+      "2026-01-01T00:00:00Z,2602,2610,2600,2608",
+    ].join("\n"));
+
+    await expect(replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, () => undefined))
+      .rejects.toThrow("CSV_NON_MONOTONIC_TIMESTAMP");
+  });
+
+  it("rejects timestamps that move backwards", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
+    const path = join(dir, "backwards.csv");
+    await writeFile(path, [
+      "timestamp,open,high,low,close",
+      "2026-01-01T00:05:00Z,2600,2605,2595,2602",
+      "2026-01-01T00:00:00Z,2602,2610,2600,2608",
+    ].join("\n"));
+
+    await expect(replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, () => undefined))
+      .rejects.toThrow("CSV_NON_MONOTONIC_TIMESTAMP");
+  });
+
   it("rejects malformed OHLC rows", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
     const path = join(dir, "bad.csv");
