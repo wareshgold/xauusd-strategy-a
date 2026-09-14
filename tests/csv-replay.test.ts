@@ -104,6 +104,24 @@ describe("replayCsv", () => {
       .rejects.toThrow("CSV_INVALID_NUMBER:high");
   });
 
+  it("rejects input missing a required CSV column", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
+    const path = join(dir, "missing-column.csv");
+    await writeFile(path, "timestamp,open,high,low\n2026-01-01T00:00:00Z,2600,2605,2595\n");
+
+    await expect(replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, () => undefined))
+      .rejects.toThrow("CSV_MISSING_COLUMN:close");
+  });
+
+  it("rejects rows whose column count does not match the CSV header", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
+    const path = join(dir, "column-count.csv");
+    await writeFile(path, "timestamp,open,high,low,close\n2026-01-01T00:00:00Z,2600,2605,2595,2602,unexpected\n");
+
+    await expect(replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, () => undefined))
+      .rejects.toThrow("CSV_COLUMN_COUNT:2");
+  });
+
   it("rejects duplicate timestamps", async () => {
     const dir = await mkdtemp(join(tmpdir(), "sp2l-replay-"));
     const path = join(dir, "duplicate.csv");
