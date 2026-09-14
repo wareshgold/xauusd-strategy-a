@@ -29,6 +29,7 @@ const candles: Candle[] = [
   { timestamp: "2026-01-01T00:00:00Z", open: 101, high: 101, low: 100, close: 101, timeframe: "1m" },
   { timestamp: "2026-01-01T00:01:00Z", open: 101, high: 102, low: 100, close: 102, timeframe: "1m" },
   { timestamp: "2026-01-01T00:02:00Z", open: 102, high: 102, low: 102, close: 102, timeframe: "1m" },
+  { timestamp: "2026-01-01T00:03:00Z", open: 102, high: 102, low: 102, close: 102, timeframe: "1m" },
 ];
 
 describe("runBacktest", () => {
@@ -48,16 +49,11 @@ describe("runBacktest", () => {
     expect(result.metrics.closedTrades).toBe(0);
   });
 
-  it("connects signal, next-candle fill, exit and metrics deterministically", () => {
-    let call = 0;
+  it("does not allow a fill candle to also establish an exit", () => {
     const detector = {
       id: "test-detector",
       provenance,
-      evaluate: () => ({
-        status: "SIGNAL" as const,
-        reason: "TEST",
-        candidate: { ...candidate, timestamp: candles[Math.min(call++, 1)]!.timestamp },
-      }),
+      evaluate: () => ({ status: "SIGNAL" as const, reason: "TEST", candidate }),
     };
     const engine = new DeterministicEngine({ symbol: "XAUUSD", timeframe: "1m", strategy: detector });
     const ledger = new TradeLedger();
@@ -65,12 +61,32 @@ describe("runBacktest", () => {
 
     const result = runBacktest(engine, simulator, ledger, candles.slice(0, 2));
 
-    expect(result.candles).toBe(2);
-    expect(result.signals).toBe(2);
-    // The runner queues the current signal before executing the candle,
-    // so the second pending event precedes the first order's fill.
     expect(result.executionEvents.map((event) => event.type)).toEqual([
-      "PENDING", "PENDING", "FILLED", "TARGET",
+      "PENDING", "PENDING", "FILLED",
+    ]);
+    expect(result.metrics.closedTrades).toBe(0);
+    expect(result.metrics.totalR).toBe(0);
+  });
+
+  it("connects next-candle fill to a later exit and metrics deterministically", () => {
+    let call = 0;
+    const detector = {
+      id: "test-detector",
+      provenance,
+      evaluate: () => ({
+        status: "SIGNAL" as const,
+        reason: "TEST",
+        candidate: { ...candidate, timestamp: candles[Math.min(call++, 2)]!.timestamp },
+      }),
+    };
+    const engine = new DeterministicEngine({ symbol: "XAUUSD", timeframe: "1m", strategy: detector });
+    const ledger = new TradeLedger();
+    const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
+
+    const result = runBacktest(engine, simulator, ledger, candles);
+
+    expect(result.executionEvents.map((event) => event.type)).toEqual([
+      "PENDING", "PENDING", "FILLED", "PENDING", "TARGET",
     ]);
     expect(result.metrics.closedTrades).toBe(1);
     expect(result.metrics.totalR).toBe(2);
