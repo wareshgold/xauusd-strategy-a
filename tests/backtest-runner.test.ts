@@ -45,7 +45,9 @@ describe("runBacktest", () => {
 
     expect(result.candles).toBe(2);
     expect(result.signals).toBe(2);
-    expect(result.executionEvents.map((event) => event.type)).toEqual(["PENDING", "FILLED", "TARGET", "PENDING", "FILLED", "TARGET"]);
+    expect(result.executionEvents.map((event) => event.type)).toEqual([
+      "PENDING", "FILLED", "PENDING", "FILLED", "TARGET", "TARGET",
+    ]);
     expect(result.metrics.closedTrades).toBe(2);
     expect(result.metrics.totalR).toBe(4);
   });
