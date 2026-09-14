@@ -110,6 +110,102 @@ describe("runBacktest", () => {
     expect(() => simulator.submit(candidate, "BT-1")).toThrow("FILL_RULE_UNRESOLVED");
   });
 
+  it("emits AMBIGUOUS when OHLC touches both stop and target and leaves the trade open", () => {
+    const ledger = new TradeLedger();
+    const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
+
+    simulator.submit(candidate, "BT-AMBIGUOUS");
+    expect(simulator.onCandle({
+      timestamp: "2026-01-01T00:01:00Z",
+      open: 101,
+      high: 102,
+      low: 100,
+      close: 101,
+      timeframe: "1m",
+    }).map((event) => event.type)).toEqual(["FILLED"]);
+
+    const events = simulator.onCandle({
+      timestamp: "2026-01-01T00:02:00Z",
+      open: 101,
+      high: 103,
+      low: 98,
+      close: 101,
+      timeframe: "1m",
+    });
+
+    expect(events.map((event) => event.type)).toEqual(["AMBIGUOUS"]);
+    expect(ledger.openTrades()).toHaveLength(1);
+    expect(ledger.all()[0]?.status).toBe("OPEN");
+  });
+
+  it("cancels a pending order without creating a ledger trade", () => {
+    const ledger = new TradeLedger();
+    const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
+
+    simulator.submit(candidate, "BT-CANCEL-PENDING");
+    expect(simulator.cancel("BT-CANCEL-PENDING", "2026-01-01T00:01:00Z")).toEqual({
+      type: "CANCELLED",
+      tradeId: "BT-CANCEL-PENDING",
+      timestamp: "2026-01-01T00:01:00Z",
+    });
+    expect(ledger.all()).toHaveLength(0);
+
+    expect(simulator.onCandle({
+      timestamp: "2026-01-01T00:02:00Z",
+      open: 100,
+      high: 101,
+      low: 99,
+      close: 100,
+      timeframe: "1m",
+    })).toEqual([]);
+  });
+
+  it("rejects duplicate execution IDs for pending and active orders", () => {
+    const ledger = new TradeLedger();
+    const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
+
+    simulator.submit(candidate, "BT-DUPLICATE");
+    expect(() => simulator.submit(candidate, "BT-DUPLICATE")).toThrow("DUPLICATE_EXECUTION_ID:BT-DUPLICATE");
+
+    simulator.onCandle({
+      timestamp: "2026-01-01T00:01:00Z",
+      open: 101,
+      high: 101,
+      low: 100,
+      close: 101,
+      timeframe: "1m",
+    });
+
+    expect(() => simulator.submit({ ...candidate, timestamp: "2026-01-01T00:01:00Z" }, "BT-DUPLICATE"))
+      .toThrow("DUPLICATE_EXECUTION_ID:BT-DUPLICATE");
+  });
+
+  it("rejects duplicate execution IDs for a closed trade", () => {
+    const ledger = new TradeLedger();
+    const simulator = new ExecutionSimulator(ledger, { fillRule: "TOUCH_ENTRY", intrabarRule: "OHLC_AMBIGUOUS" });
+
+    simulator.submit(candidate, "BT-CLOSED-DUPLICATE");
+    simulator.onCandle({
+      timestamp: "2026-01-01T00:01:00Z",
+      open: 101,
+      high: 101,
+      low: 100,
+      close: 101,
+      timeframe: "1m",
+    });
+    simulator.onCandle({
+      timestamp: "2026-01-01T00:02:00Z",
+      open: 102,
+      high: 102,
+      low: 102,
+      close: 102,
+      timeframe: "1m",
+    });
+
+    expect(() => simulator.submit({ ...candidate, timestamp: "2026-01-01T00:02:00Z" }, "BT-CLOSED-DUPLICATE"))
+      .toThrow("DUPLICATE_EXECUTION_ID:BT-CLOSED-DUPLICATE");
+  });
+
   it("rejects non-finite ledger risk values", () => {
     const ledger = new TradeLedger();
     expect(() => ledger.open({ ...candidate, riskPrice: Number.NaN }, "BT-NAN"))
