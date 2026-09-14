@@ -53,6 +53,8 @@ export class ExecutionSimulator {
 
   public onCandle(candle: Candle): readonly ExecutionEvent[] {
     const events: ExecutionEvent[] = [];
+    const filledThisCandle = new Set<string>();
+
     for (const [id, order] of this.pending) {
       // Never infer a fill from the same candle that created the order.
       if (candle.timestamp <= order.createdAt) continue;
@@ -60,11 +62,16 @@ export class ExecutionSimulator {
         this.pending.delete(id);
         this.ledger.open(order.candidate, id);
         this.active.add(id);
+        filledThisCandle.add(id);
         events.push({ type: "FILLED", tradeId: id, timestamp: candle.timestamp });
       }
     }
 
     for (const id of [...this.active]) {
+      // A candle that establishes the fill must not also establish the exit.
+      // OHLC does not reveal the intrabar order of entry versus SL/TP.
+      if (filledThisCandle.has(id)) continue;
+
       const trade = this.ledger.all().find((item) => item.id === id);
       if (!trade) throw new Error(`LEDGER_TRADE_MISSING:${id}`);
       const stop = this.touches(candle, trade.stopPrice);
