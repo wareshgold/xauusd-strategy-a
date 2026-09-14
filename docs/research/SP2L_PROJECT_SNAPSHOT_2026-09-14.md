@@ -6,14 +6,14 @@ No unresolved geometry has been promoted to canonical rules.
 
 ## Current branch / commit
 - Branch: `research/sp2l-g388-dataset-runner-2026-09-13`
-- HEAD: `248c6e52ae7ce6cc045b88035de14683ffd14ad1`
-- Latest commit: `docs: document G400 geometry freeze gate`
+- HEAD: `b53afd684fbe03fe09066d19de49b325576fa71d`
+- Latest commit: `research: register G404 structural stop boundary test`
 - PR: #124 — `research: validate G393 hypothesis batch on current branch`
 - Base branch: `research/sp2l-g386-dev-harness-2026-09-13`
 - Base SHA: `523bed70d0c935664a8d80e59c3f8c10c516bf12`
 
 ## CI gate state
-G346/G347 path corrections and the existing affected research gates were green at the prior synchronized HEAD. G400 is newly added and its workflow is now attached to this branch; its purpose is to fail closed until source-critical geometry is resolved.
+G346/G347 path corrections and the affected research gates are green at the current synchronized HEAD. G400 remains a blocking gate until source-critical geometry is resolved. G401, G402, G403, and G404 are source-resolution research gates and currently pass their deterministic guard suites while intentionally remaining unresolved.
 
 No blind rerun was used.
 
@@ -27,12 +27,6 @@ No blind rerun was used.
 G399 freezes only the source-confirmed/source-supported semantic layer. It intentionally retains executable geometry as unresolved and cannot manufacture a canonical executable candidate.
 
 ## G400 geometry freeze gate
-Added:
-- `src/domain/research/sp2l-v2/G400GeometryFreezeGate.ts`
-- `tests/sp2l-v2/g400-geometry-freeze-gate.test.ts`
-- `.github/workflows/research-sp2l-g400-geometry-freeze-gate.yml`
-- `docs/research/G400_GEOMETRY_FREEZE_GATE.md`
-
 G400 currently reports **BLOCKED** with seven source-critical blockers:
 1. P-Gap OHLC geometry/formula
 2. A/B/C anchors and wick/body semantics
@@ -44,6 +38,14 @@ G400 currently reports **BLOCKED** with seven source-critical blockers:
 
 G400 is a gate, not a geometry freeze. Synthetic discrimination or profitable backtests cannot clear a source-evidence blocker.
 
+## Source-resolution gates
+- G401: PASS — P-Gap source-resolution guard suite; executable P-Gap geometry remains unresolved.
+- G402: PASS — AB=CD anchor source-resolution guard suite; A/B/C/D anchors, price field, wick/body semantics, and tolerance remain unresolved.
+- G403: PASS — entry execution source-resolution guard suite; exact pending-limit price, trigger/persistence, fill semantics, and pre-fill invalidation remain unresolved.
+- G404: PASS — structural stop boundary source-resolution guard suite; stop reference, boundary, price field, buffer, invalidation timing, and executable stop mapping remain unresolved.
+
+G401–G404 passing means the research gates correctly preserve uncertainty and prevent unsupported promotion; it does not mean the underlying geometry has been resolved.
+
 ## Source / geometry status
 - G337: PASS — wick/body anchor source audit; exact OHLC mapping unresolved.
 - G338: PASS — structural anchor/event source audit; semantic A/B/C/D roles supported, exact candle-field mapping unresolved.
@@ -52,9 +54,14 @@ G400 is a gate, not a geometry freeze. Synthetic discrimination or profitable ba
 - G397: PASS — synthetic geometry discrimination; no hypothesis promotion.
 - G399: semantic core frozen; executable geometry remains unresolved.
 - G400: BLOCKED by the seven source-critical geometry dimensions above.
+- G401: PASS / unresolved.
+- G402: PASS / unresolved.
+- G403: PASS / unresolved.
+- G404: PASS / unresolved.
 - P-Gap executable geometry remains unresolved.
 - AB=CD relationship is source-confirmed; exact A/B/C/D anchors and tolerance remain unresolved.
 - Pending-limit entry is source-confirmed; fill price is not automatically geometric C.
+- Structural stop remains source-supported at the semantic level, but executable stop geometry is unresolved.
 
 ## Research gate position
 The project is still before FROZEN GEOMETRY.
@@ -68,7 +75,7 @@ The green research harness validates source discipline and test integrity; it do
 The previously discussed Phase 48 source-geometry-freeze-readiness artifact is not present on this branch and is therefore not treated as part of the current branch state.
 
 ## Next research target
-Use authoritative source material and targeted synthetic minimal-pair fixtures to resolve the seven G400 blockers. Start with the highest-information geometry questions, without choosing formulas or anchors in advance.
+Proceed to the next highest-information source-resolution question after G404, while preserving the seven G400 blockers as unresolved until authoritative source evidence resolves them. Do not choose formulas, anchors, tolerances, buffers, or execution semantics in advance.
 
 Do not optimize historical performance until geometry is frozen.
 Do not alter production logic to resolve research/documentation gates.
