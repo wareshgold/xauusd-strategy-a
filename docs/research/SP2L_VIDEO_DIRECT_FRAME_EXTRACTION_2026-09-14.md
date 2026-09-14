@@ -65,6 +65,45 @@ Source-safe conclusion:
 
 Disposition: `SOURCE-DISCRIMINATED` for the existence of the demonstrated bearish pending-order sequence; `BLOCKED` for full deterministic bearish geometry.
 
+## Frame-by-frame adjudication addendum
+
+### A. Bullish entry sequence: 38:35–39:55
+
+A finer inspection was performed at approximately five-second intervals across the sequence.
+
+Observed progression:
+
+1. The initial bullish construction contains multiple marked lows beneath successive candles.
+2. Additional horizontal reference levels are drawn as the construction develops.
+3. The order annotation is explicitly `Buy Limit` / `BuyLimit` rather than a market-entry instruction.
+4. A distinct lower horizontal reference is marked `SL`.
+5. The final simplified teaching diagram retains the Buy Limit level above the lower SL level.
+6. The visual therefore supports **separation of execution level from invalidation/SL level** and supports a correction-order model.
+
+Important limitation:
+
+- The teaching drawing is schematic rather than a price-scaled OHLC chart.
+- It does not expose enough information to prove whether the executable Entry is the exact wick low, body boundary, close, midpoint, or another price associated with the relevant structural candle.
+- It also does not prove a universal rule for when an earlier pending order must be retained versus replaced after a new higher low forms.
+
+Disposition: `SOURCE-DISCRIMINATED` for order type and Entry/SL separation; `SOURCE-DOES-NOT-DISCRIMINATE` for exact executable anchor and refresh threshold.
+
+### B. P-Gap / AB=CD sequence: 36:58–37:22
+
+A finer inspection of the teaching frames shows that `Valid BO = P-Gap` is written directly beside the directional candle sequence, while `AB=CD` is written above the same teaching construction. The visual is explanatory rather than a coordinate-labelled trading chart.
+
+No defensible extraction of exact candle indices or OHLC boundaries is possible from these frames alone.
+
+Disposition remains unchanged: semantic relationship confirmed; executable formula and exact AB=CD anchors/tolerance unresolved.
+
+### C. Bearish sequence: 1:02:40–1:04:40
+
+The bearish chart sequence was inspected at approximately five-second intervals. A bearish directional structure and subsequent correction/continuation are visibly present. A red horizontal order/reference marker appears around a corrective lower-high area before continuation lower.
+
+This is meaningful direct evidence that the source demonstrates a bearish order-before-continuation construction. It is **not** sufficient to infer a universal mirrored formula for Entry, invalidation, P-Gap, trigger classification, or AB=CD endpoints.
+
+Disposition: bearish pending-order/continuation concept strengthened; deterministic bearish mirror remains `BLOCKED`.
+
 ## Cross-check against existing geometry ledger
 
 This direct inspection strengthens, but does not overturn, the existing evidence boundary:
@@ -75,6 +114,7 @@ This direct inspection strengthens, but does not overturn, the existing evidence
 - Structural invalidation distinct from risk-budget sizing: retained.
 - `Leg2Magnitude ≈ Leg1Magnitude`: retained.
 - P-Gap semantic association with valid breakout: confirmed.
+- Bearish pending-order/continuation example: directly observed.
 - Exact P-Gap OHLC/candle-index formula: unresolved.
 - Exact Entry anchor: unresolved.
 - Exact SL/invalidation OHLC boundary: unresolved.
