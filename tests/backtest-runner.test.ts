@@ -67,8 +67,10 @@ describe("runBacktest", () => {
 
     expect(result.candles).toBe(2);
     expect(result.signals).toBe(2);
+    // The runner queues the current signal before executing the candle,
+    // so the second pending event precedes the first order's fill.
     expect(result.executionEvents.map((event) => event.type)).toEqual([
-      "PENDING", "FILLED", "TARGET", "PENDING",
+      "PENDING", "PENDING", "FILLED", "TARGET",
     ]);
     expect(result.metrics.closedTrades).toBe(1);
     expect(result.metrics.totalR).toBe(2);
