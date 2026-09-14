@@ -1,0 +1,47 @@
+{
+  "schema": "sp2l.frozen_geometry_contract.v1",
+  "as_of": "2026-09-14",
+  "canonical_geometry": false,
+  "gate_state": "SOURCE_RESOLUTION_STOPPED_PENDING_NEW_TIER1_TIER2_DISCRIMINATOR",
+  "source_priority": "tier1_tier2_only_for_canonical_promotion",
+  "confirmed_semantics": [
+    "SPIKE",
+    "CORRECTION",
+    "LEG_2",
+    "BREAKOUT_FOLLOW_THROUGH",
+    "P_GAP_ASSOCIATION",
+    "P_GAP_DISTINCT_FROM_E_GAP",
+    "CORRECTIVE_PENDING_ENTRY",
+    "STRUCTURAL_INVALIDATION_DISTINCT_FROM_RISK_STOP",
+    "LEG_2_MAGNITUDE_COMPARED_WITH_LEG_1",
+    "BULLISH_AND_BEARISH_DIRECTION_STATES",
+    "2X_TP1_TP2_SOURCE_CONCEPTS"
+  ],
+  "unresolved_geometry": [
+    "P_GAP_OHLC_AND_CANDLE_INDEX",
+    "ENTRY_PRICE_ANCHOR",
+    "LEG_2_START_BOUNDARY",
+    "SPIKE_ORIGIN_INVALIDATION_BOUNDARY",
+    "PENDING_ORDER_REFRESH_CONDITION",
+    "ONE_TWO_THREE_CANDLE_TRIGGER_CLASSIFIER",
+    "ABCD_A_B_C_D_ANCHORS",
+    "ABCD_EQUALITY_TOLERANCE",
+    "2X_TP1_TP2_EXECUTABLE_FORMULAS",
+    "BEARISH_MIRROR_GEOMETRY"
+  ],
+  "forbidden_inference": [
+    "generic_three_candle_imbalance_as_P_GAP",
+    "internet_standard_ABCD_or_fibonacci_anchors",
+    "wick_body_or_pivot_selection_by_convention",
+    "invented_tolerances_or_buffers",
+    "invented_fill_or_intrabar_semantics",
+    "bullish_to_bearish_sign_inversion"
+  ],
+  "promotion_requirements": [
+    "tier1_or_tier2_discriminator",
+    "timestamp_and_frame_evidence_when_applicable",
+    "competing_interpretations_recorded",
+    "manual_approval",
+    "explicit_canonicalization_before_engine_consumption"
+  ]
+}
