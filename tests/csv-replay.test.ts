@@ -36,7 +36,7 @@ describe("replayCsv", () => {
 
     const candles: Array<{ timestamp: string; timeframe: string }> = [];
     const count = await replayCsv(path, { symbol: "XAUUSD", timeframe: "5m" }, (candle) => {
-      candles.push(candle);
+      candles.push({ timestamp: candle.timestamp, timeframe: candle.timeframe });
     });
 
     expect(count).toBe(2);
