@@ -21,6 +21,7 @@ export async function replayCsv(
 
   let headers: string[] | undefined;
   let count = 0;
+  let previousTimestampMs: number | undefined;
 
   for await (const rawLine of lines) {
     const line = rawLine.trim();
@@ -43,6 +44,11 @@ export async function replayCsv(
       if (value !== undefined) row[header] = value;
     });
     const candle = parseCandle(row, options.timeframe);
+    const timestampMs = Date.parse(candle.timestamp);
+    if (previousTimestampMs !== undefined && timestampMs <= previousTimestampMs) {
+      throw new Error(`CSV_NON_MONOTONIC_TIMESTAMP:${candle.timestamp}`);
+    }
+    previousTimestampMs = timestampMs;
     await sink(candle);
     count += 1;
   }
