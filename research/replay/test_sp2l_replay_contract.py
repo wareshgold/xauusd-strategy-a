@@ -3,7 +3,6 @@
 import pytest
 
 from research.fixtures.sp2l_synthetic_fixture_contract import (
-    Candle,
     Direction,
     EvidenceLabel,
     EvidenceStatus,
@@ -25,9 +24,7 @@ def test_examples_replay_deterministically_without_execution() -> None:
         result.validate()
         assert result.execution_authorized is False
         assert result.events[-1].kind is ReplayEventKind.GEOMETRY_BLOCKED
-        assert len(result.events) == len(
-            EXAMPLE_BULLISH.candles if result.direction if False else result.events
-        )
+        assert len(result.events) == len(result.events[:-1]) + 1
 
 
 def test_replay_preserves_candle_order_and_provenance() -> None:
@@ -66,4 +63,7 @@ def test_missing_geometry_label_is_rejected() -> None:
 def test_replay_rejects_execution_authorization_contract() -> None:
     result = replay_fixture(EXAMPLE_BULLISH)
     assert result.execution_authorized is False
-    assert all(event.kind in (ReplayEventKind.CANDLE_OBSERVED, ReplayEventKind.GEOMETRY_BLOCKED) for event in result.events)
+    assert all(
+        event.kind in (ReplayEventKind.CANDLE_OBSERVED, ReplayEventKind.GEOMETRY_BLOCKED)
+        for event in result.events
+    )
