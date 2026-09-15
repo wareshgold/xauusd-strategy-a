@@ -1,0 +1,27 @@
+name: Research - SP2L Source-Safe Replay
+
+on:
+  pull_request:
+    paths:
+      - 'research/fixtures/**'
+      - 'research/replay/**'
+      - 'docs/research/SP2L_SOURCE_SAFE_REPLAY_HARNESS_2026-09-15.md'
+      - '.github/workflows/research-sp2l-source-safe-replay.yml'
+  push:
+    branches:
+      - research/sp2l-source-safe-replay-2026-09-15
+
+jobs:
+  source-safe-replay:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pytest
+        run: python -m pip install pytest
+      - name: Run source-safe replay tests
+        run: python -m pytest -q research/replay/test_sp2l_replay_contract.py
