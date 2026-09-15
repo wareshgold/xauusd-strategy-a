@@ -1,4 +1,4 @@
-import { clampFavorableStop, isFavorableStop } from './TrailingStopSafety';
+import { clampFavorableStop, isFavorableStop } from './TrailingStopSafety.js';
 
 describe('TrailingStopSafety', () => {
   it('allows BUY stop to move upward or remain equal', () => {
