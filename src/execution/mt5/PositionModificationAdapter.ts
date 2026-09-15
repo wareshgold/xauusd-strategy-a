@@ -1,4 +1,4 @@
-import type { PositionDirection } from '../PositionManager';
+import type { PositionDirection } from '../PositionManager.js';
 
 export interface PositionModificationRequest {
   readonly positionId: string;
