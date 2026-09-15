@@ -11,7 +11,7 @@ SOURCE ARTIFACT
   ↓
 SOURCE EVIDENCE / FRAME AUDIT                 COMPLETE
   ↓
-EVIDENCE CANDIDATES C01–C08                  COMPLETE
+C01–C08 MICRO-AUDIT + ADJUDICATION BRIEFS    COMPLETE
   ↓
 HUMAN MANUAL ADJUDICATION (#175)              ACTIVE BLOCKER
   ↓
@@ -38,7 +38,8 @@ PRODUCTION / BUY-SELL                         LOCKED
 - FPS: `30`
 - Duration: `4155.6667 s`
 - Deterministic frame address: `round(t * 30)`
-- Persistent evidence record: `docs/research/SP2L_SOURCE_VIDEO_FRAME_AUDIT_2026-09-15.md`
+- Persistent source audit: `docs/research/SP2L_SOURCE_VIDEO_FRAME_AUDIT_2026-09-15.md`
+- Human-review briefs: `docs/research/SP2L_C01_C08_ADJUDICATION_BRIEFS_2026-09-15.md`
 
 The source-video frame audit is the persistent reference for routine continuity. Do not repeatedly request the video unless a future adjudication requires a new pixel-level inspection that is not represented in the audit.
 
@@ -71,7 +72,23 @@ All ten executable geometry dimensions remain blocked until source-discriminatin
 9. `targets_2x`
 10. `bearish_mirror`
 
-The current source-video audit narrows these hypotheses but does not itself promote them to executable rules.
+The source-video micro-audit strengthens provenance and narrows hypotheses, but it does not itself promote them to executable rules.
+
+## Latest source-audit conclusion
+
+The binary source was re-opened and inspected at deterministic frame addresses around the remaining unresolved dimensions. The same registered SHA-256 was verified.
+
+The audit strengthened the following source observations:
+
+- P-Gap is explicitly used as a breakout-validity concept and is visually shaded in the source examples.
+- Corrective Buy Limit and separate SL placement are directly visible.
+- AB=CD is explicitly written over the candle-level construction.
+- TP1/TP2/Entry/SL and the 2X/second-position concept are directly visible.
+- Delete behavior is explicitly annotated in the pending lifecycle.
+- A bearish continuation example is directly visible.
+- The 1/2/3 construction family is directly visible.
+
+The audit still did **not** establish unique executable OHLC formulas/anchors/tolerances/thresholds for the ten dimensions. Therefore no geometry was promoted.
 
 ## Governance gates already prepared
 
@@ -84,6 +101,8 @@ The current source-video audit narrows these hypotheses but does not itself prom
 - Canonical Geometry Freeze Decision Contract: prepared; separate decision gate.
 - Human Adjudication Execution Runbook: prepared.
 - Research-vs-MT5 Data Architecture Contract: prepared as non-canonical engineering architecture.
+- Source-video frame audit: completed and persisted in PR #185.
+- C01–C08 adjudication briefs: prepared and persisted in PR #185.
 
 ## Active work items
 
@@ -161,14 +180,15 @@ Future sessions MUST follow these rules:
 6. **Do not start deterministic Strategy A execution development before the separate canonical freeze decision.**
 7. **Do not claim CI green unless the exact current commit/run has been verified.**
 8. **Do not merge research PRs automatically.**
-9. When context is lost, read this snapshot and the source-video frame audit first, then continue from the active gate instead of recreating prior steps.
+9. When context is lost, read this snapshot, the source-video frame audit, and the C01–C08 briefs first, then continue from the active gate instead of recreating prior steps.
 10. The active gate is human adjudication, not another engineering PR.
+11. The original video is a persistent registered artifact; routine sessions should use the GitHub audit rather than repeatedly requesting it.
 
 ## Next concrete actions
 
 ### Immediate
 
-- Human adjudicate C01–C08 using the persistent evidence audit + existing candidate package.
+- Human adjudicate C01–C08 using the persistent evidence audit and adjudication briefs.
 - Record the exact source evidence and rationale in the Manual Adjudication contract.
 
 ### After adjudication
@@ -189,4 +209,4 @@ A high development win rate is not sufficient evidence of a robust edge. Stabili
 
 **The project is not blocked by missing infrastructure. It is blocked by human source adjudication of the remaining ten executable geometry dimensions.**
 
-The correct next move is therefore to adjudicate C01–C08 from the recorded source evidence, not to invent geometry, rerun generic backtests, or create another round of infrastructure PRs.
+The source-video audit and C01–C08 briefs are now durable in GitHub, so the original video should not be requested again for routine continuity. The correct next move is human adjudication, not another source-hunt loop or another infrastructure round.
