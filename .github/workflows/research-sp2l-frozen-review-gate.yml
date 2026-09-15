@@ -1,0 +1,30 @@
+name: Research - SP2L Frozen Geometry Review Gate
+
+on:
+  pull_request:
+    paths:
+      - 'research/gates/sp2l_post_adjudication_review.py'
+      - 'research/gates/test_sp2l_post_adjudication_review.py'
+      - '.github/workflows/research-sp2l-frozen-review-gate.yml'
+
+jobs:
+  readiness-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run readiness-gate tests
+        run: python -m pytest -q research/gates/test_sp2l_post_adjudication_review.py
+      - name: Governance scan
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('research/gates/sp2l_post_adjudication_review.py').read_text()
+          forbidden = ('BUY', 'SELL', 'execute_order', 'place_order', 'backtest', 'optimize')
+          hits = [token for token in forbidden if token in text]
+          if hits:
+              raise SystemExit(f'forbidden execution/research-resolution tokens: {hits}')
+          print('governance scan passed')
+          PY
