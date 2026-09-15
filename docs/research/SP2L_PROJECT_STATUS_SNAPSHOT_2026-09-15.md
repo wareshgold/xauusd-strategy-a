@@ -183,6 +183,7 @@ Future sessions MUST follow these rules:
 9. When context is lost, read this snapshot, the source-video frame audit, and the C01–C08 briefs first, then continue from the active gate instead of recreating prior steps.
 10. The active gate is human adjudication, not another engineering PR.
 11. The original video is a persistent registered artifact; routine sessions should use the GitHub audit rather than repeatedly requesting it.
+12. Treat the current PR #185 as provenance documentation only; do not treat its test-merge SHA as a merged commit. It remains open and unmerged.
 
 ## Next concrete actions
 
