@@ -13,7 +13,8 @@ export interface Mt5PositionModificationResult {
     | 'EXECUTION_DISABLED'
     | 'CONTRACT_UNFROZEN'
     | 'INVALID_INPUT'
-    | 'NO_MODIFICATION';
+    | 'NO_MODIFICATION'
+    | 'MODIFICATION_READY';
 }
 
 /**
@@ -55,6 +56,6 @@ export function buildMt5PositionModification(
   return {
     accepted: true,
     request: { positionTicket, newStopLoss: proposedStopLoss },
-    reason: 'NO_MODIFICATION',
+    reason: 'MODIFICATION_READY',
   };
 }
