@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { clampFavorableStop, isFavorableStop } from './TrailingStopSafety.js';
 
 describe('TrailingStopSafety', () => {
