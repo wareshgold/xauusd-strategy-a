@@ -17,10 +17,6 @@ export interface Mt5PositionModificationResult {
     | 'MODIFICATION_READY';
 }
 
-/**
- * Adapter boundary only. It deliberately emits no MT5 modification while the
- * trailing execution contract is not frozen and enabled.
- */
 export function buildMt5PositionModification(
   position: OpenPosition,
   positionTicket: string,
@@ -41,7 +37,7 @@ export function buildMt5PositionModification(
     return { accepted: false, request: null, reason: 'CONTRACT_UNFROZEN' };
   }
 
-  if (!positionTicket || !Number.isFinite(proposedStopLoss)) {
+  if (!positionTicket || proposedStopLoss === null || !Number.isFinite(proposedStopLoss)) {
     return { accepted: false, request: null, reason: 'INVALID_INPUT' };
   }
 
