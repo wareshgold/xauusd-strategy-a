@@ -1,4 +1,4 @@
-import type { OpenPosition } from './PositionManager';
+import type { OpenPosition } from './PositionManager.js';
 
 export function isFavorableStop(direction: OpenPosition['direction'], current: number, proposed: number): boolean {
   if (!Number.isFinite(current) || !Number.isFinite(proposed)) return false;
