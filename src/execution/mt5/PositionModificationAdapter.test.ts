@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   rejectUntilBrokerConstraintsAreFrozen,
   validatePositionModificationRequest,
-} from './PositionModificationAdapter';
+} from './PositionModificationAdapter.js';
 
 describe('MT5 position modification adapter boundary', () => {
   it('accepts a finite, identified request at the adapter boundary', () => {
