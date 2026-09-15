@@ -18,6 +18,6 @@ jobs:
         run: python -m pytest -q research/engine/test_dataset_coverage.py
       - name: Re-run deterministic coverage tests
         run: python -m pytest -q research/engine/test_dataset_coverage.py
-      - name: Governance scan
+      - name: Governance scan of executable pilot component
         run: |
-          ! grep -RniE 'BUY|SELL|P-Gap|P-GAP|AB=CD|Leg.?2|entry.?anchor|fill.?semantics|target.?formula|bearish.?mirror' docs/engineering/SP2L_SPEC_KIT_PILOT_* 2>/dev/null
+          ! grep -niE 'BUY|SELL|P-Gap|P-GAP|AB=CD|Leg.?2|entry.?anchor|fill.?semantics|target.?formula|bearish.?mirror' research/engine/dataset_coverage.py
