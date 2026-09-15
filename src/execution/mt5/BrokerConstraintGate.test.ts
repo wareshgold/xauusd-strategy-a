@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canSubmitStopModification } from './BrokerConstraintGate';
+import { canSubmitStopModification } from './BrokerConstraintGate.js';
 
 describe('broker constraint gate', () => {
   it('blocks unknown constraints', () => {
