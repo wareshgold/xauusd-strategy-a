@@ -1,10 +1,12 @@
+export type TrailingExecutionFreezeState = 'UNFROZEN' | 'FROZEN';
+
 export interface TrailingStopExecutionContract {
   readonly enabled: boolean;
   readonly distancePrice: number | null;
   readonly activationPrice: number | null;
   readonly stepPrice: number | null;
-  readonly evaluation: 'UNFROZEN';
-  readonly brokerConstraints: 'UNFROZEN';
+  readonly evaluation: TrailingExecutionFreezeState;
+  readonly brokerConstraints: TrailingExecutionFreezeState;
 }
 
 /**
