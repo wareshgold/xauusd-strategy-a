@@ -27,4 +27,4 @@ jobs:
           if hits:
               raise SystemExit(f'forbidden execution/research-resolution tokens: {hits}')
           print('governance scan passed')
-PY
+          PY
