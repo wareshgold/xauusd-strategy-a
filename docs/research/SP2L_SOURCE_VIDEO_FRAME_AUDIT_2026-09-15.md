@@ -23,7 +23,7 @@ The SHA-256 matches the previously registered source fingerprint. Therefore this
 
 ## Audit method
 
-The review focused on the source-sensitive windows already identified by transcript/source research. Frames were inspected at frame-level around slide transitions, annotations, candle constructions, entry/SL lifecycle, target diagrams, and the bearish example. Representative transition/state timestamps are recorded below so the evidence can be re-located deterministically.
+The review used deterministic frame extraction from the supplied binary at the registered 30 fps address rule, with finer inspection around the source-sensitive windows. The audit covered slide transitions, annotated candle constructions, P-Gap diagrams, correction/entry/SL lifecycle, delete behavior, target diagrams, point-distance examples, and the bearish chart sequence.
 
 No generic trading convention was used to fill missing boundaries. Visual similarity was not promoted into a canonical formula. Where the video shows a concept but does not uniquely expose the executable OHLC rule, the dimension remains unresolved.
 
@@ -40,48 +40,137 @@ No generic trading convention was used to fill missing boundaries. Visual simila
 | C07 | `trigger_classifier` | Three numbered constructions are visibly presented; source treats multiple spike constructions as valid forms. | Exact exhaustive 1/2/3-candle classifier and boundary conditions are not fully specified. | `REMAINS_BLOCKED` pending human adjudication |
 | C08 | `structural_invalidation` | Source explicitly discusses return to the cited lower level invalidating the scenario; visual invalidation examples are present. | Exact OHLC boundary and indexing semantics remain unresolved. | `REMAINS_BLOCKED` pending human adjudication |
 
+## Detailed frame-level micro-audit
+
+### C01 — P-Gap discriminator
+
+**35:53–36:17**
+
+- The source displays the SP2L slide with three numbered constructions.
+- The blue/gray shaded regions are repeatedly associated with the text `Valid BO = P-Gap`.
+- A red-X example is shown separately from the valid constructions.
+- The repeated constructions establish that P-Gap is not merely a generic chart label added later; it is part of the source's own breakout-validity vocabulary.
+
+**36:17–36:30**
+
+- The three numbered examples remain visible while the source transitions into the AB=CD explanation.
+- The shaded P-Gap regions remain visual reference areas.
+
+**36:30–37:20**
+
+- `Valid BO = P-Gap` remains visible in the construction.
+- `AB=CD` is handwritten above the example.
+- `1M / 5M` annotations appear, reinforcing that the explanation is tied to candle/example construction rather than a published universal formula.
+
+**Adjudication boundary:** the video makes the semantic discriminator strong, but the exact top/bottom OHLC boundary of the shaded region and the exact candle-index formula are not uniquely stated. Therefore no executable P-Gap formula is promoted.
+
+### C02 — Entry anchor
+
+**38:40–39:30**
+
+- The correction sequence is shown with a horizontal reference level.
+- The narration/annotation moves from the spike/continuation construction into corrective entry placement.
+
+**39:40–40:10**
+
+- `Buy Limit` is explicitly written next to the horizontal entry/reference line.
+- `SL` is explicitly marked below the setup.
+- The entry level and SL are visually distinct; the source does not present them as the same price.
+- The pending entry is shown during the corrective phase rather than as a market entry after an arbitrary later candle.
+
+**Adjudication boundary:** the source clearly establishes corrective Buy Limit semantics and separate SL placement, but it does not expose a uniquely reproducible rule such as exact candle high/low/body/open/close selection. No such anchor is inferred.
+
+### C03 — Leg-2 start / AB=CD
+
+**36:30–37:20**
+
+- The source explicitly writes `AB=CD` over the candle construction.
+- The visual explanation remains at candle/example level.
+- The second-leg construction is presented as the continuation after correction.
+
+**Adjudication boundary:** the source supports a semantic magnitude relationship between the two legs, but the exact A/B/C/D price anchors and the precise point at which Leg 2 begins are not uniquely exposed. Classical Fibonacci or internet AB=CD conventions are not substituted.
+
+### C04 — Targets / 2X
+
+**41:45–42:20**
+
+- `Buy`, `2X`, and `SL` are shown in sequence.
+- The source visually distinguishes the normal entry from the secondary/2X position concept.
+
+**42:30–42:40**
+
+- The clean diagram labels `TP1`, `TP2`, `Entry`, and `SL`.
+- This confirms that the source has distinct target levels rather than one undifferentiated take-profit.
+
+**44:30–44:50**
+
+- Point-distance examples are written, including `250 point` and `500 point` examples.
+- These examples demonstrate that distance/point arithmetic is discussed, but they do not by themselves provide a universal executable TP formula with unambiguous units, anchors, and indexing.
+
+**Adjudication boundary:** TP1/TP2/2X are source-confirmed concepts; the complete formulas remain unresolved.
+
+### C05 — Bearish mirror
+
+**62:35–64:35**
+
+- A bearish chart sequence is visibly shown with declining price structure and highlighted regions.
+- The later chart includes bearish continuation/target-style markings.
+- The visual sequence is evidence that bearish setups exist in the source.
+
+**Adjudication boundary:** the video does not state a complete field-by-field bullish-to-bearish transformation for every unresolved dimension. In particular, exact P-Gap, entry, invalidation, Leg-2, target, and pending semantics cannot be mirrored by assumption. Bearish existence is source-confirmed; deterministic mirror mapping is not.
+
+### C06 — Pending refresh / delete behavior
+
+**40:20–40:40**
+
+- `Delete` is explicitly annotated in the entry lifecycle.
+- The setup is subsequently redrawn/changed, demonstrating that the pending order state is not necessarily immutable after first placement.
+- The later annotated state includes a new/changed level and continued discussion of the pending setup.
+
+**Adjudication boundary:** source supports lifecycle change/delete behavior, but does not provide an exhaustive deterministic predicate for delete vs replace vs retain, nor a universal numeric threshold/buffer.
+
+### C07 — Trigger classifier
+
+**35:53–36:17**
+
+- Three constructions are explicitly numbered `1`, `2`, and `3`.
+- Each is presented as a valid spike construction within the SP2L explanation.
+
+**36:17–36:30**
+
+- The numbered constructions remain part of the same explanation as `Valid BO = P-Gap`.
+
+**Adjudication boundary:** the source confirms a 1/2/3 construction family, but does not provide an exhaustive machine-testable classifier with all candle-index and boundary conditions. The family should not be converted into an arbitrary 1/2/3-candle algorithm.
+
+### C08 — Correction / structural invalidation
+
+**38:40–39:40**
+
+- The source moves from the spike into correction and places the Buy Limit around a horizontal reference level.
+- The correction is tied to a lower reference relative to the bullish construction.
+
+**39:40–40:10**
+
+- The entry and SL are explicitly separated.
+
+**40:20–40:40**
+
+- The `Delete` lifecycle indicates that the setup can be invalidated/removed as subsequent structure develops.
+
+**Adjudication boundary:** the relationship between correction, the cited lower level, and invalidation is source-supported; the exact OHLC boundary and candle indexing are not uniquely stated.
+
 ## Key frame references
 
-### C01 — P-Gap
-
-- `35:53` — three numbered spike constructions; shaded P-Gap regions and `Valid BO = P-Gap` visible.
-- `36:16` — three constructions shown simultaneously; each has a shaded P-Gap region.
-- `36:30` — `Valid BO = P-Gap` and handwritten `AB=CD` visible.
-- `36:45–37:20` — repeated AB=CD / P-Gap construction across the same source example and timeframe annotations.
-
-**Source conclusion:** P-Gap is a source-defined validity concept associated with the breakout/spike construction. The visual material does not uniquely state the exact OHLC formula needed for deterministic implementation.
-
-### C02 + C08 — Entry, correction and invalidation
-
-- `38:40` — corrective sequence and lower reference levels are annotated.
-- `39:40` — explicit `Buy Limit` and `SL` annotations.
-- `39:50–40:10` — Buy Limit placement is emphasized relative to the horizontal reference and SL.
-- `40:20–40:40` — explicit `Delete` annotation and subsequent pending-order lifecycle discussion.
-
-**Source conclusion:** corrective entry, separate SL, and deletion/update behavior are directly visible. The exact candle/price anchor and deterministic refresh/invalidation threshold are not uniquely specified by the visual evidence.
-
-### C03 — Leg 2 / AB=CD
-
-- `36:30` — handwritten `AB=CD` above the construction.
-- `36:35–37:20` — AB=CD repeated with `1M / 5M` annotations and the same candle-level construction.
-- The source presentation is candle-level and does not provide a classical Fibonacci/online-AB=CD definition that can safely be substituted.
-
-**Source conclusion:** the source supports the semantic expectation that the second leg corresponds to the first leg in the presented construction. It does not uniquely identify A/B/C/D anchors or a numerical tolerance.
-
-### C04 — TP1 / TP2 / 2X
-
-- `41:45–42:20` — `Buy`, `2X`, `SL`, and position/risk annotations appear sequentially.
-- `42:30` — clean diagram explicitly labels `TP1`, `TP2`, `Entry`, and `SL`.
-- `44:30` — handwritten point-distance examples (`250 point`, `500 point`) appear.
-
-**Source conclusion:** the source clearly distinguishes TP1/TP2 and a 2X/second-position concept. The frames do not uniquely provide a general executable formula that can be safely encoded as canonical geometry.
-
-### C05 — Bearish example
-
-- `62:30–63:45` — bearish chart sequence with red highlighted region and declining structure.
-- `64:00–64:40` — continued bearish movement and later setup/target markings.
-
-**Source conclusion:** bearish continuation exists in the source. The video does not explicitly provide a complete bullish-to-bearish mirror mapping for every unresolved Strategy A field. No symmetry inference is allowed.
+- `35:53` — three numbered spike constructions / P-Gap context.
+- `36:16` — three constructions and shaded P-Gap regions.
+- `36:30` — `Valid BO = P-Gap` and `AB=CD`.
+- `37:00` — AB=CD construction with timeframe annotations.
+- `38:40` — correction sequence.
+- `39:40` — `Buy Limit` + `SL`.
+- `40:20` — `Delete` lifecycle.
+- `42:30` — `TP1` / `TP2` / `Entry` / `SL` diagram.
+- `44:30` — point-distance examples.
+- `62:35–64:35` — bearish continuation example.
 
 ## Important non-findings
 
