@@ -1,0 +1,25 @@
+name: Execution Trailing Boundary
+
+on:
+  push:
+    branches:
+      - main
+      - 'research/**'
+  pull_request:
+    paths:
+      - 'src/execution/**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - '.github/workflows/execution-trailing-boundary.yml'
+
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - run: npm test

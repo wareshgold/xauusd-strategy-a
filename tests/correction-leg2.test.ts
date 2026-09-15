@@ -3,7 +3,7 @@ import type { Candle } from '../src/domain/market/Candle.js';
 import { detectFirstCorrection } from '../src/domain/strategy-a/CorrectionDetector.js';
 import { projectLeg2 } from '../src/domain/strategy-a/LegProjection.js';
 
-const c = (i:number,o:number,h:number,l:number,cl:number): Candle => ({ timestamp:`2026-01-01T00:${String(i).padStart(2,'0')}:00Z`, timeframe:'1m', open:o, high:h, low:l, close:cl });
+const c = (i:number,o:number,h:number,l:number,cl:number): Candle => ({ timestamp:`2026-01-01T00:${String(i).padStart(2,'0')}:00Z`, open:o, high:h, low:l, close:cl });
 
 describe('Strategy A correction and Leg 2 projection', () => {
   it('detects the first bullish correction beyond the setup low', () => {

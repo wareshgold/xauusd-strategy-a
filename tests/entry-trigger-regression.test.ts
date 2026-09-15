@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { detectEntryTrigger } from '../src/domain/strategy-a/EntryTrigger.js';
 
 const c = (index: number, open: number, high: number, low: number, close: number) => ({
-  index,
   timestamp: `2026-01-01T00:${String(index).padStart(2, '0')}:00Z`,
   open,
   high,
@@ -12,8 +11,11 @@ const c = (index: number, open: number, high: number, low: number, close: number
 });
 
 const correction = {
-  direction: 'BULLISH' as const,
+  spikeStartIndex: 0,
+  spikeEndIndex: 2,
+  correctionStartIndex: 3,
   correctionExtremeIndex: 3,
+  direction: 'BULLISH' as const,
   extremePrice: 99,
 };
 
