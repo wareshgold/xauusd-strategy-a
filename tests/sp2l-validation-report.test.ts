@@ -44,7 +44,6 @@ describe('SP2L deterministic validation report', () => {
     const executed = createReadyValidationReport('EXECUTED-1', geometry);
     executed.status = 'EXECUTED';
     executed.excludedFromMetrics = false;
-    executed.exclusionReason = undefined;
     executed.metrics.rValues = [2, -1, 1];
 
     const blocked = createBlockedValidationReport('BLOCKED-1', createResearchCandidate());
