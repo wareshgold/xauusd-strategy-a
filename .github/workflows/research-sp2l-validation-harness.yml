@@ -40,4 +40,4 @@ jobs:
         run: npx tsc -p tsconfig.sp2l-harness.json --noEmit
 
       - name: Run SP2L validation harness tests
-        run: npx vitest run tests/sp2l-geometry-contract.test.ts tests/sp2l-frozen-geometry-gate.test.ts tests/sp2l-validation-report.test.ts tests/sp2l-fixture-runner.test.ts tests/sp2l-integrity-invariants.test.ts
+        run: npx vitest run tests/sp2l-geometry-contract.test.ts tests/sp2l-frozen-geometry-gate.test.ts tests/sp2l-validation-report.test.ts tests/sp2l-fixture-runner.test.ts tests/sp2l-integrity-invariants.test.ts tests/sp2l-determinism-invariants.test.ts
