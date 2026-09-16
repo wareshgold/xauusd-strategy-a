@@ -12,6 +12,9 @@ const c = (index: number, open: number, high: number, low: number, close: number
 });
 
 const correction = {
+  spikeStartIndex: 0,
+  spikeEndIndex: 2,
+  correctionStartIndex: 3,
   direction: 'BULLISH' as const,
   correctionExtremeIndex: 3,
   extremePrice: 99,
