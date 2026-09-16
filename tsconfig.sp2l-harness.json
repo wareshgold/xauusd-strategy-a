@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "research/harness/sp2l_geometry_contract_v1.ts",
+    "research/harness/sp2l_frozen_geometry_gate_v1.ts",
+    "research/harness/sp2l_validation_report_v1.ts",
+    "research/harness/sp2l_fixture_runner_v1.ts",
+    "tests/sp2l-geometry-contract.test.ts",
+    "tests/sp2l-frozen-geometry-gate.test.ts",
+    "tests/sp2l-validation-report.test.ts"
+  ]
+}
