@@ -98,9 +98,35 @@ Source-bound conclusions:
 
 No canonical rule is promoted from Batch 29.
 
+## Batch 30 — chart ↔ trade-history matching forensic pass
+
+A follow-up forensic pass attempted to match the visible chart annotations and price levels against the concrete history rows in the same worked-trade material.
+
+Observed correspondence:
+
+- The worked chart and account/history are clearly presented as the same operational XAUUSD example, with `SP2L`, `EMA60`, and `M1` annotations on the chart and corresponding XAUUSD sell records in the account display.
+- Three TP-bearing SELL positions share **TP 3213.37** while their entry prices differ (**3229.08, 3223.84, 3228.88**) and their SL values are not identical. This establishes an observed multi-position execution context with a common target, but not the rule that generated it.
+- Multiple SELL rows around **3232.41 / SL 3237.80** have different later close prices. This demonstrates that the displayed account history can contain multiple separately represented positions around the same entry/SL context; it does not establish a canonical scaling or duplicate-entry policy.
+- The separate **3269.88** row with no SL/TP is at a materially different price/time context from the 322x cluster. It must not be merged into the same setup without explicit source evidence.
+- The chart-side target and the common history TP strengthen the correspondence between the chart teaching and the account outcome, but the artifact still lacks an event-level order identifier or deterministic timeline linking each annotation to each history row.
+
+Source-bound conclusions:
+
+**F9:** chart/history correspondence strengthens the existence of executed positions, but not the exact fill trigger or pending-price construction.
+
+**F10:** repeated Entry+SL pairs strengthen the existence of explicit risk attachment, but not the canonical SL formula or invalidation event.
+
+**F11:** multiple pending/executed-looking states are observed, but lifecycle transitions and precedence remain unresolved.
+
+**F13:** 2X remains an explicitly observed worked-chart concept, but its price/sizing formula and execution semantics remain unresolved.
+
+**TP/outcome:** common TP **3213.37** is an observed worked-example target/close value. It does not establish canonical TP1/TP2 construction, partial-close semantics, fill priority, or execution rules.
+
+No canonical rule is promoted from Batch 30.
+
 ## Gate decision
 
-**Source Resolution: PARTIAL PASS — individual concepts, temporal teaching sequence, and worked-account states strengthened; executable semantics remain unresolved.**
+**Source Resolution: PARTIAL PASS — individual concepts, temporal teaching sequence, and worked-account chart/history correspondence strengthened; executable semantics remain unresolved.**
 
 **Frozen Geometry: BLOCKED** — executable semantics remain unresolved and cannot be selected by backtest performance or implementation convenience.
 
