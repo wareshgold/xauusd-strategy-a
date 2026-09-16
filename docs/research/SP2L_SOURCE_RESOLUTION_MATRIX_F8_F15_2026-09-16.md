@@ -27,6 +27,18 @@ Therefore the earlier wording "primary geometric midpoint evidence" is withdrawn
 
 No canonical 2X formula, order type, trigger, fill, sizing, cancellation, or replacement semantics is introduced.
 
+## Batch 24 — F16 round-level forensic update
+
+Primary frames around **2640–2670 (~44:00–44:30)** visibly annotate **"Round level"** and show price examples around the 3200/3250/3255 area. The following frame visibly includes spacing annotations **"250 point"**, **"500 point"**, and **"1000"**.
+
+This strengthens the source evidence that round-number levels and multiple spacing magnitudes are part of the teaching/context. It does **not** uniquely establish the instrument scale, whether these are exact point/tick increments or presentation shorthand, which spacing is selected, the rounding anchor, proximity threshold, or whether round level acts as a filter, score feature, entry condition, or contextual annotation.
+
+F16 is therefore recorded as:
+
+**SOURCE-CONFIRMED CONCEPT / MULTIPLE SPACING CANDIDATES OBSERVED / EXACT ROUND-LEVEL ALGORITHM UNRESOLVED**
+
+The research-only synthetic fixture records `[250, 500, 1000]` as observed candidates without selecting a canonical interpretation.
+
 ## F14 / F15 current evidence boundary
 
 F14 remains explicitly supported at the concept level by the handwritten `AB=CD` teaching sequence around frames 2190–2220, while A/B/C/D anchor semantics and equality/tolerance remain unresolved.
@@ -35,7 +47,7 @@ F15 remains directly supported by the bearish/sell-side worked episode around fr
 
 ## Gate decision
 
-**Source Resolution: PARTIAL PASS — strengthened, with F13 wording conservatively corrected.**
+**Source Resolution: PARTIAL PASS — strengthened by F16 primary-artifact evidence, with F13 wording conservatively corrected.**
 
 **Frozen Geometry: BLOCKED** — executable semantics remain unresolved and cannot be selected by backtest performance or implementation convenience.
 
