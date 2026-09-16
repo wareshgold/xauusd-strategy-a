@@ -13,11 +13,17 @@ function expectThrow(fn: () => void): void {
   if (!threw) throw new Error('Expected function to throw');
 }
 
-const candidate = createResearchCandidate();
-expectThrow(() => assertCanonicalGeometryFrozen(candidate));
+describe('SP2L geometry contract', () => {
+  it('blocks unresolved research candidates', () => {
+    const candidate = createResearchCandidate();
+    expectThrow(() => assertCanonicalGeometryFrozen(candidate));
+  });
 
-const resolved = createResearchCandidate();
-for (const key of Object.keys(resolved) as Array<keyof typeof resolved>) {
-  resolved[key] = { provenance: 'SOURCE_CONFIRMED' };
-}
-assertCanonicalGeometryFrozen(resolved);
+  it('accepts only fully source-confirmed geometry', () => {
+    const resolved = createResearchCandidate();
+    for (const key of Object.keys(resolved) as Array<keyof typeof resolved>) {
+      resolved[key] = { provenance: 'SOURCE_CONFIRMED' };
+    }
+    assertCanonicalGeometryFrozen(resolved);
+  });
+});
