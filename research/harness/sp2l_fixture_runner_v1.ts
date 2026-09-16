@@ -2,16 +2,19 @@ import {
   Sp2lGeometryContract,
   assertCanonicalGeometryFrozen,
 } from './sp2l_geometry_contract_v1';
+import {
+  createBlockedValidationReport,
+  createReadyValidationReport,
+  ValidationReport,
+} from './sp2l_validation_report_v1';
 
 export type FixtureExpectation = {
   id: string;
   expected: string;
 };
 
-export type FixtureRun = {
-  fixtureId: string;
-  status: 'PASS' | 'FAIL' | 'BLOCKED_UNRESOLVED_GEOMETRY';
-  reason?: string;
+export type FixtureRun = ValidationReport & {
+  expectationId: string;
 };
 
 /** Research-only runner shell. It intentionally does not execute BUY/SELL logic. */
@@ -22,18 +25,16 @@ export function runCanonicalFixture(
 ): FixtureRun {
   try {
     assertCanonicalGeometryFrozen(geometry);
-  } catch (error) {
+  } catch {
     return {
-      fixtureId,
-      status: 'BLOCKED_UNRESOLVED_GEOMETRY',
-      reason: error instanceof Error ? error.message : String(error),
+      ...createBlockedValidationReport(fixtureId, geometry),
+      expectationId: expectation.id,
     };
   }
 
-  // Execution semantics remain a separate unresolved research boundary.
+  // Geometry may be frozen, but execution/fill semantics remain a separate boundary.
   return {
-    fixtureId,
-    status: 'FAIL',
-    reason: `Fixture ${expectation.id} requires explicit execution implementation before canonical validation.`,
+    ...createReadyValidationReport(fixtureId, geometry),
+    expectationId: expectation.id,
   };
 }
