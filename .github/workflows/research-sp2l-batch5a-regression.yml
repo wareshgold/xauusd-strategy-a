@@ -1,0 +1,48 @@
+name: Research - SP2L Batch 5A Regression
+
+on:
+  push:
+    branches:
+      - research/sp2l-batch5-source-boundary-2026-09-16
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Batch 5A branch
+        uses: actions/checkout@v4
+        with:
+          ref: research/sp2l-batch5-source-boundary-2026-09-16
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --package-lock=false
+
+      - name: Build
+        run: npm run build
+
+      - name: Run deterministic regression suite
+        run: npm test
+
+      - name: Run source-boundary assertions explicitly
+        run: npx vitest run tests/sp2l-source-boundary-assertions.test.ts
+
+      - name: Run synthetic fixture registry explicitly
+        run: npx vitest run tests/sp2l-source-fixtures.test.ts
+
+      - name: Emit gate result
+        if: success()
+        run: |
+          echo "BATCH_5A_REGRESSION=PASS"
+          echo "SOURCE_BOUNDARY=PASS"
+          echo "SYNTHETIC_FIXTURE_HARNESS=PASS"
+          echo "GEOMETRY_PROMOTION=NONE"
+          echo "PRODUCTION=OFF"
