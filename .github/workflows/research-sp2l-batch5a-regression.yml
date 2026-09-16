@@ -27,22 +27,39 @@ jobs:
         run: npm install --package-lock=false
 
       - name: Build
+        id: build
+        continue-on-error: true
         run: npm run build
 
       - name: Run deterministic regression suite
+        id: regression
+        if: always()
+        continue-on-error: true
         run: npm test
 
       - name: Run source-boundary assertions explicitly
+        id: source_boundary
+        if: always()
+        continue-on-error: true
         run: npx vitest run tests/sp2l-source-boundary-assertions.test.ts
 
       - name: Run synthetic fixture registry explicitly
+        id: fixtures
+        if: always()
+        continue-on-error: true
         run: npx vitest run tests/sp2l-source-fixtures.test.ts
 
       - name: Emit gate result
-        if: success()
+        if: always()
         run: |
-          echo "BATCH_5A_REGRESSION=PASS"
-          echo "SOURCE_BOUNDARY=PASS"
-          echo "SYNTHETIC_FIXTURE_HARNESS=PASS"
+          echo "BUILD_OUTCOME=${{ steps.build.outcome }}"
+          echo "DETERMINISTIC_REGRESSION_OUTCOME=${{ steps.regression.outcome }}"
+          echo "SOURCE_BOUNDARY_OUTCOME=${{ steps.source_boundary.outcome }}"
+          echo "SYNTHETIC_FIXTURE_OUTCOME=${{ steps.fixtures.outcome }}"
           echo "GEOMETRY_PROMOTION=NONE"
           echo "PRODUCTION=OFF"
+          if [ "${{ steps.build.outcome }}" != "success" ]; then exit 1; fi
+          if [ "${{ steps.regression.outcome }}" != "success" ]; then exit 1; fi
+          if [ "${{ steps.source_boundary.outcome }}" != "success" ]; then exit 1; fi
+          if [ "${{ steps.fixtures.outcome }}" != "success" ]; then exit 1; fi
+          echo "BATCH_5A_REGRESSION=PASS"
