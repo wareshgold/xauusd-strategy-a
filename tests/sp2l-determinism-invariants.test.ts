@@ -5,7 +5,7 @@ import { runCanonicalFixture } from '../research/harness/sp2l_fixture_runner_v1'
 describe('SP2L deterministic replay invariants', () => {
   it('returns identical blocked results for identical unresolved inputs', () => {
     const geometry = createResearchCandidate();
-    const expectation = { id: 'DET-FIXTURE-001' };
+    const expectation = { id: 'DET-FIXTURE-001', expected: 'BLOCKED_UNRESOLVED_GEOMETRY' };
 
     const first = runCanonicalFixture('DET-001', geometry, expectation);
     const second = runCanonicalFixture('DET-001', geometry, expectation);
@@ -19,7 +19,7 @@ describe('SP2L deterministic replay invariants', () => {
       geometry[field] = { provenance: 'SOURCE_CONFIRMED' };
     }
 
-    const expectation = { id: 'DET-FIXTURE-002' };
+    const expectation = { id: 'DET-FIXTURE-002', expected: 'READY_FOR_EXECUTION' };
     const first = runCanonicalFixture('DET-002', geometry, expectation);
     const second = runCanonicalFixture('DET-002', geometry, expectation);
 
