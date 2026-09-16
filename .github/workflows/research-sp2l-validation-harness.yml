@@ -1,0 +1,42 @@
+name: Research - SP2L Validation Harness
+
+on:
+  push:
+    paths:
+      - 'research/harness/**'
+      - 'tests/sp2l-**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - '.github/workflows/research-sp2l-validation-harness.yml'
+  pull_request:
+    paths:
+      - 'research/harness/**'
+      - 'tests/sp2l-**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - '.github/workflows/research-sp2l-validation-harness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validation-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run build
+
+      - name: Run SP2L validation harness tests
+        run: npx vitest run tests/sp2l-geometry-contract.test.ts tests/sp2l-frozen-geometry-gate.test.ts tests/sp2l-validation-report.test.ts
