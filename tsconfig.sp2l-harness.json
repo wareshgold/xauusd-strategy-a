@@ -17,9 +17,11 @@
     "research/harness/sp2l_frozen_geometry_gate_v1.ts",
     "research/harness/sp2l_validation_report_v1.ts",
     "research/harness/sp2l_fixture_runner_v1.ts",
+    "research/harness/sp2l_integrity_invariants_v1.ts",
     "tests/sp2l-geometry-contract.test.ts",
     "tests/sp2l-frozen-geometry-gate.test.ts",
     "tests/sp2l-validation-report.test.ts",
-    "tests/sp2l-fixture-runner.test.ts"
+    "tests/sp2l-fixture-runner.test.ts",
+    "tests/sp2l-integrity-invariants.test.ts"
   ]
 }
