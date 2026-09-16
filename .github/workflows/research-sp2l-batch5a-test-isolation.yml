@@ -1,0 +1,42 @@
+name: SP2L Batch 5A Test Isolation
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tests/**'
+      - 'docs/research/**'
+      - '.github/workflows/research-sp2l-batch5a-test-isolation.yml'
+      - 'package.json'
+      - 'vitest.config.*'
+
+jobs:
+  deterministic-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Batch 5A branch
+        uses: actions/checkout@v4
+        with:
+          ref: research/sp2l-batch5-source-boundary-2026-09-16
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --package-lock=false
+
+      - name: Run source-boundary assertions
+        run: npx vitest run tests/sp2l-source-boundary-assertions.test.ts
+
+      - name: Run synthetic source fixtures
+        run: npx vitest run tests/sp2l-source-fixtures.test.ts
+
+      - name: Emit explicit research gate
+        if: always()
+        run: |
+          echo 'Batch 5A deterministic test execution completed.'
+          echo 'This workflow does not promote unresolved geometry.'
+          echo 'Frozen Geometry remains blocked unless source evidence uniquely discriminates the geometry.'
+          echo 'Production remains OFF.'
