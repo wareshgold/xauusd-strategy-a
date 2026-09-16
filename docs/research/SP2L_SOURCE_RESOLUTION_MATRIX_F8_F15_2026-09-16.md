@@ -62,15 +62,15 @@ No canonical swing selection, P-Gap formula, Round Level algorithm, Buy Limit pr
 
 ## Batch 26 — P-Gap source-resolution update
 
-A dedicated P-Gap pass added a related Poursamadi price-action source to the evidence ledger. That source labels `P_GAP` as **Pressure gap** and describes checking the distance between the **high of two candles before** and the **low of the current candle**, with a gap existing when a distance is present.
+A dedicated P-Gap pass added a related Poursamadi price-action source to the evidence ledger. That source's glossary labels `P_GAP` as **Pressure gap**. Separately, the broader gap section describes a generic gap-detection relationship involving the **high of two candles before** and the **low of the current candle**, but it does not state that this relationship is the complete `P_GAP` formula.
 
-This is a useful source-aligned candidate construction, but it is not sufficient to freeze SP2L geometry because the current primary SP2L artifact only establishes the relationship **`Valid BO = P-Gap`** and does not expose the full formula. The related source also does not, in the available excerpt, establish the complete SP2L bullish/bearish mirror, tolerance, exact indexing convention, or execution role.
+This distinction corrects an earlier over-compression of the source. The current primary SP2L artifact establishes **`Valid BO = P-Gap`**, while the related source provides terminology and contextual gap material. It does not provide a source-complete SP2L P-Gap formula, bullish/bearish mirror, tolerance, or execution role.
 
-Therefore the status is strengthened but remains unresolved:
+Therefore the status is:
 
-**P-Gap: SOURCE-CONFIRMED CONCEPT + RELATED-SOURCE CANDIDATE CONSTRUCTION / EXACT SP2L FORMULA UNRESOLVED.**
+**P-Gap: SOURCE-CONFIRMED CONCEPT + RELATED-SOURCE TERMINOLOGY/CONTEXT EVIDENCE / EXACT SP2L FORMULA UNRESOLVED.**
 
-The research notation `High[2]` / `Low[0]` is only a normalization of the cited wording; it is **not** a source-defined indexing convention. No numeric threshold, epsilon, wick/body substitution, bearish mirror, breakout-close rule, entry rule, or production behavior is introduced.
+The research notation `High[2]` / `Low[0]` is only a normalization of the cited generic wording; it is **not** a source-defined indexing convention and is not promoted to a P-Gap formula.
 
 See `docs/research/SP2L_BATCH26_PGAP_SOURCE_RESOLUTION_2026-09-16.md` for the evidence ledger.
 
