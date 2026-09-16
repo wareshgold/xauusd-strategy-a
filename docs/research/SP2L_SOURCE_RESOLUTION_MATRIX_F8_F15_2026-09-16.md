@@ -1,8 +1,8 @@
-# SP2L Source Resolution Matrix — F8–F15 — 2026-09-16
+# SP2L Source Resolution Matrix — F8–F16 — 2026-09-16
 
 ## Purpose
 
-Consolidate the current source-first status of synthetic fixtures **F8–F15** after completed evidence batches and direct forensic inspection of the user-supplied primary SP2L training video, including worked-trade reconstruction and F14/F15 micro-forensic inspection. This matrix records what the artifact supports and what remains unresolved. It is a gate artifact, not a geometry specification.
+Consolidate the current source-first status of synthetic fixtures **F8–F16** after completed evidence batches and direct forensic inspection of the user-supplied primary SP2L training video, including worked-trade reconstruction and primary-artifact micro-forensic passes. This matrix records what the artifact supports and what remains unresolved. It is a gate artifact, not a geometry specification.
 
 ## Source-resolution matrix
 
@@ -16,6 +16,7 @@ Consolidate the current source-first status of synthetic fixtures **F8–F15** a
 | F13 | 2X | **PRIMARY-ARTIFACT CONFIRMED CONCEPT + BETWEEN-LEVEL VISUAL RELATION / EXACT PRICE FORMULA AND EXECUTION SEMANTICS UNRESOLVED** | No | BLOCKED |
 | F14 | AB=CD anchors and tolerance | **PRIMARY-ARTIFACT EXPLICIT AB=CD / CONCEPT CONFIRMED / A-B-C-D ANCHORS UNRESOLVED / TOLERANCE UNRESOLVED** | No | BLOCKED |
 | F15 | Bearish mirror | **PRIMARY-ARTIFACT BEARISH EXECUTION CONFIRMED / EXACT MIRROR GEOMETRY UNRESOLVED** | No | BLOCKED |
+| F16 | Round level | **SOURCE-CONFIRMED CONCEPT / MULTIPLE SPACING CANDIDATES OBSERVED / EXACT ROUND-LEVEL ALGORITHM UNRESOLVED** | No | BLOCKED |
 
 ## Batch 23 — F13 evidence-boundary correction
 
@@ -29,15 +30,35 @@ No canonical 2X formula, order type, trigger, fill, sizing, cancellation, or rep
 
 ## Batch 24 — F16 round-level forensic update
 
-Primary frames around **2640–2670 (~44:00–44:30)** visibly annotate **"Round level"** and show price examples around the 3200/3250/3255 area. The following frame visibly includes spacing annotations **"250 point"**, **"500 point"**, and **"1000"**.
+Primary frames around **2640–2670 (~44:00–44:30)** visibly annotate **"Round level"** and show price examples around the 3200/3250/3255 area. A following frame visibly includes spacing annotations **"250 point"**, **"500 point"**, and **"1000"**.
 
 This strengthens the source evidence that round-number levels and multiple spacing magnitudes are part of the teaching/context. It does **not** uniquely establish the instrument scale, whether these are exact point/tick increments or presentation shorthand, which spacing is selected, the rounding anchor, proximity threshold, or whether round level acts as a filter, score feature, entry condition, or contextual annotation.
 
-F16 is therefore recorded as:
-
-**SOURCE-CONFIRMED CONCEPT / MULTIPLE SPACING CANDIDATES OBSERVED / EXACT ROUND-LEVEL ALGORITHM UNRESOLVED**
-
 The research-only synthetic fixture records `[250, 500, 1000]` as observed candidates without selecting a canonical interpretation.
+
+## Batch 25 — F8/F12/F16 chain forensic update
+
+A dense primary-artifact sequence was inspected for the proposed chain:
+
+**structural level → valid BO / P-Gap → pending Buy Limit → execution**, with Round Level as a possible contextual predecessor.
+
+Observed evidence:
+
+- Around frame **2280 (~38:00)** the primary slide explicitly states **"Valid BO = P-Gap"** beside a bullish candle sequence.
+- Around frame **2310 (~38:30)** several local lower points are marked on the bullish sequence.
+- Around frame **2340 (~39:00)** multiple horizontal reference levels are drawn, with a **BO** annotation and a **Buy Limit** annotation introduced in the same teaching sequence.
+- Around frame **2370 (~39:30)** a horizontal level is explicitly labeled **"Buy Limit"**.
+- Around frame **2400 (~40:00)** the horizontal order line remains extended through the sequence.
+- Around frames **2430–2460 (~40:30–41:00)** order-management annotations include **delete**.
+- Around frames **2640–2670 (~44:00–44:30)** Round Level and multiple spacing examples are taught separately.
+
+The individual concepts are therefore strongly source-supported. The artifact does **not** uniquely establish that Round Level is a required predecessor of the specific Buy Limit, nor does it uniquely map a particular marked low to the Buy Limit price. The numeric P-Gap formula and exact breakout/order activation semantics are also absent from this sequence.
+
+Therefore the complete chain remains:
+
+**SOURCE-CONFIRMED CONCEPT CHAIN / EXACT EXECUTABLE MAPPING UNRESOLVED.**
+
+No canonical swing selection, P-Gap formula, Round Level algorithm, Buy Limit price construction, fill semantics, or order lifecycle rule is introduced.
 
 ## F14 / F15 current evidence boundary
 
@@ -47,7 +68,7 @@ F15 remains directly supported by the bearish/sell-side worked episode around fr
 
 ## Gate decision
 
-**Source Resolution: PARTIAL PASS — strengthened by F16 primary-artifact evidence, with F13 wording conservatively corrected.**
+**Source Resolution: PARTIAL PASS — individual concepts and their teaching sequence strengthened; executable chain remains unresolved.**
 
 **Frozen Geometry: BLOCKED** — executable semantics remain unresolved and cannot be selected by backtest performance or implementation convenience.
 
