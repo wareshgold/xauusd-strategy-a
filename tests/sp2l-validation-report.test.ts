@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1';
 import {
   aggregateCanonicalMetrics,
