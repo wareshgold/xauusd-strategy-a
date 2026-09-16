@@ -25,6 +25,8 @@
     "tests/sp2l-fixture-runner.test.ts",
     "tests/sp2l-integrity-invariants.test.ts",
     "tests/sp2l-determinism-invariants.test.ts",
-    "tests/sp2l-125r-golden-fixture.test.ts"
+    "tests/sp2l-125r-golden-fixture.test.ts",
+    "tests/sp2l-synthetic-geometry-fixtures.test.ts",
+    "tests/sp2l-baseline-forensic-accounting.test.ts"
   ]
 }
