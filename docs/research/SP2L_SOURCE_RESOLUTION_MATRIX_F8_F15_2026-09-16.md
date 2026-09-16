@@ -11,8 +11,8 @@ Consolidate the current source-first status of synthetic fixtures **F8–F16** a
 | F8 | First important swing / evolving swing selection | **PRIMARY-ARTIFACT + WORKED-EXAMPLE EVIDENCE STRENGTHENED / SELECTION ALGORITHM UNRESOLVED** | No | BLOCKED |
 | F9 | Entry vs Leg-2 start | **PRIMARY-ARTIFACT PENDING-ENTRY CONCEPT CONFIRMED / ACTIVATION SEMANTICS UNRESOLVED** | No | BLOCKED |
 | F10 | Structural invalidation vs SL | **SOURCE-CONFIRMED ORIGIN/RISK-SEPARATION CONCEPT / EXACT PRICE AND INVALIDATION SEMANTICS UNRESOLVED** | No | BLOCKED |
-| F11 | Pending-order replacement / refresh | **PRIMARY-ARTIFACT ORDER-LIFECYCLE CONCEPT CONFIRMED / DELETE CONDITION AND REPLACEMENT RULE UNRESOLVED** | No | BLOCKED |
-| F12 | 1/2/3-candle trigger taxonomy | **PRIMARY-ARTIFACT TRIGGER CONCEPT CONFIRMED / EXACT TRIGGER TAXONOMY UNRESOLVED** | No | BLOCKED |
+| F11 | Pending-order replacement / refresh | **PRIMARY-ARTIFACT TEMPORAL PERSISTENCE + DELETE OBSERVED / REPLACEMENT CAUSALITY UNRESOLVED** | No | BLOCKED |
+| F12 | 1/2/3-candle trigger taxonomy | **PRIMARY-ARTIFACT TRIGGER CONCEPT + TEMPORAL ORDERING CONFIRMED / EXACT TRIGGER TAXONOMY UNRESOLVED** | No | BLOCKED |
 | F13 | 2X | **PRIMARY-ARTIFACT CONFIRMED CONCEPT + BETWEEN-LEVEL VISUAL RELATION / EXACT PRICE FORMULA AND EXECUTION SEMANTICS UNRESOLVED** | No | BLOCKED |
 | F14 | AB=CD anchors and tolerance | **PRIMARY-ARTIFACT EXPLICIT AB=CD / CONCEPT CONFIRMED / A-B-C-D ANCHORS UNRESOLVED / TOLERANCE UNRESOLVED** | No | BLOCKED |
 | F15 | Bearish mirror | **PRIMARY-ARTIFACT BEARISH EXECUTION CONFIRMED / EXACT MIRROR GEOMETRY UNRESOLVED** | No | BLOCKED |
@@ -44,9 +44,36 @@ The pass strengthens the following source boundaries:
 
 No canonical rule is promoted from this pass.
 
+## Batch 28 — temporal pending-order state reconstruction
+
+A dense 5-second sequence from approximately **39:00–41:00** was reconstructed as a temporal ledger rather than as isolated frames.
+
+Observed sequence:
+
+`BO context → Buy Limit shown → pending level persists → delete annotation → newer reference becomes visible → money/management annotations`
+
+At ~39:30–39:40, `Buy Limit` is explicitly associated with a horizontal level and a separate lower `SL` reference is added. At ~40:00 the horizontal level remains while the represented price is above it. Around ~40:05, `delete` is written while a newer blue/sloped reference appears near the newer price structure. This is consistent with a possible stale-order/candidate-refresh context, but the artifact does not explicitly state that the newer reference replaces the old pending order.
+
+Therefore the source-aligned update is:
+
+**F11 = temporal persistence + delete observed / replacement causality unresolved.**
+
+The following remain non-canonical:
+
+- delete = replacement;
+- delete = invalidation;
+- delete = timeout;
+- delete = manual cancellation;
+- newer reference = new pending order;
+- any multiple-order precedence rule.
+
+The same temporal sequence strengthens F12 only at the ordering level: `BO / valid-BO context` precedes the pending Buy Limit teaching and later management. It still does not prove wick-vs-close, touch-vs-break, next-candle confirmation, or a 1/2/3-candle taxonomy.
+
+F9 remains pending-entry confirmed but activation/fill unresolved. F10 remains entry/risk separation observed but exact price/invalidation unresolved.
+
 ## Gate decision
 
-**Source Resolution: PARTIAL PASS — individual concepts and their teaching sequence strengthened; executable chain remains unresolved.**
+**Source Resolution: PARTIAL PASS — individual concepts and temporal teaching sequence strengthened; executable chain remains unresolved.**
 
 **Frozen Geometry: BLOCKED** — executable semantics remain unresolved and cannot be selected by backtest performance or implementation convenience.
 
