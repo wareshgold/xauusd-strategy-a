@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Consolidate the current source-first status of synthetic fixtures **F8–F15** after the completed evidence batches. This matrix records what accessible evidence supports and, critically, what remains unresolved. It is a gate artifact, not a geometry specification.
+Consolidate the current source-first status of synthetic fixtures **F8–F15** after the completed evidence batches and direct inspection of the user-supplied primary SP2L training video. This matrix records what accessible evidence supports and, critically, what remains unresolved. It is a gate artifact, not a geometry specification.
 
 ## Source-resolution matrix
 
@@ -13,8 +13,8 @@ Consolidate the current source-first status of synthetic fixtures **F8–F15** a
 | F10 | Structural invalidation vs SL | **SOURCE-CONFIRMED ORIGIN REFERENCE / PRICE SEMANTICS UNRESOLVED** | No | BLOCKED |
 | F11 | Pending-order replacement / refresh | **UNRESOLVED** | No | BLOCKED |
 | F12 | 1/2/3-candle trigger taxonomy | **SOURCE-CONFIRMED TRIGGER CONCEPT / TAXONOMY UNRESOLVED** | No | BLOCKED |
-| F13 | 2X | **SOURCE-CONFIRMED CONCEPT / SECONDARY 50%-DISTANCE EVIDENCE / CANONICAL FORMULA UNRESOLVED** | No | BLOCKED |
-| F14 | AB=CD anchors and tolerance | **SOURCE-CONFIRMED CONCEPT / A-B-C-D ANCHORS UNRESOLVED / TOLERANCE UNRESOLVED** | No | BLOCKED |
+| F13 | 2X | **PRIMARY-ARTIFACT CONFIRMED CONCEPT / 50%-DISTANCE VISUAL SUPPORT / EXECUTION SEMANTICS UNRESOLVED** | No | BLOCKED |
+| F14 | AB=CD anchors and tolerance | **PRIMARY-ARTIFACT CONFIRMED AB=CD CONCEPT / A-B-C-D ANCHORS UNRESOLVED / TOLERANCE UNRESOLVED** | No | BLOCKED |
 | F15 | Bearish mirror | **SOURCE-CONFIRMED DIRECTIONAL MIRROR / EXACT EXECUTION GEOMETRY UNRESOLVED** | No | BLOCKED |
 
 ## Evidence boundaries
@@ -41,11 +41,11 @@ Trigger-taking is explicitly a taught SP2L topic, and accessible secondary mater
 
 ### F13
 
-2X is an explicit training topic in the author-associated SP2L video index. Secondary sources converge on a 50%-distance concept, while the accessible primary-author page also mentions a secondary entry at 50% of the Entry-to-SL distance. However, the exact activation conditions, order semantics, and fill semantics are not sufficiently resolved to promote a complete canonical 2X rule. Therefore `2X = 50% of Entry→SL` is not yet treated as a fully canonical executable rule.
+Direct inspection of the supplied primary training artifact confirms that `2X` is explicitly taught. Around 42:00–42:35, the teaching diagram labels `Buy`, `2X`, and `SL` on three horizontal levels with distance markers; the 2X level is visually constructed between Entry/Buy and SL, consistent with the previously documented 50%-distance concept. Around 42:40–43:20, the same sequence labels `TP1`, `TP2`, `Entry`, and `SL`. This is stronger than secondary-only evidence. However, the artifact review does not provide a sufficiently explicit numeric statement plus complete lifecycle semantics to freeze a deterministic 2X order rule. Exact activation, order type, fill, replacement/cancellation, sizing, and interaction with an existing Entry remain unresolved.
 
 ### F14
 
-AB=CD / two-leg structure is source-supported conceptually, including association of the Spike with the initial AB move. Secondary implementation descriptions additionally show bearish continuation and breakout behavior, but they do not establish the canonical A/B/C/D mapping or tolerance. Exact A/B/C/D anchors, wick/body semantics, projected versus observed D, equality/ratio interpretation, and numeric tolerance remain unresolved.
+Direct inspection of the supplied primary training artifact around 37:00–37:25 shows the explicit handwritten label `AB=CD` on the SP2L teaching slide. This confirms the AB=CD/equal-leg concept directly in the primary artifact. The reviewed frames do not uniquely define A/B/C/D anchors, wick/body semantics, projected versus observed D, equality/ratio interpretation, numeric tolerance, or the candle-selection algorithm. Therefore the concept is source-closed at primary-artifact level, but executable AB=CD geometry remains unresolved.
 
 ### F15
 
@@ -53,7 +53,7 @@ Primary-author material explicitly describes both bullish and bearish directiona
 
 ## Gate decision
 
-**Source Resolution: PARTIAL PASS** — several concepts and references are source-supported, but executable geometry is not fully resolved.
+**Source Resolution: PARTIAL PASS** — primary artifact inspection materially strengthened F13 and F14 concept evidence, but executable geometry is not fully resolved.
 
 **Frozen Geometry: BLOCKED** — F8–F15 contain unresolved executable semantics that cannot be selected by backtest performance or implementation convenience.
 
@@ -74,7 +74,7 @@ The following must remain unresolved and must not be promoted merely to make the
 - exact SL price boundary and buffer;
 - pending-order replacement/refresh threshold and lifecycle;
 - 1/2/3-candle trigger family;
-- exact 2X activation/fill semantics;
+- exact 2X activation/order/fill semantics;
 - A/B/C/D AB=CD anchors and tolerance;
 - any assumption that bullish/bearish symmetry resolves the underlying lower-level geometry.
 
@@ -84,8 +84,6 @@ This matrix does **not** authorize variant backtests to choose among unresolved 
 
 The existing implementation/report R-multiple semantics and the observed 125R extreme remain separate forensic concerns and are not used to resolve any F8–F15 item.
 
-## P4 conclusion
+## Current conclusion
 
-The F8–F15 consolidation does **not** open the Frozen Geometry gate. The strongest current source closure is conceptual/directional: SP2L contains Spike + 2nd Leg + Entry Level, has bullish and bearish directional behavior, includes 2X as an explicit training topic, and uses AB=CD/two-leg language. The remaining blockers are precisely the executable details required for reproducible implementation.
-
-The next research target should therefore be **primary-source retrieval at artifact level** (original video/transcript/examples) rather than parameter optimization or backtest selection. If primary material still fails to expose the missing semantics, the unresolved items must remain unresolved and the project should not manufacture a canonical geometry from secondary implementations.
+Direct primary-artifact inspection is now available and has closed the evidence gap at the concept level for F13 and F14. It has **not** closed the executable-rule gap. The next research work should therefore focus on extracting additional timestamped examples/frames from the same artifact for the exact order lifecycle, anchor construction, trigger semantics, and bearish mirror rather than selecting formulas by backtest performance.
