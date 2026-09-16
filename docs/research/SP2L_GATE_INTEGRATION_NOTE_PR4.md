@@ -1,0 +1,1 @@
+The Frozen Geometry Readiness Gate is a hard, fail-closed boundary between source resolution and canonical validation. Current state is BLOCKED because required source geometry is not fully SOURCE_CONFIRMED. No production signal logic is introduced.
