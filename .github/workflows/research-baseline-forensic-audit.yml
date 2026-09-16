@@ -1,0 +1,45 @@
+name: Research - Baseline Forensic Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run TypeScript build
+        run: npm install --package-lock=false && npm run build
+
+      - name: Run deterministic tests
+        run: npm test
+
+      - name: Run baseline forensic audit
+        run: node scripts/audit-baseline-extreme-r.mjs
+
+      - name: Verify forensic report
+        run: test -s docs/research/SP2L_BASELINE_EXTREME_R_FORENSIC_2026-09-16.md
+
+      - name: Commit forensic report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/research/SP2L_BASELINE_EXTREME_R_FORENSIC_2026-09-16.md
+          if git diff --cached --quiet; then
+            echo "No forensic report changes to commit."
+          else
+            git commit -m "research: record baseline extreme-R forensic audit"
+            git push origin HEAD:main
+          fi
