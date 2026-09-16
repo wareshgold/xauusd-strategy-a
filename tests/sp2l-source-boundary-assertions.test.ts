@@ -8,22 +8,51 @@ interface BoundaryCase {
   readonly canonical: boolean;
 }
 
+/**
+ * Research-only guardrail. These cases mirror the current evidence ledger:
+ * unresolved source meaning must remain outside canonical geometry.
+ * This test does not define or choose any strategy geometry.
+ */
 const cases: readonly BoundaryCase[] = [
-  { id: 'C01-P-GAP', resolution: 'UNRESOLVED', canonical: false },
-  { id: 'C02-SL-GEOMETRY', resolution: 'UNRESOLVED', canonical: false },
-  { id: 'C03-ABCD', resolution: 'UNRESOLVED', canonical: false },
-  { id: 'C04-TP-2X', resolution: 'UNRESOLVED', canonical: false },
-  { id: 'C05-CONTEXT', resolution: 'UNRESOLVED', canonical: false },
-  { id: 'C06-PENDING-REFRESH', resolution: 'UNRESOLVED', canonical: false },
-  { id: 'C07-TRIGGER', resolution: 'UNRESOLVED', canonical: false },
-  { id: 'C08-CORRECTION-INVALIDATION', resolution: 'UNRESOLVED', canonical: false },
+  { id: 'ENTRY', resolution: 'UNRESOLVED', canonical: false },
+  { id: 'INVALIDATION', resolution: 'UNRESOLVED', canonical: false },
+  { id: 'LIMIT-REFRESH', resolution: 'UNRESOLVED', canonical: false },
+  { id: 'TRIGGER', resolution: 'UNRESOLVED', canonical: false },
+  { id: '2X', resolution: 'UNRESOLVED', canonical: false },
+  { id: 'ABCD', resolution: 'UNRESOLVED', canonical: false },
+  { id: 'P-GAP', resolution: 'UNRESOLVED', canonical: false },
+  { id: 'CONTEXT', resolution: 'UNRESOLVED', canonical: false },
+  { id: 'CORRECTION', resolution: 'UNRESOLVED', canonical: false },
   { id: 'F09-ENTRY-VS-LEG2', resolution: 'SOURCE_DISCRIMINATED', canonical: false },
+  { id: 'F16-ROUND-LEVEL', resolution: 'UNRESOLVED', canonical: false },
 ];
 
 describe('SP2L source-boundary assertions', () => {
-  it('keeps unresolved geometry out of the canonical rule set', () => {
-    for (const item of cases.filter((x) => x.resolution === 'UNRESOLVED')) {
+  it('keeps every unresolved geometry blocker out of the canonical rule set', () => {
+    const unresolved = cases.filter((x) => x.resolution === 'UNRESOLVED');
+    expect(unresolved.length).toBeGreaterThanOrEqual(7);
+
+    for (const item of unresolved) {
       expect(item.canonical, item.id).toBe(false);
+    }
+  });
+
+  it('covers all seven Frozen Geometry evidence fields as unresolved', () => {
+    const requiredFields = [
+      'ENTRY',
+      'INVALIDATION',
+      'LIMIT-REFRESH',
+      'TRIGGER',
+      '2X',
+      'ABCD',
+      'P-GAP',
+    ];
+
+    for (const id of requiredFields) {
+      const item = cases.find((x) => x.id === id);
+      expect(item, id).toBeDefined();
+      expect(item?.resolution, id).toBe('UNRESOLVED');
+      expect(item?.canonical, id).toBe(false);
     }
   });
 
@@ -33,7 +62,7 @@ describe('SP2L source-boundary assertions', () => {
     expect(f9.canonical).toBe(false);
   });
 
-  it('fails closed if a blocker is accidentally promoted', () => {
+  it('fails closed if any unresolved blocker is accidentally promoted', () => {
     const promotedBlockers = cases.filter(
       (x) => x.resolution === 'UNRESOLVED' && x.canonical,
     );
