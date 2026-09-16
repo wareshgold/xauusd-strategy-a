@@ -24,7 +24,7 @@ const mirror = (c: Candle): Candle => ({
  * interpretations; they do not select canonical Strategy A geometry.
  */
 
-describe('SP2L synthetic geometry fixtures F8-F15', () => {
+describe('SP2L synthetic geometry fixtures F8-F16', () => {
   it('F8 exposes first relevant swing versus evolving latest swing', () => {
     const candles = [candle(0, 100, 104, 99, 103), candle(1, 103, 108, 102, 107), candle(2, 107, 109, 105, 106), candle(3, 106, 110, 104, 109)];
     const lows = candles.map(x => x.low);
@@ -90,6 +90,14 @@ describe('SP2L synthetic geometry fixtures F8-F15', () => {
     expect(bearish.high).toBe(-98);
     expect(bearish.low).toBe(-106);
     expect(bearish.close).toBe(-104);
+  });
+
+  it('F16 preserves source-observed round-level spacing candidates without selecting one', () => {
+    const sourceObservedCandidates = [250, 500, 1000];
+    expect(sourceObservedCandidates).toEqual([250, 500, 1000]);
+    expect(new Set(sourceObservedCandidates).size).toBe(3);
+    // The primary artifact shows these spacing annotations, but does not
+    // establish the canonical instrument scale, anchor, or selection rule.
   });
 
   it('does not assign a canonical direction from fixture construction', () => {
