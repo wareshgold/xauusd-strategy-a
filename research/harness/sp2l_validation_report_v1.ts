@@ -42,6 +42,12 @@ function provenanceOf(geometry: Sp2lGeometryContract) {
   ) as Record<keyof Sp2lGeometryContract, Provenance>;
 }
 
+function isFullySourceConfirmed(
+  provenance: Record<keyof Sp2lGeometryContract, Provenance>,
+): boolean {
+  return Object.values(provenance).every((value) => value === 'SOURCE_CONFIRMED');
+}
+
 export function createBlockedValidationReport(
   fixtureId: string,
   geometry: Sp2lGeometryContract,
@@ -75,7 +81,10 @@ export function aggregateCanonicalMetrics(
   reports: ValidationReport[],
 ): CanonicalMetricSet {
   const executed = reports.filter(
-    (report) => report.status === 'EXECUTED' && !report.excludedFromMetrics,
+    (report) =>
+      report.status === 'EXECUTED' &&
+      !report.excludedFromMetrics &&
+      isFullySourceConfirmed(report.provenance),
   );
 
   const rValues = executed.flatMap((report) => report.metrics.rValues);
