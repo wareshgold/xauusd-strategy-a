@@ -6,13 +6,21 @@ Prepare a deterministic pre-validation layer for F09–F14 and P-Gap without fre
 
 ## Current contract
 
-The suite must distinguish:
+The suite distinguishes:
 
 - `SOURCE_CONFIRMED`: source uniquely determines the field.
 - `CANDIDATE`: a plausible interpretation exists but is not canonical.
 - `UNRESOLVED`: source does not uniquely determine the executable meaning.
 
-Canonical historical validation is blocked while required geometry contains `UNRESOLVED` fields.
+Canonical historical validation is blocked while any required geometry field is not `SOURCE_CONFIRMED`.
+
+## Frozen Geometry Gate integration
+
+Canonical validation is downstream of the deterministic Frozen Geometry Readiness Gate:
+
+`SOURCE RESOLUTION → FROZEN GEOMETRY GATE → CANONICAL VALIDATION`
+
+The gate is fail-closed. Any `CANDIDATE` or `UNRESOLVED` required field blocks canonical validation. Candidate fixtures remain allowed for source-discrimination and engineering work, but their outcomes must not enter canonical performance metrics.
 
 ## Fixture inventory
 
@@ -30,12 +38,16 @@ Canonical historical validation is blocked while required geometry contains `UNR
 
 1. **Source-discrimination mode:** compare explicit candidate interpretations against fixtures.
 2. **Contract mode:** verify unresolved fields fail closed.
-3. **Historical validation mode:** LOCKED until source resolution freezes all required executable fields.
+3. **Historical validation mode:** LOCKED until the Frozen Geometry Gate is READY.
 
 ## Explicit non-goals
 
 This suite does not define entry price, stop price, P-Gap formula, AB=CD anchors/tolerance, 2X sizing, fill semantics, refresh threshold, trigger precedence, or production signal rules.
 
+## 125R preservation
+
+The 125R observation remains untouched. This integration does not clip, exclude, reclassify, or optimize it.
+
 ## Next gate
 
-Resolve the minimum primary-source evidence for F11–F14 and P-Gap. Once the source uniquely determines the executable fields, freeze geometry, then activate untouched validation. No historical performance result from a candidate interpretation may be used to promote that interpretation to canonical status.
+Only after primary evidence uniquely determines the executable fields may provenance be promoted to `SOURCE_CONFIRMED`, the Frozen Geometry Gate become READY, and untouched validation activate. No historical performance result from a candidate interpretation may be used to promote that interpretation to canonical status.
