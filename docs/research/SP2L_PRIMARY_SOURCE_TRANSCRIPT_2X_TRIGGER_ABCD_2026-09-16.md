@@ -8,15 +8,11 @@ Purpose: source-first discrimination for Batch 6. This record does not promote u
 
 At 36:15 the speaker identifies the strategy name as SPIKE-2LEG and explicitly equates the 2Leg concept with AB=CD. At 36:59–37:08 the expectation is stated as: after a spike, a correction occurs and the second leg is expected to become equal to the first leg. The transcript also states that the target is at the completion of that second leg.
 
-Source excerpt: `fileciteturn371file7`
-
 **Source status:** concept confirmed. Exact A/B/C/D anchors and tolerance remain unresolved.
 
 ## Evidence B — 2X entry concept
 
 At 38:05 the speaker describes the first pullback entry followed by a second entry called `2X`. At 41:26–41:53 the speaker explicitly describes 2X as an optional second position and explains that the second position can produce a larger R multiple because its entry is farther along the move toward the target. At 22:43–22:50 the transcript explicitly says the second position is entered when price reaches approximately half of the target distance.
-
-Source excerpts: `fileciteturn371file1`, `fileciteturn371file3`
 
 **Source status:** the transcript directly supports a 2X concept tied to approximately half the target distance. It does **not** establish a canonical executable formula for the exact second-entry price, nor does it establish whether the half-distance is measured from entry, structural level, or another source-defined anchor in every setup.
 
@@ -26,15 +22,11 @@ At 38:38 the speaker describes the trend producing higher lows (bullish example)
 
 At 40:57–41:03 the speaker also describes additional trigger confirmation variants, including a bar signal and a key-bar signal.
 
-Source excerpts: `fileciteturn371file12`, `fileciteturn371file3`
-
 **Source status:** trigger/entry is source-confirmed as a family of conditions and can involve a Limit order; exact deterministic trigger taxonomy and acceptance criteria remain unresolved.
 
 ## Evidence D — P-Gap / breakout relationship
 
 At 31:02–31:43 the speaker defines a breakout through a candle close followed by a follow-through candle that cannot return to the prior area; the example is associated with P-Gap. At 34:25–35:37, the speaker gives multiple source-described sequences in which breakout/follow-through/P-Gap and higher lows can occur in different orderings, while stating that the cases are treated as the same concept for this strategy.
-
-Source excerpts: `fileciteturn371file0`, `fileciteturn371file10`
 
 **Source status:** source meaning is materially stronger than the prior index-only evidence, but the transcript still does not provide a complete OHLC-level deterministic P-Gap formula.
 
