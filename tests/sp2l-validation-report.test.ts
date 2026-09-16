@@ -57,4 +57,25 @@ describe('SP2L deterministic validation report', () => {
     expect(metrics.expectancyR).toBeCloseTo(2 / 3);
     expect(metrics.maxDrawdownR).toBe(1);
   });
+
+  it('fails closed when an executed report still carries candidate or unresolved provenance', () => {
+    const geometry = createResearchCandidate() as Sp2lGeometryContract;
+    for (const field of Object.keys(geometry) as (keyof Sp2lGeometryContract)[]) {
+      geometry[field] = { provenance: 'SOURCE_CONFIRMED' };
+    }
+
+    const nonCanonical = createReadyValidationReport('EXECUTED-NONCANONICAL', geometry);
+    nonCanonical.status = 'EXECUTED';
+    nonCanonical.excludedFromMetrics = false;
+    nonCanonical.provenance.pGap = 'CANDIDATE';
+    nonCanonical.metrics.rValues = [125];
+
+    const metrics = aggregateCanonicalMetrics([nonCanonical]);
+
+    expect(metrics.tradeCount).toBe(0);
+    expect(metrics.winRate).toBeNull();
+    expect(metrics.expectancyR).toBeNull();
+    expect(metrics.maxDrawdownR).toBeNull();
+    expect(metrics.rValues).toEqual([]);
+  });
 });
