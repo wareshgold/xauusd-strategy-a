@@ -13,47 +13,29 @@ Consolidate the current source-first status of synthetic fixtures **F8–F15** a
 | F10 | Structural invalidation vs SL | **PRIMARY-ARTIFACT + WORKED-EXAMPLE EVIDENCE STRENGTHENED / PRICE SEMANTICS UNRESOLVED** | No | BLOCKED |
 | F11 | Pending-order replacement / refresh | **PRIMARY-ARTIFACT ORDER-LIFECYCLE + WORKED-EXAMPLE EVIDENCE / REPLACEMENT RULE UNRESOLVED** | No | BLOCKED |
 | F12 | 1/2/3-candle trigger taxonomy | **PRIMARY-ARTIFACT TRIGGER + WORKED-EXAMPLE EVIDENCE STRENGTHENED / EXACT TAXONOMY UNRESOLVED** | No | BLOCKED |
-| F13 | 2X | **PRIMARY-ARTIFACT CONFIRMED CONCEPT + PRIMARY GEOMETRIC MIDPOINT EVIDENCE / EXECUTION SEMANTICS UNRESOLVED** | No | BLOCKED |
+| F13 | 2X | **PRIMARY-ARTIFACT CONFIRMED CONCEPT + BETWEEN-LEVEL VISUAL RELATION / EXACT PRICE FORMULA AND EXECUTION SEMANTICS UNRESOLVED** | No | BLOCKED |
 | F14 | AB=CD anchors and tolerance | **PRIMARY-ARTIFACT EXPLICIT AB=CD / CONCEPT CONFIRMED / A-B-C-D ANCHORS UNRESOLVED / TOLERANCE UNRESOLVED** | No | BLOCKED |
 | F15 | Bearish mirror | **PRIMARY-ARTIFACT BEARISH EXECUTION CONFIRMED / EXACT MIRROR GEOMETRY UNRESOLVED** | No | BLOCKED |
 
-## Batch 22 — primary F14/F15 micro-forensic update
+## Batch 23 — F13 evidence-boundary correction
 
-### F14 — AB=CD
+A falsification-oriented recheck of the primary 2X schematic around frame 2520 found that `Buy`, `2X`, and `SL` are explicitly marked and that 2X is visually placed between the Buy and SL levels. However, the schematic is not a calibrated price plot and the drawn pixel distances are not demonstrably equal. The account-table examples also contain multiple entries with different stop distances.
 
-Frames around approximately 36:30–37:00 (2190–2220) directly show the handwritten `AB=CD` annotation on the SP2L teaching slide. The same teaching sequence visibly contains `Valid BO = P-Gap`. Later worked diagrams around 45:30–47:00 distinguish the first/second-leg structure and separately label `Entry`, `TP1`, `TP2`, and `SL`.
+Therefore the earlier wording "primary geometric midpoint evidence" is withdrawn as too strong. The source-supported statement is narrower:
 
-This strengthens and clarifies the source-level concept: AB=CD/two-leg symmetry is explicitly taught. It still does not uniquely identify A/B/C/D candle indices, wick/body/OHLC component selection, projected versus observed D, equality versus another ratio/normalization, or numeric tolerance/rounding. No executable AB=CD formula is frozen.
+**2X is explicitly taught as a distinct level positioned between Buy and SL in the schematic; the exact 50%-distance price formula is unresolved.**
 
-### F15 — bearish mirror / execution
+No canonical 2X formula, order type, trigger, fill, sizing, cancellation, or replacement semantics is introduced.
 
-The worked material around 12 May 2025 contains a direct sell-side episode. Frame 3510 shows a bearish-side chart structure with marked levels; frame 3630 shows an account table containing multiple XAUUSD sell positions with explicit entry/SL/TP fields.
+## F14 / F15 current evidence boundary
 
-This directly confirms that bearish/sell-side execution is demonstrated in the primary artifact. It does not uniquely establish the mathematical mirror of the bullish executable rules. Bearish swing selection, LH/high selection, Entry activation, SL boundary, trigger taxonomy, AB=CD anchor transformation, and bearish 2X execution semantics remain unresolved.
+F14 remains explicitly supported at the concept level by the handwritten `AB=CD` teaching sequence around frames 2190–2220, while A/B/C/D anchor semantics and equality/tolerance remain unresolved.
 
-## Cross-fixture evidence boundary
-
-The combined primary artifact supports the conceptual chain:
-
-`Spike → 2 Leg → AB=CD concept → Entry/SL/targets → bullish + bearish worked examples`
-
-Conceptual confirmation is not deterministic executable geometry. The following remain explicitly non-canonical:
-
-- exact swing-selection algorithm;
-- exact Entry activation timestamp/price semantics;
-- exact Leg-2 start semantics;
-- exact SL boundary/buffer;
-- pending-order replacement/refresh/expiry/invalidation state machine;
-- exact 1/2/3-candle trigger taxonomy;
-- complete 2X activation/order/fill/sizing semantics;
-- A/B/C/D AB=CD anchors and tolerance;
-- exact bearish mirror geometry;
-- P-Gap numeric formula;
-- any account-table TP/SL ratio interpreted as canonical R semantics.
+F15 remains directly supported by the bearish/sell-side worked episode around frames 3510–3630, while the exact mathematical mirror of bullish executable geometry remains unresolved.
 
 ## Gate decision
 
-**Source Resolution: PARTIAL PASS — strengthened by primary-artifact, worked-example, and F14/F15 micro-forensic evidence.**
+**Source Resolution: PARTIAL PASS — strengthened, with F13 wording conservatively corrected.**
 
 **Frozen Geometry: BLOCKED** — executable semantics remain unresolved and cannot be selected by backtest performance or implementation convenience.
 
