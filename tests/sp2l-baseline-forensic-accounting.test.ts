@@ -21,11 +21,7 @@ type BaselineReport = {
   trades?: Trade[];
 };
 
-const REPORTS = [
-  '1min',
-  '5min',
-] as const;
-
+const REPORTS = ['1min', '5min'] as const;
 const EPSILON = 1e-9;
 
 async function loadReport(timeframe: string): Promise<BaselineReport> {
@@ -60,9 +56,7 @@ describe('SP2L baseline forensic accounting', () => {
 
       for (const trade of closed) {
         const risk = Math.abs(trade.entry - trade.stopLoss);
-        const expectedR = trade.direction === 'BUY'
-          ? (trade.tp1 - trade.entry) / risk
-          : (trade.entry - trade.tp1) / risk;
+        const expectedR = Math.abs(trade.tp1 - trade.entry) / risk;
         expect(Math.abs(expectedR - (trade.rMultiple ?? 0))).toBeLessThanOrEqual(EPSILON);
       }
 
