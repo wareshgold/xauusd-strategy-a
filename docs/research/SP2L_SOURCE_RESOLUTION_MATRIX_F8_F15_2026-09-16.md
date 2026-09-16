@@ -14,38 +14,34 @@ Consolidate the current source-first status of synthetic fixtures **F8–F15** a
 | F11 | Pending-order replacement / refresh | **PRIMARY-ARTIFACT ORDER-LIFECYCLE + WORKED-EXAMPLE EVIDENCE / REPLACEMENT RULE UNRESOLVED** | No | BLOCKED |
 | F12 | 1/2/3-candle trigger taxonomy | **PRIMARY-ARTIFACT TRIGGER + WORKED-EXAMPLE EVIDENCE STRENGTHENED / EXACT TAXONOMY UNRESOLVED** | No | BLOCKED |
 | F13 | 2X | **PRIMARY-ARTIFACT CONFIRMED CONCEPT + PRIMARY GEOMETRIC MIDPOINT EVIDENCE / EXECUTION SEMANTICS UNRESOLVED** | No | BLOCKED |
-| F14 | AB=CD anchors and tolerance | **PRIMARY-ARTIFACT CONFIRMED AB=CD CONCEPT + WORKED-EXAMPLE EVIDENCE / A-B-C-D ANCHORS UNRESOLVED / TOLERANCE UNRESOLVED** | No | BLOCKED |
+| F14 | AB=CD anchors and tolerance | **PRIMARY-ARTIFACT EXPLICIT AB=CD + TWO-LEG SYMMETRY EVIDENCE STRENGTHENED / A-B-C-D ANCHORS UNRESOLVED / EQUALITY-TOLERANCE UNRESOLVED** | No | BLOCKED |
 | F15 | Bearish mirror | **PRIMARY-ARTIFACT + WORKED-EXAMPLE DIRECTIONAL EVIDENCE / EXACT EXECUTION GEOMETRY UNRESOLVED** | No | BLOCKED |
 
-## Micro-forensic update — order / 2X / risk diagrams
+## Batch 21 — primary F14/F8/F12 micro-forensic update
 
-Batch 20 inspected the dense sequence around approximately 39:00–44:00 of the primary artifact.
+Batch 21 inspected the dense primary teaching sequence around approximately 36:00–44:00 and recorded the direct visual evidence in `SP2L_BATCH21_PRIMARY_F14_F8_F12_MICRO_FORENSIC_2026-09-16.md`.
 
-### F11 — pending order lifecycle
+### F14 — AB=CD
 
-Frames around 2340–2460 seconds visibly teach a horizontal `Buy Limit` level and contain a handwritten `delete` annotation in the same instructional sequence. This is direct evidence for pending-order placement and deletion as taught actions. The artifact still does not uniquely identify the state-transition condition: cancellation, replacement, invalidation, expiry, or another management action cannot be distinguished without inference.
+The primary artifact visibly writes `AB=CD` around frame 2190 and retains the annotation around frame 2220. Around frame 2250 it shows a hand-drawn two-leg price path with visually corresponding impulse segments. This materially strengthens the primary evidence for an explicit two-leg symmetry/equality concept.
 
-### F13 — 2X geometric relation
+The artifact still does not uniquely label A, B, C, and D to exact candle prices/indices, does not state wick/body/OHLC anchor semantics, and does not state whether equality is exact or tolerance-based. No numeric tolerance or rounding rule is exposed.
 
-The dedicated primary diagram around 2520 seconds explicitly labels `Buy`, `2X`, and `SL`. The drawn distance markers depict the `2X` level midway between Buy and SL, with the two segments shown as equal divisions of the Buy→SL span. This is stronger primary evidence than a chart-only annotation and supports the source-level geometric relation that 2X is at the midpoint of the Buy→SL distance.
+### F8 — swing/level selection
 
-This does **not** close the complete execution rule. The artifact does not uniquely specify whether Buy denotes intended entry, filled entry, or order level in every context; nor does it uniquely specify 2X order type, activation trigger, fill semantics, sizing, or cancellation/replacement interaction.
+Frames around 2310 mark multiple local lower points; frames around 2340 and 2490 show multiple horizontal structural/order levels, with `Buy` and `SL` visually separated. This strengthens the existence of local structural level selection but does not uniquely determine which candidate low is selected by an executable algorithm.
 
-Therefore: **the geometric 50%-relation is primary-artifact-supported; complete 2X execution semantics remain unresolved.**
+### F12 — breakout / trigger
 
-### F9 / F10 — Entry, TP1, TP2, SL separation
+The primary artifact visibly states `Valid BO = P-Gap` in the same teaching sequence. Frames around 2340–2400 show `BO`, a horizontal order level, and `Buy Limit`; frame 2490 labels `Buy` and a separate `SL` level. This supports a source-visible chain of breakout validation concept → structural level → pending Buy Limit → separate SL.
 
-The dedicated diagram around 2550 seconds explicitly labels four distinct levels: `TP2`, `TP1`, `Entry`, and `SL`. This directly supports the distinction among these levels. It does not uniquely define how Entry, TP1, TP2, or SL are calculated from candle structure or AB=CD anchors, nor does it establish the exact activation/fill semantics.
-
-### Round-level evidence
-
-A later diagram around 2640 seconds contains handwritten `Round level` annotations and example price levels. This confirms that round levels are part of the taught material, but the deterministic round-level algorithm remains unresolved and is outside the F8–F15 closure set.
+Exact P-Gap numeric definition, intrabar vs close semantics, 1/2/3-candle taxonomy, touch/break/close activation, retest/fill semantics, and exact order-placement timing remain unresolved.
 
 ## Gate decision
 
-**Source Resolution: PARTIAL PASS — strengthened by primary-artifact, worked-example, and micro-forensic evidence.**
+**Source Resolution: PARTIAL PASS — materially strengthened by direct primary visual evidence.**
 
-**Frozen Geometry: BLOCKED** — executable semantics remain unresolved and cannot be selected by backtest performance or implementation convenience.
+**Frozen Geometry: BLOCKED** — F14 is conceptually confirmed but deterministic anchors/tolerance remain unresolved; F8 and F12 remain unresolved at executable-rule level.
 
 **Untouched Validation: LOCKED.**
 
@@ -65,10 +61,10 @@ A later diagram around 2640 seconds contains handwritten `Round level` annotatio
 - exact SL boundary/buffer;
 - pending-order replacement/refresh/expiry/invalidation state machine;
 - exact 1/2/3-candle trigger taxonomy;
-- complete 2X activation/order/fill/sizing semantics (while the midpoint geometry is primary-artifact-supported);
-- A/B/C/D AB=CD anchors and tolerance;
+- complete 2X activation/order/fill/sizing semantics (while midpoint geometry is primary-artifact-supported);
+- A/B/C/D AB=CD anchors and equality/tolerance;
 - exact bearish mirror geometry;
-- any assumption that bullish/bearish symmetry resolves lower-level geometry;
+- P-Gap numeric formula;
 - any assumption that account-table TP/SL ratios define canonical R semantics.
 
 No backtest variant was selected from this evidence and no production implementation was changed.
