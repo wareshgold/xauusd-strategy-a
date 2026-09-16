@@ -8,19 +8,12 @@ describe('SP2L frozen geometry gate', () => {
 
     expect(result.status).toBe('BLOCKED');
     expect(result.blockedFields).toEqual([
-      'entry',
-      'invalidation',
-      'limitRefresh',
-      'trigger',
-      'twoX',
-      'abcd',
-      'pGap',
+      'entry', 'invalidation', 'limitRefresh', 'trigger', 'twoX', 'abcd', 'pGap',
     ]);
   });
 
   it('allows readiness only when every required field is source-confirmed', () => {
     const geometry = createResearchCandidate() as Sp2lGeometryContract;
-
     for (const field of Object.keys(geometry) as (keyof Sp2lGeometryContract)[]) {
       geometry[field] = { provenance: 'SOURCE_CONFIRMED' };
     }
@@ -32,7 +25,6 @@ describe('SP2L frozen geometry gate', () => {
 
   it('fails closed when even one field is candidate or unresolved', () => {
     const geometry = createResearchCandidate() as Sp2lGeometryContract;
-
     for (const field of Object.keys(geometry) as (keyof Sp2lGeometryContract)[]) {
       geometry[field] = { provenance: 'SOURCE_CONFIRMED' };
     }
