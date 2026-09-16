@@ -8,7 +8,7 @@ This pass combines:
 
 1. the user-supplied primary SP2L training artifact already forensically inspected;
 2. the author-associated SP2L training index;
-3. an older Poursamadi price-action course excerpt that explicitly defines `P_GAP` as **Pressure gap**.
+3. an older Poursamadi price-action course excerpt that labels `P_GAP` as **Pressure gap** and separately describes a generic gap-detection relationship.
 
 The source meaning remains higher priority than any backtest result.
 
@@ -42,30 +42,27 @@ It does not expose the formula itself.
 
 ## Evidence C — related Poursamadi price-action source
 
-A searchable excerpt from an older Poursamadi price-action course labels:
+A searchable excerpt from an older Poursamadi price-action course provides two separate pieces of evidence:
 
-- `P_GAP` = **Pressure gap**;
-- and states, in the gap section, to inspect the distance between the **high of two candles before** and the **low of the current candle**, with a gap existing when a distance is present.
+- its glossary labels `P_GAP` as **Pressure gap**;
+- in the broader gap section, it says to inspect the distance between the **high of two candles before** and the **low of the current candle**, with a gap existing when a distance is present.
 
-This is materially useful because it supplies a concrete candidate construction that is consistent with the terminology `P_GAP = Pressure gap`.
+The second statement is a **generic gap-detection description in the broader price-action material**. It is not explicitly stated there as the complete formula for `P_GAP` / Pressure gap.
 
-But it is **not sufficient to freeze SP2L P-Gap geometry** for three reasons:
+This distinction matters. The material also describes Pressure gap separately as a gap occurring after a period of roughly 10–30 candles when buying pressure pauses and then a bullish trend bar appears, suggesting continuation. Therefore the available excerpt does **not** justify equating the generic High[2]/Low[0] gap test with the complete P-Gap definition.
 
-1. the excerpt is from a broader/older price-action course, not the current SP2L primary training artifact;
-2. the excerpt is not a complete SP2L execution specification;
-3. the available text does not establish the full bullish/bearish mirror, tolerance, indexing convention, or exact role of the gap inside the SP2L breakout chain.
-
-Therefore this evidence is recorded as a **source-aligned candidate construction**, not a canonical rule.
+The older source is still useful as terminology/context evidence, but it does not freeze SP2L P-Gap geometry.
 
 ## Candidate construction ledger
 
 | Candidate | Evidence | Canonical? | Freeze impact |
 |---|---|---:|---|
-| P-Gap exists when there is a distance between High[2] and Low[0] in the cited price-action context | Related Poursamadi course excerpt | No | Still BLOCKED |
+| Generic gap check involving High of two candles before vs Low of current candle | Related Poursamadi price-action excerpt | No | Still BLOCKED |
+| `P_GAP` = Pressure gap | Related source glossary | No executable formula | Still BLOCKED |
 | P-Gap is the validity condition for the SP2L breakout | Current primary SP2L artifact: `Valid BO = P-Gap` | Concept only | Still BLOCKED |
-| P-Gap exact OHLC formula / tolerance / mirror | No source-complete evidence yet | No | BLOCKED |
+| Complete P-Gap OHLC formula / tolerance / mirror / role | No source-complete evidence yet | No | BLOCKED |
 
-`High[2]` / `Low[0]` notation above is a research normalization of the cited wording, **not a source-defined indexing convention**. It must not be implemented as canonical geometry.
+`High[2]` / `Low[0]` notation above is only a research normalization of the cited wording, **not a source-defined indexing convention** and not a proposed SP2L formula.
 
 ## Falsification boundary
 
@@ -84,13 +81,15 @@ Backtest performance must not be used to choose among these unresolved interpret
 
 ## Resolution
 
-**P-Gap: SOURCE-CONFIRMED CONCEPT + RELATED-SOURCE CANDIDATE CONSTRUCTION / EXACT SP2L FORMULA UNRESOLVED.**
+**P-Gap: SOURCE-CONFIRMED CONCEPT + RELATED-SOURCE TERMINOLOGY/CONTEXT EVIDENCE / EXACT SP2L FORMULA UNRESOLVED.**
+
+The High[2]/Low[0] relationship remains an observed generic-gap clue only; it is **not** promoted to a P-Gap formula.
 
 This is progress in source resolution, but it is **not** a Frozen Geometry pass.
 
 ## Gate impact
 
-- Source Resolution: **PARTIAL PASS — P-Gap evidence strengthened**
+- Source Resolution: **PARTIAL PASS — P-Gap evidence strengthened, formula still unresolved**
 - Frozen Geometry: **BLOCKED**
 - Untouched Validation: **LOCKED**
 - Robustness/Stability: **LOCKED**
@@ -102,4 +101,4 @@ This is progress in source resolution, but it is **not** a Frozen Geometry pass.
 
 - Current author-associated SP2L training index: https://t.me/s/tradingclub13
 - Author SP2L strategy page: https://poursamadi.com/en/sp2l-strategy-spike-2leg-by-mohammad-ali-poursamadi/
-- Related Poursamadi price-action course excerpt containing `P_GAP: Pressure gap` and the High[2]/Low[0] wording: https://www.scribd.com/document/666358452/%D8%AC%D8%B2%D9%88%D9%87-%DA%A9%D8%A7%D9%85%D9%84-%D8%A7%D8%B3%D8%AA%D8%A7%D8%AF-%D9%85%D8%AD%D9%85%D8%AF%D8%B9%D9%84%DB%8C-%D9%BE%D9%88%D8%B1%D8%B5%D9%85%D8%AF%DB%8C-%D9%88%DB%8C%D8%B1%D8%A7%DB%8C%D8%B4-%D8%B4%D8%AF%D9%87
+- Related Poursamadi price-action course excerpt: https://www.scribd.com/document/666358452/%D8%AC%D8%B2%D9%88%D9%87-%DA%A9%D8%A7%D9%85%D9%84-%D8%A7%D8%B3%D8%AA%D8%A7%D8%AF-%D9%85%D8%AD%D9%85%D8%AF%D8%B9%D9%84%DB%8C-%D9%BE%D9%88%D8%B1%D8%B5%D9%85%D8%AF%DB%8C-%D9%88%DB%8C%D8%B1%D8%A7%DB%8C%D8%B4-%D8%B4%D8%AF%D9%87
