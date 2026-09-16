@@ -3,6 +3,11 @@
  *
  * Research infrastructure only. These fixtures deliberately preserve competing
  * interpretations instead of selecting a canonical executable rule.
+ *
+ * Reconciliation note (2026-09-16): transcript + visual evidence materially
+ * narrows several questions, but no F09-F14 field is promoted to canonical
+ * executable geometry. Demonstrated bullish visual behavior must not be
+ * generalized to every Spike variant without source confirmation.
  */
 
 export type Direction = "bullish" | "bearish";
@@ -34,14 +39,16 @@ export interface SourceDiscriminationFixture {
 export const ENTRY_SL_2X_TRIGGER_ABCD_FIXTURES: readonly SourceDiscriminationFixture[] = [
   {
     id: "F09-entry-anchor-vs-leg2-start",
-    question: "Does the first entry anchor equal the start of Leg 2?",
+    question: "Does the first entry anchor equal the start of Leg 2, or is the entry tied to a currently relevant structural higher-low?",
     sourceEvidence: [
-      "Correction can lead to a Limit order placed inside the initial structure.",
+      "38:38–39:26: correction/Limit-entry sequence is source-described.",
+      "38:40–39:50 visual triangulation supports a dynamic/relevant completed higher-low Buy Limit in the demonstrated bullish variant.",
       "The source separately describes the later second leg and target completion.",
     ],
     competingInterpretations: [
       "entry-price is the Leg-2 start",
-      "entry-price is distinct from the Leg-2 start",
+      "entry-price is the currently relevant completed higher-low",
+      "entry-price is another source-defined structural anchor",
     ],
     canonicalStatus: "UNRESOLVED",
   },
@@ -49,13 +56,14 @@ export const ENTRY_SL_2X_TRIGGER_ABCD_FIXTURES: readonly SourceDiscriminationFix
     id: "F10-stop-anchor",
     question: "Which exact price defines the executable stop?",
     sourceEvidence: [
-      "Return to the referenced invalidation level invalidates the setup.",
-      "Exact OHLC stop anchor and numeric buffer are not specified.",
+      "39:26 establishes structural invalidation at the referenced level.",
+      "Visual triangulation shows invalidation deeper than the demonstrated pending entry level.",
+      "Exact OHLC stop anchor, wick/body semantics and numeric buffer are not specified.",
     ],
     competingInterpretations: [
       "structural invalidation price",
       "risk-budget-derived stop",
-      "wick/body variant of the referenced level",
+      "wick/body variant of the referenced structural level",
     ],
     canonicalStatus: "UNRESOLVED",
   },
@@ -63,12 +71,14 @@ export const ENTRY_SL_2X_TRIGGER_ABCD_FIXTURES: readonly SourceDiscriminationFix
     id: "F11-limit-refresh",
     question: "When must a pending Limit be replaced after a new candle?",
     sourceEvidence: [
-      "The source permits deleting and replacing the order when stop distance changes.",
+      "39:48 explicitly permits delete/re-place after another candle forms.",
+      "40:07 distinguishes materially changed stop distance (new order/new sizing) from small change (retain/move).",
+      "The numeric/materiality threshold is not source-defined.",
     ],
     competingInterpretations: [
       "refresh whenever the relevant distance changes",
       "refresh only after a material change",
-      "retain the original order unless an explicitly stated condition occurs",
+      "retain the existing order unless another explicit source condition occurs",
     ],
     canonicalStatus: "UNRESOLVED",
   },
@@ -76,8 +86,8 @@ export const ENTRY_SL_2X_TRIGGER_ABCD_FIXTURES: readonly SourceDiscriminationFix
     id: "F12-trigger-family",
     question: "Is there one fixed candle trigger or a broader trigger family?",
     sourceEvidence: [
-      "The source describes one-, two-, and three-candle structures.",
-      "Bar and key-bar confirmation variants are also described.",
+      "40:42–41:03 and 53:16 describe one-, two-, and three-candle structures plus Bar/Key-Bar confirmation variants.",
+      "The source does not define a deterministic classifier or precedence among those variants.",
     ],
     competingInterpretations: [
       "one-candle confirmation",
@@ -92,13 +102,14 @@ export const ENTRY_SL_2X_TRIGGER_ABCD_FIXTURES: readonly SourceDiscriminationFix
     id: "F13-2x-anchor",
     question: "What exact anchor is used for the approximately half-target 2X entry?",
     sourceEvidence: [
-      "The source describes an optional second position.",
-      "The source describes the second position at approximately half the target distance.",
+      "22:43 associates the second position with approximately half-target distance.",
+      "38:05 and 41:26–41:53 describe an optional later/second position and a larger-R outcome.",
+      "The exact price anchor, sizing, stop and fill semantics remain unresolved.",
     ],
     competingInterpretations: [
       "half the target distance measured from initial entry",
-      "half the target distance measured from a structural reference",
-      "another source-defined anchor not explicitly recoverable from the transcript",
+      "half the target distance measured from another source-defined structural anchor",
+      "another source-defined anchor not recoverable from current evidence",
     ],
     canonicalStatus: "UNRESOLVED",
   },
@@ -106,8 +117,9 @@ export const ENTRY_SL_2X_TRIGGER_ABCD_FIXTURES: readonly SourceDiscriminationFix
     id: "F14-abcd-anchor",
     question: "Which exact A/B/C/D anchors implement the AB=CD concept?",
     sourceEvidence: [
-      "SP2L is explicitly linked to AB=CD.",
-      "The second leg is expected to become equal to the first leg.",
+      "36:15 and 36:59–37:08 explicitly link SPIKE-2LEG to AB=CD and describe Leg 2 as equal in magnitude to Leg 1.",
+      "1:02:41–1:03:19 provides a later worked leg-hierarchy example.",
+      "Exact A/B/C/D OHLC anchors and equality tolerance remain unresolved.",
     ],
     competingInterpretations: [
       "wick-based A/B/C/D",
