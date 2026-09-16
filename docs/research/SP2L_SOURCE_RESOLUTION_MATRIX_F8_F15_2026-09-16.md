@@ -60,6 +60,20 @@ Therefore the complete chain remains:
 
 No canonical swing selection, P-Gap formula, Round Level algorithm, Buy Limit price construction, fill semantics, or order lifecycle rule is introduced.
 
+## Batch 26 — P-Gap source-resolution update
+
+A dedicated P-Gap pass added a related Poursamadi price-action source to the evidence ledger. That source's glossary labels `P_GAP` as **Pressure gap**. Separately, the broader gap section describes a generic gap-detection relationship involving the **high of two candles before** and the **low of the current candle**, but it does not state that this relationship is the complete `P_GAP` formula.
+
+This distinction corrects an earlier over-compression of the source. The current primary SP2L artifact establishes **`Valid BO = P-Gap`**, while the related source provides terminology and contextual gap material. It does not provide a source-complete SP2L P-Gap formula, bullish/bearish mirror, tolerance, or execution role.
+
+Therefore the status is:
+
+**P-Gap: SOURCE-CONFIRMED CONCEPT + RELATED-SOURCE TERMINOLOGY/CONTEXT EVIDENCE / EXACT SP2L FORMULA UNRESOLVED.**
+
+The research notation `High[2]` / `Low[0]` is only a normalization of the cited generic wording; it is **not** a source-defined indexing convention and is not promoted to a P-Gap formula.
+
+See `docs/research/SP2L_BATCH26_PGAP_SOURCE_RESOLUTION_2026-09-16.md` for the evidence ledger.
+
 ## F14 / F15 current evidence boundary
 
 F14 remains explicitly supported at the concept level by the handwritten `AB=CD` teaching sequence around frames 2190–2220, while A/B/C/D anchor semantics and equality/tolerance remain unresolved.
