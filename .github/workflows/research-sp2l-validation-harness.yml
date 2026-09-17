@@ -5,6 +5,8 @@ on:
     paths:
       - 'research/harness/**'
       - 'tests/sp2l-**'
+      - 'scripts/run-author-replica-backtest.mjs'
+      - 'data/historical/xauusd-1min.json'
       - 'data/reports/strategy-a-baseline/**'
       - 'package.json'
       - 'package-lock.json'
@@ -14,6 +16,8 @@ on:
     paths:
       - 'research/harness/**'
       - 'tests/sp2l-**'
+      - 'scripts/run-author-replica-backtest.mjs'
+      - 'data/historical/xauusd-1min.json'
       - 'data/reports/strategy-a-baseline/**'
       - 'package.json'
       - 'package-lock.json'
@@ -43,3 +47,12 @@ jobs:
 
       - name: Run SP2L validation harness tests
         run: npx vitest run tests/sp2l-geometry-contract.test.ts tests/sp2l-frozen-geometry-gate.test.ts tests/sp2l-validation-report.test.ts tests/sp2l-fixture-runner.test.ts tests/sp2l-integrity-invariants.test.ts tests/sp2l-determinism-invariants.test.ts tests/sp2l-125r-golden-fixture.test.ts tests/sp2l-synthetic-geometry-fixtures.test.ts tests/sp2l-baseline-forensic-accounting.test.ts
+
+      - name: Run author replica XAUUSD 1m research backtest
+        run: node scripts/run-author-replica-backtest.mjs
+
+      - name: Upload author replica research artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sp2l-author-replica-backtest
+          path: artifacts/sp2l-author-replica-backtest.json
