@@ -54,7 +54,7 @@ void OnStart()
       Print("tick_ok=true");
       Print("tick.time_epoch=", (long)tick.time);
       Print("tick.time_text=", Ts(tick.time));
-      Print("tick.time_msc=", (long long)tick.time_msc);
+      Print("tick.time_msc=", (long)tick.time_msc);
       Print("tick_time_minus_TimeGMT_seconds=", (long)(tick.time-t_time_gmt));
       Print("tick_time_minus_TimeTradeServer_seconds=", (long)(tick.time-t_time_trade_server));
       Print("tick_time_minus_TimeCurrent_seconds=", (long)(tick.time-t_time_current));
@@ -62,7 +62,7 @@ void OnStart()
    else
       Print("tick_ok=false error=", GetLastError());
 
-   MqlRates rates[3];
+   MqlRates rates[];
    ArraySetAsSeries(rates, true);
    int copied = CopyRates(symbol, InpTimeframe, 0, 3, rates);
    Print("bars_copied=", copied);
