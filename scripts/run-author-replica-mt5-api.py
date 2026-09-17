@@ -20,6 +20,7 @@ P_GAP = float(os.getenv("PGAP_PRICE", "1"))
 SPIKE_MULT = float(os.getenv("SPIKE_MULTIPLIER", "1.5"))
 MAX_SL = float(os.getenv("MAX_SL_PRICE", "10"))
 TP_R = float(os.getenv("TP_R", "1"))
+FIXED_FROM_UTC = os.getenv("FIXED_FROM_UTC")
 
 
 def body(c):
@@ -68,7 +69,13 @@ def main():
     try:
         if not mt5.symbol_select(SYMBOL, True):
             raise SystemExit(f"symbol_select failed for {SYMBOL}: {mt5.last_error()}")
-        from_date = datetime.now(timezone.utc) + timedelta(hours=3)
+        if FIXED_FROM_UTC:
+            from_date = datetime.fromisoformat(FIXED_FROM_UTC.replace("Z", "+00:00"))
+            if from_date.tzinfo is None:
+                from_date = from_date.replace(tzinfo=timezone.utc)
+            from_date = from_date.astimezone(timezone.utc)
+        else:
+            from_date = datetime.now(timezone.utc) + timedelta(hours=3)
         rates = mt5.copy_rates_from(SYMBOL, mt5.TIMEFRAME_M1, from_date, N)
         if rates is None:
             raise SystemExit(f"copy_rates_from failed: {mt5.last_error()}")
@@ -124,6 +131,7 @@ def main():
             "server": mt5.account_info().server if mt5.account_info() else None,
             "symbol": SYMBOL,
             "timeframe": "M1",
+            "request_from_utc": from_date.isoformat(),
             "requested_bars": N,
             "returned_bars": len(candles),
             "first_utc": datetime.fromtimestamp(candles[0]["time"], timezone.utc).isoformat() if candles else None,
