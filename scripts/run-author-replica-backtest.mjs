@@ -35,7 +35,7 @@ function emaSeries(values, period) {
 
 const ema = emaSeries(candles.map(c => c.close), cfg.emaPeriod);
 
-function detect(i) {
+function detect(i, pGapPrice = cfg.pGapPrice) {
   if (i < 3) return null;
   const a = candles[i-3], spike = candles[i-2], correction = candles[i-1], trigger = candles[i];
   const sb = spike.close - spike.open;
@@ -45,7 +45,7 @@ function detect(i) {
     correction.close > spike.close && correction.open > spike.open &&
     spike.close > a.close && spike.open > a.open &&
     correction.close > correction.open && spike.close > spike.open && a.close > a.open &&
-    correction.low > a.high + cfg.pGapPrice &&
+    correction.low > a.high + pGapPrice &&
     sb > cfg.spikeMultiplier * (correction.close-correction.open) &&
     sb > cfg.spikeMultiplier * (a.close-a.open) &&
     sb > cfg.spikeMultiplier * (trigger.close-trigger.open);
@@ -54,7 +54,7 @@ function detect(i) {
     correction.close < spike.close && correction.open < spike.open &&
     spike.close < a.close && spike.open < a.open &&
     correction.close < correction.open && spike.close < spike.open && a.close < a.open &&
-    correction.high < a.low - cfg.pGapPrice &&
+    correction.high < a.low - pGapPrice &&
     ss > cfg.spikeMultiplier * (correction.open-correction.close) &&
     ss > cfg.spikeMultiplier * (a.open-a.close) &&
     ss > cfg.spikeMultiplier * (trigger.open-trigger.close);
@@ -70,7 +70,6 @@ function detect(i) {
 function trendValid(signal) {
   if (!cfg.useTrend) return true;
   let opposite = 0;
-  // Mirror the author's trend check from the setup origin through entry.
   const start = signal.signalIndex - 2;
   for (let p = start + 1; p <= signal.signalIndex; p++) {
     if (signal.direction === 'BUY') {
@@ -94,7 +93,7 @@ function filtersValid(signal) {
   return trendValid(signal);
 }
 
-function run({filters}) {
+function run({filters, pGapPrice = cfg.pGapPrice}) {
   const trades = [];
   let open = null;
   let detected = 0;
@@ -121,7 +120,7 @@ function run({filters}) {
       }
       continue;
     }
-    const s = detect(i);
+    const s = detect(i, pGapPrice);
     if (!s) continue;
     detected++;
     if (filters && !filtersValid(s)) continue;
@@ -137,12 +136,22 @@ function run({filters}) {
   return { detected, trades:trades.length, wins, losses, winRate: trades.length ? wins/trades.length : null, totalR, expectancy: trades.length ? totalR/trades.length : null, profitFactor: grossLoss ? grossWin/grossLoss : null, maxDrawdownR:maxDD, byDirection:{BUY:trades.filter(t=>t.direction==='BUY').length,SELL:trades.filter(t=>t.direction==='SELL').length}, exitReasons:Object.fromEntries([...new Set(trades.map(t=>t.reason))].map(k=>[k,trades.filter(t=>t.reason===k).length])), firstTrade:trades[0]?.entryTime??null,lastTrade:trades.at(-1)?.entryTime??null};
 }
 
+function setupDiagnostics() {
+  const gapThresholds = [0, 0.25, 0.5, 1, 1.5, 2];
+  return gapThresholds.map(pGapPrice => ({
+    pGapPrice,
+    detected: Array.from({length: candles.length - 3}, (_, k) => k + 3)
+      .filter(i => detect(i, pGapPrice) !== null).length,
+  }));
+}
+
 const result = {
   methodology: 'RESEARCH-ONLY author implementation replica; not canonical Strategy A. Bar-level entry at trigger low/high and next-bar-forward exit evaluation.',
   data: { source: raw.source, symbol: raw.symbol, timeframe: raw.timeframe, timezone: raw.timezone, candles: candles.length, from: candles[0].time, to: candles.at(-1).time },
   config: cfg,
   noFilters: run({filters:false}),
   reportedConfigFilters: run({filters:true}),
+  setupDiagnostics: setupDiagnostics(),
   externalReference: { signals:93, trades:92, wins:66, losses:26, winRate:0.7174, totalR:40, profitFactor:2.538, maxDrawdownCash:-300, secondEntry:false, ema:true, emaPeriod:60, trend:true, maxOppositeMoves:1, range:false, session:false },
 };
 fs.mkdirSync('artifacts', {recursive:true});
