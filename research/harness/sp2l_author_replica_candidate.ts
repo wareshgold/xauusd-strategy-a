@@ -21,7 +21,7 @@ export interface AuthorReplicaSetup {
  * Research-only reproduction of observable logic in Alireza Sadabadi's
  * SP2L implementation. It is NOT canonical Strategy A geometry.
  *
- * Window convention follows the author's advanced live implementation:
+ * Window convention:
  *   -4 = candle before spike
  *   -3 = spike candle
  *   -2 = candle after spike
@@ -52,7 +52,7 @@ export function detectAuthorReplica(
     a.close > a.open &&
     correction.low > a.high + config.pGapPrice &&
     spikeBodyBuy > config.spikeMultiplier * (correction.close - correction.open) &&
-    spikeBodyBuy > config.spikeMultiplier * (spike.close - spike.open === 0 ? 0 : a.close - a.open) &&
+    spikeBodyBuy > config.spikeMultiplier * (a.close - a.open) &&
     spikeBodyBuy > config.spikeMultiplier * (trigger.close - trigger.open);
 
   const sell =
