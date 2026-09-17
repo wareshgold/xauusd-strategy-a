@@ -37,13 +37,13 @@ void WriteSessionRow(const int handle,
              TimeToString(to_time, TIME_DATE|TIME_SECONDS));
 }
 
-int OnInit()
+void OnStart()
 {
    if(!SymbolSelect(InpSymbol, true))
    {
       PrintFormat("SP2L_MT5_SESSION_CALENDAR_ERROR symbol_select symbol=%s error=%d",
                   InpSymbol, GetLastError());
-      return INIT_FAILED;
+      return;
    }
 
    string safe_symbol = InpSymbol;
@@ -63,7 +63,7 @@ int OnInit()
    {
       PrintFormat("SP2L_MT5_SESSION_CALENDAR_ERROR file_open file=%s error=%d",
                   filename, GetLastError());
-      return INIT_FAILED;
+      return;
    }
 
    FileWrite(handle,
@@ -117,11 +117,4 @@ int OnInit()
    PrintFormat("SP2L_MT5_SESSION_CALENDAR_END symbol=%s trade_rows=%d quote_rows=%d file=%s",
                InpSymbol, trade_count, quote_count, filename);
    Print("SP2L_MT5_SESSION_CALENDAR_NOTE: output preserves MT5 session timestamps as returned by the terminal; no UTC conversion, DST normalization, or session interpretation is performed.");
-
-   return INIT_SUCCEEDED;
-}
-
-void OnStart()
-{
-   // This script performs all work in OnInit so it can be run once from Navigator.
 }
