@@ -18,15 +18,14 @@ export interface AuthorReplicaSetup {
 }
 
 /**
- * Research-only reproduction of the observable logic in Alireza Sadabadi's
- * SP2L implementation. It is intentionally NOT the canonical Strategy A
- * geometry and must not be used for production decisions.
+ * Research-only reproduction of observable logic in Alireza Sadabadi's
+ * SP2L implementation. It is NOT canonical Strategy A geometry.
  *
- * Window convention:
+ * Window convention follows the author's advanced live implementation:
  *   -4 = candle before spike
  *   -3 = spike candle
  *   -2 = candle after spike
- *   -1 = trigger/entry candle
+ *   -1 = current/trigger candle
  */
 export function detectAuthorReplica(
   candles: readonly Candle[],
@@ -39,6 +38,9 @@ export function detectAuthorReplica(
   const correction = candles[candles.length - 2];
   const trigger = candles[candles.length - 1];
 
+  const spikeBodyBuy = spike.close - spike.open;
+  const spikeBodySell = spike.open - spike.close;
+
   const buy =
     trigger.low < correction.low &&
     correction.close > spike.close &&
@@ -49,9 +51,9 @@ export function detectAuthorReplica(
     spike.close > spike.open &&
     a.close > a.open &&
     correction.low > a.high + config.pGapPrice &&
-    spike.close - spike.open > config.spikeMultiplier * (correction.close - correction.open) &&
-    spike.close - spike.open > config.spikeMultiplier * (spike.close - spike.open === 0 ? 0 : spike.close - spike.open) &&
-    spike.close - spike.open > config.spikeMultiplier * (trigger.close - trigger.open);
+    spikeBodyBuy > config.spikeMultiplier * (correction.close - correction.open) &&
+    spikeBodyBuy > config.spikeMultiplier * (spike.close - spike.open === 0 ? 0 : a.close - a.open) &&
+    spikeBodyBuy > config.spikeMultiplier * (trigger.close - trigger.open);
 
   const sell =
     trigger.high > correction.high &&
@@ -63,9 +65,9 @@ export function detectAuthorReplica(
     spike.close < spike.open &&
     a.close < a.open &&
     correction.high < a.low - config.pGapPrice &&
-    spike.open - spike.close > config.spikeMultiplier * (correction.open - correction.close) &&
-    spike.open - spike.close > config.spikeMultiplier * (a.open - a.close) &&
-    spike.open - spike.close > config.spikeMultiplier * (trigger.open - trigger.close);
+    spikeBodySell > config.spikeMultiplier * (correction.open - correction.close) &&
+    spikeBodySell > config.spikeMultiplier * (a.open - a.close) &&
+    spikeBodySell > config.spikeMultiplier * (trigger.open - trigger.close);
 
   if (buy === sell) return null;
 
