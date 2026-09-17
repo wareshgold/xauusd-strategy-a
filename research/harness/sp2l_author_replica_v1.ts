@@ -18,13 +18,7 @@ export interface AuthorReplicaSetup {
   readonly pGapDistance: number;
 }
 
-/**
- * Research-only reconstruction of the author-owned SP2L implementation.
- * This is deliberately NOT the canonical Strategy A geometry.
- *
- * Four-candle indexing follows the author code:
- *   -4 previous candle, -3 spike, -2 post-spike/correction, -1 current.
- */
+/** Research-only reconstruction of the author-owned SP2L implementation. */
 export const DEFAULT_AUTHOR_REPLICA: AuthorReplicaConfig = {
   gapPrice: 1.0,
   spikeMultiplier: 1.5,
@@ -32,12 +26,18 @@ export const DEFAULT_AUTHOR_REPLICA: AuthorReplicaConfig = {
   tpR: 1.0,
 };
 
+/**
+ * Author indexing:
+ * -4 = candle before spike, -3 = spike, -2 = post-spike/correction, -1 = current.
+ * The candidate intentionally remains non-canonical.
+ */
 function bullishSetup(data: readonly Candle[], i: number, c: AuthorReplicaConfig): boolean {
   if (i < 4) return false;
   const m4 = data[i - 4]!;
   const m3 = data[i - 3]!;
   const m2 = data[i - 2]!;
   const m1 = data[i]!;
+  const spikeBody = m3.close - m3.open;
   return (
     m1.low < m2.low &&
     m2.close > m3.close &&
@@ -48,8 +48,9 @@ function bullishSetup(data: readonly Candle[], i: number, c: AuthorReplicaConfig
     m3.close > m3.open &&
     m4.close > m4.open &&
     m2.low > m4.high + c.gapPrice &&
-    (m3.close - m3.open) > c.spikeMultiplier * (m2.close - m2.open) &&
-    (m3.close - m3.open) > c.spikeMultiplier * (m3.close - m4.close - (m3.open - m4.open))
+    spikeBody > c.spikeMultiplier * (m2.close - m2.open) &&
+    spikeBody > c.spikeMultiplier * (m4.close - m4.open) &&
+    spikeBody > c.spikeMultiplier * (m1.close - m1.open)
   );
 }
 
@@ -59,6 +60,7 @@ function bearishSetup(data: readonly Candle[], i: number, c: AuthorReplicaConfig
   const m3 = data[i - 3]!;
   const m2 = data[i - 2]!;
   const m1 = data[i]!;
+  const spikeBody = m3.open - m3.close;
   return (
     m1.high > m2.high &&
     m2.close < m3.close &&
@@ -69,18 +71,12 @@ function bearishSetup(data: readonly Candle[], i: number, c: AuthorReplicaConfig
     m3.close < m3.open &&
     m4.close < m4.open &&
     m2.high < m4.low - c.gapPrice &&
-    (m3.open - m3.close) > c.spikeMultiplier * (m2.open - m2.close) &&
-    (m3.open - m3.close) > c.spikeMultiplier * (m4.open - m4.close) &&
-    (m3.open - m3.close) > c.spikeMultiplier * (m1.open - m1.close)
+    spikeBody > c.spikeMultiplier * (m2.open - m2.close) &&
+    spikeBody > c.spikeMultiplier * (m4.open - m4.close) &&
+    spikeBody > c.spikeMultiplier * (m1.open - m1.close)
   );
 }
 
-/**
- * Emits the setup/entry represented by the same candle on which the author's
- * trigger condition is observed. This is the research candidate used to
- * compare the implementation against our backtest engine. The live bot adds
- * an explicit pending state; that lifecycle remains separately documented.
- */
 export function detectAuthorReplicaCandidates(
   data: readonly Candle[],
   config: AuthorReplicaConfig = DEFAULT_AUTHOR_REPLICA,
