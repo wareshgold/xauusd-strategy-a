@@ -31,8 +31,8 @@ void WriteSessionRow(const int handle,
              DayName(day),
              IntegerToString((int)day),
              IntegerToString((int)index),
-             LongToString((long)from_time),
-             LongToString((long)to_time),
+             IntegerToString((int)from_time),
+             IntegerToString((int)to_time),
              TimeToString(from_time, TIME_DATE|TIME_SECONDS),
              TimeToString(to_time, TIME_DATE|TIME_SECONDS));
 }
