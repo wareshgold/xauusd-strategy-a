@@ -1,0 +1,43 @@
+{
+  "dataset_id": "REPLACE_WITH_UNIQUE_ID",
+  "status": "ACQUIRED_UNAUDITED",
+  "source": {
+    "provider": "MetaTrader5",
+    "terminal": "Otet Group MT5 Terminal",
+    "server": "OtetGroup-MT5",
+    "symbol": "XAUUSD.ecn",
+    "timeframe": "M1"
+  },
+  "request": {
+    "start_utc": "REPLACE",
+    "end_utc": "REPLACE",
+    "snapshot_end_rule": "REPLACE_IF_SNAPSHOT",
+    "requested_bar_count": 10000
+  },
+  "observed": {
+    "first_bar_utc": "REPLACE",
+    "last_bar_utc": "REPLACE",
+    "actual_bar_count": 0,
+    "gap_count": 0,
+    "gap_ranges": []
+  },
+  "integrity": {
+    "timezone_normalization": "UTC",
+    "artifact_path": "REPLACE",
+    "artifact_sha256": "REPLACE",
+    "chronological_order_verified": false,
+    "no_fabricated_candles": true
+  },
+  "provenance": {
+    "retrieved_at_utc": "REPLACE",
+    "acquisition_code_revision": "REPLACE",
+    "downstream_runner_revision": "REPLACE",
+    "configuration_id": "REPLACE"
+  },
+  "audit": {
+    "status": "ACQUIRED_UNAUDITED",
+    "auditor": "REPLACE",
+    "audited_at_utc": null,
+    "notes": ""
+  }
+}
