@@ -2,20 +2,20 @@
 
 ## Purpose
 
-Consolidate the current source-first status of synthetic fixtures **F8–F16** after completed evidence batches and direct forensic inspection of the user-supplied primary SP2L training video, including worked-trade reconstruction and primary-artifact micro-forensic passes. This matrix records what the artifact supports and what remains unresolved. It is a gate artifact, not a geometry specification.
+Consolidate the current source-first status of synthetic fixtures **F8–F16** after completed evidence batches and direct forensic inspection of the user-supplied primary SP2L training video plus author-associated source material. This matrix records what the artifact supports and what remains unresolved. It is a gate artifact, not a geometry specification.
 
 ## Source-resolution matrix
 
 | Fixture | Topic | Current source status | Canonical executable rule? | Freeze impact |
 |---|---|---|---|---|
 | F8 | First important swing / evolving swing selection | **PRIMARY-ARTIFACT + WORKED-EXAMPLE EVIDENCE STRENGTHENED / SELECTION ALGORITHM UNRESOLVED** | No | BLOCKED |
-| F9 | Entry vs Leg-2 start | **PRIMARY-ARTIFACT PENDING-ENTRY CONCEPT + WORKED-TRADE EXECUTED POSITIONS + TIMELINE CLUSTER CONFIRMED / ACTIVATION SEMANTICS UNRESOLVED** | No | BLOCKED |
-| F10 | Structural invalidation vs SL | **SOURCE-CONFIRMED ORIGIN/RISK-SEPARATION CONCEPT + WORKED-TRADE SL/ENTRY INSTANCES OBSERVED / EXACT PRICE AND INVALIDATION SEMANTICS UNRESOLVED** | No | BLOCKED |
-| F11 | Pending-order replacement / refresh | **PRIMARY-ARTIFACT TEMPORAL PERSISTENCE + DELETE OBSERVED / WORKED-TRADE HISTORY CLUSTERED / LIFECYCLE CAUSALITY UNRESOLVED** | No | BLOCKED |
-| F12 | 1/2/3-candle trigger taxonomy | **PRIMARY-ARTIFACT TRIGGER CONCEPT + TEMPORAL ORDERING CONFIRMED / EXACT TRIGGER TAXONOMY UNRESOLVED** | No | BLOCKED |
-| F13 | 2X | **PRIMARY-ARTIFACT CONFIRMED CONCEPT + BETWEEN-LEVEL VISUAL RELATION + WORKED-TRADE CONTEXT / EXACT PRICE FORMULA AND EXECUTION SEMANTICS UNRESOLVED** | No | BLOCKED |
+| F9 | Entry vs Leg-2 start | **AUTHOR-ASSOCIATED SECOND-LEG TRIGGER + PRIMARY-ARTIFACT PENDING/EXECUTED STATES CONFIRMED / ACTIVATION & FILL SEMANTICS UNRESOLVED** | No | BLOCKED |
+| F10 | Structural invalidation vs SL | **AUTHOR-ASSOCIATED ORIGIN-CANDLE SL CONCEPT + WORKED-TRADE INSTANCES OBSERVED / EXACT PRICE & INVALIDATION SEMANTICS UNRESOLVED** | No | BLOCKED |
+| F11 | Pending-order replacement / refresh | **PRIMARY-ARTIFACT TEMPORAL PERSISTENCE + DELETE + WORKED-TRADE HISTORY CLUSTERED / LIFECYCLE CAUSALITY UNRESOLVED** | No | BLOCKED |
+| F12 | 1/2/3-candle trigger taxonomy | **AUTHOR-ASSOCIATED P-GAP VALIDITY + SECOND-LEG TRIGGER CONCEPT + PRIMARY-ARTIFACT BO ORDERING CONFIRMED / EXACT EXECUTABLE TAXONOMY UNRESOLVED** | No | BLOCKED |
+| F13 | 2X | **AUTHOR-ASSOCIATED 50%-OF-ENTRY-TO-SL SECONDARY-ENTRY RELATION CONFIRMED / FULL 2X ORDER, SIZING & LIFECYCLE SEMANTICS UNRESOLVED** | No | BLOCKED |
 | F14 | AB=CD anchors and tolerance | **PRIMARY-ARTIFACT EXPLICIT AB=CD / CONCEPT CONFIRMED / A-B-C-D ANCHORS UNRESOLVED / TOLERANCE UNRESOLVED** | No | BLOCKED |
-| F15 | Bearish mirror | **PRIMARY-ARTIFACT BEARISH EXECUTION CONFIRMED / EXACT MIRROR GEOMETRY UNRESOLVED** | No | BLOCKED |
+| F15 | Bearish mirror | **AUTHOR-ASSOCIATED UP/DOWN SECOND-LEG MIRROR + PRIMARY-ARTIFACT BEARISH EXECUTION CONFIRMED / EXACT MIRROR GEOMETRY UNRESOLVED** | No | BLOCKED |
 | F16 | Round level | **SOURCE-CONFIRMED CONCEPT / MULTIPLE SPACING CANDIDATES OBSERVED / EXACT ROUND-LEVEL ALGORITHM UNRESOLVED** | No | BLOCKED |
 
 ## Batch 27 — F9/F10/F11/F12 primary trigger/order forensic update
@@ -92,7 +92,7 @@ Source-bound conclusions:
 
 **F11:** the account/history material confirms that both pending-order and executed-position states can appear in the worked material. It does not provide enough temporal linkage to prove a deterministic pending → fill → management state machine, nor does it prove replacement, cancellation, expiry, or delete semantics.
 
-**F13:** the worked example contains visible `2x` chart annotations and multi-position execution context, but the account tables do not expose a canonical 2X price formula, sizing rule, or fill semantics. The previously observed visual placement of 2X must not be promoted to a 50% formula.
+**F13:** the worked example contains visible `2x` chart annotations and multi-position execution context, but the account tables do not expose a canonical 2X price formula, sizing rule, or fill semantics. The prior visual placement alone was not sufficient to promote 50%.
 
 **Execution semantics:** account tables are evidence of observed platform state, not by themselves a canonical source for intrabar fill rules, spread/bid-ask handling, order priority, partial fills, slippage, or manual-vs-automatic execution.
 
@@ -123,9 +123,31 @@ Therefore:
 
 No canonical execution or lifecycle rule is promoted.
 
+## Batch 35 — author-associated source resolution: P-Gap, second-leg trigger, SL, and 2X
+
+A fresh source-resolution search located the author-associated SP2L page and exposed stronger indexed source text than the prior secondary evidence. The direct page fetch returned HTTP 403 during this pass, so the retrieval limitation is recorded; the search result itself is the source record used for this update.
+
+The source states that a valid SP2L spike has a P-Gap between candles and that a sharp movement without a gap is not considered valid. It does not expose the numeric P-Gap formula, candle indexing, wick/body rule, minimum threshold, or tolerance.
+
+The source states that after a spike correction, in an uptrend the corrective candle waits to reach the low of the previous candle; in a downtrend it waits to reach the high of the previous candle. Once the Second Leg is triggered, entry is taken in the spike direction. This strengthens F9/F12 at the concept level but does not specify touch/wick/close/broker activation semantics.
+
+The source states that SL is placed behind the candle from which the spike originated. This confirms the origin-candle relationship but not the exact price boundary or invalidation event.
+
+Most importantly, the source explicitly states that a secondary entry can be added at **50% of the distance from the entry point to the stop-loss**. This is now author-associated source evidence for the secondary-entry relation. It does not, by itself, resolve 2X sizing, whether the secondary entry is always used, exact pending-order behavior, or the full lifecycle.
+
+Source-aligned resolution:
+
+- **F9:** second-leg trigger concept strengthened; activation/fill semantics unresolved.
+- **F10:** origin-candle SL concept strengthened; exact price/invalidation semantics unresolved.
+- **F12:** P-Gap validity + second-leg trigger concept source-confirmed; exact executable taxonomy unresolved.
+- **F13:** **50%-of-entry-to-SL secondary-entry relation source-confirmed; complete 2X execution/lifecycle semantics unresolved.**
+- **F14:** unchanged; AB=CD concept confirmed, anchors/tolerance unresolved.
+
+No canonical implementation is changed from this pass.
+
 ## Gate decision
 
-**Source Resolution: PARTIAL PASS — individual concepts, temporal teaching sequence, worked-account states, and chronological history evidence strengthened; executable semantics remain unresolved.**
+**Source Resolution: PARTIAL PASS — materially strengthened by author-associated source evidence.**
 
 **Frozen Geometry: BLOCKED** — executable semantics remain unresolved and cannot be selected by backtest performance or implementation convenience.
 
