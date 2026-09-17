@@ -51,6 +51,16 @@ def expected_timestamps(start: datetime, end: datetime) -> list[datetime]:
     return out
 
 
+def inactive_only_between(a: datetime, b: datetime, expected_set: set[str]) -> bool:
+    """Return True iff every minute strictly between a and b is inactive."""
+    cur = a + timedelta(minutes=1)
+    while cur < b:
+        if iso(cur) in expected_set:
+            return False
+        cur += timedelta(minutes=1)
+    return True
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--start", required=True)
@@ -109,13 +119,18 @@ def main() -> int:
             datetime.fromisoformat(returned[i-1].replace("Z", "+00:00"))
             for i in range(1, len(returned))
         )
+
         jumps = []
+        invalid_jumps = []
         for i in range(1, len(returned)):
             a = datetime.fromisoformat(returned[i-1].replace("Z", "+00:00"))
             b = datetime.fromisoformat(returned[i].replace("Z", "+00:00"))
             delta = int((b - a).total_seconds())
             if delta != 60:
-                jumps.append({"from": returned[i-1], "to": returned[i], "delta_seconds": delta})
+                jump = {"from": returned[i-1], "to": returned[i], "delta_seconds": delta}
+                jumps.append(jump)
+                if delta < 60 or not inactive_only_between(a, b, expected_set):
+                    invalid_jumps.append(jump)
 
         out = Path(args.out_dir)
         out.mkdir(parents=True, exist_ok=True)
@@ -133,7 +148,8 @@ def main() -> int:
         passed = (
             bool(expected_set) and
             returned_set == expected_set and
-            unique and chronological and not jumps
+            unique and chronological and
+            not invalid_jumps
         )
         result = {
             "dataset_id": args.dataset_id,
@@ -153,6 +169,8 @@ def main() -> int:
             "unique_timestamps": unique,
             "chronological": chronological,
             "timestamp_jumps": jumps,
+            "invalid_timestamp_jumps": invalid_jumps,
+            "session_boundary_jumps_allowed": True,
             "artifact": artifact.name,
             "artifact_sha256": digest,
             "retrieval_timestamp_utc": iso(datetime.now(timezone.utc)),
