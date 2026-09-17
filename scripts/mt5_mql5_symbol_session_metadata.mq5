@@ -82,7 +82,11 @@ void OnStart()
          "|company=",AccountInfoString(ACCOUNT_COMPANY),
          "|server=",AccountInfoString(ACCOUNT_SERVER));
    Print("SESSION_DIAGNOSTIC|symbol_selected=",(bool)SymbolSelect(InpSymbol,true));
-   Print("SESSION_DIAGNOSTIC|symbol_exists=",SymbolExist(InpSymbol,true));
+
+   bool is_custom=false;
+   bool symbol_exists=SymbolExist(InpSymbol,is_custom);
+   Print("SESSION_DIAGNOSTIC|symbol_exists=",symbol_exists,
+         "|symbol_custom=",is_custom);
 
    for(int day=(int)SUNDAY; day<=(int)SATURDAY; day++)
      {
