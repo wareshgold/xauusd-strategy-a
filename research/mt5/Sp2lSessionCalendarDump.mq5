@@ -50,7 +50,7 @@ void OnStart()
    StringReplace(safe_symbol, ".", "_");
    StringReplace(safe_symbol, "/", "_");
 
-   string stamp = TimeToString(TimeLocal(), TIME_DATE|TIME_SECONDS);
+   string stamp = TimeLocalToString(TimeLocal());
    StringReplace(stamp, ".", "-");
    StringReplace(stamp, ":", "-");
    StringReplace(stamp, " ", "T");
@@ -71,10 +71,10 @@ void OnStart()
              "day_name",
              "day_enum",
              "session_index",
-             "from_epoch_server",
-             "to_epoch_server",
-             "from_server_text",
-             "to_server_text");
+             "from_seconds_from_midnight",
+             "to_seconds_from_midnight",
+             "from_time",
+             "to_time");
 
    PrintFormat("SP2L_MT5_SESSION_CALENDAR_BEGIN symbol=%s server_time=%s gmt_time=%s file=%s",
                InpSymbol,
@@ -116,5 +116,5 @@ void OnStart()
 
    PrintFormat("SP2L_MT5_SESSION_CALENDAR_END symbol=%s trade_rows=%d quote_rows=%d file=%s",
                InpSymbol, trade_count, quote_count, filename);
-   Print("SP2L_MT5_SESSION_CALENDAR_NOTE: output preserves MT5 session timestamps as returned by the terminal; no UTC conversion, DST normalization, or session interpretation is performed.");
+   Print("SP2L_MT5_SESSION_CALENDAR_NOTE: output preserves MT5 session timestamps as returned by the terminal; values are seconds from midnight and no UTC conversion, DST normalization, or session interpretation is performed.");
 }
