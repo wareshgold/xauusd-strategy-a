@@ -33,8 +33,8 @@ void WriteSessionRow(const int handle,
              IntegerToString((int)index),
              IntegerToString((int)from_time),
              IntegerToString((int)to_time),
-             TimeToString(from_time, TIME_DATE|TIME_SECONDS),
-             TimeToString(to_time, TIME_DATE|TIME_SECONDS));
+             TimeToString(from_time, TIME_SECONDS),
+             TimeToString(to_time, TIME_SECONDS));
 }
 
 void OnStart()
@@ -50,7 +50,7 @@ void OnStart()
    StringReplace(safe_symbol, ".", "_");
    StringReplace(safe_symbol, "/", "_");
 
-   string stamp = TimeLocalToString(TimeLocal());
+   string stamp = TimeToString(TimeLocal(), TIME_DATE|TIME_SECONDS);
    StringReplace(stamp, ".", "-");
    StringReplace(stamp, ":", "-");
    StringReplace(stamp, " ", "T");
