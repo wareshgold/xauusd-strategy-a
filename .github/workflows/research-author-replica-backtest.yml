@@ -1,0 +1,30 @@
+name: Research - SP2L Author Replica Backtest
+
+on:
+  push:
+    branches:
+      - research/sp2l-author-implementation-crosswalk-batch38-2026-09-17
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  author-replica-backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install
+      - name: Run research backtest
+        run: node scripts/run-author-replica-backtest.mjs
+      - name: Upload research artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sp2l-author-replica-backtest
+          path: artifacts/sp2l-author-replica-backtest.json
