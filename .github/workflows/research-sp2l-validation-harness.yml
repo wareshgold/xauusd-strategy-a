@@ -6,6 +6,7 @@ on:
       - 'research/harness/**'
       - 'tests/sp2l-**'
       - 'scripts/run-author-replica-backtest.mjs'
+      - 'scripts/run-author-replica-condition-diagnostics.mjs'
       - 'data/historical/xauusd-1min.json'
       - 'data/reports/strategy-a-baseline/**'
       - 'package.json'
@@ -17,6 +18,7 @@ on:
       - 'research/harness/**'
       - 'tests/sp2l-**'
       - 'scripts/run-author-replica-backtest.mjs'
+      - 'scripts/run-author-replica-condition-diagnostics.mjs'
       - 'data/historical/xauusd-1min.json'
       - 'data/reports/strategy-a-baseline/**'
       - 'package.json'
@@ -51,8 +53,11 @@ jobs:
       - name: Run author replica XAUUSD 1m research backtest
         run: node scripts/run-author-replica-backtest.mjs
 
-      - name: Upload author replica research artifact
+      - name: Run author replica condition diagnostics
+        run: node scripts/run-author-replica-condition-diagnostics.mjs
+
+      - name: Upload author replica research artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sp2l-author-replica-backtest
-          path: artifacts/sp2l-author-replica-backtest.json
+          path: artifacts/sp2l-author-replica-*.json
