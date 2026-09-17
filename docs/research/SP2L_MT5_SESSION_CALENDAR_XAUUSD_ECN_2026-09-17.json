@@ -1,0 +1,18 @@
+{
+  "calendar_id": "xauusd-ecn-session-current-observation-2026-09-17",
+  "provider": "MetaTrader5 native MQL5 symbol session metadata",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "observed_utc": "2026-09-17",
+  "historical_applicability": "UNVERIFIED",
+  "days": {
+    "sunday": [],
+    "monday": [{"from": "01:00:00", "to": "00:00:00"}],
+    "tuesday": [{"from": "01:00:00", "to": "00:00:00"}],
+    "wednesday": [{"from": "01:00:00", "to": "00:00:00"}],
+    "thursday": [{"from": "01:00:00", "to": "00:00:00"}],
+    "friday": [{"from": "01:00:00", "to": "00:00:00"}],
+    "saturday": []
+  }
+}
