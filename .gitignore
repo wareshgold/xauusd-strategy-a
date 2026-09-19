@@ -11,3 +11,10 @@ coverage/
 
 data/raw/
 data/processed/
+
+# Live runtime state and derived exports
+runtime/journal/
+runtime/exports/
+runtime/approved_signal.json
+runtime/approved_signal.example.json
+runtime/processed/
