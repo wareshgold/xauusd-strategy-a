@@ -241,7 +241,28 @@ def main() -> None:
             signal = read_signal()
             if signal:
                 if signal_already_seen(signal.signal_id):
+                    duplicate = {
+                        "signal_id": signal.signal_id,
+                        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                        "symbol": signal.symbol,
+                        "direction": signal.direction,
+                        "signal_entry": signal.entry,
+                        "sl": signal.sl,
+                        "tp": signal.tp,
+                        "volume": signal.volume,
+                        "source": signal.source,
+                        "status": "DUPLICATE_REJECTED",
+                        "reason": "DUPLICATE_SIGNAL_ID",
+                    }
+                    record_signal(duplicate)
                     print(json.dumps({"signal_id": signal.signal_id, "execution": {"ok": False, "reason": "DUPLICATE_SIGNAL_ID"}}, indent=2))
+                    telegram_send(
+                        format_signal(
+                            signal,
+                            "LIVE" if LIVE_TRADING_ENABLE else "DRY-RUN",
+                            {"retcode": None, "order": None, "deal": None, "comment": "DUPLICATE_SIGNAL_ID"},
+                        )
+                    )
                     archive_signal()
                     time.sleep(POLL_SECONDS)
                     continue
