@@ -15,7 +15,7 @@ The runner requested only:
 - Symbol: `XAUUSD.ecn`
 - Timeframe: M1
 - Start: **2026-09-19 00:00:00 UTC**
-- End at this check: **2026-09-19 07:33:10 UTC**
+- End at this check: **2026-09-19 07:37:38 UTC**
 
 Result:
 
@@ -74,5 +74,7 @@ No parameter sweep, tuning, geometry reinterpretation, fill-rule change, or prod
 The latest local run produced:
 
 `artifacts/SP2L_fresh_holdout_2026-09-19.json`
+
+The structural integrity audit is recorded at `docs/research/SP2L_FRESH_HOLDOUT_INTEGRITY_AUDIT_2026-09-19.md`.
 
 The artifact is a research-only availability result and does not authorize live trading.
