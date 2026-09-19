@@ -71,7 +71,7 @@ S1 surface concentration: positive. S2 baseline locality: positive. S3 temporal 
 
 Frozen boundary: **2026-09-19 00:00:00 UTC**.
 
-A new untouched availability check was executed on 2026-09-19 through 07:33 UTC. The committed single-configuration runner requested post-boundary XAUUSD.ecn M1 data and returned:
+A new untouched availability check was executed on 2026-09-19 through 07:37 UTC. The committed single-configuration runner requested post-boundary XAUUSD.ecn M1 data and returned:
 
 - `HOLDOUT_DATA_UNAVAILABLE`
 - 0 returned bars
@@ -155,7 +155,8 @@ No real trade was enabled or authorized by this verification.
 - Robustness analysis: `f4de3f6bd8490a8fe08dc47f66d83f64b358f3d2`
 - Fresh Holdout boundary freeze: `b9324eb0bc5231f0b64e8347c1451c2267b3b778`
 - Fresh Holdout runner: `08f2fc01fb4ac92e1cc38545164433a24242ffd6`
-- Weekend holdout availability audit: `385e893f18462a77e431baeb7a48793422251ab8`
+- Weekend holdout availability audit: `e096283315d3394f56986cac1b5cf4d25e195506`
+- Fresh Holdout integrity audit: `410a69da38f7d846ba59035aca9f764fe144db4c`
 - Live infrastructure audit: `d50893ac759ec6b5daf806730fe5ae82c99d07f3`
 - Live gateway safety tests: `87166f75d97be283f002277b22550df2f0a5ff0d`
 - Live gateway journal duplicate fix: `aef1041aab5c43c79b09b6d491f1b19dd3ebca95`
@@ -173,4 +174,4 @@ When continuing this project:
 
 ## Current operational conclusion
 
-**The infrastructure path is materially implemented and guarded. Parameter Stability remains INCONCLUSIVE — NO PASS / NO FAIL because temporal stability is mixed/inconclusive despite completion of the full S4 main-effect calculation. The untouched Fresh Holdout remains blocked only by lack of eligible post-boundary MT5 data; the latest availability check returned zero bars through 07:33 UTC on Saturday 2026-09-19. Strategy production remains BLOCKED. The Nexora runtime verification is PASS for the tested dry-run path, and live execution stays disabled.**
+**The infrastructure path is materially implemented and guarded. Parameter Stability remains INCONCLUSIVE — NO PASS / NO FAIL because temporal stability is mixed/inconclusive despite completion of the full S4 main-effect calculation. The untouched Fresh Holdout remains blocked only by lack of eligible post-boundary MT5 data; the latest availability check returned zero bars through 07:37 UTC on Saturday 2026-09-19. The frozen runner integrity path has been audited and remains ready without parameter, geometry, or fill-rule changes. Strategy production remains BLOCKED. The Nexora runtime verification is PASS for the tested dry-run path, and live execution stays disabled.**
