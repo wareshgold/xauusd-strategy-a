@@ -90,3 +90,32 @@ def test_max_open_positions_blocks_execution(monkeypatch, tmp_path):
     })
     result = gateway.execute_signal(signal)
     assert result == {"ok": False, "reason": "MAX_OPEN_POSITIONS", "open_positions": 1}
+
+def test_telegram_format_is_nexora_branded(monkeypatch, tmp_path):
+    gateway, _ = load_gateway(monkeypatch, tmp_path)
+    signal = gateway.Signal.from_json({
+        "direction": "BUY",
+        "symbol": "XAUUSD.ecn",
+        "entry": 100.0,
+        "sl": 90.0,
+        "tp": 110.0,
+        "volume": 0.01,
+        "signal_id": "TEST-NEXORA-BRAND-001",
+        "source": "NEXORA_TELEGRAM_TEST_ONLY",
+        "status": "APPROVED",
+    })
+
+    signal_message = gateway.format_signal(signal, "DRY-RUN")
+    execution_message = gateway.format_signal(
+        signal,
+        "DRY-RUN",
+        {"retcode": None, "order": None, "deal": None, "comment": None},
+    )
+
+    assert "Nexora SIGNAL — BUY" in signal_message
+    assert "Nexora EXECUTION — BUY" in execution_message
+    assert "SP2L SIGNAL" not in signal_message
+    assert "SP2L SIGNAL" not in execution_message
+    assert "SP2L Live Gateway" not in signal_message
+    assert "SP2L Live Gateway" not in execution_message
+
