@@ -1,3 +1,4 @@
+import json
 """Export the live journal into a single analysis workbook.
 
 Requires openpyxl in the local MT5 Python environment.
