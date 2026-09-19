@@ -20,7 +20,7 @@ from urllib.request import Request, urlopen
 
 import MetaTrader5 as mt5
 
-from live_journal import record_market_snapshot, record_signal, record_trade
+from live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
 
 
 SYMBOL = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
@@ -199,6 +199,10 @@ def read_signal() -> Signal | None:
     return Signal.from_json(payload)
 
 
+
+def signal_already_seen(signal_id: str) -> bool:
+    return any(str(row.get("signal_id")) == signal_id for row in read_jsonl(SIGNALS))
+
 def archive_signal() -> None:
     if not SIGNAL_FILE.exists():
         return
@@ -233,6 +237,11 @@ def main() -> None:
 
             signal = read_signal()
             if signal:
+                if signal_already_seen(signal.signal_id):
+                    print(json.dumps({"signal_id": signal.signal_id, "execution": {"ok": False, "reason": "DUPLICATE_SIGNAL_ID"}}, indent=2))
+                    archive_signal()
+                    time.sleep(POLL_SECONDS)
+                    continue
                 record_signal({
                     "signal_id": signal.signal_id,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
