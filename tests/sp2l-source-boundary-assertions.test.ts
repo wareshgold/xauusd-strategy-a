@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1';
-import { evaluateCanonicalPromotionGuard } from '../research/harness/sp2l_canonical_promotion_no_go_guard_v1';
+import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1.js';
+import { evaluateCanonicalPromotionGuard } from '../research/harness/sp2l_canonical_promotion_no_go_guard_v1.js';
 
 type Resolution = 'SOURCE_CONFIRMED' | 'SOURCE_DISCRIMINATED' | 'UNRESOLVED';
 
