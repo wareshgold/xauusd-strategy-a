@@ -188,3 +188,34 @@ Audit commit: `94f56b62baf27773c7b56130f308dc836afed6a2`
 ## Current operational conclusion
 
 **The infrastructure path is materially implemented and guarded. Parameter Stability remains INCONCLUSIVE — NO PASS / NO FAIL because temporal stability is mixed/inconclusive despite completion of the full S4 main-effect calculation. The untouched Fresh Holdout remains blocked only by lack of eligible post-boundary MT5 data; the latest availability check returned zero bars through 07:37 UTC on Saturday 2026-09-19. The frozen runner integrity path has been audited and remains ready without parameter, geometry, or fill-rule changes. Strategy production remains BLOCKED. The Nexora runtime verification is PASS for the tested dry-run path, and live execution stays disabled.**
+
+
+## Future Nexora VIP Client / Installer Roadmap — 2026-09-19
+
+A future non-operational product architecture has been recorded for a Nexora Windows client intended for VIP distribution.
+
+Planned layers:
+1. Installer / Client Shell
+2. Release / Update Manager
+3. VIP Authorization
+4. MT5 Discovery / Connection Adapter
+5. Strategy Runtime Boundary
+6. Existing Guarded Execution Gateway
+7. Observability / Support
+
+Design constraints:
+- GitHub main/release is a versioned source/release input, not unconditional trading authority.
+- VIP authorization grants access to an approved release; it does not define Strategy A rules.
+- MT5 remains the local broker/data connection.
+- The existing guarded execution gateway remains the order boundary.
+- No client, installer, auto-update, VIP authentication, or automated live-order path is operationalized by this roadmap.
+- No unresolved P-Gap geometry, AB=CD anchors/tolerance, fill semantics, or Leg1=Leg2 rule may be invented or promoted by the future client.
+
+Architecture roadmap: docs/research/NEXORA_VIP_CLIENT_ARCHITECTURE_ROADMAP_2026-09-19.md
+Architecture documentation commit: 2f867d744c9eb0fb108b6ac128cf3c34b42cfa7c
+
+The roadmap is intentionally parked until the research gates permit production. Current gates remain unchanged:
+- Frozen Geometry: **BLOCKED**
+- Parameter Stability: **INCONCLUSIVE — NO PASS / NO FAIL**
+- Fresh Holdout: **WAITING FOR ELIGIBLE POST-BOUNDARY DATA**
+- Live Trading: **DISABLED**
