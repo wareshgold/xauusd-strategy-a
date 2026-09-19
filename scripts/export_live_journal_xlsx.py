@@ -1,11 +1,7 @@
-import json
-"""Export the live journal into a single analysis workbook.
-
-Requires openpyxl in the local MT5 Python environment.
-Raw JSONL remains the audit source; XLSX is a derived analysis view.
-"""
-
+$1
 from __future__ import annotations
+
+import json
 
 from pathlib import Path
 from openpyxl import Workbook
