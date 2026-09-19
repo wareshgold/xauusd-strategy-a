@@ -198,7 +198,7 @@ def execute_signal(signal: Signal) -> dict:
 def read_signal() -> Signal | None:
     if not SIGNAL_FILE.exists():
         return None
-    payload = json.loads(SIGNAL_FILE.read_text(encoding="utf-8"))
+    payload = json.loads(SIGNAL_FILE.read_text(encoding="utf-8-sig"))
     return Signal.from_json(payload)
 
 
