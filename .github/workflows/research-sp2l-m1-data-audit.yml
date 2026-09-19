@@ -1,0 +1,25 @@
+name: Research - SP2L M1 Data Audit
+
+on:
+  push:
+    branches:
+      - research/sp2l-working-rules-experiment-2026-09-15
+  pull_request:
+    branches: [main]
+
+jobs:
+  m1-data-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run deterministic M1 audit
+        run: |
+          python research/engine/audit_xauusd_m1.py \
+            --m1 data/historical/xauusd-1min.json \
+            --m5 data/historical/xauusd-5min.json \
+            --out data/reports/sp2l-m1-audit.json
+      - name: Verify audit report exists
+        run: test -s data/reports/sp2l-m1-audit.json
