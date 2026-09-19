@@ -71,7 +71,7 @@ describe("SP2L source-discrimination fixtures", () => {
 
   it("provides deterministic OHLC fixture inputs", () => {
     expect(DISCRIMINATION_OHLC).toHaveLength(3);
-    expect(DISCRIMINATION_OHLC[0].low).toBe(99);
-    expect(DISCRIMINATION_OHLC[2].high).toBe(115);
+    expect(DISCRIMINATION_OHLC[0]!.low).toBe(99);
+    expect(DISCRIMINATION_OHLC[2]!.high).toBe(115);
   });
 });
