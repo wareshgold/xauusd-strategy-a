@@ -20,6 +20,8 @@ from urllib.request import Request, urlopen
 
 import MetaTrader5 as mt5
 
+from live_journal import record_market_snapshot, record_signal, record_trade
+
 
 SYMBOL = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
 MAGIC = int(os.getenv("MT5_MAGIC", "26091901"))
@@ -221,9 +223,22 @@ def main() -> None:
             if status_key != last_status:
                 print(json.dumps({"gateway": snapshot}, indent=2))
                 last_status = status_key
+            record_market_snapshot(snapshot)
 
             signal = read_signal()
             if signal:
+                record_signal({
+                    "signal_id": signal.signal_id,
+                    "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                    "symbol": signal.symbol,
+                    "direction": signal.direction,
+                    "signal_entry": signal.entry,
+                    "sl": signal.sl,
+                    "tp": signal.tp,
+                    "volume": signal.volume,
+                    "source": signal.source,
+                    "status": "APPROVED",
+                })
                 message = format_signal(
                     signal,
                     "LIVE" if LIVE_TRADING_ENABLE else "DRY-RUN",
@@ -231,6 +246,22 @@ def main() -> None:
                 telegram_send(message)
 
                 result = execute_signal(signal)
+                record_trade({
+                    "signal_id": signal.signal_id,
+                    "symbol": signal.symbol,
+                    "direction": signal.direction,
+                    "signal_entry": signal.entry,
+                    "sl": signal.sl,
+                    "tp": signal.tp,
+                    "volume": signal.volume,
+                    "execution_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+                    "status": "DRY_RUN" if result.get("dry_run") else ("OPEN" if result.get("ok") else "EXECUTION_FAILED"),
+                    "order_id": result.get("order"),
+                    "deal_id": result.get("deal"),
+                    "retcode": result.get("retcode"),
+                    "comment": result.get("comment"),
+                    "execution_json": result,
+                })
                 print(json.dumps({
                     "signal_id": signal.signal_id,
                     "execution": result,
