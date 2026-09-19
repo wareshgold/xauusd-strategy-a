@@ -20,7 +20,10 @@ from urllib.request import Request, urlopen
 
 import MetaTrader5 as mt5
 
-from live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
+try:
+    from live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
+except ModuleNotFoundError:
+    from scripts.live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
 
 
 SYMBOL = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
