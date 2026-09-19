@@ -172,6 +172,19 @@ When continuing this project:
 6. Do not substitute pre-boundary data.
 7. Do not use backtest/robustness performance to invent unresolved source geometry or authorize production trading.
 
+## Combined Readiness Audit — 2026-09-19
+
+A non-invasive combined audit was completed across Parameter Stability, execution infrastructure, and the Source/Frozen Geometry gate.
+
+- Parameter Stability: **INCONCLUSIVE — NO PASS / NO FAIL**
+- Execution infrastructure: **READY / GUARDED** for controlled dry-run; not authorization for Strategy A production auto-signals.
+- Source/Frozen Geometry: **BLOCKED**
+- Fresh Holdout: **WAITING FOR ELIGIBLE POST-BOUNDARY DATA**
+- Live execution: **DISABLED**
+
+Audit file: `docs/research/SP2L_COMBINED_READINESS_AUDIT_2026-09-19.md`
+Audit commit: `94f56b62baf27773c7b56130f308dc836afed6a2`
+
 ## Current operational conclusion
 
 **The infrastructure path is materially implemented and guarded. Parameter Stability remains INCONCLUSIVE — NO PASS / NO FAIL because temporal stability is mixed/inconclusive despite completion of the full S4 main-effect calculation. The untouched Fresh Holdout remains blocked only by lack of eligible post-boundary MT5 data; the latest availability check returned zero bars through 07:37 UTC on Saturday 2026-09-19. The frozen runner integrity path has been audited and remains ready without parameter, geometry, or fill-rule changes. Strategy production remains BLOCKED. The Nexora runtime verification is PASS for the tested dry-run path, and live execution stays disabled.**
