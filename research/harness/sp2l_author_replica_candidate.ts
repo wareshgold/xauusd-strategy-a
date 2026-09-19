@@ -37,6 +37,7 @@ export function detectAuthorReplica(
   const spike = candles[candles.length - 3];
   const correction = candles[candles.length - 2];
   const trigger = candles[candles.length - 1];
+  if (!a || !spike || !correction || !trigger) return null;
 
   const spikeBodyBuy = spike.close - spike.open;
   const spikeBodySell = spike.open - spike.close;
