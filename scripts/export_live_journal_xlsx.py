@@ -77,6 +77,8 @@ def main() -> None:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     wb = Workbook()
+    default_sheet = wb.active
+    wb.remove(default_sheet)
     write_summary(wb, signals, trades)
     write_sheet(wb, "Signals", signals)
     write_sheet(wb, "Trades", trades)
