@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1';
-import { runCanonicalFixture } from '../research/harness/sp2l_fixture_runner_v1';
+import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1.js';
+import { runCanonicalFixture } from '../research/harness/sp2l_fixture_runner_v1.js';
 
 describe('SP2L canonical fixture runner', () => {
   it('fails closed to BLOCKED when source geometry is unresolved', () => {

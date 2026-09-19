@@ -1,12 +1,12 @@
 import {
   Sp2lGeometryContract,
   assertCanonicalGeometryFrozen,
-} from './sp2l_geometry_contract_v1';
+} from './sp2l_geometry_contract_v1.js';
 import {
   createBlockedValidationReport,
   createReadyValidationReport,
   ValidationReport,
-} from './sp2l_validation_report_v1';
+} from './sp2l_validation_report_v1.js';
 
 export type FixtureExpectation = {
   id: string;

@@ -1,0 +1,131 @@
+{
+  "research_only": true,
+  "artifact_type": "SP2L_STATISTICAL_UNCERTAINTY",
+  "input_artifact": "artifacts\\SP2L_pl_pip_accounting_2026-09-14_2026-09-18.json",
+  "input_artifact_sha256": null,
+  "sample": {
+    "decisive_n": 37,
+    "wins": 27,
+    "losses": 10,
+    "ambiguous_excluded": 1
+  },
+  "observed": {
+    "win_rate_pct": 72.97297297297297,
+    "wilson_95_ci_pct": [
+      57.021831675285725,
+      84.60253848895091
+    ],
+    "net_pips": 643.4000000000287,
+    "net_pl_0_01_lot": 64.34000000000287,
+    "profit_factor": 3.067480719794565,
+    "avg_win_loss_pip_ratio": 1.1361039702942832
+  },
+  "bootstrap": {
+    "win_rate_pct": {
+      "bootstrap_samples": 20000,
+      "ci_95_percentile": [
+        59.45945945945946,
+        86.48648648648648
+      ],
+      "median_bootstrap": 72.97297297297297,
+      "mean_bootstrap": 73.01743243243243
+    },
+    "net_pips": {
+      "bootstrap_samples": 20000,
+      "ci_95_percentile": [
+        235.59250000000497,
+        1034.5025000000164
+      ],
+      "median_bootstrap": 649.5000000000209,
+      "mean_bootstrap": 645.4005150000287
+    },
+    "net_pl_0_01_lot": {
+      "bootstrap_samples": 20000,
+      "ci_95_percentile": [
+        23.5592500000005,
+        103.45025000000165
+      ],
+      "median_bootstrap": 64.95000000000209,
+      "mean_bootstrap": 64.54005150000287
+    },
+    "profit_factor": {
+      "bootstrap_samples": 20000,
+      "ci_95_percentile": [
+        1.4662445319190438,
+        8.346792663730833
+      ],
+      "median_bootstrap": 3.1235716328567698,
+      "mean_bootstrap": 3.5770358336410744
+    },
+    "avg_win_loss_pip_ratio": {
+      "bootstrap_samples": 20000,
+      "ci_95_percentile": [
+        0.7802195471395456,
+        1.6596136579179632
+      ],
+      "median_bootstrap": 1.1529629283133962,
+      "mean_bootstrap": 1.1719958063196165
+    }
+  },
+  "largest_winner_sensitivity": {
+    "1": {
+      "removed_winning_trades": 1,
+      "removed_pips": 68.40000000000146,
+      "remaining_n": 36,
+      "remaining_wins": 26,
+      "remaining_losses": 10,
+      "remaining_win_rate_pct": 72.22222222222221,
+      "remaining_net_pips": 575.0000000000273,
+      "remaining_net_pl_0_01_lot": 57.50000000000273,
+      "remaining_profit_factor": 2.847686375321539
+    },
+    "2": {
+      "removed_winning_trades": 2,
+      "removed_pips": 135.50000000000182,
+      "remaining_n": 35,
+      "remaining_wins": 25,
+      "remaining_losses": 10,
+      "remaining_win_rate_pct": 71.42857142857143,
+      "remaining_net_pips": 507.9000000000269,
+      "remaining_net_pl_0_01_lot": 50.79000000000269,
+      "remaining_profit_factor": 2.6320694087405476
+    },
+    "3": {
+      "removed_winning_trades": 3,
+      "removed_pips": 195.90000000001055,
+      "remaining_n": 34,
+      "remaining_wins": 24,
+      "remaining_losses": 10,
+      "remaining_win_rate_pct": 70.58823529411765,
+      "remaining_net_pips": 447.5000000000182,
+      "remaining_net_pl_0_01_lot": 44.75000000000182,
+      "remaining_profit_factor": 2.4379820051415355
+    },
+    "5": {
+      "removed_winning_trades": 5,
+      "removed_pips": 311.800000000012,
+      "remaining_n": 32,
+      "remaining_wins": 22,
+      "remaining_losses": 10,
+      "remaining_win_rate_pct": 68.75,
+      "remaining_net_pips": 331.60000000001673,
+      "remaining_net_pl_0_01_lot": 33.16000000000167,
+      "remaining_profit_factor": 2.0655526992289115
+    }
+  },
+  "methodology": {
+    "bootstrap_replicates": 20000,
+    "seed": 20260919,
+    "ci_method": "percentile_95",
+    "win_rate_interval": "Wilson_score_95"
+  },
+  "guard": "RESEARCH_STATISTICS_ONLY; NO_RULE_OR_PARAMETER_PROMOTION",
+  "limitations": [
+    "37 decisive observations is a small sample.",
+    "Bootstrap resamples trades as if independently exchangeable; temporal dependence is not modeled.",
+    "The observed window is historical and not a fresh post-boundary holdout.",
+    "Ambiguous outcome is excluded rather than resolved.",
+    "Costs and broker execution effects are not reconstructed.",
+    "Sensitivity removes largest winning trades descriptively; it is not a selection procedure."
+  ]
+}

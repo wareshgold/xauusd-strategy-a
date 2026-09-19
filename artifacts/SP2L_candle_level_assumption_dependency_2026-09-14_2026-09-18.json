@@ -1,0 +1,2217 @@
+{
+  "research_only": true,
+  "artifact_type": "SP2L_CANDLE_LEVEL_ASSUMPTION_DEPENDENCY_ANALYSIS",
+  "input_artifact": "artifacts\\SP2L_candle_level_evidence_2026-09-14_2026-09-18.json",
+  "input_artifact_sha256": "3a45f71e5cc58763df25852ff3619209f96926470200943164bfe29eef1e7e29",
+  "frozen_config": {
+    "pGapPrice": 1.0,
+    "spikeMultiplier": 1.5,
+    "maxSlPrice": 10.0,
+    "tpR": 1.0
+  },
+  "integrity": {
+    "signal_count": 38,
+    "mapping_summary": {
+      "expected_signals": 38,
+      "mapped": 38,
+      "not_found": 0,
+      "insufficient_context": 0
+    },
+    "gap_count": 7,
+    "candle_index_contiguous": true,
+    "signal_timestamp_alignment": true
+  },
+  "status_counts": {
+    "pgap_status": {
+      "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY": 38
+    },
+    "swing_sl_status": {
+      "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY": 38
+    },
+    "abcd_status": {
+      "NOT_ATTRIBUTABLE_FROM_ARTIFACT": 38
+    },
+    "pending_lifecycle_status": {
+      "NOT_ATTRIBUTABLE_FROM_ARTIFACT": 38
+    },
+    "tp_risk_status": {
+      "DIRECTLY_OBSERVABLE_NOT_CANONICAL": 38
+    }
+  },
+  "canonicalization_guard": "NO_UNRESOLVED_RULE_PROMOTED",
+  "notes": [
+    "All measurements are descriptive and derived only from archived OHLC/mapping fields.",
+    "The trigger relationship is a direct measurement, not a canonical trigger predicate.",
+    "No P-Gap formula, indexing, threshold, AB=CD anchors/tolerance, swing rule, fill semantics, or execution rule is inferred.",
+    "AB=CD and pending-order lifecycle remain not attributable because required fields are absent."
+  ],
+  "signal_rows": [
+    {
+      "archived_signal_index": 0,
+      "signal_time_utc": "2026-09-14T01:46:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4336.78,
+      "sl": 4333.62,
+      "tp": 4339.94,
+      "context_indices": {
+        "a_index": 3147,
+        "s_index": 3148,
+        "correction_index": 3149,
+        "trigger_index": 3150,
+        "signal_index": 3151
+      },
+      "body_points": {
+        "A": 0.6300000000001091,
+        "S": 0.7200000000002547,
+        "C": 1.449999999999818,
+        "T": 0.11999999999989086,
+        "G": 0.2899999999999636
+      },
+      "range_points": {
+        "A": 0.7699999999995271,
+        "S": 2.25,
+        "C": 1.9900000000006912,
+        "T": 0.6000000000003638,
+        "G": 0.6599999999998545
+      },
+      "body_to_range": {
+        "A": 0.8181818181824625,
+        "S": 0.3200000000001132,
+        "C": 0.7286432160800576,
+        "T": 0.19999999999969684,
+        "G": 0.43939393939398114
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.1599999999998545,
+      "sl_to_context_levels": {
+        "A_low": 1.730000000000473,
+        "A_high": 2.5,
+        "S_low": 0.0,
+        "S_high": 2.25,
+        "C_low": 1.7399999999997817,
+        "C_high": 3.730000000000473,
+        "T_low": 3.4600000000000364,
+        "T_high": 4.0600000000004,
+        "G_low": 3.1599999999998545,
+        "G_high": 3.819999999999709
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 1,
+      "signal_time_utc": "2026-09-14T02:31:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4339.04,
+      "sl": 4336.92,
+      "tp": 4341.16,
+      "context_indices": {
+        "a_index": 3192,
+        "s_index": 3193,
+        "correction_index": 3194,
+        "trigger_index": 3195,
+        "signal_index": 3196
+      },
+      "body_points": {
+        "A": 0.06000000000040018,
+        "S": 0.2899999999999636,
+        "C": 1.3800000000001091,
+        "T": 0.8599999999996726,
+        "G": 0.8300000000008367
+      },
+      "range_points": {
+        "A": 0.7199999999993452,
+        "S": 0.8999999999996362,
+        "C": 2.4399999999996,
+        "T": 0.9499999999998181,
+        "G": 1.180000000000291
+      },
+      "body_to_range": {
+        "A": 0.08333333333396492,
+        "S": 0.32222222222231206,
+        "C": 0.5655737704919408,
+        "T": 0.9052631578945656,
+        "G": 0.7033898305090102
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.119999999999891,
+      "sl_to_context_levels": {
+        "A_low": 0.3500000000003638,
+        "A_high": 1.069999999999709,
+        "S_low": 0.0,
+        "S_high": 0.8999999999996362,
+        "C_low": 0.8400000000001455,
+        "C_high": 3.2799999999997453,
+        "T_low": 2.130000000000109,
+        "T_high": 3.0799999999999272,
+        "G_low": 2.119999999999891,
+        "G_high": 3.300000000000182
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 2,
+      "signal_time_utc": "2026-09-14T03:04:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4332.99,
+      "sl": 4330.57,
+      "tp": 4335.41,
+      "context_indices": {
+        "a_index": 3225,
+        "s_index": 3226,
+        "correction_index": 3227,
+        "trigger_index": 3228,
+        "signal_index": 3229
+      },
+      "body_points": {
+        "A": 1.0999999999994543,
+        "S": 0.6199999999998909,
+        "C": 2.6900000000005093,
+        "T": 0.7299999999995634,
+        "G": 1.5399999999999636
+      },
+      "range_points": {
+        "A": 4.579999999999927,
+        "S": 2.5200000000004366,
+        "C": 3.4600000000000364,
+        "T": 1.7199999999993452,
+        "G": 2.2899999999999636
+      },
+      "body_to_range": {
+        "A": 0.24017467248896765,
+        "S": 0.2460317460316601,
+        "C": 0.7774566473989829,
+        "T": 0.42441860465107056,
+        "G": 0.6724890829694271
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.4200000000000728,
+      "sl_to_context_levels": {
+        "A_low": 0.7299999999995634,
+        "A_high": 3.850000000000364,
+        "S_low": 0.0,
+        "S_high": 2.5200000000004366,
+        "C_low": 0.5900000000001455,
+        "C_high": 4.050000000000182,
+        "T_low": 3.530000000000655,
+        "T_high": 5.25,
+        "G_low": 2.4200000000000728,
+        "G_high": 4.710000000000036
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 3,
+      "signal_time_utc": "2026-09-14T08:25:00+00:00",
+      "direction": "SELL",
+      "outcome": "AMBIGUOUS",
+      "entry": 4328.18,
+      "sl": 4330.25,
+      "tp": 4326.110000000001,
+      "context_indices": {
+        "a_index": 3546,
+        "s_index": 3547,
+        "correction_index": 3548,
+        "trigger_index": 3549,
+        "signal_index": 3550
+      },
+      "body_points": {
+        "A": 0.19000000000050932,
+        "S": 0.17000000000007276,
+        "C": 1.6199999999998909,
+        "T": 0.5499999999992724,
+        "G": 0.5500000000001819
+      },
+      "range_points": {
+        "A": 0.6300000000001091,
+        "S": 0.7799999999997453,
+        "C": 2.0100000000002183,
+        "T": 1.5900000000001455,
+        "G": 1.1700000000000728
+      },
+      "body_to_range": {
+        "A": 0.3015873015880578,
+        "S": 0.21794871794888238,
+        "C": 0.8059701492535896,
+        "T": 0.34591194968504535,
+        "G": 0.4700854700855963
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.069999999999709,
+      "sl_to_context_levels": {
+        "A_low": 0.819999999999709,
+        "A_high": 0.18999999999959982,
+        "S_low": 0.7799999999997453,
+        "S_high": 0.0,
+        "C_low": 2.3400000000001455,
+        "C_high": 0.32999999999992724,
+        "T_low": 3.949999999999818,
+        "T_high": 2.3599999999996726,
+        "G_low": 3.2399999999997817,
+        "G_high": 2.069999999999709
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 4,
+      "signal_time_utc": "2026-09-14T10:53:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4312.82,
+      "sl": 4319.66,
+      "tp": 4305.98,
+      "context_indices": {
+        "a_index": 3694,
+        "s_index": 3695,
+        "correction_index": 3696,
+        "trigger_index": 3697,
+        "signal_index": 3698
+      },
+      "body_points": {
+        "A": 1.0399999999999636,
+        "S": 1.1499999999996362,
+        "C": 4.960000000000036,
+        "T": 0.1000000000003638,
+        "G": 0.24000000000069122
+      },
+      "range_points": {
+        "A": 2.7000000000007276,
+        "S": 2.930000000000291,
+        "C": 5.140000000000327,
+        "T": 1.6599999999998545,
+        "G": 1.7599999999993088
+      },
+      "body_to_range": {
+        "A": 0.3851851851850679,
+        "S": 0.39249146757662867,
+        "C": 0.9649805447470273,
+        "T": 0.060240963855646125,
+        "G": 0.13636363636408266
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 6.8400000000001455,
+      "sl_to_context_levels": {
+        "A_low": 3.8400000000001455,
+        "A_high": 1.139999999999418,
+        "S_low": 2.930000000000291,
+        "S_high": 0.0,
+        "C_low": 8.079999999999927,
+        "C_high": 2.9399999999996,
+        "T_low": 8.889999999999418,
+        "T_high": 7.229999999999563,
+        "G_low": 8.599999999999454,
+        "G_high": 6.8400000000001455
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 5,
+      "signal_time_utc": "2026-09-14T13:27:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4290.47,
+      "sl": 4287.8,
+      "tp": 4293.14,
+      "context_indices": {
+        "a_index": 3848,
+        "s_index": 3849,
+        "correction_index": 3850,
+        "trigger_index": 3851,
+        "signal_index": 3852
+      },
+      "body_points": {
+        "A": 1.7899999999999636,
+        "S": 0.5700000000006185,
+        "C": 2.2100000000000364,
+        "T": 1.0300000000006548,
+        "G": 1.4699999999993452
+      },
+      "range_points": {
+        "A": 2.5299999999997453,
+        "S": 1.6199999999998909,
+        "C": 2.680000000000291,
+        "T": 1.7600000000002183,
+        "G": 1.9399999999995998
+      },
+      "body_to_range": {
+        "A": 0.7075098814229818,
+        "S": 0.3518518518522573,
+        "C": 0.8246268656715658,
+        "T": 0.5852272727275722,
+        "G": 0.7577319587627054
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.6700000000000728,
+      "sl_to_context_levels": {
+        "A_low": 1.3299999999999272,
+        "A_high": 1.199999999999818,
+        "S_low": 0.0,
+        "S_high": 1.6199999999998909,
+        "C_low": 1.2299999999995634,
+        "C_high": 3.9099999999998545,
+        "T_low": 3.069999999999709,
+        "T_high": 4.829999999999927,
+        "G_low": 2.6700000000000728,
+        "G_high": 4.609999999999673
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 6,
+      "signal_time_utc": "2026-09-14T17:46:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4276.39,
+      "sl": 4271.04,
+      "tp": 4281.740000000001,
+      "context_indices": {
+        "a_index": 4107,
+        "s_index": 4108,
+        "correction_index": 4109,
+        "trigger_index": 4110,
+        "signal_index": 4111
+      },
+      "body_points": {
+        "A": 0.6599999999998545,
+        "S": 1.3699999999998909,
+        "C": 4.259999999999309,
+        "T": 1.7800000000006548,
+        "G": 1.550000000000182
+      },
+      "range_points": {
+        "A": 1.5799999999999272,
+        "S": 2.1400000000003274,
+        "C": 4.6299999999992,
+        "T": 2.3200000000006185,
+        "G": 2.630000000000109
+      },
+      "body_to_range": {
+        "A": 0.4177215189872689,
+        "S": 0.6401869158877015,
+        "C": 0.9200863930885627,
+        "T": 0.7672413793104226,
+        "G": 0.589353612167345
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 5.350000000000364,
+      "sl_to_context_levels": {
+        "A_low": 0.7200000000002547,
+        "A_high": 0.8599999999996726,
+        "S_low": 0.0,
+        "S_high": 2.1400000000003274,
+        "C_low": 1.5200000000004366,
+        "C_high": 6.149999999999636,
+        "T_low": 5.779999999999745,
+        "T_high": 8.100000000000364,
+        "G_low": 5.350000000000364,
+        "G_high": 7.980000000000473
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 7,
+      "signal_time_utc": "2026-09-14T19:25:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4303.29,
+      "sl": 4298.79,
+      "tp": 4307.79,
+      "context_indices": {
+        "a_index": 4206,
+        "s_index": 4207,
+        "correction_index": 4208,
+        "trigger_index": 4209,
+        "signal_index": 4210
+      },
+      "body_points": {
+        "A": 0.27000000000043656,
+        "S": 2.0799999999999272,
+        "C": 3.4099999999998545,
+        "T": 0.3100000000004002,
+        "G": 1.1700000000000728
+      },
+      "range_points": {
+        "A": 1.5100000000002183,
+        "S": 2.9200000000000728,
+        "C": 3.600000000000364,
+        "T": 1.2399999999997817,
+        "G": 1.980000000000473
+      },
+      "body_to_range": {
+        "A": 0.1788079470201308,
+        "S": 0.712328767123245,
+        "C": 0.9472222222220861,
+        "T": 0.2500000000003667,
+        "G": 0.5909090909089865
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 4.5,
+      "sl_to_context_levels": {
+        "A_low": 1.3699999999998909,
+        "A_high": 0.14000000000032742,
+        "S_low": 0.0,
+        "S_high": 2.9200000000000728,
+        "C_low": 1.9899999999997817,
+        "C_high": 5.5900000000001455,
+        "T_low": 5.230000000000473,
+        "T_high": 6.470000000000255,
+        "G_low": 4.5,
+        "G_high": 6.480000000000473
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 8,
+      "signal_time_utc": "2026-09-14T19:42:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4303.92,
+      "sl": 4301.15,
+      "tp": 4306.6900000000005,
+      "context_indices": {
+        "a_index": 4223,
+        "s_index": 4224,
+        "correction_index": 4225,
+        "trigger_index": 4226,
+        "signal_index": 4227
+      },
+      "body_points": {
+        "A": 0.43000000000029104,
+        "S": 0.5500000000001819,
+        "C": 1.6700000000000728,
+        "T": 0.5900000000001455,
+        "G": 0.5
+      },
+      "range_points": {
+        "A": 1.680000000000291,
+        "S": 2.0,
+        "C": 2.199999999999818,
+        "T": 1.3299999999999272,
+        "G": 1.4099999999998545
+      },
+      "body_to_range": {
+        "A": 0.25595238095250983,
+        "S": 0.27500000000009095,
+        "C": 0.759090909091005,
+        "T": 0.4436090225565247,
+        "G": 0.3546099290780508
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.7700000000004366,
+      "sl_to_context_levels": {
+        "A_low": 0.5,
+        "A_high": 2.180000000000291,
+        "S_low": 0.0,
+        "S_high": 2.0,
+        "C_low": 1.4500000000007276,
+        "C_high": 3.6500000000005457,
+        "T_low": 3.050000000000182,
+        "T_high": 4.380000000000109,
+        "G_low": 2.7700000000004366,
+        "G_high": 4.180000000000291
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 9,
+      "signal_time_utc": "2026-09-14T21:52:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4305.84,
+      "sl": 4308.66,
+      "tp": 4303.02,
+      "context_indices": {
+        "a_index": 4353,
+        "s_index": 4354,
+        "correction_index": 4355,
+        "trigger_index": 4356,
+        "signal_index": 4357
+      },
+      "body_points": {
+        "A": 0.13000000000010914,
+        "S": 0.14000000000032742,
+        "C": 2.119999999999891,
+        "T": 0.5700000000006185,
+        "G": 0.5999999999994543
+      },
+      "range_points": {
+        "A": 0.8999999999996362,
+        "S": 1.199999999999818,
+        "C": 2.819999999999709,
+        "T": 0.8100000000004002,
+        "G": 0.7899999999999636
+      },
+      "body_to_range": {
+        "A": 0.1444444444446241,
+        "S": 0.1166666666669572,
+        "C": 0.7517730496454289,
+        "T": 0.7037037037041196,
+        "G": 0.7594936708854202
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.819999999999709,
+      "sl_to_context_levels": {
+        "A_low": 1.389999999999418,
+        "A_high": 0.4899999999997817,
+        "S_low": 1.199999999999818,
+        "S_high": 0.0,
+        "C_low": 3.869999999999891,
+        "C_high": 1.050000000000182,
+        "T_low": 3.75,
+        "T_high": 2.9399999999996,
+        "G_low": 3.6099999999996726,
+        "G_high": 2.819999999999709
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 10,
+      "signal_time_utc": "2026-09-15T04:39:00+00:00",
+      "direction": "SELL",
+      "outcome": "LOSS",
+      "entry": 4298.31,
+      "sl": 4301.83,
+      "tp": 4294.790000000001,
+      "context_indices": {
+        "a_index": 4699,
+        "s_index": 4700,
+        "correction_index": 4701,
+        "trigger_index": 4702,
+        "signal_index": 4703
+      },
+      "body_points": {
+        "A": 1.7100000000000364,
+        "S": 1.1700000000000728,
+        "C": 1.7600000000002183,
+        "T": 0.7100000000000364,
+        "G": 0.33000000000083674
+      },
+      "range_points": {
+        "A": 2.25,
+        "S": 2.5,
+        "C": 1.9500000000007276,
+        "T": 2.199999999999818,
+        "G": 1.8800000000001091
+      },
+      "body_to_range": {
+        "A": 0.7600000000000162,
+        "S": 0.4680000000000291,
+        "C": 0.9025641025638778,
+        "T": 0.32272727272731594,
+        "G": 0.1755319148940519
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.519999999999527,
+      "sl_to_context_levels": {
+        "A_low": 1.3800000000001091,
+        "A_high": 0.8699999999998909,
+        "S_low": 2.5,
+        "S_high": 0.0,
+        "C_low": 4.180000000000291,
+        "C_high": 2.2299999999995634,
+        "T_low": 5.989999999999782,
+        "T_high": 3.7899999999999636,
+        "G_low": 5.399999999999636,
+        "G_high": 3.519999999999527
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 11,
+      "signal_time_utc": "2026-09-15T04:57:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4301.06,
+      "sl": 4298.21,
+      "tp": 4303.910000000001,
+      "context_indices": {
+        "a_index": 4717,
+        "s_index": 4718,
+        "correction_index": 4719,
+        "trigger_index": 4720,
+        "signal_index": 4721
+      },
+      "body_points": {
+        "A": 2.0700000000006185,
+        "S": 0.8099999999994907,
+        "C": 2.8400000000001455,
+        "T": 0.2600000000002183,
+        "G": 1.360000000000582
+      },
+      "range_points": {
+        "A": 2.4700000000002547,
+        "S": 1.6599999999998545,
+        "C": 3.0600000000004,
+        "T": 1.3599999999996726,
+        "G": 1.589999999999236
+      },
+      "body_to_range": {
+        "A": 0.8380566801621073,
+        "S": 0.4879518072286516,
+        "C": 0.9281045751633249,
+        "T": 0.1911764705884418,
+        "G": 0.8553459119504626
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.850000000000364,
+      "sl_to_context_levels": {
+        "A_low": 1.8699999999998909,
+        "A_high": 0.6000000000003638,
+        "S_low": 0.0,
+        "S_high": 1.6599999999998545,
+        "C_low": 1.1599999999998545,
+        "C_high": 4.220000000000255,
+        "T_low": 3.8400000000001455,
+        "T_high": 5.199999999999818,
+        "G_low": 2.850000000000364,
+        "G_high": 4.4399999999996
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 12,
+      "signal_time_utc": "2026-09-15T10:43:00+00:00",
+      "direction": "SELL",
+      "outcome": "LOSS",
+      "entry": 4284.42,
+      "sl": 4286.76,
+      "tp": 4282.08,
+      "context_indices": {
+        "a_index": 5063,
+        "s_index": 5064,
+        "correction_index": 5065,
+        "trigger_index": 5066,
+        "signal_index": 5067
+      },
+      "body_points": {
+        "A": 0.10999999999967258,
+        "S": 1.2600000000002183,
+        "C": 1.9099999999998545,
+        "T": 0.9200000000000728,
+        "G": 0.9700000000002547
+      },
+      "range_points": {
+        "A": 0.7899999999999636,
+        "S": 2.449999999999818,
+        "C": 2.180000000000291,
+        "T": 2.130000000000109,
+        "G": 3.4200000000000728
+      },
+      "body_to_range": {
+        "A": 0.13924050632870588,
+        "S": 0.5142857142858416,
+        "C": 0.876146788990642,
+        "T": 0.43192488262912,
+        "G": 0.28362573099422045
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.3400000000001455,
+      "sl_to_context_levels": {
+        "A_low": 1.1900000000005093,
+        "A_high": 0.4000000000005457,
+        "S_low": 2.449999999999818,
+        "S_high": 0.0,
+        "C_low": 4.190000000000509,
+        "C_high": 2.0100000000002183,
+        "T_low": 5.860000000000582,
+        "T_high": 3.730000000000473,
+        "G_low": 5.760000000000218,
+        "G_high": 2.3400000000001455
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 13,
+      "signal_time_utc": "2026-09-15T11:50:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4268.15,
+      "sl": 4269.19,
+      "tp": 4267.11,
+      "context_indices": {
+        "a_index": 5130,
+        "s_index": 5131,
+        "correction_index": 5132,
+        "trigger_index": 5133,
+        "signal_index": 5134
+      },
+      "body_points": {
+        "A": 0.049999999999272404,
+        "S": 0.06000000000040018,
+        "C": 1.800000000000182,
+        "T": 0.27000000000043656,
+        "G": 0.4099999999998545
+      },
+      "range_points": {
+        "A": 1.1599999999998545,
+        "S": 0.9899999999997817,
+        "C": 2.0499999999992724,
+        "T": 1.1899999999995998,
+        "G": 1.7199999999993452
+      },
+      "body_to_range": {
+        "A": 0.043103448275240236,
+        "S": 0.06060606060647819,
+        "C": 0.8780487804882052,
+        "T": 0.22689075630296415,
+        "G": 0.23837209302326196
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 1.0399999999999636,
+      "sl_to_context_levels": {
+        "A_low": 0.7199999999993452,
+        "A_high": 0.4400000000005093,
+        "S_low": 0.9899999999997817,
+        "S_high": 0.0,
+        "C_low": 2.759999999999309,
+        "C_high": 0.7100000000000364,
+        "T_low": 3.389999999999418,
+        "T_high": 2.199999999999818,
+        "G_low": 2.759999999999309,
+        "G_high": 1.0399999999999636
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 14,
+      "signal_time_utc": "2026-09-15T13:25:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4273.85,
+      "sl": 4270.34,
+      "tp": 4277.360000000001,
+      "context_indices": {
+        "a_index": 5225,
+        "s_index": 5226,
+        "correction_index": 5227,
+        "trigger_index": 5228,
+        "signal_index": 5229
+      },
+      "body_points": {
+        "A": 0.7699999999995271,
+        "S": 0.6300000000001091,
+        "C": 1.930000000000291,
+        "T": 0.22000000000025466,
+        "G": 0.42999999999938154
+      },
+      "range_points": {
+        "A": 1.1099999999996726,
+        "S": 2.130000000000109,
+        "C": 2.2700000000004366,
+        "T": 0.5799999999999272,
+        "G": 0.8599999999996726
+      },
+      "body_to_range": {
+        "A": 0.6936936936934722,
+        "S": 0.29577464788736,
+        "C": 0.8502202643171454,
+        "T": 0.37931034482807285,
+        "G": 0.4999999999994712
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.5100000000002183,
+      "sl_to_context_levels": {
+        "A_low": 1.0399999999999636,
+        "A_high": 2.149999999999636,
+        "S_low": 0.0,
+        "S_high": 2.130000000000109,
+        "C_low": 2.069999999999709,
+        "C_high": 4.3400000000001455,
+        "T_low": 3.819999999999709,
+        "T_high": 4.399999999999636,
+        "G_low": 3.5100000000002183,
+        "G_high": 4.369999999999891
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 15,
+      "signal_time_utc": "2026-09-15T15:36:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4280.77,
+      "sl": 4274.73,
+      "tp": 4286.810000000001,
+      "context_indices": {
+        "a_index": 5356,
+        "s_index": 5357,
+        "correction_index": 5358,
+        "trigger_index": 5359,
+        "signal_index": 5360
+      },
+      "body_points": {
+        "A": 2.1400000000003274,
+        "S": 1.7299999999995634,
+        "C": 5.139999999999418,
+        "T": 1.7299999999995634,
+        "G": 3.199999999999818
+      },
+      "range_points": {
+        "A": 3.050000000000182,
+        "S": 3.050000000000182,
+        "C": 5.3200000000006185,
+        "T": 3.2600000000002183,
+        "G": 4.369999999999891
+      },
+      "body_to_range": {
+        "A": 0.7016393442623606,
+        "S": 0.5672131147539214,
+        "C": 0.9661654135336128,
+        "T": 0.5306748466255974,
+        "G": 0.732265446224233
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 6.040000000000873,
+      "sl_to_context_levels": {
+        "A_low": 0.8000000000001819,
+        "A_high": 3.850000000000364,
+        "S_low": 0.0,
+        "S_high": 3.050000000000182,
+        "C_low": 3.0100000000002183,
+        "C_high": 8.330000000000837,
+        "T_low": 8.150000000000546,
+        "T_high": 11.410000000000764,
+        "G_low": 6.040000000000873,
+        "G_high": 10.410000000000764
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 16,
+      "signal_time_utc": "2026-09-15T15:58:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4289.98,
+      "sl": 4295.79,
+      "tp": 4284.169999999999,
+      "context_indices": {
+        "a_index": 5378,
+        "s_index": 5379,
+        "correction_index": 5380,
+        "trigger_index": 5381,
+        "signal_index": 5382
+      },
+      "body_points": {
+        "A": 1.889999999999418,
+        "S": 1.2199999999993452,
+        "C": 4.760000000000218,
+        "T": 0.5299999999997453,
+        "G": 0.8700000000008004
+      },
+      "range_points": {
+        "A": 2.7000000000007276,
+        "S": 6.670000000000073,
+        "C": 5.079999999999927,
+        "T": 2.449999999999818,
+        "G": 2.8099999999994907
+      },
+      "body_to_range": {
+        "A": 0.6999999999995958,
+        "S": 0.18290854572703627,
+        "C": 0.9370078740158044,
+        "T": 0.216326530612157,
+        "G": 0.30960854092560786
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 5.8100000000004,
+      "sl_to_context_levels": {
+        "A_low": 4.3100000000004,
+        "A_high": 1.6099999999996726,
+        "S_low": 6.670000000000073,
+        "S_high": 0.0,
+        "C_low": 8.109999999999673,
+        "C_high": 3.0299999999997453,
+        "T_low": 10.409999999999854,
+        "T_high": 7.960000000000036,
+        "G_low": 8.61999999999989,
+        "G_high": 5.8100000000004
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 17,
+      "signal_time_utc": "2026-09-15T17:50:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4279.23,
+      "sl": 4282.96,
+      "tp": 4275.499999999999,
+      "context_indices": {
+        "a_index": 5490,
+        "s_index": 5491,
+        "correction_index": 5492,
+        "trigger_index": 5493,
+        "signal_index": 5494
+      },
+      "body_points": {
+        "A": 0.8099999999994907,
+        "S": 1.2899999999999636,
+        "C": 2.2600000000002183,
+        "T": 0.680000000000291,
+        "G": 0.2600000000002183
+      },
+      "range_points": {
+        "A": 1.389999999999418,
+        "S": 2.5600000000004,
+        "C": 2.469999999999345,
+        "T": 2.1799999999993815,
+        "G": 1.9899999999997817
+      },
+      "body_to_range": {
+        "A": 0.5827338129495179,
+        "S": 0.5039062499999071,
+        "C": 0.9149797570853512,
+        "T": 0.31192660550480916,
+        "G": 0.13065326633178231
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.730000000000473,
+      "sl_to_context_levels": {
+        "A_low": 1.6899999999995998,
+        "A_high": 0.3000000000001819,
+        "S_low": 2.5600000000004,
+        "S_high": 0.0,
+        "C_low": 4.069999999999709,
+        "C_high": 1.6000000000003638,
+        "T_low": 5.989999999999782,
+        "T_high": 3.8100000000004,
+        "G_low": 5.720000000000255,
+        "G_high": 3.730000000000473
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 18,
+      "signal_time_utc": "2026-09-15T19:23:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4293.32,
+      "sl": 4287.99,
+      "tp": 4298.65,
+      "context_indices": {
+        "a_index": 5583,
+        "s_index": 5584,
+        "correction_index": 5585,
+        "trigger_index": 5586,
+        "signal_index": 5587
+      },
+      "body_points": {
+        "A": 0.8299999999999272,
+        "S": 1.4000000000005457,
+        "C": 3.6700000000000728,
+        "T": 0.13999999999941792,
+        "G": 0.8600000000005821
+      },
+      "range_points": {
+        "A": 1.0299999999997453,
+        "S": 2.2600000000002183,
+        "C": 3.75,
+        "T": 1.4299999999993815,
+        "G": 2.350000000000364
+      },
+      "body_to_range": {
+        "A": 0.8058252427185751,
+        "S": 0.6194690265488542,
+        "C": 0.9786666666666861,
+        "T": 0.0979020979017332,
+        "G": 0.3659574468087017
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 5.329999999999927,
+      "sl_to_context_levels": {
+        "A_low": 0.22999999999956344,
+        "A_high": 0.8000000000001819,
+        "S_low": 0.0,
+        "S_high": 2.2600000000002183,
+        "C_low": 2.1500000000005457,
+        "C_high": 5.900000000000546,
+        "T_low": 5.5600000000004,
+        "T_high": 6.989999999999782,
+        "G_low": 5.329999999999927,
+        "G_high": 7.680000000000291
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 19,
+      "signal_time_utc": "2026-09-15T20:33:00+00:00",
+      "direction": "BUY",
+      "outcome": "LOSS",
+      "entry": 4296.15,
+      "sl": 4293.05,
+      "tp": 4299.249999999999,
+      "context_indices": {
+        "a_index": 5653,
+        "s_index": 5654,
+        "correction_index": 5655,
+        "trigger_index": 5656,
+        "signal_index": 5657
+      },
+      "body_points": {
+        "A": 0.17000000000007276,
+        "S": 0.8600000000005821,
+        "C": 3.2200000000002547,
+        "T": 0.11999999999989086,
+        "G": 0.4899999999997817
+      },
+      "range_points": {
+        "A": 1.7799999999997453,
+        "S": 1.319999999999709,
+        "C": 3.6900000000005093,
+        "T": 1.1300000000001091,
+        "G": 1.3200000000006185
+      },
+      "body_to_range": {
+        "A": 0.09550561797758263,
+        "S": 0.6515151515157361,
+        "C": 0.8726287262872114,
+        "T": 0.10619469026537988,
+        "G": 0.37121212121178193
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.0999999999994543,
+      "sl_to_context_levels": {
+        "A_low": 1.5799999999999272,
+        "A_high": 0.1999999999998181,
+        "S_low": 0.0,
+        "S_high": 1.319999999999709,
+        "C_low": 0.9799999999995634,
+        "C_high": 4.670000000000073,
+        "T_low": 3.9899999999997817,
+        "T_high": 5.119999999999891,
+        "G_low": 3.0999999999994543,
+        "G_high": 4.420000000000073
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 20,
+      "signal_time_utc": "2026-09-15T20:43:00+00:00",
+      "direction": "SELL",
+      "outcome": "LOSS",
+      "entry": 4293.35,
+      "sl": 4295.82,
+      "tp": 4290.880000000001,
+      "context_indices": {
+        "a_index": 5663,
+        "s_index": 5664,
+        "correction_index": 5665,
+        "trigger_index": 5666,
+        "signal_index": 5667
+      },
+      "body_points": {
+        "A": 1.5300000000006548,
+        "S": 0.5500000000001819,
+        "C": 2.0799999999999272,
+        "T": 0.5,
+        "G": 0.8100000000004002
+      },
+      "range_points": {
+        "A": 1.6199999999998909,
+        "S": 1.1899999999995998,
+        "C": 2.480000000000473,
+        "T": 0.6900000000005093,
+        "G": 1.0799999999999272
+      },
+      "body_to_range": {
+        "A": 0.9444444444449123,
+        "S": 0.4621848739498881,
+        "C": 0.8387096774191656,
+        "T": 0.7246376811588854,
+        "G": 0.7500000000004211
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.469999999999345,
+      "sl_to_context_levels": {
+        "A_low": 0.2999999999992724,
+        "A_high": 1.3200000000006185,
+        "S_low": 1.1899999999995998,
+        "S_high": 0.0,
+        "C_low": 3.199999999999818,
+        "C_high": 0.7199999999993452,
+        "T_low": 3.4600000000000364,
+        "T_high": 2.769999999999527,
+        "G_low": 3.5499999999992724,
+        "G_high": 2.469999999999345
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 21,
+      "signal_time_utc": "2026-09-15T21:08:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4296.7,
+      "sl": 4294.83,
+      "tp": 4298.57,
+      "context_indices": {
+        "a_index": 5688,
+        "s_index": 5689,
+        "correction_index": 5690,
+        "trigger_index": 5691,
+        "signal_index": 5692
+      },
+      "body_points": {
+        "A": 2.1500000000005457,
+        "S": 1.019999999999527,
+        "C": 2.1099999999996726,
+        "T": 0.03999999999996362,
+        "G": 1.019999999999527
+      },
+      "range_points": {
+        "A": 2.360000000000582,
+        "S": 1.5799999999999272,
+        "C": 2.3200000000006185,
+        "T": 1.1199999999998909,
+        "G": 1.75
+      },
+      "body_to_range": {
+        "A": 0.9110169491525489,
+        "S": 0.645569620252895,
+        "C": 0.909482758620306,
+        "T": 0.035714285714256715,
+        "G": 0.5828571428568726
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 1.8699999999998909,
+      "sl_to_context_levels": {
+        "A_low": 1.8800000000001091,
+        "A_high": 0.48000000000047294,
+        "S_low": 0.0,
+        "S_high": 1.5799999999999272,
+        "C_low": 1.4099999999998545,
+        "C_high": 3.730000000000473,
+        "T_low": 2.7799999999997453,
+        "T_high": 3.899999999999636,
+        "G_low": 1.8699999999998909,
+        "G_high": 3.619999999999891
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 22,
+      "signal_time_utc": "2026-09-15T21:14:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4301.95,
+      "sl": 4297.67,
+      "tp": 4306.23,
+      "context_indices": {
+        "a_index": 5694,
+        "s_index": 5695,
+        "correction_index": 5696,
+        "trigger_index": 5697,
+        "signal_index": 5698
+      },
+      "body_points": {
+        "A": 0.9400000000005093,
+        "S": 1.4900000000006912,
+        "C": 3.3400000000001455,
+        "T": 0.75,
+        "G": 0.9200000000000728
+      },
+      "range_points": {
+        "A": 1.610000000000582,
+        "S": 1.9099999999998545,
+        "C": 3.509999999999309,
+        "T": 1.7700000000004366,
+        "G": 1.7200000000002547
+      },
+      "body_to_range": {
+        "A": 0.5838509316771239,
+        "S": 0.7801047120423061,
+        "C": 0.9515669515671804,
+        "T": 0.42372881355921754,
+        "G": 0.5348837209301956
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 4.279999999999745,
+      "sl_to_context_levels": {
+        "A_low": 1.4400000000005093,
+        "A_high": 0.17000000000007276,
+        "S_low": 0.0,
+        "S_high": 1.9099999999998545,
+        "C_low": 1.5100000000002183,
+        "C_high": 5.019999999999527,
+        "T_low": 4.779999999999745,
+        "T_high": 6.550000000000182,
+        "G_low": 4.279999999999745,
+        "G_high": 6.0
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 23,
+      "signal_time_utc": "2026-09-16T03:20:00+00:00",
+      "direction": "BUY",
+      "outcome": "LOSS",
+      "entry": 4284.28,
+      "sl": 4283.06,
+      "tp": 4285.499999999999,
+      "context_indices": {
+        "a_index": 5999,
+        "s_index": 6000,
+        "correction_index": 6001,
+        "trigger_index": 6002,
+        "signal_index": 6003
+      },
+      "body_points": {
+        "A": 1.0399999999999636,
+        "S": 0.18000000000029104,
+        "C": 1.8099999999994907,
+        "T": 0.31999999999970896,
+        "G": 0.6500000000005457
+      },
+      "range_points": {
+        "A": 2.1099999999996726,
+        "S": 0.8699999999998909,
+        "C": 2.519999999999527,
+        "T": 0.7100000000000364,
+        "G": 1.3200000000006185
+      },
+      "body_to_range": {
+        "A": 0.4928909952607228,
+        "S": 0.20689655172449842,
+        "C": 0.718253968253901,
+        "T": 0.45070422535167964,
+        "G": 0.4924242424244251
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 1.2199999999993452,
+      "sl_to_context_levels": {
+        "A_low": 0.9700000000002547,
+        "A_high": 1.139999999999418,
+        "S_low": 0.0,
+        "S_high": 0.8699999999998909,
+        "C_low": 0.2600000000002183,
+        "C_high": 2.259999999999309,
+        "T_low": 2.0399999999999636,
+        "T_high": 2.75,
+        "G_low": 1.2199999999993452,
+        "G_high": 2.5399999999999636
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 24,
+      "signal_time_utc": "2026-09-16T05:13:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4292.57,
+      "sl": 4289.17,
+      "tp": 4295.969999999999,
+      "context_indices": {
+        "a_index": 6112,
+        "s_index": 6113,
+        "correction_index": 6114,
+        "trigger_index": 6115,
+        "signal_index": 6116
+      },
+      "body_points": {
+        "A": 1.7599999999993088,
+        "S": 1.569999999999709,
+        "C": 2.9200000000000728,
+        "T": 0.42000000000007276,
+        "G": 1.2100000000000364
+      },
+      "range_points": {
+        "A": 2.9500000000007276,
+        "S": 3.0799999999999272,
+        "C": 2.9799999999995634,
+        "T": 1.5999999999994543,
+        "G": 1.9400000000005093
+      },
+      "body_to_range": {
+        "A": 0.596610169491144,
+        "S": 0.5097402597401773,
+        "C": 0.9798657718122485,
+        "T": 0.262500000000135,
+        "G": 0.6237113402060406
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.399999999999636,
+      "sl_to_context_levels": {
+        "A_low": 2.600000000000364,
+        "A_high": 0.3500000000003638,
+        "S_low": 0.0,
+        "S_high": 3.0799999999999272,
+        "C_low": 1.550000000000182,
+        "C_high": 4.529999999999745,
+        "T_low": 4.180000000000291,
+        "T_high": 5.779999999999745,
+        "G_low": 3.399999999999636,
+        "G_high": 5.3400000000001455
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 25,
+      "signal_time_utc": "2026-09-16T10:07:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4334.3,
+      "sl": 4335.73,
+      "tp": 4332.870000000001,
+      "context_indices": {
+        "a_index": 6406,
+        "s_index": 6407,
+        "correction_index": 6408,
+        "trigger_index": 6409,
+        "signal_index": 6410
+      },
+      "body_points": {
+        "A": 1.9400000000005093,
+        "S": 0.9800000000004729,
+        "C": 1.8299999999999272,
+        "T": 0.43000000000029104,
+        "G": 1.069999999999709
+      },
+      "range_points": {
+        "A": 2.230000000000473,
+        "S": 1.199999999999818,
+        "C": 2.300000000000182,
+        "T": 2.8499999999994543,
+        "G": 1.7399999999997817
+      },
+      "body_to_range": {
+        "A": 0.8699551569507166,
+        "S": 0.8166666666671846,
+        "C": 0.795652173912949,
+        "T": 0.15087719298258714,
+        "G": 0.6149425287355421
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 1.4299999999993815,
+      "sl_to_context_levels": {
+        "A_low": 2.069999999999709,
+        "A_high": 0.16000000000076398,
+        "S_low": 1.199999999999818,
+        "S_high": 0.0,
+        "C_low": 3.4099999999998545,
+        "C_high": 1.1099999999996726,
+        "T_low": 5.709999999999127,
+        "T_high": 2.8599999999996726,
+        "G_low": 3.1699999999991633,
+        "G_high": 1.4299999999993815
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 26,
+      "signal_time_utc": "2026-09-17T04:08:00+00:00",
+      "direction": "BUY",
+      "outcome": "LOSS",
+      "entry": 4304.37,
+      "sl": 4296.79,
+      "tp": 4311.95,
+      "context_indices": {
+        "a_index": 7427,
+        "s_index": 7428,
+        "correction_index": 7429,
+        "trigger_index": 7430,
+        "signal_index": 7431
+      },
+      "body_points": {
+        "A": 1.5399999999999636,
+        "S": 2.630000000000109,
+        "C": 6.4299999999993815,
+        "T": 2.160000000000764,
+        "G": 3.7100000000000364
+      },
+      "range_points": {
+        "A": 3.0200000000004366,
+        "S": 3.2899999999999636,
+        "C": 6.630000000000109,
+        "T": 4.0,
+        "G": 5.880000000000109
+      },
+      "body_to_range": {
+        "A": 0.5099337748343513,
+        "S": 0.7993920972644797,
+        "C": 0.969834087481037,
+        "T": 0.540000000000191,
+        "G": 0.6309523809523754
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 7.579999999999927,
+      "sl_to_context_levels": {
+        "A_low": 1.25,
+        "A_high": 1.7700000000004366,
+        "S_low": 0.0,
+        "S_high": 3.2899999999999636,
+        "C_low": 2.850000000000364,
+        "C_high": 9.480000000000473,
+        "T_low": 9.100000000000364,
+        "T_high": 13.100000000000364,
+        "G_low": 7.579999999999927,
+        "G_high": 13.460000000000036
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 27,
+      "signal_time_utc": "2026-09-17T08:17:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4292.94,
+      "sl": 4294.94,
+      "tp": 4290.94,
+      "context_indices": {
+        "a_index": 7676,
+        "s_index": 7677,
+        "correction_index": 7678,
+        "trigger_index": 7679,
+        "signal_index": 7680
+      },
+      "body_points": {
+        "A": 0.2600000000002183,
+        "S": 0.8099999999994907,
+        "C": 1.7900000000008731,
+        "T": 0.42000000000007276,
+        "G": 0.14000000000032742
+      },
+      "range_points": {
+        "A": 1.2599999999993088,
+        "S": 0.8799999999991996,
+        "C": 2.2600000000002183,
+        "T": 0.9400000000005093,
+        "G": 1.2999999999992724
+      },
+      "body_to_range": {
+        "A": 0.20634920634949278,
+        "S": 0.9204545454548039,
+        "C": 0.7920353982303984,
+        "T": 0.4468085106381332,
+        "G": 0.10769230769261982
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.0,
+      "sl_to_context_levels": {
+        "A_low": 0.2599999999993088,
+        "A_high": 1.0,
+        "S_low": 0.8799999999991996,
+        "S_high": 0.0,
+        "C_low": 3.0599999999994907,
+        "C_high": 0.7999999999992724,
+        "T_low": 3.4600000000000364,
+        "T_high": 2.519999999999527,
+        "G_low": 3.2999999999992724,
+        "G_high": 2.0
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 28,
+      "signal_time_utc": "2026-09-17T15:57:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4373.53,
+      "sl": 4374.6,
+      "tp": 4372.459999999999,
+      "context_indices": {
+        "a_index": 8136,
+        "s_index": 8137,
+        "correction_index": 8138,
+        "trigger_index": 8139,
+        "signal_index": 8140
+      },
+      "body_points": {
+        "A": 1.8099999999994907,
+        "S": 0.3100000000004002,
+        "C": 1.680000000000291,
+        "T": 0.8700000000008004,
+        "G": 0.6300000000001091
+      },
+      "range_points": {
+        "A": 2.4099999999998545,
+        "S": 1.0100000000002183,
+        "C": 1.9000000000005457,
+        "T": 2.050000000000182,
+        "G": 2.3099999999994907
+      },
+      "body_to_range": {
+        "A": 0.7510373443981743,
+        "S": 0.30693069306963683,
+        "C": 0.8842105263156887,
+        "T": 0.4243902439027918,
+        "G": 0.2727272727273801
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 1.0700000000006185,
+      "sl_to_context_levels": {
+        "A_low": 2.2200000000002547,
+        "A_high": 0.18999999999959982,
+        "S_low": 1.0100000000002183,
+        "S_high": 0.0,
+        "C_low": 2.5700000000006185,
+        "C_high": 0.6700000000000728,
+        "T_low": 4.160000000000764,
+        "T_high": 2.110000000000582,
+        "G_low": 3.380000000000109,
+        "G_high": 1.0700000000006185
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 29,
+      "signal_time_utc": "2026-09-17T18:15:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4360.09,
+      "sl": 4353.38,
+      "tp": 4366.8,
+      "context_indices": {
+        "a_index": 8274,
+        "s_index": 8275,
+        "correction_index": 8276,
+        "trigger_index": 8277,
+        "signal_index": 8278
+      },
+      "body_points": {
+        "A": 0.6300000000001091,
+        "S": 1.0700000000006185,
+        "C": 5.4099999999998545,
+        "T": 0.9200000000000728,
+        "G": 0.23000000000047294
+      },
+      "range_points": {
+        "A": 1.8400000000001455,
+        "S": 3.5900000000001455,
+        "C": 5.739999999999782,
+        "T": 1.4200000000000728,
+        "G": 2.0399999999999636
+      },
+      "body_to_range": {
+        "A": 0.3423913043478583,
+        "S": 0.2980501392759262,
+        "C": 0.9425087108014042,
+        "T": 0.64788732394368,
+        "G": 0.11274509803944953
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 6.710000000000036,
+      "sl_to_context_levels": {
+        "A_low": 0.5,
+        "A_high": 2.3400000000001455,
+        "S_low": 0.0,
+        "S_high": 3.5900000000001455,
+        "C_low": 1.9200000000000728,
+        "C_high": 7.6599999999998545,
+        "T_low": 7.399999999999636,
+        "T_high": 8.819999999999709,
+        "G_low": 6.710000000000036,
+        "G_high": 8.75
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 30,
+      "signal_time_utc": "2026-09-17T21:23:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4358.93,
+      "sl": 4361.27,
+      "tp": 4356.59,
+      "context_indices": {
+        "a_index": 8462,
+        "s_index": 8463,
+        "correction_index": 8464,
+        "trigger_index": 8465,
+        "signal_index": 8466
+      },
+      "body_points": {
+        "A": 0.7699999999995271,
+        "S": 0.15999999999985448,
+        "C": 1.7599999999993088,
+        "T": 0.4500000000007276,
+        "G": 0.4399999999995998
+      },
+      "range_points": {
+        "A": 1.6900000000005093,
+        "S": 1.3100000000004002,
+        "C": 2.519999999999527,
+        "T": 1.449999999999818,
+        "G": 1.800000000000182
+      },
+      "body_to_range": {
+        "A": 0.45562130177473076,
+        "S": 0.12213740458000427,
+        "C": 0.6984126984125552,
+        "T": 0.31034482758674764,
+        "G": 0.2444444444441974
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.3400000000001455,
+      "sl_to_context_levels": {
+        "A_low": 0.910000000000764,
+        "A_high": 0.7799999999997453,
+        "S_low": 1.3100000000004002,
+        "S_high": 0.0,
+        "C_low": 3.0100000000002183,
+        "C_high": 0.4900000000006912,
+        "T_low": 4.010000000000218,
+        "T_high": 2.5600000000004,
+        "G_low": 4.140000000000327,
+        "G_high": 2.3400000000001455
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 31,
+      "signal_time_utc": "2026-09-18T01:19:00+00:00",
+      "direction": "SELL",
+      "outcome": "LOSS",
+      "entry": 4342.72,
+      "sl": 4344.85,
+      "tp": 4340.59,
+      "context_indices": {
+        "a_index": 8637,
+        "s_index": 8638,
+        "correction_index": 8639,
+        "trigger_index": 8640,
+        "signal_index": 8641
+      },
+      "body_points": {
+        "A": 0.2899999999999636,
+        "S": 0.2600000000002183,
+        "C": 1.7399999999997817,
+        "T": 0.38000000000010914,
+        "G": 0.22999999999956344
+      },
+      "range_points": {
+        "A": 0.42999999999938154,
+        "S": 0.7000000000007276,
+        "C": 2.0799999999999272,
+        "T": 0.6999999999998181,
+        "G": 0.9900000000006912
+      },
+      "body_to_range": {
+        "A": 0.6744186046520482,
+        "S": 0.37142857142849717,
+        "C": 0.8365384615383858,
+        "T": 0.5428571428574398,
+        "G": 0.23232323232262914
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.130000000000109,
+      "sl_to_context_levels": {
+        "A_low": 0.5399999999999636,
+        "A_high": 0.11000000000058208,
+        "S_low": 0.7000000000007276,
+        "S_high": 0.0,
+        "C_low": 2.4700000000002547,
+        "C_high": 0.3900000000003274,
+        "T_low": 3.0700000000006185,
+        "T_high": 2.3700000000008004,
+        "G_low": 3.1200000000008004,
+        "G_high": 2.130000000000109
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 32,
+      "signal_time_utc": "2026-09-18T03:49:00+00:00",
+      "direction": "SELL",
+      "outcome": "LOSS",
+      "entry": 4354.22,
+      "sl": 4357.75,
+      "tp": 4350.6900000000005,
+      "context_indices": {
+        "a_index": 8787,
+        "s_index": 8788,
+        "correction_index": 8789,
+        "trigger_index": 8790,
+        "signal_index": 8791
+      },
+      "body_points": {
+        "A": 1.2700000000004366,
+        "S": 1.0600000000004002,
+        "C": 2.3400000000001455,
+        "T": 0.17000000000007276,
+        "G": 0.25
+      },
+      "range_points": {
+        "A": 2.0399999999999636,
+        "S": 2.4600000000000364,
+        "C": 2.880000000000109,
+        "T": 1.4099999999998545,
+        "G": 0.6500000000005457
+      },
+      "body_to_range": {
+        "A": 0.6225490196080682,
+        "S": 0.4308943089432457,
+        "C": 0.8125000000000198,
+        "T": 0.12056737588658886,
+        "G": 0.38461538461506173
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.5299999999997453,
+      "sl_to_context_levels": {
+        "A_low": 0.4600000000000364,
+        "A_high": 1.5799999999999272,
+        "S_low": 2.4600000000000364,
+        "S_high": 0.0,
+        "C_low": 3.7399999999997817,
+        "C_high": 0.8599999999996726,
+        "T_low": 5.0900000000001455,
+        "T_high": 3.680000000000291,
+        "G_low": 4.180000000000291,
+        "G_high": 3.5299999999997453
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 33,
+      "signal_time_utc": "2026-09-18T06:11:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4346.8,
+      "sl": 4349.94,
+      "tp": 4343.660000000001,
+      "context_indices": {
+        "a_index": 8929,
+        "s_index": 8930,
+        "correction_index": 8931,
+        "trigger_index": 8932,
+        "signal_index": 8933
+      },
+      "body_points": {
+        "A": 0.03999999999996362,
+        "S": 1.230000000000473,
+        "C": 1.9600000000000364,
+        "T": 0.0999999999994543,
+        "G": 0.8299999999999272
+      },
+      "range_points": {
+        "A": 2.889999999999418,
+        "S": 2.369999999999891,
+        "C": 2.2200000000002547,
+        "T": 0.8099999999994907,
+        "G": 1.230000000000473
+      },
+      "body_to_range": {
+        "A": 0.013840830449817189,
+        "S": 0.5189873417723754,
+        "C": 0.882882882882798,
+        "T": 0.12345679012286072,
+        "G": 0.674796747967161
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.139999999999418,
+      "sl_to_context_levels": {
+        "A_low": 2.4199999999991633,
+        "A_high": 0.47000000000025466,
+        "S_low": 2.369999999999891,
+        "S_high": 0.0,
+        "C_low": 4.460000000000036,
+        "C_high": 2.2399999999997817,
+        "T_low": 4.3799999999992,
+        "T_high": 3.569999999999709,
+        "G_low": 4.369999999999891,
+        "G_high": 3.139999999999418
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 34,
+      "signal_time_utc": "2026-09-18T09:02:00+00:00",
+      "direction": "BUY",
+      "outcome": "WIN",
+      "entry": 4382.32,
+      "sl": 4376.54,
+      "tp": 4388.099999999999,
+      "context_indices": {
+        "a_index": 9100,
+        "s_index": 9101,
+        "correction_index": 9102,
+        "trigger_index": 9103,
+        "signal_index": 9104
+      },
+      "body_points": {
+        "A": 2.2899999999999636,
+        "S": 0.17999999999938154,
+        "C": 6.140000000000327,
+        "T": 1.8299999999999272,
+        "G": 0.11999999999989086
+      },
+      "range_points": {
+        "A": 2.819999999999709,
+        "S": 1.480000000000473,
+        "C": 6.539999999999964,
+        "T": 3.6500000000005457,
+        "G": 3.4500000000007276
+      },
+      "body_to_range": {
+        "A": 0.8120567375887234,
+        "S": 0.12162162162116488,
+        "C": 0.9388379204893519,
+        "T": 0.5013698630136038,
+        "G": 0.034782608695613206
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 5.779999999999745,
+      "sl_to_context_levels": {
+        "A_low": 2.069999999999709,
+        "A_high": 0.75,
+        "S_low": 0.0,
+        "S_high": 1.480000000000473,
+        "C_low": 0.5900000000001455,
+        "C_high": 7.130000000000109,
+        "T_low": 6.829999999999927,
+        "T_high": 10.480000000000473,
+        "G_low": 5.779999999999745,
+        "G_high": 9.230000000000473
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 35,
+      "signal_time_utc": "2026-09-18T14:03:00+00:00",
+      "direction": "BUY",
+      "outcome": "LOSS",
+      "entry": 4384.59,
+      "sl": 4381.17,
+      "tp": 4388.01,
+      "context_indices": {
+        "a_index": 9401,
+        "s_index": 9402,
+        "correction_index": 9403,
+        "trigger_index": 9404,
+        "signal_index": 9405
+      },
+      "body_points": {
+        "A": 1.069999999999709,
+        "S": 0.9499999999998181,
+        "C": 2.2799999999997453,
+        "T": 1.199999999999818,
+        "G": 0.9700000000002547
+      },
+      "range_points": {
+        "A": 1.25,
+        "S": 1.7200000000002547,
+        "C": 2.9099999999998545,
+        "T": 1.7399999999997817,
+        "G": 2.25
+      },
+      "body_to_range": {
+        "A": 0.8559999999997672,
+        "S": 0.5523255813951613,
+        "C": 0.783505154639127,
+        "T": 0.689655172413775,
+        "G": 0.4311111111112243
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 3.4200000000000728,
+      "sl_to_context_levels": {
+        "A_low": 0.4600000000000364,
+        "A_high": 0.7899999999999636,
+        "S_low": 0.0,
+        "S_high": 1.7200000000002547,
+        "C_low": 1.6199999999998909,
+        "C_high": 4.529999999999745,
+        "T_low": 3.8400000000001455,
+        "T_high": 5.579999999999927,
+        "G_low": 3.4200000000000728,
+        "G_high": 5.670000000000073
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 36,
+      "signal_time_utc": "2026-09-18T17:12:00+00:00",
+      "direction": "BUY",
+      "outcome": "LOSS",
+      "entry": 4353.63,
+      "sl": 4351.82,
+      "tp": 4355.4400000000005,
+      "context_indices": {
+        "a_index": 9590,
+        "s_index": 9591,
+        "correction_index": 9592,
+        "trigger_index": 9593,
+        "signal_index": 9594
+      },
+      "body_points": {
+        "A": 0.07999999999992724,
+        "S": 0.22000000000025466,
+        "C": 2.550000000000182,
+        "T": 0.019999999999527063,
+        "G": 0.6900000000005093
+      },
+      "range_points": {
+        "A": 3.1900000000005093,
+        "S": 1.5399999999999636,
+        "C": 2.930000000000291,
+        "T": 1.5599999999994907,
+        "G": 2.300000000000182
+      },
+      "body_to_range": {
+        "A": 0.0250783699059293,
+        "S": 0.1428571428573116,
+        "C": 0.8703071672354705,
+        "T": 0.01282051282021384,
+        "G": 0.3000000000001977
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 1.8100000000004002,
+      "sl_to_context_levels": {
+        "A_low": 1.5900000000001455,
+        "A_high": 1.6000000000003638,
+        "S_low": 0.0,
+        "S_high": 1.5399999999999636,
+        "C_low": 0.1000000000003638,
+        "C_high": 3.030000000000655,
+        "T_low": 2.600000000000364,
+        "T_high": 4.1599999999998545,
+        "G_low": 1.8100000000004002,
+        "G_high": 4.110000000000582
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    },
+    {
+      "archived_signal_index": 37,
+      "signal_time_utc": "2026-09-18T22:20:00+00:00",
+      "direction": "SELL",
+      "outcome": "WIN",
+      "entry": 4382.47,
+      "sl": 4384.95,
+      "tp": 4379.990000000001,
+      "context_indices": {
+        "a_index": 9898,
+        "s_index": 9899,
+        "correction_index": 9900,
+        "trigger_index": 9901,
+        "signal_index": 9902
+      },
+      "body_points": {
+        "A": 0.36999999999989086,
+        "S": 0.7899999999999636,
+        "C": 1.6700000000000728,
+        "T": 0.5100000000002183,
+        "G": 0.36999999999989086
+      },
+      "range_points": {
+        "A": 0.9099999999998545,
+        "S": 1.0100000000002183,
+        "C": 1.930000000000291,
+        "T": 0.6599999999998545,
+        "G": 0.7700000000004366
+      },
+      "body_to_range": {
+        "A": 0.4065934065933517,
+        "S": 0.7821782178215771,
+        "C": 0.8652849740931715,
+        "T": 0.7727272727277739,
+        "G": 0.48051948051906634
+      },
+      "observable_trigger_relationship": true,
+      "trigger_relationship_definition": "C low <= T low for BUY; C high >= T high for SELL (descriptive measurement only)",
+      "entry_sl_distance": 2.4799999999995634,
+      "sl_to_context_levels": {
+        "A_low": 0.8999999999996362,
+        "A_high": 0.010000000000218279,
+        "S_low": 1.0100000000002183,
+        "S_high": 0.0,
+        "C_low": 2.7100000000000364,
+        "C_high": 0.7799999999997453,
+        "T_low": 3.149999999999636,
+        "T_high": 2.4899999999997817,
+        "G_low": 3.25,
+        "G_high": 2.4799999999995634
+      },
+      "pgap_status": "OBSERVABLE_CANDIDATE_MEASUREMENTS_ONLY",
+      "swing_sl_status": "OBSERVABLE_DISTANCE_TO_CONTEXT_LEVELS_ONLY",
+      "abcd_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "pending_lifecycle_status": "NOT_ATTRIBUTABLE_FROM_ARTIFACT",
+      "tp_risk_status": "DIRECTLY_OBSERVABLE_NOT_CANONICAL"
+    }
+  ],
+  "report_sha256": "bc08281a732bc211c6c770c2aabccce9e7fdbd1baccadef61e9400d4c439c207"
+}

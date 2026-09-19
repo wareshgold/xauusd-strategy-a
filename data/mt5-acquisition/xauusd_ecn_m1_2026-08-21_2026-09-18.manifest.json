@@ -1,0 +1,169 @@
+{
+  "dataset_id": "xauusd_ecn_m1_2026-08-21_2026-09-18",
+  "research_only": true,
+  "provider": "MetaTrader5 terminal API",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "requested_interval_utc": {
+    "start": "2026-08-21T00:00:00Z",
+    "end": "2026-09-18T23:59:00Z"
+  },
+  "actual_first_utc": "2026-08-21T01:00:00Z",
+  "actual_last_utc": "2026-09-18T23:57:00Z",
+  "requested_bar_count": 41760,
+  "actual_bar_count": 28815,
+  "gap_count": 20,
+  "gap_ranges": [
+    {
+      "from": "2026-08-21T23:57:00Z",
+      "to": "2026-08-24T01:00:00Z",
+      "minutes": 2943.0,
+      "missing_bars": 2942,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-08-24T23:58:00Z",
+      "to": "2026-08-25T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-08-25T23:58:00Z",
+      "to": "2026-08-26T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-08-26T23:58:00Z",
+      "to": "2026-08-27T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-08-27T23:58:00Z",
+      "to": "2026-08-28T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-08-28T23:57:00Z",
+      "to": "2026-08-31T01:00:00Z",
+      "minutes": 2943.0,
+      "missing_bars": 2942,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-08-31T23:58:00Z",
+      "to": "2026-09-01T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-01T23:58:00Z",
+      "to": "2026-09-02T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-02T23:58:00Z",
+      "to": "2026-09-03T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-03T23:58:00Z",
+      "to": "2026-09-04T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-04T23:58:00Z",
+      "to": "2026-09-07T01:00:00Z",
+      "minutes": 2942.0,
+      "missing_bars": 2941,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-07T21:36:00Z",
+      "to": "2026-09-08T01:00:00Z",
+      "minutes": 204.0,
+      "missing_bars": 203,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-08T23:58:00Z",
+      "to": "2026-09-09T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-09T23:58:00Z",
+      "to": "2026-09-10T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-10T23:59:00Z",
+      "to": "2026-09-11T01:00:00Z",
+      "minutes": 61.0,
+      "missing_bars": 60,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-11T23:57:00Z",
+      "to": "2026-09-14T01:00:00Z",
+      "minutes": 2943.0,
+      "missing_bars": 2942,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-14T23:58:00Z",
+      "to": "2026-09-15T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-15T23:58:00Z",
+      "to": "2026-09-16T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-16T23:59:00Z",
+      "to": "2026-09-17T01:00:00Z",
+      "minutes": 61.0,
+      "missing_bars": 60,
+      "kind": "gap"
+    },
+    {
+      "from": "2026-09-17T23:58:00Z",
+      "to": "2026-09-18T01:00:00Z",
+      "minutes": 62.0,
+      "missing_bars": 61,
+      "kind": "gap"
+    }
+  ],
+  "invalid_row_count": 0,
+  "invalid_rows": [],
+  "retrieval_timestamp_utc": "2026-09-19T11:12:08.536129+00:00",
+  "artifact": "xauusd_ecn_m1_2026-08-21_2026-09-18.csv",
+  "artifact_sha256": "9df9a0ca0333c185396fb3407c7c816fd77a2ab57d88f71cea30a73462e75aa4",
+  "purpose": "expand historical M1 evidence before tick-level management research",
+  "strategy_geometry_changed": false,
+  "parameter_tuning": false,
+  "live_trading": false
+}
