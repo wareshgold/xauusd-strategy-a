@@ -114,6 +114,16 @@ This is expected after the prior consumed test signal was archived and the runti
 
 Do not commit runtime/approved_signal.json.
 
+## PR #235 audit result — 2026-09-19
+
+The existing guarded live-infrastructure work in PR #235 was audited before adding new functionality.
+
+- PR #235 remains the primary live MT5 + Telegram implementation; no restart/rebuild is required.
+- Existing verified scope includes MT5 connectivity, explicit APPROVED signal contract, dry-run execution, Telegram echo, append-only journals, Excel export, broker reconciliation, and duplicate-signal protection.
+- A second, inferior duplicate gateway implementation (`scripts/mt5_live_gateway.py`) was removed from this branch so there is one authoritative gateway entry point: `scripts/live_mt5_gateway.py`.
+- Duplicate-signal rejection now creates an auditable `DUPLICATE_REJECTED` signal-journal record and emits a Telegram acknowledgement instead of only printing to stdout.
+- No Strategy A geometry or signal-generation logic was added or promoted.
+
 ## Next execution-infrastructure gates
 
 1. Recreate a controlled manual APPROVED test signal with a NEW signal_id.
