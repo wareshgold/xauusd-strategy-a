@@ -112,9 +112,13 @@ The 81-combination search space is explicitly acknowledged as a multiple-compari
 
 For the baseline decisive WR, report a descriptive 95% Wilson interval.
 
-Do not interpret this interval as an out-of-sample guarantee or as proof of independent Bernoulli trials. Trade dependence, market regime dependence and execution assumptions remain limitations.
+The archived four-week baseline artifact contains trade-level observations for all four weekly partitions: 158 trades total, with 154 decisive outcomes and 4 AMBIGUOUS outcomes. AMBIGUOUS observations must remain excluded from the decisive-WR numerator and denominator; they must not be reassigned to WIN or LOSS.
 
-If raw trade-level observations are available for a future formal analysis, additionally report a block/bootstrap uncertainty analysis using time-preserving resampling. Do not manufacture such a test from aggregated matrix rows.
+Where implemented, an additional time-preserving block/bootstrap analysis may be applied to these archived baseline outcomes. Any resampling result applies only to the observed baseline sample and must not be generalized to the 81-combination grid.
+
+Do not interpret either interval or resampling result as an out-of-sample guarantee or as proof of independent Bernoulli trials. Trade dependence, market-regime dependence and execution assumptions remain limitations.
+
+The 81-combination matrix contains aggregate combination-level results rather than trade-level outcomes for every combination. Therefore no trade-level bootstrap/permutation test may be claimed for the complete 81-point surface from that matrix alone.
 
 ## Gate interpretation
 
