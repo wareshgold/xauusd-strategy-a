@@ -6,25 +6,46 @@ The untouched Fresh Holdout boundary remains:
 
 **2026-09-19 00:00:00 UTC onward**
 
-Two acquisition paths were tested locally against `XAUUSD.ecn` M1 for the morning of 2026-09-19:
+A new untouched Fresh Holdout availability check was executed locally on branch:
 
-- `copy_rates_range`: 0 bars; MT5 error state reported success.
-- `copy_rates_from`: 500 bars returned when requesting 500 bars ending at 2026-09-19 06:08:20 UTC.
+`research/sp2l-live-mt5-telegram-2026-09-19`
 
-The returned `copy_rates_from` sample was:
+The runner requested only:
+
+- Symbol: `XAUUSD.ecn`
+- Timeframe: M1
+- Start: **2026-09-19 00:00:00 UTC**
+- End at this check: **2026-09-19 07:33:10 UTC**
+
+Result:
+
+- `MetaTrader5.copy_rates_range`: **0 bars**
+- MT5 acquisition error: **null / no reported error**
+- Status: **HOLDOUT_DATA_UNAVAILABLE**
+
+The frozen configuration used by the runner remained:
+
+- P-Gap = 1.0
+- Spike Multiplier = 1.5
+- Max SL = 10.0
+- TP = 1.0R
+
+## Prior acquisition evidence
+
+Earlier on 2026-09-19, a `copy_rates_from` diagnostic requested 500 bars ending at 2026-09-19 06:08:20 UTC and returned:
 
 - first: **2026-09-18 15:38:00 UTC**
 - last: **2026-09-18 23:57:00 UTC**
 - count: **500**
 - `last_error`: `(1, 'Success')`
 
-Therefore the returned history did **not** cross the frozen holdout boundary.
+That sample did not cross the frozen holdout boundary.
 
 ## Calendar interpretation
 
-2026-09-19 is a Saturday. The observed last available M1 bar at 2026-09-18 23:57 UTC is consistent with the MT5 terminal having no XAUUSD.ecn M1 bars available for the Saturday morning request.
+2026-09-19 is a Saturday. The observed absence of post-boundary XAUUSD.ecn M1 bars is consistent with the terminal having no Saturday morning market data available.
 
-This is an observed data-availability result, not evidence that Strategy A generated zero signals.
+This is an observed data-availability result, not evidence that Strategy A generated zero signals and not a holdout performance result.
 
 ## Gate disposition
 
@@ -33,18 +54,25 @@ This is an observed data-availability result, not evidence that Strategy A gener
 - Frozen parameters: **UNCHANGED**
 - Source/geometry rules: **UNCHANGED**
 - Parameter tuning: **NONE**
+- Post-result subperiod selection: **NONE**
 - Production/live trading: **BLOCKED**
 
 ## Next valid action
 
 Do not substitute 2026-09-18 or any earlier date into the Fresh Holdout.
 
-Keep the frozen boundary at **2026-09-19 00:00:00 UTC** and re-run the single-configuration Fresh Holdout only after new post-boundary XAUUSD.ecn M1 data becomes available. The holdout may then accumulate from the frozen boundary onward without changing parameters or selecting a favorable sub-period.
+Keep the frozen boundary at **2026-09-19 00:00:00 UTC**. Re-run the same single-configuration Fresh Holdout after new post-boundary XAUUSD.ecn M1 data becomes available. The holdout may accumulate from the frozen boundary onward without changing parameters or selecting a favorable sub-period.
+
+The next check must continue to use the committed frozen runner:
+
+`scripts/run-author-replica-mt5-fresh-holdout.py`
+
+No parameter sweep, tuning, geometry reinterpretation, fill-rule change, or production execution is permitted as part of this gate.
 
 ## Reproducibility note
 
-This diagnostic was performed from branch:
+The latest local run produced:
 
-`research/sp2l-live-mt5-telegram-2026-09-19`
+`artifacts/SP2L_fresh_holdout_2026-09-19.json`
 
-The diagnostic does not authorize live trading and does not alter the frozen validation configuration.
+The artifact is a research-only availability result and does not authorize live trading.
