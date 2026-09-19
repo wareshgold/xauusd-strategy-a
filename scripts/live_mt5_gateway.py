@@ -124,8 +124,9 @@ def open_positions() -> list:
 
 
 def format_signal(signal: Signal, mode: str, result: dict | None = None) -> str:
+    title = "Nexora EXECUTION" if result is not None else "Nexora SIGNAL"
     lines = [
-        f"SP2L SIGNAL — {signal.direction}",
+        f"{title} — {signal.direction}",
         f"Symbol: {signal.symbol}",
         f"Entry: {signal.entry}",
         f"SL: {signal.sl}",
@@ -220,7 +221,7 @@ def main() -> None:
     mt5_initialize()
     last_status = None
     telegram_send(
-        "SP2L Live Gateway started\n"
+        "Nexora Gateway started\n"
         f"Symbol: {SYMBOL}\n"
         f"Mode: {'LIVE' if LIVE_TRADING_ENABLE else 'DRY-RUN'}"
     )
