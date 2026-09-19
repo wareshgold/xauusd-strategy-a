@@ -65,7 +65,7 @@ Assessment commit: `d69f58ab1886dbe19f092c824544dd8257dd13c0`.
 
 S4 complete: direct 81-row raw-matrix main effects computed for P-Gap, Spike Multiplier, Max SL, and TP.
 
-S1 surface concentration: positive. S2 baseline locality: positive. S3 temporal consistency: mixed/inconclusive. S4 main-effect aggregation: pending direct raw-matrix computation. S5 multiple-testing guard: pass. S6 uncertainty: descriptive/limited.
+S1 surface concentration: positive. S2 baseline locality: positive. S3 temporal consistency: mixed/inconclusive. S4 main-effect aggregation: complete / descriptive. S5 multiple-testing guard: pass. S6 uncertainty: descriptive/limited.
 
 ## Fresh Holdout
 
@@ -157,4 +157,4 @@ When continuing this project:
 
 ## Current operational conclusion
 
-**The infrastructure path is materially implemented and guarded. Parameter Stability has been assessed as INCONCLUSIVE/PENDING only because temporal stability remains mixed/inconclusive despite completion of the full S4 main-effect calculation. Strategy production remains BLOCKED. After S4 completion, the next strategic evidence gate remains the untouched Fresh Holdout using the frozen configuration and boundary once eligible post-boundary data exists; infrastructure runtime verification remains separate and live execution stays disabled.**
+**The infrastructure path is materially implemented and guarded. Parameter Stability has been assessed as INCONCLUSIVE — NO PASS / NO FAIL because temporal stability remains mixed/inconclusive despite completion of the full S4 main-effect calculation. Strategy production remains BLOCKED. After S4 completion, the next strategic evidence gate remains the untouched Fresh Holdout using the frozen configuration and boundary once eligible post-boundary data exists; infrastructure runtime verification remains separate and live execution stays disabled.**
