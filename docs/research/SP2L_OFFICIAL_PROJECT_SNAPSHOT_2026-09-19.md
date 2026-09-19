@@ -244,3 +244,18 @@ The roadmap is intentionally parked until the research gates permit production. 
 - Parameter Stability: **INCONCLUSIVE — NO PASS / NO FAIL**
 - Fresh Holdout: **WAITING FOR ELIGIBLE POST-BOUNDARY DATA**
 - Live Trading: **DISABLED**
+
+
+## Canonicalization Firewall Audit — 2026-09-19
+
+A code-boundary audit was completed to verify that the concrete author-replica geometry used for historical robustness and the frozen holdout runner is not silently promoted into canonical Strategy A or live execution.
+
+Audit: `docs/research/SP2L_CANONICALIZATION_FIREWALL_AUDIT_2026-09-19.md`
+
+Commit: `664a837a488fb6087664c7786c3e7e215d693d14`
+
+Result: **NO CANONICALIZATION LEAKAGE IDENTIFIED** in the reviewed research, holdout, and live-gateway paths.
+
+Important boundary: the author-replica runner contains concrete candidate P-Gap/entry/SL expressions for research. Those expressions remain non-canonical and cannot become Strategy A rules without source-resolution review and Frozen Geometry promotion.
+
+The live gateway remains an external-signal execution boundary and does not calculate Strategy A geometry. `LIVE_TRADING_ENABLE=false` remains unchanged.
