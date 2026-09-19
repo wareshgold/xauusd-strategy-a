@@ -1,0 +1,100 @@
+{
+  "research_only": true,
+  "experiment": "TRAILING_SL_STABILITY_MATRIX",
+  "canonicalization_guard": "RESEARCH_ONLY; NO_STRATEGY_RULE_OR_PARAMETER_PROMOTION",
+  "frozen_window_utc": "2026-09-14T00:00:00Z/2026-09-18T23:59:59Z",
+  "method": {
+    "source_engine": "scripts/analyze-sp2l-trailing-10pip-management-m1safe.py",
+    "tp_policy": "FIXED_INITIAL_TP",
+    "tp_extension": "NOT_SIMULATED_FROM_M1_OHLC; REQUIRES_INTRABAR_ORDER",
+    "same_bar_policy": "AMBIGUOUS_WHEN_SL_AND_TP_BOTH_TOUCHED",
+    "pip_size_price_units": 0.1
+  },
+  "input_sha256": "3a45f71e5cc58763df25852ff3619209f96926470200943164bfe29eef1e7e29",
+  "variants": [
+    {
+      "trail_pips": 5.0,
+      "summary": {
+        "signals": 38,
+        "decisive": 37,
+        "wins": 36,
+        "losses": 1,
+        "breakeven": 0,
+        "ambiguous": 1,
+        "open_or_unresolved": 0,
+        "win_rate_decisive_pct": 97.2972972972973,
+        "gross_profit_pips": 512.6000000000386,
+        "gross_loss_pips_abs": 24.69999999999345,
+        "net_pips": 487.9000000000451,
+        "profit_factor": 20.75303643725403,
+        "max_drawdown_pips": 24.69999999999345,
+        "avg_win_pips": 14.23888888888996,
+        "avg_loss_pips_abs": 24.69999999999345,
+        "trailing_activated_count": 28
+      }
+    },
+    {
+      "trail_pips": 10.0,
+      "summary": {
+        "signals": 38,
+        "decisive": 37,
+        "wins": 36,
+        "losses": 1,
+        "breakeven": 0,
+        "ambiguous": 1,
+        "open_or_unresolved": 0,
+        "win_rate_decisive_pct": 97.2972972972973,
+        "gross_profit_pips": 540.4000000000269,
+        "gross_loss_pips_abs": 24.69999999999345,
+        "net_pips": 515.7000000000335,
+        "profit_factor": 21.878542510128348,
+        "max_drawdown_pips": 24.69999999999345,
+        "avg_win_pips": 15.011111111111859,
+        "avg_loss_pips_abs": 24.69999999999345,
+        "trailing_activated_count": 28
+      }
+    },
+    {
+      "trail_pips": 15.0,
+      "summary": {
+        "signals": 38,
+        "decisive": 37,
+        "wins": 34,
+        "losses": 3,
+        "breakeven": 0,
+        "ambiguous": 1,
+        "open_or_unresolved": 0,
+        "win_rate_decisive_pct": 91.8918918918919,
+        "gross_profit_pips": 523.0000000000018,
+        "gross_loss_pips_abs": 80.19999999999527,
+        "net_pips": 442.80000000000655,
+        "profit_factor": 6.521197007481704,
+        "max_drawdown_pips": 34.20000000000073,
+        "avg_win_pips": 15.382352941176524,
+        "avg_loss_pips_abs": 26.733333333331757,
+        "trailing_activated_count": 25
+      }
+    },
+    {
+      "trail_pips": 20.0,
+      "summary": {
+        "signals": 38,
+        "decisive": 37,
+        "wins": 32,
+        "losses": 5,
+        "breakeven": 0,
+        "ambiguous": 1,
+        "open_or_unresolved": 0,
+        "win_rate_decisive_pct": 86.48648648648648,
+        "gross_profit_pips": 608.799999999992,
+        "gross_loss_pips_abs": 191.299999999992,
+        "net_pips": 417.5,
+        "profit_factor": 3.1824359644538287,
+        "max_drawdown_pips": 75.79999999999927,
+        "avg_win_pips": 19.02499999999975,
+        "avg_loss_pips_abs": 38.2599999999984,
+        "trailing_activated_count": 20
+      }
+    }
+  ]
+}

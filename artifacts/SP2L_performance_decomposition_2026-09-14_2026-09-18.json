@@ -1,0 +1,110 @@
+{
+  "research_only": true,
+  "artifact_type": "SP2L_PERFORMANCE_DECOMPOSITION",
+  "input_artifact": "artifacts\\SP2L_pl_pip_accounting_2026-09-14_2026-09-18.json",
+  "input_artifact_sha256": null,
+  "accounting_inputs": {
+    "pip_size_price_units": 0.1,
+    "tick_size_price_units": 0.01,
+    "tick_value_account_currency_per_1_lot": 1.0,
+    "lot": 0.01
+  },
+  "counts": {
+    "all_signals": 38,
+    "decisive": 37,
+    "wins": 27,
+    "losses": 10,
+    "ambiguous": 1
+  },
+  "r_to_price_accounting": {
+    "realized_pips_all_decisive": 643.4000000000287,
+    "winner_pip_distribution": {
+      "n": 27,
+      "mean": 35.3555555555559,
+      "median": 31.39999999999418,
+      "stdev_population": 16.756587059320037,
+      "min": 10.399999999999636,
+      "max": 68.40000000000146
+    },
+    "loser_absolute_pip_distribution": {
+      "n": 10,
+      "mean": 31.119999999998072,
+      "median": 27.849999999993997,
+      "stdev_population": 16.62725473432119,
+      "min": 12.199999999993452,
+      "max": 75.79999999999927
+    },
+    "average_win_pips": 35.3555555555559,
+    "average_loss_pips_abs": 31.119999999998072,
+    "win_loss_pip_ratio": 1.1361039702942832
+  },
+  "by_direction": {
+    "BUY": {
+      "signals": 21,
+      "wins": 16,
+      "losses": 5,
+      "decisive_win_rate_pct": 76.19047619047619,
+      "net_pips": 456.3000000000193,
+      "gross_profit_pips": 627.6000000000113,
+      "gross_loss_pips_abs": 171.299999999992,
+      "net_pl_0_01_lot_usd": 45.63000000000193,
+      "profit_factor": 3.6637478108583807
+    },
+    "SELL": {
+      "signals": 16,
+      "wins": 11,
+      "losses": 5,
+      "decisive_win_rate_pct": 68.75,
+      "net_pips": 187.10000000000946,
+      "gross_profit_pips": 326.9999999999982,
+      "gross_loss_pips_abs": 139.89999999998872,
+      "net_pl_0_01_lot_usd": 18.710000000000946,
+      "profit_factor": 2.3373838456041782
+    }
+  },
+  "lot_scaling_arithmetic": {
+    "0.01": {
+      "net_pl_usd": 64.34000000000287,
+      "gross_profit_usd": 95.46000000000095,
+      "gross_loss_usd_abs": 31.119999999998072,
+      "max_sequential_drawdown_usd": 7.579999999999927
+    },
+    "0.05": {
+      "net_pl_usd": 321.70000000001437,
+      "gross_profit_usd": 477.30000000000473,
+      "gross_loss_usd_abs": 155.59999999999036,
+      "max_sequential_drawdown_usd": 37.899999999999636
+    },
+    "0.1": {
+      "net_pl_usd": 643.4000000000287,
+      "gross_profit_usd": 954.6000000000095,
+      "gross_loss_usd_abs": 311.1999999999807,
+      "max_sequential_drawdown_usd": 75.79999999999927
+    },
+    "0.5": {
+      "net_pl_usd": 3217.0000000001437,
+      "gross_profit_usd": 4773.000000000047,
+      "gross_loss_usd_abs": 1555.9999999999036,
+      "max_sequential_drawdown_usd": 378.99999999999636
+    },
+    "1.0": {
+      "net_pl_usd": 6434.000000000287,
+      "gross_profit_usd": 9546.000000000095,
+      "gross_loss_usd_abs": 3111.999999999807,
+      "max_sequential_drawdown_usd": 757.9999999999927
+    }
+  },
+  "sequential_drawdown": {
+    "max_drawdown_usd_0_01_lot": 7.579999999999927,
+    "peak_signal_index": 24,
+    "trough_signal_index": 25
+  },
+  "canonicalization_guard": "RESEARCH_ACCOUNTING_ONLY; NO_STRATEGY_RULE_PROMOTED",
+  "limitations": [
+    "Ambiguous outcome is excluded from realized P/L.",
+    "Commission, swap, slippage and spread execution effects are not reconstructed here.",
+    "Lot scaling is arithmetic, not a live execution simulation.",
+    "Historical signal ordering is used for sequential drawdown.",
+    "No geometry, trigger, fill, pending-order or execution rule is inferred."
+  ]
+}

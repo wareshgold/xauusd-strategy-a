@@ -17,3 +17,8 @@ runtime/journal/
 runtime/exports/
 runtime/approved_signal.json
 runtime/processed/
+.venv/
+.mimosa/
+scripts/__pycache__/
+tests/__pycache__/
+*.ex5
