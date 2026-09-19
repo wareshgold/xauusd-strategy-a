@@ -111,21 +111,42 @@ However:
 
 This is not a failure of the strategy. It means the pre-registered assessment cannot honestly be marked fully passed until S4 is computed from the raw 81-row artifact.
 
-## Next required action
 
-Retrieve the archived 81-row matrix directly and compute S4 level-wise main effects without changing the grid, followed by a final Stability Gate record.
+## S4 — Complete Parameter Main Effects
 
-After that, the next independent strategic gate remains the untouched Fresh Holdout after eligible post-2026-09-19 data exists.
+The archived raw 81-row matrix was retrieved directly and aggregated by each parameter level. Each level represents 27 combinations; aggregation uses the sum of wins divided by the sum of decisive wins+losses across those combinations.
 
-## Safety / canonical guard
+| Parameter | Level | Decisive WR | Mean Total R | Mean PF | Mean min-week WR |
+|---|---:|---:|---:|---:|---:|
+| P-Gap | 0.8 | 64.415% | +47.89R | 1.842 | 56.06% |
+| P-Gap | 1.0 | 66.546% | +50.67R | 2.015 | 55.85% |
+| P-Gap | 1.2 | 66.071% | +40.00R | 1.960 | 53.67% |
+| Spike Multiplier | 1.3 | 64.971% | +52.33R | 1.884 | 55.97% |
+| Spike Multiplier | 1.5 | 66.019% | +47.67R | 1.969 | 54.95% |
+| Spike Multiplier | 1.7 | 66.050% | +38.56R | 1.964 | 54.66% |
+| Max SL | 8 | 65.495% | +45.07R | 1.932 | 55.20% |
+| Max SL | 10 | 65.673% | +46.74R | 1.943 | 55.20% |
+| Max SL | 12 | 65.673% | +46.74R | 1.943 | 55.20% |
+| TP | 0.8R | 68.867% | +55.89R | 2.227 | 58.40% |
+| TP | 1.0R | 65.561% | +45.89R | 1.920 | 53.86% |
+| TP | 1.2R | 62.416% | +36.78R | 1.670 | 53.33% |
 
-This assessment does not:
+### S4 interpretation
 
-- define P-Gap geometry;
-- define AB=CD anchors or tolerance;
-- define fill semantics;
-- promote TP=0.8R or any other parameter;
-- authorize BUY/SELL decisions;
-- enable live execution.
+The main-effect surface shows that TP has the largest tested effect on aggregate decisive WR and payoff. P-Gap and Spike Multiplier show smaller shifts, while Max SL is nearly flat between the tested levels 10 and 12. These are descriptive sensitivity results only; they do not authorize parameter re-selection.
 
-`LIVE_TRADING_ENABLE=false` remains unchanged.
+**S4 disposition: COMPLETE / DESCRIPTIVE.**
+
+## Final Stability Gate Disposition
+
+All six protocol sections are now recorded. The evidence does not support calling the temporal behavior uniformly stable: the baseline has one materially weaker observed week (52.941%), and the main-effect surface confirms that TP sensitivity is non-trivial.
+
+Therefore:
+
+**PARAMETER STABILITY GATE: INCONCLUSIVE — NO PASS / NO FAIL**
+
+This is a deliberate evidence-status result, not a production rejection. The current historical matrix supports robustness within the tested grid, but the temporal sample is too limited to declare stability sufficient for production.
+
+The untouched Fresh Holdout remains the required independent evidence gate. It must use the frozen configuration and frozen boundary, with no tuning from holdout observations.
+
+**PRODUCTION: BLOCKED.**
