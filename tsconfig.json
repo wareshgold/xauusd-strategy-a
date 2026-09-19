@@ -9,6 +9,8 @@
     "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node", "vitest/globals"],
     "noEmit": true
   },
   "include": ["src", "tests"]
