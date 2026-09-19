@@ -7,7 +7,7 @@ import {
   candidateAnchors,
   entryAndLeg2AreDistinct,
   halfTargetCandidates,
-} from "../research/fixtures/sp2l_source_discrimination_entry_sl_2x_trigger_abcd_v1";
+} from "../research/fixtures/sp2l_source_discrimination_entry_sl_2x_trigger_abcd_v1.js";
 
 describe("SP2L source-discrimination fixtures", () => {
   it("keeps the fixture questions explicitly unresolved/partial", () => {
