@@ -185,6 +185,31 @@ A non-invasive combined audit was completed across Parameter Stability, executio
 Audit file: `docs/research/SP2L_COMBINED_READINESS_AUDIT_2026-09-19.md`
 Audit commit: `94f56b62baf27773c7b56130f308dc836afed6a2`
 
+## Source / Frozen Geometry Gate Audit — 2026-09-19
+
+A fresh repository-level audit was completed after reviewing the current source-evidence ledger and the latest P-Gap / 2X / sequence-forensic batches.
+
+Audit file: `docs/research/SP2L_SOURCE_FROZEN_GEOMETRY_AUDIT_2026-09-19.md`
+
+Audit commit: `5498221df75a9e692aa0f861992ed45109169c80`
+
+Key result:
+
+- Executable `SOURCE_CONFIRMED` fields: **0/7**
+- Entry: PARTIAL
+- Invalidation/SL: PARTIAL
+- Limit refresh: PARTIAL
+- Trigger: PARTIAL
+- 2X: PARTIAL
+- AB=CD: PARTIAL
+- P-Gap: **UNRESOLVED**
+
+Recent evidence materially strengthens source concepts and structural relationships, but does not uniquely determine the executable geometry required by the freeze contract. In particular, the latest P-Gap forensic batches still do not resolve current-SP2L indexing, bearish mirror, boundary semantics, threshold/tolerance, or qualifying-candle relation.
+
+The current GitHub tree does not expose the previously referenced `SP2L/Source_Archive/2026-09-17_Original_Video_Visual_Evidence` directory by that exact path. This is recorded only as a repository-storage/path observation; it is not treated as source-evidence loss because the primary-artifact/source-resolution ledger remains present.
+
+**Frozen Geometry remains BLOCKED. No downstream gate is unlocked by this audit.**
+
 ## Current operational conclusion
 
 **The infrastructure path is materially implemented and guarded. Parameter Stability remains INCONCLUSIVE — NO PASS / NO FAIL because temporal stability is mixed/inconclusive despite completion of the full S4 main-effect calculation. The untouched Fresh Holdout remains blocked only by lack of eligible post-boundary MT5 data; the latest availability check returned zero bars through 07:37 UTC on Saturday 2026-09-19. The frozen runner integrity path has been audited and remains ready without parameter, geometry, or fill-rule changes. Strategy production remains BLOCKED. The Nexora runtime verification is PASS for the tested dry-run path, and live execution stays disabled.**
