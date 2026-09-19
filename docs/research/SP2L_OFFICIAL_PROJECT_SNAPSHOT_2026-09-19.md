@@ -124,12 +124,18 @@ Coverage:
 2. SELL dry-run order construction using bid;
 3. MAX_OPEN_POSITIONS guard.
 
-Runtime verification still pending:
-- restart persistence on local MT5 runtime;
-- credentialed Telegram delivery;
-- broker-history reconciliation against actual MT5 activity.
+Runtime verification checkpoint completed on 2026-09-19:
+- synthetic dry-run signal archive: PASS;
+- signal journal: PASS;
+- trade journal: PASS;
+- Excel export: PASS;
+- broker reconciliation: PASS (signals=5, mt5_deals=0, matched_signals=0, newly_recorded_closed=0);
+- public Telegram branding verified as Nexora SIGNAL / Nexora EXECUTION;
+- LIVE_TRADING_ENABLE=false throughout the test.
 
-No real trade was enabled or authorized by these changes.
+Checkpoint: `docs/research/NEXORA_RUNTIME_VERIFICATION_CHECKPOINT_2026-09-19.md` (commit `dad25b2537b4da21f74adca13bde6340cb9e3fef`).
+
+No real trade was enabled or authorized by this verification.
 
 ## Important archived evidence / gates
 
@@ -157,4 +163,4 @@ When continuing this project:
 
 ## Current operational conclusion
 
-**The infrastructure path is materially implemented and guarded. Parameter Stability has been assessed as INCONCLUSIVE — NO PASS / NO FAIL because temporal stability remains mixed/inconclusive despite completion of the full S4 main-effect calculation. Strategy production remains BLOCKED. After S4 completion, the next strategic evidence gate remains the untouched Fresh Holdout using the frozen configuration and boundary once eligible post-boundary data exists; infrastructure runtime verification remains separate and live execution stays disabled.**
+**The infrastructure path is materially implemented and guarded. Parameter Stability has been assessed as INCONCLUSIVE — NO PASS / NO FAIL because temporal stability remains mixed/inconclusive despite completion of the full S4 main-effect calculation. Strategy production remains BLOCKED. After S4 completion, the next strategic evidence gate remains the untouched Fresh Holdout using the frozen configuration and boundary once eligible post-boundary data exists; the Nexora runtime verification is now recorded as PASS for the tested dry-run path, and live execution stays disabled.**
