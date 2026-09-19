@@ -20,7 +20,7 @@ Current gate state:
 
 - Frozen Geometry: **BLOCKED**
 - Parameter robustness evidence: **POSITIVE**
-- Parameter Stability Gate: **PROTOCOL REGISTERED / ASSESSMENT IN PROGRESS**
+- Parameter Stability Gate: **INCONCLUSIVE / PENDING S4 RAW-MATRIX COMPUTATION**
 - Fresh Holdout: **NOT RUN / NO ELIGIBLE POST-BOUNDARY BARS YET**
 - Production/live trading authorization: **BLOCKED**
 
@@ -60,6 +60,10 @@ A pre-registered stability protocol was added at `docs/research/SP2L_PARAMETER_S
 It formalizes surface concentration, baseline locality, temporal consistency, parameter main-effect sensitivity, multiple-testing protection, and descriptive statistical uncertainty. It does not select or promote a canonical parameter and does not alter strategy geometry.
 
 Protocol commit: `a6b8ad174306ace0118d2344501c129951a240d0`.
+
+Assessment commit: `7f356adfe511e7dcd66d8c157f534be421509b26`.
+
+S1 surface concentration: positive. S2 baseline locality: positive. S3 temporal consistency: mixed/inconclusive. S4 main-effect aggregation: pending direct raw-matrix computation. S5 multiple-testing guard: pass. S6 uncertainty: descriptive/limited.
 
 ## Fresh Holdout
 
@@ -151,4 +155,4 @@ When continuing this project:
 
 ## Current operational conclusion
 
-**The infrastructure path is materially implemented and guarded. Parameter Stability is now formally pre-registered and under assessment. Strategy production remains BLOCKED. The next strategic evidence gate remains the untouched Fresh Holdout using the frozen configuration and boundary once eligible post-boundary data exists; infrastructure runtime verification remains separate and live execution stays disabled.**
+**The infrastructure path is materially implemented and guarded. Parameter Stability has been assessed as INCONCLUSIVE/PENDING only because the complete S4 level-wise main-effect calculation still requires direct access to the archived 81-row matrix. Strategy production remains BLOCKED. After S4 completion, the next strategic evidence gate remains the untouched Fresh Holdout using the frozen configuration and boundary once eligible post-boundary data exists; infrastructure runtime verification remains separate and live execution stays disabled.**
