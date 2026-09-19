@@ -165,3 +165,23 @@ Every approved signal and execution outcome should remain traceable so later res
 - execution failures
 
 Journal data can inform later research, but cannot itself redefine canonical Strategy A geometry.
+
+## Safety-test coverage added — 2026-09-19
+
+Added `tests/test_live_mt5_gateway.py` covering:
+- rejection of non-APPROVED signal status;
+- SELL dry-run order construction using bid price;
+- MAX_OPEN_POSITIONS execution guard.
+
+These are offline tests and do not send broker orders or Telegram messages. Live execution remains disabled by default.
+
+## Gate status after code audit
+
+- Existing integration path: PRESENT
+- Duplicate guard: PRESENT + auditable rejection
+- SELL dry-run coverage: ADDED
+- MAX_OPEN_POSITIONS coverage: ADDED
+- Restart persistence: implementation uses persistent journal state; runtime restart test still requires local MT5 execution
+- Telegram delivery: implementation present; credentialed delivery test still requires local credentials
+- Broker reconciliation: implementation present; live broker-history verification still requires local MT5 runtime
+- LIVE_TRADING_ENABLE: FALSE / BLOCKED
