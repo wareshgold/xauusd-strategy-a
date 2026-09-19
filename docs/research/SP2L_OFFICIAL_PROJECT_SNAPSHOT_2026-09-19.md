@@ -71,9 +71,17 @@ S1 surface concentration: positive. S2 baseline locality: positive. S3 temporal 
 
 Frozen boundary: **2026-09-19 00:00:00 UTC**.
 
-The first holdout acquisition attempt returned zero bars because 2026-09-19 was Saturday. A `copy_rates_from` diagnostic returned historical data only through 2026-09-18 23:57 UTC. Earlier data must not be substituted into the holdout.
+A new untouched availability check was executed on 2026-09-19 through 07:33 UTC. The committed single-configuration runner requested post-boundary XAUUSD.ecn M1 data and returned:
 
-Next valid holdout action: rerun the same frozen single-configuration runner after new post-boundary XAUUSD.ecn M1 data exists.
+- `HOLDOUT_DATA_UNAVAILABLE`
+- 0 returned bars
+- no reported MT5 acquisition error
+
+Earlier `copy_rates_from` diagnostics also showed returned history ending at **2026-09-18 23:57 UTC**, so no returned sample has crossed the frozen boundary.
+
+Because 2026-09-19 is Saturday, this is consistent with observed market-data availability. It is **not** a strategy result and does not count as a failed holdout.
+
+Earlier data must not be substituted.
 
 Frozen holdout configuration:
 - XAUUSD.ecn
@@ -84,6 +92,8 @@ Frozen holdout configuration:
 - TP 1.0R
 
 No holdout tuning, subperiod selection, geometry reinterpretation, fill-rule changes, or source reinterpretation.
+
+Availability diagnostic: `docs/research/SP2L_FRESH_HOLDOUT_MT5_DATA_AVAILABILITY_2026-09-19.md`.
 
 ## Live MT5 + Telegram infrastructure
 
@@ -157,10 +167,10 @@ When continuing this project:
 2. Do not re-request the original source video or redo already archived source resolution.
 3. Do not rebuild PR #235 live infrastructure.
 4. Keep live execution disabled.
-5. Continue pending live-runtime verification only where needed.
-6. Separately continue the frozen Fresh Holdout once eligible post-2026-09-19 data exists.
+5. Continue the frozen Fresh Holdout only after eligible post-2026-09-19 data exists.
+6. Do not substitute pre-boundary data.
 7. Do not use backtest/robustness performance to invent unresolved source geometry or authorize production trading.
 
 ## Current operational conclusion
 
-**The infrastructure path is materially implemented and guarded. Parameter Stability has been assessed as INCONCLUSIVE — NO PASS / NO FAIL because temporal stability remains mixed/inconclusive despite completion of the full S4 main-effect calculation. Strategy production remains BLOCKED. After S4 completion, the next strategic evidence gate remains the untouched Fresh Holdout using the frozen configuration and boundary once eligible post-boundary data exists; the Nexora runtime verification is now recorded as PASS for the tested dry-run path, and live execution stays disabled.**
+**The infrastructure path is materially implemented and guarded. Parameter Stability remains INCONCLUSIVE — NO PASS / NO FAIL because temporal stability is mixed/inconclusive despite completion of the full S4 main-effect calculation. The untouched Fresh Holdout remains blocked only by lack of eligible post-boundary MT5 data; the latest availability check returned zero bars through 07:33 UTC on Saturday 2026-09-19. Strategy production remains BLOCKED. The Nexora runtime verification is PASS for the tested dry-run path, and live execution stays disabled.**
