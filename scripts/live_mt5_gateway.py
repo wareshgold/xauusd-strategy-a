@@ -60,6 +60,12 @@ class Signal:
             raise ValueError("signal status must be APPROVED")
         if str(payload["symbol"]) != SYMBOL:
             raise ValueError(f"signal symbol {payload['symbol']} != configured {SYMBOL}")
+        for field in ("entry", "sl", "tp", "volume"):
+            value = float(payload[field])
+            if value <= 0:
+                raise ValueError(f"{field} must be > 0")
+        if float(payload["volume"]) <= 0:
+            raise ValueError("volume must be > 0")
         return cls(
             direction=direction,
             symbol=SYMBOL,
