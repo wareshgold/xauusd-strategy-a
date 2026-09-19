@@ -31,7 +31,7 @@ def write_sheet(wb: Workbook, name: str, rows: list[dict]) -> None:
 
     ws.append(keys)
     for row in rows:
-        ws.append([row.get(key) for key in keys])
+        ws.append([json.dumps(row.get(key), ensure_ascii=False, sort_keys=True) if isinstance(row.get(key), (dict, list)) else row.get(key) for key in keys])
 
     ws.freeze_panes = "A2"
     ws.auto_filter.ref = ws.dimensions
