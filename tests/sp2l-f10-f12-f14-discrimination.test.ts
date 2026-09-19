@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { F10_F12_F14_DISCRIMINATION_STATUS } from '../research/harness/sp2l_f10_f12_f14_discrimination_v1';
+import { F10_F12_F14_DISCRIMINATION_STATUS } from '../research/harness/sp2l_f10_f12_f14_discrimination_v1.js';
 
 describe('SP2L F10/F12/F14 discrimination boundary', () => {
   it('keeps the fixture harness research-only', () => {
