@@ -20,7 +20,7 @@ Current gate state:
 
 - Frozen Geometry: **BLOCKED**
 - Parameter robustness evidence: **POSITIVE**
-- Parameter Stability Gate: **PENDING**
+- Parameter Stability Gate: **PROTOCOL REGISTERED / ASSESSMENT IN PROGRESS**
 - Fresh Holdout: **NOT RUN / NO ELIGIBLE POST-BOUNDARY BARS YET**
 - Production/live trading authorization: **BLOCKED**
 
@@ -53,7 +53,15 @@ Full matrix:
 
 Do not promote the best-performing parameter combination to canonical status. Matrix is research evidence only.
 
-### Fresh Holdout
+### Parameter Stability
+
+A pre-registered stability protocol was added at `docs/research/SP2L_PARAMETER_STABILITY_PROTOCOL_2026-09-19.md`.
+
+It formalizes surface concentration, baseline locality, temporal consistency, parameter main-effect sensitivity, multiple-testing protection, and descriptive statistical uncertainty. It does not select or promote a canonical parameter and does not alter strategy geometry.
+
+Protocol commit: `a6b8ad174306ace0118d2344501c129951a240d0`.
+
+## Fresh Holdout
 
 Frozen boundary: **2026-09-19 00:00:00 UTC**.
 
@@ -143,4 +151,4 @@ When continuing this project:
 
 ## Current operational conclusion
 
-**The infrastructure path is materially implemented and guarded. Strategy production is still BLOCKED. The next strategic evidence gate is an untouched Fresh Holdout using the frozen configuration and boundary; the next infrastructure tasks are runtime verification of restart persistence, Telegram delivery, and MT5 reconciliation.**
+**The infrastructure path is materially implemented and guarded. Parameter Stability is now formally pre-registered and under assessment. Strategy production remains BLOCKED. The next strategic evidence gate remains the untouched Fresh Holdout using the frozen configuration and boundary once eligible post-boundary data exists; infrastructure runtime verification remains separate and live execution stays disabled.**
