@@ -14,6 +14,7 @@ data/processed/
 
 # Live runtime state and derived exports
 runtime/journal/
+runtime/journal_backtest/
 runtime/exports/
 runtime/approved_signal.json
 runtime/processed/
