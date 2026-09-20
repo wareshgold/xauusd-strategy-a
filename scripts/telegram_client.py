@@ -27,6 +27,24 @@ def read_telegram_env(env: dict | None = None) -> tuple[str | None, str | None]:
     return source.get("TELEGRAM_BOT_TOKEN"), source.get("TELEGRAM_CHAT_ID")
 
 
+def telegram_delivery_status(env: dict | None = None) -> dict:
+    """Pre-delivery destination status from existing configuration only.
+
+    mode REAL means both TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set and
+    a real API call will be attempted. mode MOCK means nothing will leave
+    the host (calls return NOT_CONFIGURED). No bot is created and no chat
+    ID is guessed anywhere in this codebase.
+    """
+    bot_token, chat_id = read_telegram_env(env)
+    bot_configured = bool(bot_token)
+    chat_configured = bool(chat_id)
+    return {
+        "bot_configured": bot_configured,
+        "chat_configured": chat_configured,
+        "mode": "REAL" if (bot_configured and chat_configured) else "MOCK",
+    }
+
+
 def send_telegram_message(
     text: str,
     *,

@@ -19,10 +19,10 @@ from typing import Any
 
 try:
     from live_journal import record_report
-    from telegram_client import send_telegram_message
+    from telegram_client import send_telegram_message, telegram_delivery_status
 except ModuleNotFoundError:
     from scripts.live_journal import record_report
-    from scripts.telegram_client import send_telegram_message
+    from scripts.telegram_client import send_telegram_message, telegram_delivery_status
 
 LABELS = {
     "daily": "SP2L Daily Report — RESEARCH",
@@ -234,6 +234,7 @@ def send_report(
     response, and success/failure. Never raises.
     """
     result = send_telegram_message(report_text)
+    delivery = telegram_delivery_status()
     record = {
         "report_type": report_type,
         "period_label": period_label,
@@ -241,6 +242,7 @@ def send_report(
         "period_end_utc": period_end_utc,
         "report_timestamp_utc": report_timestamp_utc,
         "sent_at_utc": sent_at_utc,
+        "delivery_mode": delivery["mode"],
         "telegram_response": result.response if result.response is not None else result.detail,
         "telegram_status": result.detail,
         "success": result.success,

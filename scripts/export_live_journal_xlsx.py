@@ -71,11 +71,20 @@ def write_summary(wb: Workbook, signals: list[dict], trades: list[dict]) -> None
 
 
 def main() -> None:
-    signals = read_jsonl(SIGNALS)
-    trades = read_jsonl(TRADES)
-    snapshots = read_jsonl(SNAPSHOTS)
+    import argparse
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
+    parser = argparse.ArgumentParser(description="Export a live/backtest journal into an analysis workbook.")
+    parser.add_argument("--journal-dir", default=None, help="journal directory (default: runtime/journal)")
+    parser.add_argument("--out", default=None, help="output xlsx path (default: runtime/exports/SP2L_Live_Trade_Journal.xlsx)")
+    args = parser.parse_args()
+
+    journal_dir = Path(args.journal_dir) if args.journal_dir else ROOT
+    out_path = Path(args.out) if args.out else OUT
+    signals = read_jsonl(journal_dir / SIGNALS.name)
+    trades = read_jsonl(journal_dir / TRADES.name)
+    snapshots = read_jsonl(journal_dir / SNAPSHOTS.name)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     wb = Workbook()
     default_sheet = wb.active
     wb.remove(default_sheet)
@@ -83,8 +92,8 @@ def main() -> None:
     write_sheet(wb, "Signals", signals)
     write_sheet(wb, "Trades", trades)
     write_sheet(wb, "Market Snapshots", snapshots)
-    wb.save(OUT)
-    print(OUT)
+    wb.save(out_path)
+    print(out_path)
 
 
 if __name__ == "__main__":

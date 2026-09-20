@@ -43,6 +43,7 @@ try:
         weekly_report_bounds,
     )
     from live_report_telegram import format_report, send_report
+    from telegram_client import telegram_delivery_status
 except ModuleNotFoundError:
     from scripts.live_journal import _csv_export
     from scripts.live_report_engine import (
@@ -61,6 +62,7 @@ except ModuleNotFoundError:
         weekly_report_bounds,
     )
     from scripts.live_report_telegram import format_report, send_report
+    from scripts.telegram_client import telegram_delivery_status
 
 
 def _parse_ts(value: str) -> datetime:
@@ -87,6 +89,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--end", help="period end ISO timestamp (exclusive)")
     parser.add_argument("--now", help="reference instant for scheduler bounds (ISO); default: current UTC")
     parser.add_argument("--send", action="store_true", help="send the rendered report via Telegram and log it")
+    parser.add_argument("--journal-dir", default=None, help="journal directory to read (default: engine config journal_source; e.g. a backtest journal)")
     parser.add_argument("--json-out", help="write the canonical JSON artifact to this path")
     parser.add_argument("--csv-out", help="write period trade rows CSV to this path")
     args = parser.parse_args(argv)
@@ -100,6 +103,15 @@ def main(argv: list[str] | None = None) -> int:
         now_utc = _parse_ts(args.now) if args.now else datetime.now(timezone.utc)
         start, end = _period_bounds(args.type, now_utc, schedule)
 
+    if args.journal_dir:
+        engine_config = ReportConfig(
+            geometry_status=engine_config.geometry_status,
+            live_trading_enabled=engine_config.live_trading_enabled,
+            pip_size=engine_config.pip_size,
+            session_timezone=engine_config.session_timezone,
+            journal_source=str(Path(args.journal_dir)).replace("\\", "/"),
+            period_basis=engine_config.period_basis,
+        )
     signals, trades = load_journal(Path(engine_config.journal_source))
 
     generated_at_utc = datetime.now(timezone.utc).isoformat()
@@ -117,6 +129,14 @@ def main(argv: list[str] | None = None) -> int:
         _csv_export(period_csv_rows(trades, start, end), csv_path)
 
     if args.send:
+        delivery = telegram_delivery_status()
+        print(json.dumps({
+            "telegram_pre_delivery_status": {
+                "bot_configuration_detected": "yes" if delivery["bot_configured"] else "no",
+                "chat_destination_configured": "yes" if delivery["chat_configured"] else "no",
+                "delivery_mode": delivery["mode"],
+            }
+        }, indent=2, sort_keys=True))
         record = send_report(
             report_text,
             report_type=args.type,

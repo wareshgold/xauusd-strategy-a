@@ -221,7 +221,11 @@ def _trade_pips(row: dict[str, Any], pip_size: float | None) -> float | None:
     if pip_size is None or pip_size <= 0:
         return None
     entry = row.get("signal_entry")
+    # Exit price: live journal rows use broker_price; backtest journal rows
+    # carry their (non-broker) exit in exit_price. Either is accepted.
     exit_price = row.get("broker_price")
+    if exit_price is None:
+        exit_price = row.get("exit_price")
     direction = str(row.get("direction", "")).upper()
     if entry is None or exit_price is None or direction not in {"BUY", "SELL"}:
         return None
@@ -476,7 +480,8 @@ def trade_list_summary(signals: list[dict], trades: list[dict], pip_size: float 
         closed = [t for t in related if str(t.get("status", "")).upper() == "CLOSED"]
         if closed:
             latest = closed[-1]
-            result = str(latest.get("result", "")).upper() or "AMBIGUOUS"
+            raw_result = latest.get("result")
+            result = str(raw_result).upper() if raw_result else "AMBIGUOUS"
             r_value = _round(_trade_r(latest), _R_DP)
             pips = _round(_trade_pips(latest, pip_size), _PIPS_DP)
             status = "CLOSED"
