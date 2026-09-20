@@ -1,2 +1,4 @@
 MetaTrader5
 openpyxl
+# IANA timezone database for Python on Windows (session timezone handling).
+tzdata

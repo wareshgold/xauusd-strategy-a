@@ -15,15 +15,15 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlencode
-from urllib.request import Request, urlopen
 
 import MetaTrader5 as mt5
 
 try:
     from live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
+    from telegram_client import send_telegram_message
 except ModuleNotFoundError:
     from scripts.live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
+    from scripts.telegram_client import send_telegram_message
 
 
 SYMBOL = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
@@ -83,17 +83,11 @@ class Signal:
 
 
 def telegram_send(text: str) -> bool:
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        return False
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    body = urlencode({"chat_id": TELEGRAM_CHAT_ID, "text": text}).encode()
-    try:
-        req = Request(url, data=body, method="POST")
-        with urlopen(req, timeout=10) as response:
-            return 200 <= response.status < 300
-    except Exception as exc:
-        print(f"[telegram] send failed: {exc}")
-        return False
+    """Delegates to the shared Telegram client (same env vars, same behavior)."""
+    result = send_telegram_message(text)
+    if not result.success and result.detail != "NOT_CONFIGURED":
+        print(f"[telegram] send failed: {result.detail}")
+    return result.success
 
 
 def mt5_initialize() -> None:

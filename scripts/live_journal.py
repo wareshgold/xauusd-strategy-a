@@ -4,6 +4,7 @@ Storage:
 - runtime/journal/signals.jsonl
 - runtime/journal/trades.jsonl
 - runtime/journal/market_snapshots.jsonl
+- runtime/journal/report_log.jsonl (Telegram report delivery log)
 
 JSONL is the canonical raw audit layer. Excel/CSV exports are derived views.
 """
@@ -20,6 +21,7 @@ ROOT = Path("runtime/journal")
 SIGNALS = ROOT / "signals.jsonl"
 TRADES = ROOT / "trades.jsonl"
 SNAPSHOTS = ROOT / "market_snapshots.jsonl"
+REPORT_LOG = ROOT / "report_log.jsonl"
 
 
 def _append(path: Path, record: dict[str, Any]) -> None:
@@ -40,6 +42,11 @@ def record_trade(record: dict[str, Any]) -> None:
 
 def record_market_snapshot(record: dict[str, Any]) -> None:
     _append(SNAPSHOTS, record)
+
+
+def record_report(record: dict[str, Any]) -> None:
+    """Append one report-delivery record (timestamp, type, response, success)."""
+    _append(REPORT_LOG, record)
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -76,10 +83,12 @@ def export_csv(out_dir: Path = Path("runtime/exports")) -> dict[str, str]:
         "signals": out_dir / "signals.csv",
         "trades": out_dir / "trades.csv",
         "market_snapshots": out_dir / "market_snapshots.csv",
+        "report_log": out_dir / "report_log.csv",
     }
     _csv_export(read_jsonl(SIGNALS), outputs["signals"])
     _csv_export(read_jsonl(TRADES), outputs["trades"])
     _csv_export(read_jsonl(SNAPSHOTS), outputs["market_snapshots"])
+    _csv_export(read_jsonl(REPORT_LOG), outputs["report_log"])
     return {key: str(path) for key, path in outputs.items()}
 
 
