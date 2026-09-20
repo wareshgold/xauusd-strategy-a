@@ -117,11 +117,21 @@ endpoint mapping in the currently archived evidence.
 
 ## Cross-cutting dependency — P-Gap
 
-P-Gap remains the highest-severity unresolved geometry item overall, and a
-stated prerequisite for a valid/breakout-qualified setup and the F12 trigger
-chain. Its exact OHLC construction is **UNRESOLVED**. No F-level blocker may be
-promoted to canonical executable geometry while P-Gap's formula/candle-boundary
-semantics stay open.
+P-Gap executable geometry remains the highest-severity unresolved item
+overall, and a stated prerequisite for a valid/breakout-qualified setup and
+the F12 trigger chain. Its exact OHLC construction is **UNRESOLVED**. No
+F-level blocker may be promoted to canonical executable geometry while
+P-Gap's formula/candle-boundary semantics stay open.
+
+Sync note (2026-09-20): the P-Gap *concept* is now tracked separately as
+**SOURCE_CONFIRMED_CONCEPT** — P-GAP = «فشار» (pressure) in the author's
+4-type gap taxonomy (breakout, pressure, exhaustion, common), with a
+contextual definition (10–30 candles pressure → pause → trend-bar →
+continuation likely) and E-GAP = «خستگی» carrying the opposite (reversal)
+expectation. Full record:
+`SP2L_PGAP_SOURCE_RESOLUTION_UPDATE_2026-09-20.md`. The concept/executable
+split changes no verdict in this matrix: F12 still cannot fully resolve
+until the P-Gap OHLC construction is resolved.
 
 ## Gate consequence
 

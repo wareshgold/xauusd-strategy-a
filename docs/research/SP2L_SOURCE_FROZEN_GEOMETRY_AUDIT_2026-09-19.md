@@ -59,6 +59,19 @@ Batch35/36/37 materially strengthened the source boundary:
 
 Decision: **candidate strengthened, not promoted**.
 
+### P-Gap — sync addendum (2026-09-20; verdicts above unchanged)
+
+After this audit's date, the author gap-video dependency audit added primary
+slide-text evidence: the 4-type gap taxonomy (breakout, pressure, exhaustion,
+common), P-GAP = «فشار» with a contextual definition (10–30 candles pressure
+→ pause → trend-bar → continuation likely), and E-GAP = «خستگی» with the
+opposite expectation. Full record:
+`SP2L_PGAP_SOURCE_RESOLUTION_UPDATE_2026-09-20.md`.
+
+Synchronized classification: P-Gap *concept* = SOURCE_CONFIRMED_CONCEPT;
+P-Gap *executable geometry* = UNRESOLVED (row above stands as written). No
+frozen-geometry verdict in this document changes.
+
 ### Entry / SL / Limit lifecycle
 
 Batch34 and Batch35 strengthen the source chain:

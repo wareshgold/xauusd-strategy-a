@@ -41,7 +41,8 @@ Every executable-geometry blocker remains unresolved. Status detail:
 
 | Blocker | Status | Blocking item |
 |---|---|---|
-| P-Gap | **UNRESOLVED** | Exact current-SP2L OHLC construction / indexing / mirror / threshold / boundary vs E-Gap. Highest-severity item. |
+| P-Gap concept | **SOURCE_CONFIRMED_CONCEPT** (sync 2026-09-20) | Concept resolved: P-GAP = «فشار» (pressure) in the author's 4-type gap taxonomy (breakout, pressure, exhaustion, common); contextual definition (10–30 candles pressure → pause → trend-bar → continuation likely); E-GAP = «خستگی» with opposite (reversal) expectation. See `SP2L_PGAP_SOURCE_RESOLUTION_UPDATE_2026-09-20.md`. Historical note: concept previously tracked inside the single UNRESOLVED row below; no historical finding is removed. |
+| P-Gap executable geometry | **UNRESOLVED** | Exact current-SP2L OHLC construction / indexing / mirror / threshold / boundary vs E-Gap. Highest-severity item. |
 | F08 — relevant/important swing | PARTIAL / UNRESOLVED | Swing-selection algorithm. |
 | F10 — invalidation / SL anchor | PARTIAL / UNRESOLVED | Exact SL price field (wick/body/close/open) and invalidation event. |
 | F11 — pending-order lifecycle | PARTIAL / UNRESOLVED | Mandatory delete predicate, timeout, replacement-price rule, precedence. |
@@ -82,7 +83,13 @@ Why not PASS:
 - `SOURCE_CONFIRMED executable fields = 0 / 7` (F08/F10–F16/P-Gap unresolved).
 - A full re-audit (2026-09-20) found **no new unique primary-source evidence**;
   all four tracked blockers (F10/F11/F12/F14) remain PARTIAL / UNRESOLVED, and
-  P-Gap remains UNRESOLVED.
+  P-Gap executable geometry remains UNRESOLVED.
+- Sync note (2026-09-20, same date, after the re-audit): the author gap-video
+  dependency audit added new primary *concept-level* evidence for P-Gap
+  (taxonomy + pressure-gap contextual definition; see
+  `SP2L_PGAP_SOURCE_RESOLUTION_UPDATE_2026-09-20.md`). This moves the P-Gap
+  *concept* to SOURCE_CONFIRMED_CONCEPT but contributes zero executable
+  geometry, so the gate verdict is unchanged.
 - The gate passes only when direct primary evidence uniquely determines the
   executable meaning of every field above.
 
@@ -103,6 +110,7 @@ the archive.
 
 ## Related
 
+- [P-Gap Source Resolution Update (2026-09-20)](docs/research/SP2L_PGAP_SOURCE_RESOLUTION_UPDATE_2026-09-20.md)
 - [F10/F11/F12/F14 Evidence Gap Matrix](docs/research/SP2L_F10_F11_F12_F14_EVIDENCE_GAP_MATRIX_2026-09-20.md)
 - [Source-to-Gap Traceability Map](docs/research/SP2L_SOURCE_TO_GAP_TRACEABILITY_MAP_2026-09-20.md)
 - [Source Discrimination Review Matrix](docs/research/SP2L_SOURCE_DISCRIMINATION_REVIEW_MATRIX_2026-09-20.md)
