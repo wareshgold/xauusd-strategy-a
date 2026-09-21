@@ -68,3 +68,17 @@ This does not alter the P-Gap primitive or promote any executable rule. Frozen G
 ## AB=CD discrimination status
 
 Source evidence supports the structural concept `AB=CD` / Leg 2 approximately matching Leg 1. Exact A/B/C/D OHLC anchors and any numeric tolerance remain unresolved. The new research matrix intentionally includes exact equality, near-equality, and materially unequal examples so future source evidence can discriminate them without backtest-driven selection.
+
+
+## F08 / F09 / F15 geometry discrimination
+
+### F08 Swing selection
+Source evidence supports structural turning areas, but does not uniquely define swing-selection mechanics or wick/body fields. Research hypotheses are isolated without canonical promotion.
+
+### F09 Entry geometry
+Source evidence supports Pending Limit execution and a 1/2/3-candle family, while exact entry price geometry and replacement precedence remain unresolved. The close-reclaim implementation is not treated as source-canonical.
+
+### F15 Bearish executable geometry
+Bearish Spike/Leg-2 structure is source-consistent and visually mirrored. Bearish P-Gap remains only source-consistent rather than independently demonstrated in the preserved excerpt. No bearish executable formula is promoted.
+
+**Gate result: PASS — unresolved geometry is explicitly quarantined. Frozen Geometry remains BLOCKED.**
