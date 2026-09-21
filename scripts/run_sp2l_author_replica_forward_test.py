@@ -197,14 +197,32 @@ def telegram_send(text: str) -> dict:
 
 
 def format_trigger_message(candidate: dict) -> str:
+    direction = candidate["direction"]
+    icon = "🟢" if direction == "BUY" else "🔴"
+    entry = float(candidate["theoretical_entry"])
+    sl = float(candidate["sl"])
+    tp = float(candidate["tp"])
+    risk = abs(entry - sl)
+    risk_pips = risk / PIP_SIZE
+    secondary = float(candidate["secondary_entry_2x"])
+    trigger_time = datetime.fromtimestamp(
+        int(candidate["trigger_time"]), timezone.utc
+    ).astimezone(timezone(timedelta(hours=3, minutes=30)))
+
     return (
-        f"🟢 XAUUSD {candidate['direction']}\n\n"
-        f"Entry: {candidate['theoretical_entry']}\n"
-        f"SL: {candidate['sl']}\n"
-        f"TP: {candidate['tp']}\n\n"
-        f"Signal ID: {candidate['signal_id']}\n"
-        f"Mode: PENDING_LIMIT_RESEARCH\n"
-        f"SL Anchor: SPIKE_CANDLE_EXTREME_RESEARCH"
+        f"{icon} <b>SP2L — XAUUSD {direction}</b>\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"📌 <b>Entry</b>   {entry:.2f}\n"
+        f"🛑 <b>SL</b>      {sl:.2f}\n"
+        f"🎯 <b>TP (1R)</b>  {tp:.2f}\n"
+        f"📏 <b>Risk</b>    {risk:.2f}  ({risk_pips:.0f} pip)\n"
+        f"➕ <b>2X Entry</b> {secondary:.2f}  <i>(research)</i>\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"📦 <b>Order</b>   Pending Limit\n"
+        f"⚖️ <b>Volume</b>  {VOLUME:.2f}\n"
+        f"🕒 <b>Signal</b>  {trigger_time.strftime('%H:%M:%S')} (UTC+3:30)\n\n"
+        f"🆔 <code>{candidate['signal_id']}</code>\n"
+        f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
 
 
