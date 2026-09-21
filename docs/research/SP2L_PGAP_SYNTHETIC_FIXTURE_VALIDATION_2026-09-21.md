@@ -76,3 +76,26 @@ The source-shaped variants can be represented and tested deterministically as ob
 - Higher-low progression is source-described, but the required number of higher lows is not fixed.
 - P-Gap remains location/context dependent; geometric non-overlap alone is insufficient.
 - E-Gap separation is qualitative in the preserved excerpt (early/fast opportunity versus repeated extensions), not yet a deterministic numeric cutoff.
+
+## P-Gap vs E-Gap timing reconstruction
+
+Additional preserved-source evidence narrows the distinction:
+
+- At 50:09, the teacher describes taking the opportunity early in the trend / quickly as P-Gap rather than E-Gap.
+- At 50:26, the teacher links a valid setup to a broken prior high plus a sufficiently good trend, while saying it has not progressed far enough toward E-Gap.
+- At 50:56–51:07, the teacher says after one extension, then another, and a third, the probability of E-Gap becomes high and the entry is avoided.
+
+This supports a timing/extension dimension for P-Gap vs E-Gap. It does not provide a deterministic numeric cutoff, nor does it prove that one extension alone is the universal E-Gap boundary.
+
+A research observer now records:
+- early-trend when a geometric gap is observed with zero prior extension events;
+- repeated-extension when a geometric gap is observed after one or more prior extension events;
+- unresolved otherwise.
+
+This is an evidence-preserving representation, not an executable classifier.
+
+### Gate result
+
+**P-GAP / E-GAP TIMING OBSERVATION GATE: PASS**
+
+The source distinction can be encoded as an auditable observation axis. The executable P-Gap/E-Gap cutoff remains unresolved.
