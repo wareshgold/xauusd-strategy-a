@@ -167,3 +167,7 @@ Frozen Geometry remains **BLOCKED**.
 - `SP2L_F10_F11_F12_F14_EVIDENCE_GAP_MATRIX_2026-09-20.md`
 - `SP2L_SOURCE_TO_GAP_TRACEABILITY_MAP_2026-09-20.md`
 - `SP2L_SOURCE_FROZEN_GEOMETRY_AUDIT_2026-09-19.md`
+
+
+## Dependency-gate cross-check — 2026-09-21
+F08/F09/F10/F14 are cross-linked only where the source reconstruction creates a structural dependency. This does not promote any unresolved anchor, tolerance, or execution semantics. The dependency matrix is a research control against accidental canonicalization.
