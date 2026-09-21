@@ -125,3 +125,17 @@ The matrix demonstrates an important reconstruction constraint: identical adjace
 ## Remaining blocker
 
 No deterministic extension count, trend-age threshold, distance-from-origin threshold, or E-Gap cutoff has been inferred. Therefore the matrix remains observational and cannot promote a canonical P-Gap detector.
+
+## Leg-1 structural boundary gate
+
+Source visual evidence (Window A 36:30–37:26) supports Leg 1 as a structural swing-to-swing movement followed by correction and a second directional leg. The visual source does not uniquely identify whether the endpoints use open/close, wick extremes, or another structural field.
+
+A research-only anchor hypothesis matrix now keeps three families separate: first-spike open → last-spike close; spike extremes; and structural swing endpoints. Bullish/bearish mirrors are included. None is canonical.
+
+**Result: PASS — anchor hypotheses are isolated without silently promoting the existing implementation.**
+
+The existing `LegProjection.ts` formula remains quarantined as research-stage and is not changed by this work.
+
+### Current Leg-1 blocker
+
+Exact A/B endpoints, wick/body semantics, and AB=CD tolerance remain unresolved. Therefore no Leg-1 formula may enter Frozen Geometry.
