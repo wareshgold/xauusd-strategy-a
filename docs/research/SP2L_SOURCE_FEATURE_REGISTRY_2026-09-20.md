@@ -171,3 +171,7 @@ Frozen Geometry remains **BLOCKED**.
 
 ## Dependency-gate cross-check — 2026-09-21
 F08/F09/F10/F14 are cross-linked only where the source reconstruction creates a structural dependency. This does not promote any unresolved anchor, tolerance, or execution semantics. The dependency matrix is a research control against accidental canonicalization.
+
+
+### F08 latest resolution status
+F08 swing selection has expanded hypothesis/counterexample coverage. Source supports structural turning areas, but no deterministic pivot/window or wick/body field has been promoted. Status remains unresolved.
