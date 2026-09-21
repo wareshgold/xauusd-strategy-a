@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{F08_COUNTEREXAMPLES}from"../research/fixtures/sp2l_f08_swing_counterexamples_v1.js";
+describe("F08 swing counterexamples",()=>{it("covers counterexample classes",()=>expect(new Set(F08_COUNTEREXAMPLES.map(x=>x.type)).size).toBe(3));it("covers both directions",()=>expect(new Set(F08_COUNTEREXAMPLES.map(x=>x.direction)).size).toBe(2));it("fails closed",()=>expect(F08_COUNTEREXAMPLES.every(x=>x.status==="UNRESOLVED"&&x.canonicalEligible===false)).toBe(true));});
