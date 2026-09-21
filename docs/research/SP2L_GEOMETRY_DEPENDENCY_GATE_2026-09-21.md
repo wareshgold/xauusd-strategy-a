@@ -15,3 +15,6 @@ F08 Swing, F09 Entry, F10 Stop, and F14 AB=CD are tracked as a dependency graph 
 
 ## Safety
 No production logic, forward-test logic, or canonical rule was changed.
+
+## Resolution ordering
+The dependency graph is now ordered into P0 source blockers, P1 dependent questions, and P2 downstream symmetry. This ordering is a research control only and does not determine canonical rules.
