@@ -209,7 +209,7 @@ def test_closeonly_symbol_blocks_real_order_send(monkeypatch, tmp_path):
 
     # Case 1: live terminal reports CLOSEONLY (mode 3).
     mt5.account_info = lambda: SimpleNamespace(trade_mode=0)
-    mt5.symbol_info = lambda symbol: SimpleNamespace(trade_mode=4)
+    mt5.symbol_info = lambda symbol: SimpleNamespace(trade_mode=3)
     result = gateway.execute_signal(_approved_buy(gateway))
     assert result["ok"] is False
     assert result["reason"] == "SYMBOL_NOT_OPENABLE"
