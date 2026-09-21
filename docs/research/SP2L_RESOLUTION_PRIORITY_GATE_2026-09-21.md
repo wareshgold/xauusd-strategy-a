@@ -40,3 +40,7 @@ F09 now covers BUY/SELL, 1/2/3-candle families, Pending Limit, and competing pri
 
 ## Blocker-resolution checkpoint — 2026-09-21
 The active blockers now have explicit evidence requirements and promotion guards in `SP2L_BLOCKER_RESOLUTION_PLAN_2026-09-21.md`. P0 remains F08/F10; downstream work must not promote unresolved geometry.
+
+
+## F09/F14 dependency discrimination checkpoint
+F09/F14 candidate families are narrowed without selecting executable entry fields, A/B/C/D anchors, or tolerance. Variable candle development is retained as a source-shaped family; AB=CD near-equality is retained as diagnostic only. P0 and execution blockers remain gating dependencies.
