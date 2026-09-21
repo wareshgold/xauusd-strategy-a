@@ -20,6 +20,10 @@ from telegram_client import send_telegram_message
 SYMBOL = "XAUUSD.ecn"
 MAGIC = 26091901
 POLL_SECONDS = 3
+# Reporting convention only: XAUUSD 1 pip = 0.01 price unit.
+# This does not define Strategy A geometry or execution semantics.
+PIP_SIZE = float(os.getenv("XAUUSD_PIP_SIZE", "0.01"))
+IRAN_UTC_OFFSET = timezone(timedelta(hours=3, minutes=30))
 STATE = Path("runtime/telegram_forward_monitor_state.json")
 
 
@@ -32,22 +36,63 @@ def send(text: str) -> dict:
     return {"success": r.success, "detail": r.detail}
 
 
+def resolve_trade_levels(deal) -> tuple[float | None, float | None]:
+    """Resolve SL/TP from the MT5 order/position; never infer them."""
+    sl = None
+    tp = None
+
+    position_id = int(getattr(deal, "position_id", 0) or 0)
+    if position_id:
+        positions = mt5.positions_get(ticket=position_id) or []
+        if positions:
+            position = positions[0]
+            sl = float(getattr(position, "sl", 0.0) or 0.0) or None
+            tp = float(getattr(position, "tp", 0.0) or 0.0) or None
+
+    order_ticket = int(getattr(deal, "order", 0) or 0)
+    if (sl is None or tp is None) and order_ticket:
+        orders = mt5.history_orders_get(ticket=order_ticket) or []
+        if orders:
+            order = orders[0]
+            if sl is None:
+                sl = float(getattr(order, "sl", 0.0) or 0.0) or None
+            if tp is None:
+                tp = float(getattr(order, "tp", 0.0) or 0.0) or None
+
+    return sl, tp
+
+
+def pips(distance: float | None) -> str:
+    if distance is None:
+        return "N/A"
+    return f"{abs(distance) / PIP_SIZE:.1f} pip"
+
+
 def deal_message(deal) -> str:
-    entry = getattr(deal, "entry", None)
-    reason = getattr(deal, "reason", None)
     side = "BUY" if getattr(deal, "type", None) == mt5.DEAL_TYPE_BUY else "SELL"
+    entry_price = float(deal.price)
+    sl, tp = resolve_trade_levels(deal)
+    sl_distance = abs(entry_price - sl) if sl is not None else None
+    tp_distance = abs(tp - entry_price) if tp is not None else None
     profit = float(getattr(deal, "profit", 0.0))
+    iran_time = datetime.fromtimestamp(int(deal.time), timezone.utc).astimezone(IRAN_UTC_OFFSET)
+    status = "OPEN" if int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN else "CLOSE"
+
+    sl_text = f"{sl:.2f} ({pips(sl_distance)})" if sl is not None else "NOT SET"
+    tp_text = f"{tp:.2f} ({pips(tp_distance)})" if tp is not None else "NOT SET"
+
     return (
-        f"📌 XAUUSD {side} DEAL\n\n"
-        f"Price: {float(deal.price):.2f}\n"
+        f"🟢 XAUUSD {side} — {status}\n\n"
+        f"Entry: {entry_price:.2f}\n"
+        f"SL: {sl_text}\n"
+        f"TP: {tp_text}\n\n"
         f"Volume: {float(deal.volume):.2f}\n"
-        f"Profit: {profit:.2f}\n"
+        f"Profit: {profit:.2f}\n\n"
+        f"Date: {iran_time.strftime('%Y-%m-%d')}\n"
+        f"Time: {iran_time.strftime('%H:%M:%S')} (UTC+3:30)\n\n"
         f"Deal: {int(deal.ticket)}\n"
         f"Order: {int(deal.order)}\n"
-        f"Entry code: {entry}\n"
-        f"Reason code: {reason}\n"
-        f"Time UTC: {datetime.fromtimestamp(int(deal.time), timezone.utc).isoformat()}\n"
-        f"Mode: RESEARCH_FORWARD_MONITOR"
+        f"Mode: RESEARCH FORWARD MONITOR"
     )
 
 
