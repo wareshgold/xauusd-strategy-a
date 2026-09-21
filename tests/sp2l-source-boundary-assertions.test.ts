@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1.js';
+import { evaluateCanonicalPromotionGuard } from '../research/harness/sp2l_canonical_promotion_no_go_guard_v1.js';
 
 type Resolution = 'SOURCE_CONFIRMED' | 'SOURCE_DISCRIMINATED' | 'UNRESOLVED';
 
@@ -31,6 +33,24 @@ describe('SP2L source-boundary assertions', () => {
     const f9 = cases.find((x) => x.id === 'F09-ENTRY-VS-LEG2')!;
     expect(f9.resolution).toBe('SOURCE_DISCRIMINATED');
     expect(f9.canonical).toBe(false);
+  });
+
+  it('blocks canonical promotion while any executable geometry field is unresolved', () => {
+    const result = evaluateCanonicalPromotionGuard(createResearchCandidate());
+    expect(result.allowed).toBe(false);
+    expect(result.blockedFields).toEqual([
+      'entry', 'invalidation', 'limitRefresh', 'trigger', 'twoX', 'abcd', 'pGap',
+    ]);
+  });
+
+  it('allows promotion only after every required field is source-confirmed', () => {
+    const geometry = createResearchCandidate() as Sp2lGeometryContract;
+    for (const field of Object.keys(geometry) as (keyof Sp2lGeometryContract)[]) {
+      geometry[field] = { provenance: 'SOURCE_CONFIRMED' };
+    }
+    const result = evaluateCanonicalPromotionGuard(geometry);
+    expect(result.allowed).toBe(true);
+    expect(result.blockedFields).toEqual([]);
   });
 
   it('fails closed if a blocker is accidentally promoted', () => {

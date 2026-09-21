@@ -1,0 +1,244 @@
+{
+  "dataset_id": "xauusd-ecn-m1-2026-08",
+  "provider": "MetaTrader5 terminal API",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "requested_interval_utc": {
+    "start": "2026-08-01T00:00:00Z",
+    "end": "2026-08-31T23:59:00Z"
+  },
+  "session_calendar_id": "xauusd-ecn-session-current-observation-2026-09-17",
+  "session_calendar_evidence_date": "2026-09-17",
+  "session_calendar_historical_applicability": "UNVERIFIED",
+  "expected_active_bar_count": 28980,
+  "returned_bar_count": 28957,
+  "missing_expected_timestamps": [
+    "2026-08-03T23:59:00Z",
+    "2026-08-04T23:59:00Z",
+    "2026-08-05T23:59:00Z",
+    "2026-08-06T23:59:00Z",
+    "2026-08-07T23:58:00Z",
+    "2026-08-07T23:59:00Z",
+    "2026-08-10T23:59:00Z",
+    "2026-08-11T23:59:00Z",
+    "2026-08-12T23:59:00Z",
+    "2026-08-14T23:58:00Z",
+    "2026-08-14T23:59:00Z",
+    "2026-08-17T23:59:00Z",
+    "2026-08-19T23:59:00Z",
+    "2026-08-20T23:59:00Z",
+    "2026-08-21T23:58:00Z",
+    "2026-08-21T23:59:00Z",
+    "2026-08-24T23:59:00Z",
+    "2026-08-25T23:59:00Z",
+    "2026-08-26T23:59:00Z",
+    "2026-08-27T23:59:00Z",
+    "2026-08-28T23:58:00Z",
+    "2026-08-28T23:59:00Z",
+    "2026-08-31T23:59:00Z"
+  ],
+  "unexpected_returned_timestamps": [],
+  "unique_timestamps": true,
+  "chronological": true,
+  "timestamp_jumps": [
+    {
+      "from": "2026-08-03T23:58:00Z",
+      "to": "2026-08-04T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-04T23:58:00Z",
+      "to": "2026-08-05T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-05T23:58:00Z",
+      "to": "2026-08-06T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-06T23:58:00Z",
+      "to": "2026-08-07T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-07T23:57:00Z",
+      "to": "2026-08-10T01:00:00Z",
+      "delta_seconds": 176580
+    },
+    {
+      "from": "2026-08-10T23:58:00Z",
+      "to": "2026-08-11T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-11T23:58:00Z",
+      "to": "2026-08-12T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-12T23:58:00Z",
+      "to": "2026-08-13T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-13T23:59:00Z",
+      "to": "2026-08-14T01:00:00Z",
+      "delta_seconds": 3660
+    },
+    {
+      "from": "2026-08-14T23:57:00Z",
+      "to": "2026-08-17T01:00:00Z",
+      "delta_seconds": 176580
+    },
+    {
+      "from": "2026-08-17T23:58:00Z",
+      "to": "2026-08-18T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-18T23:59:00Z",
+      "to": "2026-08-19T01:00:00Z",
+      "delta_seconds": 3660
+    },
+    {
+      "from": "2026-08-19T23:58:00Z",
+      "to": "2026-08-20T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-20T23:58:00Z",
+      "to": "2026-08-21T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-21T23:57:00Z",
+      "to": "2026-08-24T01:00:00Z",
+      "delta_seconds": 176580
+    },
+    {
+      "from": "2026-08-24T23:58:00Z",
+      "to": "2026-08-25T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-25T23:58:00Z",
+      "to": "2026-08-26T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-26T23:58:00Z",
+      "to": "2026-08-27T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-27T23:58:00Z",
+      "to": "2026-08-28T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-28T23:57:00Z",
+      "to": "2026-08-31T01:00:00Z",
+      "delta_seconds": 176580
+    }
+  ],
+  "invalid_timestamp_jumps": [
+    {
+      "from": "2026-08-03T23:58:00Z",
+      "to": "2026-08-04T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-04T23:58:00Z",
+      "to": "2026-08-05T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-05T23:58:00Z",
+      "to": "2026-08-06T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-06T23:58:00Z",
+      "to": "2026-08-07T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-07T23:57:00Z",
+      "to": "2026-08-10T01:00:00Z",
+      "delta_seconds": 176580
+    },
+    {
+      "from": "2026-08-10T23:58:00Z",
+      "to": "2026-08-11T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-11T23:58:00Z",
+      "to": "2026-08-12T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-12T23:58:00Z",
+      "to": "2026-08-13T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-14T23:57:00Z",
+      "to": "2026-08-17T01:00:00Z",
+      "delta_seconds": 176580
+    },
+    {
+      "from": "2026-08-17T23:58:00Z",
+      "to": "2026-08-18T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-19T23:58:00Z",
+      "to": "2026-08-20T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-20T23:58:00Z",
+      "to": "2026-08-21T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-21T23:57:00Z",
+      "to": "2026-08-24T01:00:00Z",
+      "delta_seconds": 176580
+    },
+    {
+      "from": "2026-08-24T23:58:00Z",
+      "to": "2026-08-25T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-25T23:58:00Z",
+      "to": "2026-08-26T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-26T23:58:00Z",
+      "to": "2026-08-27T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-27T23:58:00Z",
+      "to": "2026-08-28T01:00:00Z",
+      "delta_seconds": 3720
+    },
+    {
+      "from": "2026-08-28T23:57:00Z",
+      "to": "2026-08-31T01:00:00Z",
+      "delta_seconds": 176580
+    }
+  ],
+  "session_boundary_jumps_allowed": true,
+  "artifact": "xauusd-ecn-m1-2026-08.csv",
+  "artifact_sha256": "8d9f4d9a82ff2fcbedfc8221ef62da1b4c518d037a000f09b8ec888077ca4a87",
+  "retrieval_timestamp_utc": "2026-09-17T09:01:35.325425Z",
+  "audit_status": "AUDITED_FAIL"
+}

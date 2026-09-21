@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "source_rows": 28815,
+  "observation_rows": 28815,
+  "first_timestamp_match": true,
+  "last_timestamp_match": true,
+  "required_columns_present": true,
+  "feature_states_preserved_as_unknown": true,
+  "geometry_changed": false
+}

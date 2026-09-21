@@ -1,0 +1,125 @@
+{
+  "daily_breakdown": {
+    "rows": [
+      {
+        "ambiguous": 0,
+        "date": "2026-09-19",
+        "loss": 0,
+        "net_r": 0.0,
+        "signals": 5,
+        "win": 0
+      },
+      {
+        "ambiguous": 0,
+        "date": "2026-09-20",
+        "loss": 0,
+        "net_r": 0.0,
+        "signals": 1,
+        "win": 0
+      }
+    ],
+    "timezone": "America/New_York"
+  },
+  "determinism": {
+    "input_signal_records": 6,
+    "input_trade_records": 6,
+    "period_signal_records": 6,
+    "period_trade_records": 6,
+    "sorted_by": "timestamp_utc,signal_id,deal_id",
+    "unclassified_records": 0
+  },
+  "execution": {
+    "broker_reconciliation_status": "NOT_RUN",
+    "closed_trades": 0,
+    "dry_run_trades": 6,
+    "execution_failed": 0,
+    "open_trades": 0
+  },
+  "generated_at_utc": "2026-09-20T11:20:15.335936+00:00",
+  "performance": {
+    "closed_missing_r": 0,
+    "closed_with_r": 0,
+    "max_drawdown_r": 0.0,
+    "net_pips": null,
+    "net_r": 0.0,
+    "pips_basis": "EXPLICIT_PIP_SIZE",
+    "profit_factor": null,
+    "win_rate_pct": null
+  },
+  "period": {
+    "basis": "EXPLICIT_PERIOD_BOUNDS",
+    "end_utc": "2026-09-21T00:00:00+00:00",
+    "session_timezone": "America/New_York",
+    "start_utc": "2026-09-14T00:00:00+00:00"
+  },
+  "report_type": "weekly",
+  "schema": "sp2l.live_report.v1",
+  "signals": {
+    "ambiguous": 6,
+    "duplicates_rejected": 0,
+    "loss": 0,
+    "total": 6,
+    "win": 0
+  },
+  "system": {
+    "geometry_status": "UNRESOLVED_FROZEN_GEOMETRY_GATE",
+    "journal_source": "runtime/journal",
+    "live_trading_status": "DISABLED (LIVE_TRADING_ENABLE=false)"
+  },
+  "trade_list_summary": [
+    {
+      "direction": "BUY",
+      "pips": null,
+      "r_multiple": null,
+      "result": "AMBIGUOUS",
+      "signal_id": "DRYRUN-20260919-001",
+      "status": "DRY_RUN",
+      "timestamp_utc": "2026-09-19T05:20:05.854001+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": null,
+      "r_multiple": null,
+      "result": "AMBIGUOUS",
+      "signal_id": "DRYRUN-SELL-20260919-001",
+      "status": "DRY_RUN",
+      "timestamp_utc": "2026-09-19T05:31:00.353802+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": null,
+      "r_multiple": null,
+      "result": "AMBIGUOUS",
+      "signal_id": "DRYRUN-20260919-002",
+      "status": "DRY_RUN",
+      "timestamp_utc": "2026-09-19T06:42:27.819333+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": null,
+      "r_multiple": null,
+      "result": "AMBIGUOUS",
+      "signal_id": "NEXORA-TELEGRAM-DRYRUN-001",
+      "status": "DRY_RUN",
+      "timestamp_utc": "2026-09-19T07:17:48.623492+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": null,
+      "r_multiple": null,
+      "result": "AMBIGUOUS",
+      "signal_id": "NEXORA-TELEGRAM-DRYRUN-002",
+      "status": "DRY_RUN",
+      "timestamp_utc": "2026-09-19T07:23:22.425855+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": null,
+      "r_multiple": null,
+      "result": "AMBIGUOUS",
+      "signal_id": "DRYRUN-20260920-001",
+      "status": "DRY_RUN",
+      "timestamp_utc": "2026-09-20T09:48:22.121390+00:00"
+    }
+  ]
+}

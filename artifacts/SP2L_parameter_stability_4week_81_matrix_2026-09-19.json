@@ -1,0 +1,5078 @@
+{
+  "research_only": true,
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "weeks": [
+    [
+      "2026-09-14",
+      "2026-09-18"
+    ],
+    [
+      "2026-09-07",
+      "2026-09-11"
+    ],
+    [
+      "2026-08-31",
+      "2026-09-04"
+    ],
+    [
+      "2026-08-24",
+      "2026-08-28"
+    ]
+  ],
+  "grid": {
+    "pGap": [
+      0.8,
+      1.0,
+      1.2
+    ],
+    "spikeMultiplier": [
+      1.3,
+      1.5,
+      1.7
+    ],
+    "maxSL": [
+      8.0,
+      10.0,
+      12.0
+    ],
+    "tpR": [
+      0.8,
+      1.0,
+      1.2
+    ]
+  },
+  "aggregate": {
+    "combinations": 81,
+    "wr_stats": {
+      "min": 0.5979381443298969,
+      "q1": 0.6313131313131313,
+      "median": 0.6597222222222222,
+      "q3": 0.6863905325443787,
+      "max": 0.7096774193548387
+    },
+    "total_R_stats": {
+      "min": 25,
+      "q1": 38,
+      "median": 46,
+      "q3": 52,
+      "max": 70
+    },
+    "positive_total_R_count": 81,
+    "above_60pct_wr_count": 80,
+    "baseline": {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "signals": 158,
+      "wins": 103,
+      "losses": 51,
+      "ambiguous": 4,
+      "decisive_wr": 0.6688311688311688,
+      "total_R": 52,
+      "profit_factor": 2.019607843137255
+    },
+    "baseline_neighbors": [
+      {
+        "parameter": "pGap",
+        "level": 0.8,
+        "delta_WR": -0.02002164502164494,
+        "delta_R": -2,
+        "delta_PF": -0.1721502160186108
+      },
+      {
+        "parameter": "pGap",
+        "level": 1.2,
+        "delta_WR": -0.007413845996523061,
+        "delta_R": -11,
+        "delta_PF": -0.06611947104423166
+      },
+      {
+        "parameter": "spikeMultiplier",
+        "level": 1.3,
+        "delta_WR": -0.011372605295257188,
+        "delta_R": 5,
+        "delta_PF": -0.10025300442757734
+      },
+      {
+        "parameter": "spikeMultiplier",
+        "level": 1.7,
+        "delta_WR": -0.0021645021645021467,
+        "delta_R": -10,
+        "delta_PF": -0.019607843137254832
+      },
+      {
+        "parameter": "maxSL",
+        "level": 8.0,
+        "delta_WR": -0.0021645021645021467,
+        "delta_R": -2,
+        "delta_PF": -0.019607843137254832
+      },
+      {
+        "parameter": "maxSL",
+        "level": 12.0,
+        "delta_WR": 0.0,
+        "delta_R": 0,
+        "delta_PF": 0.0
+      },
+      {
+        "parameter": "tpR",
+        "level": 0.8,
+        "delta_WR": 0.04084625052366997,
+        "delta_R": 13,
+        "delta_PF": 0.4248366013071898
+      },
+      {
+        "parameter": "tpR",
+        "level": 1.2,
+        "delta_WR": -0.030121491411813972,
+        "delta_R": -9,
+        "delta_PF": -0.25175070028011204
+      }
+    ]
+  },
+  "combinations": [
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 34,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7083333333333334,
+          "total_R": 20,
+          "profit_factor": 2.4285714285714284,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 46,
+          "wins": 31,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6888888888888889,
+          "total_R": 17,
+          "profit_factor": 2.2142857142857144,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 28,
+          "losses": 19,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5957446808510638,
+          "total_R": 9,
+          "profit_factor": 1.4736842105263157,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 56,
+          "wins": 35,
+          "losses": 19,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6481481481481481,
+          "total_R": 16,
+          "profit_factor": 1.8421052631578947,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 199,
+      "wins": 128,
+      "losses": 66,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6597938144329897,
+      "total_R": 62,
+      "profit_factor": 1.9393939393939394,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 31,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6458333333333334,
+          "total_R": 14,
+          "profit_factor": 1.8235294117647058,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 46,
+          "wins": 31,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6888888888888889,
+          "total_R": 17,
+          "profit_factor": 2.2142857142857144,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 25,
+          "losses": 21,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5434782608695652,
+          "total_R": 4,
+          "profit_factor": 1.1904761904761905,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 56,
+          "wins": 34,
+          "losses": 20,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6296296296296297,
+          "total_R": 14,
+          "profit_factor": 1.7,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 199,
+      "wins": 121,
+      "losses": 72,
+      "ambiguous": 6,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6269430051813472,
+      "total_R": 49,
+      "profit_factor": 1.6805555555555556,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 29,
+          "losses": 19,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6041666666666666,
+          "total_R": 10,
+          "profit_factor": 1.5263157894736843,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 46,
+          "wins": 29,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6444444444444445,
+          "total_R": 13,
+          "profit_factor": 1.8125,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 24,
+          "losses": 22,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5217391304347826,
+          "total_R": 2,
+          "profit_factor": 1.0909090909090908,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 56,
+          "wins": 34,
+          "losses": 21,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6181818181818182,
+          "total_R": 13,
+          "profit_factor": 1.619047619047619,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 199,
+      "wins": 116,
+      "losses": 78,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.5979381443298969,
+      "total_R": 38,
+      "profit_factor": 1.4871794871794872,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 34,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7083333333333334,
+          "total_R": 20,
+          "profit_factor": 2.4285714285714284,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 32,
+          "losses": 15,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6808510638297872,
+          "total_R": 17,
+          "profit_factor": 2.1333333333333333,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 28,
+          "losses": 19,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5957446808510638,
+          "total_R": 9,
+          "profit_factor": 1.4736842105263157,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 59,
+          "wins": 38,
+          "losses": 19,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 19,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 204,
+      "wins": 132,
+      "losses": 67,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6633165829145728,
+      "total_R": 65,
+      "profit_factor": 1.9701492537313432,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 31,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6458333333333334,
+          "total_R": 14,
+          "profit_factor": 1.8235294117647058,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 32,
+          "losses": 15,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6808510638297872,
+          "total_R": 17,
+          "profit_factor": 2.1333333333333333,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 25,
+          "losses": 21,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5434782608695652,
+          "total_R": 4,
+          "profit_factor": 1.1904761904761905,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 59,
+          "wins": 37,
+          "losses": 20,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6491228070175439,
+          "total_R": 17,
+          "profit_factor": 1.85,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 204,
+      "wins": 125,
+      "losses": 73,
+      "ambiguous": 6,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6313131313131313,
+      "total_R": 52,
+      "profit_factor": 1.7123287671232876,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 29,
+          "losses": 19,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6041666666666666,
+          "total_R": 10,
+          "profit_factor": 1.5263157894736843,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 30,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6382978723404256,
+          "total_R": 13,
+          "profit_factor": 1.7647058823529411,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 24,
+          "losses": 22,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5217391304347826,
+          "total_R": 2,
+          "profit_factor": 1.0909090909090908,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 59,
+          "wins": 37,
+          "losses": 21,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6379310344827587,
+          "total_R": 16,
+          "profit_factor": 1.7619047619047619,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 204,
+      "wins": 120,
+      "losses": 79,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6030150753768844,
+      "total_R": 41,
+      "profit_factor": 1.518987341772152,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 34,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7083333333333334,
+          "total_R": 20,
+          "profit_factor": 2.4285714285714284,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 32,
+          "losses": 15,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6808510638297872,
+          "total_R": 17,
+          "profit_factor": 2.1333333333333333,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 28,
+          "losses": 19,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5957446808510638,
+          "total_R": 9,
+          "profit_factor": 1.4736842105263157,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 59,
+          "wins": 38,
+          "losses": 19,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 19,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 204,
+      "wins": 132,
+      "losses": 67,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6633165829145728,
+      "total_R": 65,
+      "profit_factor": 1.9701492537313432,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 31,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6458333333333334,
+          "total_R": 14,
+          "profit_factor": 1.8235294117647058,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 32,
+          "losses": 15,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6808510638297872,
+          "total_R": 17,
+          "profit_factor": 2.1333333333333333,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 25,
+          "losses": 21,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5434782608695652,
+          "total_R": 4,
+          "profit_factor": 1.1904761904761905,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 59,
+          "wins": 37,
+          "losses": 20,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6491228070175439,
+          "total_R": 17,
+          "profit_factor": 1.85,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 204,
+      "wins": 125,
+      "losses": 73,
+      "ambiguous": 6,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6313131313131313,
+      "total_R": 52,
+      "profit_factor": 1.7123287671232876,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 49,
+          "wins": 29,
+          "losses": 19,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6041666666666666,
+          "total_R": 10,
+          "profit_factor": 1.5263157894736843,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 30,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6382978723404256,
+          "total_R": 13,
+          "profit_factor": 1.7647058823529411,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 48,
+          "wins": 24,
+          "losses": 22,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5217391304347826,
+          "total_R": 2,
+          "profit_factor": 1.0909090909090908,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 59,
+          "wins": 37,
+          "losses": 21,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6379310344827587,
+          "total_R": 16,
+          "profit_factor": 1.7619047619047619,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 204,
+      "wins": 120,
+      "losses": 79,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6030150753768844,
+      "total_R": 41,
+      "profit_factor": 1.518987341772152,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 30,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7317073170731707,
+          "total_R": 19,
+          "profit_factor": 2.727272727272727,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 40,
+          "wins": 28,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.717948717948718,
+          "total_R": 17,
+          "profit_factor": 2.5454545454545454,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 24,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6153846153846154,
+          "total_R": 9,
+          "profit_factor": 1.6,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 31,
+          "losses": 15,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6739130434782609,
+          "total_R": 16,
+          "profit_factor": 2.066666666666667,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 169,
+      "wins": 113,
+      "losses": 52,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6848484848484848,
+      "total_R": 61,
+      "profit_factor": 2.173076923076923,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 27,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6585365853658537,
+          "total_R": 13,
+          "profit_factor": 1.9285714285714286,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 40,
+          "wins": 28,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.717948717948718,
+          "total_R": 17,
+          "profit_factor": 2.5454545454545454,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 21,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5526315789473685,
+          "total_R": 4,
+          "profit_factor": 1.2352941176470589,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 30,
+          "losses": 16,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6521739130434783,
+          "total_R": 14,
+          "profit_factor": 1.875,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 169,
+      "wins": 106,
+      "losses": 58,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6463414634146342,
+      "total_R": 48,
+      "profit_factor": 1.8275862068965518,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 25,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6097560975609756,
+          "total_R": 9,
+          "profit_factor": 1.5625,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 40,
+          "wins": 26,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 13,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 20,
+          "losses": 18,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5263157894736842,
+          "total_R": 2,
+          "profit_factor": 1.1111111111111112,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 48,
+          "wins": 30,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6382978723404256,
+          "total_R": 13,
+          "profit_factor": 1.7647058823529411,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 169,
+      "wins": 101,
+      "losses": 64,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6121212121212121,
+      "total_R": 37,
+      "profit_factor": 1.578125,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 30,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7317073170731707,
+          "total_R": 19,
+          "profit_factor": 2.727272727272727,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 28,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7,
+          "total_R": 16,
+          "profit_factor": 2.3333333333333335,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 24,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6153846153846154,
+          "total_R": 9,
+          "profit_factor": 1.6,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 34,
+          "losses": 15,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6938775510204082,
+          "total_R": 19,
+          "profit_factor": 2.2666666666666666,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 173,
+      "wins": 116,
+      "losses": 53,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6863905325443787,
+      "total_R": 63,
+      "profit_factor": 2.188679245283019,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 27,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6585365853658537,
+          "total_R": 13,
+          "profit_factor": 1.9285714285714286,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 28,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7,
+          "total_R": 16,
+          "profit_factor": 2.3333333333333335,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 21,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5526315789473685,
+          "total_R": 4,
+          "profit_factor": 1.2352941176470589,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 33,
+          "losses": 16,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.673469387755102,
+          "total_R": 17,
+          "profit_factor": 2.0625,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 173,
+      "wins": 109,
+      "losses": 59,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6488095238095238,
+      "total_R": 50,
+      "profit_factor": 1.847457627118644,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 25,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6097560975609756,
+          "total_R": 9,
+          "profit_factor": 1.5625,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 26,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.65,
+          "total_R": 12,
+          "profit_factor": 1.8571428571428572,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 20,
+          "losses": 18,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5263157894736842,
+          "total_R": 2,
+          "profit_factor": 1.1111111111111112,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 33,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.66,
+          "total_R": 16,
+          "profit_factor": 1.9411764705882353,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 173,
+      "wins": 104,
+      "losses": 65,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6153846153846154,
+      "total_R": 39,
+      "profit_factor": 1.6,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 30,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7317073170731707,
+          "total_R": 19,
+          "profit_factor": 2.727272727272727,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 28,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7,
+          "total_R": 16,
+          "profit_factor": 2.3333333333333335,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 24,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6153846153846154,
+          "total_R": 9,
+          "profit_factor": 1.6,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 34,
+          "losses": 15,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6938775510204082,
+          "total_R": 19,
+          "profit_factor": 2.2666666666666666,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 173,
+      "wins": 116,
+      "losses": 53,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6863905325443787,
+      "total_R": 63,
+      "profit_factor": 2.188679245283019,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 27,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6585365853658537,
+          "total_R": 13,
+          "profit_factor": 1.9285714285714286,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 28,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7,
+          "total_R": 16,
+          "profit_factor": 2.3333333333333335,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 21,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5526315789473685,
+          "total_R": 4,
+          "profit_factor": 1.2352941176470589,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 33,
+          "losses": 16,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.673469387755102,
+          "total_R": 17,
+          "profit_factor": 2.0625,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 173,
+      "wins": 109,
+      "losses": 59,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6488095238095238,
+      "total_R": 50,
+      "profit_factor": 1.847457627118644,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 42,
+          "wins": 25,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6097560975609756,
+          "total_R": 9,
+          "profit_factor": 1.5625,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 26,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.65,
+          "total_R": 12,
+          "profit_factor": 1.8571428571428572,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 39,
+          "wins": 20,
+          "losses": 18,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5263157894736842,
+          "total_R": 2,
+          "profit_factor": 1.1111111111111112,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 33,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.66,
+          "total_R": 16,
+          "profit_factor": 1.9411764705882353,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 173,
+      "wins": 104,
+      "losses": 65,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6153846153846154,
+      "total_R": 39,
+      "profit_factor": 1.6,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 24,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.75,
+          "total_R": 16,
+          "profit_factor": 3.0,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 32,
+          "wins": 22,
+          "losses": 9,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7096774193548387,
+          "total_R": 13,
+          "profit_factor": 2.4444444444444446,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 32,
+          "wins": 19,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.59375,
+          "total_R": 6,
+          "profit_factor": 1.4615384615384615,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 40,
+          "wins": 27,
+          "losses": 11,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7105263157894737,
+          "total_R": 16,
+          "profit_factor": 2.4545454545454546,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 137,
+      "wins": 92,
+      "losses": 41,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6917293233082706,
+      "total_R": 51,
+      "profit_factor": 2.2439024390243905,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 32,
+          "wins": 22,
+          "losses": 9,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7096774193548387,
+          "total_R": 13,
+          "profit_factor": 2.4444444444444446,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 32,
+          "wins": 17,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5483870967741935,
+          "total_R": 3,
+          "profit_factor": 1.2142857142857142,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 40,
+          "wins": 26,
+          "losses": 12,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6842105263157895,
+          "total_R": 14,
+          "profit_factor": 2.1666666666666665,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 137,
+      "wins": 87,
+      "losses": 45,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6590909090909091,
+      "total_R": 42,
+      "profit_factor": 1.9333333333333333,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 20,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.625,
+          "total_R": 8,
+          "profit_factor": 1.6666666666666667,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 32,
+          "wins": 20,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6451612903225806,
+          "total_R": 9,
+          "profit_factor": 1.8181818181818181,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 32,
+          "wins": 17,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5483870967741935,
+          "total_R": 3,
+          "profit_factor": 1.2142857142857142,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 40,
+          "wins": 26,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 13,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 137,
+      "wins": 83,
+      "losses": 50,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6240601503759399,
+      "total_R": 33,
+      "profit_factor": 1.66,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 24,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.75,
+          "total_R": 16,
+          "profit_factor": 3.0,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 32,
+          "wins": 19,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.59375,
+          "total_R": 6,
+          "profit_factor": 1.4615384615384615,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 28,
+          "losses": 11,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.717948717948718,
+          "total_R": 17,
+          "profit_factor": 2.5454545454545454,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 139,
+      "wins": 93,
+      "losses": 42,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6888888888888889,
+      "total_R": 51,
+      "profit_factor": 2.2142857142857144,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 32,
+          "wins": 17,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5483870967741935,
+          "total_R": 3,
+          "profit_factor": 1.2142857142857142,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 27,
+          "losses": 12,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6923076923076923,
+          "total_R": 15,
+          "profit_factor": 2.25,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 139,
+      "wins": 88,
+      "losses": 46,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6567164179104478,
+      "total_R": 42,
+      "profit_factor": 1.9130434782608696,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 20,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.625,
+          "total_R": 8,
+          "profit_factor": 1.6666666666666667,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 33,
+          "wins": 20,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.625,
+          "total_R": 8,
+          "profit_factor": 1.6666666666666667,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 32,
+          "wins": 17,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5483870967741935,
+          "total_R": 3,
+          "profit_factor": 1.2142857142857142,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 27,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.675,
+          "total_R": 14,
+          "profit_factor": 2.076923076923077,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 139,
+      "wins": 84,
+      "losses": 51,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6222222222222222,
+      "total_R": 33,
+      "profit_factor": 1.6470588235294117,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 24,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.75,
+          "total_R": 16,
+          "profit_factor": 3.0,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 32,
+          "wins": 19,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.59375,
+          "total_R": 6,
+          "profit_factor": 1.4615384615384615,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 28,
+          "losses": 11,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.717948717948718,
+          "total_R": 17,
+          "profit_factor": 2.5454545454545454,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 139,
+      "wins": 93,
+      "losses": 42,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6888888888888889,
+      "total_R": 51,
+      "profit_factor": 2.2142857142857144,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 32,
+          "wins": 17,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5483870967741935,
+          "total_R": 3,
+          "profit_factor": 1.2142857142857142,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 27,
+          "losses": 12,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6923076923076923,
+          "total_R": 15,
+          "profit_factor": 2.25,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 139,
+      "wins": 88,
+      "losses": 46,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6567164179104478,
+      "total_R": 42,
+      "profit_factor": 1.9130434782608696,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 0.8,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 20,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.625,
+          "total_R": 8,
+          "profit_factor": 1.6666666666666667,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 33,
+          "wins": 20,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.625,
+          "total_R": 8,
+          "profit_factor": 1.6666666666666667,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 32,
+          "wins": 17,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5483870967741935,
+          "total_R": 3,
+          "profit_factor": 1.2142857142857142,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 41,
+          "wins": 27,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.675,
+          "total_R": 14,
+          "profit_factor": 2.076923076923077,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 139,
+      "wins": 84,
+      "losses": 51,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6222222222222222,
+      "total_R": 33,
+      "profit_factor": 1.6470588235294117,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 34,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7727272727272727,
+          "total_R": 24,
+          "profit_factor": 3.4,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 43,
+          "wins": 29,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6904761904761905,
+          "total_R": 16,
+          "profit_factor": 2.230769230769231,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 42,
+          "wins": 25,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6097560975609756,
+          "total_R": 9,
+          "profit_factor": 1.5625,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 34,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.68,
+          "total_R": 18,
+          "profit_factor": 2.125,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 181,
+      "wins": 122,
+      "losses": 55,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6892655367231638,
+      "total_R": 67,
+      "profit_factor": 2.2181818181818183,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 31,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7045454545454546,
+          "total_R": 18,
+          "profit_factor": 2.3846153846153846,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 43,
+          "wins": 29,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6904761904761905,
+          "total_R": 16,
+          "profit_factor": 2.230769230769231,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 42,
+          "wins": 22,
+          "losses": 18,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.55,
+          "total_R": 4,
+          "profit_factor": 1.2222222222222223,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 33,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.66,
+          "total_R": 16,
+          "profit_factor": 1.9411764705882353,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 181,
+      "wins": 115,
+      "losses": 61,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6534090909090909,
+      "total_R": 54,
+      "profit_factor": 1.8852459016393444,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 29,
+          "losses": 15,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6590909090909091,
+          "total_R": 14,
+          "profit_factor": 1.9333333333333333,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 43,
+          "wins": 27,
+          "losses": 15,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6428571428571429,
+          "total_R": 12,
+          "profit_factor": 1.8,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 42,
+          "wins": 22,
+          "losses": 18,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.55,
+          "total_R": 4,
+          "profit_factor": 1.2222222222222223,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 51,
+          "wins": 33,
+          "losses": 18,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6470588235294118,
+          "total_R": 15,
+          "profit_factor": 1.8333333333333333,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 181,
+      "wins": 111,
+      "losses": 66,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6271186440677966,
+      "total_R": 45,
+      "profit_factor": 1.6818181818181819,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 34,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7727272727272727,
+          "total_R": 24,
+          "profit_factor": 3.4,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 45,
+          "wins": 30,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6818181818181818,
+          "total_R": 16,
+          "profit_factor": 2.142857142857143,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 42,
+          "wins": 25,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6097560975609756,
+          "total_R": 9,
+          "profit_factor": 1.5625,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 54,
+          "wins": 37,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6981132075471698,
+          "total_R": 21,
+          "profit_factor": 2.3125,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 186,
+      "wins": 126,
+      "losses": 56,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6923076923076923,
+      "total_R": 70,
+      "profit_factor": 2.25,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 31,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7045454545454546,
+          "total_R": 18,
+          "profit_factor": 2.3846153846153846,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 45,
+          "wins": 30,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6818181818181818,
+          "total_R": 16,
+          "profit_factor": 2.142857142857143,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 42,
+          "wins": 22,
+          "losses": 18,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.55,
+          "total_R": 4,
+          "profit_factor": 1.2222222222222223,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 54,
+          "wins": 36,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6792452830188679,
+          "total_R": 19,
+          "profit_factor": 2.1176470588235294,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 186,
+      "wins": 119,
+      "losses": 62,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6574585635359116,
+      "total_R": 57,
+      "profit_factor": 1.9193548387096775,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 29,
+          "losses": 15,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6590909090909091,
+          "total_R": 14,
+          "profit_factor": 1.9333333333333333,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 45,
+          "wins": 28,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6363636363636364,
+          "total_R": 12,
+          "profit_factor": 1.75,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 42,
+          "wins": 22,
+          "losses": 18,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.55,
+          "total_R": 4,
+          "profit_factor": 1.2222222222222223,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 54,
+          "wins": 36,
+          "losses": 18,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 18,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 186,
+      "wins": 115,
+      "losses": 67,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6318681318681318,
+      "total_R": 48,
+      "profit_factor": 1.7164179104477613,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 34,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7727272727272727,
+          "total_R": 24,
+          "profit_factor": 3.4,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 45,
+          "wins": 30,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6818181818181818,
+          "total_R": 16,
+          "profit_factor": 2.142857142857143,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 42,
+          "wins": 25,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6097560975609756,
+          "total_R": 9,
+          "profit_factor": 1.5625,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 54,
+          "wins": 37,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6981132075471698,
+          "total_R": 21,
+          "profit_factor": 2.3125,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 186,
+      "wins": 126,
+      "losses": 56,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6923076923076923,
+      "total_R": 70,
+      "profit_factor": 2.25,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 31,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7045454545454546,
+          "total_R": 18,
+          "profit_factor": 2.3846153846153846,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 45,
+          "wins": 30,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6818181818181818,
+          "total_R": 16,
+          "profit_factor": 2.142857142857143,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 42,
+          "wins": 22,
+          "losses": 18,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.55,
+          "total_R": 4,
+          "profit_factor": 1.2222222222222223,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 54,
+          "wins": 36,
+          "losses": 17,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6792452830188679,
+          "total_R": 19,
+          "profit_factor": 2.1176470588235294,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 186,
+      "wins": 119,
+      "losses": 62,
+      "ambiguous": 5,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6574585635359116,
+      "total_R": 57,
+      "profit_factor": 1.9193548387096775,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 45,
+          "wins": 29,
+          "losses": 15,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6590909090909091,
+          "total_R": 14,
+          "profit_factor": 1.9333333333333333,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 45,
+          "wins": 28,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6363636363636364,
+          "total_R": 12,
+          "profit_factor": 1.75,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 42,
+          "wins": 22,
+          "losses": 18,
+          "ambiguous": 2,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.55,
+          "total_R": 4,
+          "profit_factor": 1.2222222222222223,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 54,
+          "wins": 36,
+          "losses": 18,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 18,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 3
+        }
+      ],
+      "signals": 186,
+      "wins": 115,
+      "losses": 67,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6318681318681318,
+      "total_R": 48,
+      "profit_factor": 1.7164179104477613,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 30,
+          "losses": 7,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8108108108108109,
+          "total_R": 23,
+          "profit_factor": 4.285714285714286,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 37,
+          "wins": 26,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7222222222222222,
+          "total_R": 16,
+          "profit_factor": 2.6,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 21,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6,
+          "total_R": 7,
+          "profit_factor": 1.5,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 44,
+          "wins": 30,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6976744186046512,
+          "total_R": 17,
+          "profit_factor": 2.3076923076923075,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 154,
+      "wins": 107,
+      "losses": 44,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.7086092715231788,
+      "total_R": 63,
+      "profit_factor": 2.4318181818181817,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 27,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7297297297297297,
+          "total_R": 17,
+          "profit_factor": 2.7,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 37,
+          "wins": 26,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7222222222222222,
+          "total_R": 16,
+          "profit_factor": 2.6,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 18,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5294117647058824,
+          "total_R": 2,
+          "profit_factor": 1.125,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 44,
+          "wins": 29,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6744186046511628,
+          "total_R": 15,
+          "profit_factor": 2.0714285714285716,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 154,
+      "wins": 100,
+      "losses": 50,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6666666666666666,
+      "total_R": 50,
+      "profit_factor": 2.0,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 25,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6756756756756757,
+          "total_R": 13,
+          "profit_factor": 2.0833333333333335,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 37,
+          "wins": 24,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 12,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 18,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5294117647058824,
+          "total_R": 2,
+          "profit_factor": 1.125,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 44,
+          "wins": 29,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6590909090909091,
+          "total_R": 14,
+          "profit_factor": 1.9333333333333333,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 154,
+      "wins": 96,
+      "losses": 55,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6357615894039735,
+      "total_R": 41,
+      "profit_factor": 1.7454545454545454,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 30,
+          "losses": 7,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8108108108108109,
+          "total_R": 23,
+          "profit_factor": 4.285714285714286,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7027027027027027,
+          "total_R": 15,
+          "profit_factor": 2.3636363636363638,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 21,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6,
+          "total_R": 7,
+          "profit_factor": 1.5,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 47,
+          "wins": 33,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.717391304347826,
+          "total_R": 20,
+          "profit_factor": 2.5384615384615383,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 158,
+      "wins": 110,
+      "losses": 45,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.7096774193548387,
+      "total_R": 65,
+      "profit_factor": 2.4444444444444446,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 27,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7297297297297297,
+          "total_R": 17,
+          "profit_factor": 2.7,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7027027027027027,
+          "total_R": 15,
+          "profit_factor": 2.3636363636363638,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 18,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5294117647058824,
+          "total_R": 2,
+          "profit_factor": 1.125,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 47,
+          "wins": 32,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6956521739130435,
+          "total_R": 18,
+          "profit_factor": 2.2857142857142856,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 158,
+      "wins": 103,
+      "losses": 51,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6688311688311688,
+      "total_R": 52,
+      "profit_factor": 2.019607843137255,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 25,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6756756756756757,
+          "total_R": 13,
+          "profit_factor": 2.0833333333333335,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 38,
+          "wins": 24,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6486486486486487,
+          "total_R": 11,
+          "profit_factor": 1.8461538461538463,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 18,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5294117647058824,
+          "total_R": 2,
+          "profit_factor": 1.125,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 47,
+          "wins": 32,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6808510638297872,
+          "total_R": 17,
+          "profit_factor": 2.1333333333333333,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 158,
+      "wins": 99,
+      "losses": 56,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6387096774193548,
+      "total_R": 43,
+      "profit_factor": 1.7678571428571428,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 30,
+          "losses": 7,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8108108108108109,
+          "total_R": 23,
+          "profit_factor": 4.285714285714286,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7027027027027027,
+          "total_R": 15,
+          "profit_factor": 2.3636363636363638,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 21,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6,
+          "total_R": 7,
+          "profit_factor": 1.5,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 47,
+          "wins": 33,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.717391304347826,
+          "total_R": 20,
+          "profit_factor": 2.5384615384615383,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 158,
+      "wins": 110,
+      "losses": 45,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.7096774193548387,
+      "total_R": 65,
+      "profit_factor": 2.4444444444444446,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 27,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7297297297297297,
+          "total_R": 17,
+          "profit_factor": 2.7,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7027027027027027,
+          "total_R": 15,
+          "profit_factor": 2.3636363636363638,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 18,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5294117647058824,
+          "total_R": 2,
+          "profit_factor": 1.125,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 47,
+          "wins": 32,
+          "losses": 14,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6956521739130435,
+          "total_R": 18,
+          "profit_factor": 2.2857142857142856,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 158,
+      "wins": 103,
+      "losses": 51,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6688311688311688,
+      "total_R": 52,
+      "profit_factor": 2.019607843137255,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 38,
+          "wins": 25,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6756756756756757,
+          "total_R": 13,
+          "profit_factor": 2.0833333333333335,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 38,
+          "wins": 24,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6486486486486487,
+          "total_R": 11,
+          "profit_factor": 1.8461538461538463,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 35,
+          "wins": 18,
+          "losses": 16,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5294117647058824,
+          "total_R": 2,
+          "profit_factor": 1.125,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 47,
+          "wins": 32,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6808510638297872,
+          "total_R": 17,
+          "profit_factor": 2.1333333333333333,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 158,
+      "wins": 99,
+      "losses": 56,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6387096774193548,
+      "total_R": 43,
+      "profit_factor": 1.7678571428571428,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 24,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8,
+          "total_R": 18,
+          "profit_factor": 4.0,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 30,
+          "wins": 20,
+          "losses": 9,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6896551724137931,
+          "total_R": 11,
+          "profit_factor": 2.2222222222222223,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 29,
+          "wins": 17,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5862068965517241,
+          "total_R": 5,
+          "profit_factor": 1.4166666666666667,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 38,
+          "wins": 27,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7297297297297297,
+          "total_R": 17,
+          "profit_factor": 2.7,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 88,
+      "losses": 37,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.704,
+      "total_R": 51,
+      "profit_factor": 2.3783783783783785,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 22,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7333333333333333,
+          "total_R": 14,
+          "profit_factor": 2.75,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 30,
+          "wins": 20,
+          "losses": 9,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6896551724137931,
+          "total_R": 11,
+          "profit_factor": 2.2222222222222223,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 29,
+          "wins": 15,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5357142857142857,
+          "total_R": 2,
+          "profit_factor": 1.1538461538461537,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7027027027027027,
+          "total_R": 15,
+          "profit_factor": 2.3636363636363638,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 83,
+      "losses": 41,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6693548387096774,
+      "total_R": 42,
+      "profit_factor": 2.024390243902439,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 10,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 30,
+          "wins": 18,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6206896551724138,
+          "total_R": 7,
+          "profit_factor": 1.6363636363636365,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 29,
+          "wins": 15,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5357142857142857,
+          "total_R": 2,
+          "profit_factor": 1.1538461538461537,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6842105263157895,
+          "total_R": 14,
+          "profit_factor": 2.1666666666666665,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 79,
+      "losses": 46,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.632,
+      "total_R": 33,
+      "profit_factor": 1.7173913043478262,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 24,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8,
+          "total_R": 18,
+          "profit_factor": 4.0,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 10,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 29,
+          "wins": 17,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5862068965517241,
+          "total_R": 5,
+          "profit_factor": 1.4166666666666667,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 39,
+          "wins": 28,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7368421052631579,
+          "total_R": 18,
+          "profit_factor": 2.8,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 130,
+      "wins": 89,
+      "losses": 38,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.7007874015748031,
+      "total_R": 51,
+      "profit_factor": 2.3421052631578947,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 22,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7333333333333333,
+          "total_R": 14,
+          "profit_factor": 2.75,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 10,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 29,
+          "wins": 15,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5357142857142857,
+          "total_R": 2,
+          "profit_factor": 1.1538461538461537,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 39,
+          "wins": 27,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7105263157894737,
+          "total_R": 16,
+          "profit_factor": 2.4545454545454546,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 130,
+      "wins": 84,
+      "losses": 42,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6666666666666666,
+      "total_R": 42,
+      "profit_factor": 2.0,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 10,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 31,
+          "wins": 18,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6,
+          "total_R": 6,
+          "profit_factor": 1.5,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 29,
+          "wins": 15,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5357142857142857,
+          "total_R": 2,
+          "profit_factor": 1.1538461538461537,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 39,
+          "wins": 27,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6923076923076923,
+          "total_R": 15,
+          "profit_factor": 2.25,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 130,
+      "wins": 80,
+      "losses": 47,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6299212598425197,
+      "total_R": 33,
+      "profit_factor": 1.702127659574468,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 24,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8,
+          "total_R": 18,
+          "profit_factor": 4.0,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 10,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 29,
+          "wins": 17,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5862068965517241,
+          "total_R": 5,
+          "profit_factor": 1.4166666666666667,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 39,
+          "wins": 28,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7368421052631579,
+          "total_R": 18,
+          "profit_factor": 2.8,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 130,
+      "wins": 89,
+      "losses": 38,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.7007874015748031,
+      "total_R": 51,
+      "profit_factor": 2.3421052631578947,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 22,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7333333333333333,
+          "total_R": 14,
+          "profit_factor": 2.75,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 10,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 29,
+          "wins": 15,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5357142857142857,
+          "total_R": 2,
+          "profit_factor": 1.1538461538461537,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 39,
+          "wins": 27,
+          "losses": 11,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7105263157894737,
+          "total_R": 16,
+          "profit_factor": 2.4545454545454546,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 130,
+      "wins": 84,
+      "losses": 42,
+      "ambiguous": 4,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6666666666666666,
+      "total_R": 42,
+      "profit_factor": 2.0,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.0,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 10,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 31,
+          "wins": 18,
+          "losses": 12,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6,
+          "total_R": 6,
+          "profit_factor": 1.5,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 29,
+          "wins": 15,
+          "losses": 13,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5357142857142857,
+          "total_R": 2,
+          "profit_factor": 1.1538461538461537,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 39,
+          "wins": 27,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6923076923076923,
+          "total_R": 15,
+          "profit_factor": 2.25,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 130,
+      "wins": 80,
+      "losses": 47,
+      "ambiguous": 3,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6299212598425197,
+      "total_R": 33,
+      "profit_factor": 1.702127659574468,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 26,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8125,
+          "total_R": 20,
+          "profit_factor": 4.333333333333333,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 36,
+          "wins": 25,
+          "losses": 11,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6944444444444444,
+          "total_R": 14,
+          "profit_factor": 2.272727272727273,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 33,
+          "wins": 19,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5757575757575758,
+          "total_R": 5,
+          "profit_factor": 1.3571428571428572,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 43,
+          "wins": 29,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6744186046511628,
+          "total_R": 15,
+          "profit_factor": 2.0714285714285716,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 145,
+      "wins": 99,
+      "losses": 45,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6875,
+      "total_R": 54,
+      "profit_factor": 2.2,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 24,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.75,
+          "total_R": 16,
+          "profit_factor": 3.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 36,
+          "wins": 25,
+          "losses": 11,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6944444444444444,
+          "total_R": 14,
+          "profit_factor": 2.272727272727273,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 33,
+          "wins": 18,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5454545454545454,
+          "total_R": 3,
+          "profit_factor": 1.2,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 43,
+          "wins": 28,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6511627906976745,
+          "total_R": 13,
+          "profit_factor": 1.8666666666666667,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 145,
+      "wins": 95,
+      "losses": 49,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6597222222222222,
+      "total_R": 46,
+      "profit_factor": 1.9387755102040816,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 36,
+          "wins": 23,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6388888888888888,
+          "total_R": 10,
+          "profit_factor": 1.7692307692307692,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 33,
+          "wins": 18,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5454545454545454,
+          "total_R": 3,
+          "profit_factor": 1.2,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 43,
+          "wins": 28,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6511627906976745,
+          "total_R": 13,
+          "profit_factor": 1.8666666666666667,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 145,
+      "wins": 91,
+      "losses": 53,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6319444444444444,
+      "total_R": 38,
+      "profit_factor": 1.7169811320754718,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 26,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8125,
+          "total_R": 20,
+          "profit_factor": 4.333333333333333,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6842105263157895,
+          "total_R": 14,
+          "profit_factor": 2.1666666666666665,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 33,
+          "wins": 19,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5757575757575758,
+          "total_R": 5,
+          "profit_factor": 1.3571428571428572,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 46,
+          "wins": 32,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6956521739130435,
+          "total_R": 18,
+          "profit_factor": 2.2857142857142856,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 150,
+      "wins": 103,
+      "losses": 46,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6912751677852349,
+      "total_R": 57,
+      "profit_factor": 2.239130434782609,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 24,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.75,
+          "total_R": 16,
+          "profit_factor": 3.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6842105263157895,
+          "total_R": 14,
+          "profit_factor": 2.1666666666666665,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 33,
+          "wins": 18,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5454545454545454,
+          "total_R": 3,
+          "profit_factor": 1.2,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 46,
+          "wins": 31,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6739130434782609,
+          "total_R": 16,
+          "profit_factor": 2.066666666666667,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 150,
+      "wins": 99,
+      "losses": 50,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6644295302013423,
+      "total_R": 49,
+      "profit_factor": 1.98,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 38,
+          "wins": 24,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.631578947368421,
+          "total_R": 10,
+          "profit_factor": 1.7142857142857142,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 33,
+          "wins": 18,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5454545454545454,
+          "total_R": 3,
+          "profit_factor": 1.2,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 46,
+          "wins": 31,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6739130434782609,
+          "total_R": 16,
+          "profit_factor": 2.066666666666667,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 150,
+      "wins": 95,
+      "losses": 54,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6375838926174496,
+      "total_R": 41,
+      "profit_factor": 1.7592592592592593,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 26,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.8125,
+          "total_R": 20,
+          "profit_factor": 4.333333333333333,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6842105263157895,
+          "total_R": 14,
+          "profit_factor": 2.1666666666666665,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 33,
+          "wins": 19,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5757575757575758,
+          "total_R": 5,
+          "profit_factor": 1.3571428571428572,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 46,
+          "wins": 32,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6956521739130435,
+          "total_R": 18,
+          "profit_factor": 2.2857142857142856,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 150,
+      "wins": 103,
+      "losses": 46,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6912751677852349,
+      "total_R": 57,
+      "profit_factor": 2.239130434782609,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 24,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.75,
+          "total_R": 16,
+          "profit_factor": 3.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 38,
+          "wins": 26,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6842105263157895,
+          "total_R": 14,
+          "profit_factor": 2.1666666666666665,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 33,
+          "wins": 18,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5454545454545454,
+          "total_R": 3,
+          "profit_factor": 1.2,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 46,
+          "wins": 31,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6739130434782609,
+          "total_R": 16,
+          "profit_factor": 2.066666666666667,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 150,
+      "wins": 99,
+      "losses": 50,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6644295302013423,
+      "total_R": 49,
+      "profit_factor": 1.98,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.3,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 33,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 38,
+          "wins": 24,
+          "losses": 14,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.631578947368421,
+          "total_R": 10,
+          "profit_factor": 1.7142857142857142,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 33,
+          "wins": 18,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5454545454545454,
+          "total_R": 3,
+          "profit_factor": 1.2,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 46,
+          "wins": 31,
+          "losses": 15,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6739130434782609,
+          "total_R": 16,
+          "profit_factor": 2.066666666666667,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 150,
+      "wins": 95,
+      "losses": 54,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6375838926174496,
+      "total_R": 41,
+      "profit_factor": 1.7592592592592593,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 23,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7931034482758621,
+          "total_R": 17,
+          "profit_factor": 3.8333333333333335,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 30,
+          "wins": 22,
+          "losses": 8,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7333333333333333,
+          "total_R": 14,
+          "profit_factor": 2.75,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 27,
+          "wins": 15,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5555555555555556,
+          "total_R": 3,
+          "profit_factor": 1.25,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 37,
+          "wins": 25,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6756756756756757,
+          "total_R": 13,
+          "profit_factor": 2.0833333333333335,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 124,
+      "wins": 85,
+      "losses": 38,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6910569105691057,
+      "total_R": 47,
+      "profit_factor": 2.236842105263158,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 21,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7241379310344828,
+          "total_R": 13,
+          "profit_factor": 2.625,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 30,
+          "wins": 22,
+          "losses": 8,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7333333333333333,
+          "total_R": 14,
+          "profit_factor": 2.75,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 27,
+          "wins": 14,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5185185185185185,
+          "total_R": 1,
+          "profit_factor": 1.0769230769230769,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 37,
+          "wins": 24,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6486486486486487,
+          "total_R": 11,
+          "profit_factor": 1.8461538461538463,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 124,
+      "wins": 81,
+      "losses": 42,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6585365853658537,
+      "total_R": 39,
+      "profit_factor": 1.9285714285714286,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 19,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6551724137931034,
+          "total_R": 9,
+          "profit_factor": 1.9,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 30,
+          "wins": 20,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6666666666666666,
+          "total_R": 10,
+          "profit_factor": 2.0,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 27,
+          "wins": 14,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5185185185185185,
+          "total_R": 1,
+          "profit_factor": 1.0769230769230769,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 37,
+          "wins": 24,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6486486486486487,
+          "total_R": 11,
+          "profit_factor": 1.8461538461538463,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 124,
+      "wins": 77,
+      "losses": 46,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6260162601626016,
+      "total_R": 31,
+      "profit_factor": 1.673913043478261,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 23,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7931034482758621,
+          "total_R": 17,
+          "profit_factor": 3.8333333333333335,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 31,
+          "wins": 22,
+          "losses": 9,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7096774193548387,
+          "total_R": 13,
+          "profit_factor": 2.4444444444444446,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 27,
+          "wins": 15,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5555555555555556,
+          "total_R": 3,
+          "profit_factor": 1.25,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 40,
+          "wins": 28,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7,
+          "total_R": 16,
+          "profit_factor": 2.3333333333333335,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 88,
+      "losses": 39,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6929133858267716,
+      "total_R": 49,
+      "profit_factor": 2.2564102564102564,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 21,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7241379310344828,
+          "total_R": 13,
+          "profit_factor": 2.625,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 31,
+          "wins": 22,
+          "losses": 9,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7096774193548387,
+          "total_R": 13,
+          "profit_factor": 2.4444444444444446,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 27,
+          "wins": 14,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5185185185185185,
+          "total_R": 1,
+          "profit_factor": 1.0769230769230769,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 40,
+          "wins": 27,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.675,
+          "total_R": 14,
+          "profit_factor": 2.076923076923077,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 84,
+      "losses": 43,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6614173228346457,
+      "total_R": 41,
+      "profit_factor": 1.9534883720930232,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 19,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6551724137931034,
+          "total_R": 9,
+          "profit_factor": 1.9,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 11,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6451612903225806,
+          "total_R": 9,
+          "profit_factor": 1.8181818181818181,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 27,
+          "wins": 14,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5185185185185185,
+          "total_R": 1,
+          "profit_factor": 1.0769230769230769,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 40,
+          "wins": 27,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.675,
+          "total_R": 14,
+          "profit_factor": 2.076923076923077,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 80,
+      "losses": 47,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6299212598425197,
+      "total_R": 33,
+      "profit_factor": 1.702127659574468,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 23,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7931034482758621,
+          "total_R": 17,
+          "profit_factor": 3.8333333333333335,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 31,
+          "wins": 22,
+          "losses": 9,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7096774193548387,
+          "total_R": 13,
+          "profit_factor": 2.4444444444444446,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 27,
+          "wins": 15,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5555555555555556,
+          "total_R": 3,
+          "profit_factor": 1.25,
+          "max_drawdown_R": 4
+        },
+        {
+          "signals": 40,
+          "wins": 28,
+          "losses": 12,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7,
+          "total_R": 16,
+          "profit_factor": 2.3333333333333335,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 88,
+      "losses": 39,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6929133858267716,
+      "total_R": 49,
+      "profit_factor": 2.2564102564102564,
+      "max_weekly_drawdown_R": 4
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 21,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7241379310344828,
+          "total_R": 13,
+          "profit_factor": 2.625,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 31,
+          "wins": 22,
+          "losses": 9,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7096774193548387,
+          "total_R": 13,
+          "profit_factor": 2.4444444444444446,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 27,
+          "wins": 14,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5185185185185185,
+          "total_R": 1,
+          "profit_factor": 1.0769230769230769,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 40,
+          "wins": 27,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.675,
+          "total_R": 14,
+          "profit_factor": 2.076923076923077,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 84,
+      "losses": 43,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6614173228346457,
+      "total_R": 41,
+      "profit_factor": 1.9534883720930232,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.5,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 30,
+          "wins": 19,
+          "losses": 10,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6551724137931034,
+          "total_R": 9,
+          "profit_factor": 1.9,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 31,
+          "wins": 20,
+          "losses": 11,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6451612903225806,
+          "total_R": 9,
+          "profit_factor": 1.8181818181818181,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 27,
+          "wins": 14,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5185185185185185,
+          "total_R": 1,
+          "profit_factor": 1.0769230769230769,
+          "max_drawdown_R": 6
+        },
+        {
+          "signals": 40,
+          "wins": 27,
+          "losses": 13,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.675,
+          "total_R": 14,
+          "profit_factor": 2.076923076923077,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 128,
+      "wins": 80,
+      "losses": 47,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6299212598425197,
+      "total_R": 33,
+      "profit_factor": 1.702127659574468,
+      "max_weekly_drawdown_R": 6
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 18,
+          "losses": 5,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.782608695652174,
+          "total_R": 13,
+          "profit_factor": 3.6,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 24,
+          "wins": 17,
+          "losses": 7,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7083333333333334,
+          "total_R": 10,
+          "profit_factor": 2.4285714285714284,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 31,
+          "wins": 22,
+          "losses": 9,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7096774193548387,
+          "total_R": 13,
+          "profit_factor": 2.4444444444444446,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 100,
+      "wins": 68,
+      "losses": 31,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6868686868686869,
+      "total_R": 37,
+      "profit_factor": 2.193548387096774,
+      "max_weekly_drawdown_R": 5
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 17,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7391304347826086,
+          "total_R": 11,
+          "profit_factor": 2.8333333333333335,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 24,
+          "wins": 17,
+          "losses": 7,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7083333333333334,
+          "total_R": 10,
+          "profit_factor": 2.4285714285714284,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 31,
+          "wins": 21,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6774193548387096,
+          "total_R": 11,
+          "profit_factor": 2.1,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 100,
+      "wins": 66,
+      "losses": 33,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6666666666666666,
+      "total_R": 33,
+      "profit_factor": 2.0,
+      "max_weekly_drawdown_R": 5
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 8.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 15,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6521739130434783,
+          "total_R": 7,
+          "profit_factor": 1.875,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 24,
+          "wins": 15,
+          "losses": 9,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.625,
+          "total_R": 6,
+          "profit_factor": 1.6666666666666667,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 31,
+          "wins": 21,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6774193548387096,
+          "total_R": 11,
+          "profit_factor": 2.1,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 100,
+      "wins": 62,
+      "losses": 37,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6262626262626263,
+      "total_R": 25,
+      "profit_factor": 1.6756756756756757,
+      "max_weekly_drawdown_R": 5
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 18,
+          "losses": 5,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.782608695652174,
+          "total_R": 13,
+          "profit_factor": 3.6,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 25,
+          "wins": 17,
+          "losses": 8,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.68,
+          "total_R": 9,
+          "profit_factor": 2.125,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 32,
+          "wins": 23,
+          "losses": 9,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.71875,
+          "total_R": 14,
+          "profit_factor": 2.5555555555555554,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 102,
+      "wins": 69,
+      "losses": 32,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6831683168316832,
+      "total_R": 37,
+      "profit_factor": 2.15625,
+      "max_weekly_drawdown_R": 5
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 17,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7391304347826086,
+          "total_R": 11,
+          "profit_factor": 2.8333333333333335,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 25,
+          "wins": 17,
+          "losses": 8,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.68,
+          "total_R": 9,
+          "profit_factor": 2.125,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 32,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 102,
+      "wins": 67,
+      "losses": 34,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6633663366336634,
+      "total_R": 33,
+      "profit_factor": 1.9705882352941178,
+      "max_weekly_drawdown_R": 5
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 10.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 15,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6521739130434783,
+          "total_R": 7,
+          "profit_factor": 1.875,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 25,
+          "wins": 15,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6,
+          "total_R": 5,
+          "profit_factor": 1.5,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 32,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 102,
+      "wins": 63,
+      "losses": 38,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6237623762376238,
+      "total_R": 25,
+      "profit_factor": 1.6578947368421053,
+      "max_weekly_drawdown_R": 5
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 0.8,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 18,
+          "losses": 5,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.782608695652174,
+          "total_R": 13,
+          "profit_factor": 3.6,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 25,
+          "wins": 17,
+          "losses": 8,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.68,
+          "total_R": 9,
+          "profit_factor": 2.125,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 32,
+          "wins": 23,
+          "losses": 9,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.71875,
+          "total_R": 14,
+          "profit_factor": 2.5555555555555554,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 102,
+      "wins": 69,
+      "losses": 32,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6831683168316832,
+      "total_R": 37,
+      "profit_factor": 2.15625,
+      "max_weekly_drawdown_R": 5
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 1.0,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 17,
+          "losses": 6,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.7391304347826086,
+          "total_R": 11,
+          "profit_factor": 2.8333333333333335,
+          "max_drawdown_R": 2
+        },
+        {
+          "signals": 25,
+          "wins": 17,
+          "losses": 8,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.68,
+          "total_R": 9,
+          "profit_factor": 2.125,
+          "max_drawdown_R": 1
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 32,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 102,
+      "wins": 67,
+      "losses": 34,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6633663366336634,
+      "total_R": 33,
+      "profit_factor": 1.9705882352941178,
+      "max_weekly_drawdown_R": 5
+    },
+    {
+      "pGap": 1.2,
+      "spikeMultiplier": 1.7,
+      "maxSL": 12.0,
+      "tpR": 1.2,
+      "weeks": [
+        {
+          "signals": 24,
+          "wins": 15,
+          "losses": 8,
+          "ambiguous": 1,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6521739130434783,
+          "total_R": 7,
+          "profit_factor": 1.875,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 25,
+          "wins": 15,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6,
+          "total_R": 5,
+          "profit_factor": 1.5,
+          "max_drawdown_R": 3
+        },
+        {
+          "signals": 21,
+          "wins": 11,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.5238095238095238,
+          "total_R": 1,
+          "profit_factor": 1.1,
+          "max_drawdown_R": 5
+        },
+        {
+          "signals": 32,
+          "wins": 22,
+          "losses": 10,
+          "ambiguous": 0,
+          "open_or_unresolved": 0,
+          "decisive_wr": 0.6875,
+          "total_R": 12,
+          "profit_factor": 2.2,
+          "max_drawdown_R": 2
+        }
+      ],
+      "signals": 102,
+      "wins": 63,
+      "losses": 38,
+      "ambiguous": 1,
+      "open_or_unresolved": 0,
+      "decisive_wr": 0.6237623762376238,
+      "total_R": 25,
+      "profit_factor": 1.6578947368421053,
+      "max_weekly_drawdown_R": 5
+    }
+  ]
+}

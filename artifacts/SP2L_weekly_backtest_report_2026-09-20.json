@@ -1,0 +1,437 @@
+{
+  "daily_breakdown": {
+    "rows": [
+      {
+        "ambiguous": 1,
+        "date": "2026-09-14",
+        "loss": 0,
+        "net_r": 9.0,
+        "signals": 10,
+        "win": 9
+      },
+      {
+        "ambiguous": 0,
+        "date": "2026-09-15",
+        "loss": 4,
+        "net_r": 5.0,
+        "signals": 13,
+        "win": 9
+      },
+      {
+        "ambiguous": 0,
+        "date": "2026-09-16",
+        "loss": 1,
+        "net_r": 1.0,
+        "signals": 3,
+        "win": 2
+      },
+      {
+        "ambiguous": 0,
+        "date": "2026-09-17",
+        "loss": 1,
+        "net_r": 3.0,
+        "signals": 5,
+        "win": 4
+      },
+      {
+        "ambiguous": 0,
+        "date": "2026-09-18",
+        "loss": 4,
+        "net_r": -1.0,
+        "signals": 7,
+        "win": 3
+      }
+    ],
+    "timezone": "UTC"
+  },
+  "determinism": {
+    "input_signal_records": 38,
+    "input_trade_records": 38,
+    "period_signal_records": 38,
+    "period_trade_records": 38,
+    "sorted_by": "timestamp_utc,signal_id,deal_id",
+    "unclassified_records": 0
+  },
+  "execution": {
+    "broker_reconciliation_status": "PARTIAL",
+    "closed_trades": 38,
+    "dry_run_trades": 0,
+    "execution_failed": 0,
+    "open_trades": 0
+  },
+  "generated_at_utc": "2026-09-20T12:58:12.050653+00:00",
+  "performance": {
+    "closed_missing_r": 1,
+    "closed_with_r": 37,
+    "max_drawdown_r": 2.0,
+    "net_pips": 643.4,
+    "net_r": 17.0,
+    "pips_basis": "EXPLICIT_PIP_SIZE",
+    "profit_factor": 2.7,
+    "win_rate_pct": 72.97
+  },
+  "period": {
+    "basis": "EXPLICIT_PERIOD_BOUNDS",
+    "end_utc": "2026-09-19T00:00:00+00:00",
+    "session_timezone": "UTC",
+    "start_utc": "2026-09-14T00:00:00+00:00"
+  },
+  "report_type": "weekly",
+  "schema": "sp2l.live_report.v1",
+  "signals": {
+    "ambiguous": 1,
+    "duplicates_rejected": 0,
+    "loss": 10,
+    "total": 38,
+    "win": 27
+  },
+  "system": {
+    "geometry_status": "UNRESOLVED_FROZEN_GEOMETRY_GATE",
+    "journal_source": "runtime/journal_backtest",
+    "live_trading_status": "DISABLED (LIVE_TRADING_ENABLE=false)"
+  },
+  "trade_list_summary": [
+    {
+      "direction": "BUY",
+      "pips": 31.6,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-001",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T01:46:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 21.2,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-002",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T02:31:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 24.2,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-003",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T03:04:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": null,
+      "r_multiple": null,
+      "result": "AMBIGUOUS",
+      "signal_id": "BT-20260914-004",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T08:25:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 68.4,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-005",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T10:53:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 26.7,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-006",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T13:27:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 53.5,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-007",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T17:46:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 45.0,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-008",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T19:25:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 27.7,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-009",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T19:42:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 28.2,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-010",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-14T21:52:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": -35.2,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-011",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T04:39:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 28.5,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-012",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T04:57:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": -23.4,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-013",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T10:43:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 10.4,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-014",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T11:50:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 35.1,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-015",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T13:25:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 60.4,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-016",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T15:36:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 58.1,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-017",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T15:58:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 37.3,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-018",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T17:50:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 53.3,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-019",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T19:23:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": -31.0,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-020",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T20:33:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": -24.7,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-021",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T20:43:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 18.7,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-022",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T21:08:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 42.8,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-023",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-15T21:14:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": -12.2,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-024",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-16T03:20:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 34.0,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-025",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-16T05:13:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 14.3,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-026",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-16T10:07:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": -75.8,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-027",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-17T04:08:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 20.0,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-028",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-17T08:17:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 10.7,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-029",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-17T15:57:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 67.1,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-030",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-17T18:15:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 23.4,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-031",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-17T21:23:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": -21.3,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-032",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-18T01:19:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": -35.3,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-033",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-18T03:49:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 31.4,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-034",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-18T06:11:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": 57.8,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-035",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-18T09:02:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": -34.2,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-036",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-18T14:03:00+00:00"
+    },
+    {
+      "direction": "BUY",
+      "pips": -18.1,
+      "r_multiple": -1.0,
+      "result": "LOSS",
+      "signal_id": "BT-20260914-037",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-18T17:12:00+00:00"
+    },
+    {
+      "direction": "SELL",
+      "pips": 24.8,
+      "r_multiple": 1.0,
+      "result": "WIN",
+      "signal_id": "BT-20260914-038",
+      "status": "CLOSED",
+      "timestamp_utc": "2026-09-18T22:20:00+00:00"
+    }
+  ]
+}

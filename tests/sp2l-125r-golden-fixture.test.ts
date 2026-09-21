@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SP2L_125R_GOLDEN_FIXTURE } from '../research/harness/sp2l_125r_golden_fixture_v1';
+import { SP2L_125R_GOLDEN_FIXTURE } from '../research/harness/sp2l_125r_golden_fixture_v1.js';
 
 const EXPECTED = {
   fixtureId: 'SP2L-125R-2026-08-20-20:54:00',

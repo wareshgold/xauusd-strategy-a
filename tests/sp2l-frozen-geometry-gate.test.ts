@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1';
-import { evaluateFrozenGeometryGate } from '../research/harness/sp2l_frozen_geometry_gate_v1';
+import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1.js';
+import { evaluateFrozenGeometryGate } from '../research/harness/sp2l_frozen_geometry_gate_v1.js';
 
 describe('SP2L frozen geometry gate', () => {
   it('blocks the current unresolved research candidate', () => {

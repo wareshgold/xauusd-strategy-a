@@ -1,0 +1,9 @@
+[
+  {
+    "previous_bar_utc": "2026-06-19T20:00:00Z",
+    "next_bar_utc": "2026-06-22T01:00:00Z",
+    "interval_minutes": 3180.0,
+    "missing_m1_bars": 3179,
+    "kind": "gap"
+  }
+]
