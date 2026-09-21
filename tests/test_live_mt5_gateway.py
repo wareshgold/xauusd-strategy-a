@@ -160,7 +160,8 @@ def test_both_keys_enable_real_path_only_with_fake_order_send(monkeypatch, tmp_p
     monkeypatch.setattr(gateway, "LIVE_TRADING_ENABLE", True, raising=False)
     monkeypatch.setattr(gateway, "ALLOW_REAL_EXECUTION", True, raising=False)
     mt5.symbol_info_tick = lambda symbol: SimpleNamespace(bid=100.0, ask=100.2)
-    mt5.symbol_info = lambda symbol: SimpleNamespace(trade_mode=3)  # FULL
+    mt5.account_info = lambda: SimpleNamespace(trade_mode=0)
+    mt5.symbol_info = lambda symbol: SimpleNamespace(trade_mode=4)  # FULL
     mt5.positions_get = lambda symbol=None: []
     sent = {}
 
@@ -206,12 +207,13 @@ def test_closeonly_symbol_blocks_real_order_send(monkeypatch, tmp_path):
 
     mt5.order_send = forbidden_order_send
 
-    # Case 1: live terminal reports CLOSEONLY (mode 4) — the OtetGroup state.
+    # Case 1: live terminal reports CLOSEONLY (mode 3).
+    mt5.account_info = lambda: SimpleNamespace(trade_mode=0)
     mt5.symbol_info = lambda symbol: SimpleNamespace(trade_mode=4)
     result = gateway.execute_signal(_approved_buy(gateway))
     assert result["ok"] is False
     assert result["reason"] == "SYMBOL_NOT_OPENABLE"
-    assert result["symbol_trade_mode"] == 4
+    assert result["symbol_trade_mode"] == 3
     assert result["trade_mode_name"] == "CLOSEONLY"
     assert calls["order_send"] == 0
 
@@ -237,6 +239,7 @@ def test_disabled_symbol_also_blocks_real_order_send(monkeypatch, tmp_path):
     mt5.order_send = lambda request: (_ for _ in ()).throw(
         AssertionError("order_send must never be called for a DISABLED symbol")
     )
+    mt5.account_info = lambda: SimpleNamespace(trade_mode=0)
     mt5.symbol_info = lambda symbol: SimpleNamespace(trade_mode=0)
     result = gateway.execute_signal(_approved_buy(gateway))
     assert result["reason"] == "SYMBOL_NOT_OPENABLE"
@@ -244,7 +247,7 @@ def test_disabled_symbol_also_blocks_real_order_send(monkeypatch, tmp_path):
 
 
 def test_full_trade_mode_allows_real_order_send(monkeypatch, tmp_path):
-    """Control case: with FULL (3) and both keys set, order_send IS reached
+    """Control case: with FULL (4) and both keys set, order_send IS reached
     (against the fake MT5 module) — proving the blocker targets the mode,
     not the flags."""
     gateway, mt5 = load_gateway(monkeypatch, tmp_path)
