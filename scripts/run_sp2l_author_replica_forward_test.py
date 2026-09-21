@@ -31,6 +31,8 @@ from pathlib import Path
 
 import MetaTrader5 as mt5
 
+from live_mt5_gateway import Signal, execute_signal
+
 SYMBOL = "XAUUSD.ecn"
 TIMEFRAME = mt5.TIMEFRAME_M1
 P_GAP_PRICE = 1.0
@@ -179,53 +181,25 @@ def open_positions():
 
 
 def send_market(signal):
-    if len(open_positions()) >= MAX_OPEN_POSITIONS:
-        return {"ok": False, "reason": "MAX_OPEN_POSITIONS"}
-
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return {"ok": False, "reason": f"NO_TICK:{mt5.last_error()}"}
 
     direction = signal["direction"]
-    price = float(tick.ask if direction == "BUY" else tick.bid)
-    sl = float(signal["sl"])
-    risk = abs(price - sl)
-    if risk <= 0 or risk > MAX_SL_DISTANCE:
-        return {"ok": False, "reason": "LIVE_RISK_OUT_OF_RANGE", "price": price, "sl": sl}
-
-    tp = price + TP_R * risk if direction == "BUY" else price - TP_R * risk
-    order_type = mt5.ORDER_TYPE_BUY if direction == "BUY" else mt5.ORDER_TYPE_SELL
-
-    request = {
-        "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": SYMBOL,
-        "volume": VOLUME,
-        "type": order_type,
-        "price": price,
-        "sl": sl,
-        "tp": tp,
-        "deviation": 30,
-        "magic": MAGIC,
-        "comment": "SP2L-FT",
-        "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_IOC,
-    }
-
-    result = mt5.order_send(request)
-    if result is None:
-        return {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": list(mt5.last_error())}
-
-    return {
-        "ok": result.retcode == mt5.TRADE_RETCODE_DONE,
-        "retcode": int(result.retcode),
-        "order": int(result.order),
-        "deal": int(result.deal),
-        "comment": str(result.comment),
-        "actual_entry": price,
-        "actual_sl": sl,
-        "actual_tp": tp,
-        "theoretical_entry": signal["theoretical_entry"],
-    }
+    market_price = float(tick.ask if direction == "BUY" else tick.bid)
+    payload = Signal(
+        direction=direction,
+        symbol=SYMBOL,
+        entry=float(signal["theoretical_entry"]),
+        sl=float(signal["sl"]),
+        tp=float(signal["tp"]),
+        volume=VOLUME,
+        signal_id=signal["signal_id"],
+        source="AUTHOR_REPLICA_FORWARD_TEST",
+        status="APPROVED",
+    )
+    result = execute_signal(payload)
+    return {**result, "observed_market_price": market_price, "theoretical_entry": signal["theoretical_entry"]}
 
 
 def main():
@@ -246,6 +220,7 @@ def main():
             candidate = detect(data)
             if candidate is not None and candidate["trigger_time"] != seen_trigger:
                 seen_trigger = candidate["trigger_time"]
+                candidate["signal_id"] = f"AUTHOR_REPLICA_FT_{seen_trigger}_{candidate['direction']}"
                 signal_id = f"AUTHOR_REPLICA_FT_{seen_trigger}_{candidate['direction']}"
                 log_event({
                     "event": "CANDIDATE",
