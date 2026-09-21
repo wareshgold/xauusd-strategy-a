@@ -36,3 +36,7 @@ F10 now has BUY/SELL coverage across wick, body, structural, and buffered anchor
 F09 now covers BUY/SELL, 1/2/3-candle families, Pending Limit, and competing price-field hypotheses. F14 now covers BUY/SELL and three anchor families with exact/near/materially unequal ratios while tolerance remains unresolved.
 
 **Gate: PASS — neither feature is promoted to canonical geometry.**
+
+
+## Blocker-resolution checkpoint — 2026-09-21
+The active blockers now have explicit evidence requirements and promotion guards in `SP2L_BLOCKER_RESOLUTION_PLAN_2026-09-21.md`. P0 remains F08/F10; downstream work must not promote unresolved geometry.
