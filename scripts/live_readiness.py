@@ -34,6 +34,9 @@ except ModuleNotFoundError:  # pytest / package mode
     from scripts.live_mt5_gateway import SYMBOL  # type: ignore
     from scripts.telegram_client import telegram_delivery_status  # type: ignore
 
+# account_info().trade_mode values: 0=DEMO, 1=CONTEST, 2=REAL
+ACCOUNT_TRADE_MODE_DEMO = 0
+
 # account_info().margin_mode values (MetaTrader5 package constants)
 MARGIN_MODE_RETAIL_HEDGING = 2
 
@@ -99,6 +102,7 @@ def _probe_mt5(symbol: str) -> dict:
         out["account_server"] = str(account.server) if account else None
         out["account_currency"] = str(account.currency) if account else None
         out["account_leverage"] = int(account.leverage) if account else None
+        out["trade_mode"] = int(account.trade_mode) if account else None
         out["margin_mode"] = int(account.margin_mode) if account else None
         # account_info().trade_allowed = account-level trading permission.
         out["account_trade_allowed"] = bool(account.trade_allowed) if account else None
@@ -172,6 +176,15 @@ def _mt5_items(mt5: dict) -> list[dict]:
             f"margin_mode={mt5.get('margin_mode')} "
             f"(hedging={mt5.get('margin_mode') == MARGIN_MODE_RETAIL_HEDGING})"
         ),
+    })
+
+    account_mode = mt5.get("trade_mode")
+    real_possible = double_gate_state()["real_execution_possible"]
+    demo_ok = account_mode == ACCOUNT_TRADE_MODE_DEMO
+    items.append({
+        "item": "mt5_account_mode",
+        "status": "OK" if demo_ok else ("FAILED" if real_possible else "SKIPPED"),
+        "detail": f"trade_mode={account_mode} (DEMO=0); demo_required_for_real_execution={real_possible}",
     })
 
     mode = mt5.get("symbol_trade_mode")
