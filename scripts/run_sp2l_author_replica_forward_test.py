@@ -274,13 +274,66 @@ def main():
                     "result": telegram_result,
                     "trigger_notification": True,
                 })
+                tick_before_order = mt5.symbol_info_tick(SYMBOL)
+                log_event({
+                    "event": "ORDER_ATTEMPT",
+                    "signal_id": signal_id,
+                    "direction": candidate["direction"],
+                    "order_mode": DEMO_ORDER_MODE,
+                    "entry": candidate["theoretical_entry"],
+                    "sl": candidate["sl"],
+                    "tp": candidate["tp"],
+                    "volume": VOLUME,
+                    "bid": float(tick_before_order.bid) if tick_before_order else None,
+                    "ask": float(tick_before_order.ask) if tick_before_order else None,
+                    "mt5_last_error_before": mt5.last_error(),
+                    "reason": "SIGNAL_APPROVED_FOR_RESEARCH_EXECUTION",
+                    "canonical": False,
+                })
                 result = send_demo_order(candidate)
                 log_event({
-                    "event": "EXECUTION",
+                    "event": "ORDER_RESULT",
                     "signal_id": signal_id,
                     "result": result,
+                    "mt5_last_error_after": mt5.last_error(),
                     "demo_only": True,
+                    "success": bool(result.get("ok")),
                 })
+                if not result.get("ok"):
+                    log_event({
+                        "event": "ORDER_REJECTED",
+                        "signal_id": signal_id,
+                        "direction": candidate["direction"],
+                        "entry": candidate["theoretical_entry"],
+                        "sl": candidate["sl"],
+                        "tp": candidate["tp"],
+                        "volume": VOLUME,
+                        "bid": float(tick_before_order.bid) if tick_before_order else None,
+                        "ask": float(tick_before_order.ask) if tick_before_order else None,
+                        "reason": result.get("reason", "UNKNOWN_EXECUTION_FAILURE"),
+                        "retcode": result.get("retcode"),
+                        "comment": result.get("comment"),
+                        "last_error": result.get("last_error", mt5.last_error()),
+                        "order_mode": DEMO_ORDER_MODE,
+                        "canonical": False,
+                    })
+                else:
+                    log_event({
+                        "event": "ORDER_PLACED",
+                        "signal_id": signal_id,
+                        "direction": candidate["direction"],
+                        "entry": candidate["theoretical_entry"],
+                        "sl": candidate["sl"],
+                        "tp": candidate["tp"],
+                        "volume": VOLUME,
+                        "order": result.get("order"),
+                        "deal": result.get("deal"),
+                        "retcode": result.get("retcode"),
+                        "comment": result.get("comment"),
+                        "order_mode": DEMO_ORDER_MODE,
+                        "dry_run": result.get("dry_run"),
+                        "canonical": False,
+                    })
 
                 # Do not retry or move the strategy levels when the theoretical
                 # entry has already been crossed. Fill/activation semantics are
