@@ -25,3 +25,7 @@ A blocker can move toward canonical only after source evidence discriminates the
 **Frozen Geometry:** BLOCKED.
 **Forward Test:** untouched.
 **Production:** disabled.
+
+
+## P0 counterexample checkpoint
+Counterexample discrimination is complete for the current 14 F08/F10 cases. Only semantic narrowing was accepted; executable geometry remains unresolved.
