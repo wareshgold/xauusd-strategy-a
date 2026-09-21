@@ -104,4 +104,9 @@ export const UNRESOLVED_SYNTHETIC_FIXTURES: readonly SyntheticFixture[] = [
   f('ROUND-001', 'ROUND-LEVEL', ['round-level-near', 'no-round-level'], [], 'round level affects execution'),
   f('ROUND-002', 'ROUND-LEVEL', ['distance-a', 'distance-b', 'distance-c'], [], 'round-level threshold'),
   f('ROUND-003', 'ROUND-LEVEL', ['with-round-level', 'without-round-level'], [], 'round-level binding'),
+  f('SAFETY-001', 'F09', ['required-geometry-unresolved'], [], 'unresolved geometry may produce canonical signal'),
+  f('SAFETY-002', 'F10', ['backtest-preferred-a', 'backtest-preferred-b'], [], 'backtest selects source rule'),
+  f('SAFETY-003', 'P-GAP', ['implementation-formula'], [], 'implementation promotes to source'),
+  f('SAFETY-004', 'F15', ['bullish-complete', 'bearish-incomplete'], [], 'synthetic bearish symmetry'),
+  f('SAFETY-005', 'F12', ['price-touch', 'successful-fill'], ['touch', 'fill'], 'touch=fill'),
 ] as const;
