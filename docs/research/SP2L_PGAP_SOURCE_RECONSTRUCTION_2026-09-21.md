@@ -91,3 +91,10 @@ Pending-order lifecycle and trigger semantics are now isolated in research fixtu
 Source evidence supports Pending Limit usage and demonstrates deletion/replacement when structure or stop distance changes, but exact mandatory predicates, timeout, touch-versus-fill behavior, and activation precedence remain unresolved.
 
 **Gate result: PASS — execution semantics remain explicitly unresolved and noncanonical.**
+
+
+## F10 / F13 / F14 reconciliation gate
+
+F10 stop-anchor evidence, F13 secondary-entry relation, and F14 AB=CD geometry are now cross-checked in one research-only matrix. F13's Entry-to-Stop midpoint relation remains source-confirmed, while its lifecycle is unresolved. F10 exact wick/body/buffer semantics and F14 exact A/B/C/D anchors and equality tolerance remain unresolved.
+
+**Gate result: PASS — source-confirmed relations are preserved; unresolved execution/geometry is not promoted.**
