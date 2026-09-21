@@ -159,3 +159,10 @@ No A/B/C/D anchor family or numerical AB=CD tolerance is promoted. `LegProjectio
 Added research-only matrices for swing selection, entry geometry, and bearish geometry. The matrices distinguish competing hypotheses and preserve the source-evidence asymmetry for bearish P-Gap. All observations are explicitly noncanonical.
 
 **Result: PASS — no unresolved hypothesis is promoted to executable geometry.**
+
+
+## F11/F12 execution gate
+
+Added joint trigger/lifecycle fixtures and counterexamples. Touch, breach, close, and fill are deliberately separate events. Pending-order replacement, cancellation, timeout, and fill outcomes remain research observations only.
+
+**Result: PASS — no trigger or lifecycle semantics are promoted to canonical execution.**
