@@ -184,8 +184,107 @@ def execute_signal(signal: Signal) -> dict:
     point = float(getattr(info, "point", 0.0) or 0.0)
     min_stop_distance = stops_level_points * point
 
-    # Research-only guard: validate SL/TP against the CURRENT executable price.
-    # Never move strategy levels or redefine entry/fill semantics.
+    # Research-only execution mode. Pending LIMIT keeps the strategy's
+    # theoretical Entry/SL/TP unchanged and avoids the prior failure where a
+    # completed-trigger MARKET execution had already crossed the theoretical
+    # entry. This does NOT establish canonical fill/lifecycle semantics.
+    order_mode = os.getenv("MT5_FORWARD_ORDER_MODE", "MARKET").upper()
+    if order_mode == "PENDING_LIMIT_RESEARCH":
+        if signal.direction == "BUY":
+            if signal.entry >= float(tick.ask):
+                return {
+                    "ok": False,
+                    "dry_run": False,
+                    "reason": "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET",
+                    "observed_market_price": price,
+                    "signal_entry": signal.entry,
+                    "order_mode": order_mode,
+                }
+            order_type = mt5.ORDER_TYPE_BUY_LIMIT
+        else:
+            if signal.entry <= float(tick.bid):
+                return {
+                    "ok": False,
+                    "dry_run": False,
+                    "reason": "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET",
+                    "observed_market_price": price,
+                    "signal_entry": signal.entry,
+                    "order_mode": order_mode,
+                }
+            order_type = mt5.ORDER_TYPE_SELL_LIMIT
+
+        sl_distance = (signal.entry - signal.sl) if signal.direction == "BUY" else (signal.sl - signal.entry)
+        tp_distance = (signal.tp - signal.entry) if signal.direction == "BUY" else (signal.entry - signal.tp)
+        if sl_distance <= 0 or tp_distance <= 0:
+            return {
+                "ok": False,
+                "dry_run": False,
+                "reason": "INVALID_STOPS_AT_THEORETICAL_ENTRY",
+                "observed_market_price": price,
+                "signal_entry": signal.entry,
+                "sl": signal.sl,
+                "tp": signal.tp,
+                "sl_distance": sl_distance,
+                "tp_distance": tp_distance,
+                "order_mode": order_mode,
+            }
+        if min_stop_distance > 0 and (
+            sl_distance < min_stop_distance or tp_distance < min_stop_distance
+        ):
+            return {
+                "ok": False,
+                "dry_run": False,
+                "reason": "BELOW_BROKER_MIN_STOP_DISTANCE",
+                "observed_market_price": price,
+                "signal_entry": signal.entry,
+                "sl": signal.sl,
+                "tp": signal.tp,
+                "sl_distance": sl_distance,
+                "tp_distance": tp_distance,
+                "stops_level_points": stops_level_points,
+                "min_stop_distance": min_stop_distance,
+                "order_mode": order_mode,
+            }
+
+        request = {
+            "action": mt5.TRADE_ACTION_PENDING,
+            "symbol": SYMBOL,
+            "volume": signal.volume,
+            "type": order_type,
+            "price": signal.entry,
+            "sl": signal.sl,
+            "tp": signal.tp,
+            "deviation": DEVIATION,
+            "magic": MAGIC,
+            "comment": "SP2L-FWD-LIMIT"[:31],
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_RETURN,
+        }
+
+        if not LIVE_TRADING_ENABLE:
+            return {"ok": True, "dry_run": True, "request": request, "retcode": None, "reason": "LIVE_TRADING_ENABLE=false"}
+        if not ALLOW_REAL_EXECUTION:
+            return {"ok": True, "dry_run": True, "request": request, "retcode": None, "reason": "ALLOW_REAL_EXECUTION!=true"}
+
+        account = mt5.account_info()
+        account_trade_mode = int(account.trade_mode) if account is not None else None
+        if account_trade_mode != 0:
+            return {"ok": False, "reason": "DEMO_ACCOUNT_REQUIRED", "account_trade_mode": account_trade_mode}
+
+        info = mt5.symbol_info(SYMBOL)
+        trade_mode = int(info.trade_mode) if info is not None else None
+        if trade_mode is None or trade_mode not in OPENABLE_SYMBOL_TRADE_MODES:
+            return {"ok": False, "reason": "SYMBOL_NOT_OPENABLE", "symbol_trade_mode": trade_mode,
+                    "trade_mode_name": SYMBOL_TRADE_MODE_NAMES.get(trade_mode, "UNKNOWN") if trade_mode is not None else "UNAVAILABLE"}
+
+        result = mt5.order_send(request)
+        if result is None:
+            return {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
+        return {"ok": result.retcode in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED),
+                "dry_run": False, "retcode": result.retcode, "order": result.order,
+                "deal": result.deal, "comment": result.comment, "order_mode": order_mode}
+
+    # Existing MARKET mode remains available for research compatibility.
     if signal.direction == "SELL":
         sl_distance = signal.sl - price
         tp_distance = price - signal.tp
