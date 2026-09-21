@@ -19,6 +19,7 @@ def load_gateway(monkeypatch, tmp_path):
         ORDER_TIME_GTC=0,
         ORDER_FILLING_IOC=1,
         TRADE_RETCODE_DONE=10009,
+        ACCOUNT_TRADE_MODE_DEMO=0,
     )
     monkeypatch.setitem(sys.modules, "MetaTrader5", fake_mt5)
     monkeypatch.setenv("TRADING_SYMBOL", "XAUUSD.ecn")
@@ -253,7 +254,8 @@ def test_full_trade_mode_allows_real_order_send(monkeypatch, tmp_path):
     monkeypatch.setattr(gateway, "ALLOW_REAL_EXECUTION", True, raising=False)
     mt5.positions_get = lambda symbol=None: []
     mt5.symbol_info_tick = lambda symbol: SimpleNamespace(bid=100.0, ask=100.2)
-    mt5.symbol_info = lambda symbol: SimpleNamespace(trade_mode=3)
+    mt5.account_info = lambda: SimpleNamespace(trade_mode=0)
+    mt5.symbol_info = lambda symbol: SimpleNamespace(trade_mode=4)
     mt5.order_send = lambda request: SimpleNamespace(
         retcode=mt5.TRADE_RETCODE_DONE, order=1, deal=2, comment="ok"
     )
