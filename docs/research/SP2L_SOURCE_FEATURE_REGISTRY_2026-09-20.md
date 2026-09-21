@@ -175,3 +175,7 @@ F08/F09/F10/F14 are cross-linked only where the source reconstruction creates a 
 
 ### F08 latest resolution status
 F08 swing selection has expanded hypothesis/counterexample coverage. Source supports structural turning areas, but no deterministic pivot/window or wick/body field has been promoted. Status remains unresolved.
+
+
+## Coverage audit checkpoint — 2026-09-21
+F08–F15 coverage is consolidated. Seven feature families remain source/execution blockers; F13 is only partially source-confirmed. No canonical promotion occurred.
