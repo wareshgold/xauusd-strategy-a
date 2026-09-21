@@ -30,3 +30,7 @@ F09 Entry and F14 AB=CD now have expanded source-discrimination fixtures. Both r
 
 ## P0 source-discrimination checkpoint — 2026-09-21
 F08 and F10 now have an explicit meaning-level source reconciliation artifact. F08 remains unresolved at pivot/endpoint level. F10 remains unresolved at exact field, buffer, origin mapping, and invalidation-event level. No canonical promotion occurred.
+
+
+## P1 dependency discrimination checkpoint
+F09 and F14 have now been cross-tested as dependent research questions. No entry field, trigger precedence, A/B/C/D anchor, or AB=CD tolerance is promoted. Their dependency remains gated by unresolved P0 and execution semantics.
