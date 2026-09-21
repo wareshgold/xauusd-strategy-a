@@ -139,3 +139,16 @@ The existing `LegProjection.ts` formula remains quarantined as research-stage an
 ### Current Leg-1 blocker
 
 Exact A/B endpoints, wick/body semantics, and AB=CD tolerance remain unresolved. Therefore no Leg-1 formula may enter Frozen Geometry.
+
+
+## AB=CD source-reconstruction gate
+
+The preserved visual source explicitly labels the SP2L construction `AB=CD` and shows Leg 1 → correction → Leg 2 with approximate magnitude equality. It does not uniquely resolve the exact A/B/C/D price fields or a numerical equality tolerance.
+
+A research-only matrix now covers three competing anchor families (structural swings, spike extremes, candle OHLC fields), bullish/bearish mirrors, exact equality, near-equality, and materially unequal cases. The matrix deliberately records tolerance as `UNRESOLVED` and every fixture remains `canonicalEligible: false`.
+
+**Result: PASS — AB=CD hypotheses are discriminated without inventing a tolerance.**
+
+### Canonical blocker remains
+
+No A/B/C/D anchor family or numerical AB=CD tolerance is promoted. `LegProjection.ts` remains quarantined research code. Frozen Geometry remains BLOCKED and the forward test remains untouched.
