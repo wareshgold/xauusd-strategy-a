@@ -8,6 +8,7 @@ on:
       - 'scripts/run-author-replica-backtest.mjs'
       - 'scripts/run-author-replica-condition-diagnostics.mjs'
       - 'scripts/run-author-replica-nearmiss-forensics.mjs'
+      - 'scripts/run_sp2l_author_replica_forward_test.py'
       - 'data/historical/xauusd-1min.json'
       - 'data/reports/strategy-a-baseline/**'
       - 'package.json'
