@@ -30,3 +30,9 @@ F08 now has BUY/SELL hypothesis coverage and explicit wick-vs-body, structural-t
 F10 now has BUY/SELL coverage across wick, body, structural, and buffered anchor hypotheses plus touch/breach/close and spike-origin counterexamples. Source meaning remains preserved without selecting an executable stop rule.
 
 **Gate: PASS — F10 remains unresolved at field/buffer/invalidation level.**
+
+
+## F09/F14 resolution pass
+F09 now covers BUY/SELL, 1/2/3-candle families, Pending Limit, and competing price-field hypotheses. F14 now covers BUY/SELL and three anchor families with exact/near/materially unequal ratios while tolerance remains unresolved.
+
+**Gate: PASS — neither feature is promoted to canonical geometry.**
