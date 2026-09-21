@@ -3,6 +3,8 @@ report aggregation, and the Strategy A adapter activation gates."""
 
 from __future__ import annotations
 
+import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -13,6 +15,7 @@ import scripts.live_signal_simulator as sim
 import scripts.live_session_report as session_report
 import scripts.mt5_symbol_probe as probe
 import scripts.strategy_a_signal_adapter as adapter
+import scripts.telegram_diagnostic as tg_diag
 
 
 # ---------------------------------------------------------------------------
@@ -127,6 +130,31 @@ def test_verify_chain_reports_missing_trade(tmp_path):
     result = sim.verify_chain("SIM-Y", journal_dir=journal, processed_dir=tmp_path)
     assert result["chain_ok"] is False
     assert result["checks"]["trade_recorded_dry_run"] is False
+
+
+def test_explicit_signal_id_namespaces_without_changing_values():
+    """The signal ID namespace never affects the seed-derived values."""
+    base = sim.simulate_signal(7)
+    named = sim.simulate_signal(7, signal_id="SIM-20260921T091500Z-0007")
+    for key in ("direction", "entry", "sl", "tp", "volume", "status", "source"):
+        assert named[key] == base[key]
+    assert named["signal_id"] == "SIM-20260921T091500Z-0007"
+    assert base["signal_id"] == sim.signal_id_for(7)
+
+
+def test_signal_id_for_prefers_explicit_then_run_id():
+    assert sim.signal_id_for(7, run_id="R1", explicit_id="CUSTOM-1") == "CUSTOM-1"
+    assert sim.signal_id_for(7, run_id="R1") == "SIM-R1-0007"
+    assert sim.signal_id_for(7).startswith("SIM-")
+
+
+def test_repeated_runs_same_seed_get_distinct_ids(tmp_path, monkeypatch):
+    """Acceptance: repeated deterministic test runs stay unique per run —
+    without touching duplicate protection (values identical, IDs differ)."""
+    first = sim.simulate_signal(7, signal_id=sim.signal_id_for(7, run_id="RUN-A"))
+    second = sim.simulate_signal(7, signal_id=sim.signal_id_for(7, run_id="RUN-B"))
+    assert first["signal_id"] != second["signal_id"]
+    assert first["entry"] == second["entry"]  # deterministic values preserved
 
 
 # ---------------------------------------------------------------------------
@@ -269,3 +297,40 @@ def test_adapter_batch_all_or_nothing(monkeypatch):
     bad = {**SCANNER_RECORD, "signal_id": "X", "status": "REJECTED"}
     with pytest.raises(adapter.AdapterError):
         adapter.map_scanner_batch([SCANNER_RECORD, bad], symbol="XAUUSD.ecn")
+
+
+# ---------------------------------------------------------------------------
+# Telegram configuration diagnostic (test-only)
+# ---------------------------------------------------------------------------
+
+
+def test_diagnostic_reports_not_configured_without_secrets(monkeypatch):
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
+    result = tg_diag.diagnose()
+    assert result["configured"] is False
+    assert result["delivery_mode"] == "MOCK"
+    assert result["bot_token_fingerprint"] is None
+    assert result["chat_id_fingerprint"] is None
+    assert result["get_me"] is None  # no network call requested
+
+
+def test_diagnostic_masks_credentials_never_exposes_them(monkeypatch):
+    token = "123456789:AAAbbbCCCdddEEEfffGGGhhhIIIjjjKKKlll"
+    chat = "-1004342109034"
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", token)
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", chat)
+    result = tg_diag.diagnose(env=dict(os.environ))
+    assert result["configured"] is True
+    assert result["delivery_mode"] == "REAL"
+    # Masked fingerprints only: never the full secret in the result.
+    assert result["bot_token_fingerprint"] == token[:4] + "..." + token[-4:]
+    assert result["chat_id_fingerprint"] == chat[:4] + "..." + chat[-4:]
+    assert token not in json.dumps(result)
+    assert chat not in json.dumps(result)
+
+
+def test_get_me_skipped_without_token(monkeypatch):
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    result = tg_diag.diagnose(do_get_me=True, env={})
+    assert result["get_me"] == {"ok": False, "detail": "NOT_CONFIGURED (no token)"}

@@ -36,13 +36,34 @@ JOURNAL_DIR = SIGNALS.parent
 
 DEFAULT_SYMBOL = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
 PROCESSED_DIR = SIGNAL_FILE.parent / "processed"
+# Deterministic uniqueness for repeated test runs: an explicit test run ID
+# (e.g. the run timestamp) namespaces the signal ID so re-running the same
+# seed never collides with the gateway's duplicate protection. Duplicate
+# protection itself is intentionally unchanged.
 
 
-def simulate_signal(seed: int, symbol: str = DEFAULT_SYMBOL) -> dict:
+def signal_id_for(seed: int, *, run_id: str | None = None, explicit_id: str | None = None) -> str:
+    """Deterministic signal ID: explicit_id wins; else [run_id-]seed form."""
+    if explicit_id:
+        return str(explicit_id)
+    if run_id:
+        return f"SIM-{run_id}-{seed:04d}"
+    day = datetime.now(timezone.utc).strftime("%Y%m%d")
+    return f"SIM-{day}-{seed:04d}"
+
+
+def simulate_signal(
+    seed: int,
+    symbol: str = DEFAULT_SYMBOL,
+    *,
+    signal_id: str | None = None,
+) -> dict:
     """Deterministically derive a synthetic APPROVED signal from a seed.
 
     Pure integer arithmetic (module-level randomness is never used) so the
-    same seed always produces the same signal on every machine.
+    same seed always produces the same signal values on every machine.
+    `signal_id` only namespaces the ID (see `signal_id_for`); it never
+    affects direction/entry/SL/TP derivation.
     """
     rng = (seed * 1103515245 + 12345) % (2**31)
     direction = "BUY" if (rng % 2) == 0 else "SELL"
@@ -54,8 +75,6 @@ def simulate_signal(seed: int, symbol: str = DEFAULT_SYMBOL) -> dict:
     entry = round(base, 2)
     sl = round(entry - sl_dist, 2) if direction == "BUY" else round(entry + sl_dist, 2)
     tp = round(entry + tp_dist, 2) if direction == "BUY" else round(entry - tp_dist, 2)
-    day = datetime.now(timezone.utc).strftime("%Y%m%d")
-    signal_id = f"SIM-{day}-{seed:04d}"
     return {
         "direction": direction,
         "symbol": symbol,
@@ -63,7 +82,7 @@ def simulate_signal(seed: int, symbol: str = DEFAULT_SYMBOL) -> dict:
         "sl": sl,
         "tp": tp,
         "volume": 0.01,
-        "signal_id": signal_id,
+        "signal_id": signal_id or signal_id_for(seed),
         "source": "SIMULATOR_TEST_ONLY",
         "status": "APPROVED",
     }
@@ -134,6 +153,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Deterministic dry-run chain simulator")
     parser.add_argument("--seed", type=int, default=1, help="deterministic signal seed")
     parser.add_argument("--symbol", default=DEFAULT_SYMBOL)
+    parser.add_argument("--signal-id", default=None,
+                        help="explicit signal ID (wins over seed/run-id naming)")
+    parser.add_argument("--run-id", default=None,
+                        help="deterministic run namespace, e.g. 20260921T091500Z: "
+                        "produces SIM-<run-id>-<seed> so repeated test runs of the "
+                        "same seed stay unique without bypassing duplicate protection")
+    parser.add_argument("--unique-run", action="store_true",
+                        help="namespace this run with the current UTC timestamp "
+                        "(deterministic per second; keeps values seed-derived)")
     parser.add_argument("--gateway-seconds", type=float, default=8.0)
     parser.add_argument("--verify-only", action="store_true",
                         help="re-verify the chain for an existing signal id")
@@ -141,13 +169,17 @@ def main() -> int:
                         help="only write the signal file (no gateway run)")
     args = parser.parse_args()
 
+    if args.unique_run and args.run_id is None:
+        args.run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+    signal_id = args.signal_id or signal_id_for(args.seed, run_id=args.run_id)
+
     if args.verify_only:
-        signal_id = f"SIM-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{args.seed:04d}"
+        pass
     else:
-        payload = simulate_signal(args.seed, args.symbol)
+        payload = simulate_signal(args.seed, args.symbol, signal_id=signal_id)
         target = place_signal(payload)
         print(json.dumps({"signal_placed": payload, "file": str(target)}, indent=2))
-        signal_id = payload["signal_id"]
         if not args.no_gateway:
             rc = run_gateway(args.gateway_seconds)
             if rc != 0:

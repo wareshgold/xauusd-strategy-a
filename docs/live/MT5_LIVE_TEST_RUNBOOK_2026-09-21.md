@@ -19,9 +19,29 @@ Use:
 
 ```powershell
 python scripts/run_live_session.py --check-only
-python scripts/live_signal_simulator.py --seed 7
+python scripts/live_signal_simulator.py --seed 7 --unique-run
 python scripts/live_session_report.py
+python scripts/telegram_diagnostic.py --get-me   # test-only; sends no messages
 ```
+
+### Repeated simulator runs (duplicate protection unchanged)
+
+The gateway's DUPLICATE_SIGNAL_ID protection is intentionally untouched.
+The simulator namespaces its deterministic signal ID so re-running the same
+seed never collides with a previously processed test signal:
+
+```powershell
+python scripts/live_signal_simulator.py --seed 7 --unique-run
+# -> SIM-<UTC-timestamp>-0007, e.g. SIM-20260921T091500Z-0007
+
+# or with an explicit deterministic namespace / ID:
+python scripts/live_signal_simulator.py --seed 7 --run-id 20260921T091500Z
+python scripts/live_signal_simulator.py --seed 7 --signal-id SIM-MYTEST-0007
+```
+
+Same seed → same direction/entry/SL/TP values on every machine (verified by
+tests); only the ID namespace changes. A deliberately replayed duplicate ID
+is still rejected with DUPLICATE_SIGNAL_ID.
 
 Expected safety outcome on the current account:
 
@@ -39,6 +59,19 @@ Before any real order test, obtain from the broker:
 3. confirmation that the symbol trade mode permits opening.
 
 Then rerun pre-flight and verify `READY` before considering a controlled real-order test.
+
+## Telegram configuration diagnostic (test-only)
+`scripts/telegram_diagnostic.py` reports the configuration path clearly:
+```powershell
+python scripts/telegram_diagnostic.py            # config presence only (offline)
+python scripts/telegram_diagnostic.py --get-me   # + read-only bot identity check
+```
+
+- Reports bot token / chat id as **configured / not configured**, with
+  masked fingerprints (`1234...wxyz`) — credentials are never printed in full.
+- `--get-me` calls the read-only Bot API `getMe`: it sends **no messages** to
+  any chat and reveals only the bot identity (first name/username/id).
+- Exit code 0 = configuration complete (and token valid, if checked).
 
 ## Prohibited shortcuts
 
