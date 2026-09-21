@@ -37,17 +37,17 @@ LIVE_TRADING_ENABLE = os.getenv("LIVE_TRADING_ENABLE", "false").lower() == "true
 ALLOW_REAL_EXECUTION = os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true"
 # Hard real-execution blocker (third layer): symbol trade modes that allow
 # OPENING new positions (MetaTrader5 SYMBOL_TRADE_MODE_*: 1=LONGONLY,
-# 2=SHORTONLY, 3=FULL). Anything else — DISABLED (0), CLOSEONLY (4), or
+# 2=SHORTONLY, 4=FULL). Anything else — DISABLED (0), CLOSEONLY (3), or
 # unknown/unavailable — must never reach an open-order request. This is
 # verified against the live terminal immediately before order_send,
 # regardless of any operator flags (fail-closed).
-OPENABLE_SYMBOL_TRADE_MODES = {1, 2, 3}
+OPENABLE_SYMBOL_TRADE_MODES = {1, 2, 4}
 SYMBOL_TRADE_MODE_NAMES = {
     0: "DISABLED",
     1: "LONGONLY",
     2: "SHORTONLY",
-    3: "FULL",
-    4: "CLOSEONLY",
+    3: "CLOSEONLY",
+    4: "FULL",
 }
 MAX_OPEN_POSITIONS = int(os.getenv("MAX_OPEN_POSITIONS", "1"))
 # Optional bounded run (smoke tests). 0 / unset = run until stopped.
@@ -209,7 +209,17 @@ def execute_signal(signal: Signal) -> dict:
             "reason": "ALLOW_REAL_EXECUTION!=true",
         }
 
-    # Hard real-execution blocker (layer 3): refuse open orders on symbols
+    # Demo-only blocker: this execution test must never submit to a real account.
+    account = mt5.account_info()
+    account_trade_mode = int(account.trade_mode) if account is not None else None
+    if account_trade_mode != 0:  # MetaTrader5 ACCOUNT_TRADE_MODE_DEMO
+        return {
+            "ok": False,
+            "reason": "DEMO_ACCOUNT_REQUIRED",
+            "account_trade_mode": account_trade_mode,
+        }
+
+    # Hard real-execution blocker (layer 4): refuse open orders on symbols
     # whose live trade mode forbids opening (e.g. CLOSEONLY). Checked against
     # the terminal's CURRENT state, immediately before order_send; missing
     # symbol info fails closed.
