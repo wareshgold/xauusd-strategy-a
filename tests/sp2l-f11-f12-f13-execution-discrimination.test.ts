@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{EXECUTION_DISCRIMINATION as C}from"../research/fixtures/sp2l_f11_f12_f13_execution_discrimination_v1.js";
+describe("SP2L F11/F12/F13 execution discrimination",()=>{it("covers all three families",()=>expect(new Set(C.map(x=>x.family)).size).toBe(3));it("never promotes execution semantics",()=>expect(C.every(x=>x.canonicalEligible===false)).toBe(true));it("preserves unresolved fill semantics",()=>expect(C.some(x=>x.type==="ACTIVATION_VS_FILL"&&x.verdict==="UNRESOLVED")).toBe(true));});
