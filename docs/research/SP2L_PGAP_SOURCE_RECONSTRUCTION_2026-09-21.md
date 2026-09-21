@@ -98,3 +98,7 @@ Source evidence supports Pending Limit usage and demonstrates deletion/replaceme
 F10 stop-anchor evidence, F13 secondary-entry relation, and F14 AB=CD geometry are now cross-checked in one research-only matrix. F13's Entry-to-Stop midpoint relation remains source-confirmed, while its lifecycle is unresolved. F10 exact wick/body/buffer semantics and F14 exact A/B/C/D anchors and equality tolerance remain unresolved.
 
 **Gate result: PASS — source-confirmed relations are preserved; unresolved execution/geometry is not promoted.**
+
+
+## Resolution priority control
+P0 source blockers are F08 Swing selection and F10 exact Stop semantics. P1 includes F09 Entry, F11/F12 execution semantics, and F14 AB=CD. P2 covers downstream bearish executable symmetry. This ordering only controls research sequence; it does not promote any rule.
