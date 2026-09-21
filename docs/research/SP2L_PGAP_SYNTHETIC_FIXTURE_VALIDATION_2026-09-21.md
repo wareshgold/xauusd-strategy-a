@@ -52,3 +52,27 @@ The suite therefore does **not** modify the existing forward-test detector and d
 - Frozen Geometry: BLOCKED
 - Untouched Validation: LOCKED
 - Production BUY/SELL authorization: DISABLED
+
+
+## Qualification-layer reconstruction update
+
+The preserved source provides enough wording to test two source-shaped qualification paths without freezing them as canonical:
+
+- **Breakout → follow-through → P-Gap:** the teacher explicitly describes a breakout, a follow-through/key-bar, and P-Gap as the visual marker of the strong trend.
+- **Higher-lows → P-Gap:** the teacher explicitly says higher lows can precede the gap and that this is treated as the same concept in the strategy.
+- **Immediate-post-low variant:** the teacher describes a third three-candle movement variant, but the exact deterministic OHLC predicate is not recoverable from transcript wording alone; it remains unresolved.
+
+A research-only observer was added to distinguish these source-shaped observations from the primitive gap event. It deliberately does not define a fixed candle count, fixed index, minimum gap size, or E-Gap cutoff.
+
+### New gate result
+
+**QUALIFICATION OBSERVATION GATE: PASS (research-only)**
+
+The source-shaped variants can be represented and tested deterministically as observations. This does not mean the executable P-Gap detector is complete.
+
+### Newly narrowed but still unresolved
+
+- Breakout event can be represented as close beyond the prior high/low based on the teacher's explicit breakout wording, but exact candle indexing remains unresolved.
+- Higher-low progression is source-described, but the required number of higher lows is not fixed.
+- P-Gap remains location/context dependent; geometric non-overlap alone is insufficient.
+- E-Gap separation is qualitative in the preserved excerpt (early/fast opportunity versus repeated extensions), not yet a deterministic numeric cutoff.
