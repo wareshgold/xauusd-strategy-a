@@ -1,0 +1,8796 @@
+{
+  "research_only": true,
+  "dataset": "data\\mt5-acquisition\\xauusd_ecn_m1_2026-08-21_2026-09-18.csv",
+  "candidate_parameters": {
+    "pressure_min": 10,
+    "pressure_max": 30,
+    "pause_len": 2,
+    "compression_factor": 0.75,
+    "trend_body_factor": 1.5
+  },
+  "candidate_event_count": 1755,
+  "existing_imbalance_event_count": 7402,
+  "overlap_count": 290,
+  "candidate_only_count": 1465,
+  "imbalance_only_count": 7112,
+  "candidate_events": [
+    {
+      "index": 72,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 85,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 118,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 161,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 177,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 192,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 195,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 203,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 207,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 211,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 227,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 237,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 250,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 263,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 314,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 317,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 328,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 329,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 351,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 352,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 358,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 362,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 369,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 378,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 386,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 401,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 405,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 409,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 413,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 417,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 420,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 446,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 462,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 468,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 469,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 475,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 491,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 528,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 548,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 569,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 570,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 597,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 606,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 632,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 651,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 657,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 673,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 687,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 702,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 718,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 746,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 754,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 757,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 824,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 869,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 870,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 875,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 916,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 920,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 928,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 951,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 967,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 980,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 981,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 985,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1015,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1035,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1100,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1111,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1117,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1127,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1131,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1162,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1197,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1198,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1200,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1215,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1218,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1248,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1251,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1276,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1304,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1335,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1336,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1355,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1366,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1395,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1404,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1405,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1408,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1417,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1436,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1449,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1459,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1468,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1492,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1532,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1557,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1572,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1575,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1581,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1607,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1608,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1614,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1626,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1635,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1646,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1663,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1738,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1753,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1771,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1788,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1791,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1796,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1840,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1855,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1871,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1918,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 1939,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1959,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1989,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 1994,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2001,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2014,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2019,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2034,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2038,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2066,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2080,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2098,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2101,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2118,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2139,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2145,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2182,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2186,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2210,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2212,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2219,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2236,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2259,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2269,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2272,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2289,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2308,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2338,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2347,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2349,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2365,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2372,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2398,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2419,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2453,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2475,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2482,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2484,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2488,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2494,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2554,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2567,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2584,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2597,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2603,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2606,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2625,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2635,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2638,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2685,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2702,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2709,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2713,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2717,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2722,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2729,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2739,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2743,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2752,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2765,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2784,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2813,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2816,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2832,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2889,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2905,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2913,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 2928,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2932,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2936,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2952,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2957,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2959,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2991,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2995,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 2999,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3009,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3017,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3027,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3060,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3089,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3090,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3101,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3138,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3155,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3158,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3177,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3192,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3205,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3216,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3243,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3259,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3283,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3319,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3325,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3341,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3357,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3391,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3401,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3405,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3408,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3445,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3479,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3485,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3504,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3523,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3537,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3541,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3542,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3576,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3581,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3595,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3615,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3636,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3643,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3656,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3677,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3679,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3704,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3810,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3821,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3833,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3846,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3852,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3870,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3879,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3885,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3894,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3905,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3932,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3937,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 3938,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3951,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3968,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3985,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 3991,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4027,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4064,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4118,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4127,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4145,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4149,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4158,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4166,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4211,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4216,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4217,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4226,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4234,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4235,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4237,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4254,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4281,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4332,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4345,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4402,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4417,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4436,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4465,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4469,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4481,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4490,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4495,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4515,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4543,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4563,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4598,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4599,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4631,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4715,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4743,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4766,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4791,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4803,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4809,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4812,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4839,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4842,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4867,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4914,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4924,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4961,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 4972,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 4976,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5022,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5024,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5028,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5034,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5095,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5106,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5107,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5125,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5142,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5167,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5172,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5183,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5190,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5195,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5200,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5201,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5204,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5226,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5231,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5246,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5260,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5267,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5281,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5288,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5293,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5304,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5316,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5330,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5354,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5383,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5417,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5418,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5439,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5461,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5464,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5467,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5470,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5476,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5496,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5515,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5531,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5543,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5572,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5580,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5588,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5589,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5592,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5628,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5645,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5685,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5709,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5719,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5725,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5732,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5751,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5754,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5762,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5782,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5783,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5803,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5827,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5835,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5838,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5861,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5867,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5872,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5886,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5892,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5908,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 5958,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 5979,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6022,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6064,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6069,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6130,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6171,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6172,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6191,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6193,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6195,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6210,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6211,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6249,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6253,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6309,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6326,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6355,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6356,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6369,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6383,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6391,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6441,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6468,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6486,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6487,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6494,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6495,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6503,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6510,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6535,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6553,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6563,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6588,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6621,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6625,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6640,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6669,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6716,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6735,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6761,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6765,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6773,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6795,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6816,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6854,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6856,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6858,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6860,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6870,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6876,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6907,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6914,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6919,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6920,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6925,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6934,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6954,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 6968,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6974,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6980,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6982,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 6999,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7052,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7057,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7070,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7095,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7098,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7119,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7126,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7142,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7145,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7150,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7153,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7157,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7158,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7189,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7192,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7203,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7222,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7227,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7235,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7239,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7254,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7260,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7283,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7310,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7337,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7340,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7382,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7447,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7467,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7482,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7486,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7487,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7494,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7501,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7530,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7563,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7566,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7582,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7590,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7593,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7639,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7649,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7652,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7660,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7701,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7709,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7726,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7729,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7789,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7794,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7818,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7822,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7828,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7851,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7865,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7873,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7877,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7881,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7893,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7908,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7909,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 7932,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7945,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 7982,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8007,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8014,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8048,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8067,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8073,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8090,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8095,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8110,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8117,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8126,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8135,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8173,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8177,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8184,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8212,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8225,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8229,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8234,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8251,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8290,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8305,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8310,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8315,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8330,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8348,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8373,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8387,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8403,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8427,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8437,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8441,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8446,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8447,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8482,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8499,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8512,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8530,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8560,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8569,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8573,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8586,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8594,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8632,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8636,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8637,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8653,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8656,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8676,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8678,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8710,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8729,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8748,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8766,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8774,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8780,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8782,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8791,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8797,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8822,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8825,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8870,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8896,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8905,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8913,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8922,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8932,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8937,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8948,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 8955,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 8996,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9012,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9016,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9023,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9028,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9039,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9042,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9047,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9074,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9118,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9150,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9157,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9194,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9230,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9248,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9259,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9286,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9335,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9343,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9344,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9348,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9381,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9398,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9454,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9497,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9537,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9541,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9554,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9567,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9590,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9591,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9612,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9630,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9631,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9634,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9635,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9672,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9678,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9699,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9715,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9723,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9728,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9730,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9756,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9828,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9840,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9844,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9853,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9856,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9876,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9910,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9921,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9964,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9968,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9971,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 9984,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 9996,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10000,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10036,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10052,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10067,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10075,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10127,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10158,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10159,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10163,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10169,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10172,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10175,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10191,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10212,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10228,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10235,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10268,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10294,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10307,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10333,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10334,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10357,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10366,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10367,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10370,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10382,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10408,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10413,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10443,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10451,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10466,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10477,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10523,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10542,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10569,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10579,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10631,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10699,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10711,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10714,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10720,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10725,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10731,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10782,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10790,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10836,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10844,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10881,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10892,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10921,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10940,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10941,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 10966,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 10985,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11004,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11010,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11013,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11030,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11034,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11040,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11055,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11061,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11103,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11124,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11167,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11183,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11204,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11242,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11247,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11248,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11257,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11279,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11290,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11307,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11324,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11358,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11363,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11364,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11393,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11398,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11426,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11427,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11433,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11448,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11455,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11499,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11505,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11539,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11556,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11580,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11607,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11655,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11658,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11665,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11672,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11703,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11710,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11713,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11715,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11745,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11833,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11842,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11869,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 11915,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11920,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11927,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 11995,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12048,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12070,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12089,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12091,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12094,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12105,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12133,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12169,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12211,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12227,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12238,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12242,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12260,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12271,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12278,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12324,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12333,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12339,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12364,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12378,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12388,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12421,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12481,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12485,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12490,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12494,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12529,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12557,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12559,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12562,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12578,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12586,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12600,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12609,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12632,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12637,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12638,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12647,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12666,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12671,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12679,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12697,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12733,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12737,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12749,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12753,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12755,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12770,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12789,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12798,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12807,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12910,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 12934,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12949,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12965,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12971,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 12984,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13002,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13031,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13044,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13051,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13060,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13104,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13113,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13135,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13148,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13152,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13180,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13203,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13214,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13225,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13229,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13234,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13258,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13265,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13279,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13295,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13301,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13334,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13339,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13349,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13354,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13388,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13389,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13398,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13416,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13443,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13447,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13448,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13467,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13474,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13486,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13499,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13549,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13578,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13584,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13594,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13608,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13657,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13698,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13703,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13706,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13714,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13770,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13799,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13806,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13815,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13836,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13845,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13848,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13854,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13864,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13884,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13889,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13928,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13932,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13933,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13937,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13945,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 13951,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 13987,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14030,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14038,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14039,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14051,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14054,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14062,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14070,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14093,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14102,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14108,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14124,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14125,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14130,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14145,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14159,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14164,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14183,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14198,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14206,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14209,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14246,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14263,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14266,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14275,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14288,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14296,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14335,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14338,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14347,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14352,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14369,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14388,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14397,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14436,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14486,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14491,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14511,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14520,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14539,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14547,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14554,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14567,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14585,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14606,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14672,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14685,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14687,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14698,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14705,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14711,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14716,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14745,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14769,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14790,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14799,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14822,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14838,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14856,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14860,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14861,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14885,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14919,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14945,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 14957,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14967,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14982,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 14987,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15013,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15034,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15038,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15056,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15059,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15097,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15116,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15131,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15134,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15148,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15160,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15178,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15179,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15213,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15232,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15233,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15246,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15262,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15276,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15283,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15308,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15365,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15385,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15393,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15420,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15427,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15432,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15436,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15453,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15454,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15504,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15508,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15509,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15518,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15526,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15547,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15557,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15588,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15605,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15611,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15627,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15637,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15675,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15680,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15701,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15727,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15735,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15782,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15785,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15794,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15795,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15806,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15817,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15843,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15907,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15933,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15937,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15940,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 15965,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15975,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 15999,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16007,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16045,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16064,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16076,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16087,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16092,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16097,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16122,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16148,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16179,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16180,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16196,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16199,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16201,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16206,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16221,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16237,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16240,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16254,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16260,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16290,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16295,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16305,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16312,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16319,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16333,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16337,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16340,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16345,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16352,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16376,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16383,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16392,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16399,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16404,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16413,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16423,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16425,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16429,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16434,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16449,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16452,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16556,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16561,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16564,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16615,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16640,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16679,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16721,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16749,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16758,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16760,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16784,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16791,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16801,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16819,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16869,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 16877,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16894,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16895,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16919,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16956,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 16993,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17021,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17023,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17028,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17044,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17045,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17060,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17064,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17103,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17104,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17114,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17115,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17144,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17157,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17172,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17192,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17217,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17242,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17273,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17276,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17282,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17291,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17358,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17377,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17382,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17387,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17392,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17401,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17423,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17426,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17439,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17449,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17481,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17483,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17491,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17512,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17514,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17525,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17539,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17540,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17564,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17622,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17634,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17648,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17664,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17666,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17669,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17677,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17678,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17697,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17709,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17714,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17746,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17747,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17790,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17797,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17798,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17803,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17804,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17810,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17839,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17849,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17861,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17869,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17883,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17903,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 17946,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17954,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17955,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17960,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17962,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17990,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 17993,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18000,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18019,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18036,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18041,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18075,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18089,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18098,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18103,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18148,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18149,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18153,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18159,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18192,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18199,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18221,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18227,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18244,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18253,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18266,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18276,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18278,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18300,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18312,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18328,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18335,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18350,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18359,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18381,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18383,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18406,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18435,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18439,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18440,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18483,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18549,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18563,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18572,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18601,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18621,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18635,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18675,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18680,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18683,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18713,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18725,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18732,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18767,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18820,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18824,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18825,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18835,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18839,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18842,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18922,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18957,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18966,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18970,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 18973,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18980,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 18995,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19012,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19055,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19061,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19064,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19069,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19078,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19116,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19118,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19122,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19131,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19147,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19152,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19171,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19180,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19238,
+      "pressure_length": 30,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19245,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19282,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19300,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19307,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19316,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19330,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19372,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19380,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19397,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19423,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19440,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19483,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19488,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19523,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19533,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19582,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19624,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19628,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19640,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19651,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19654,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19679,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19682,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19692,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19701,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19702,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19723,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19748,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19753,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19817,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19831,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19846,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19853,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19933,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19951,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19963,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 19966,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19967,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19975,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19981,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 19992,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20017,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20027,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20032,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20057,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20076,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20080,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20086,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20109,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20139,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20145,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20151,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20157,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20176,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20209,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20240,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20250,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20268,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20300,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20312,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20318,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20335,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20402,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20407,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20422,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20442,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20446,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20450,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20464,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20468,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20479,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20483,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20501,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20502,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20528,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20530,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20531,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20537,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20542,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20551,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20558,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20562,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20581,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20588,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20607,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20615,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20622,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20656,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20683,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20686,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20743,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20778,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20786,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20795,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20802,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20836,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20853,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20859,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20861,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20884,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20900,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 20909,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20967,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20980,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 20992,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21013,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21041,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21082,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21086,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21095,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21165,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21166,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21180,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21196,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21211,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21216,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21226,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21229,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21240,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21257,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21258,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21280,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21281,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21343,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21353,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21361,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21380,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21440,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21467,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21470,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21486,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21500,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21530,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21560,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21569,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21574,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21589,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21658,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21662,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21701,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21723,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21737,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21747,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21778,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21786,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21787,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21790,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21836,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21904,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21912,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21933,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21937,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21939,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21942,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21943,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21945,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21946,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21947,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21953,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21954,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 21961,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 21980,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22060,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22065,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22069,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22075,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22110,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22139,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22151,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22156,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22183,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22190,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22211,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22230,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22233,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22242,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22250,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22283,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22292,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22302,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22343,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22353,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22363,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22393,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22453,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22456,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22460,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22469,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22475,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22480,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22484,
+      "pressure_length": 26,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22549,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22557,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22568,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22573,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22576,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22595,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22624,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22640,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22641,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22658,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22678,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22681,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22715,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22721,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22732,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22741,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22763,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22808,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22811,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22813,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22850,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22900,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 22924,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22964,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22968,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 22998,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23001,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23004,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23005,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23022,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23043,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23064,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23100,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23130,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23142,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23146,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23159,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23166,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23195,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23210,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23250,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23251,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23255,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23258,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23259,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23270,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23285,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23286,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23287,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23295,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23346,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23348,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23349,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23363,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23378,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23391,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23404,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23411,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23449,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23452,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23458,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23468,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23492,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23537,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23540,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23546,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23557,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23560,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23561,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23564,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23568,
+      "pressure_length": 26,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23609,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23614,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23633,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23658,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23706,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23730,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23744,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23762,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23768,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23804,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23817,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23835,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23879,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23889,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23899,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23907,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23934,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23947,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23954,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 23973,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23993,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 23996,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24000,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24019,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24035,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24039,
+      "pressure_length": 17,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24048,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24108,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24111,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24112,
+      "pressure_length": 23,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24140,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24159,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24209,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24226,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24257,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24275,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24286,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24307,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24330,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24348,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24399,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24411,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24422,
+      "pressure_length": 20,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24429,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24438,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24458,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24540,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24578,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24579,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24589,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24610,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24614,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24631,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24664,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24667,
+      "pressure_length": 24,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24677,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24687,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24732,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24747,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24762,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24786,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24787,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24793,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24814,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24824,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24829,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24893,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24896,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24897,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24904,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24912,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 24942,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24944,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24945,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 24964,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25026,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25043,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25046,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25065,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25066,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25081,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25086,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25116,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25149,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25156,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25174,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25217,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25221,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25232,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25240,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25244,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25253,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25276,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25311,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25335,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25339,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25353,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25377,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25380,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25381,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25387,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25394,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25416,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25418,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25424,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25451,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25454,
+      "pressure_length": 28,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25470,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25472,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25476,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25481,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25486,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25491,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25494,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25506,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25560,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25577,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25591,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25607,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25626,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25633,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25638,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25664,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25705,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25718,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25723,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25754,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25779,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25784,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25794,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25813,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25818,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25824,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25865,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25869,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25889,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25907,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25908,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25945,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 25983,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 25988,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26000,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26006,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26035,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26047,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26048,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26051,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26052,
+      "pressure_length": 21,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26055,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26058,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26068,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26072,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26084,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26088,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26130,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26178,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26197,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26205,
+      "pressure_length": 30,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26229,
+      "pressure_length": 28,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26233,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26269,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26289,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26292,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26293,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26349,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26369,
+      "pressure_length": 25,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26382,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26388,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26400,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26411,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26438,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26443,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26447,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26488,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26507,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26526,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26531,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26567,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26594,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26625,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26628,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26637,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26644,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26652,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26675,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26686,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26695,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26724,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26758,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26763,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26786,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26821,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26826,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26828,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26838,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26861,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26878,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26906,
+      "pressure_length": 22,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26907,
+      "pressure_length": 24,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26914,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 26981,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 26988,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27008,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27015,
+      "pressure_length": 19,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27019,
+      "pressure_length": 27,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27024,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27061,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27095,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27136,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27151,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27163,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27180,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27186,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27193,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27221,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27246,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27249,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27270,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27273,
+      "pressure_length": 19,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27287,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27291,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27318,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27382,
+      "pressure_length": 21,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27388,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27394,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27404,
+      "pressure_length": 27,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27426,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27428,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27442,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27447,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27497,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27507,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27518,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27526,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27532,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27534,
+      "pressure_length": 18,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27645,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27648,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27661,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27667,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27676,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27677,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27684,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27698,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27720,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27727,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27729,
+      "pressure_length": 16,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27751,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27771,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27801,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27810,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27816,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27826,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27839,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27853,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27880,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27885,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27899,
+      "pressure_length": 16,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27901,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 27913,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 27965,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28002,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28005,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28006,
+      "pressure_length": 14,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28012,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28028,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28066,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28072,
+      "pressure_length": 22,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28099,
+      "pressure_length": 15,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28103,
+      "pressure_length": 12,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28170,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28244,
+      "pressure_length": 12,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28260,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28267,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28352,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28360,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28410,
+      "pressure_length": 18,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28422,
+      "pressure_length": 11,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28466,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28486,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28517,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28522,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28526,
+      "pressure_length": 13,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28536,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28563,
+      "pressure_length": 14,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28584,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28602,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28631,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28633,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28634,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28637,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28643,
+      "pressure_length": 20,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28667,
+      "pressure_length": 17,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28675,
+      "pressure_length": 15,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28679,
+      "pressure_length": 29,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28738,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28767,
+      "pressure_length": 11,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28777,
+      "pressure_length": 10,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28779,
+      "pressure_length": 25,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28785,
+      "pressure_length": 13,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28787,
+      "pressure_length": 29,
+      "direction": "BULLISH"
+    },
+    {
+      "index": 28797,
+      "pressure_length": 23,
+      "direction": "BEARISH"
+    },
+    {
+      "index": 28802,
+      "pressure_length": 10,
+      "direction": "BEARISH"
+    }
+  ],
+  "status": "DESCRIPTIVE_ONLY",
+  "canonical_geometry_changed": false,
+  "live_trading": false
+}
