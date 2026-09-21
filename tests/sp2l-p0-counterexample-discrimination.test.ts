@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{P0_COUNTEREXAMPLE_DISCRIMINATION as C}from"../research/fixtures/sp2l_p0_counterexample_discrimination_v1.js";
+describe("SP2L P0 counterexample discrimination",()=>{it("covers all 14 P0 cases",()=>expect(C).toHaveLength(14));it("never promotes a candidate",()=>expect(C.every(x=>x.canonicalEligible===false)).toBe(true));it("keeps unresolved field semantics unresolved",()=>expect(C.filter(x=>x.verdict==="NOT_SOURCE_DISCRIMINATED").length).toBeGreaterThan(6));});

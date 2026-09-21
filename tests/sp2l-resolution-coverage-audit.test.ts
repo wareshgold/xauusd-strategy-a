@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{COVERAGE}from"../research/fixtures/sp2l_resolution_coverage_audit_v1.js";
+describe("SP2L resolution coverage audit",()=>{it("covers F08-F15",()=>expect(new Set(COVERAGE.map(x=>x.family)).size).toBe(8));it("keeps all noncanonical",()=>expect(COVERAGE.every(x=>x.canonicalEligible===false)).toBe(true));it("identifies unresolved blockers",()=>expect(COVERAGE.filter(x=>x.state!=="SOURCE_CONFIRMED_PARTIAL").length).toBeGreaterThanOrEqual(7));});

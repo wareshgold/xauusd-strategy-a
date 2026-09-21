@@ -1,0 +1,32 @@
+# SP2L Resolution Coverage Audit — 2026-09-21
+
+| Family | Status | Current blocker |
+|---|---|---|
+| F08 Swing | COVERED_UNRESOLVED | deterministic swing/pivot + wick/body field |
+| F09 Entry | COVERED_UNRESOLVED | exact price field + trigger/activation precedence |
+| F10 Stop | COVERED_UNRESOLVED | exact field/buffer/invalidation |
+| F11 Lifecycle | COVERED_UNRESOLVED | replacement/delete/timeout/fill semantics |
+| F12 Trigger | COVERED_UNRESOLVED | touch/breach/close/fill/activation |
+| F13 2X | SOURCE_CONFIRMED_PARTIAL | lifecycle, sizing, shared SL/TP behavior |
+| F14 AB=CD | COVERED_UNRESOLVED | A/B/C/D anchors + tolerance |
+| F15 Bearish | NOT_INDEPENDENTLY_DEMONSTRATED | independent bearish P-Gap/executable proof |
+
+## Remaining source blockers
+1. F08 deterministic swing selection.
+2. F10 exact stop field/buffer/invalidation.
+3. F09 exact entry geometry and precedence.
+4. F14 exact AB=CD anchors/tolerance.
+5. F11/F12 execution lifecycle.
+6. F15 independent bearish executable evidence.
+7. F13 lifecycle/risk aggregation.
+
+**Gate: PASS — coverage audit complete; Frozen Geometry remains BLOCKED.**
+
+No production or forward-test logic changed.
+
+## P0 checkpoint
+F08/F10 source meaning has been reconciled without selecting an executable field. P0 remains open because deterministic swing selection and exact stop semantics are still unresolved.
+
+
+## Execution semantics checkpoint — 2026-09-21
+F11/F12/F13 execution questions were discriminated together. Pending-order usage is source-narrowed, but timeout/replacement/fill semantics remain unresolved. F13 Entry→SL midpoint remains source-confirmed; lifecycle, sizing/risk aggregation, and shared SL/TP behavior remain unresolved.

@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{F08_SWING_CASES}from"../research/fixtures/sp2l_f08_swing_source_resolution_v2.js";
+describe("F08 swing source resolution v2",()=>{it("covers BUY and SELL",()=>expect(new Set(F08_SWING_CASES.map(x=>x.direction)).size).toBe(2));it("covers all three anchor hypotheses",()=>expect(new Set(F08_SWING_CASES.map(x=>x.hypothesis)).size).toBe(3));it("keeps field unresolved",()=>expect(F08_SWING_CASES.every(x=>x.status==="SOURCE_SUPPORTED_FIELD_UNRESOLVED"&&x.canonicalEligible===false)).toBe(true));});

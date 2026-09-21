@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{F09_F14}from"../research/fixtures/sp2l_f09_f14_dependency_discrimination_v1.js";
+describe("SP2L F09/F14 dependency discrimination",()=>{it("covers both families and directions",()=>expect(new Set(F09_F14.map(x=>x.family)).size).toBe(2));it("keeps all noncanonical",()=>expect(F09_F14.every(x=>x.canonicalEligible===false)).toBe(true));it("does not invent tolerance",()=>expect(F09_F14.filter(x=>x.family==="F14_ABCD"&&x.verdict==="UNRESOLVED").length).toBeGreaterThan(0));});

@@ -57,3 +57,48 @@ Do not replace the existing forward-test P-Gap implementation yet. This document
 ## Gate
 
 Frozen Geometry remains BLOCKED until the sequence qualification can be made deterministic without contradicting the source.
+
+## Cross-gate finding: Spike / Leg-1 boundary
+
+The source visual ledger confirms that the Spike-to-two-leg construction is structural, not reducible to a fixed candle count. The Leg-1 endpoints are visually identifiable structural turning areas, while the exact OHLC field remains unresolved. The research branch therefore keeps anchor hypotheses separate from the source-confirmed structural concept.
+
+This does not alter the P-Gap primitive or promote any executable rule. Frozen Geometry remains BLOCKED.
+
+
+## AB=CD discrimination status
+
+Source evidence supports the structural concept `AB=CD` / Leg 2 approximately matching Leg 1. Exact A/B/C/D OHLC anchors and any numeric tolerance remain unresolved. The new research matrix intentionally includes exact equality, near-equality, and materially unequal examples so future source evidence can discriminate them without backtest-driven selection.
+
+
+## F08 / F09 / F15 geometry discrimination
+
+### F08 Swing selection
+Source evidence supports structural turning areas, but does not uniquely define swing-selection mechanics or wick/body fields. Research hypotheses are isolated without canonical promotion.
+
+### F09 Entry geometry
+Source evidence supports Pending Limit execution and a 1/2/3-candle family, while exact entry price geometry and replacement precedence remain unresolved. The close-reclaim implementation is not treated as source-canonical.
+
+### F15 Bearish executable geometry
+Bearish Spike/Leg-2 structure is source-consistent and visually mirrored. Bearish P-Gap remains only source-consistent rather than independently demonstrated in the preserved excerpt. No bearish executable formula is promoted.
+
+**Gate result: PASS — unresolved geometry is explicitly quarantined. Frozen Geometry remains BLOCKED.**
+
+
+## F11 / F12 execution-semantics discrimination
+
+Pending-order lifecycle and trigger semantics are now isolated in research fixtures. The matrix distinguishes **touch / breach / close / fill** from lifecycle actions such as place, refresh, delete, replace, and cancel. This prevents a trigger observation from silently becoming a fill rule.
+
+Source evidence supports Pending Limit usage and demonstrates deletion/replacement when structure or stop distance changes, but exact mandatory predicates, timeout, touch-versus-fill behavior, and activation precedence remain unresolved.
+
+**Gate result: PASS — execution semantics remain explicitly unresolved and noncanonical.**
+
+
+## F10 / F13 / F14 reconciliation gate
+
+F10 stop-anchor evidence, F13 secondary-entry relation, and F14 AB=CD geometry are now cross-checked in one research-only matrix. F13's Entry-to-Stop midpoint relation remains source-confirmed, while its lifecycle is unresolved. F10 exact wick/body/buffer semantics and F14 exact A/B/C/D anchors and equality tolerance remain unresolved.
+
+**Gate result: PASS — source-confirmed relations are preserved; unresolved execution/geometry is not promoted.**
+
+
+## Resolution priority control
+P0 source blockers are F08 Swing selection and F10 exact Stop semantics. P1 includes F09 Entry, F11/F12 execution semantics, and F14 AB=CD. P2 covers downstream bearish executable symmetry. This ordering only controls research sequence; it does not promote any rule.
