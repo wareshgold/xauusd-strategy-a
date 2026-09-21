@@ -62,6 +62,8 @@ def format_result_notification(
     *,
     direction: str,
     entry: float,
+    sl: float,
+    tp: float,
     exit_price: float,
     outcome: str,
     at: datetime | None = None,
@@ -74,8 +76,12 @@ def format_result_notification(
         if direction == "BUY"
         else float(entry) - float(exit_price)
     )
-    tp_amount = delta if outcome == "TP" else 0.0
-    sl_amount = delta if outcome == "SL" else 0.0
+    tp_amount = abs(float(tp) - float(entry))
+    sl_amount = -abs(float(entry) - float(sl))
+    if outcome == "TP":
+        tp_amount = abs(delta)
+    elif outcome == "SL":
+        sl_amount = -abs(delta)
     icon = "✅" if outcome == "TP" else ("❌" if outcome == "SL" else "⚠️")
     return "\n".join(
         [
