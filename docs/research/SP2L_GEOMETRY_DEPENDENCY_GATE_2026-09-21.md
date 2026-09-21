@@ -18,3 +18,7 @@ No production logic, forward-test logic, or canonical rule was changed.
 
 ## Resolution ordering
 The dependency graph is now ordered into P0 source blockers, P1 dependent questions, and P2 downstream symmetry. This ordering is a research control only and does not determine canonical rules.
+
+
+## P0 completion status
+F08 and F10 now have expanded source-discrimination fixtures. Neither is resolved enough to unlock Frozen Geometry; both remain source blockers.
