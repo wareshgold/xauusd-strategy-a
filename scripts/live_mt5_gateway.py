@@ -35,6 +35,20 @@ LIVE_TRADING_ENABLE = os.getenv("LIVE_TRADING_ENABLE", "false").lower() == "true
 # Double gate: even with LIVE_TRADING_ENABLE=true, real order_send additionally
 # requires ALLOW_REAL_EXECUTION=true. One forgotten flag can never go live.
 ALLOW_REAL_EXECUTION = os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true"
+# Hard real-execution blocker (third layer): symbol trade modes that allow
+# OPENING new positions (MetaTrader5 SYMBOL_TRADE_MODE_*: 1=LONGONLY,
+# 2=SHORTONLY, 3=FULL). Anything else — DISABLED (0), CLOSEONLY (4), or
+# unknown/unavailable — must never reach an open-order request. This is
+# verified against the live terminal immediately before order_send,
+# regardless of any operator flags (fail-closed).
+OPENABLE_SYMBOL_TRADE_MODES = {1, 2, 3}
+SYMBOL_TRADE_MODE_NAMES = {
+    0: "DISABLED",
+    1: "LONGONLY",
+    2: "SHORTONLY",
+    3: "FULL",
+    4: "CLOSEONLY",
+}
 MAX_OPEN_POSITIONS = int(os.getenv("MAX_OPEN_POSITIONS", "1"))
 # Optional bounded run (smoke tests). 0 / unset = run until stopped.
 MAX_RUN_SECONDS = float(os.getenv("GATEWAY_MAX_SECONDS", "0")) or None
@@ -193,6 +207,22 @@ def execute_signal(signal: Signal) -> dict:
             "request": request,
             "retcode": None,
             "reason": "ALLOW_REAL_EXECUTION!=true",
+        }
+
+    # Hard real-execution blocker (layer 3): refuse open orders on symbols
+    # whose live trade mode forbids opening (e.g. CLOSEONLY). Checked against
+    # the terminal's CURRENT state, immediately before order_send; missing
+    # symbol info fails closed.
+    info = mt5.symbol_info(SYMBOL)
+    trade_mode = int(info.trade_mode) if info is not None else None
+    if trade_mode is None or trade_mode not in OPENABLE_SYMBOL_TRADE_MODES:
+        return {
+            "ok": False,
+            "reason": "SYMBOL_NOT_OPENABLE",
+            "symbol_trade_mode": trade_mode,
+            "trade_mode_name": SYMBOL_TRADE_MODE_NAMES.get(trade_mode, "UNKNOWN")
+            if trade_mode is not None
+            else "UNAVAILABLE",
         }
 
     result = mt5.order_send(request)

@@ -166,13 +166,17 @@ python scripts/run_live_session.py
 python scripts/run_live_session.py --mode real
 ```
 
-Real-execution double gate (defense in depth):
+Real-execution triple gate (defense in depth) — a real `order_send` requires
+ALL of: both env keys AND an openable symbol trade mode verified against the
+live terminal immediately before the request (missing symbol info fails
+closed):
 
-| `LIVE_TRADING_ENABLE` | `ALLOW_REAL_EXECUTION` | Result |
-|---|---|---|
-| false | any | dry-run (order request journal-only) |
-| true | false/absent | dry-run (reason: `ALLOW_REAL_EXECUTION!=true`) |
-| true | true | real `order_send` to MT5 |
+| `LIVE_TRADING_ENABLE` | `ALLOW_REAL_EXECUTION` | Symbol trade mode | Result |
+|---|---|---|---|
+| false | any | any | dry-run (order request journal-only) |
+| true | false/absent | any | dry-run (reason: `ALLOW_REAL_EXECUTION!=true`) |
+| true | true | CLOSEONLY/DISABLED/unknown | **refused** (`SYMBOL_NOT_OPENABLE`) |
+| true | true | LONGONLY/SHORTONLY/FULL | real `order_send` to MT5 |
 
 The Telegram message mode label reflects this truthfully: it shows `LIVE`
 only when both keys are set.
@@ -193,17 +197,35 @@ Note: `symbol_trade_mode` for this broker's `XAUUSD.ecn` was observed as
 the terminal; the pre-flight check surfaces this so the operator can confirm
 the intended symbol/account before going live.
 
-### Gold symbol probe (2026-09-21 finding)
+### Gold symbol probe (2026-09-21 finding — hard real-execution blocker)
 
 `scripts/mt5_symbol_probe.py` lists every gold-named symbol with its trade
 mode. On the connected OtetGroup-MT5 account 812930 **all three metal
-symbols are CLOSEONLY** (`XAUUSD.ecn`, `XAUEUR.ecn`, `XAGUSD.ecn`) — there
-is **no openable gold symbol** on this terminal, while the terminal and
+symbols are CLOSEONLY** (`XAUUSD.ecn`, `XAUEUR.ecn`, `XAGUSD.ecn`) — **no
+openable metal symbol was found** on this terminal, while the terminal and
 account both report full trade/expert permissions. A uniform CLOSEONLY state
 with permissive account flags points to a broker/account-level restriction
 (e.g. expired demo, contest account, or account flagged close-only) and must
-be resolved with the broker; it is not a symbol-selection problem. The probe
-is read-only and safe to re-run anytime:
+be resolved with the broker; it is not a symbol-selection problem.
+
+CLOSEONLY is therefore treated as a **hard real-execution blocker**, enforced
+in two independent places:
+
+1. **Pre-flight** (`scripts/live_readiness.py`): a CLOSEONLY/DISABLED/unknown
+   symbol trade mode makes `mt5_symbol_spec` FAILED and the whole verdict
+   `NOT_READY`, even when both real-execution env keys are set — the session
+   runner then refuses `--mode real`.
+2. **Execution path** (`scripts/live_mt5_gateway.py::execute_signal`): as the
+   last check before `order_send`, the live `symbol_info().trade_mode` is
+   re-verified against the terminal; any mode outside
+   {LONGONLY, SHORTONLY, FULL} (or missing info) returns
+   `SYMBOL_NOT_OPENABLE` and no request leaves the process — regardless of
+   operator flags.
+
+Regression tests pin both behaviors (see `tests/test_live_readiness.py::
+test_closeonly_symbol_is_hard_real_execution_blocker` and
+`tests/test_live_mt5_gateway.py::test_closeonly_symbol_blocks_real_order_send`).
+The probe is read-only and safe to re-run anytime:
 
 ```powershell
 python scripts/mt5_symbol_probe.py

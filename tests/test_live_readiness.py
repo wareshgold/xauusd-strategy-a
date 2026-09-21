@@ -98,6 +98,39 @@ def test_disabled_symbol_trade_mode_blocks(monkeypatch):
     assert "mt5_symbol_spec" in report["blocking_items"]
 
 
+def test_closeonly_symbol_is_hard_real_execution_blocker(monkeypatch):
+    """REGRESSION: CLOSEONLY (mode 4, the observed OtetGroup state for
+    XAUUSD.ecn/XAUEUR.ecn/XAGUSD.ecn) must make the whole verdict NOT_READY
+    even when both real-execution env keys are set — it can never be a
+    merely-degraded warning."""
+    monkeypatch.setenv("LIVE_TRADING_ENABLE", "true")
+    monkeypatch.setenv("ALLOW_REAL_EXECUTION", "true")
+    monkeypatch.setattr(live_readiness, "telegram_delivery_status", lambda: TG_CONFIGURED)
+    probe = dict(MT5_PROBE_OK)
+    probe["symbol_trade_mode"] = 4  # CLOSEONLY
+    monkeypatch.setattr(live_readiness, "_probe_mt5", lambda symbol: probe)
+    report = check_live_readiness(probe_mt5=True)
+    assert report["verdict"] == "NOT_READY"
+    assert "mt5_symbol_spec" in report["blocking_items"]
+    assert report["real_execution_possible"] is True  # flags set...
+    # ...but the blocker still refuses the symbol.
+    spec = next(i for i in report["items"] if i["item"] == "mt5_symbol_spec")
+    assert spec["status"] == "FAILED"
+    assert "openable=False" in spec["detail"]
+
+
+def test_unknown_trade_mode_fails_closed(monkeypatch):
+    monkeypatch.setenv("LIVE_TRADING_ENABLE", "true")
+    monkeypatch.setenv("ALLOW_REAL_EXECUTION", "true")
+    monkeypatch.setattr(live_readiness, "telegram_delivery_status", lambda: TG_CONFIGURED)
+    probe = dict(MT5_PROBE_OK)
+    probe["symbol_trade_mode"] = None  # unavailable -> fail closed
+    monkeypatch.setattr(live_readiness, "_probe_mt5", lambda symbol: probe)
+    report = check_live_readiness(probe_mt5=True)
+    assert report["verdict"] == "NOT_READY"
+    assert "mt5_symbol_spec" in report["blocking_items"]
+
+
 def test_mt5_initialize_failure_blocks(monkeypatch):
     monkeypatch.delenv("LIVE_TRADING_ENABLE", raising=False)
     monkeypatch.delenv("ALLOW_REAL_EXECUTION", raising=False)

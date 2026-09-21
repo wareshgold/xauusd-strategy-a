@@ -40,6 +40,10 @@ MARGIN_MODE_RETAIL_HEDGING = 2
 # symbol_info().trade_mode values
 SYMBOL_TRADE_MODE_DISABLED = 0
 SYMBOL_TRADE_MODE_FULL = 3
+# Modes that allow OPENING new positions. Everything else — DISABLED (0),
+# CLOSEONLY (4), or unknown — is a HARD real-execution blocker, not merely a
+# degraded state.
+OPENABLE_SYMBOL_TRADE_MODES = {1, 2, 3}
 _SYMBOL_TRADE_MODE_NAMES = {
     0: "DISABLED",
     1: "LONGONLY",
@@ -172,13 +176,17 @@ def _mt5_items(mt5: dict) -> list[dict]:
 
     mode = mt5.get("symbol_trade_mode")
     visible = mt5.get("symbol_visible") is True
-    tradable = visible and mode not in (None, SYMBOL_TRADE_MODE_DISABLED)
+    # CLOSEONLY/DISABLED/unknown are HARD real-execution blockers: they make
+    # the whole readiness verdict NOT_READY, never merely degraded.
+    openable = mode in OPENABLE_SYMBOL_TRADE_MODES
+    tradable = visible and openable
     items.append({
         "item": "mt5_symbol_spec",
         "status": "OK" if tradable else "FAILED",
         "detail": (
             f"{SYMBOL} visible={visible} "
             f"trade_mode={_SYMBOL_TRADE_MODE_NAMES.get(mode, mode)} "
+            f"openable={openable} "
             f"stops_level={mt5.get('stops_level_points')}pts "
             f"volume_min={mt5.get('volume_min')} "
             f"volume_step={mt5.get('volume_step')} "
