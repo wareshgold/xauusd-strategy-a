@@ -36,7 +36,7 @@ MT5_PROBE_OK = {
     "account_trade_expert": True,
     "margin_mode": 2,
     "symbol_visible": True,
-    "symbol_trade_mode": 3,
+    "symbol_trade_mode": 4,
     "stops_level_points": 0,
     "volume_min": 0.01,
     "volume_step": 0.01,
@@ -107,7 +107,7 @@ def test_closeonly_symbol_is_hard_real_execution_blocker(monkeypatch):
     monkeypatch.setenv("ALLOW_REAL_EXECUTION", "true")
     monkeypatch.setattr(live_readiness, "telegram_delivery_status", lambda: TG_CONFIGURED)
     probe = dict(MT5_PROBE_OK)
-    probe["symbol_trade_mode"] = 4  # CLOSEONLY
+    probe["symbol_trade_mode"] = 3  # CLOSEONLY
     monkeypatch.setattr(live_readiness, "_probe_mt5", lambda symbol: probe)
     report = check_live_readiness(probe_mt5=True)
     assert report["verdict"] == "NOT_READY"
