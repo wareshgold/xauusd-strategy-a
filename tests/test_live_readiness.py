@@ -99,7 +99,7 @@ def test_disabled_symbol_trade_mode_blocks(monkeypatch):
 
 
 def test_closeonly_symbol_is_hard_real_execution_blocker(monkeypatch):
-    """REGRESSION: CLOSEONLY (mode 4, the observed OtetGroup state for
+    """REGRESSION: CLOSEONLY (mode 3, the observed OtetGroup state for
     XAUUSD.ecn/XAUEUR.ecn/XAGUSD.ecn) must make the whole verdict NOT_READY
     even when both real-execution env keys are set — it can never be a
     merely-degraded warning."""
