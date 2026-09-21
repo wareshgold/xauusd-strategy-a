@@ -26,3 +26,7 @@ No production or forward-test logic changed.
 
 ## P0 checkpoint
 F08/F10 source meaning has been reconciled without selecting an executable field. P0 remains open because deterministic swing selection and exact stop semantics are still unresolved.
+
+
+## Execution semantics checkpoint — 2026-09-21
+F11/F12/F13 execution questions were discriminated together. Pending-order usage is source-narrowed, but timeout/replacement/fill semantics remain unresolved. F13 Entry→SL midpoint remains source-confirmed; lifecycle, sizing/risk aggregation, and shared SL/TP behavior remain unresolved.
