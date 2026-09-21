@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{F10_COUNTEREXAMPLES}from"../research/fixtures/sp2l_f10_stop_counterexamples_v1.js";
+describe("F10 stop counterexamples",()=>{it("covers four discrimination classes",()=>expect(new Set(F10_COUNTEREXAMPLES.map(x=>x.type)).size).toBe(4));it("covers both directions",()=>expect(new Set(F10_COUNTEREXAMPLES.map(x=>x.direction)).size).toBe(2));it("fails closed",()=>expect(F10_COUNTEREXAMPLES.every(x=>x.status==="UNRESOLVED"&&x.canonicalEligible===false)).toBe(true));});
