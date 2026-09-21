@@ -36,7 +36,7 @@ try:  # direct-script compatibility (repo pattern)
 except ModuleNotFoundError:  # pytest / package mode
     from scripts.live_readiness import check_live_readiness, format_readiness
 
-GATEWAY = "live_mt5_gateway.py"
+GATEWAY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "live_mt5_gateway.py")
 
 
 def _requested_real(args_mode: str) -> bool:
