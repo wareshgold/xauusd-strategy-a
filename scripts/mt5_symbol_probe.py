@@ -29,11 +29,11 @@ TRADE_MODE_NAMES = {
     0: "DISABLED",
     1: "LONGONLY",
     2: "SHORTONLY",
-    3: "FULL",
-    4: "CLOSEONLY",
+    3: "CLOSEONLY",
+    4: "FULL",
 }
 # Modes that allow opening new positions (everything except DISABLED/CLOSEONLY).
-OPENABLE_TRADE_MODES = {1, 2, 3}
+OPENABLE_TRADE_MODES = {1, 2, 4}
 
 
 def probe_symbols(mt5, patterns=GOLD_PATTERNS) -> list[dict]:
