@@ -26,3 +26,7 @@ F08 and F10 now have expanded source-discrimination fixtures. Neither is resolve
 
 ## P1 geometry coverage
 F09 Entry and F14 AB=CD now have expanded source-discrimination fixtures. Both remain unresolved; dependency mapping is preserved and no canonical execution rule is inferred.
+
+
+## P0 source-discrimination checkpoint — 2026-09-21
+F08 and F10 now have an explicit meaning-level source reconciliation artifact. F08 remains unresolved at pivot/endpoint level. F10 remains unresolved at exact field, buffer, origin mapping, and invalidation-event level. No canonical promotion occurred.
