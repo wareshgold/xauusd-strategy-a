@@ -19,3 +19,8 @@ This is a research prioritization control, not a canonical rule set. It identifi
 **Result: PASS — priority graph established; Frozen Geometry remains BLOCKED.**
 
 No forward-test or production logic changed.
+
+## F08 resolution pass
+F08 now has BUY/SELL hypothesis coverage and explicit wick-vs-body, structural-turn-vs-fixed-pivot, and asymmetric-window counterexamples. These constrain the reconstruction but do not select a canonical swing algorithm.
+
+**Gate: PASS — F08 remains unresolved at the field/algorithm level.**
