@@ -186,7 +186,7 @@ def execute_signal(signal: Signal) -> dict:
         "tp": signal.tp,
         "deviation": DEVIATION,
         "magic": MAGIC,
-        "comment": f"SP2L:{signal.signal_id}"[:31],
+        "comment": "SP2L-TEST"[:31],
         "type_time": mt5.ORDER_TIME_GTC,
         "type_filling": mt5.ORDER_FILLING_IOC,
     }
