@@ -146,3 +146,49 @@ This switch is intentionally explicit because the project is not yet at the prod
 - [ ] Gateway restart behavior tested
 - [ ] Dry-run tested before any live order
 - [ ] Canonical Strategy A signal source still blocked unless its validation gate is actually passed
+
+## One-command session (pre-flight + gateway)
+
+The pre-flight checker inspects MT5 terminal/account/symbol state, Telegram
+configuration, and the real-execution double gate. It only inspects — it
+never changes configuration and never enables trading.
+
+```powershell
+# Pre-flight only (exit 0 = READY, 1 = NOT_READY/PARTIAL):
+python scripts/run_live_session.py --check-only
+
+# Dry-run session (default; every execution is journal-only, no order):
+python scripts/run_live_session.py
+
+# REAL orders: requires ALL of the following or the runner refuses to start:
+#   --mode real  AND  LIVE_TRADING_ENABLE=true  AND  ALLOW_REAL_EXECUTION=true
+#   AND pre-flight verdict READY
+python scripts/run_live_session.py --mode real
+```
+
+Real-execution double gate (defense in depth):
+
+| `LIVE_TRADING_ENABLE` | `ALLOW_REAL_EXECUTION` | Result |
+|---|---|---|
+| false | any | dry-run (order request journal-only) |
+| true | false/absent | dry-run (reason: `ALLOW_REAL_EXECUTION!=true`) |
+| true | true | real `order_send` to MT5 |
+
+The Telegram message mode label reflects this truthfully: it shows `LIVE`
+only when both keys are set.
+
+### Readiness verdicts
+
+- `READY` — every probed component verified; real mode may start.
+- `PARTIAL` — nothing failed but some component was not verified (e.g. MT5
+  probe skipped); real mode is refused.
+- `NOT_READY` — at least one FAILED item (terminal, account permission, or
+  symbol trade mode); real mode is refused.
+
+Telegram unconfigured is `DEGRADED` (alerts missing) and never blocks
+execution — the trading path is independent of the alerting path.
+
+Note: `symbol_trade_mode` for this broker's `XAUUSD.ecn` was observed as
+`CLOSEONLY` on 2026-09-21. Opening new positions on it will be rejected by
+the terminal; the pre-flight check surfaces this so the operator can confirm
+the intended symbol/account before going live.

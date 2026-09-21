@@ -32,7 +32,12 @@ DEVIATION = int(os.getenv("MT5_DEVIATION_POINTS", "30"))
 POLL_SECONDS = float(os.getenv("POLL_SECONDS", "2"))
 SIGNAL_FILE = Path(os.getenv("SIGNAL_FILE", "runtime/approved_signal.json"))
 LIVE_TRADING_ENABLE = os.getenv("LIVE_TRADING_ENABLE", "false").lower() == "true"
+# Double gate: even with LIVE_TRADING_ENABLE=true, real order_send additionally
+# requires ALLOW_REAL_EXECUTION=true. One forgotten flag can never go live.
+ALLOW_REAL_EXECUTION = os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true"
 MAX_OPEN_POSITIONS = int(os.getenv("MAX_OPEN_POSITIONS", "1"))
+# Optional bounded run (smoke tests). 0 / unset = run until stopped.
+MAX_RUN_SECONDS = float(os.getenv("GATEWAY_MAX_SECONDS", "0")) or None
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -140,6 +145,11 @@ def format_signal(signal: Signal, mode: str, result: dict | None = None) -> str:
     return "\n".join(lines)
 
 
+def effective_mode() -> str:
+    """Truthful mode label: LIVE only when BOTH real-execution keys are set."""
+    return "LIVE" if (LIVE_TRADING_ENABLE and ALLOW_REAL_EXECUTION) else "DRY-RUN"
+
+
 def execute_signal(signal: Signal) -> dict:
     positions = open_positions()
     if len(positions) >= MAX_OPEN_POSITIONS:
@@ -174,6 +184,15 @@ def execute_signal(signal: Signal) -> dict:
             "request": request,
             "retcode": None,
             "reason": "LIVE_TRADING_ENABLE=false",
+        }
+
+    if not ALLOW_REAL_EXECUTION:
+        return {
+            "ok": True,
+            "dry_run": True,
+            "request": request,
+            "retcode": None,
+            "reason": "ALLOW_REAL_EXECUTION!=true",
         }
 
     result = mt5.order_send(request)
@@ -213,11 +232,12 @@ def archive_signal() -> None:
 
 def main() -> None:
     mt5_initialize()
+    started_at = time.time()
     last_status = None
     telegram_send(
         "Nexora Gateway started\n"
         f"Symbol: {SYMBOL}\n"
-        f"Mode: {'LIVE' if LIVE_TRADING_ENABLE else 'DRY-RUN'}"
+        f"Mode: {effective_mode()}"
     )
 
     try:
@@ -254,7 +274,7 @@ def main() -> None:
                     telegram_send(
                         format_signal(
                             signal,
-                            "LIVE" if LIVE_TRADING_ENABLE else "DRY-RUN",
+                            effective_mode(),
                             {"retcode": None, "order": None, "deal": None, "comment": "DUPLICATE_SIGNAL_ID"},
                         )
                     )
@@ -275,7 +295,7 @@ def main() -> None:
                 })
                 message = format_signal(
                     signal,
-                    "LIVE" if LIVE_TRADING_ENABLE else "DRY-RUN",
+                    effective_mode(),
                 )
                 telegram_send(message)
 
@@ -303,11 +323,14 @@ def main() -> None:
 
                 telegram_send(format_signal(
                     signal,
-                    "LIVE" if LIVE_TRADING_ENABLE else "DRY-RUN",
+                    effective_mode(),
                     result,
                 ))
                 archive_signal()
 
+            if MAX_RUN_SECONDS and time.time() - started_at >= MAX_RUN_SECONDS:
+                print(json.dumps({"gateway": "bounded_run_complete", "max_run_seconds": MAX_RUN_SECONDS}))
+                break
             time.sleep(POLL_SECONDS)
     finally:
         mt5.shutdown()

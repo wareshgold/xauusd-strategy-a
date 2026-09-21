@@ -24,6 +24,7 @@ def load_gateway(monkeypatch, tmp_path):
     monkeypatch.setenv("TRADING_SYMBOL", "XAUUSD.ecn")
     monkeypatch.setenv("SIGNAL_FILE", str(tmp_path / "approved_signal.json"))
     monkeypatch.setenv("LIVE_TRADING_ENABLE", "false")
+    monkeypatch.delenv("ALLOW_REAL_EXECUTION", raising=False)
     monkeypatch.setenv("MAX_OPEN_POSITIONS", "1")
     sys.modules.pop("scripts.live_mt5_gateway", None)
     return importlib.import_module("scripts.live_mt5_gateway"), fake_mt5
@@ -118,4 +119,66 @@ def test_telegram_format_is_nexora_branded(monkeypatch, tmp_path):
     assert "SP2L SIGNAL" not in execution_message
     assert "SP2L Live Gateway" not in signal_message
     assert "SP2L Live Gateway" not in execution_message
+
+
+def _approved_buy(gateway):
+    return gateway.Signal.from_json({
+        "direction": "BUY",
+        "symbol": "XAUUSD.ecn",
+        "entry": 100.0,
+        "sl": 90.0,
+        "tp": 110.0,
+        "volume": 0.01,
+        "signal_id": "TEST-DOUBLE-GATE-001",
+        "source": "MANUAL_GATEWAY_TEST_ONLY",
+        "status": "APPROVED",
+    })
+
+
+def test_live_flag_without_allow_stays_dry_run(monkeypatch, tmp_path):
+    """One forgotten key must never reach order_send."""
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    monkeypatch.setenv("LIVE_TRADING_ENABLE", "true")
+    monkeypatch.delenv("ALLOW_REAL_EXECUTION", raising=False)
+    monkeypatch.setattr(
+        gateway, "LIVE_TRADING_ENABLE", True, raising=False
+    )
+    mt5.positions_get = lambda symbol=None: []
+    mt5.symbol_info_tick = lambda symbol: SimpleNamespace(bid=100.0, ask=100.2)
+    result = gateway.execute_signal(_approved_buy(gateway))
+    assert result["dry_run"] is True
+    assert result["reason"] == "ALLOW_REAL_EXECUTION!=true"
+
+
+def test_both_keys_enable_real_path_only_with_fake_order_send(monkeypatch, tmp_path):
+    """With BOTH keys set the real path is taken — verified against a fake
+    MT5 module (no broker connection in tests)."""
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    monkeypatch.setenv("LIVE_TRADING_ENABLE", "true")
+    monkeypatch.setenv("ALLOW_REAL_EXECUTION", "true")
+    monkeypatch.setattr(gateway, "LIVE_TRADING_ENABLE", True, raising=False)
+    monkeypatch.setattr(gateway, "ALLOW_REAL_EXECUTION", True, raising=False)
+    mt5.symbol_info_tick = lambda symbol: SimpleNamespace(bid=100.0, ask=100.2)
+    mt5.positions_get = lambda symbol=None: []
+    sent = {}
+
+    def fake_order_send(request):
+        sent.update(request)
+        return SimpleNamespace(retcode=mt5.TRADE_RETCODE_DONE, order=111, deal=222, comment="ok")
+
+    mt5.order_send = fake_order_send
+    result = gateway.execute_signal(_approved_buy(gateway))
+    assert result["dry_run"] is False
+    assert result["ok"] is True
+    assert result["retcode"] == mt5.TRADE_RETCODE_DONE
+    assert sent["symbol"] == "XAUUSD.ecn"
+
+
+def test_effective_mode_is_truthful(monkeypatch, tmp_path):
+    gateway, _ = load_gateway(monkeypatch, tmp_path)
+    assert gateway.effective_mode() == "DRY-RUN"
+    monkeypatch.setattr(gateway, "LIVE_TRADING_ENABLE", True, raising=False)
+    assert gateway.effective_mode() == "DRY-RUN"  # still dry: ALLOW key missing
+    monkeypatch.setattr(gateway, "ALLOW_REAL_EXECUTION", True, raising=False)
+    assert gateway.effective_mode() == "LIVE"
 

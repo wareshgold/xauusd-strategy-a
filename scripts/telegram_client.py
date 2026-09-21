@@ -51,9 +51,13 @@ def send_telegram_message(
     bot_token: str | None = None,
     chat_id: str | None = None,
     timeout: float = 10,
+    parse_mode: str | None = None,
     env: dict | None = None,
 ) -> TelegramSendResult:
     """Send one text message. Falls back to environment credentials.
+
+    parse_mode: optional Telegram formatting (e.g. "HTML"). Plain text
+    when omitted.
 
     Never raises: every failure mode is returned as a structured result so
     callers can log it deterministically.
@@ -67,7 +71,10 @@ def send_telegram_message(
         return TelegramSendResult(success=False, detail="NOT_CONFIGURED", response=None)
 
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    body = urlencode({"chat_id": chat_id, "text": text}).encode()
+    params: dict[str, str] = {"chat_id": chat_id, "text": text}
+    if parse_mode:
+        params["parse_mode"] = parse_mode
+    body = urlencode(params).encode()
     try:
         req = Request(url, data=body, method="POST")
         with urlopen(req, timeout=timeout) as response:

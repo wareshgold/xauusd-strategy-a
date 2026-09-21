@@ -1,20 +1,23 @@
 """Telegram formatting + delivery layer for SP2L reports.
 
-Reporting/infrastructure only:
-- renders an already-computed report dict into fixed text templates;
-- sends via the shared Telegram client (scripts/telegram_client.py);
-- appends every delivery attempt to runtime/journal/report_log.jsonl with
-  report timestamp, report type, Telegram response and success/failure;
+Compact, HTML-formatted Telegram templates:
+- summary-first (signals -> performance -> daily/weekly breakdown ->
+  execution -> safety footer);
+- no per-trade dump on Telegram: the trade-by-trade detail remains in the
+  JSON/XLSX artifacts and period CSV for audit ("قابل بررسی" stays in the
+  artifacts; Telegram stays readable);
+- renders an already-computed report dict (deterministic, no wall clock);
+- sends via the shared Telegram client with parse_mode=HTML (all dynamic
+  values HTML-escaped);
+- appends every delivery attempt to runtime/journal/report_log.jsonl;
 - never calculates geometry, never alters direction, never creates signals.
-
-Research-mode labelling contract (SP2L_RESEARCH_LIVE_MODE_CONTRACT):
-Telegram output is explicitly labelled RESEARCH and must not imply
-production authorization.
 """
 
 from __future__ import annotations
 
 import hashlib
+import html
+from datetime import datetime
 from typing import Any
 
 try:
@@ -24,11 +27,12 @@ except ModuleNotFoundError:
     from scripts.live_journal import record_report
     from scripts.telegram_client import send_telegram_message, telegram_delivery_status
 
-LABELS = {
-    "daily": "SP2L Daily Report — RESEARCH",
-    "weekly": "SP2L Weekly Report — RESEARCH",
-    "monthly": "SP2L Monthly Report — RESEARCH",
+TITLES = {
+    "daily": "📊 SP2L Daily Report",
+    "weekly": "📊 SP2L Weekly Report",
+    "monthly": "📊 SP2L Monthly Report",
 }
+_EMOJI = {"win": "✅", "loss": "❌", "ambiguous": "⚠️"}
 
 
 # ---------------------------------------------------------------------------
@@ -36,75 +40,76 @@ LABELS = {
 # ---------------------------------------------------------------------------
 
 
-def _fmt(value: Any, digits: int = 2) -> str:
+def _esc(value: Any) -> str:
+    return html.escape(str(value), quote=False)
+
+
+def _num(value: Any, digits: int = 2, signed: bool = False) -> str:
     if value is None:
-        return "n/a"
-    return f"{float(value):.{digits}f}"
+        return "—"
+    return f"{float(value):+.{digits}f}" if signed else f"{float(value):.{digits}f}"
 
 
-def _fmt_pips(report: dict) -> str:
-    perf = report.get("performance", {})
-    basis = perf.get("pips_basis")
-    net_pips = perf.get("net_pips")
-    if basis == "NOT_CONFIGURED":
-        return "n/a (pip size not configured)"
-    return f"{_fmt(net_pips, 2)} (basis: EXPLICIT_PIP_SIZE)"
+def _pct(value: Any) -> str:
+    return "—" if value is None else f"{float(value):.2f}%"
 
 
-def _period_line(report: dict) -> str:
+def _period_header(report: dict) -> str:
     period = report.get("period", {})
-    return (
-        f"Trading Period: {period.get('start_utc')} → {period.get('end_utc')} "
-        f"({period.get('session_timezone')})"
-    )
+    start = str(period.get("start_utc", ""))[:10]
+    end = str(period.get("end_utc", ""))[:10]
+    return f"🗓 {start} → {end} · {_esc(period.get('session_timezone', 'UTC'))}"
 
 
-def _date_line(report: dict) -> str:
-    start = str(report.get("period", {}).get("start_utc", ""))
-    return f"Date: {start[:10]} ({report.get('period', {}).get('session_timezone')})"
+def _live_trading_flag(system: dict) -> str:
+    status = str(system.get("live_trading_status", ""))
+    return "OFF" if status.startswith("DISABLED") else "ON"
 
 
-def _signals_section(report: dict) -> list[str]:
+def _signals_block(report: dict) -> list[str]:
     sig = report.get("signals", {})
-    return [
-        "Signals:",
-        f"- Total signals: {sig.get('total', 0)}",
-        f"- WIN count: {sig.get('win', 0)}",
-        f"- LOSS count: {sig.get('loss', 0)}",
-        f"- AMBIGUOUS count: {sig.get('ambiguous', 0)}",
-    ]
+    lines = ["<b>Signals</b>"]
+    lines.append(
+        f"Total <b>{sig.get('total', 0)}</b> · "
+        f"{_EMOJI['win']} {sig.get('win', 0)} · "
+        f"{_EMOJI['loss']} {sig.get('loss', 0)} · "
+        f"{_EMOJI['ambiguous']} {sig.get('ambiguous', 0)}"
+    )
+    win_rate = report.get("performance", {}).get("win_rate_pct")
+    lines.append(f"Win rate: <b>{_pct(win_rate)}</b>")
+    if sig.get("ambiguous", 0):
+        lines.append(f"{_EMOJI['ambiguous']} = outcome unresolved in journal")
+    return lines
 
 
-def _performance_section(report: dict) -> list[str]:
+def _performance_block(report: dict) -> list[str]:
     perf = report.get("performance", {})
-    win_rate = perf.get("win_rate_pct")
-    win_rate_text = "n/a" if win_rate is None else f"{_fmt(win_rate, 2)}%"
-    return [
-        "Performance:",
-        f"- Net pips: {_fmt_pips(report)}",
-        f"- Net R: {_fmt(perf.get('net_r'), 4)}",
-        f"- Profit factor: {_fmt(perf.get('profit_factor'), 4)}",
-        f"- Win rate: {win_rate_text}",
-        f"- Max drawdown: {_fmt(perf.get('max_drawdown_r'), 4)} R",
-    ]
+    lines = ["<b>Performance</b>"]
+    lines.append(f"Net R: <b>{_num(perf.get('net_r'), 2, signed=True)}</b>")
+    if perf.get("pips_basis") == "EXPLICIT_PIP_SIZE":
+        lines.append(f"Net Pips: <b>{_num(perf.get('net_pips'), 2, signed=True)}</b>")
+    lines.append(f"Profit Factor: <b>{_num(perf.get('profit_factor'))}</b>")
+    lines.append(f"Max Drawdown: {_num(perf.get('max_drawdown_r'))} R")
+    return lines
 
 
-def _execution_section(report: dict) -> list[str]:
+def _execution_block(report: dict) -> list[str]:
     exe = report.get("execution", {})
-    return [
-        "Execution:",
-        f"- Open trades: {exe.get('open_trades', 0)}",
-        f"- Closed trades: {exe.get('closed_trades', 0)}",
-        f"- Broker reconciliation status: {exe.get('broker_reconciliation_status', 'NO_DATA')}",
-    ]
+    lines = ["<b>Execution</b>"]
+    lines.append(
+        f"Closed {exe.get('closed_trades', 0)} · Open {exe.get('open_trades', 0)}"
+        + (f" · Dry-run {exe.get('dry_run_trades', 0)}" if exe.get("dry_run_trades") else "")
+    )
+    lines.append(f"Reconciliation: {_esc(exe.get('broker_reconciliation_status', 'NO_DATA'))}")
+    return lines
 
 
-def _system_section(report: dict) -> list[str]:
+def _footer_block(report: dict) -> list[str]:
     system = report.get("system", {})
     return [
-        "System:",
-        f"- Geometry status: {system.get('geometry_status', 'UNKNOWN')}",
-        f"- Live trading status: {system.get('live_trading_status', 'UNKNOWN')}",
+        "🟡 Research mode — not a trading signal",
+        f"🟢 Live trading: {_live_trading_flag(system)}",
+        f"🧭 Geometry gate: {_esc(system.get('geometry_status', 'UNKNOWN'))}",
     ]
 
 
@@ -113,61 +118,44 @@ def _system_section(report: dict) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def _daily_breakdown_lines(report: dict) -> list[str]:
+def _weekday_label(date_key: str) -> str:
+    try:
+        return datetime.strptime(date_key, "%Y-%m-%d").strftime("%a %d")
+    except ValueError:
+        return date_key
+
+
+def _bucket_lines(rows: list[dict], key: str) -> list[str]:
+    if not rows:
+        return ["(no records)"]
+    lines = []
+    for row in rows:
+        label = _weekday_label(str(row.get(key, "")))
+        lines.append(
+            f"{_esc(label)} · {row.get('win', 0)}W {row.get('loss', 0)}L "
+            f"{row.get('ambiguous', 0)}A · {_num(row.get('net_r'), 2, signed=True)}R"
+        )
+    return lines
+
+
+def _daily_breakdown_block(report: dict) -> list[str]:
     breakdown = report.get("daily_breakdown") or {}
-    lines = [f"Daily breakdown ({breakdown.get('timezone', 'UTC')}):"]
-    rows = breakdown.get("rows") or []
-    if not rows:
-        lines.append("- (no records)")
-        return lines
-    for row in rows:
-        lines.append(
-            f"- {row['date']}: signals={row['signals']} win={row['win']} "
-            f"loss={row['loss']} ambiguous={row['ambiguous']} net_r={_fmt(row['net_r'], 4)}"
-        )
-    return lines
+    return ["<b>Daily</b>", *_bucket_lines(breakdown.get("rows") or [], "date")]
 
 
-def _weekly_breakdown_lines(report: dict) -> list[str]:
+def _weekly_breakdown_block(report: dict) -> list[str]:
     breakdown = report.get("weekly_breakdown") or {}
-    lines = [f"Weekly breakdown ({breakdown.get('timezone', 'UTC')}):"]
-    rows = breakdown.get("rows") or []
-    if not rows:
-        lines.append("- (no records)")
-        return lines
-    for row in rows:
-        lines.append(
-            f"- {row['week']}: signals={row['signals']} win={row['win']} "
-            f"loss={row['loss']} ambiguous={row['ambiguous']} net_r={_fmt(row['net_r'], 4)}"
-        )
-    return lines
+    return ["<b>Weeks</b>", *_bucket_lines(breakdown.get("rows") or [], "week")]
 
 
-def _trade_list_lines(report: dict) -> list[str]:
-    rows = report.get("trade_list_summary") or []
-    lines = ["Trade list summary:"]
-    if not rows:
-        lines.append("- (no signals in period)")
-        return lines
-    for row in rows:
-        lines.append(
-            f"- {row.get('signal_id')} {row.get('direction')} {row.get('status')} "
-            f"result={row.get('result')} r={_fmt(row.get('r_multiple'), 4)} "
-            f"pips={_fmt(row.get('pips'), 2)}"
-        )
-    return lines
-
-
-def _equity_lines(report: dict) -> list[str]:
+def _equity_block(report: dict) -> list[str]:
     equity = report.get("equity_summary") or {}
     return [
-        "Equity/performance summary (R-basis):",
-        f"- Equity start R: {_fmt(equity.get('equity_start_r'), 4)}",
-        f"- Equity end R: {_fmt(equity.get('equity_end_r'), 4)}",
-        f"- Equity peak R: {_fmt(equity.get('equity_peak_r'), 4)}",
-        f"- Equity trough R: {_fmt(equity.get('equity_trough_r'), 4)}",
-        "Drawdown summary:",
-        f"- Max drawdown: {_fmt(equity.get('max_drawdown_r'), 4)} R",
+        "<b>Equity (R)</b>",
+        f"End {_num(equity.get('equity_end_r'), 2, signed=True)} · "
+        f"Peak {_num(equity.get('equity_peak_r'), 2)} · "
+        f"Trough {_num(equity.get('equity_trough_r'), 2, signed=True)} · "
+        f"Max DD {_num(equity.get('max_drawdown_r'), 2)}",
     ]
 
 
@@ -177,35 +165,29 @@ def _equity_lines(report: dict) -> list[str]:
 
 
 def format_report(report: dict) -> str:
-    """Render a report dict into its fixed Telegram text template."""
+    """Render a report dict into the compact HTML Telegram template."""
     report_type = report.get("report_type")
-    if report_type not in LABELS:
+    if report_type not in TITLES:
         raise ValueError(f"unsupported report type: {report_type}")
 
-    lines: list[str] = [LABELS[report_type]]
-    if report_type == "daily":
-        lines.append(_date_line(report))
-    lines.append(_period_line(report))
+    lines: list[str] = [TITLES[report_type], _period_header(report), ""]
+    lines.extend(_signals_block(report))
     lines.append("")
-    lines.extend(_signals_section(report))
-    lines.append("")
-    lines.extend(_performance_section(report))
-    lines.append("")
-    lines.extend(_execution_section(report))
+    lines.extend(_performance_block(report))
     lines.append("")
 
     if report_type in {"weekly", "monthly"}:
-        lines.extend(_daily_breakdown_lines(report))
-        lines.append("")
-        lines.extend(_trade_list_lines(report))
+        lines.extend(_daily_breakdown_block(report))
         lines.append("")
     if report_type == "monthly":
-        lines.extend(_weekly_breakdown_lines(report))
+        lines.extend(_weekly_breakdown_block(report))
         lines.append("")
-        lines.extend(_equity_lines(report))
+        lines.extend(_equity_block(report))
         lines.append("")
 
-    lines.extend(_system_section(report))
+    lines.extend(_execution_block(report))
+    lines.append("")
+    lines.extend(_footer_block(report))
     return "\n".join(lines)
 
 
@@ -233,7 +215,7 @@ def send_report(
     The log record contains: report timestamp, report type, Telegram
     response, and success/failure. Never raises.
     """
-    result = send_telegram_message(report_text)
+    result = send_telegram_message(report_text, parse_mode="HTML")
     delivery = telegram_delivery_status()
     record = {
         "report_type": report_type,

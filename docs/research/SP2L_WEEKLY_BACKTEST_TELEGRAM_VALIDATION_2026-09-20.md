@@ -80,41 +80,43 @@ timestamps are canonical UTC; explicit config, not a new assumption) and
 `artifacts/SP2L_weekly_backtest_report_2026-09-20.json` (+ CSV + XLSX).
 
 ```
-SP2L Weekly Report — RESEARCH
-Trading Period: 2026-09-14T00:00:00+00:00 → 2026-09-19T00:00:00+00:00 (UTC)
+📊 SP2L Weekly Report
+🗓 2026-09-14 → 2026-09-19 · UTC
 
-Signals:
-- Total signals: 38
-- WIN count: 27
-- LOSS count: 10
-- AMBIGUOUS count: 1
+Signals
+Total 38 · ✅ 27 · ❌ 10 · ⚠️ 1
+Win rate: 72.97%
+⚠️ = outcome unresolved in journal
 
-Performance:
-- Net pips: 643.40 (basis: EXPLICIT_PIP_SIZE)
-- Net R: 17.0000
-- Profit factor: 2.7000
-- Win rate: 72.97%
-- Max drawdown: 2.0000 R
+Performance
+Net R: +17.00
+Net Pips: +643.40
+Profit Factor: 2.70
+Max Drawdown: 2.00 R
 
-Execution:
-- Open trades: 0
-- Closed trades: 38
-- Broker reconciliation status: PARTIAL
+Daily
+Mon 14 · 9W 0L 1A · +9.00R
+Tue 15 · 9W 4L 0A · +5.00R
+Wed 16 · 2W 1L 0A · +1.00R
+Thu 17 · 4W 1L 0A · +3.00R
+Fri 18 · 3W 4L 0A · -1.00R
 
-Daily breakdown (UTC):
-- 2026-09-14: signals=10 win=9 loss=0 ambiguous=1 net_r=9.0000
-- 2026-09-15: signals=13 win=9 loss=4 ambiguous=0 net_r=5.0000
-- 2026-09-16: signals=3 win=2 loss=1 ambiguous=0 net_r=1.0000
-- 2026-09-17: signals=5 win=4 loss=1 ambiguous=0 net_r=3.0000
-- 2026-09-18: signals=7 win=3 loss=4 ambiguous=0 net_r=-1.0000
+Execution
+Closed 38 · Open 0
+Reconciliation: PARTIAL
 
-System:
-- Geometry status: UNRESOLVED_FROZEN_GEOMETRY_GATE
-- Live trading status: DISABLED (LIVE_TRADING_ENABLE=false)
+🟡 Research mode — not a trading signal
+🟢 Live trading: OFF
+🧭 Geometry gate: UNRESOLVED_FROZEN_GEOMETRY_GATE
 ```
 
-`Broker reconciliation status: PARTIAL` is correct here: the journal is a
+`Reconciliation: PARTIAL` is correct here: the journal is a
 backtest view, so rows carry exit prices but no broker deal/net fields.
+Template revised 2026-09-20 (compact HTML; per-trade dump removed from
+Telegram — see SP2L_TELEGRAM_REPORTING_SYSTEM_2026-09-20.md). A first
+REAL delivery of the pre-revision template was performed from the operator
+session on 2026-09-20 12:36 UTC (message #12, Nexora Signals group; logged
+with `delivery_mode: REAL`, `success: true`).
 
 ## Phase 5 — Telegram destination status and delivery test
 

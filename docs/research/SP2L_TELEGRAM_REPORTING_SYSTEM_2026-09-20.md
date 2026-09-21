@@ -182,49 +182,52 @@ is logged with `telegram_status=NOT_CONFIGURED` and `success=false`.
 Results at time of writing: pytest 31 passed; `npm test` (vitest) 124
 passed; `npm run build` (`tsc --noEmit`) clean.
 
-## Example Telegram weekly report (verification window, real journal)
+## Telegram template (2026-09-20 revision: compact HTML)
+
+After the first REAL delivery (2026-09-20 12:36 UTC, message #12 to the
+Nexora Signals group) the template was redesigned: the per-trade dump was
+removed from Telegram (it remains in the JSON/XLSX/CSV artifacts for
+audit) and the message is now sent with `parse_mode=HTML` using a compact
+summary-first layout. Verified deliverable (weekly backtest artifact,
+canonical config):
 
 ```
-SP2L Weekly Report — RESEARCH
-Trading Period: 2026-09-14T00:00:00+00:00 → 2026-09-21T00:00:00+00:00 (America/New_York)
+📊 SP2L Weekly Report
+🗓 2026-09-14 → 2026-09-19 · UTC
 
-Signals:
-- Total signals: 6
-- WIN count: 0
-- LOSS count: 0
-- AMBIGUOUS count: 6
+Signals
+Total 38 · ✅ 27 · ❌ 10 · ⚠️ 1
+Win rate: 72.97%
+⚠️ = outcome unresolved in journal
 
-Performance:
-- Net pips: n/a (basis: EXPLICIT_PIP_SIZE)
-- Net R: 0.0000
-- Profit factor: n/a
-- Win rate: n/a
-- Max drawdown: 0.0000 R
+Performance
+Net R: +17.00
+Net Pips: +643.40
+Profit Factor: 2.70
+Max Drawdown: 2.00 R
 
-Execution:
-- Open trades: 0
-- Closed trades: 0
-- Broker reconciliation status: NOT_RUN
+Daily
+Mon 14 · 9W 0L 1A · +9.00R
+Tue 15 · 9W 4L 0A · +5.00R
+Wed 16 · 2W 1L 0A · +1.00R
+Thu 17 · 4W 1L 0A · +3.00R
+Fri 18 · 3W 4L 0A · -1.00R
 
-Daily breakdown (America/New_York):
-- 2026-09-19: signals=5 win=0 loss=0 ambiguous=0 net_r=0.0000
-- 2026-09-20: signals=1 win=0 loss=0 ambiguous=0 net_r=0.0000
+Execution
+Closed 38 · Open 0
+Reconciliation: PARTIAL
 
-Trade list summary:
-- DRYRUN-20260919-001 BUY DRY_RUN result=AMBIGUOUS r=n/a pips=n/a
-- DRYRUN-SELL-20260919-001 SELL DRY_RUN result=AMBIGUOUS r=n/a pips=n/a
-- DRYRUN-20260919-002 BUY DRY_RUN result=AMBIGUOUS r=n/a pips=n/a
-- NEXORA-TELEGRAM-DRYRUN-001 BUY DRY_RUN result=AMBIGUOUS r=n/a pips=n/a
-- NEXORA-TELEGRAM-DRYRUN-002 BUY DRY_RUN result=AMBIGUOUS r=n/a pips=n/a
-- DRYRUN-20260920-001 BUY DRY_RUN result=AMBIGUOUS r=n/a pips=n/a
-
-System:
-- Geometry status: UNRESOLVED_FROZEN_GEOMETRY_GATE
-- Live trading status: DISABLED (LIVE_TRADING_ENABLE=false)
+🟡 Research mode — not a trading signal
+🟢 Live trading: OFF
+🧭 Geometry gate: UNRESOLVED_FROZEN_GEOMETRY_GATE
 ```
 
-All six records are dry-run gateway test signals; the journal contains no
-closed trades for the period, so the report truthfully shows zeros/`n/a`.
+(In Telegram, section headers render bold via `parse_mode=HTML`; all
+dynamic values are HTML-escaped.)
+
+All six dry-run journal records from the verification window and the full
+38-row trade list for the backtest week remain fully auditable in the
+JSON/XLSX/CSV artifacts; Telegram intentionally shows the summary only.
 
 ## Safety boundaries
 
