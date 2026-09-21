@@ -24,3 +24,9 @@ No forward-test or production logic changed.
 F08 now has BUY/SELL hypothesis coverage and explicit wick-vs-body, structural-turn-vs-fixed-pivot, and asymmetric-window counterexamples. These constrain the reconstruction but do not select a canonical swing algorithm.
 
 **Gate: PASS — F08 remains unresolved at the field/algorithm level.**
+
+
+## F10 resolution pass
+F10 now has BUY/SELL coverage across wick, body, structural, and buffered anchor hypotheses plus touch/breach/close and spike-origin counterexamples. Source meaning remains preserved without selecting an executable stop rule.
+
+**Gate: PASS — F10 remains unresolved at field/buffer/invalidation level.**
