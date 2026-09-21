@@ -1,0 +1,2 @@
+import{describe,expect,it}from"vitest";import{F14_CASES}from"../research/fixtures/sp2l_f14_abcd_source_resolution_v2.js";
+describe("F14 AB=CD source resolution v2",()=>{it("covers both directions",()=>expect(new Set(F14_CASES.map(x=>x.direction)).size).toBe(2));it("covers three anchor families",()=>expect(new Set(F14_CASES.map(x=>x.anchor)).size).toBe(3));it("keeps tolerance unresolved",()=>expect(F14_CASES.every(x=>x.toleranceStatus==="UNRESOLVED"&&x.canonicalEligible===false)).toBe(true));});
