@@ -59,10 +59,41 @@ def main() -> None:
             if not signal_id:
                 continue
 
+            # Match broker history to the already-recorded signal using
+            # journaled order/deal/position identifiers first. The gateway
+            # currently uses the safe fixed comment "SP2L-TEST", so comment
+            # equality alone cannot reconcile forward-test trades.
+            signal_trades = [
+                row for row in existing
+                if str(row.get("signal_id", "")) == signal_id
+            ]
+            known_order_ids = {
+                int(row["order_id"])
+                for row in signal_trades
+                if row.get("order_id") is not None
+                and str(row.get("order_id")).isdigit()
+            }
+            known_deal_ids = {
+                int(row["deal_id"])
+                for row in signal_trades
+                if row.get("deal_id") is not None
+                and str(row.get("deal_id")).isdigit()
+            }
+            known_position_ids = {
+                int(row["position_id"])
+                for row in signal_trades
+                if row.get("position_id") is not None
+                and str(row.get("position_id")).isdigit()
+            }
             comment = f"SP2L:{signal_id}"
             signal_deals = [
                 deal for deal in deals
-                if str(getattr(deal, "comment", "")) == comment
+                if (
+                    str(getattr(deal, "comment", "")) == comment
+                    or int(getattr(deal, "ticket", -1)) in known_deal_ids
+                    or int(getattr(deal, "order", -1)) in known_order_ids
+                    or int(getattr(deal, "position_id", -1)) in known_position_ids
+                )
             ]
             if not signal_deals:
                 continue
