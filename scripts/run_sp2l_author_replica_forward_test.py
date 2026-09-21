@@ -244,6 +244,30 @@ def main():
                     "demo_only": True,
                 })
 
+                # Do not retry or move the strategy levels when the theoretical
+                # entry has already been crossed. Fill/activation semantics are
+                # unresolved; this is recorded as an execution miss for research.
+                if result.get("reason") == "INVALID_STOPS_AT_CURRENT_MARKET":
+                    market = float(result["observed_market_price"])
+                    theoretical = float(result["theoretical_entry"])
+                    drift = (
+                        market - theoretical
+                        if candidate["direction"] == "BUY"
+                        else theoretical - market
+                    )
+                    log_event({
+                        "event": "EXECUTION_MISS",
+                        "signal_id": signal_id,
+                        "direction": candidate["direction"],
+                        "theoretical_entry": theoretical,
+                        "observed_market_price": market,
+                        "entry_drift_in_favor": drift,
+                        "reason": "MARKET_MOVED_PAST_THEORETICAL_ENTRY_BEFORE_EXECUTION",
+                        "action": "NO_RETRY_NO_LEVEL_MOVE",
+                        "canonical": False,
+                        "note": "Execution/fill semantics remain unresolved; candidate retained for research audit.",
+                    })
+
             time.sleep(POLL_SECONDS)
     finally:
         mt5.shutdown()
