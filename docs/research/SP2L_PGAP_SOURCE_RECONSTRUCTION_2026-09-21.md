@@ -82,3 +82,12 @@ Source evidence supports Pending Limit execution and a 1/2/3-candle family, whil
 Bearish Spike/Leg-2 structure is source-consistent and visually mirrored. Bearish P-Gap remains only source-consistent rather than independently demonstrated in the preserved excerpt. No bearish executable formula is promoted.
 
 **Gate result: PASS — unresolved geometry is explicitly quarantined. Frozen Geometry remains BLOCKED.**
+
+
+## F11 / F12 execution-semantics discrimination
+
+Pending-order lifecycle and trigger semantics are now isolated in research fixtures. The matrix distinguishes **touch / breach / close / fill** from lifecycle actions such as place, refresh, delete, replace, and cancel. This prevents a trigger observation from silently becoming a fill rule.
+
+Source evidence supports Pending Limit usage and demonstrates deletion/replacement when structure or stop distance changes, but exact mandatory predicates, timeout, touch-versus-fill behavior, and activation precedence remain unresolved.
+
+**Gate result: PASS — execution semantics remain explicitly unresolved and noncanonical.**
