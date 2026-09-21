@@ -23,3 +23,6 @@
 **Gate: PASS — coverage audit complete; Frozen Geometry remains BLOCKED.**
 
 No production or forward-test logic changed.
+
+## P0 checkpoint
+F08/F10 source meaning has been reconciled without selecting an executable field. P0 remains open because deterministic swing selection and exact stop semantics are still unresolved.
