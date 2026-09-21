@@ -22,3 +22,7 @@ The dependency graph is now ordered into P0 source blockers, P1 dependent questi
 
 ## P0 completion status
 F08 and F10 now have expanded source-discrimination fixtures. Neither is resolved enough to unlock Frozen Geometry; both remain source blockers.
+
+
+## P1 geometry coverage
+F09 Entry and F14 AB=CD now have expanded source-discrimination fixtures. Both remain unresolved; dependency mapping is preserved and no canonical execution rule is inferred.
