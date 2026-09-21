@@ -37,6 +37,8 @@ def test_result_template_reports_observed_exit_distance():
     message = format_result_notification(
         direction="BUY",
         entry=4353.15,
+        sl=4350.59,
+        tp=4355.71,
         exit_price=4355.71,
         outcome="TP",
         at=at,
@@ -47,7 +49,7 @@ Entry: 4353.15
 Exit: 4355.71
 
 TP: +2.56
-SL: +0.00
+SL: -2.56
 
 Time: 10:18
 Date: 21/09/2026"""
