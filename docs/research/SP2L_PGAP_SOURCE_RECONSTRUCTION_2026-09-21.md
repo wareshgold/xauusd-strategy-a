@@ -63,3 +63,8 @@ Frozen Geometry remains BLOCKED until the sequence qualification can be made det
 The source visual ledger confirms that the Spike-to-two-leg construction is structural, not reducible to a fixed candle count. The Leg-1 endpoints are visually identifiable structural turning areas, while the exact OHLC field remains unresolved. The research branch therefore keeps anchor hypotheses separate from the source-confirmed structural concept.
 
 This does not alter the P-Gap primitive or promote any executable rule. Frozen Geometry remains BLOCKED.
+
+
+## AB=CD discrimination status
+
+Source evidence supports the structural concept `AB=CD` / Leg 2 approximately matching Leg 1. Exact A/B/C/D OHLC anchors and any numeric tolerance remain unresolved. The new research matrix intentionally includes exact equality, near-equality, and materially unequal examples so future source evidence can discriminate them without backtest-driven selection.
