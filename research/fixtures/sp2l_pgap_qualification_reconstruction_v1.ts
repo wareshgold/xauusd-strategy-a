@@ -104,3 +104,40 @@ export function observeBearishGapPrimitive(
 ): boolean {
   return bearishGapPrimitive(previous, current);
 }
+
+export type PgapTimingObservation =
+  | "early-trend"
+  | "repeated-extension"
+  | "unresolved";
+
+export interface PgapEGAPComparison {
+  gapObserved: boolean;
+  priorExtensionCount: number;
+  timing: PgapTimingObservation;
+  executableQualification: "UNRESOLVED";
+  canonicalEligible: false;
+}
+
+/**
+ * Source-aligned observation only:
+ * the transcript distinguishes an early/quick opportunity from repeated
+ * extensions where a gap is considered likely E-Gap and entry is avoided.
+ *
+ * The extension cutoff is intentionally NOT frozen.
+ */
+export function observePgapTiming(
+  gapObserved: boolean,
+  priorExtensionCount: number,
+): PgapEGAPComparison {
+  let timing: PgapTimingObservation = "unresolved";
+  if (gapObserved && priorExtensionCount === 0) timing = "early-trend";
+  else if (gapObserved && priorExtensionCount >= 1) timing = "repeated-extension";
+
+  return {
+    gapObserved,
+    priorExtensionCount,
+    timing,
+    executableQualification: "UNRESOLVED",
+    canonicalEligible: false,
+  };
+}
