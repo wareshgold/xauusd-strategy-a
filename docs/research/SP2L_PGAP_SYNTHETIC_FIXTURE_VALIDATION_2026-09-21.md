@@ -166,3 +166,7 @@ Added research-only matrices for swing selection, entry geometry, and bearish ge
 Added joint trigger/lifecycle fixtures and counterexamples. Touch, breach, close, and fill are deliberately separate events. Pending-order replacement, cancellation, timeout, and fill outcomes remain research observations only.
 
 **Result: PASS — no trigger or lifecycle semantics are promoted to canonical execution.**
+
+
+## Geometry dependency gate
+F08/F09/F10/F14 are now tracked as a dependency graph. Dependencies are observations only; no geometry is promoted and Frozen Geometry remains BLOCKED.
