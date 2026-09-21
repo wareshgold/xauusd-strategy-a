@@ -10,3 +10,7 @@ The source meaning is explicit at the semantic level: the stop is placed behind 
 F08 and F10 are now source-discriminated at the meaning level with explicit unresolved fields. No implementation choice is promoted and no backtest result may resolve the remaining fields.
 
 **Result: P0 source discrimination PASS; Frozen Geometry remains BLOCKED.**
+
+
+## Counterexample checkpoint — 2026-09-21
+The 14 P0 counterexamples were classified. Source discriminates structural-turn meaning over an assumed fixed pivot for F08, and spike-origin semantic ownership for F10. Wick/body, buffer, invalidation event, exact pivot/window, and multi-candle origin mapping remain unresolved. No canonical promotion.
