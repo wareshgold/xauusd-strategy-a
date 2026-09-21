@@ -5,6 +5,7 @@ on:
     paths:
       - 'research/harness/**'
       - 'tests/sp2l-**'
+      - 'tests/research/sp2l_unresolved_synthetic_fixtures.test.ts'
       - 'scripts/run-author-replica-backtest.mjs'
       - 'scripts/run-author-replica-condition-diagnostics.mjs'
       - 'scripts/run-author-replica-nearmiss-forensics.mjs'
@@ -18,6 +19,7 @@ on:
     paths:
       - 'research/harness/**'
       - 'tests/sp2l-**'
+      - 'tests/research/sp2l_unresolved_synthetic_fixtures.test.ts'
       - 'scripts/run-author-replica-backtest.mjs'
       - 'scripts/run-author-replica-condition-diagnostics.mjs'
       - 'scripts/run-author-replica-nearmiss-forensics.mjs'
