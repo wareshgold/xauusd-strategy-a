@@ -176,6 +176,55 @@ def execute_signal(signal: Signal) -> dict:
     price = float(tick.ask if signal.direction == "BUY" else tick.bid)
     order_type = mt5.ORDER_TYPE_BUY if signal.direction == "BUY" else mt5.ORDER_TYPE_SELL
 
+    info = mt5.symbol_info(SYMBOL)
+    if info is None:
+        return {"ok": False, "reason": "SYMBOL_INFO_UNAVAILABLE"}
+
+    stops_level_points = int(getattr(info, "trade_stops_level", 0) or 0)
+    point = float(getattr(info, "point", 0.0) or 0.0)
+    min_stop_distance = stops_level_points * point
+
+    # Research-only guard: validate SL/TP against the CURRENT executable price.
+    # Never move strategy levels or redefine entry/fill semantics.
+    if signal.direction == "SELL":
+        sl_distance = signal.sl - price
+        tp_distance = price - signal.tp
+    else:
+        sl_distance = price - signal.sl
+        tp_distance = signal.tp - price
+
+    if sl_distance <= 0 or tp_distance <= 0:
+        return {
+            "ok": False,
+            "dry_run": False,
+            "reason": "INVALID_STOPS_AT_CURRENT_MARKET",
+            "observed_market_price": price,
+            "signal_entry": signal.entry,
+            "sl": signal.sl,
+            "tp": signal.tp,
+            "sl_distance": sl_distance,
+            "tp_distance": tp_distance,
+            "stops_level_points": stops_level_points,
+            "min_stop_distance": min_stop_distance,
+        }
+
+    if min_stop_distance > 0 and (
+        sl_distance < min_stop_distance or tp_distance < min_stop_distance
+    ):
+        return {
+            "ok": False,
+            "dry_run": False,
+            "reason": "BELOW_BROKER_MIN_STOP_DISTANCE",
+            "observed_market_price": price,
+            "signal_entry": signal.entry,
+            "sl": signal.sl,
+            "tp": signal.tp,
+            "sl_distance": sl_distance,
+            "tp_distance": tp_distance,
+            "stops_level_points": stops_level_points,
+            "min_stop_distance": min_stop_distance,
+        }
+
     request = {
         "action": mt5.TRADE_ACTION_DEAL,
         "symbol": SYMBOL,
