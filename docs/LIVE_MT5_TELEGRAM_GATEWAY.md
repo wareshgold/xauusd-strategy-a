@@ -192,3 +192,53 @@ Note: `symbol_trade_mode` for this broker's `XAUUSD.ecn` was observed as
 `CLOSEONLY` on 2026-09-21. Opening new positions on it will be rejected by
 the terminal; the pre-flight check surfaces this so the operator can confirm
 the intended symbol/account before going live.
+
+### Gold symbol probe (2026-09-21 finding)
+
+`scripts/mt5_symbol_probe.py` lists every gold-named symbol with its trade
+mode. On the connected OtetGroup-MT5 account 812930 **all three metal
+symbols are CLOSEONLY** (`XAUUSD.ecn`, `XAUEUR.ecn`, `XAGUSD.ecn`) — there
+is **no openable gold symbol** on this terminal, while the terminal and
+account both report full trade/expert permissions. A uniform CLOSEONLY state
+with permissive account flags points to a broker/account-level restriction
+(e.g. expired demo, contest account, or account flagged close-only) and must
+be resolved with the broker; it is not a symbol-selection problem. The probe
+is read-only and safe to re-run anytime:
+
+```powershell
+python scripts/mt5_symbol_probe.py
+```
+
+### Deterministic dry-run chain simulator
+
+`scripts/live_signal_simulator.py` derives a synthetic APPROVED signal from
+an integer seed (same seed → same signal, on every machine), writes the
+approved-signal file, runs a bounded gateway session, and verifies the full
+dry-run chain (signal journal → DRY_RUN trade row with MT5 request from a
+live tick → archived file). Exit code 0 = chain verified:
+
+```powershell
+python scripts/live_signal_simulator.py --seed 7
+```
+
+### Weekly session monitor report
+
+`scripts/live_session_report.py` renders this week's gateway session
+(signals, dry-run/executions, gateway snapshots, last tick) in the same
+compact Telegram template:
+
+```powershell
+python scripts/live_session_report.py          # render only
+python scripts/live_session_report.py --send   # deliver via Telegram
+```
+
+### Strategy A signal adapter (prepared, INACTIVE)
+
+`scripts/strategy_a_signal_adapter.py` maps an already-APPROVED scanner
+record onto the approved-signal payload verbatim (entry/SL/TP/volume are
+echoed, never recomputed; missing geometry fails the record instead of being
+invented; malformed SL/TP sides are refused). It is default-off and stays
+inactive until BOTH `STRATEGY_A_ADAPTER_ENABLE=true` AND
+`STRATEGY_A_ADAPTER_SOURCE=<name>` are set. Even when active it only
+transforms records; it generates no autonomous signals and never touches the
+live-trading double gate.
