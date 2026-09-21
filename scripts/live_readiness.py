@@ -44,7 +44,7 @@ MARGIN_MODE_RETAIL_HEDGING = 2
 SYMBOL_TRADE_MODE_DISABLED = 0
 SYMBOL_TRADE_MODE_FULL = 4
 # Modes that allow OPENING new positions. Everything else — DISABLED (0),
-# CLOSEONLY (4), or unknown — is a HARD real-execution blocker, not merely a
+# CLOSEONLY (3), or unknown — is a HARD real-execution blocker, not merely a
 # degraded state.
 OPENABLE_SYMBOL_TRADE_MODES = {1, 2, 4}
 _SYMBOL_TRADE_MODE_NAMES = {
