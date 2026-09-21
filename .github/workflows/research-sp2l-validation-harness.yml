@@ -5,6 +5,7 @@ on:
     paths:
       - 'research/harness/**'
       - 'tests/sp2l-**'
+      - 'tests/research/sp2l_unresolved_synthetic_fixtures.test.ts'
       - 'scripts/run-author-replica-backtest.mjs'
       - 'scripts/run-author-replica-condition-diagnostics.mjs'
       - 'scripts/run-author-replica-nearmiss-forensics.mjs'
@@ -18,6 +19,7 @@ on:
     paths:
       - 'research/harness/**'
       - 'tests/sp2l-**'
+      - 'tests/research/sp2l_unresolved_synthetic_fixtures.test.ts'
       - 'scripts/run-author-replica-backtest.mjs'
       - 'scripts/run-author-replica-condition-diagnostics.mjs'
       - 'scripts/run-author-replica-nearmiss-forensics.mjs'
@@ -50,7 +52,7 @@ jobs:
         run: npx tsc -p tsconfig.sp2l-harness.json --noEmit
 
       - name: Run SP2L validation harness tests
-        run: npx vitest run tests/sp2l-geometry-contract.test.ts tests/sp2l-frozen-geometry-gate.test.ts tests/sp2l-validation-report.test.ts tests/sp2l-fixture-runner.test.ts tests/sp2l-integrity-invariants.test.ts tests/sp2l-determinism-invariants.test.ts tests/sp2l-125r-golden-fixture.test.ts tests/sp2l-synthetic-geometry-fixtures.test.ts tests/sp2l-baseline-forensic-accounting.test.ts
+        run: npx vitest run tests/research/sp2l_unresolved_synthetic_fixtures.test.ts tests/sp2l-geometry-contract.test.ts tests/sp2l-frozen-geometry-gate.test.ts tests/sp2l-validation-report.test.ts tests/sp2l-fixture-runner.test.ts tests/sp2l-integrity-invariants.test.ts tests/sp2l-determinism-invariants.test.ts tests/sp2l-125r-golden-fixture.test.ts tests/sp2l-synthetic-geometry-fixtures.test.ts tests/sp2l-baseline-forensic-accounting.test.ts
 
       - name: Run author replica XAUUSD 1m research backtest
         run: node scripts/run-author-replica-backtest.mjs
