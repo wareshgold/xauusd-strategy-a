@@ -26,7 +26,7 @@ from __future__ import annotations
 import json
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import MetaTrader5 as mt5
@@ -375,9 +375,9 @@ def main():
     try:
         while deadline is None or time.time() < deadline:
             data = rates()
+            monitor_trade_lifecycle(lifecycle_state)
             if data is None:
-                monitor_trade_lifecycle(lifecycle_state)
-            time.sleep(POLL_SECONDS)
+                time.sleep(POLL_SECONDS)
                 continue
 
             candidate = detect(data)
