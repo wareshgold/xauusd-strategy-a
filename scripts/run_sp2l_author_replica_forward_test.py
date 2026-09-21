@@ -43,6 +43,16 @@ VOLUME = 0.01
 MAGIC = 26091901
 POLL_SECONDS = 2
 MAX_OPEN_POSITIONS = 1
+# Research-only source-aligned SL interpretation: the SL is anchored to the
+# candle from which the spike originated. The exact body/wick/buffer semantics
+# remain unresolved, so this is explicitly non-canonical.
+SL_ANCHOR = "SPIKE_CANDLE_EXTREME_RESEARCH"
+# Research-only demo execution: place a limit at the theoretical entry so the
+# prior MARKET_AFTER_COMPLETED_TRIGGER crossed-entry/invalid-stops failure is
+# not silently converted into a level change. Pending-order lifecycle remains
+# unresolved and non-canonical.
+DEMO_ORDER_MODE = "PENDING_LIMIT_RESEARCH"
+os.environ.setdefault("MT5_FORWARD_ORDER_MODE", DEMO_ORDER_MODE)
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "runtime"
@@ -148,7 +158,7 @@ def detect(candles):
 
     if buy:
         entry = float(trigger["low"])
-        sl = float(a["low"])
+        sl = float(spike["low"])
         risk = entry - sl
         if 0 < risk <= MAX_SL_DISTANCE:
             return {
@@ -163,7 +173,7 @@ def detect(candles):
 
     if sell:
         entry = float(trigger["high"])
-        sl = float(a["high"])
+        sl = float(spike["high"])
         risk = sl - entry
         if 0 < risk <= MAX_SL_DISTANCE:
             return {
@@ -182,7 +192,7 @@ def open_positions():
     return list(mt5.positions_get(symbol=SYMBOL) or [])
 
 
-def send_market(signal):
+def send_demo_order(signal):
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return {"ok": False, "reason": f"NO_TICK:{mt5.last_error()}"}
@@ -232,11 +242,11 @@ def main():
                         "status": "SOURCE_CONFIRMED_RELATION_ONLY",
                         "secondary_entry": candidate["secondary_entry_2x"],
                         "formula": "Entry + 0.5 * (StopLoss - Entry)",
-                        "execution": "NOT_EXECUTED_UNRESOLVED_LIFECYCLE",
+                        "execution": "NOT_EXECUTED_UNRESOLVED_LIFECYCLE",\n                        "sl_anchor": SL_ANCHOR,
                     },
-                    "execution_semantics": "MARKET_AFTER_COMPLETED_TRIGGER",
+                    "execution_semantics": "PENDING_LIMIT_RESEARCH",
                 })
-                result = send_market(candidate)
+                result = send_demo_order(candidate)
                 log_event({
                     "event": "EXECUTION",
                     "signal_id": signal_id,
