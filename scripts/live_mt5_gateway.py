@@ -25,6 +25,7 @@ try:
 except ModuleNotFoundError:
     from scripts.live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
     from scripts.telegram_client import send_telegram_message
+    from scripts.sp2l_telegram_trade_formatter import format_signal_notification
 
 
 SYMBOL = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
