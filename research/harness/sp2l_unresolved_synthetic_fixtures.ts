@@ -51,7 +51,7 @@ const f = (
 ): SyntheticFixture => ({
   id,
   feature,
-  direction,
+  ...(direction === undefined ? {} : { direction }),
   candidates,
   events,
   evidenceState: 'UNRESOLVED',
