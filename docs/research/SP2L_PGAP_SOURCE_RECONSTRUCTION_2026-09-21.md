@@ -57,3 +57,9 @@ Do not replace the existing forward-test P-Gap implementation yet. This document
 ## Gate
 
 Frozen Geometry remains BLOCKED until the sequence qualification can be made deterministic without contradicting the source.
+
+## Cross-gate finding: Spike / Leg-1 boundary
+
+The source visual ledger confirms that the Spike-to-two-leg construction is structural, not reducible to a fixed candle count. The Leg-1 endpoints are visually identifiable structural turning areas, while the exact OHLC field remains unresolved. The research branch therefore keeps anchor hypotheses separate from the source-confirmed structural concept.
+
+This does not alter the P-Gap primitive or promote any executable rule. Frozen Geometry remains BLOCKED.
