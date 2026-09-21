@@ -105,6 +105,8 @@ def init() -> None:
             "maxSlDistance": MAX_SL_DISTANCE,
             "tpR": TP_R,
             "volume": VOLUME,
+            "slAnchor": SL_ANCHOR,
+            "demoOrderMode": DEMO_ORDER_MODE,
         },
     })
 
@@ -242,7 +244,8 @@ def main():
                         "status": "SOURCE_CONFIRMED_RELATION_ONLY",
                         "secondary_entry": candidate["secondary_entry_2x"],
                         "formula": "Entry + 0.5 * (StopLoss - Entry)",
-                        "execution": "NOT_EXECUTED_UNRESOLVED_LIFECYCLE",\n                        "sl_anchor": SL_ANCHOR,
+                        "execution": "NOT_EXECUTED_UNRESOLVED_LIFECYCLE",
+                        "sl_anchor": SL_ANCHOR,
                     },
                     "execution_semantics": "PENDING_LIMIT_RESEARCH",
                 })
