@@ -158,6 +158,7 @@ def detect(candles):
                 "sl": sl,
                 "risk": risk,
                 "tp": entry + TP_R * risk,
+                "secondary_entry_2x": entry + 0.5 * (sl - entry),
             }
 
     if sell:
@@ -172,6 +173,7 @@ def detect(candles):
                 "sl": sl,
                 "risk": risk,
                 "tp": entry - TP_R * risk,
+                "secondary_entry_2x": entry + 0.5 * (sl - entry),
             }
     return None
 
@@ -226,6 +228,12 @@ def main():
                     "event": "CANDIDATE",
                     "signal_id": signal_id,
                     "candidate": candidate,
+                    "f13_2x": {
+                        "status": "SOURCE_CONFIRMED_RELATION_ONLY",
+                        "secondary_entry": candidate["secondary_entry_2x"],
+                        "formula": "Entry + 0.5 * (StopLoss - Entry)",
+                        "execution": "NOT_EXECUTED_UNRESOLVED_LIFECYCLE",
+                    },
                     "execution_semantics": "MARKET_AFTER_COMPLETED_TRIGGER",
                 })
                 result = send_market(candidate)
