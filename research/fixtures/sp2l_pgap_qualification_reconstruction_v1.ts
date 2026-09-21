@@ -141,3 +141,41 @@ export function observePgapTiming(
     canonicalEligible: false,
   };
 }
+
+export interface BreakoutFollowThroughObservation {
+  breakoutCloseBeyondPreviousRange: boolean;
+  followThroughDoesNotReturn: boolean;
+  sourceBreakoutObserved: boolean;
+  canonicalEligible: false;
+}
+
+/**
+ * Source-shaped breakout observation.
+ * The preserved transcript describes breakout as a candle close followed by
+ * a next candle that cannot return/overlap the breakout area.
+ * Exact return boundary and indexing remain unresolved.
+ */
+export function observeBreakoutFollowThrough(
+  previous: PgapCandle,
+  breakout: PgapCandle,
+  followThrough: PgapCandle,
+): BreakoutFollowThroughObservation {
+  const breakoutCloseBeyondPreviousRange =
+    breakout.close > previous.high || breakout.close < previous.low;
+
+  const bullishFollowThrough = breakout.close > previous.high &&
+    followThrough.low > previous.high;
+  const bearishFollowThrough = breakout.close < previous.low &&
+    followThrough.high < previous.low;
+
+  const followThroughDoesNotReturn =
+    bullishFollowThrough || bearishFollowThrough;
+
+  return {
+    breakoutCloseBeyondPreviousRange,
+    followThroughDoesNotReturn,
+    sourceBreakoutObserved:
+      breakoutCloseBeyondPreviousRange && followThroughDoesNotReturn,
+    canonicalEligible: false,
+  };
+}
