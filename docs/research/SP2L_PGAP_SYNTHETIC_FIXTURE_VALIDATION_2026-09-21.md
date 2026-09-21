@@ -170,3 +170,9 @@ Added joint trigger/lifecycle fixtures and counterexamples. Touch, breach, close
 
 ## Geometry dependency gate
 F08/F09/F10/F14 are now tracked as a dependency graph. Dependencies are observations only; no geometry is promoted and Frozen Geometry remains BLOCKED.
+
+
+## Resolution coverage audit
+F08–F15 are now enumerated in one coverage artifact. Covered does not mean resolved: unresolved geometry and execution semantics remain explicitly quarantined. F13 is source-confirmed only for the secondary-entry relation; lifecycle/risk aggregation remain unresolved.
+
+**Result: PASS — coverage complete, Frozen Geometry BLOCKED.**
