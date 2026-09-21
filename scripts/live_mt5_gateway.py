@@ -21,6 +21,7 @@ import MetaTrader5 as mt5
 try:
     from live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
     from telegram_client import send_telegram_message
+    from sp2l_telegram_trade_formatter import format_signal_notification
 except ModuleNotFoundError:
     from scripts.live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
     from scripts.telegram_client import send_telegram_message
@@ -137,26 +138,13 @@ def open_positions() -> list:
 
 
 def format_signal(signal: Signal, mode: str, result: dict | None = None) -> str:
-    title = "Nexora EXECUTION" if result is not None else "Nexora SIGNAL"
-    lines = [
-        f"{title} — {signal.direction}",
-        f"Symbol: {signal.symbol}",
-        f"Entry: {signal.entry}",
-        f"SL: {signal.sl}",
-        f"TP: {signal.tp}",
-        f"Volume: {signal.volume}",
-        f"Signal ID: {signal.signal_id}",
-        f"Source: {signal.source}",
-        f"Mode: {mode}",
-    ]
-    if result:
-        lines.extend([
-            f"MT5 retcode: {result.get('retcode')}",
-            f"Order: {result.get('order')}",
-            f"Deal: {result.get('deal')}",
-            f"Comment: {result.get('comment')}",
-        ])
-    return "\n".join(lines)
+    """Render the operator-facing signal template; internal fields stay in journals."""
+    return format_signal_notification(
+        direction=signal.direction,
+        entry=signal.entry,
+        sl=signal.sl,
+        tp=signal.tp,
+    )
 
 
 def effective_mode() -> str:
