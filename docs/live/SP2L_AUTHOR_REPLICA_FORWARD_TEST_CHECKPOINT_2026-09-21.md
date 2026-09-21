@@ -46,7 +46,7 @@ artifacts/forward-test/SP2L_AUTHOR_REPLICA_FORWARD_EVENTS.jsonl
 ## Start
 Run locally from the repository root:
 
-python scripts\run_sp2l_author_replica_forward_test.py
+$env:LIVE_TRADING_ENABLE="true"; $env:ALLOW_REAL_EXECUTION="true"; python scripts\run_sp2l_author_replica_forward_test.py; Remove-Item Env:LIVE_TRADING_ENABLE,Env:ALLOW_REAL_EXECUTION -ErrorAction SilentlyContinue
 
 Optional bounded smoke test:
 
