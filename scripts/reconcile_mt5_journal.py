@@ -12,6 +12,12 @@ from datetime import datetime, timedelta, timezone
 import MetaTrader5 as mt5
 
 from live_journal import read_jsonl, record_trade, TRADES, SIGNALS
+try:
+    from telegram_client import send_telegram_message
+    from sp2l_telegram_trade_formatter import format_result_notification
+except ModuleNotFoundError:
+    from scripts.telegram_client import send_telegram_message
+    from scripts.sp2l_telegram_trade_formatter import format_result_notification
 
 SYMBOL = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
 MAGIC = int(os.getenv("MT5_MAGIC", "26091901"))
@@ -59,10 +65,19 @@ def main() -> None:
             if not signal_id:
                 continue
 
+            signal_trades = [row for row in existing if str(row.get("signal_id", "")) == signal_id]
+            known_order_ids = {int(row["order_id"]) for row in signal_trades if row.get("order_id") is not None and str(row.get("order_id")).isdigit()}
+            known_deal_ids = {int(row["deal_id"]) for row in signal_trades if row.get("deal_id") is not None and str(row.get("deal_id")).isdigit()}
+            known_position_ids = {int(row["position_id"]) for row in signal_trades if row.get("position_id") is not None and str(row.get("position_id")).isdigit()}
             comment = f"SP2L:{signal_id}"
             signal_deals = [
                 deal for deal in deals
-                if str(getattr(deal, "comment", "")) == comment
+                if (
+                    str(getattr(deal, "comment", "")) == comment
+                    or int(getattr(deal, "ticket", -1)) in known_deal_ids
+                    or int(getattr(deal, "order", -1)) in known_order_ids
+                    or int(getattr(deal, "position_id", -1)) in known_position_ids
+                )
             ]
             if not signal_deals:
                 continue
@@ -109,6 +124,25 @@ def main() -> None:
                     "broker_entry_type": entry_type,
                     "broker_comment": getattr(deal, "comment", None),
                 })
+                if is_exit and result in {"WIN", "LOSS"}:
+                    deal_reason = int(getattr(deal, "reason", -1))
+                    tp_reason = int(getattr(mt5, "DEAL_REASON_TP", -999))
+                    sl_reason = int(getattr(mt5, "DEAL_REASON_SL", -998))
+                    outcome = "TP" if deal_reason == tp_reason else ("SL" if deal_reason == sl_reason else None)
+                    if outcome is not None:
+                        try:
+                            telegram_message = format_result_notification(
+                                direction=str(signal.get("direction", "")),
+                                entry=float(signal.get("signal_entry")),
+                                sl=float(signal.get("sl")),
+                                tp=float(signal.get("tp")),
+                                exit_price=exit_price,
+                                outcome=outcome,
+                                at=datetime.fromtimestamp(int(getattr(deal, "time", 0)), tz=timezone.utc),
+                            )
+                            send_telegram_message(telegram_message)
+                        except Exception as exc:
+                            print(f"telegram_result_notification_failed={exc}")
                 known_deals.add(deal_id)
 
         print(f"signals={len(signals)} mt5_deals={len(deals)} matched_signals={matched} newly_recorded_closed={closed}")
