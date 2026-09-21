@@ -1,7 +1,7 @@
 # SP2L Strategy A — Author-Site Primary Source Update: F13 / F12
 ## 2026-09-21
 
-Status: RESEARCH-ONLY / SOURCE-UPDATE / NON-CANONICAL
+Status: RESEARCH-ONLY / SOURCE-CANDIDATE / NON-CANONICAL
 
 ## New source artifact
 
@@ -19,16 +19,16 @@ The page explicitly states that SP2L has a secondary entry and describes it as:
 
 ## Evidence classification
 
-Authority: PRIMARY / AUTHOR-CONTROLLED WRITTEN MATERIAL.
+Candidate authority: AUTHOR-CONTROLLED WRITTEN MATERIAL.
 
-This is stronger than secondary TradingFinder material and is admissible under the existing source-retrieval checklist, which explicitly permits author-controlled written material.
+The page is an admissible source target under the existing retrieval checklist, but durable primary-source verification is not complete. Direct retrieval currently returns HTTP 404 and search indexing did not provide a durable page artifact. Therefore this candidate is **not sufficient for canonical source closure yet**.
 
 ## F13 update
 
-New source evidence uniquely supports the **50% Entry-to-SL secondary-entry relationship**.
+The indexed author-site candidate contains a statement describing a **50% Entry-to-SL secondary-entry relationship**. Because the underlying page could not be durably retrieved/archived during this pass, this remains a **SOURCE CANDIDATE**, not a closed canonical fact.
 
 Therefore:
-- F13 50% price relationship: SOURCE-CONFIRMED at the concept/price-relationship level.
+- F13 50% price relationship: **CANDIDATE / PENDING DURABLE PRIMARY VERIFICATION**.
 - F13 exact 2X execution lifecycle: still UNRESOLVED.
 - F13 conditions for enabling 2X: still UNRESOLVED.
 - F13 pending-vs-market semantics: still UNRESOLVED.
@@ -78,7 +78,7 @@ This artifact does not promote:
 
 ## Gate effect
 
-- Source Resolution: PARTIAL, with F13 50%-relationship newly source-confirmed.
+- Source Resolution: PARTIAL; F13 50% remains a candidate pending durable primary verification.
 - Frozen Geometry: BLOCKED.
 - Synthetic Fixture Gate: PASS.
 - Untouched Validation: LOCKED.
@@ -89,8 +89,8 @@ This artifact does not promote:
 
 ## Reproducibility note
 
-The web source is an author-controlled page and was retrieved during the 2026-09-21 source audit. Search indexing currently exposes the cited statements; direct page retrieval returned a transient 404 in the web fetch layer. The source URL and exact quoted/paraphrased claims are therefore recorded for later archival verification.
+The source URL was identified during the 2026-09-21 audit. Direct retrieval currently returns 404, and the search result did not yield a durable page artifact. The claims are therefore recorded as a source candidate only; no canonical promotion is permitted.
 
 ## Required next action
 
-Before any canonical F13 promotion, archive a durable copy/screenshot/PDF of the author-controlled page and reconcile it against the original training video. The exact lifecycle semantics must remain unresolved until that evidence discriminates them.
+Before any canonical F13 promotion, obtain and archive a durable copy/screenshot/PDF of the author-controlled page and reconcile it against the original training video. Until then, retain the 50% relationship as unresolved for canonical purposes.
