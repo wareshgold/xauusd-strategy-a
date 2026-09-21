@@ -197,7 +197,18 @@ def telegram_send(text: str) -> dict:
 
 
 def format_trigger_message(candidate: dict) -> str:
-    return (\n        f"🟢 XAUUSD {candidate['direction']}\\n\\n"\n        f"Entry: {candidate['theoretical_entry']}\\n"\n        f"SL: {candidate['sl']}\\n"\n        f"TP: {candidate['tp']}\\n\\n"\n        f"Signal ID: {candidate['signal_id']}\\n"\n        f"Mode: PENDING_LIMIT_RESEARCH\\n"\n        f"SL Anchor: SPIKE_CANDLE_EXTREME_RESEARCH"\n    )\n\n\ndef open_positions():
+    return (
+        f"🟢 XAUUSD {candidate['direction']}\n\n"
+        f"Entry: {candidate['theoretical_entry']}\n"
+        f"SL: {candidate['sl']}\n"
+        f"TP: {candidate['tp']}\n\n"
+        f"Signal ID: {candidate['signal_id']}\n"
+        f"Mode: PENDING_LIMIT_RESEARCH\n"
+        f"SL Anchor: SPIKE_CANDLE_EXTREME_RESEARCH"
+    )
+
+
+def open_positions():
     return list(mt5.positions_get(symbol=SYMBOL) or [])
 
 
