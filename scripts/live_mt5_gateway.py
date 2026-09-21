@@ -135,6 +135,15 @@ def open_positions() -> list:
     positions = mt5.positions_get(symbol=SYMBOL)
     return list(positions or [])
 
+def active_orders() -> list:
+    orders = mt5.orders_get(symbol=SYMBOL)
+    return list(orders or [])
+
+def active_exposure_count() -> int:
+    # Research forward guard: count both open positions and pending orders so
+    # one unresolved GTC pending order cannot be followed by another signal.
+    return len(open_positions()) + len(active_orders())
+
 
 def format_signal(signal: Signal, mode: str, result: dict | None = None) -> str:
     title = "Nexora EXECUTION" if result is not None else "Nexora SIGNAL"
@@ -165,9 +174,9 @@ def effective_mode() -> str:
 
 
 def execute_signal(signal: Signal) -> dict:
-    positions = open_positions()
-    if len(positions) >= MAX_OPEN_POSITIONS:
-        return {"ok": False, "reason": "MAX_OPEN_POSITIONS", "open_positions": len(positions)}
+    exposure_count = active_exposure_count()
+    if exposure_count >= MAX_OPEN_POSITIONS:
+        return {"ok": False, "reason": "MAX_OPEN_POSITIONS", "active_exposure": exposure_count}
 
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
