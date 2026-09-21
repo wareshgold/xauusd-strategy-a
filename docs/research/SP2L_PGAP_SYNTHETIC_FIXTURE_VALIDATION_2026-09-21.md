@@ -152,3 +152,10 @@ A research-only matrix now covers three competing anchor families (structural sw
 ### Canonical blocker remains
 
 No A/B/C/D anchor family or numerical AB=CD tolerance is promoted. `LegProjection.ts` remains quarantined research code. Frozen Geometry remains BLOCKED and the forward test remains untouched.
+
+
+## F08/F09/F15 fixture gate
+
+Added research-only matrices for swing selection, entry geometry, and bearish geometry. The matrices distinguish competing hypotheses and preserve the source-evidence asymmetry for bearish P-Gap. All observations are explicitly noncanonical.
+
+**Result: PASS — no unresolved hypothesis is promoted to executable geometry.**
