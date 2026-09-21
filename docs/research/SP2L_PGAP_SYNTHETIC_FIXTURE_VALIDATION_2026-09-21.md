@@ -99,3 +99,11 @@ This is an evidence-preserving representation, not an executable classifier.
 **P-GAP / E-GAP TIMING OBSERVATION GATE: PASS**
 
 The source distinction can be encoded as an auditable observation axis. The executable P-Gap/E-Gap cutoff remains unresolved.
+
+## Breakout → follow-through boundary refinement
+
+The preserved transcript also gives a more specific source-shaped breakout observation at 31:02–31:29: a candle closes beyond the relevant level, and the next candle (follow-through/key bar) cannot return/overlap the prior breakout area. The source contrasts this with a return/overlap that would instead create a channel-like concept.
+
+A research-only observer now records this two-part observation. The exact boundary for "return", exact candle indexing, and its relationship to the later P-Gap event remain unresolved.
+
+**Result: PASS — source-shaped breakout/follow-through observation added; no canonical rule promoted.**
