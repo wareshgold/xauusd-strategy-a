@@ -13,6 +13,11 @@ describe('SP2L unresolved synthetic fixture gate', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('contains the complete 49-fixture research matrix', () => {
+    expect(UNRESOLVED_SYNTHETIC_FIXTURES).toHaveLength(49);
+    expect(new Set(UNRESOLVED_SYNTHETIC_FIXTURES.map((x) => x.id)).size).toBe(49);
+  });
+
   it('keeps every unresolved fixture non-canonical', () => {
     for (const fixture of UNRESOLVED_SYNTHETIC_FIXTURES) {
       const result = evaluateUnresolvedFixture(fixture);
