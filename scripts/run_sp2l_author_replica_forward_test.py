@@ -234,9 +234,139 @@ def send_demo_order(signal):
     return {**result, "observed_market_price": market_price, "theoretical_entry": signal["theoretical_entry"]}
 
 
+LIFECYCLE_STATE = RUNTIME / "sp2l_author_replica_telegram_lifecycle_state.json"
+PIP_SIZE = float(os.getenv("XAUUSD_PIP_SIZE", "0.01"))
+
+
+def load_lifecycle_state() -> dict:
+    try:
+        payload = json.loads(LIFECYCLE_STATE.read_text(encoding="utf-8"))
+        return {
+            "deals": {int(x) for x in payload.get("deals", [])},
+            "orders": {int(x) for x in payload.get("orders", [])},
+            "positions": {int(x) for x in payload.get("positions", [])},
+        }
+    except Exception:
+        return {"deals": set(), "orders": set(), "positions": set()}
+
+
+def save_lifecycle_state(state: dict) -> None:
+    LIFECYCLE_STATE.parent.mkdir(parents=True, exist_ok=True)
+    LIFECYCLE_STATE.write_text(json.dumps({
+        "deals": sorted(state["deals"])[-500:],
+        "orders": sorted(state["orders"])[-500:],
+        "positions": sorted(state["positions"])[-500:],
+    }, indent=2), encoding="utf-8")
+
+
+def lifecycle_levels(deal) -> tuple[float | None, float | None]:
+    sl = tp = None
+    position_id = int(getattr(deal, "position_id", 0) or 0)
+    if position_id:
+        positions = mt5.positions_get(ticket=position_id) or []
+        if positions:
+            sl = float(getattr(positions[0], "sl", 0.0) or 0.0) or None
+            tp = float(getattr(positions[0], "tp", 0.0) or 0.0) or None
+    order_id = int(getattr(deal, "order", 0) or 0)
+    if (sl is None or tp is None) and order_id:
+        orders = mt5.history_orders_get(ticket=order_id) or []
+        if orders:
+            order = orders[0]
+            sl = sl if sl is not None else (float(getattr(order, "sl", 0.0) or 0.0) or None)
+            tp = tp if tp is not None else (float(getattr(order, "tp", 0.0) or 0.0) or None)
+    return sl, tp
+
+
+def lifecycle_reason(deal) -> str:
+    reason = int(getattr(deal, "reason", -1))
+    if reason == getattr(mt5, "DEAL_REASON_TP", -999):
+        return "TAKE PROFIT"
+    if reason == getattr(mt5, "DEAL_REASON_SL", -998):
+        return "STOP LOSS"
+    return "CLOSE"
+
+
+def lifecycle_message(deal) -> str:
+    side = "BUY" if getattr(deal, "type", None) == mt5.DEAL_TYPE_BUY else "SELL"
+    is_open = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
+    price = float(deal.price)
+    sl, tp = lifecycle_levels(deal)
+    profit = float(getattr(deal, "profit", 0.0))
+    commission = float(getattr(deal, "commission", 0.0))
+    swap = float(getattr(deal, "swap", 0.0))
+    net = profit + commission + swap
+    iran_time = datetime.fromtimestamp(int(deal.time), timezone.utc).astimezone(
+        timezone.utc
+    ).astimezone(timezone(timedelta(hours=3, minutes=30)))
+    title = f"🟢 XAUUSD {side} — OPEN" if is_open else f"🔴 XAUUSD {side} — CLOSE"
+    reason = "" if is_open else f"\nReason: {lifecycle_reason(deal)}"
+    sl_text = f"{sl:.2f}" if sl is not None else "NOT SET"
+    tp_text = f"{tp:.2f}" if tp is not None else "NOT SET"
+    return (
+        f"{title}{reason}\n\n"
+        f"{'Entry' if is_open else 'Exit'}: {price:.2f}\n"
+        f"SL: {sl_text}\n"
+        f"TP: {tp_text}\n\n"
+        f"Volume: {float(deal.volume):.2f}\n"
+        f"Profit: {profit:.2f}\n"
+        f"Net: {net:.2f}\n\n"
+        f"Date: {iran_time.strftime('%Y-%m-%d')}\n"
+        f"Time: {iran_time.strftime('%H:%M:%S')} (UTC+3:30)\n\n"
+        f"Deal: {int(deal.ticket)}\n"
+        f"Order: {int(deal.order)}\n"
+        f"Position: {int(getattr(deal, 'position_id', 0) or 0)}\n"
+        f"Mode: RESEARCH FORWARD MONITOR"
+    )
+
+
+def monitor_trade_lifecycle(state: dict) -> None:
+    start = datetime.now(timezone.utc) - timedelta(minutes=5)
+    deals = mt5.history_deals_get(start, datetime.now(timezone.utc))
+    if deals is None:
+        return
+
+    for deal in sorted(deals, key=lambda x: (int(x.time), int(x.ticket))):
+        ticket = int(deal.ticket)
+        order = int(getattr(deal, "order", 0) or 0)
+        position = int(getattr(deal, "position_id", 0) or 0)
+        magic = int(getattr(deal, "magic", 0) or 0)
+
+        linked = (
+            magic == MAGIC
+            or (order and order in state["orders"])
+            or (position and position in state["positions"])
+        )
+        if not linked or ticket in state["deals"]:
+            continue
+
+        if order:
+            state["orders"].add(order)
+        if position:
+            state["positions"].add(position)
+
+        telegram_result = telegram_send(lifecycle_message(deal))
+        log_event({
+            "event": "TELEGRAM_DEAL_LIFECYCLE",
+            "deal": ticket,
+            "order": order,
+            "position": position,
+            "entry": int(getattr(deal, "entry", -1)),
+            "reason": int(getattr(deal, "reason", -1)),
+            "profit": float(getattr(deal, "profit", 0.0)),
+            "commission": float(getattr(deal, "commission", 0.0)),
+            "swap": float(getattr(deal, "swap", 0.0)),
+            "telegram": telegram_result,
+            "canonical": False,
+        })
+        state["deals"].add(ticket)
+        save_lifecycle_state(state)
+
+
+
 def main():
     init()
     seen_trigger = None
+    lifecycle_state = load_lifecycle_state()
     deadline = None
     seconds = os.getenv("FORWARD_TEST_SECONDS")
     if seconds:
@@ -246,7 +376,8 @@ def main():
         while deadline is None or time.time() < deadline:
             data = rates()
             if data is None:
-                time.sleep(POLL_SECONDS)
+                monitor_trade_lifecycle(lifecycle_state)
+            time.sleep(POLL_SECONDS)
                 continue
 
             candidate = detect(data)
