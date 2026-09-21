@@ -107,3 +107,21 @@ The preserved transcript also gives a more specific source-shaped breakout obser
 A research-only observer now records this two-part observation. The exact boundary for "return", exact candle indexing, and its relationship to the later P-Gap event remain unresolved.
 
 **Result: PASS — source-shaped breakout/follow-through observation added; no canonical rule promoted.**
+
+## Context-matrix gate
+
+Added PGAP_EGAP_CONTEXT_MATRIX with six source-preserving classes:
+1. early P-Gap-shaped;
+2. late / repeated-extension E-Gap-shaped;
+3. identical gap geometry with context intentionally separated;
+4. no-gap control;
+5. overlap control;
+6. equality control.
+
+The matrix demonstrates an important reconstruction constraint: identical adjacent-candle gap geometry does not by itself determine P-Gap versus E-Gap. Context/timing must remain an explicit input to qualification.
+
+**Result: PASS — context is now represented separately from geometry.**
+
+## Remaining blocker
+
+No deterministic extension count, trend-age threshold, distance-from-origin threshold, or E-Gap cutoff has been inferred. Therefore the matrix remains observational and cannot promote a canonical P-Gap detector.
