@@ -393,6 +393,8 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         signed_move = None
         pips_result = None
         if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN and entry_price is not None and pip > 0:
+            deal_type = getattr(deal, "type", None)
+            side = "SELL" if deal_type == mt5.DEAL_TYPE_BUY else "BUY"
             signed_move = exit_price - entry_price if side == "BUY" else entry_price - exit_price
             pips_result = signed_move / pip
         profit = float(getattr(deal, "profit", 0.0))
