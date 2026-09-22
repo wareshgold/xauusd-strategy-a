@@ -41,6 +41,7 @@ def read_events(path: Path) -> list[dict]:
 def audit(events: list[dict]) -> dict:
     candidates = {}
     attempts = {}
+    order_result_signal_ids = set()
     lifecycle = []
     pending_order_lifecycle = []
     telegram = Counter()
@@ -75,7 +76,7 @@ def audit(events: list[dict]) -> dict:
             elif order_id:
                 seen_order_results.add(order_id)
             if sid:
-                attempts.setdefault(sid, {})["result_event"] = e
+                order_result_signal_ids.add(sid)
                 ok = bool(e.get("success"))
                 symbols[symbol]["execution_success" if ok else "execution_failure"] += 1
                 if not ok:
@@ -122,11 +123,7 @@ def audit(events: list[dict]) -> dict:
     lifecycle_orders = {int(e.get("order")) for e in lifecycle if e.get("order")}
     unmatched_lifecycle_orders = sorted(lifecycle_orders - successful_order_ids)
 
-    result_signal_ids = {
-        str(e.get("signal_id")) for e in events
-        if e.get("event") == "ORDER_RESULT" and e.get("signal_id")
-    }
-    result_without_attempt = sorted(result_signal_ids - set(attempts))
+    result_without_attempt = sorted(order_result_signal_ids - set(attempts))
     attempt_without_candidate = sorted(set(attempts) - set(candidates))
 
     successful = sum(v["execution_success"] for v in symbols.values())
