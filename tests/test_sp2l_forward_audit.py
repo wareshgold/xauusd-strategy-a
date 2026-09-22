@@ -42,3 +42,39 @@ def test_orphan_and_duplicate_records_are_exposed():
     assert report["integrity"]["duplicate_order_result_events"] == 1
     assert report["integrity"]["duplicate_lifecycle_deal_events"] == 1
     assert report["linkage"]["unmatched_lifecycle_orders"] == [9999]
+
+
+def test_pending_order_placement_is_not_conflated_with_fill():
+    events = [
+        {"event": "CANDIDATE", "symbol": "XAUUSD.ecn", "signal_id": "X:3:SELL"},
+        {"event": "ORDER_ATTEMPT", "symbol": "XAUUSD.ecn", "signal_id": "X:3:SELL"},
+        {"event": "ORDER_RESULT", "symbol": "XAUUSD.ecn", "signal_id": "X:3:SELL",
+         "success": True, "tracked_order": 3003, "tracked_deal": 0},
+        {"event": "PENDING_ORDER_LIFECYCLE", "symbol": "XAUUSD.ecn",
+         "order": 3003, "state": "PLACED"},
+    ]
+    report = audit(events)
+    assert report["execution"]["accepted_order_placements"] == 1
+    assert report["execution"]["immediate_deals_reported"] == 0
+    assert report["execution"]["accepted_without_immediate_deal"] == 1
+    assert report["pending_order_lifecycle"]["orders_observed"] == 1
+    assert report["pending_order_lifecycle"]["states"]["PLACED"] == 1
+
+
+def test_pending_order_terminal_states_are_auditable():
+    events = [
+        {"event": "ORDER_RESULT", "symbol": "BTCUSD.ecn", "signal_id": "B:4:BUY",
+         "success": True, "tracked_order": 4004, "tracked_deal": 0},
+        {"event": "PENDING_ORDER_LIFECYCLE", "symbol": "BTCUSD.ecn",
+         "order": 4004, "state": "PLACED"},
+        {"event": "PENDING_ORDER_LIFECYCLE", "symbol": "BTCUSD.ecn",
+         "order": 4004, "state": "EXPIRED"},
+        {"event": "PENDING_ORDER_LIFECYCLE", "symbol": "EURUSD.ecn",
+         "order": 5005, "state": "CANCELED"},
+    ]
+    report = audit(events)
+    assert report["pending_order_lifecycle"]["orders_observed"] == 2
+    assert report["pending_order_lifecycle"]["states"]["PLACED"] == 1
+    assert report["pending_order_lifecycle"]["states"]["EXPIRED"] == 1
+    assert report["pending_order_lifecycle"]["states"]["CANCELED"] == 1
+    assert report["pending_order_lifecycle"]["orders_with_terminal_cancel_or_expiry"] == 2
