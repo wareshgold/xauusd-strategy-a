@@ -202,10 +202,11 @@ def load_state() -> dict:
             "deals": {int(k) for k in raw.get("deals", [])},
             "orders": {int(k) for k in raw.get("orders", [])},
             "positions": {int(k) for k in raw.get("positions", [])},
+            "position_orders": {str(k): {int(v) for v in vals} for k, vals in raw.get("position_orders", {}).items()},
             "order_states": {str(k) for k in raw.get("order_states", [])},
         }
     except Exception:
-        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "order_states": set()}
+        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set()}
 
 
 def reconcile_state_from_events(state: dict) -> None:
@@ -277,6 +278,7 @@ def save_state(state: dict) -> None:
         "deals": sorted(state["deals"])[-1000:],
         "orders": sorted(state["orders"])[-1000:],
         "positions": sorted(state["positions"])[-1000:],
+        "position_orders": {k: sorted(v) for k, v in state.get("position_orders", {}).items()},
         "order_states": sorted(state["order_states"])[-2000:],
     }, indent=2), encoding="utf-8")
 
@@ -465,10 +467,36 @@ def monitor_pending_order_lifecycle(cfg: dict, state: dict) -> None:
         })
 
 
+def _remember_position_links(state: dict, deal) -> None:
+    """Persist the broker position id and both entry/exit order ids for correlation."""
+    position = int(getattr(deal, "position_id", 0) or 0)
+    order = int(getattr(deal, "order", 0) or 0)
+    if position:
+        state["positions"].add(position)
+        state.setdefault("position_orders", {}).setdefault(str(position), set())
+        if order:
+            state["position_orders"][str(position)].add(order)
+    if order:
+        state["orders"].add(order)
+
+
+def _reconcile_history_position_links(state: dict, symbol: str, magic: int) -> None:
+    """Build position->orders/deals links from broker history before lifecycle filtering."""
+    start = datetime.now(timezone.utc) - timedelta(hours=24)
+    deals = mt5.history_deals_get(start, datetime.now(timezone.utc), group=symbol) or []
+    for deal in deals:
+        order = int(getattr(deal, "order", 0) or 0)
+        position = int(getattr(deal, "position_id", 0) or 0)
+        deal_magic = int(getattr(deal, "magic", 0) or 0)
+        if deal_magic == magic or order in state["orders"] or position in state["positions"]:
+            _remember_position_links(state, deal)
+
+
 def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
     symbol, magic, pip = cfg["symbol"], cfg["magic"], cfg["pip_size"]
+    _reconcile_history_position_links(state, symbol, magic)
     start = datetime.now(timezone.utc) - timedelta(hours=24)
-    deals = mt5.history_deals_get(start, datetime.now(timezone.utc)) or []
+    deals = mt5.history_deals_get(start, datetime.now(timezone.utc), group=symbol) or []
     for deal in sorted(deals, key=lambda x: (int(x.time), int(x.ticket))):
         ticket = int(deal.ticket)
         if ticket in state["deals"]:
@@ -476,15 +504,16 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         order = int(getattr(deal, "order", 0) or 0)
         position = int(getattr(deal, "position_id", 0) or 0)
         deal_magic = int(getattr(deal, "magic", 0) or 0)
+        position_orders = state.get("position_orders", {}).get(str(position), set())
         linked = (
             deal_magic == magic
             or order in state["orders"]
             or position in state["positions"]
+            or bool(position_orders)
         )
         if not linked:
             continue
-        state["orders"].add(order) if order else None
-        state["positions"].add(position) if position else None
+        _remember_position_links(state, deal)
         text = lifecycle_message(deal, symbol, pip)
         result = gateway.send_telegram_message(text)
         entry_price = position_entry_price(deal) if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN else float(deal.price)
@@ -559,6 +588,7 @@ def main() -> None:
     })
 
     state = load_state()
+    state.setdefault("position_orders", {})
     deadline = None
     seconds = os.getenv("FORWARD_TEST_SECONDS")
     if seconds:
