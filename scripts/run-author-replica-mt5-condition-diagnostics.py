@@ -42,6 +42,7 @@ def conditions(c, i, p):
       corr["close"]<s["close"],
       corr["open"]<s["open"],
       s["close"]<a["close"],
+      s["open"]<a["open"],
       corr["close"]<corr["open"],
       s["close"]<s["open"],
       a["close"]<a["open"],
@@ -54,7 +55,7 @@ def conditions(c, i, p):
 
 LABELS=[
  "trigger breaks correction","correction close beyond spike","correction open beyond spike",
- "spike body directional vs A","correction directional body","spike directional body",
+ "spike body directional vs A","spike open directional vs A","correction directional body","spike directional body",
  "A directional body","P-Gap","spike > multiplier correction","spike > multiplier A",
  "spike > multiplier trigger"
 ]
