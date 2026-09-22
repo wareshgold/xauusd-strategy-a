@@ -47,6 +47,7 @@ def diagnostic(c, i, side):
         corr["close"] < s["close"],
         corr["open"] < s["open"],
         s["close"] < a["close"],
+        s["open"] < a["open"],
         corr["close"] < corr["open"],
         s["close"] < s["open"],
         a["close"] < a["open"],
@@ -105,7 +106,7 @@ def main():
                        "maxSlPrice": mod.MAX_SL, "tpR": mod.TP_R},
             "counts": counts,
             "first_disagreements": examples,
-            "interpretation": "Diagnostic and exact signal() should agree for BUY; SELL may differ because the diagnostic intentionally omits the exact signal() SELL open-vs-A condition. Any disagreement must be investigated before geometry changes."
+            "interpretation": "Diagnostic predicate is intended to mirror the exact signal() predicate condition-for-condition. Any disagreement is an engineering reconciliation issue and must be investigated before geometry changes."
         }
         print(json.dumps(result, indent=2))
         out = Path(os.getenv("RECONCILIATION_OUT", f"artifacts/SP2L_{SYMBOL.replace('.', '_')}_signal_reconciliation_2026-09-14_2026-09-18.json"))
