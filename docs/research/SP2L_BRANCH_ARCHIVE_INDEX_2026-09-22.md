@@ -116,3 +116,13 @@ The archive preserves source conclusions, unresolved geometry, execution-layer b
 No deletion should remove the only copy of a source artifact, forensic result, synthetic fixture, gate decision, or reproducibility record.
 
 No cleanup action changes Strategy A geometry, P-Gap semantics, AB=CD anchors/tolerance, fill semantics, execution semantics, or canonical status.
+
+
+### 2026-09-15 snapshot cleanup decision
+
+The 2026-09-15 snapshot family was rechecked by exact branch-tip SHA. The family contains:
+- `a49fa5134336c0c9bb78bf3693afe13494da95c5` — shared by the standard/session/final/z/zz/zz2/zz3/b/trailing-stop refs;
+- `cf1234647f0da9ddde9dd8ddc63d0c82250dc8b6` — shared by final2/unique/unique2/unique3;
+- `3682250ec551ac84fcac07ea7a658a9d5c7e8a2e` — unique4, separately reviewed and its durable evidence preserved in `docs/research/archive/SP2L_HISTORICAL_EVIDENCE_ARCHIVE_2026-09-22.md`.
+
+Conclusion: the duplicate refs in the first two groups add no distinct commit evidence. The unique4 checkpoint is now archived at the durable-document level. Branch-ref deletion can therefore be handled as a separate cleanup operation; no source evidence depends on retaining all duplicate names.
