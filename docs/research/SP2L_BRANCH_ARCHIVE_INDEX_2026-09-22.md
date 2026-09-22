@@ -107,9 +107,9 @@ The archive preserves source conclusions, unresolved geometry, execution-layer b
 
 - Inventory: COMPLETE (initial inventory)
 - Duplicate-family identification: COMPLETE for the families listed above
-- Evidence preservation: IN PROGRESS
-- Branch deletion: NOT YET PERFORMED
-- Post-cleanup audit: REQUIRED
+- Evidence preservation: COMPLETE for G350/G368 and previously deleted families
+- Branch deletion: G350 COMPLETE (13 branches); G368 COMPLETE (29 branches); prior listed duplicate families COMPLETE
+- Post-cleanup audit: IN PROGRESS
 
 ## Safety
 
@@ -126,3 +126,14 @@ The 2026-09-15 snapshot family was rechecked by exact branch-tip SHA. The family
 - `3682250ec551ac84fcac07ea7a658a9d5c7e8a2e` — unique4, separately reviewed and its durable evidence preserved in `docs/research/archive/SP2L_HISTORICAL_EVIDENCE_ARCHIVE_2026-09-22.md`.
 
 Conclusion: the duplicate refs in the first two groups add no distinct commit evidence. The unique4 checkpoint is now archived at the durable-document level. Branch-ref deletion can therefore be handled as a separate cleanup operation; no source evidence depends on retaining all duplicate names.
+
+
+### 2026-09-22 cleanup execution
+
+G350 official-source audit family: all 13 remote branch refs were deleted after durable evidence preservation in the historical archive.
+
+G368 hypothesis-layer family: all 29 remote branch refs were deleted after durable evidence preservation in the historical archive.
+
+No canonical Strategy A rule, P-Gap executable formula, AB=CD anchor/tolerance, fill semantics, or production execution rule was changed by this cleanup.
+
+Next cleanup control: re-audit remaining remote branches, then review the G413 family as a separate lineage-control item before any deletion.
