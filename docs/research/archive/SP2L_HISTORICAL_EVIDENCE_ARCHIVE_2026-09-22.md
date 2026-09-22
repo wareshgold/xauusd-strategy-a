@@ -214,3 +214,25 @@ Gate state after Batch 46:
 **Production = BLOCKED / DISABLED**
 
 No backtest-selected anchors, tolerance optimization, invented P-Gap formula, guessed fill semantics, or canonical promotion was authorized.
+
+
+## 2026-09-16 Batch 5–8 gate evidence
+
+### Batch 5 source-discrimination / engineering boundary
+Batch 5 established a clean separation between repository engineering failures and Strategy A source geometry.
+
+Preserved findings:
+- isolated source-boundary assertions and synthetic fixture infrastructure passed in the recorded run;
+- full regression was blocked/unverified when the build failed, so no PASS was claimed from skipped tests;
+- engineering repairs were limited to imports, optional-field typing, restored execution-layer modules, legacy test interfaces, and workflow diagnostics;
+- no P-Gap formula, swing selection, structural stop anchor, wick/body rule, pending-refresh threshold, trigger taxonomy, AB=CD tolerance, 2X formula, TP/TP2 formula, session semantics, or 125R treatment was changed;
+- the Batch 5 source-discrimination audit found no new primary-source discriminator for F08, F10, F11, F15 or executable P-Gap geometry.
+
+Gate remained:
+**Source Resolution PARTIAL PASS; Synthetic Fixtures PASS as infrastructure; Frozen Geometry BLOCKED; validation/holdout locked; Production OFF.**
+
+### Batch 5 gate reassessment
+The source-discrimination search did not uniquely freeze executable geometry. Batch 6 remained the next source-discrimination track for F12 trigger taxonomy, F14 AB=CD anchors/tolerance, and F13 2X semantics.
+
+### Batch 6–8 branch family
+The historical Batch 6 trigger/ABCD/2X, Batch 7 validation-gate, and Batch 8 statistical-holdout refs did not add a newer retained gate state beyond the later source-resolution and forward-test records. They remain historical checkpoints only; no validation or holdout authorization was created by these refs.
