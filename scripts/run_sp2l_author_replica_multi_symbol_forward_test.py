@@ -296,7 +296,7 @@ def send_signal(candidate: dict, pip_size: float) -> None:
         f"🆔 <code>AUTHOR_REPLICA_MULTI_{candidate['trigger_time']}_{symbol}_{candidate['direction']}</code>\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
-    gateway.send_telegram_message(text)
+    gateway.send_telegram_message(text, parse_mode="HTML")
 
 
 def execute_candidate(candidate: dict, magic: int) -> dict:
