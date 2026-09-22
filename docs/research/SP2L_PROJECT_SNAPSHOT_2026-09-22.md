@@ -3,7 +3,7 @@
 
 > Checkpoint type: research / engineering / forward-test continuity
 > Branch: `research/sp2l-f13-demo-forward-slfixed-2026-09-21`
-> HEAD at snapshot: `0af3d5359f55640f25ce5a249357268d30faff97`
+> HEAD at snapshot update: `126e32952e44ab27e5125fe3848b2983d6206252`
 
 ## 1. Project objective
 
@@ -73,7 +73,7 @@ Implemented/recorded components include:
 - Multi-symbol forward-test runner.
 - Human-facing MT5 timestamp conversion to Iran time in the latest branch update.
 
-The latest commit `0af3d5359f55640f25ce5a249357268d30faff97` changes only human-facing timestamp conversion in the multi-symbol forward runner; it does not change Strategy A geometry.
+The forward runner has since received two execution-state reliability fixes: failed orders are retryable without permanently suppressing the trigger, and restart reconciliation rebuilds successful execution/notification state from the event log. These changes do not alter Strategy A geometry, source interpretation, or canonical status.
 
 ## 5. Validation evidence already obtained
 
@@ -186,7 +186,7 @@ Status: `RESERVED — DO NOT IMPLEMENT YET`.
 
 ## 10. Immediate next checkpoint
 
-The next active work remains the SP2L F13 demo forward-test/research path.
+The next active work remains the SP2L F13 multi-symbol demo forward-test/research path. Current branch HEAD is `126e32952e44ab27e5125fe3848b2983d6206252`.
 
 Before any production consideration:
 
