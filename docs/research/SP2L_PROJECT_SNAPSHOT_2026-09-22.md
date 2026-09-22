@@ -208,3 +208,11 @@ Before any production consideration:
 This checkpoint is a continuity record, not a declaration that Strategy A is complete or production-ready.
 
 The future VIP Trader App is preserved as a product idea only and does not alter the current research/canonical status of SP2L.
+
+
+## Checkpoint — pending lifecycle restart recovery
+
+- Commit `9d11c987e810ab6e72646d3366958b6b99698143`: restart reconciliation now reconstructs tracked orders, positions, deals, and pending-order state markers from the event stream.
+- Commit `c32c081a7c4686ada80bda2b5841d3a47868d21c`: deterministic audit now consumes `PENDING_ORDER_LIFECYCLE` events; placement is kept distinct from fill, and terminal cancel/expiry/rejection states remain observable.
+- CI/status API currently reports no status entries for these commits; runtime execution remains the authoritative next verification step.
+- Source/geometry/canonical rules unchanged. Pending-order semantics remain research-only.
