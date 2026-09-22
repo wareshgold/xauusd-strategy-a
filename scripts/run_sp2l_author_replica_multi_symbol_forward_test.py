@@ -315,7 +315,7 @@ def execute_candidate(candidate: dict, magic: int) -> dict:
 
 def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
     symbol, magic, pip = cfg["symbol"], cfg["magic"], cfg["pip_size"]
-    start = datetime.now(timezone.utc) - timedelta(minutes=5)
+    start = datetime.now(timezone.utc) - timedelta(hours=24)
     deals = mt5.history_deals_get(start, datetime.now(timezone.utc)) or []
     for deal in sorted(deals, key=lambda x: (int(x.time), int(x.ticket))):
         ticket = int(deal.ticket)
@@ -433,9 +433,20 @@ def main() -> None:
                     "magic": cfg["magic"], "canonical": False,
                 })
                 result = execute_candidate(candidate, cfg["magic"])
+                # Persist execution identifiers immediately. MT5 may report a
+                # closing deal with a different identifier and some brokers
+                # may not carry the original magic onto the closing deal.
+                result_order = int(result.get("order", 0) or 0)
+                result_deal = int(result.get("deal", 0) or 0)
+                if result_order:
+                    state["orders"].add(result_order)
+                if result_deal:
+                    state["deals"].add(result_deal)
                 log_event({
                     "event": "ORDER_RESULT", "symbol": symbol,
                     "signal_id": trigger_key, "result": result,
+                    "tracked_order": result_order or None,
+                    "tracked_deal": result_deal or None,
                     "demo_only": True, "success": bool(result.get("ok")),
                 })
                 save_state(state)
