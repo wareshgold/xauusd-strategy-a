@@ -440,8 +440,6 @@ def main() -> None:
                 result_deal = int(result.get("deal", 0) or 0)
                 if result_order:
                     state["orders"].add(result_order)
-                if result_deal:
-                    state["deals"].add(result_deal)
                 log_event({
                     "event": "ORDER_RESULT", "symbol": symbol,
                     "signal_id": trigger_key, "result": result,
