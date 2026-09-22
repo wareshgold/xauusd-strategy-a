@@ -3,7 +3,7 @@
 
 > Checkpoint type: research / engineering / forward-test continuity
 > Branch: `research/sp2l-f13-demo-forward-slfixed-2026-09-21`
-> HEAD at snapshot update: `e000df1b314d9059a92621cf0754cc90e551f27d`
+> HEAD at snapshot update: `c4911838828b674c4f850c01a4a224ca4534f901`
 
 ## 1. Project objective
 
@@ -72,7 +72,8 @@ Implemented/recorded components include:
 - Entry, SL, TP, risk/pip and result reporting.
 - Multi-symbol forward-test runner.
 - Human-facing MT5 timestamp conversion to Iran time in the latest branch update.
-- Deterministic forward-audit script for candidates, execution outcomes, lifecycle linkage, realized pips/net, and missing measurements.
+- Deterministic forward-audit script for candidates, execution outcomes, lifecycle linkage, realized pips/net, missing measurements, duplicate/orphan records, and pending-order state telemetry.
+- Pending-order lifecycle telemetry now observes broker-side order states such as PLACED, FILLED, CANCELED, REJECTED and EXPIRED without changing the research execution semantics.
 
 The forward runner has since received two execution-state reliability fixes: failed orders are retryable without permanently suppressing the trigger, and restart reconciliation rebuilds successful execution/notification state from the event log. These changes do not alter Strategy A geometry, source interpretation, or canonical status.
 
@@ -187,7 +188,7 @@ Status: `RESERVED — DO NOT IMPLEMENT YET`.
 
 ## 10. Immediate next checkpoint
 
-The next active work remains the SP2L F13 multi-symbol demo forward-test/research path. Current branch HEAD is `e000df1b314d9059a92621cf0754cc90e551f27d`.
+The next active work remains the SP2L F13 multi-symbol demo forward-test/research path. Current branch HEAD is `c4911838828b674c4f850c01a4a224ca4534f901`.
 
 Before any production consideration:
 
@@ -196,8 +197,8 @@ Before any production consideration:
 3. Run the deterministic forward audit and preserve its output as observed telemetry.
 4. Measure execution-vs-theoretical-entry differences.
 5. Measure pending-order lifecycle behavior and expiry/cancellation behavior.
-6. Run the deterministic forward-audit integrity fixtures and verify orphan/duplicate records remain visible.
-7. Keep multi-symbol linkage isolated by symbol, magic, order, position and deal identifiers.
+6. Run the deterministic forward-audit integrity fixtures, including pending-order placement-vs-fill and terminal-state cases.
+7. Keep multi-symbol linkage isolated by symbol, magic, order, position and deal identifiers, including pending-order state transitions.
 8. Keep all unresolved execution semantics explicitly research-only.
 9. Complete robustness/stability and fresh-holdout gates.
 10. Only source-confirmed rules may later enter a frozen canonical specification.
