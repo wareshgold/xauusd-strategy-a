@@ -126,3 +126,91 @@ Preserved boundary:
 - no universal bearish mirror is assumed.
 
 F11 remains SOURCE-DOES-NOT-DISCRIMINATE; it authorizes no engine change and leaves frozen geometry blocked.
+
+
+## 2026-09-21 Batch 39–46 source-closure evidence
+
+### Batch 39 — F14 AB=CD closure attempt
+The primary-source review confirmed:
+- AB=CD is explicitly part of the SP2L teaching vocabulary.
+- The source supports the magnitude relationship `Leg2 ≈ Leg1`.
+- The available primary frames do not uniquely label A/B/C/D endpoints, price fields, wick/body convention, or equality tolerance.
+- Bearish worked examples contain Leg-1 references, but do not provide a deterministic A/B/C/D mapping.
+
+Decision preserved:
+**F14 remains PARTIAL / UNRESOLVED; Frozen Geometry remains BLOCKED.**
+No canonical AB=CD detector, pivot selector, tolerance, or target rule was created.
+
+### Batch 40 — P-Gap canonical-contamination audit
+The repository's `PGAPResearch.ts` was audited and found to be explicitly a research three-candle imbalance candidate layer, not a canonical P-Gap detector.
+
+The source audit instead describes P-Gap conceptually as a pressure-gap development:
+`10–30 candles of trend pressure → pressure pause/compression → trend-bar → continuation expectation`.
+
+The source does not provide an executable OHLC formula, candle indexing, deterministic threshold, or complete classifier.
+
+Decision preserved:
+**No canonical contamination identified. No code promotion. Frozen Geometry remains BLOCKED.**
+
+### Batch 42 — P-Gap + SL synthetic fixture boundary
+Research fixtures were specified for:
+- a non-canonical pressure-window / pause / directional-trend-bar P-Gap candidate;
+- spike shadow/wick plus spread as a reported SL interpretation.
+
+These fixtures are engineering validation only. They do not freeze source geometry or authorize production signals.
+
+Execution semantics intentionally left unresolved include bid/ask side, spread timing, broker stop constraints, tick rounding, slippage, and any additional safety buffer.
+
+### Batch 43 — P-Gap forensic comparison
+On the MT5 M1 research dataset, deterministic forensic partitioning produced:
+- Candidate V1: 1,755
+- existing three-candle imbalance: 7,402
+- overlap: 290
+- candidate-only: 1,465
+- imbalance-only: 7,112
+
+These counts prove reproducibility of the partition only; they do not identify Candidate V1 as the teacher's P-Gap.
+
+Candidate parameters such as pause length 2, compression factor 0.75, and trend-body factor 1.5 remain implementation choices and non-canonical.
+
+### Batch 44/45 — P-Gap source-to-code reconciliation and closure decision
+Author implementation evidence narrows one executable candidate to a four-candle construction:
+- `-4`: before-spike/origin-side candle
+- `-3`: spike candle
+- `-2`: post-spike candle
+- `-1`: latest/trigger-side candle
+
+Author-code candidate inequalities:
+- BUY: `low[-2] > high[-4] + P_GAP_PRICE`
+- SELL: `high[-2] < low[-4] - P_GAP_PRICE`
+
+However, primary-source evidence does not directly bind these exact endpoints/indexing/mirror to the P-Gap label. Wick/body semantics, threshold, compression boundary, executable trend-bar definition, and formula binding remain unresolved.
+
+Deterministic canonical status:
+**P-Gap concept = SOURCE-CONFIRMED.**
+**P-Gap executable formula = AUTHOR-IMPLEMENTATION-SUPPORTED / PRIMARY-SOURCE-UNRESOLVED.**
+**Canonical P-Gap detector = NOT FROZEN.**
+
+The generic gap convention must not be silently substituted for the author implementation candidate, and author parameters must not be promoted from code alone.
+
+### Batch 46 — remaining source-blocker closure pass
+The parallel closure pass retained these boundaries:
+- F08 universal swing algorithm: unresolved.
+- F10 exact structural OHLC stop anchor: unresolved; wick/body/base/latest-opposite-swing alternatives remain open.
+- F11 pending refresh: qualitative behavior supported, exact delete/replace predicate and timeout unresolved.
+- F12/C07 trigger: 1/2/3-candle family supported, exact taxonomy/indexing/activation unresolved.
+- F13/C04 2X: concept confirmed, exact TP1/TP2/second-position numeric semantics unresolved.
+- F14 AB=CD: magnitude relationship confirmed, anchors/tolerance unresolved.
+- F15 bearish mirror: synthetic symmetry can be tested, but universal bearish source geometry remains unresolved.
+
+Gate state after Batch 46:
+**Source Resolution = PARTIAL**
+**P-Gap executable geometry = UNRESOLVED**
+**F08/F10/F11/F12/F13/F14/F15 = unresolved**
+**Frozen Geometry = BLOCKED**
+**Untouched Validation = LOCKED**
+**Robustness/Stability = LOCKED**
+**Fresh Holdout = BLOCKED**
+**Production = BLOCKED / DISABLED**
+
+No backtest-selected anchors, tolerance optimization, invented P-Gap formula, guessed fill semantics, or canonical promotion was authorized.
