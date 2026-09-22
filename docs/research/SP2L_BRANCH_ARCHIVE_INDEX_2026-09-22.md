@@ -75,7 +75,7 @@ Commit `4ff65ab126bc382ff2ec539e88a0ff9432975e25`.
 Multiple G349/G350 variants point to the same snapshot.
 
 ### G413 source-geometry reconciliation
-Commit `c50f3dafa48b60735ab10efd3c58016c22728351`.
+Exact tip must be re-queried from the retained G413 branch family before deletion; the earlier recorded SHA was inconsistent with GitHub and is not treated as authoritative.
 
 Multiple `research/sp2l-g413-source-geometry-reconciliation-2026-09-14-v2...v8` variants point to this same snapshot.
 
@@ -95,6 +95,13 @@ These are not automatically deletable merely because they are old:
 - `research/sp2l-f13-2x-tp1-fixture-2026-09-14`
 
 These are evidence pointers, not canonical-rule authorities.
+
+## Preserved evidence archive
+
+Durable historical evidence from the 2026-09-08 source-resolution/gate work and 2026-09-15 MT5 execution-layer work is consolidated in:
+`docs/research/archive/SP2L_HISTORICAL_EVIDENCE_ARCHIVE_2026-09-22.md`
+
+The archive preserves source conclusions, unresolved geometry, execution-layer boundaries, and the rule that historical performance cannot choose source semantics. Obsolete implementation files and duplicate generated outputs are not copied unless they are uniquely evidentiary.
 
 ## Cleanup phases
 
