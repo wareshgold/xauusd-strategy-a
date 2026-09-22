@@ -151,3 +151,48 @@ The remote branch inventory was re-read after G350/G368/G413 cleanup. Several ol
 ### Next requested validation work
 
 After branch cleanup, run a research-only weekly backtest for the prior trading week, 2026-09-14 through 2026-09-18, for EURUSD, BTCUSD, and USTEC using the existing author-replica research path. Report signal count, wins/losses/ambiguous, win rate, net R, profit factor where supported, and pips/points where the instrument metric is valid. This is a research diagnostic and does not alter canonical geometry or production status.
+
+
+### 2026-09-22 staged duplicate inventory — exact-tip families
+
+A fresh GitHub branch inventory identified the following exact duplicate families. These are branch-ref duplicates only; the retained anchor commit preserves the underlying evidence.
+
+- Entry-trigger mechanics family — SHA `f0f6f1168d59e022601b396a4c3bd75f0bf7a837`:
+  - `research/entry-trigger-mechanics-dev-val`
+  - `research/entry-trigger-mechanics-dev-val-2` through `-13`
+  - `research/entry-trigger-mechanics-root-cause`
+  - `research/entry-trigger-mechanics-root-cause-2`
+  - `research/entry-trigger-mechanics-root-cause-3`
+  - `research/entry-trigger-root-cause-4` through `-11`
+  - `research/entry-trigger-root-cause-final`
+  - `research/entry-trigger-root-cause-final-2`
+  - `research/entry-trigger-root-cause-final-3`
+  These all resolve to the same commit tip. The separate `research/entry-trigger-root-cause` tip is `0a71e5fc126ec257eca5d7b48ad887cf4203de9f` and is not included in this deletion group.
+
+- Excursion/outcome topology family — SHA `c8d4a6ae89a2a0f282c31df4d82f9f5050c1c25d`:
+  - `research/excursion-topology`
+  - `research/excursion-topology-final3`
+  - `research/excursion-topology-next` through `next5`
+  - `research/excursion-topology-run`
+  - `research/excursion-topology-run2`
+  - `research/excursion-topology-run3`
+  - `research/outcome-excursion-topology`
+  - `research/outcome-excursion-topology-final`
+  - `research/outcome-excursion-topology-final2`
+  - `research/outcome-excursion-topology-v2` through `v6`
+  - `research/outcome-stop-stress`
+  - `research/outcome-stop-stress-excursion`
+  - `research/outcome-stop-stress-excursion-v2` through `v4`
+  These all resolve to the same commit tip. The distinct `research/outcome-stop-stress-v5` tip `77618d93bbffc27f3bdaa03fc9d126bf78dc0079` is retained and excluded.
+
+- Outcome-path stop-stress family — SHA `c097bfe4e20c8df83ff5733cc984b5a4145c766e`:
+  - `research/outcome-path-stop-stress`
+  - `research/outcome-path-stop-stress-final`
+  - `research/outcome-path-stop-stress-final2`
+  - `research/outcome-path-stop-stress-final3`
+  - `research/outcome-path-stop-stress-v2` through `v7`
+  - `research/outcome-stop-stress-impl`
+  - `research/outcome-stop-stress-impl2`
+  These all resolve to the same commit tip and are exact duplicates.
+
+Deletion of these branch refs does not change any source rule, geometry status, validation result, or production state. Retain at least one branch/ref to each listed SHA before deleting the duplicate names.
