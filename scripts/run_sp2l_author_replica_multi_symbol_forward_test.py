@@ -31,7 +31,7 @@ VOLUME = float(os.getenv("SP2L_VOLUME", "0.01"))
 POLL_SECONDS = float(os.getenv("SP2L_POLL_SECONDS", "2"))
 ORDER_MODE = os.getenv("MT5_FORWARD_ORDER_MODE", "PENDING_LIMIT_RESEARCH")
 MAGIC_BASE = int(os.getenv("SP2L_MAGIC_BASE", "26092200"))
-TZ = timezone(timedelta(hours=3, minutes=30))
+IRAN_TZ = timezone(timedelta(hours=3, minutes=30))
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACTS = ROOT / "artifacts" / "forward-test"
@@ -53,6 +53,29 @@ def log_event(event: dict) -> None:
     with EVENTS.open("a", encoding="utf-8") as f:
         f.write(json.dumps(payload, separators=(",", ":")) + "\n")
     print(json.dumps(payload, indent=2))
+
+
+def mt5_server_offset() -> timedelta:
+    """Estimate MT5 broker-server offset for human-facing timestamps only."""
+    tick_times = []
+    for base in BASE_SYMBOLS:
+        symbol = resolve_symbol(base)
+        if symbol:
+            tick = mt5.symbol_info_tick(symbol)
+            if tick and getattr(tick, "time", None):
+                tick_times.append(int(tick.time))
+    if not tick_times:
+        return timedelta(0)
+    observed = sum(tick_times) / len(tick_times)
+    offset_seconds = observed - time.time()
+    offset_hours = max(-12, min(14, round(offset_seconds / 3600)))
+    return timedelta(hours=offset_hours)
+
+
+def display_time_from_mt5(timestamp: int) -> datetime:
+    offset = mt5_server_offset()
+    utc_time = datetime.fromtimestamp(int(timestamp), timezone.utc) - offset
+    return utc_time.astimezone(IRAN_TZ)
 
 
 def resolve_symbol(base: str) -> str | None:
@@ -230,7 +253,7 @@ def lifecycle_message(deal, symbol: str, pip_size: float) -> str:
     else:
         icon = "🔵" if pips is not None and pips > 0 else "🟠"
 
-    dt = datetime.fromtimestamp(int(deal.time), timezone.utc).astimezone(TZ)
+    dt = display_time_from_mt5(int(deal.time))
     result = f"Result: {pips:+.0f} pips\n" if pips is not None else ""
     return (
         f"{icon} {symbol} {side} — {'OPEN' if is_open else 'CLOSE'}"
@@ -278,7 +301,7 @@ def lifecycle_levels(deal, symbol: str):
 def send_signal(candidate: dict, pip_size: float) -> None:
     symbol = candidate["symbol"]
     digits = int(mt5.symbol_info(symbol).digits)
-    t = datetime.fromtimestamp(candidate["trigger_time"], timezone.utc).astimezone(TZ)
+    t = display_time_from_mt5(candidate["trigger_time"])
     risk_pips = candidate["risk"] / pip_size if pip_size else 0.0
     icon = "🟢" if candidate["direction"] == "BUY" else "🔴"
     text = (
