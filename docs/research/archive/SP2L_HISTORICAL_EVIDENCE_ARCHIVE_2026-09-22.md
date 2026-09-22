@@ -266,3 +266,36 @@ G413 gate state:
 Required next evidence was direct visual resolution of 34:14–35:50 P-Gap, 36:15–37:10 AB=CD anchors, 38:18–40:16 Buy Limit/update boundary, 41:18–42:48 stop/TP mapping, and 1:04:00–1:04:42 deep-leg/R mapping.
 
 The later G416 visual-artifact gate already records that the required frame bundle was not available, so these G413 narrowing results do not constitute a canonical freeze.
+
+
+## G349/G350 official-source audit family — 2026-09-12
+
+Durable evidence preserved from the official-source bridge:
+- Official Poursamadi web pages were identified as potentially authoritative extensions of the source package.
+- SP2L sequence (spike → correction/second leg → entry) is consistent with the preserved lesson.
+- P-Gap is presented as a validity condition for a valid spike, but the official page still does not define executable endpoints, OHLC fields, candle count, magnitude or overlap rule.
+- The official page gives a directional second-leg trigger candidate, but the relationship between that trigger and the pending-limit placement remains unresolved.
+- Stop-loss is tied to the spike-origin candle; wick/body/OHLC-field and offset remain unresolved.
+- A 50% secondary/add-on entry is described, but its exact distance reference, sizing interaction and relation to the primary order remain unresolved.
+- Default TP 1:1 is described on the official page, while the original lesson also discusses R1/R2, 2X/3X and AB=CD contexts; executable TP scope remains unresolved.
+- AB=CD / Leg2≈Leg1 remains source-supported from the lesson.
+- Higher-volume/New York session preference is contextual, not a deterministic session gate.
+
+G349 gate:
+**PASS — NEW OFFICIAL SOURCE MATERIAL IDENTIFIED; SOURCE BRIDGE OPEN, GEOMETRY STILL UNRESOLVED.**
+
+**Frozen Geometry BLOCKED; DEV BLOCKED; Validation protected; Fresh Holdout locked; Production blocked.**
+
+The G350 family is retained only as historical official-source audit lineage; no evidence from it authorizes canonical geometry or production.
+
+## G368 hypothesis-layer family — 2026-09-12
+
+The G368 family is a hypothesis/research layer, not canonical source resolution. Its durable role was to provide:
+- an explicit hypothesis registry/schema and research boundary;
+- synthetic/fixture-oriented investigation of unresolved SP2L geometry;
+- a handoff into adversarial/minimal-pair discrimination work;
+- separation between hypothesis execution and source-confirmed canonical rules.
+
+G368 did not authorize promotion of hypotheses to canonical Strategy A geometry. Hypothesis results remain subordinate to source evidence and do not override unresolved P-Gap, A/B/C/D, entry, stop, TP, fill or execution semantics.
+
+Therefore the historical G368 branch family can be removed after this archive preservation; deleting those branches does not promote or discard canonical evidence.
