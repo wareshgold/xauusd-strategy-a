@@ -99,3 +99,30 @@ Nothing in this archive:
 - authorizes production execution.
 
 The active forward-test branch remains the operational research anchor.
+
+
+## 2026-09-09 source-resolution evidence
+
+The 2026-09-09 entry/trigger/P-Gap research established durable source boundaries:
+- pending-limit entry is source-confirmed; exact Entry price anchor and wick/body edge remain unresolved;
+- structural invalidation is source-confirmed; exact anchor and deterministic replacement threshold remain unresolved;
+- source examples include 1-, 2-, and 3-candle trigger constructions, but no universal trigger taxonomy/acceptance rule is frozen;
+- 2X is source-confirmed terminology/concept, but its exact formula/reference levels remain unresolved;
+- P-Gap is source-confirmed as a valid-breakout concept distinct from E-Gap/Common-Gap, but its executable formula and price/candle anchors remain unresolved;
+- AB=CD is source-confirmed as the Leg-2 relationship, while A/B/C/D anchors and equality tolerance remain unresolved;
+- Entry = Leg2Start is not authorized as a canonical assumption;
+- market-close reclaim, fixed-distance stop, arbitrary ATR/pip/percentage replacement thresholds, generic BOS/MSS, generic FVG/three-candle imbalance, and unconfirmed bearish mirrors remain non-canonical.
+
+These findings came from the 2026-09-09 source ledger and discrimination fixtures. They preserve evidence boundaries only and do not freeze Strategy A geometry.
+
+## F11 pending-order refresh evidence — 2026-09-14
+
+F11 established that the source demonstrates pending-order refresh/replacement behavior when subsequent structure materially changes the risk relationship, while the deterministic retain-versus-replace condition remains unresolved.
+
+Preserved boundary:
+- market-entry-on-close/reclaim is not a substitute for the source-confirmed pending-Limit model;
+- no pip/tick/ATR/percentage/candle-count refresh threshold is source-confirmed;
+- no rule requiring movement on every swing is frozen;
+- no universal bearish mirror is assumed.
+
+F11 remains SOURCE-DOES-NOT-DISCRIMINATE; it authorizes no engine change and leaves frozen geometry blocked.
