@@ -202,9 +202,10 @@ def load_state() -> dict:
             "deals": {int(k) for k in raw.get("deals", [])},
             "orders": {int(k) for k in raw.get("orders", [])},
             "positions": {int(k) for k in raw.get("positions", [])},
+            "order_states": {str(k) for k in raw.get("order_states", [])},
         }
     except Exception:
-        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set()}
+        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "order_states": set()}
 
 
 def reconcile_state_from_events(state: dict) -> None:
@@ -242,6 +243,7 @@ def save_state(state: dict) -> None:
         "deals": sorted(state["deals"])[-1000:],
         "orders": sorted(state["orders"])[-1000:],
         "positions": sorted(state["positions"])[-1000:],
+        "order_states": sorted(state["order_states"])[-2000:],
     }, indent=2), encoding="utf-8")
 
 
@@ -366,6 +368,69 @@ def execute_candidate(candidate: dict, magic: int) -> dict:
     return gateway.execute_signal(payload)
 
 
+def order_state_name(order) -> str:
+    state = int(getattr(order, "state", -1))
+    names = {
+        getattr(mt5, "ORDER_STATE_STARTED", 0): "STARTED",
+        getattr(mt5, "ORDER_STATE_PLACED", 1): "PLACED",
+        getattr(mt5, "ORDER_STATE_CANCELED", 2): "CANCELED",
+        getattr(mt5, "ORDER_STATE_PARTIAL", 3): "PARTIAL",
+        getattr(mt5, "ORDER_STATE_FILLED", 4): "FILLED",
+        getattr(mt5, "ORDER_STATE_REJECTED", 5): "REJECTED",
+        getattr(mt5, "ORDER_STATE_EXPIRED", 6): "EXPIRED",
+        getattr(mt5, "ORDER_STATE_REQUEST_ADD", 7): "REQUEST_ADD",
+        getattr(mt5, "ORDER_STATE_REQUEST_MODIFY", 8): "REQUEST_MODIFY",
+        getattr(mt5, "ORDER_STATE_REQUEST_CANCEL", 9): "REQUEST_CANCEL",
+    }
+    return names.get(state, f"UNKNOWN_{state}")
+
+
+def monitor_pending_order_lifecycle(cfg: dict, state: dict) -> None:
+    """Observe broker-side pending-order state without changing execution semantics."""
+    symbol, magic = cfg["symbol"], cfg["magic"]
+    start = datetime.now(timezone.utc) - timedelta(hours=24)
+    end = datetime.now(timezone.utc)
+    orders = mt5.history_orders_get(start, end, group=symbol) or []
+    active = mt5.orders_get(symbol=symbol) or []
+    orders = list(orders) + list(active)
+    seen_local = set()
+    for order in sorted(orders, key=lambda x: (int(getattr(x, "time_setup", 0) or 0), int(getattr(x, "ticket", 0) or 0))):
+        ticket = int(getattr(order, "ticket", 0) or 0)
+        if not ticket or ticket in seen_local:
+            continue
+        seen_local.add(ticket)
+        order_magic = int(getattr(order, "magic", 0) or 0)
+        if order_magic != magic and ticket not in state["orders"]:
+            continue
+        state_name = order_state_name(order)
+        marker = f"{ticket}:{state_name}"
+        if marker in state["order_states"]:
+            continue
+        state["orders"].add(ticket)
+        state["order_states"].add(marker)
+        log_event({
+            "event": "PENDING_ORDER_LIFECYCLE",
+            "symbol": symbol,
+            "order": ticket,
+            "state": state_name,
+            "state_code": int(getattr(order, "state", -1)),
+            "type": int(getattr(order, "type", -1)),
+            "type_time": int(getattr(order, "type_time", -1)),
+            "time_setup": int(getattr(order, "time_setup", 0) or 0),
+            "time_done": int(getattr(order, "time_done", 0) or 0),
+            "magic": order_magic,
+            "position_id": int(getattr(order, "position_id", 0) or 0),
+            "position_by_id": int(getattr(order, "position_by_id", 0) or 0),
+            "volume_initial": float(getattr(order, "volume_initial", 0.0) or 0.0),
+            "volume_current": float(getattr(order, "volume_current", 0.0) or 0.0),
+            "price_open": float(getattr(order, "price_open", 0.0) or 0.0),
+            "price_current": float(getattr(order, "price_current", 0.0) or 0.0),
+            "sl": float(getattr(order, "sl", 0.0) or 0.0),
+            "tp": float(getattr(order, "tp", 0.0) or 0.0),
+            "canonical": False,
+        })
+
+
 def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
     symbol, magic, pip = cfg["symbol"], cfg["magic"], cfg["pip_size"]
     start = datetime.now(timezone.utc) - timedelta(hours=24)
@@ -472,6 +537,7 @@ def main() -> None:
         while deadline is None or time.time() < deadline:
             for cfg in configs:
                 symbol = cfg["symbol"]
+                monitor_pending_order_lifecycle(cfg, state)
                 monitor_symbol_lifecycle(cfg, state)
                 data = rates(symbol)
                 if data is None:
