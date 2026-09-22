@@ -213,6 +213,10 @@ def reconcile_state_from_events(state: dict) -> None:
     if not EVENTS.exists():
         return
     successful = {}
+    recovered_order_states = set()
+    recovered_orders = set()
+    recovered_positions = set()
+    recovered_deals = set()
     try:
         for line in EVENTS.read_text(encoding="utf-8").splitlines():
             try:
@@ -220,12 +224,38 @@ def reconcile_state_from_events(state: dict) -> None:
             except json.JSONDecodeError:
                 continue
             signal_id = event.get("signal_id")
-            if not signal_id:
-                continue
             if event.get("event") == "ORDER_RESULT" and bool(event.get("success")):
-                successful[str(signal_id)] = str(signal_id)
+                if signal_id:
+                    successful[str(signal_id)] = str(signal_id)
+                order_id = int(event.get("tracked_order") or 0)
+                deal_id = int(event.get("tracked_deal") or 0)
+                if order_id:
+                    recovered_orders.add(order_id)
+                if deal_id:
+                    recovered_deals.add(deal_id)
+            elif event.get("event") == "PENDING_ORDER_LIFECYCLE":
+                order_id = int(event.get("order") or 0)
+                state_name = str(event.get("state") or "")
+                if order_id:
+                    recovered_orders.add(order_id)
+                    if state_name:
+                        recovered_order_states.add(f"{order_id}:{state_name}")
+                    position_id = int(event.get("position_id") or 0)
+                    if position_id:
+                        recovered_positions.add(position_id)
+            elif event.get("event") == "TELEGRAM_DEAL_LIFECYCLE":
+                deal_id = int(event.get("deal") or 0)
+                order_id = int(event.get("order") or 0)
+                position_id = int(event.get("position") or 0)
+                if deal_id:
+                    recovered_deals.add(deal_id)
+                if order_id:
+                    recovered_orders.add(order_id)
+                if position_id:
+                    recovered_positions.add(position_id)
             elif event.get("event") == "TELEGRAM_SIGNAL" and bool(event.get("success")):
-                state["notified"].add(str(signal_id))
+                if signal_id:
+                    state["notified"].add(str(signal_id))
     except OSError:
         return
 
@@ -234,6 +264,10 @@ def reconcile_state_from_events(state: dict) -> None:
         symbol = signal_id.split(":", 1)[0]
         recovered_seen[symbol] = signal_id
     state["seen"] = recovered_seen
+    state["orders"].update(recovered_orders)
+    state["positions"].update(recovered_positions)
+    state["deals"].update(recovered_deals)
+    state["order_states"].update(recovered_order_states)
 
 
 def save_state(state: dict) -> None:
