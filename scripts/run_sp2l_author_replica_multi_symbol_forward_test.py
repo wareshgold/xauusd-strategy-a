@@ -198,17 +198,19 @@ def load_state() -> dict:
         raw = json.loads(STATE_FILE.read_text(encoding="utf-8"))
         return {
             "seen": {str(k): v for k, v in raw.get("seen", {}).items()},
+            "notified": {str(k) for k in raw.get("notified", [])},
             "deals": {int(k) for k in raw.get("deals", [])},
             "orders": {int(k) for k in raw.get("orders", [])},
             "positions": {int(k) for k in raw.get("positions", [])},
         }
     except Exception:
-        return {"seen": {}, "deals": set(), "orders": set(), "positions": set()}
+        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set()}
 
 
 def save_state(state: dict) -> None:
     STATE_FILE.write_text(json.dumps({
         "seen": state["seen"],
+        "notified": sorted(state["notified"])[-1000:],
         "deals": sorted(state["deals"])[-1000:],
         "orders": sorted(state["orders"])[-1000:],
         "positions": sorted(state["positions"])[-1000:],
@@ -430,8 +432,11 @@ def main() -> None:
                 if candidate is None or seen_trigger.get(symbol) == trigger_key:
                     continue
 
-                seen_trigger[symbol] = trigger_key
                 candidate["signal_id"] = trigger_key
+                if trigger_key not in state["notified"]:
+                    send_signal(candidate, cfg["pip_size"])
+                    state["notified"].add(trigger_key)
+                    save_state(state)
                 log_event({
                     "event": "CANDIDATE", "symbol": symbol,
                     "signal_id": trigger_key, "candidate": candidate,
@@ -444,7 +449,6 @@ def main() -> None:
                     },
                     "execution_semantics": ORDER_MODE,
                 })
-                send_signal(candidate, cfg["pip_size"])
                 tick = mt5.symbol_info_tick(symbol)
                 log_event({
                     "event": "ORDER_ATTEMPT", "symbol": symbol,
@@ -455,7 +459,13 @@ def main() -> None:
                     "ask": float(tick.ask) if tick else None,
                     "magic": cfg["magic"], "canonical": False,
                 })
-                result = execute_candidate(candidate, cfg["magic"])
+                try:
+                    result = execute_candidate(candidate, cfg["magic"])
+                except Exception as exc:
+                    result = {
+                        "ok": False,
+                        "error": f"execute_candidate_exception: {type(exc).__name__}: {exc}",
+                    }
                 # Persist execution identifiers immediately. MT5 may report a
                 # closing deal with a different identifier and some brokers
                 # may not carry the original magic onto the closing deal.
@@ -470,6 +480,8 @@ def main() -> None:
                     "tracked_deal": result_deal or None,
                     "demo_only": True, "success": bool(result.get("ok")),
                 })
+                if bool(result.get("ok")):
+                    seen_trigger[symbol] = trigger_key
                 save_state(state)
             time.sleep(POLL_SECONDS)
     finally:
