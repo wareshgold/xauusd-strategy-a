@@ -236,3 +236,33 @@ The source-discrimination search did not uniquely freeze executable geometry. Ba
 
 ### Batch 6–8 branch family
 The historical Batch 6 trigger/ABCD/2X, Batch 7 validation-gate, and Batch 8 statistical-holdout refs did not add a newer retained gate state beyond the later source-resolution and forward-test records. They remain historical checkpoints only; no validation or holdout authorization was created by these refs.
+
+
+## G413 source-geometry reconciliation — 2026-09-14
+
+G413 narrowed the source questions without freezing executable geometry.
+
+Durable source-aligned findings:
+- P-Gap is source-distinguished from E-Gap/Common-Gap; generic three-candle range/body/wick separation was not promoted.
+- A source-specific pressure-gap construction remained the retained semantic hypothesis, but exact candle pair, OHLC fields, magnitude/tolerance and non-overlap sufficiency remained unresolved.
+- AB=CD / `Leg2 magnitude = Leg1` is source-confirmed.
+- Arbitrary A/B/C/D candle selectors and fixed equality tolerance were not promoted.
+- `fill = C` was explicitly not authorized.
+- The worked example strengthened the research question toward source-defined structural swing origins, but did not establish a deterministic selector.
+- Pending-limit execution is source-confirmed; market-close reclaim is not a substitute.
+- Entry in the correction/first-low area was narrowed but not frozen; touch/overshoot and exact price-field semantics remained unresolved.
+- Structural invalidation is source-supported, but wick/body, OHLC field, buffer and exact pre-fill cancellation boundary remained unresolved.
+- TP1 / R=1 was source-confirmed as the primary target convention; TP2 as a larger alternative was source-confirmed; exact geometric mappings remained unresolved.
+- Broker time, European opening and contextual MA/trend observations were not promoted to mandatory deterministic session filters.
+
+G413 gate state:
+**G413 PASS — SOURCE CANDIDATE RECONCILIATION**
+**G400 BLOCKED**
+**Frozen Geometry NOT AUTHORIZED**
+**DEV NOT AUTHORIZED**
+**Validation protected**
+**Production BLOCKED**
+
+Required next evidence was direct visual resolution of 34:14–35:50 P-Gap, 36:15–37:10 AB=CD anchors, 38:18–40:16 Buy Limit/update boundary, 41:18–42:48 stop/TP mapping, and 1:04:00–1:04:42 deep-leg/R mapping.
+
+The later G416 visual-artifact gate already records that the required frame bundle was not available, so these G413 narrowing results do not constitute a canonical freeze.
