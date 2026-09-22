@@ -45,6 +45,10 @@ def audit(events: list[dict]) -> dict:
     telegram = Counter()
     failure_reasons = Counter()
     symbols = defaultdict(lambda: Counter())
+    duplicate_events = Counter()
+
+    seen_lifecycle_deals = set()
+    seen_order_results = set()
 
     for e in events:
         event = e.get("event")
@@ -64,6 +68,11 @@ def audit(events: list[dict]) -> dict:
 
         elif event == "ORDER_RESULT":
             sid = str(e.get("signal_id") or "")
+            order_id = int(e.get("tracked_order") or 0)
+            if order_id and order_id in seen_order_results:
+                duplicate_events["duplicate_order_result"] += 1
+            elif order_id:
+                seen_order_results.add(order_id)
             if sid:
                 attempts.setdefault(sid, {})["result_event"] = e
                 ok = bool(e.get("success"))
@@ -78,6 +87,11 @@ def audit(events: list[dict]) -> dict:
 
         elif event == "TELEGRAM_DEAL_LIFECYCLE":
             lifecycle.append(e)
+            deal_id = int(e.get("deal") or 0)
+            if deal_id and deal_id in seen_lifecycle_deals:
+                duplicate_events["duplicate_lifecycle_deal"] += 1
+            elif deal_id:
+                seen_lifecycle_deals.add(deal_id)
             entry = int(e.get("entry", -1))
             symbols[symbol]["lifecycle_open" if entry == 0 else "lifecycle_close"] += 1
 
@@ -98,6 +112,13 @@ def audit(events: list[dict]) -> dict:
     lifecycle_orders = {int(e.get("order")) for e in lifecycle if e.get("order")}
     unmatched_lifecycle_orders = sorted(lifecycle_orders - successful_order_ids)
 
+    result_signal_ids = {
+        str(e.get("signal_id")) for e in events
+        if e.get("event") == "ORDER_RESULT" and e.get("signal_id")
+    }
+    result_without_attempt = sorted(result_signal_ids - set(attempts))
+    attempt_without_candidate = sorted(set(attempts) - set(candidates))
+
     successful = sum(v["execution_success"] for v in symbols.values())
     failed = sum(v["execution_failure"] for v in symbols.values())
 
@@ -115,6 +136,8 @@ def audit(events: list[dict]) -> dict:
             "unique_candidates": len(candidates),
             "unique_attempts": len(attempts),
             "candidate_without_attempt": sorted(set(candidates) - set(attempts)),
+            "attempt_without_candidate": attempt_without_candidate,
+            "order_result_without_attempt": result_without_attempt,
         },
         "execution": {
             "successful": successful,
@@ -136,6 +159,11 @@ def audit(events: list[dict]) -> dict:
         },
         "telegram": dict(telegram),
         "symbols": {k: dict(v) for k, v in sorted(symbols.items())},
+        "integrity": {
+            "duplicate_order_result_events": duplicate_events["duplicate_order_result"],
+            "duplicate_lifecycle_deal_events": duplicate_events["duplicate_lifecycle_deal"],
+            "all_symbols_observed": sorted(symbols),
+        },
         "linkage": {
             "successful_order_ids": len(successful_order_ids),
             "lifecycle_order_ids": len(lifecycle_orders),
@@ -171,6 +199,8 @@ def markdown(report: dict) -> str:
         f"- Unique candidates: **{sig['unique_candidates']}**",
         f"- Unique execution attempts: **{sig['unique_attempts']}**",
         f"- Candidates without attempt: **{len(sig['candidate_without_attempt'])}**",
+        f"- Attempts without candidate: **{len(sig['attempt_without_candidate'])}**",
+        f"- Order results without attempt: **{len(sig['order_result_without_attempt'])}**",
         f"- Successful execution results: **{ex['successful']}**",
         f"- Failed execution results: **{ex['failed']}**",
         "",
@@ -196,6 +226,10 @@ def markdown(report: dict) -> str:
         f"- Successful order IDs linked to lifecycle telemetry: **{report['linkage']['successful_order_ids']}**",
         f"- Lifecycle order IDs: **{report['linkage']['lifecycle_order_ids']}**",
         f"- Unmatched lifecycle order IDs: **{len(report['linkage']['unmatched_lifecycle_orders'])}**",
+        "",
+        "## Duplicate / linkage integrity",
+        f"- Duplicate order-result events: **{report['integrity']['duplicate_order_result_events']}**",
+        f"- Duplicate lifecycle-deal events: **{report['integrity']['duplicate_lifecycle_deal_events']}**",
         "",
         "## Source boundary",
         "- P-Gap, spike, SL, TP, fill semantics, and pending-order lifecycle remain research telemetry.",
