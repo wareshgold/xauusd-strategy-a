@@ -281,17 +281,45 @@ def save_state(state: dict) -> None:
     }, indent=2), encoding="utf-8")
 
 
-def position_entry_price(deal) -> float | None:
+def entry_price_from_deals(deals) -> tuple[float | None, int | None]:
+    """Return the volume-weighted opening price and its first entry deal ticket.
+
+    Closing telemetry must use the actual DEAL_ENTRY_IN records belonging to the
+    same MT5 position. Never infer the entry from the closing deal, order price,
+    current position price, or an unrelated historical trade.
+    """
+    entries = [
+        d for d in (deals or [])
+        if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN
+        and float(getattr(d, "volume", 0.0) or 0.0) > 0
+    ]
+    if not entries:
+        return None, None
+
+    ordered = sorted(
+        entries,
+        key=lambda x: (int(getattr(x, "time", 0) or 0), int(getattr(x, "ticket", 0) or 0)),
+    )
+    total_volume = sum(float(d.volume) for d in ordered)
+    if total_volume <= 0:
+        return None, None
+    weighted_price = sum(float(d.price) * float(d.volume) for d in ordered) / total_volume
+    return weighted_price, int(ordered[0].ticket)
+
+
+def position_entry_details(deal) -> tuple[float | None, int | None]:
     position_id = int(getattr(deal, "position_id", 0) or 0)
     if not position_id:
-        return None
+        return None, None
     start = datetime.fromtimestamp(int(deal.time), timezone.utc) - timedelta(days=7)
     end = datetime.fromtimestamp(int(deal.time), timezone.utc) + timedelta(seconds=1)
     history = mt5.history_deals_get(start, end, position=position_id) or []
-    entries = [d for d in history if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN]
-    if not entries:
-        return None
-    return float(sorted(entries, key=lambda x: (int(x.time), int(x.ticket)))[0].price)
+    return entry_price_from_deals(history)
+
+
+def position_entry_price(deal) -> float | None:
+    price, _ticket = position_entry_details(deal)
+    return price
 
 
 def lifecycle_message(deal, symbol: str, pip_size: float) -> str:
@@ -485,9 +513,13 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             continue
         state["orders"].add(order) if order else None
         state["positions"].add(position) if position else None
+        entry_price, entry_deal_ticket = (
+            position_entry_details(deal)
+            if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN
+            else (float(deal.price), ticket)
+        )
         text = lifecycle_message(deal, symbol, pip)
         result = gateway.send_telegram_message(text)
-        entry_price = position_entry_price(deal) if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN else float(deal.price)
         exit_price = float(deal.price)
         signed_move = None
         pips_result = None
@@ -506,6 +538,7 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             "entry": int(getattr(deal, "entry", -1)),
             "reason": int(getattr(deal, "reason", -1)),
             "entry_price": entry_price,
+            "entry_deal": entry_deal_ticket,
             "exit_price": exit_price,
             "pips_result": pips_result,
             "profit": profit,
