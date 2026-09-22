@@ -142,3 +142,12 @@ Next cleanup control: re-audit remaining remote branches, then review the G413 f
 ### 2026-09-22 G413 lineage control
 
 The retained G413 base branch `research/sp2l-g413-source-geometry-reconciliation-2026-09-14` was re-compared against v2 through v8. All seven variant branches are exactly 4 commits behind the base branch and add no commits beyond the base tip. The base branch remains the lineage anchor for the G413 family during cleanup. Variant refs v2-v8 are therefore redundant once the base lineage anchor is retained. No canonical geometry is promoted by this lineage decision.
+
+
+### 2026-09-22 post-cleanup inventory — next duplicate families
+
+The remote branch inventory was re-read after G350/G368/G413 cleanup. Several older families are exact ref duplicates and are candidates for staged cleanup. First candidates are the gate-preparation family (research/sp2l-gate-preparation-v1b, v1, v2…v19, all at SHA 851ae2eef29c1e909a364f1f4790d32d90b27f43) and the source/semantic duplicate families identified by identical tip SHAs. These will be deleted only in staged groups with a retained lineage anchor; unique-tip variants remain untouched until their evidence is checked.
+
+### Next requested validation work
+
+After branch cleanup, run a research-only weekly backtest for the prior trading week, 2026-09-14 through 2026-09-18, for EURUSD, BTCUSD, and USTEC using the existing author-replica research path. Report signal count, wins/losses/ambiguous, win rate, net R, profit factor where supported, and pips/points where the instrument metric is valid. This is a research diagnostic and does not alter canonical geometry or production status.
