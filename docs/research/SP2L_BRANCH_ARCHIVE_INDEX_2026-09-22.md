@@ -2,84 +2,86 @@
 
 ## Purpose
 
-This document is the preservation index for the historical SP2L Git branches before branch cleanup.
+This document preserves the historical branch-cleanup record before redundant branches are removed.
 
-The cleanup rule is:
-
+Cleanup rules:
 1. Preserve source evidence, decisions, audit results, test contracts, and reproducibility information in repository documents.
-2. Do not use old branch names as the source of truth once their useful information is represented in the current documentation.
+2. Old branch names are not evidence by themselves once their useful content is preserved elsewhere.
 3. Consolidate duplicate branches that point to the same commit.
-4. Remove temporary/redundant historical branches only after their commit is represented by another retained branch or its useful evidence is documented.
-5. Never remove the active forward-test branch:
-   - `research/sp2l-f13-demo-forward-slfixed-2026-09-21`
-6. Never promote historical research conclusions to canonical rules merely because they survive branch cleanup.
+4. Remove temporary/redundant branches only after their useful information is preserved and the commit has another retained reference.
+5. Never remove the active forward-test branch `research/sp2l-f13-demo-forward-slfixed-2026-09-21`.
+6. Branch cleanup never promotes a research result to a canonical Strategy A rule.
 
 ## Current retained anchor
 
-- Active branch: `research/sp2l-f13-demo-forward-slfixed-2026-09-21`
-- Current HEAD: `b598ca1574aa7b8993fee79344fb768e019ebfb9`
-- Purpose: live/demo forward observability and lifecycle validation.
-- Canonical Strategy A status: unchanged; forward-test telemetry is research-only.
+- Branch: `research/sp2l-f13-demo-forward-slfixed-2026-09-21`
+- HEAD at audit start: `b598ca1574aa7b8993fee79344fb768e019ebfb9`
+- Role: demo forward observability/lifecycle validation.
+- Canonical status: unchanged; telemetry remains research-only.
 
-## Historical branch families confirmed as duplicate snapshots
+## Confirmed duplicate branch families
 
-The following families were observed to contain multiple branch names pointing to the same commit. Their duplicate names do not provide independent evidence.
+These families were observed with multiple branch names pointing to the same commit.
 
 ### 2026-09-15 session snapshots
-- Commit: `a49fa5134336c0c9bb78bf3693afe13494da95c5`
-- Duplicate family includes:
-  - `checkpoint/session-snapshot-2026-09-15`
-  - `checkpoint/session-snapshot-2026-09-15-c`
-  - `checkpoint/session-snapshot-2026-09-15-d`
-  - `checkpoint/session-snapshot-2026-09-15-e`
-  - `checkpoint/session-snapshot-2026-09-15-f`
-  - `checkpoint/session-snapshot-2026-09-15-final`
-  - `checkpoint/session-snapshot-2026-09-15-z`
-  - `checkpoint/session-snapshot-2026-09-15-zz`
-  - `checkpoint/session-snapshot-2026-09-15-zz2`
-  - `checkpoint/session-snapshot-2026-09-15-zz3`
-  - `checkpoint/session-snapshot-2026-09-15b`
-- Also observed at the same commit: `research/mt5-trailing-stop-execution-2026-09-15`
+Commit `a49fa5134336c0c9bb78bf3693afe13494da95c5`.
 
-### 2026-09-15 session snapshot final variants
-- Commit: `cf1234647f0da9ddde9dd8ddc63d0c82250dc8b6`
-- Duplicate family:
-  - `checkpoint/session-snapshot-2026-09-15-final2`
-  - `checkpoint/session-snapshot-2026-09-15-unique`
-  - `checkpoint/session-snapshot-2026-09-15-unique2`
-  - `checkpoint/session-snapshot-2026-09-15-unique3`
+Duplicate names include:
+- `checkpoint/session-snapshot-2026-09-15`
+- `checkpoint/session-snapshot-2026-09-15-c`
+- `checkpoint/session-snapshot-2026-09-15-d`
+- `checkpoint/session-snapshot-2026-09-15-e`
+- `checkpoint/session-snapshot-2026-09-15-f`
+- `checkpoint/session-snapshot-2026-09-15-final`
+- `checkpoint/session-snapshot-2026-09-15-z`
+- `checkpoint/session-snapshot-2026-09-15-zz`
+- `checkpoint/session-snapshot-2026-09-15-zz2`
+- `checkpoint/session-snapshot-2026-09-15-zz3`
+- `checkpoint/session-snapshot-2026-09-15b`
+- `research/mt5-trailing-stop-execution-2026-09-15`
+
+### 2026-09-15 final/unique snapshots
+Commit `cf1234647f0da9ddde9dd8ddc63d0c82250dc8b6`.
+
+Duplicate names:
+- `checkpoint/session-snapshot-2026-09-15-final2`
+- `checkpoint/session-snapshot-2026-09-15-unique`
+- `checkpoint/session-snapshot-2026-09-15-unique2`
+- `checkpoint/session-snapshot-2026-09-15-unique3`
 
 ### Entry-trigger mechanics
-- Commit: `f0f6f1168d59e022601b396a4c3bd75f0bf7a837`
-- Multiple `research/entry-trigger-*` branches point to the same snapshot.
-- These are candidates for consolidation after confirming their useful findings are represented in the current source/evidence documents.
+Commit `f0f6f1168d59e022601b396a4c3bd75f0bf7a837`.
 
-### Excursion / stop-stress research
-- Commit: `c8d4a6ae89a2a0f282c31df4d82f9f5050c1c25d`
-- Multiple `research/excursion-topology-*` and `research/outcome-stop-stress-*` variants point to the same snapshot.
-- Preserve only the resulting evidence/decision documents, not every temporary branch name.
+Multiple `research/entry-trigger-*` variants point to this same snapshot.
 
-### Gate-preparation variants
-- Commit: `851ae2eef29c1e909a364f1f4790d32d90b27f43`
-- `research/sp2l-gate-preparation-v1` through `v19` and `final` variants were observed on the same commit.
-- These are duplicate snapshots, not separate research states.
+### Excursion / stop-stress
+Commit `c8d4a6ae89a2a0f282c31df4d82f9f5050c1c25d`.
 
-### G368 hypothesis-layer variants
-- Commit: `a3731aeee903fe5cb8f5a2c3b0403259b28117bc`
-- Numerous `research/sp2l-g368-hypothesis-layer-*` variants point to the same snapshot.
-- Preserve the evidence represented in the current research documents; duplicate branch names are not required.
+Multiple `research/excursion-topology-*` and `research/outcome-stop-stress-*` variants point to this same snapshot.
 
-### G350 official-source audit variants
-- Commit: `4ff65ab126bc382ff2ec539e88a0ff9432975e25`
-- Multiple G349/G350 official-source audit variants point to the same snapshot.
+### Gate preparation
+Commit `851ae2eef29c1e909a364f1f4790d32d90b27f43`.
 
-### G413 source-geometry reconciliation variants
-- Commit: `c50f3dafa48? `
-- Multiple G413 v2-v8 variants were observed as duplicate snapshots. Exact commit should be re-read before deletion; this entry is intentionally not a deletion authority.
+The `research/sp2l-gate-preparation-v1...v19` and final variants are duplicate snapshots.
 
-## Important single-branch historical anchors
+### G368 hypothesis layer
+Commit `a3731aeee903fe5cb8f5a2c3b0403259b28117bc`.
 
-These should not be deleted merely because they are old. Their evidence must first be confirmed in the current documentation:
+Numerous `research/sp2l-g368-hypothesis-layer-*` variants point to this same snapshot.
+
+### G350 official-source audit
+Commit `4ff65ab126bc382ff2ec539e88a0ff9432975e25`.
+
+Multiple G349/G350 variants point to the same snapshot.
+
+### G413 source-geometry reconciliation
+Commit `c50f3dafa48b60735ab10efd3c58016c22728351`.
+
+Multiple `research/sp2l-g413-source-geometry-reconciliation-2026-09-14-v2...v8` variants point to this same snapshot.
+
+## Historical branches requiring evidence-preservation check before deletion
+
+These are not automatically deletable merely because they are old:
 
 - `research/sp2l-pgap-source-reconstruction-2026-09-21`
 - `research/sp2l-batch40-pgap-contamination-audit-2026-09-21`
@@ -92,17 +94,17 @@ These should not be deleted merely because they are old. Their evidence must fir
 - `research/sp2l-f13-2x-synthetic-fixtures-2026-09-21`
 - `research/sp2l-f13-2x-tp1-fixture-2026-09-14`
 
-These names are evidence pointers only. They do not by themselves establish that a rule is canonical.
+These are evidence pointers, not canonical-rule authorities.
 
-## Cleanup status
+## Cleanup phases
 
-- Phase A — inventory: COMPLETE (initial inventory)
-- Phase B — duplicate-family identification: IN PROGRESS
-- Phase C — evidence preservation into current docs: IN PROGRESS
-- Phase D — branch deletion: NOT YET PERFORMED
-- Phase E — post-cleanup branch audit: REQUIRED
+- Inventory: COMPLETE (initial inventory)
+- Duplicate-family identification: COMPLETE for the families listed above
+- Evidence preservation: IN PROGRESS
+- Branch deletion: NOT YET PERFORMED
+- Post-cleanup audit: REQUIRED
 
-## Safety rule
+## Safety
 
 No deletion should remove the only copy of a source artifact, forensic result, synthetic fixture, gate decision, or reproducibility record.
 
