@@ -388,12 +388,29 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         state["positions"].add(position) if position else None
         text = lifecycle_message(deal, symbol, pip)
         result = gateway.send_telegram_message(text)
+        entry_price = position_entry_price(deal) if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN else float(deal.price)
+        exit_price = float(deal.price)
+        signed_move = None
+        pips_result = None
+        if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN and entry_price is not None and pip > 0:
+            signed_move = exit_price - entry_price if side == "BUY" else entry_price - exit_price
+            pips_result = signed_move / pip
+        profit = float(getattr(deal, "profit", 0.0))
+        commission = float(getattr(deal, "commission", 0.0))
+        swap = float(getattr(deal, "swap", 0.0))
+        net = profit + commission + swap
         log_event({
             "event": "TELEGRAM_DEAL_LIFECYCLE", "symbol": symbol,
             "deal": ticket, "order": order, "position": position,
             "entry": int(getattr(deal, "entry", -1)),
             "reason": int(getattr(deal, "reason", -1)),
-            "profit": float(getattr(deal, "profit", 0.0)),
+            "entry_price": entry_price,
+            "exit_price": exit_price,
+            "pips_result": pips_result,
+            "profit": profit,
+            "commission": commission,
+            "swap": swap,
+            "net": net,
             "telegram": {"success": result.success, "detail": result.detail},
             "canonical": False,
         })
