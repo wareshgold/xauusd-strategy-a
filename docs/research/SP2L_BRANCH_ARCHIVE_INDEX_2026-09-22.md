@@ -137,3 +137,8 @@ G368 hypothesis-layer family: all 29 remote branch refs were deleted after durab
 No canonical Strategy A rule, P-Gap executable formula, AB=CD anchor/tolerance, fill semantics, or production execution rule was changed by this cleanup.
 
 Next cleanup control: re-audit remaining remote branches, then review the G413 family as a separate lineage-control item before any deletion.
+
+
+### 2026-09-22 G413 lineage control
+
+The retained G413 base branch `research/sp2l-g413-source-geometry-reconciliation-2026-09-14` was re-compared against v2 through v8. All seven variant branches are exactly 4 commits behind the base branch and add no commits beyond the base tip. The base branch remains the lineage anchor for the G413 family during cleanup. Variant refs v2-v8 are therefore redundant once the base lineage anchor is retained. No canonical geometry is promoted by this lineage decision.
