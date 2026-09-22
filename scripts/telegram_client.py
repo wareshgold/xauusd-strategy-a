@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from dataclasses import dataclass
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -50,8 +51,9 @@ def send_telegram_message(
     *,
     bot_token: str | None = None,
     chat_id: str | None = None,
-    timeout: float = 10,
+    timeout: float = 15,
     parse_mode: str | None = None,
+    retries: int = 4,
     env: dict | None = None,
 ) -> TelegramSendResult:
     """Send one text message. Falls back to environment credentials.
@@ -75,13 +77,34 @@ def send_telegram_message(
     if parse_mode:
         params["parse_mode"] = parse_mode
     body = urlencode(params).encode()
-    try:
-        req = Request(url, data=body, method="POST")
-        with urlopen(req, timeout=timeout) as response:
-            status = response.status
-            payload = response.read().decode("utf-8", errors="replace")
-    except Exception as exc:  # network/API failure must not crash the caller
-        return TelegramSendResult(success=False, detail=f"EXCEPTION: {exc}", response=None)
+    last_exc: Exception | None = None
+    for attempt in range(max(1, retries)):
+        try:
+            req = Request(
+                url,
+                data=body,
+                method="POST",
+                headers={"Connection": "close", "User-Agent": "SP2L-Telegram/1.0"},
+            )
+            with urlopen(req, timeout=timeout) as response:
+                status = response.status
+                payload = response.read().decode("utf-8", errors="replace")
+            break
+        except Exception as exc:  # transient network failures are retried
+            last_exc = exc
+            if attempt + 1 >= max(1, retries):
+                return TelegramSendResult(
+                    success=False,
+                    detail=f"EXCEPTION: {exc}",
+                    response=None,
+                )
+            time.sleep(0.75 * (2 ** attempt))
+    else:
+        return TelegramSendResult(
+            success=False,
+            detail=f"EXCEPTION: {last_exc}",
+            response=None,
+        )
 
     try:
         parsed = json.loads(payload)
