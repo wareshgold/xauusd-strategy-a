@@ -3,7 +3,7 @@
 
 > Checkpoint type: research / engineering / forward-test continuity
 > Branch: `research/sp2l-f13-demo-forward-slfixed-2026-09-21`
-> HEAD at snapshot update: `126e32952e44ab27e5125fe3848b2983d6206252`
+> HEAD at snapshot update: `beee05bfe4f5bee4b3a287749fc8bac7c8c2fd08`
 
 ## 1. Project objective
 
@@ -72,6 +72,7 @@ Implemented/recorded components include:
 - Entry, SL, TP, risk/pip and result reporting.
 - Multi-symbol forward-test runner.
 - Human-facing MT5 timestamp conversion to Iran time in the latest branch update.
+- Deterministic forward-audit script for candidates, execution outcomes, lifecycle linkage, realized pips/net, and missing measurements.
 
 The forward runner has since received two execution-state reliability fixes: failed orders are retryable without permanently suppressing the trigger, and restart reconciliation rebuilds successful execution/notification state from the event log. These changes do not alter Strategy A geometry, source interpretation, or canonical status.
 
@@ -192,11 +193,12 @@ Before any production consideration:
 
 1. Continue collecting forward observations/trades.
 2. Audit the resulting event/journal records.
-3. Measure execution-vs-theoretical-entry differences.
-4. Measure pending-order lifecycle behavior and expiry/cancellation behavior.
-5. Keep all unresolved execution semantics explicitly research-only.
-6. Complete robustness/stability and fresh-holdout gates.
-7. Only source-confirmed rules may later enter a frozen canonical specification.
+3. Run the deterministic forward audit and preserve its output as observed telemetry.
+4. Measure execution-vs-theoretical-entry differences.
+5. Measure pending-order lifecycle behavior and expiry/cancellation behavior.
+6. Keep all unresolved execution semantics explicitly research-only.
+7. Complete robustness/stability and fresh-holdout gates.
+8. Only source-confirmed rules may later enter a frozen canonical specification.
 
 ## 11. Snapshot integrity statement
 
