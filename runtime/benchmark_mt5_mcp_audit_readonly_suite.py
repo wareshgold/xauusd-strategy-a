@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 from datetime import datetime, timedelta, timezone
 
@@ -11,8 +12,19 @@ MCP_URL = "http://127.0.0.1:22346/mcp"
 SYMBOL = "XAUUSD.ecn"
 
 
+def result_text(result):
+    if result is None:
+        return ""
+    parts = []
+    for item in getattr(result, "content", []) or []:
+        value = getattr(item, "text", None)
+        if value:
+            parts.append(value)
+    return "\n".join(parts)
+
+
 def summary(label, result):
-    text = str(result)
+    text = result_text(result) or str(result)
     print(f"=== {label} ===")
     print(text[:12000])
     print()
@@ -31,6 +43,15 @@ async def call(session, name, args):
         return None
 
 
+def parse_local_time(result):
+    raw = result_text(result)
+    try:
+        data = json.loads(raw)
+        return datetime.fromisoformat(data["local_time"])
+    except Exception:
+        return None
+
+
 async def main():
     api_key = os.environ["MT5_MCP_API_KEY"]
     headers = {
@@ -38,8 +59,6 @@ async def main():
         "MCP-Protocol-Version": "2025-06-18",
     }
 
-    # Use a recent UTC window for trade history. Journal tools explicitly require
-    # the terminal host's local time, so obtain that from MCP first.
     async with httpx.AsyncClient(headers=headers, timeout=20.0) as http_client:
         async with streamable_http_client(
             MCP_URL, http_client=http_client
@@ -50,27 +69,32 @@ async def main():
                 time_result = await call(session, "get_time_information", {})
                 summary("TIME INFORMATION", time_result)
 
-                # The MCP time response exposes the terminal host's current local
-                # time. Parse the local_time field if available; otherwise fall
-                # back to UTC for a bounded diagnostic window.
-                local_now = None
-                try:
-                    data = time_result.structuredContent
-                    local_now = datetime.fromisoformat(
-                        data["local_time"]
-                    )
-                except Exception:
-                    pass
-
+                local_now = parse_local_time(time_result)
                 if local_now is None:
-                    local_now = datetime.now(timezone.utc).replace(tzinfo=None)
+                    raise RuntimeError(
+                        "Could not parse terminal local_time from MCP; "
+                        "refusing to invent a journal time window."
+                    )
 
+                # Journal APIs explicitly require terminal-host local time.
                 local_from = (local_now - timedelta(hours=1)).isoformat(
                     timespec="seconds"
                 )
                 local_to = local_now.isoformat(timespec="seconds")
 
-                utc_now = datetime.now(timezone.utc)
+                # Trading history APIs accept ISO datetimes. Use the MCP UTC
+                # clock from the same response rather than the Python host clock.
+                try:
+                    time_data = json.loads(result_text(time_result))
+                    utc_now = datetime.fromisoformat(
+                        time_data["utc_time"].replace("Z", "+00:00")
+                    )
+                except Exception as exc:
+                    raise RuntimeError(
+                        "Could not parse MCP utc_time; refusing to invent "
+                        "a history window."
+                    ) from exc
+
                 utc_from = (utc_now - timedelta(hours=1)).isoformat(
                     timespec="seconds"
                 ).replace("+00:00", "Z")
