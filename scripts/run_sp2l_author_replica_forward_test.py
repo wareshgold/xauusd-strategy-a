@@ -304,14 +304,33 @@ def lifecycle_reason(deal) -> str:
     return "CLOSE"
 
 
+def position_entry_price(deal) -> float | None:
+    """Recover the original position entry price for a closing deal."""
+    position_id = int(getattr(deal, "position_id", 0) or 0)
+    if not position_id:
+        return None
+    start = datetime.fromtimestamp(int(deal.time), timezone.utc) - timedelta(days=7)
+    end = datetime.fromtimestamp(int(deal.time), timezone.utc) + timedelta(seconds=1)
+    history = mt5.history_deals_get(start, end, position=position_id) or []
+    entries = [d for d in history if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN]
+    if not entries:
+        return None
+    return float(sorted(entries, key=lambda x: (int(x.time), int(x.ticket)))[0].price)
+
+
+def result_pips(side: str, entry: float | None, exit_price: float) -> float | None:
+    if entry is None:
+        return None
+    signed_move = exit_price - entry if side == "BUY" else entry - exit_price
+    return signed_move / PIP_SIZE
+
+
 def lifecycle_message(deal) -> str:
     is_open = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
     deal_type = getattr(deal, "type", None)
     if is_open:
-        # Entry deal direction is the position direction.
         side = "BUY" if deal_type == mt5.DEAL_TYPE_BUY else "SELL"
     else:
-        # MT5 exit deals use the opposite deal type from the position being closed.
         side = "SELL" if deal_type == mt5.DEAL_TYPE_BUY else "BUY"
     price = float(deal.price)
     sl, tp = lifecycle_levels(deal)
@@ -322,15 +341,25 @@ def lifecycle_message(deal) -> str:
     iran_time = datetime.fromtimestamp(int(deal.time), timezone.utc).astimezone(
         timezone.utc
     ).astimezone(timezone(timedelta(hours=3, minutes=30)))
-    title = f"🟢 XAUUSD {side} — OPEN" if is_open else f"🔴 XAUUSD {side} — CLOSE"
+    title = (
+        f"🟢 XAUUSD {side} — OPEN" if is_open else
+        f"🔵 XAUUSD {side} — CLOSE" if net > 0 else
+        f"🟠 XAUUSD {side} — CLOSE"
+    )
     reason = "" if is_open else f"\nReason: {lifecycle_reason(deal)}"
     sl_text = f"{sl:.2f}" if sl is not None else "NOT SET"
     tp_text = f"{tp:.2f}" if tp is not None else "NOT SET"
+    entry_price = price if is_open else position_entry_price(deal)
+    pips = None if is_open else result_pips(side, entry_price, price)
+    pips_text = f"{pips:+.0f} pips" if pips is not None else "N/A"
+    result_line = f"Result: {pips_text}\n" if not is_open else ""
     return (
         f"{title}{reason}\n\n"
-        f"{'Entry' if is_open else 'Exit'}: {price:.2f}\n"
+        f"Entry: {entry_price:.2f}\n"
+        f"{'Fill' if is_open else 'Exit'}: {price:.2f}\n"
         f"SL: {sl_text}\n"
         f"TP: {tp_text}\n\n"
+        f"{result_line}"
         f"Volume: {float(deal.volume):.2f}\n"
         f"Profit: {profit:.2f}\n"
         f"Net: {net:.2f}\n\n"
