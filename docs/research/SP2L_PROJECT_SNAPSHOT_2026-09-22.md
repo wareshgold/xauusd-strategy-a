@@ -3,7 +3,7 @@
 
 > Checkpoint type: research / engineering / forward-test continuity
 > Branch: `research/sp2l-f13-demo-forward-slfixed-2026-09-21`
-> HEAD at snapshot update: `beee05bfe4f5bee4b3a287749fc8bac7c8c2fd08`
+> HEAD at snapshot update: `e000df1b314d9059a92621cf0754cc90e551f27d`
 
 ## 1. Project objective
 
@@ -187,7 +187,7 @@ Status: `RESERVED — DO NOT IMPLEMENT YET`.
 
 ## 10. Immediate next checkpoint
 
-The next active work remains the SP2L F13 multi-symbol demo forward-test/research path. Current branch HEAD is `126e32952e44ab27e5125fe3848b2983d6206252`.
+The next active work remains the SP2L F13 multi-symbol demo forward-test/research path. Current branch HEAD is `e000df1b314d9059a92621cf0754cc90e551f27d`.
 
 Before any production consideration:
 
@@ -196,9 +196,11 @@ Before any production consideration:
 3. Run the deterministic forward audit and preserve its output as observed telemetry.
 4. Measure execution-vs-theoretical-entry differences.
 5. Measure pending-order lifecycle behavior and expiry/cancellation behavior.
-6. Keep all unresolved execution semantics explicitly research-only.
-7. Complete robustness/stability and fresh-holdout gates.
-8. Only source-confirmed rules may later enter a frozen canonical specification.
+6. Run the deterministic forward-audit integrity fixtures and verify orphan/duplicate records remain visible.
+7. Keep multi-symbol linkage isolated by symbol, magic, order, position and deal identifiers.
+8. Keep all unresolved execution semantics explicitly research-only.
+9. Complete robustness/stability and fresh-holdout gates.
+10. Only source-confirmed rules may later enter a frozen canonical specification.
 
 ## 11. Snapshot integrity statement
 
