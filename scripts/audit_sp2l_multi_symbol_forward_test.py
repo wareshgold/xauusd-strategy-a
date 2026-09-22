@@ -83,6 +83,9 @@ def audit(events: list[dict]) -> dict:
                     reason = str(result.get("reason") or result.get("error") or "UNKNOWN")
                     failure_reasons[reason] += 1
 
+        elif event == "PENDING_ORDER_LIFECYCLE":
+            pending_order_lifecycle.append(e)
+
         elif event == "TELEGRAM_SIGNAL":
             telegram["success" if e.get("success") else "failure"] += 1
 
