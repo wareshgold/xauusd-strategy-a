@@ -207,6 +207,34 @@ def load_state() -> dict:
         return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set()}
 
 
+def reconcile_state_from_events(state: dict) -> None:
+    """Recover execution truth after a restart, including pre-fix state."""
+    if not EVENTS.exists():
+        return
+    successful = {}
+    try:
+        for line in EVENTS.read_text(encoding="utf-8").splitlines():
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            signal_id = event.get("signal_id")
+            if not signal_id:
+                continue
+            if event.get("event") == "ORDER_RESULT" and bool(event.get("success")):
+                successful[str(signal_id)] = str(signal_id)
+            elif event.get("event") == "TELEGRAM_SIGNAL" and bool(event.get("success")):
+                state["notified"].add(str(signal_id))
+    except OSError:
+        return
+
+    recovered_seen = {}
+    for signal_id in successful:
+        symbol = signal_id.split(":", 1)[0]
+        recovered_seen[symbol] = signal_id
+    state["seen"] = recovered_seen
+
+
 def save_state(state: dict) -> None:
     STATE_FILE.write_text(json.dumps({
         "seen": state["seen"],
@@ -300,7 +328,7 @@ def lifecycle_levels(deal, symbol: str):
     return sl, tp
 
 
-def send_signal(candidate: dict, pip_size: float) -> None:
+def send_signal(candidate: dict, pip_size: float):
     symbol = candidate["symbol"]
     digits = int(mt5.symbol_info(symbol).digits)
     t = display_time_from_mt5(candidate["trigger_time"])
@@ -321,7 +349,7 @@ def send_signal(candidate: dict, pip_size: float) -> None:
         f"🆔 <code>AUTHOR_REPLICA_MULTI_{candidate['trigger_time']}_{symbol}_{candidate['direction']}</code>\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
-    gateway.send_telegram_message(text, parse_mode="HTML")
+    return gateway.send_telegram_message(text, parse_mode="HTML")
 
 
 def execute_candidate(candidate: dict, magic: int) -> dict:
@@ -417,6 +445,8 @@ def main() -> None:
     seconds = os.getenv("FORWARD_TEST_SECONDS")
     if seconds:
         deadline = time.time() + int(seconds)
+    reconcile_state_from_events(state)
+    save_state(state)
     seen_trigger = state["seen"]
 
     try:
@@ -434,8 +464,18 @@ def main() -> None:
 
                 candidate["signal_id"] = trigger_key
                 if trigger_key not in state["notified"]:
-                    send_signal(candidate, cfg["pip_size"])
-                    state["notified"].add(trigger_key)
+                    telegram_result = send_signal(candidate, cfg["pip_size"])
+                    telegram_success = bool(getattr(telegram_result, "success", False))
+                    log_event({
+                        "event": "TELEGRAM_SIGNAL",
+                        "symbol": symbol,
+                        "signal_id": trigger_key,
+                        "success": telegram_success,
+                        "detail": getattr(telegram_result, "detail", None),
+                        "canonical": False,
+                    })
+                    if telegram_success:
+                        state["notified"].add(trigger_key)
                     save_state(state)
                 log_event({
                     "event": "CANDIDATE", "symbol": symbol,
