@@ -63,6 +63,25 @@ Historical branch family: checkpoint/session-snapshot-2026-09-15* plus research/
 
 The old implementation/test files are not required by the current forward-test runtime; their durable engineering constraints are preserved here.
 
+
+## 2026-09-15 session snapshot — unique checkpoint
+
+Commit `3682250ec551ac84fcac07ea7a658a9d5c7e8a2e` recorded a distinct 2026-09-15 session snapshot that is not represented by the other duplicate snapshot refs.
+
+Durable items preserved:
+- C01 P-Gap was classified SOURCE_DISCRIMINATED, while executable geometry remained governed rather than frozen.
+- C02 SL was a working fixed test rule (50/60/70/80 pips; RR 1:2), explicitly non-canonical.
+- C03 AB=CD / Leg-2 equality remained blocked at that checkpoint.
+- C04 TP1/TP2/2X was source-discriminated.
+- C05 M15/MA50 was a working fixed test rule, non-canonical.
+- C06 pending-order behavior was source-discriminated.
+- C07 trigger classifier and C08 correction/invalidation remained blocked.
+- MT5 trailing stop was explicitly optional execution/position management, production OFF and absent from the no-trailing research baseline.
+- No trailing distance, activation threshold, step, tick/bar convention, broker numeric constraint, fill semantics, or production BUY/SELL rule was frozen.
+- PR #196 was an open draft at that checkpoint; its GitHub-reported head was `a49fa5134336c0c9bb78bf3693afe13494da95c5`, with an explicit synchronization/CI verification item preserved.
+
+The unique checkpoint does not authorize canonical geometry or production execution.
+
 ## Cleanup decision rule
 
 Historical raw code, duplicate reports, generated outputs, and temporary workflows are not copied merely because they differ by path. They are preserved only when they contain unique evidence, a gate decision, a reproducibility identifier, or an unresolved research conclusion still relevant to SP2L.
