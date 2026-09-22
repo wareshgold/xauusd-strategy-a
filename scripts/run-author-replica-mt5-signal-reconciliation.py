@@ -73,6 +73,7 @@ def main():
         counts = {"BUY": {"diagnostic": 0, "exact_signal": 0, "both": 0, "diagnostic_only": 0, "signal_only": 0},
                   "SELL": {"diagnostic": 0, "exact_signal": 0, "both": 0, "diagnostic_only": 0, "signal_only": 0}}
         examples = {"BUY": [], "SELL": []}
+        exact_matches = {"BUY": [], "SELL": []}
         for i in range(4, len(c)):
             ts = c[i-1]["time"]
             if not (lo <= ts <= hi):
@@ -86,6 +87,14 @@ def main():
                 counts[side]["both"] += int(d and e)
                 counts[side]["diagnostic_only"] += int(d and not e)
                 counts[side]["signal_only"] += int(e and not d)
+                if e and len(exact_matches[side]) < 10:
+                    exact_matches[side].append({
+                        "signal_time_utc": datetime.fromtimestamp(ts, timezone.utc).isoformat(),
+                        "side": side,
+                        "diagnostic": d,
+                        "exact_signal": exact,
+                        "candles": c[i-4:i]
+                    })
                 if (d != e) and len(examples[side]) < 5:
                     examples[side].append({
                         "signal_time_utc": datetime.fromtimestamp(ts, timezone.utc).isoformat(),
@@ -105,11 +114,13 @@ def main():
             "config": {"pGapPrice": PGAP, "spikeMultiplier": mod.SPIKE_MULT,
                        "maxSlPrice": mod.MAX_SL, "tpR": mod.TP_R},
             "counts": counts,
+            "exact_matches": exact_matches,
             "first_disagreements": examples,
             "interpretation": "Diagnostic predicate is intended to mirror the exact signal() predicate condition-for-condition. Any disagreement is an engineering reconciliation issue and must be investigated before geometry changes."
         }
         print(json.dumps(result, indent=2))
-        out = Path(os.getenv("RECONCILIATION_OUT", f"artifacts/SP2L_{SYMBOL.replace('.', '_')}_signal_reconciliation_2026-09-14_2026-09-18.json"))
+        default_out = f"artifacts/SP2L_{SYMBOL.replace('.', '_')}_signal_reconciliation_{START:%Y-%m-%d}_{END:%Y-%m-%d}.json"
+        out = Path(os.getenv("RECONCILIATION_OUT", default_out))
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(result, indent=2), encoding="utf-8")
         print(f"Wrote {out}")
