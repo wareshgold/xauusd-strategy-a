@@ -305,8 +305,14 @@ def lifecycle_reason(deal) -> str:
 
 
 def lifecycle_message(deal) -> str:
-    side = "BUY" if getattr(deal, "type", None) == mt5.DEAL_TYPE_BUY else "SELL"
     is_open = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
+    deal_type = getattr(deal, "type", None)
+    if is_open:
+        # Entry deal direction is the position direction.
+        side = "BUY" if deal_type == mt5.DEAL_TYPE_BUY else "SELL"
+    else:
+        # MT5 exit deals use the opposite deal type from the position being closed.
+        side = "SELL" if deal_type == mt5.DEAL_TYPE_BUY else "BUY"
     price = float(deal.price)
     sl, tp = lifecycle_levels(deal)
     profit = float(getattr(deal, "profit", 0.0))
