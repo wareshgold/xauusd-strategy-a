@@ -42,6 +42,7 @@ def audit(events: list[dict]) -> dict:
     candidates = {}
     attempts = {}
     lifecycle = []
+    pending_order_lifecycle = []
     telegram = Counter()
     failure_reasons = Counter()
     symbols = defaultdict(lambda: Counter())
@@ -102,6 +103,12 @@ def audit(events: list[dict]) -> dict:
     losses = sum(x < 0 for x in measured_pips)
     flat = sum(x == 0 for x in measured_pips)
 
+    pending_states = {}
+    for e in pending_order_lifecycle:
+        order_id = int(e.get("order", 0) or 0)
+        if order_id:
+            pending_states.setdefault(order_id, set()).add(str(e.get("state")))
+
     successful_order_ids = {
         int(e.get("tracked_order"))
         for e in events
@@ -144,6 +151,9 @@ def audit(events: list[dict]) -> dict:
             "failed": failed,
             "failure_reasons": dict(sorted(failure_reasons.items())),
             "success_rate_among_attempts": successful / len(attempts) if attempts else None,
+            "accepted_order_placements": sum(1 for e in events if e.get("event") == "ORDER_RESULT" and e.get("success") and e.get("tracked_order")),
+            "immediate_deals_reported": sum(1 for e in events if e.get("event") == "ORDER_RESULT" and e.get("success") and e.get("tracked_deal")),
+            "accepted_without_immediate_deal": sum(1 for e in events if e.get("event") == "ORDER_RESULT" and e.get("success") and e.get("tracked_order") and not e.get("tracked_deal")),
         },
         "lifecycle": {
             "open_events": sum(v["lifecycle_open"] for v in symbols.values()),
@@ -163,6 +173,12 @@ def audit(events: list[dict]) -> dict:
             "duplicate_order_result_events": duplicate_events["duplicate_order_result"],
             "duplicate_lifecycle_deal_events": duplicate_events["duplicate_lifecycle_deal"],
             "all_symbols_observed": sorted(symbols),
+        },
+        "pending_order_lifecycle": {
+            "events": len(pending_order_lifecycle),
+            "orders_observed": len(pending_states),
+            "states": {state: sum(state in states for states in pending_states.values()) for state in sorted({s for states in pending_states.values() for s in states})},
+            "orders_with_terminal_cancel_or_expiry": sum(any(s in states for s in {"CANCELED", "EXPIRED", "REJECTED"}) for states in pending_states.values()),
         },
         "linkage": {
             "successful_order_ids": len(successful_order_ids),
@@ -201,7 +217,9 @@ def markdown(report: dict) -> str:
         f"- Candidates without attempt: **{len(sig['candidate_without_attempt'])}**",
         f"- Attempts without candidate: **{len(sig['attempt_without_candidate'])}**",
         f"- Order results without attempt: **{len(sig['order_result_without_attempt'])}**",
-        f"- Successful execution results: **{ex['successful']}**",
+        f"- Successful order-result records: **{ex['successful']}**",
+        f"- Accepted placements with immediate deal ID: **{ex['immediate_deals_reported']}**",
+        f"- Accepted placements without immediate deal ID: **{ex['accepted_without_immediate_deal']}**",
         f"- Failed execution results: **{ex['failed']}**",
         "",
         "## Lifecycle",
@@ -221,6 +239,11 @@ def markdown(report: dict) -> str:
     else:
         lines.append("- None recorded.")
     lines += [
+        "",
+        "## Pending-order lifecycle",
+        f"- Lifecycle events: **{report['pending_order_lifecycle']['events']}**",
+        f"- Orders observed: **{report['pending_order_lifecycle']['orders_observed']}**",
+        f"- Terminal canceled/expired/rejected orders: **{report['pending_order_lifecycle']['orders_with_terminal_cancel_or_expiry']}**",
         "",
         "## Integrity",
         f"- Successful order IDs linked to lifecycle telemetry: **{report['linkage']['successful_order_ids']}**",
