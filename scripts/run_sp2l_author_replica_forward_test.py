@@ -341,17 +341,17 @@ def lifecycle_message(deal) -> str:
     iran_time = datetime.fromtimestamp(int(deal.time), timezone.utc).astimezone(
         timezone.utc
     ).astimezone(timezone(timedelta(hours=3, minutes=30)))
-    title = (
-        f"🟢 XAUUSD {side} — OPEN" if is_open else
-        f"🔵 XAUUSD {side} — CLOSE" if net > 0 else
-        f"🟠 XAUUSD {side} — CLOSE"
-    )
     reason = "" if is_open else f"\nReason: {lifecycle_reason(deal)}"
     sl_text = f"{sl:.2f}" if sl is not None else "NOT SET"
     tp_text = f"{tp:.2f}" if tp is not None else "NOT SET"
     entry_price = price if is_open else position_entry_price(deal)
     pips = None if is_open else result_pips(side, entry_price, price)
     pips_text = f"{pips:+.0f} pips" if pips is not None else "N/A"
+    title = (
+        f"🟢 XAUUSD {side} — OPEN" if is_open else
+        f"🔵 XAUUSD {side} — CLOSE" if pips is not None and pips > 0 else
+        f"🟠 XAUUSD {side} — CLOSE"
+    )
     result_line = f"Result: {pips_text}\n" if not is_open else ""
     return (
         f"{title}{reason}\n\n"
