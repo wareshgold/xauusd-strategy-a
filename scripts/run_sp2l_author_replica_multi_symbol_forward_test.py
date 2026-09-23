@@ -784,12 +784,22 @@ def main() -> None:
     volume_summary = ", ".join(
         "{}={:.2f}".format(c["symbol"], c.get("volume", VOLUME)) for c in configs
     )
+    # Self-declared execution mode: the session's own operator flags, as seen
+    # by this process. LIVE-DEMO still requires the DEMO-ONLY account guard.
+    live_flag = os.getenv("LIVE_TRADING_ENABLE", "false").lower()
+    allow_flag = os.getenv("ALLOW_REAL_EXECUTION", "false").lower()
+    if live_flag == "true" and allow_flag == "true":
+        mode_label, mode_icon = "LIVE-DEMO", "🟩"
+    else:
+        mode_label, mode_icon = "DRY-RUN", "🟨"
     startup_banner = gateway.send_telegram_message(
         "🟢 SP2L Forward Test — started\n"
         f"Account: {account.login} ({account.server}, DEMO)\n"
         f"Symbols: {', '.join(c['symbol'] for c in configs)}\n"
         f"Order mode: {ORDER_MODE}\n"
         f"Volume: {volume_summary} · TP {TP_R:.1f}R\n"
+        f"{mode_icon} Execution: {mode_label}\n"
+        f"   LIVE_TRADING_ENABLE={live_flag} · ALLOW_REAL_EXECUTION={allow_flag}\n"
         "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"
     )
     log_event({
