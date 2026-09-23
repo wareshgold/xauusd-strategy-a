@@ -20,6 +20,8 @@ from pathlib import Path
 import MetaTrader5 as mt5
 import numpy as np
 
+from mt5_terminal_resolver import find_mt5_terminal
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "artifacts" / "backtest-mt5-local"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -247,11 +249,47 @@ def max_drawdown_and_losses(results: list[float]) -> tuple[float, int]:
 
 
 def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
-    rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M1, start, end)
-    if rates is None or len(rates) == 0:
-        err = mt5.last_error()
-        raise RuntimeError(f"copy_rates_range failed for {symbol}: {err}")
-    return rates
+    """Fetch M1 history backwards in bounded chunks."""
+    if not mt5.symbol_select(symbol, True):
+        raise RuntimeError(f"symbol_select failed for {symbol}: {mt5.last_error()}")
+
+    start_ts = int(start.timestamp())
+    end_ts = int(end.timestamp())
+    cursor = end
+    chunks = []
+    seen = set()
+    chunk_size = 10000
+
+    while int(cursor.timestamp()) >= start_ts:
+        rates = mt5.copy_rates_from(symbol, mt5.TIMEFRAME_M1, cursor, chunk_size)
+        if rates is None or len(rates) == 0:
+            raise RuntimeError(
+                f"copy_rates_from returned no data for {symbol} at "
+                f"{cursor.isoformat()}: {mt5.last_error()}"
+            )
+
+        before = len(seen)
+        for row in rates:
+            ts = int(row["time"])
+            if start_ts <= ts <= end_ts and ts not in seen:
+                seen.add(ts)
+                chunks.append(row)
+
+        oldest = int(rates["time"][0])
+        if oldest <= start_ts or len(rates) < chunk_size:
+            break
+
+        next_ts = oldest - 60
+        if next_ts >= int(cursor.timestamp()) or len(seen) == before:
+            raise RuntimeError(f"MT5 history pagination made no progress for {symbol}")
+        cursor = datetime.fromtimestamp(next_ts, timezone.utc)
+
+    if not chunks:
+        raise RuntimeError(f"No M1 bars found for {symbol} in {start.isoformat()}..{end.isoformat()}")
+
+    result = np.array(chunks, dtype=rates.dtype)
+    result.sort(order="time")
+    return result
 
 
 def run_symbol(symbol: str, rates: np.ndarray) -> dict:
@@ -333,8 +371,14 @@ def main() -> int:
     args = parser.parse_args()
 
     if not mt5.initialize():
-        print(json.dumps({"status": "MT5_INIT_FAILED", "error": mt5.last_error()}, indent=2))
-        return 2
+        terminal = find_mt5_terminal()
+        if terminal is None or not mt5.initialize(path=str(terminal)):
+            print(json.dumps({
+                "status": "MT5_INIT_FAILED",
+                "error": mt5.last_error(),
+                "terminal_path": str(terminal) if terminal else None,
+            }, indent=2))
+            return 2
 
     try:
         discovered = discover_symbols([x.strip().upper() for x in args.symbols.split(",") if x.strip()])
