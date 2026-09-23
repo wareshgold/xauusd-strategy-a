@@ -13,11 +13,11 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
 
 import MetaTrader5 as mt5
 
-from live_mt5_gateway import Signal, execute_signal, mt5_initialize
+from live_mt5_gateway import Signal, execute_signal
+from mt5_terminal_resolver import find_mt5_terminal
 
 
 def _synthetic_signal(symbol: str, direction: str, tick, point: float) -> Signal:
@@ -30,17 +30,9 @@ def _synthetic_signal(symbol: str, direction: str, tick, point: float) -> Signal
         entry = float(tick.bid) + max(100 * point, 0.50)
         sl = entry + max(50 * point, 0.25)
         tp = entry - max(50 * point, 0.25)
-    return Signal(
-        direction=direction,
-        symbol=symbol,
-        entry=entry,
-        sl=sl,
-        tp=tp,
-        volume=0.01,
-        signal_id="SL-SMOKE-TEST",
-        source="EXECUTION_PLUMBING_SMOKE",
-        status="APPROVED",
-    )
+    return Signal(direction=direction, symbol=symbol, entry=entry, sl=sl, tp=tp,
+                  volume=0.01, signal_id="SL-SMOKE-TEST",
+                  source="EXECUTION_PLUMBING_SMOKE", status="APPROVED")
 
 
 def main() -> int:
@@ -52,7 +44,14 @@ def main() -> int:
     symbol = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
     os.environ["MT5_FORWARD_ORDER_MODE"] = "PENDING_LIMIT_RESEARCH"
 
-    mt5_initialize()
+    terminal = find_mt5_terminal()
+    if terminal is None:
+        raise RuntimeError("MT5 terminal not found; set MT5_TERMINAL_PATH if needed")
+    print(f"MT5_TERMINAL={terminal}")
+
+    if not mt5.initialize(path=str(terminal), timeout=10000):
+        raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+
     try:
         info = mt5.symbol_info(symbol)
         tick = mt5.symbol_info_tick(symbol)
@@ -97,10 +96,8 @@ def main() -> int:
                     "magic": int(os.getenv("MT5_MAGIC", "26091901")),
                     "comment": "SP2L-SL-SMOKE-CANCEL"[:31],
                 })
-                print({
-                    "cancel_retcode": getattr(cancel, "retcode", None),
-                    "cancel_comment": getattr(cancel, "comment", None),
-                })
+                print({"cancel_retcode": getattr(cancel, "retcode", None),
+                       "cancel_comment": getattr(cancel, "comment", None)})
             verification = result.get("verification") or {}
             return 0 if verification.get("verified") else 1
         return 1
