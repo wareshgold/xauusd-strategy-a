@@ -15,6 +15,7 @@ import json
 import os
 import sys
 import time
+from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -249,6 +250,52 @@ def max_drawdown_and_losses(results: list[float]) -> tuple[float, int]:
     return dd, max_run
 
 
+def _history_coverage_audit(rates: np.ndarray) -> dict:
+    """Audit observed M1 coverage without inventing a broker session schedule."""
+    times = [datetime.fromtimestamp(int(t), timezone.utc) for t in rates["time"]]
+    by_day: dict = defaultdict(list)
+    for ts in times:
+        by_day[ts.date()].append(ts)
+
+    first_minutes = [v[0].hour * 60 + v[0].minute for v in by_day.values()]
+    last_minutes = [v[-1].hour * 60 + v[-1].minute for v in by_day.values()]
+    first_mode = Counter(first_minutes).most_common(1)[0][0] if first_minutes else None
+    last_mode = Counter(last_minutes).most_common(1)[0][0] if last_minutes else None
+
+    unexpected_same_day_gaps = []
+    cross_day_gaps = []
+    for prev, curr in zip(times, times[1:]):
+        gap_minutes = int((curr - prev).total_seconds() // 60) - 1
+        if gap_minutes <= 0:
+            continue
+        if prev.date() == curr.date():
+            unexpected_same_day_gaps.append({
+                "from_utc": prev.isoformat(),
+                "to_utc": curr.isoformat(),
+                "missing_minutes": gap_minutes,
+            })
+        else:
+            cross_day_gaps.append({
+                "from_utc": prev.isoformat(),
+                "to_utc": curr.isoformat(),
+                "missing_minutes": gap_minutes,
+            })
+
+    return {
+        "observed_trading_dates": len(by_day),
+        "observed_first_bar_mode_utc_minute": first_mode,
+        "observed_last_bar_mode_utc_minute": last_mode,
+        "observed_first_bar_mode_utc": (
+            f"{first_mode // 60:02d}:{first_mode % 60:02d}" if first_mode is not None else None
+        ),
+        "observed_last_bar_mode_utc": (
+            f"{last_mode // 60:02d}:{last_mode % 60:02d}" if last_mode is not None else None
+        ),
+        "unexpected_same_day_gaps": unexpected_same_day_gaps,
+        "cross_day_gaps": cross_day_gaps,
+    }
+
+
 def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
     """Fetch M1 history in bounded UTC date ranges and validate MT5 UTC timestamps.
 
@@ -330,20 +377,62 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
     start_ts = int(start.timestamp())
     end_ts = int(end.timestamp())
 
-    edge_tolerance = 60
-    if first_ts > start_ts + edge_tolerance:
+    coverage = _history_coverage_audit(result)
+
+    # Do not assume the requested edge must contain a bar. Recurring observed
+    # daily edges can explain outside-session request boundaries; this remains
+    # descriptive data-quality logic, not a Strategy A session rule.
+    first_dt = datetime.fromtimestamp(first_ts, timezone.utc)
+    last_dt = datetime.fromtimestamp(last_ts, timezone.utc)
+    start_same_day = first_dt.date() == start.date()
+    end_same_day = last_dt.date() == end.date()
+
+    if first_dt.date() > start.date():
         raise RuntimeError(
-            f"Incomplete MT5 history for {symbol}: first bar "
-            f"{datetime.fromtimestamp(first_ts, timezone.utc).isoformat()} "
-            f"is after requested start {start.isoformat()}"
+            f"Incomplete MT5 history for {symbol}: first observed trading date "
+            f"{first_dt.date().isoformat()} is after requested start date "
+            f"{start.date().isoformat()}"
         )
-    if last_ts < end_ts - edge_tolerance:
+    if start_same_day and first_ts > start_ts:
+        observed_first = coverage["observed_first_bar_mode_utc_minute"]
+        actual_minute = first_dt.hour * 60 + first_dt.minute
+        if observed_first is None or abs(actual_minute - observed_first) > 1:
+            raise RuntimeError(
+                f"Incomplete MT5 history for {symbol}: first bar "
+                f"{first_dt.isoformat()} is later than requested start "
+                f"{start.isoformat()} and does not match the recurring observed "
+                f"daily opening edge {coverage['observed_first_bar_mode_utc']}"
+            )
+
+    if last_dt.date() < end.date():
         raise RuntimeError(
-            f"Incomplete MT5 history for {symbol}: last bar "
-            f"{datetime.fromtimestamp(last_ts, timezone.utc).isoformat()} "
-            f"is before requested end {end.isoformat()}"
+            f"Incomplete MT5 history for {symbol}: last observed trading date "
+            f"{last_dt.date().isoformat()} is before requested end date "
+            f"{end.date().isoformat()}"
+        )
+    if end_same_day and last_ts < end_ts:
+        observed_last = coverage["observed_last_bar_mode_utc_minute"]
+        actual_minute = last_dt.hour * 60 + last_dt.minute
+        if observed_last is None or abs(actual_minute - observed_last) > 1:
+            raise RuntimeError(
+                f"Incomplete MT5 history for {symbol}: last bar "
+                f"{last_dt.isoformat()} is before requested end "
+                f"{end.isoformat()} and does not match the recurring observed "
+                f"daily closing edge {coverage['observed_last_bar_mode_utc']}"
+            )
+
+    if coverage["unexpected_same_day_gaps"]:
+        raise RuntimeError(
+            f"Incomplete MT5 history for {symbol}: "
+            f"{len(coverage['unexpected_same_day_gaps'])} unexpected same-day "
+            f"M1 history gap(s) detected; first="
+            f"{coverage['unexpected_same_day_gaps'][0]}"
         )
 
+    diagnostics.append({
+        "coverage_audit": coverage,
+        "history_gate": "OBSERVED_EDGE_AWARE_NO_SAME_DAY_GAPS",
+    })
     fetch_rates.last_diagnostics = diagnostics
     return result
 def run_symbol(symbol: str, rates: np.ndarray) -> dict:
@@ -465,6 +554,8 @@ def main() -> int:
                 "Historical bars are pulled directly from the connected MT5 terminal at run time.",
                 "This is not a broker-independent tick backtest; it uses MT5 M1 OHLC history.",
                 "Pending-limit fill semantics remain unresolved: a bar is eligible only if it reaches the theoretical entry.",
+                "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries, while unexpected same-day M1 gaps fail the research data-quality gate.",
+                "MT5 Python API does not expose symbol session-trade intervals in this environment; observed history coverage is descriptive only and is not a canonical Strategy A session rule.",
                 "If one M1 candle touches both SL and TP, the result is AMBIGUOUS rather than guessed.",
                 "The detector is the existing author-replica research detector; this run does not promote geometry to canonical.",
             ],
