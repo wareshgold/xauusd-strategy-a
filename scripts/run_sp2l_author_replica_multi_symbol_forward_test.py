@@ -25,6 +25,20 @@ import live_mt5_gateway as gateway
 # Symbol selection is configuration only (research/forward-test scope):
 # override with SP2L_SYMBOLS="XAUUSD,GBPUSD,USTEC"; XAUUSD stays the default
 # first entry. Order here defines the magic-number slot (MAGIC_BASE+index+1).
+SYMBOL_ALIASES = {
+    "XAUUSD": ["XAUUSD"],
+    "BTCUSD": ["BTCUSD"],
+    "USTEC100": ["USTEC100", "USTEC", "NASDAQ", "NAS100", "US100", "NDX"],
+    "NASDAQ": ["NASDAQ", "USTEC", "USTEC100", "NAS100", "US100", "NDX"],
+    "DAWJONES": ["DAWJONES", "DJ30", "DOWJONES", "US30", "DJI", "DOW"],
+    "DJ30": ["DJ30", "DAWJONES", "DOWJONES", "US30", "DJI", "DOW"],
+    "GBPUSD": ["GBPUSD"],
+    "USDJPY": ["USDJPY"],
+    "USDCHF": ["USDCHF"],
+    "EURUSD": ["EURUSD"],
+    "XAGUSD": ["XAGUSD"],
+}
+
 BASE_SYMBOLS = tuple(
     s.strip().upper()
     for s in os.getenv("SP2L_SYMBOLS", "XAUUSD,EURUSD,BTCUSD").split(",")
@@ -228,15 +242,21 @@ def display_time_from_mt5(timestamp: int) -> datetime:
 def resolve_symbol(base: str) -> str | None:
     symbols = list(mt5.symbols_get() or [])
     names = {str(s.name): s for s in symbols}
-    preferred = (base, f"{base}.ecn", f"{base}.ECN", f"{base}m")
-    for name in preferred:
-        if name in names:
-            return name
-    matches = sorted(
+    bases = SYMBOL_ALIASES.get(base.upper(), [base.upper()])
+
+    for candidate in bases:
+        preferred = (candidate, f"{candidate}.ecn", f"{candidate}.ECN", f"{candidate}m", f"{candidate}.c.ecn")
+        for name in preferred:
+            if name in names:
+                return name
+
+    normalized = lambda s: "".join(ch for ch in s.upper() if ch.isalnum())
+    normalized_candidates = {normalized(x) for x in bases}
+    matches = [
         name for name in names
-        if name.upper().startswith(base.upper())
-    )
-    return matches[0] if matches else None
+        if any(normalized(name) == c or normalized(name).startswith(c) for c in normalized_candidates)
+    ]
+    return sorted(matches, key=lambda x: (len(x), x))[0] if matches else None
 
 
 def pip_size_for(symbol: str, info) -> tuple[float, str]:
@@ -963,7 +983,7 @@ def main() -> None:
         configs.append(cfg)
 
     if not configs:
-        raise RuntimeError("None of XAUUSD/EURUSD/BTCUSD could be resolved in MT5")
+        raise RuntimeError(f"None of the configured symbols could be resolved in MT5: {BASE_SYMBOLS}")
 
     log_event({
         "event": "START",
