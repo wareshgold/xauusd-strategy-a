@@ -75,8 +75,26 @@ def log_event(event: dict) -> None:
     print(json.dumps(event, indent=2))
 
 
+def _resolve_terminal_path() -> str | None:
+    """Explicit env override first, then the repo terminal auto-resolver."""
+    env = os.getenv("MT5_TERMINAL_PATH")
+    if env:
+        return env
+    try:
+        import mt5_terminal_resolver
+    except ModuleNotFoundError:
+        try:
+            from scripts import mt5_terminal_resolver  # type: ignore
+        except ModuleNotFoundError:
+            return None
+    found = mt5_terminal_resolver.find_mt5_terminal()
+    return str(found) if found else None
+
+
 def init() -> None:
-    if not mt5.initialize():
+    mt5_path = _resolve_terminal_path()
+    initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
+    if not initialized:
         raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
     info = mt5.account_info()
     if info is None:
@@ -304,18 +322,40 @@ def lifecycle_reason(deal) -> str:
     return "CLOSE"
 
 
-def position_entry_price(deal) -> float | None:
-    """Recover the original position entry price for a closing deal."""
+def position_entry_price(deal, magic: int | None = None) -> float | None:
+    """Recover the original position entry price for a closing deal.
+
+    The ``position=`` form of ``history_deals_get`` must be called WITHOUT a
+    date range: when a date range is passed alongside ``position=``, the
+    terminal ignores the position filter and returns every deal in the range.
+    Entry deals are additionally filtered to this runner's magic so unrelated
+    positions can never leak into the computation; with no matching entry the
+    caller defers the notification instead of reporting wrong numbers.
+    """
     position_id = int(getattr(deal, "position_id", 0) or 0)
     if not position_id:
         return None
-    start = datetime.fromtimestamp(int(deal.time), timezone.utc) - timedelta(days=7)
-    end = datetime.fromtimestamp(int(deal.time), timezone.utc) + timedelta(seconds=1)
-    history = mt5.history_deals_get(start, end, position=position_id) or []
-    entries = [d for d in history if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN]
+    history = mt5.history_deals_get(position=position_id) or []
+    if not history:
+        start = datetime.fromtimestamp(int(deal.time), timezone.utc) - timedelta(days=7)
+        end = datetime.fromtimestamp(int(deal.time), timezone.utc) + timedelta(seconds=1)
+        history = [
+            d for d in (mt5.history_deals_get(start, end) or [])
+            if int(getattr(d, "position_id", 0) or 0) == position_id
+        ]
+    entries = [
+        d for d in history
+        if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN
+        and (magic is None or int(getattr(d, "magic", 0) or 0) == magic)
+    ]
     if not entries:
         return None
-    return float(sorted(entries, key=lambda x: (int(x.time), int(x.ticket)))[0].price)
+    total_volume = sum(float(getattr(d, "volume", 0.0) or 0.0) for d in entries)
+    if total_volume <= 0:
+        return None
+    return sum(
+        float(d.price) * float(getattr(d, "volume", 0.0) or 0.0) for d in entries
+    ) / total_volume
 
 
 def result_pips(side: str, entry: float | None, exit_price: float) -> float | None:
@@ -325,7 +365,7 @@ def result_pips(side: str, entry: float | None, exit_price: float) -> float | No
     return signed_move / PIP_SIZE
 
 
-def lifecycle_message(deal) -> str:
+def lifecycle_message(deal, magic: int | None = None) -> str:
     is_open = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
     deal_type = getattr(deal, "type", None)
     if is_open:
@@ -344,7 +384,7 @@ def lifecycle_message(deal) -> str:
     reason = "" if is_open else f"\nReason: {lifecycle_reason(deal)}"
     sl_text = f"{sl:.2f}" if sl is not None else "NOT SET"
     tp_text = f"{tp:.2f}" if tp is not None else "NOT SET"
-    entry_price = price if is_open else position_entry_price(deal)
+    entry_price = price if is_open else position_entry_price(deal, magic)
     pips = None if is_open else result_pips(side, entry_price, price)
     pips_text = f"{pips:+.0f} pips" if pips is not None else "N/A"
     title = (
@@ -353,9 +393,10 @@ def lifecycle_message(deal) -> str:
         f"🟠 XAUUSD {side} — CLOSE"
     )
     result_line = f"Result: {pips_text}\n" if not is_open else ""
+    entry_str = f"{entry_price:.2f}" if entry_price is not None else "n/a (unlinked)"
     return (
         f"{title}{reason}\n\n"
-        f"Entry: {entry_price:.2f}\n"
+        f"Entry: {entry_str}\n"
         f"{'Fill' if is_open else 'Exit'}: {price:.2f}\n"
         f"SL: {sl_text}\n"
         f"TP: {tp_text}\n\n"
@@ -397,7 +438,13 @@ def monitor_trade_lifecycle(state: dict) -> None:
         if position:
             state["positions"].add(position)
 
-        telegram_result = telegram_send(lifecycle_message(deal))
+        is_entry_deal = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
+        entry_price = float(deal.price) if is_entry_deal else position_entry_price(deal, MAGIC)
+        if not is_entry_deal and entry_price is None:
+            # Exit whose own-position entry cannot be resolved yet: defer the
+            # notification to the next poll instead of sending wrong numbers.
+            continue
+        telegram_result = telegram_send(lifecycle_message(deal, MAGIC))
         log_event({
             "event": "TELEGRAM_DEAL_LIFECYCLE",
             "deal": ticket,
@@ -551,3 +598,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

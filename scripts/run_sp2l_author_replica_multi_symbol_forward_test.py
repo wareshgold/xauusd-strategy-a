@@ -30,6 +30,13 @@ TP_R = float(os.getenv("SP2L_TP_R", "1.0"))
 VOLUME = float(os.getenv("SP2L_VOLUME", "0.01"))
 POLL_SECONDS = float(os.getenv("SP2L_POLL_SECONDS", "2"))
 ORDER_MODE = os.getenv("MT5_FORWARD_ORDER_MODE", "PENDING_LIMIT_RESEARCH")
+# The gateway re-reads this variable at execution time (its own default is
+# MARKET). Publish the runner's declared mode, otherwise orders silently
+# execute as MARKET: the fill lands beyond the theoretical entry while
+# SL/TP stay on the theoretical levels, destroying the 1R risk/reward
+# relation (observed 2026-09-22 15:05: filled 4325.61 vs entry 4324.59,
+# real R:R 0.34 instead of 1:1).
+os.environ.setdefault("MT5_FORWARD_ORDER_MODE", ORDER_MODE)
 MAGIC_BASE = int(os.getenv("SP2L_MAGIC_BASE", "26092200"))
 IRAN_TZ = timezone(timedelta(hours=3, minutes=30))
 
@@ -283,20 +290,46 @@ def save_state(state: dict) -> None:
     }, indent=2), encoding="utf-8")
 
 
-def position_entry_price(deal) -> float | None:
+def position_entry_price(deal, magic: int | None = None) -> float | None:
+    """Volume-weighted entry price of the deal's own position.
+
+    The ``position=`` form of ``history_deals_get`` must be called WITHOUT a
+    date range: when a date range is passed alongside ``position=``, the
+    terminal silently ignores the position filter and returns every deal in
+    the range. That leak produced a wrong result message on 2026-09-22 (an
+    XAUUSD.ecn exit reported entry 4347.104 — the volume-weighted mean of
+    nine unrelated entry deals). Entry deals are additionally filtered to
+    this runner's magic so manual or foreign positions can never be mixed
+    in; with no matching entry the function returns None and the caller
+defers the notification instead of inventing numbers.
+    """
     position_id = int(getattr(deal, "position_id", 0) or 0)
     if not position_id:
         return None
-    start = datetime.fromtimestamp(int(deal.time), timezone.utc) - timedelta(days=7)
-    end = datetime.fromtimestamp(int(deal.time), timezone.utc) + timedelta(seconds=1)
-    history = mt5.history_deals_get(start, end, position=position_id) or []
-    entries = [d for d in history if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN]
+    history = mt5.history_deals_get(position=position_id) or []
+    if not history:
+        start = datetime.fromtimestamp(int(deal.time), timezone.utc) - timedelta(days=7)
+        end = datetime.fromtimestamp(int(deal.time), timezone.utc) + timedelta(seconds=1)
+        history = [
+            d for d in (mt5.history_deals_get(start, end) or [])
+            if int(getattr(d, "position_id", 0) or 0) == position_id
+        ]
+    entries = [
+        d for d in history
+        if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN
+        and (magic is None or int(getattr(d, "magic", 0) or 0) == magic)
+    ]
     if not entries:
         return None
-    return float(sorted(entries, key=lambda x: (int(x.time), int(x.ticket)))[0].price)
+    total_volume = sum(float(getattr(d, "volume", 0.0) or 0.0) for d in entries)
+    if total_volume <= 0:
+        return None
+    return sum(
+        float(d.price) * float(getattr(d, "volume", 0.0) or 0.0) for d in entries
+    ) / total_volume
 
 
-def lifecycle_message(deal, symbol: str, pip_size: float) -> str:
+def lifecycle_message(deal, symbol: str, pip_size: float, magic: int | None = None) -> str:
     is_open = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
     deal_type = getattr(deal, "type", None)
     if is_open:
@@ -310,7 +343,7 @@ def lifecycle_message(deal, symbol: str, pip_size: float) -> str:
     swap = float(getattr(deal, "swap", 0.0))
     net = profit + commission + swap
 
-    entry = price if is_open else position_entry_price(deal)
+    entry = price if is_open else position_entry_price(deal, magic)
     pips = None
     if not is_open and entry is not None and pip_size > 0:
         signed_move = price - entry if side == "BUY" else entry - price
@@ -322,11 +355,15 @@ def lifecycle_message(deal, symbol: str, pip_size: float) -> str:
         icon = "🔵" if pips is not None and pips > 0 else "🟠"
 
     dt = display_time_from_mt5(int(deal.time))
+    entry_str = (
+        f"{entry:.{max(2, int(mt5.symbol_info(symbol).digits))}f}"
+        if entry is not None else "n/a (unlinked)"
+    )
     result = f"Result: {pips:+.0f} pips\n" if pips is not None else ""
     return (
         f"{icon} {symbol} {side} — {'OPEN' if is_open else 'CLOSE'}"
         f"{'' if is_open else chr(10) + 'Reason: ' + lifecycle_reason(deal)}\n\n"
-        f"Entry: {entry:.{max(2, int(mt5.symbol_info(symbol).digits))}f}\n"
+        f"Entry: {entry_str}\n"
         f"{'Fill' if is_open else 'Exit'}: {price:.{max(2, int(mt5.symbol_info(symbol).digits))}f}\n"
         f"\n{result}"
         f"Volume: {float(deal.volume):.2f}\n"
@@ -514,9 +551,14 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         if not linked:
             continue
         _remember_position_links(state, deal)
-        text = lifecycle_message(deal, symbol, pip)
+        is_entry_deal = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
+        entry_price = float(deal.price) if is_entry_deal else position_entry_price(deal, magic)
+        if not is_entry_deal and entry_price is None:
+            # Exit whose own-position entry cannot be resolved yet: defer the
+            # notification to the next poll instead of sending wrong numbers.
+            continue
+        text = lifecycle_message(deal, symbol, pip, magic)
         result = gateway.send_telegram_message(text)
-        entry_price = position_entry_price(deal) if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN else float(deal.price)
         exit_price = float(deal.price)
         signed_move = None
         pips_result = None
@@ -548,8 +590,26 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
     save_state(state)
 
 
+def _resolve_terminal_path() -> str | None:
+    """Explicit env override first, then the repo terminal auto-resolver."""
+    env = os.getenv("MT5_TERMINAL_PATH")
+    if env:
+        return env
+    try:
+        import mt5_terminal_resolver
+    except ModuleNotFoundError:
+        try:
+            from scripts import mt5_terminal_resolver  # type: ignore
+        except ModuleNotFoundError:
+            return None
+    found = mt5_terminal_resolver.find_mt5_terminal()
+    return str(found) if found else None
+
+
 def main() -> None:
-    if not mt5.initialize():
+    mt5_path = _resolve_terminal_path()
+    initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
+    if not initialized:
         raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
 
     account = mt5.account_info()
@@ -585,6 +645,21 @@ def main() -> None:
             "orderMode": ORDER_MODE, "slAnchor": SL_ANCHOR,
             "symbols": configs,
         },
+    })
+
+    startup_banner = gateway.send_telegram_message(
+        "🟢 SP2L Forward Test — started\n"
+        f"Account: {account.login} ({account.server}, DEMO)\n"
+        f"Symbols: {', '.join(c['symbol'] for c in configs)}\n"
+        f"Order mode: {ORDER_MODE}\n"
+        f"Volume: {VOLUME:.2f} · TP {TP_R:.1f}R\n"
+        "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"
+    )
+    log_event({
+        "event": "START_TELEGRAM",
+        "success": bool(getattr(startup_banner, "success", False)),
+        "detail": getattr(startup_banner, "detail", None),
+        "canonical": False,
     })
 
     state = load_state()

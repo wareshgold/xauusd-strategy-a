@@ -16,6 +16,11 @@ from datetime import datetime, timezone
 if __package__ in (None, ""):
     sys.path.insert(0, str(os.path.dirname(os.path.abspath(__file__))))
 
+try:
+    import mt5_terminal_resolver
+except ModuleNotFoundError:  # pragma: no cover - resolver ships alongside
+    mt5_terminal_resolver = None
+
 # Gold symbol name fragments (lowercase); configurable, not exhaustive.
 GOLD_PATTERNS = tuple(
     p.strip().lower()
@@ -93,7 +98,15 @@ def main() -> int:
         print("MetaTrader5 package not importable; cannot probe.", file=sys.stderr)
         return 1
 
-    if not mt5.initialize():
+    _mt5_path = (
+        mt5_terminal_resolver.find_mt5_terminal() if mt5_terminal_resolver else None
+    )
+    initialized = (
+        mt5.initialize(path=str(_mt5_path))
+        if _mt5_path
+        else mt5.initialize()
+    )
+    if not initialized:
         print(f"MT5 initialize failed: {mt5.last_error()}", file=sys.stderr)
         return 1
     try:
