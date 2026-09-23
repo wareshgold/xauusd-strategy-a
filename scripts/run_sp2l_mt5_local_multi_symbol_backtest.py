@@ -218,43 +218,152 @@ def detect(candles: np.ndarray, symbol: str) -> dict | None:
     return None
 
 
-def outcome(candles: np.ndarray, signal_index: int, signal: dict) -> tuple[str, int | None, float | None]:
-    """Theoretical entry replay.
+def outcome(candles: np.ndarray, signal_index: int, signal: dict) -> tuple[str, int | None, float | None, dict]:
+    """Forensic theoretical-entry replay with explicit fill/exit sequencing.
 
-    A signal is eligible from the candle after the trigger. The first later candle
-    touching TP or SL decides the outcome. If both are touched in one candle, it is
-    AMBIGUOUS rather than guessing intrabar order.
+    A signal is eligible from the candle after the trigger. A pending-limit fill
+    requires the later candle to touch the theoretical entry.
+
+    OHLC cannot establish intrabar ordering when the same candle can touch the
+    entry and TP. Those cases are quarantined as AMBIGUOUS rather than guessing.
+    If entry and SL are both touched on the same candle, the SL is structurally
+    downstream of the entry for the corresponding direction, so LOSS is
+    deterministic at OHLC resolution.
+
+    The returned trace is research diagnostics only; it does not define canonical
+    fill or execution semantics.
     """
     direction = signal["direction"]
     entry, sl, tp = signal["entry"], signal["sl"], signal["tp"]
+    trace = {
+        "signal_index": int(signal_index),
+        "signal_time": int(signal["signal_time"]),
+        "fill_index": None,
+        "fill_time": None,
+        "fill_price": None,
+        "fill_bar": None,
+        "bars_waiting_for_fill": None,
+        "exit_index": None,
+        "exit_time": None,
+        "exit_reason": None,
+        "exit_bar": None,
+        "bars_held": None,
+        "entry_to_sl_distance": float(abs(entry - sl)),
+        "entry_to_tp_distance": float(abs(tp - entry)),
+    }
 
     for j in range(signal_index + 1, len(candles)):
         bar = candles[j]
         high, low = float(bar["high"]), float(bar["low"])
+        bar_time = int(bar["time"])
 
-        # Pending-limit semantics are unresolved; only bars that actually reach
-        # the theoretical entry are eligible for fill.
         if direction == "BUY":
-            filled = low <= entry
-            if not filled:
+            touched_entry = low <= entry
+            if not touched_entry:
                 continue
             hit_sl = low <= sl
             hit_tp = high >= tp
         else:
-            filled = high >= entry
-            if not filled:
+            touched_entry = high >= entry
+            if not touched_entry:
                 continue
             hit_sl = high >= sl
             hit_tp = low <= tp
 
-        if hit_sl and hit_tp:
-            return "AMBIGUOUS", j, None
-        if hit_tp:
-            return "WIN", j, 1.0
-        if hit_sl:
-            return "LOSS", j, -1.0
+        trace["fill_index"] = int(j)
+        trace["fill_time"] = bar_time
+        trace["fill_price"] = float(entry)
+        trace["fill_bar"] = {
+            "open": float(bar["open"]),
+            "high": high,
+            "low": low,
+            "close": float(bar["close"]),
+        }
+        trace["bars_waiting_for_fill"] = int(j - signal_index - 1)
 
-    return "OPEN_AT_END", None, None
+        if hit_sl and hit_tp:
+            trace["exit_index"] = int(j)
+            trace["exit_time"] = bar_time
+            trace["exit_reason"] = "BOTH_SL_TP_SAME_BAR"
+            trace["exit_bar"] = trace["fill_bar"]
+            trace["bars_held"] = 0
+            return "AMBIGUOUS", j, None, trace
+
+        if hit_tp:
+            # Entry and TP can be touched in the same OHLC bar, but OHLC does not
+            # prove that entry occurred before TP. Quarantine rather than assume.
+            trace["exit_index"] = int(j)
+            trace["exit_time"] = bar_time
+            trace["exit_reason"] = "ENTRY_TP_SAME_BAR_ORDER_UNRESOLVED"
+            trace["exit_bar"] = trace["fill_bar"]
+            trace["bars_held"] = 0
+            return "AMBIGUOUS", j, None, trace
+
+        if hit_sl:
+            trace["exit_index"] = int(j)
+            trace["exit_time"] = bar_time
+            trace["exit_reason"] = "SL_AFTER_ENTRY_SAME_BAR"
+            trace["exit_bar"] = trace["fill_bar"]
+            trace["bars_held"] = 0
+            return "LOSS", j, -1.0, trace
+
+        # Filled with neither exit touched; subsequent bars determine outcome.
+        for k in range(j + 1, len(candles)):
+            next_bar = candles[k]
+            next_high, next_low = float(next_bar["high"]), float(next_bar["low"])
+            next_time = int(next_bar["time"])
+
+            if direction == "BUY":
+                next_hit_sl = next_low <= sl
+                next_hit_tp = next_high >= tp
+            else:
+                next_hit_sl = next_high >= sl
+                next_hit_tp = next_low <= tp
+
+            if next_hit_sl and next_hit_tp:
+                trace["exit_index"] = int(k)
+                trace["exit_time"] = next_time
+                trace["exit_reason"] = "BOTH_SL_TP_SAME_BAR"
+                trace["exit_bar"] = {
+                    "open": float(next_bar["open"]),
+                    "high": next_high,
+                    "low": next_low,
+                    "close": float(next_bar["close"]),
+                }
+                trace["bars_held"] = int(k - j)
+                return "AMBIGUOUS", k, None, trace
+
+            if next_hit_tp:
+                trace["exit_index"] = int(k)
+                trace["exit_time"] = next_time
+                trace["exit_reason"] = "TP"
+                trace["exit_bar"] = {
+                    "open": float(next_bar["open"]),
+                    "high": next_high,
+                    "low": next_low,
+                    "close": float(next_bar["close"]),
+                }
+                trace["bars_held"] = int(k - j)
+                return "WIN", k, 1.0, trace
+
+            if next_hit_sl:
+                trace["exit_index"] = int(k)
+                trace["exit_time"] = next_time
+                trace["exit_reason"] = "SL"
+                trace["exit_bar"] = {
+                    "open": float(next_bar["open"]),
+                    "high": next_high,
+                    "low": next_low,
+                    "close": float(next_bar["close"]),
+                }
+                trace["bars_held"] = int(k - j)
+                return "LOSS", k, -1.0, trace
+
+        trace["exit_reason"] = "OPEN_AT_END"
+        return "OPEN_AT_END", None, None, trace
+
+    trace["exit_reason"] = "NO_FILL"
+    return "OPEN_AT_END", None, None, trace
 
 
 def wilson(wins: int, decisive: int, z: float = 1.959963984540054) -> tuple[float | None, float | None]:
@@ -493,7 +602,7 @@ def run_symbol(symbol: str, rates: np.ndarray) -> dict:
             continue
         last_signal_time = candidate["signal_time"]
 
-        result, exit_index, r = outcome(rates, i, candidate)
+        result, exit_index, r, outcome_trace = outcome(rates, i, candidate)
         if exit_index is not None:
             for j in range(i, exit_index):
                 missing = _gap_after(int(rates[j]["time"]), int(rates[j + 1]["time"]))
@@ -511,6 +620,7 @@ def run_symbol(symbol: str, rates: np.ndarray) -> dict:
             "result": result,
             "exit_time": int(rates[exit_index]["time"]) if exit_index is not None else None,
             "r": r,
+            "outcome_trace": outcome_trace,
         })
 
     wins = sum(x["result"] == "WIN" for x in signals)
@@ -623,7 +733,8 @@ def main() -> int:
                 "Pending-limit fill semantics remain unresolved: a bar is eligible only if it reaches the theoretical entry.",
                 "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries; same-day M1 gaps are retained as data-quality events and signals crossing them are excluded from decisive performance.",
                 "The research replay filters M1 bars to London open through New York close using named local time zones with DST; this is an explicit research-test constraint, not a canonical Strategy A session rule.",
-                "If one M1 candle touches both SL and TP, the result is AMBIGUOUS rather than guessed.",
+                "Outcome diagnostics record theoretical fill/exit sequencing, fill latency, exit reason, and the OHLC bar used for each decision.",
+                "A same-bar entry+TP event is AMBIGUOUS because M1 OHLC cannot prove whether the pending entry filled before TP; same-bar entry+SL is treated as LOSS because SL lies beyond the entry in the trade direction.",
                 "The detector is the existing author-replica research detector; this run does not promote geometry to canonical.",
             ],
         }
