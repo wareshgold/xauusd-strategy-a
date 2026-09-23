@@ -62,6 +62,10 @@ STATE_FILE = RUNTIME / "sp2l_multi_symbol_forward_state.json"
 
 SL_ANCHOR = "SPIKE_CANDLE_EXTREME_RESEARCH"
 DAILY_SUMMARY_UTC_HOUR = int(os.getenv("SP2L_DAILY_SUMMARY_UTC_HOUR", "21"))
+# Pending-order expiry: unfilled limit orders of this runner are cancelled
+# after N minutes (0 disables). Research/infrastructure only — never touches
+# open positions, foreign/manual orders, or SL/TP semantics.
+PENDING_TTL_MINUTES = float(os.getenv("SP2L_PENDING_TTL_MINUTES", "30"))
 RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
 
 
@@ -591,6 +595,117 @@ def order_state_name(order) -> str:
     return names.get(state, f"UNKNOWN_{state}")
 
 
+def _cancel_pending_order(order, state: dict) -> None:
+    """Cancel one stale pending order and notify Telegram with the outcome.
+
+    Expiry policy (SP2L_PENDING_TTL_MINUTES): a limit order that did not fill
+    within its window no longer reflects the research setup's intended
+    immediate-entry premise. Cancellation is runner-side account hygiene:
+    never touches positions, foreign/manual orders, or strategy semantics.
+    In DRY-RUN the cancel request is logged but not sent (gateway-style
+    dry_run result), so the observe-only contract stays intact.
+    """
+    ticket = int(getattr(order, "ticket", 0) or 0)
+    symbol = str(getattr(order, "symbol", "") or "")
+    setup_ts = int(getattr(order, "time_setup", 0) or 0)
+    age_minutes = (time.time() - setup_ts) / 60.0 if setup_ts else 0.0
+    digits_info = mt5.symbol_info(symbol)
+    digits = max(2, int(getattr(digits_info, "digits", 2) or 2)) if digits_info else 2
+
+    cancel_request = {
+        "action": mt5.TRADE_ACTION_REMOVE,
+        "order": ticket,
+    }
+
+    live_flag = os.getenv("LIVE_TRADING_ENABLE", "false").lower() == "true"
+    allow_flag = os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true"
+    if not (live_flag and allow_flag):
+        result = {
+            "ok": True, "dry_run": True, "retcode": None,
+            "reason": "LIVE_TRADING_ENABLE=false",
+        }
+    else:
+        account = mt5.account_info()
+        if account is None or int(account.trade_mode) != 0:
+            result = {"ok": False, "reason": "DEMO_ACCOUNT_REQUIRED"}
+        else:
+            send = mt5.order_send(cancel_request)
+            if send is None:
+                result = {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
+            else:
+                result = {
+                    "ok": send.retcode == mt5.TRADE_RETCODE_DONE,
+                    "dry_run": False,
+                    "retcode": send.retcode,
+                    "comment": send.comment,
+                }
+
+    outcome = "CANCELLED" if result.get("ok") else f"CANCEL_FAILED({result.get('reason') or result.get('retcode')})"
+    log_event({
+        "event": "PENDING_ORDER_EXPIRED",
+        "symbol": symbol, "order": ticket,
+        "age_minutes": round(age_minutes, 1),
+        "price_open": float(getattr(order, "price_open", 0.0) or 0.0),
+        "sl": float(getattr(order, "sl", 0.0) or 0.0),
+        "tp": float(getattr(order, "tp", 0.0) or 0.0),
+        "cancel": result,
+        "outcome": outcome,
+        "canonical": False,
+    })
+
+    dt = display_time_from_mt5(setup_ts)
+    text = (
+        f"🟠 <b>SP2L — {symbol} — EXPIRED</b>\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"📦 <b>Order</b>   Pending Limit (unfilled)\n"
+        f"📌 <b>Entry</b>   {float(getattr(order, 'price_open', 0.0) or 0.0):.{digits}f}\n"
+        f"🛑 <b>SL</b>      {float(getattr(order, 'sl', 0.0) or 0.0):.{digits}f}\n"
+        f"🎯 <b>TP</b>      {float(getattr(order, 'tp', 0.0) or 0.0):.{digits}f}\n"
+        f"⏳ <b>Age</b>     {age_minutes:.0f} min · TTL {PENDING_TTL_MINUTES:.0f} min\n"
+        f"✔️ <b>Action</b>  {outcome}\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"🕒 {dt:%H:%M:%S} (UTC+3:30) · {dt:%Y-%m-%d}\n"
+        f"🆔 <code>{ticket}</code>\n"
+        f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
+    )
+    tg = gateway.send_telegram_message(text, parse_mode="HTML")
+    state["order_states"].add(f"{ticket}:EXPIRY_NOTIFIED:{outcome}")
+    log_event({
+        "event": "TELEGRAM_PENDING_EXPIRED", "symbol": symbol,
+        "order": ticket, "outcome": outcome,
+        "telegram": {"success": tg.success, "detail": tg.detail},
+        "canonical": False,
+    })
+
+
+def enforce_pending_order_expiry(cfg: dict, state: dict) -> None:
+    """Cancel this runner's pending limit orders older than PENDING_TTL_MINUTES."""
+    if PENDING_TTL_MINUTES <= 0:
+        return
+    symbol, magic = cfg["symbol"], cfg["magic"]
+    active = mt5.orders_get(symbol=symbol) or []
+    for order in active:
+        ticket = int(getattr(order, "ticket", 0) or 0)
+        if not ticket:
+            continue
+        order_magic = int(getattr(order, "magic", 0) or 0)
+        if order_magic != magic and ticket not in state["orders"]:
+            continue  # never touch foreign/manual orders
+        order_type = int(getattr(order, "type", -1))
+        if order_type not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
+            continue  # only the runner's own pending limits expire
+        setup_ts = int(getattr(order, "time_setup", 0) or 0)
+        if not setup_ts:
+            continue
+        age_minutes = (time.time() - setup_ts) / 60.0
+        if age_minutes < PENDING_TTL_MINUTES:
+            continue
+        marker = f"{ticket}:EXPIRY_NOTIFIED:"
+        if any(s.startswith(marker) for s in state["order_states"]):
+            continue  # expiry already handled for this ticket
+        _cancel_pending_order(order, state)
+
+
 def monitor_pending_order_lifecycle(cfg: dict, state: dict) -> None:
     """Observe broker-side pending-order state without changing execution semantics."""
     symbol, magic = cfg["symbol"], cfg["magic"]
@@ -777,6 +892,7 @@ def main() -> None:
             "pGapPrice": P_GAP_PRICE, "spikeMultiplier": SPIKE_MULTIPLIER,
             "maxSlDistance": MAX_SL_DISTANCE, "tpR": TP_R, "volume": VOLUME,
             "orderMode": ORDER_MODE, "slAnchor": SL_ANCHOR,
+            "pendingTtlMinutes": PENDING_TTL_MINUTES,
             "symbols": configs,
         },
     })
@@ -830,6 +946,7 @@ def main() -> None:
         while deadline is None or time.time() < deadline:
             for cfg in configs:
                 symbol = cfg["symbol"]
+                enforce_pending_order_expiry(cfg, state)
                 monitor_pending_order_lifecycle(cfg, state)
                 monitor_symbol_lifecycle(cfg, state)
                 data = rates(symbol)
