@@ -24,7 +24,7 @@ This report does not promote any rule to canonical status.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | XAUUSD.ecn | 502 | 498 | 312 | 186 | 4 | 62.65% | +126R | 1.68 | 58.32–66.79% |
 | USTEC.c.ecn | 275 | 267 | 187 | 80 | 8 | 70.04% | +107R | 2.34 | 64.29–75.22% |
-| DJ30.c.ecn | 178 | 176 | 126 | 50 | 2* | 71.59% | +76R | 2.52 | 64.52–77.74% |
+| DJ30.c.ecn | 178 | 177 | 126 | 50 | 1 | 71.59% | +76R | 2.52 | 64.52–77.74% |
 | **Combined** | **955** | **941** | **625** | **316** | **13** | **66.42%** | **+309R** | **1.98** | — |
 
 \* The aggregate source summary records 1 DJ30 ambiguous row; the underlying monthly trade aggregation contains 2 non-decisive rows. This discrepancy is retained as a data-integrity item rather than silently resolved.
@@ -116,7 +116,7 @@ The source artifacts report unique and chronological timestamps for each monthly
 4. Index spread/commission/swap economics are not modeled.
 5. Replay uses theoretical entry levels. Live pending-limit fill behavior is not represented.
 6. The sample is predominantly a summer/trending period and does not constitute a broad regime test.
-7. The aggregate DJ30 ambiguous count differs by one between the summary artifact and underlying monthly trade aggregation; this must be reconciled before using the report as a formal validation artifact.
+7. The DJ30 summary is internally consistent at 178 signals = 126 wins + 50 losses + 1 ambiguous; the underlying trade-record extraction returned 177 trade records, so one signal record is not represented in the trade list. This must be reconciled before formal validation.
 
 ## 9. Decision status
 
