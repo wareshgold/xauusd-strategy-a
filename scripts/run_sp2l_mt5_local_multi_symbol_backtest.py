@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -248,13 +249,49 @@ def max_drawdown_and_losses(results: list[float]) -> tuple[float, int]:
     return dd, max_run
 
 
+def _infer_mt5_time_offset_seconds(symbol: str) -> int:
+    """Infer the terminal's observed timestamp offset from the local UTC clock.
+
+    MT5 documentation specifies UTC timestamps, but this broker terminal has
+    empirically exposed a +3h timestamp offset in the connected environment.
+    We therefore normalize only the observed terminal timestamps and record the
+    offset as acquisition metadata; no SP2L geometry or outcome rule depends on it.
+    An explicit SP2L_MT5_TIME_OFFSET_HOURS overrides auto-detection.
+    """
+    explicit = os.getenv("SP2L_MT5_TIME_OFFSET_HOURS")
+    if explicit is not None:
+        hours = float(explicit)
+        if abs(hours) > 14:
+            raise ValueError("SP2L_MT5_TIME_OFFSET_HOURS must be between -14 and +14")
+        return int(round(hours * 3600))
+
+    tick = mt5.symbol_info_tick(symbol)
+    if tick is None or not getattr(tick, "time", None):
+        raise RuntimeError(f"Cannot infer MT5 timestamp offset for {symbol}: no tick time")
+
+    delta = float(tick.time) - datetime.now(timezone.utc).timestamp()
+    offset = int(round(delta / 3600.0) * 3600)
+    residual = abs(delta - offset)
+    if abs(offset) > 14 * 3600 or residual > 15 * 60:
+        raise RuntimeError(
+            f"Unstable MT5 timestamp offset for {symbol}: observed delta={delta:.1f}s "
+            f"rounded_offset={offset}s residual={residual:.1f}s"
+        )
+    return offset
+
+
 def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
-    """Fetch M1 history in bounded UTC date ranges.
+    """Fetch M1 history in bounded UTC date ranges and normalize observed MT5 time.
 
     MT5 terminals can cap copy_rates_from/copy_rates_range responses around
     MAX_BARS_IN_CHART. Small date windows avoid silently truncating a long
     request. Every chunk is independently retried and the final result is
     coverage-checked before replay.
+
+    The connected Otet terminal currently exposes timestamps three hours ahead
+    of the local UTC clock. The offset is inferred from the live tick (or can be
+    explicitly supplied with SP2L_MT5_TIME_OFFSET_HOURS), then subtracted from
+    returned bar timestamps before UTC coverage validation.
     """
     if not mt5.symbol_select(symbol, True):
         raise RuntimeError(f"symbol_select failed for {symbol}: {mt5.last_error()}")
@@ -266,6 +303,7 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
 
     start = start.astimezone(timezone.utc)
     end = end.astimezone(timezone.utc)
+    offset_seconds = _infer_mt5_time_offset_seconds(symbol)
     cursor = start
     chunks: list[np.ndarray] = []
     diagnostics: list[dict] = []
@@ -285,7 +323,6 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
             if rates is not None and len(rates):
                 break
             last_error = mt5.last_error()
-            # A failed MT5 call can be transient; retry the same bounded range.
             time.sleep(0.25 * attempt)
 
         if rates is None or len(rates) == 0:
@@ -295,16 +332,21 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
                 f"after {max_retries} attempts: {last_error or mt5.last_error()}"
             )
 
-        # copy_rates_range is inclusive at both ends; deduplication below makes
-        # adjacent chunks safe even when the boundary candle appears twice.
-        chunks.append(rates)
+        raw_first = int(rates["time"][0])
+        raw_last = int(rates["time"][-1])
         diagnostics.append({
             "start_utc": cursor.isoformat(),
             "end_utc": chunk_end.isoformat(),
             "bars": int(len(rates)),
-            "first_bar_utc": datetime.fromtimestamp(int(rates["time"][0]), timezone.utc).isoformat(),
-            "last_bar_utc": datetime.fromtimestamp(int(rates["time"][-1]), timezone.utc).isoformat(),
+            "timestamp_offset_seconds": offset_seconds,
+            "timestamp_offset_hours": offset_seconds / 3600,
+            "first_bar_observed_utc": datetime.fromtimestamp(raw_first, timezone.utc).isoformat(),
+            "last_bar_observed_utc": datetime.fromtimestamp(raw_last, timezone.utc).isoformat(),
         })
+
+        normalized = rates.copy()
+        normalized["time"] = normalized["time"].astype(np.int64) - offset_seconds
+        chunks.append(normalized)
 
         next_cursor = chunk_end + timedelta(minutes=1)
         if next_cursor <= cursor:
@@ -324,25 +366,20 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
     start_ts = int(start.timestamp())
     end_ts = int(end.timestamp())
 
-    # Do not let an incomplete history set produce a misleading COMPLETE report.
-    # A small edge tolerance is allowed because broker history may not contain
-    # the exact requested endpoint minute.
     edge_tolerance = 60
     if first_ts > start_ts + edge_tolerance:
         raise RuntimeError(
-            f"Incomplete MT5 history for {symbol}: first bar "
+            f"Incomplete MT5 history for {symbol}: first normalized bar "
             f"{datetime.fromtimestamp(first_ts, timezone.utc).isoformat()} "
             f"is after requested start {start.isoformat()}"
         )
     if last_ts < end_ts - edge_tolerance:
         raise RuntimeError(
-            f"Incomplete MT5 history for {symbol}: last bar "
+            f"Incomplete MT5 history for {symbol}: last normalized bar "
             f"{datetime.fromtimestamp(last_ts, timezone.utc).isoformat()} "
             f"is before requested end {end.isoformat()}"
         )
 
-    # Return diagnostics separately through the function attribute so callers
-    # can keep the replay API unchanged while recording acquisition evidence.
     fetch_rates.last_diagnostics = diagnostics
     return result
 
@@ -512,13 +549,13 @@ def main() -> int:
             "max_consecutive_losses": max_losses,
         }
 
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        path = OUT_DIR / f"SP2L_MT5_LOCAL_MULTI_SYMBOL_{stamp}.json"
-        path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
-
         failed = [k for k, v in report["outcomes"].items() if v.get("status") == "FAILED"]
         report["status"] = "COMPLETE" if not failed else "INCOMPLETE_HISTORY"
         report["failed_symbols"] = failed
+
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        path = OUT_DIR / f"SP2L_MT5_LOCAL_MULTI_SYMBOL_{stamp}.json"
+        path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
         print(json.dumps({
             "status": report["status"],
