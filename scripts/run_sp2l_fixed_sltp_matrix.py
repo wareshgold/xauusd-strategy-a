@@ -39,12 +39,24 @@ import MetaTrader5 as mt5
 
 NY_TZ = ZoneInfo("America/New_York")
 SYMBOLS = {
-    "XAUUSD.ecn": {"pip_size": 0.01, "pip_method": "REPO_POINT_FOR_NON_FX_DIGITS"},
-    "USTEC.c.ecn": {"pip_size": 0.01, "pip_method": "REPO_POINT_FOR_NON_FX_DIGITS"},
-    "DJ30.c.ecn": {"pip_size": 0.01, "pip_method": "REPO_POINT_FOR_NON_FX_DIGITS"},
+    "XAUUSD.ecn": {"pip_method": "REPO_POINT_FOR_NON_FX_DIGITS"},
+    "USTEC.c.ecn": {"pip_method": "REPO_POINT_FOR_NON_FX_DIGITS"},
+    "DJ30.c.ecn": {"pip_method": "REPO_POINT_FOR_NON_FX_DIGITS"},
 }
 WIDTHS_PIPS = [20, 40, 60]
-INDEX_PIP_SIZES = {"REPO_PIP": 0.01, "INDEX_POINT": 1.0}
+
+# Pip conventions evaluated side by side (user confirmed: 20 gold pips = $2.00
+# move -> $2 P/L per 0.01 lot -> gold pip = 0.10 price units).
+PIP_MODES = {
+    # Repo/journal/live-runner convention: 1 pip = 0.01 price units everywhere.
+    "REPO_PIP_0.01": {"XAUUSD.ecn": 0.01, "USTEC.c.ecn": 0.01, "DJ30.c.ecn": 0.01},
+    # Practical broker convention: gold pip = 0.10, index pip = 1.0 point.
+    "PRACTICAL_GOLD0.10_IDX1.0": {"XAUUSD.ecn": 0.10, "USTEC.c.ecn": 1.0, "DJ30.c.ecn": 1.0},
+    # Flat broker-point reading: 1 pip = 1.0 price unit everywhere.
+    "BROKER_POINT_1.0": {"XAUUSD.ecn": 1.0, "USTEC.c.ecn": 1.0, "DJ30.c.ecn": 1.0},
+}
+# Reference volumes matching the live forward session (indices min 0.1).
+REFERENCE_VOLUMES = {"XAUUSD.ecn": 0.01, "USTEC.c.ecn": 0.1, "DJ30.c.ecn": 0.1}
 TRIGGER_CONTIGUITY_SECONDS = 60
 
 REPLAY_SOURCE = Path("scripts/run-author-replica-mt5-api.py")
@@ -163,7 +175,16 @@ def _mode_summary(candles, candidates, widths, pip_size: float) -> dict:
     return {"pip_size": pip_size, "widths": per_width}
 
 
-def evaluate_symbol(symbol: str, pip_modes: dict[str, float]) -> dict:
+def dollar_per_price_unit(symbol: str):
+    """Live tick_value snapshot: USD per 1.0 price move per 1.0 lot (read-only).
+    Returns None when symbol info is unavailable."""
+    info = mt5.symbol_info(symbol)
+    if info is None or not info.trade_tick_size:
+        return None
+    return float(info.trade_tick_value) / float(info.trade_tick_size)
+
+
+def evaluate_symbol(symbol: str) -> dict:
     candles = fetch_candles(symbol)
     integrity = integrity_stats(candles)
 
@@ -183,10 +204,21 @@ def evaluate_symbol(symbol: str, pip_modes: dict[str, float]) -> dict:
              "strategy_sl": strategy_sl}
         )
 
+    usd_per_unit = dollar_per_price_unit(symbol)
+    ref_volume = REFERENCE_VOLUMES.get(symbol)
     by_mode = {
-        mode: _mode_summary(candles, candidates, WIDTHS_PIPS, pip_size)
-        for mode, pip_size in pip_modes.items()
+        mode: _mode_summary(candles, candidates, WIDTHS_PIPS, sizes[symbol])
+        for mode, sizes in PIP_MODES.items()
+        if symbol in sizes
     }
+    # Attach a reference dollar value per 1R to every width cell (live
+    # tick_value snapshot at run time; approximation, not a backtest cost model).
+    if usd_per_unit and ref_volume:
+        for mode_data in by_mode.values():
+            for cell in mode_data["widths"].values():
+                cell["reference_usd_per_1r"] = round(
+                    cell["sl_tp_distance_price"] * usd_per_unit * ref_volume, 2
+                )
 
     return {
         "symbol": symbol,
@@ -216,7 +248,7 @@ def main():
             if not mt5.symbol_select(symbol, True):
                 raise SystemExit(f"symbol_select failed for {symbol}")
             print(f"[matrix] evaluating {symbol} ...", flush=True)
-            results[symbol] = evaluate_symbol(symbol, INDEX_PIP_SIZES)
+            results[symbol] = evaluate_symbol(symbol)
 
         matrix = {
             "research_only": True,
@@ -235,6 +267,16 @@ def main():
                 "spikeMultiplier": _replica.SPIKE_MULT,
                 "note": "MAX_SL / TP_R do not apply: SL and TP are synthetic fixed widths for this matrix only",
             },
+            "pip_mode_definitions": {
+                mode: {"per_symbol_pip_size": sizes, "headline": mode == "PRACTICAL_GOLD0.10_IDX1.0"}
+                for mode, sizes in PIP_MODES.items()
+            },
+            "reference_volumes": REFERENCE_VOLUMES,
+            "reference_dollar_note": (
+                "reference_usd_per_1r uses a live trade_tick_value snapshot at run "
+                "time with the reference volume; it is an approximation, not a "
+                "historical cost model."
+            ),
             "session_window": {
                 "definition": "London open -> NY close",
                 "ny_wall_clock": "03:00..16:59 America/New_York, Mon-Fri",
@@ -257,10 +299,11 @@ def main():
                 for width, cell in m["widths"].items():
                     wr = cell["win_rate_decisive"]
                     pf = cell["profit_factor_decisive"]
-                    print(f"  {mode:<12} {width:>3}p (dist={cell['sl_tp_distance_price']:>8}) "
+                    print(f"  {mode:<27} {width:>3}p (dist={cell['sl_tp_distance_price']:>8}) "
                           f"W={cell['wins']:<4} L={cell['losses']:<4} A={cell['ambiguous']:<3} "
                           f"WR={'' if wr is None else format(wr * 100, '.1f') + '%':>6} "
-                          f"PF={'' if pf is None else pf} netR={cell['net_r']}")
+                          f"PF={'' if pf is None else pf} netR={cell['net_r']} "
+                          f"~${cell.get('reference_usd_per_1r')}/1R")
     finally:
         mt5.shutdown()
 
