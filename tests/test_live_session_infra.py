@@ -50,9 +50,10 @@ class FakeMt5:
             SimpleNamespace(name="EURUSD.ecn"),
         ]
         self.infos = {
-            "XAUUSD.ecn": FakeInfo("XAUUSD.ecn", 4),  # CLOSEONLY
-            "XAUUSD.pro": FakeInfo("XAUUSD.pro", 3),  # FULL
-            "EURUSD.ecn": FakeInfo("EURUSD.ecn", 3),
+            # Raw MT5 SYMBOL_TRADE_MODE_* codes: 3=CLOSEONLY, 4=FULL.
+            "XAUUSD.ecn": FakeInfo("XAUUSD.ecn", 3),  # CLOSEONLY
+            "XAUUSD.pro": FakeInfo("XAUUSD.pro", 4),  # FULL
+            "EURUSD.ecn": FakeInfo("EURUSD.ecn", 4),
         }
 
     def symbols_get(self):

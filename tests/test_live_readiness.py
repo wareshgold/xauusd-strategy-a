@@ -37,6 +37,7 @@ MT5_PROBE_OK = {
     "margin_mode": 2,
     "symbol_visible": True,
     "symbol_trade_mode": 4,
+    "trade_mode": 0,  # account_trade_mode: DEMO(0); required by _mt5_items
     "stops_level_points": 0,
     "volume_min": 0.01,
     "volume_step": 0.01,

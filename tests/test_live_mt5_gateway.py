@@ -15,12 +15,26 @@ def load_gateway(monkeypatch, tmp_path):
     fake_mt5 = SimpleNamespace(
         ORDER_TYPE_BUY=0,
         ORDER_TYPE_SELL=1,
+        ORDER_TYPE_BUY_LIMIT=2,
+        ORDER_TYPE_SELL_LIMIT=3,
         TRADE_ACTION_DEAL=1,
+        TRADE_ACTION_PENDING=5,
         ORDER_TIME_GTC=0,
         ORDER_FILLING_IOC=1,
+        ORDER_FILLING_RETURN=2,
         TRADE_RETCODE_DONE=10009,
+        TRADE_RETCODE_PLACED=10008,
         ACCOUNT_TRADE_MODE_DEMO=0,
     )
+    # exposure guard + limit-mode plumbing added after these fixtures were
+    # written; every execute_signal test must provide them.
+    fake_mt5.orders_get = lambda symbol=None: []
+    fake_mt5.positions_get = lambda symbol=None: []
+    fake_mt5.symbol_info = lambda symbol: SimpleNamespace(
+        trade_stops_level=0, point=0.01, trade_mode=4,
+        volume_min=0.01, volume_step=0.01,
+    )
+    fake_mt5.account_info = lambda: SimpleNamespace(trade_mode=0)
     monkeypatch.setitem(sys.modules, "MetaTrader5", fake_mt5)
     monkeypatch.setenv("TRADING_SYMBOL", "XAUUSD.ecn")
     monkeypatch.setenv("SIGNAL_FILE", str(tmp_path / "approved_signal.json"))
@@ -91,7 +105,7 @@ def test_max_open_positions_blocks_execution(monkeypatch, tmp_path):
         "status": "APPROVED",
     })
     result = gateway.execute_signal(signal)
-    assert result == {"ok": False, "reason": "MAX_OPEN_POSITIONS", "open_positions": 1}
+    assert result == {"ok": False, "reason": "MAX_OPEN_POSITIONS", "active_exposure": 1}
 
 def test_telegram_format_is_nexora_branded(monkeypatch, tmp_path):
     gateway, _ = load_gateway(monkeypatch, tmp_path)
@@ -217,12 +231,13 @@ def test_closeonly_symbol_blocks_real_order_send(monkeypatch, tmp_path):
     assert result["trade_mode_name"] == "CLOSEONLY"
     assert calls["order_send"] == 0
 
-    # Case 2: symbol info unavailable — must fail closed too.
+    # Case 2: symbol info unavailable — must fail closed too. The early
+    # SYMBOL_INFO_UNAVAILABLE guard fires before the openable check; what
+    # matters is that no order_send ever happens.
     mt5.symbol_info = lambda symbol: None
     result = gateway.execute_signal(_approved_buy(gateway))
     assert result["ok"] is False
-    assert result["reason"] == "SYMBOL_NOT_OPENABLE"
-    assert result["symbol_trade_mode"] is None
+    assert result["reason"] == "SYMBOL_INFO_UNAVAILABLE"
     assert calls["order_send"] == 0
 
 

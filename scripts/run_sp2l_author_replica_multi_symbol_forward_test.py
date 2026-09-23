@@ -49,10 +49,118 @@ EVENTS = ARTIFACTS / "SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl"
 STATE_FILE = RUNTIME / "sp2l_multi_symbol_forward_state.json"
 
 SL_ANCHOR = "SPIKE_CANDLE_EXTREME_RESEARCH"
+DAILY_SUMMARY_UTC_HOUR = int(os.getenv("SP2L_DAILY_SUMMARY_UTC_HOUR", "21"))
+RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
+
+
+def acquire_runner_lock() -> int | None:
+    """Single-instance guard: two concurrent runners would double every order."""
+    RUNTIME.mkdir(parents=True, exist_ok=True)
+    try:
+        if RUNNER_LOCK.exists():
+            pid = int(RUNNER_LOCK.read_text(encoding="utf-8").strip() or 0)
+            if pid > 0 and pid != os.getpid():
+                try:
+                    os.kill(pid, 0)  # signal probe: raises if the process is gone
+                    return pid
+                except OSError:
+                    pass  # stale lock file
+        RUNNER_LOCK.write_text(str(os.getpid()), encoding="utf-8")
+        return None
+    except (OSError, ValueError):
+        return None  # lock unavailable: never block the demo runner on FS errors
+
+
+def release_runner_lock() -> None:
+    try:
+        if RUNNER_LOCK.exists() and RUNNER_LOCK.read_text(encoding="utf-8").strip() == str(os.getpid()):
+            RUNNER_LOCK.unlink()
+    except OSError:
+        pass
 
 
 def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _utc_day_key(ts: int) -> str:
+    return datetime.fromtimestamp(int(ts), timezone.utc).strftime("%Y-%m-%d")
+
+
+def build_daily_summary(state: dict) -> str | None:
+    """Deterministic daily summary over the events already recorded today (UTC)."""
+    if not EVENTS.exists():
+        return None
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    signals = fills = closes = 0
+    wins = losses = 0
+    net = 0.0
+    per_symbol: dict[str, dict] = {}
+    with EVENTS.open("r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                ev = json.loads(line)
+            except Exception:
+                continue
+            if not str(ev.get("ts_utc", "")).startswith(today):
+                continue
+            symbol = str(ev.get("symbol") or "?")
+            bucket = per_symbol.setdefault(symbol, {"signals": 0, "wins": 0, "losses": 0, "net": 0.0})
+            event = ev.get("event")
+            if event == "TELEGRAM_SIGNAL":
+                signals += 1
+                bucket["signals"] += 1
+            elif event == "TELEGRAM_DEAL_LIFECYCLE":
+                net_ev = float(ev.get("net", 0.0) or 0.0)
+                if int(ev.get("entry", -1)) == getattr(mt5, "DEAL_ENTRY_IN", 0):
+                    fills += 1
+                    bucket["net"] += net_ev
+                else:
+                    closes += 1
+                    bucket["net"] += net_ev
+                    if net_ev > 0:
+                        wins += 1
+                        bucket["wins"] += 1
+                    elif net_ev < 0:
+                        losses += 1
+                        bucket["losses"] += 1
+    if signals == 0 and closes == 0:
+        return None
+    lines = [
+        f"📊 SP2L Forward — Daily Summary (UTC {today})\n",
+        f"Signals: {signals} · Fills: {fills} · Closed: {closes}",
+        f"Closed results: ✅ {wins} · ❌ {losses}",
+        f"Closed net: {net:+.2f} USD",
+        "",
+        "Per symbol:",
+    ]
+    for symbol in sorted(per_symbol):
+        b = per_symbol[symbol]
+        lines.append(f"- {symbol}: sig {b['signals']} · ✅ {b['wins']} · ❌ {b['losses']} · net {b['net']:+.2f}")
+    lines += ["", "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"]
+    return "\n".join(lines)
+
+
+def maybe_send_daily_summary(state: dict) -> None:
+    key = "last_daily_summary_utc_day"
+    now = datetime.now(timezone.utc)
+    if now.hour < DAILY_SUMMARY_UTC_HOUR:
+        return
+    today = now.strftime("%Y-%m-%d")
+    if state.get(key) == today:
+        return
+    summary = build_daily_summary(state)
+    if summary is None:
+        state[key] = today
+        return
+    result = gateway.send_telegram_message(summary)
+    log_event({
+        "event": "DAILY_SUMMARY", "success": bool(getattr(result, "success", False)),
+        "detail": getattr(result, "detail", None), "utc_day": today, "canonical": False,
+    })
+    if getattr(result, "success", False):
+        state[key] = today
+    save_state(state)
 
 
 def log_event(event: dict) -> None:
@@ -355,24 +463,37 @@ def lifecycle_message(deal, symbol: str, pip_size: float, magic: int | None = No
         icon = "🔵" if pips is not None and pips > 0 else "🟠"
 
     dt = display_time_from_mt5(int(deal.time))
-    entry_str = (
-        f"{entry:.{max(2, int(mt5.symbol_info(symbol).digits))}f}"
-        if entry is not None else "n/a (unlinked)"
+    digits = max(2, int(mt5.symbol_info(symbol).digits))
+    entry_str = f"{entry:.{digits}f}" if entry is not None else "n/a (unlinked)"
+    reason = lifecycle_reason(deal)
+    reason_icon = {"TAKE PROFIT": "🎯", "STOP LOSS": "🛑"}.get(reason, "☑️")
+    if is_open:
+        head = f"{icon} <b>SP2L — {symbol} {side} — OPENED</b>"
+        body = f"📌 <b>Fill</b>     {price:.{digits}f}"
+    else:
+        res_icon = "🟢" if pips is not None and pips > 0 else "🔴"
+        res_line = f"{res_icon} <b>Result</b>  {pips:+.0f} pips · {net:+.2f} USD" if pips is not None else f"☑️ Result  {net:+.2f} USD"
+        head = f"{res_icon} <b>SP2L — {symbol} {side} — CLOSED</b>"
+        body = (
+            f"📌 <b>Entry</b>   {entry_str}\n"
+            f"🏁 <b>Exit</b>    {price:.{digits}f}\n"
+            f"{reason_icon} <b>Reason</b>  {reason}"
+        )
+    pips_line = (
+        f"📏 <b>Move</b>    {pips:+.0f} pips\n"
+        if not is_open and pips is not None and entry is not None else ""
     )
-    result = f"Result: {pips:+.0f} pips\n" if pips is not None else ""
     return (
-        f"{icon} {symbol} {side} — {'OPEN' if is_open else 'CLOSE'}"
-        f"{'' if is_open else chr(10) + 'Reason: ' + lifecycle_reason(deal)}\n\n"
-        f"Entry: {entry_str}\n"
-        f"{'Fill' if is_open else 'Exit'}: {price:.{max(2, int(mt5.symbol_info(symbol).digits))}f}\n"
-        f"\n{result}"
-        f"Volume: {float(deal.volume):.2f}\n"
-        f"Profit: {profit:.2f}\n"
-        f"Net: {net:.2f}\n\n"
-        f"Date: {dt:%Y-%m-%d}\nTime: {dt:%H:%M:%S} (UTC+3:30)\n\n"
-        f"Deal: {int(deal.ticket)}\nOrder: {int(deal.order)}\n"
-        f"Position: {int(getattr(deal, 'position_id', 0) or 0)}\n"
-        f"Mode: RESEARCH FORWARD MONITOR"
+        f"{head}\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"{body}\n"
+        f"{pips_line}"
+        f"⚖️ <b>Volume</b>  {float(deal.volume):.2f}\n"
+        f"💰 <b>Profit</b>   {profit:+.2f} · Net {net:+.2f}\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"🕒 {dt:%H:%M:%S} (UTC+3:30) · {dt:%Y-%m-%d}\n"
+        f"🆔 <code>{int(deal.ticket)}/{int(getattr(deal, 'position_id', 0) or 0)}</code>\n"
+        f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
 
 
@@ -558,7 +679,7 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             # notification to the next poll instead of sending wrong numbers.
             continue
         text = lifecycle_message(deal, symbol, pip, magic)
-        result = gateway.send_telegram_message(text)
+        result = gateway.send_telegram_message(text, parse_mode="HTML")
         exit_price = float(deal.price)
         signed_move = None
         pips_result = None
@@ -672,6 +793,13 @@ def main() -> None:
     save_state(state)
     seen_trigger = state["seen"]
 
+    holder_pid = acquire_runner_lock()
+    if holder_pid is not None:
+        raise RuntimeError(
+            f"Another forward runner is already active (pid {holder_pid}). "
+            "Stop it first — two runners would duplicate every order."
+        )
+
     try:
         while deadline is None or time.time() < deadline:
             for cfg in configs:
@@ -747,8 +875,10 @@ def main() -> None:
                 if bool(result.get("ok")):
                     seen_trigger[symbol] = trigger_key
                 save_state(state)
+            maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
     finally:
+        release_runner_lock()
         mt5.shutdown()
 
 

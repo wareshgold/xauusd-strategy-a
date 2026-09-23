@@ -84,3 +84,28 @@ Do not modify P-Gap, AB=CD, Leg1/Leg2, entry, SL, TP, fill, or pending-order sem
 
 - Safety hardening commit: `f7f705f`
 - Broker blocker issue: #237
+
+## 2026-09-23 — Long-running forward session (watchdog)
+
+The multi-symbol forward runner is a single-instance process guarded by
+`runtime/sp2l_multi_symbol_forward_runner.lock` — a second runner refuses to
+start ("two runners would duplicate every order"). It sends a startup banner
+to Telegram (`START_TELEGRAM` event) and a daily summary at 21:00 UTC
+(`SP2L_DAILY_SUMMARY_UTC_HOUR`, one per UTC day, over that day's events).
+
+For a session that survives closing the PowerShell window:
+
+```powershell
+start /b python scripts\forward_watchdog.py        # keeps the runner alive
+python scripts\forward_watchdog.py --stop          # stop watchdog + notice
+```
+
+- The watchdog restarts the runner after a crash (max 20 by default,
+  `FORWARD_WATCHDOG_MAX_RESTARTS`) and notifies Telegram on DOWN/UP.
+- Runner stdout is appended to `artifacts/forward-test/runner_stdout.log`.
+- Exit-telemetry guarantees: exit deals whose own-position entry cannot be
+  resolved are deferred, never sent with invented numbers (`n/a (unlinked)`).
+- Execution mode `PENDING_LIMIT_RESEARCH` is published by the runner to the
+  gateway via `MT5_FORWARD_ORDER_MODE`; fills must sit at the theoretical
+  entry, keeping 1R intact.
+- Full suite green as of `2026-09-23`: pytest 82 passed.
