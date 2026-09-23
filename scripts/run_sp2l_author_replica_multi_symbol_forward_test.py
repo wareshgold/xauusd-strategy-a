@@ -44,7 +44,7 @@ ORDER_MODE = os.getenv("MT5_FORWARD_ORDER_MODE", "PENDING_LIMIT_RESEARCH")
 # SL/TP stay on the theoretical levels, destroying the 1R risk/reward
 # relation (observed 2026-09-22 15:05: filled 4325.61 vs entry 4324.59,
 # real R:R 0.34 instead of 1:1).
-os.environ.setdefault("MT5_FORWARD_ORDER_MODE", ORDER_MODE)
+os.environ["MT5_FORWARD_ORDER_MODE"] = ORDER_MODE
 MAGIC_BASE = int(os.getenv("SP2L_MAGIC_BASE", "26092200"))
 # Per-symbol volume override (e.g. SP2L_VOLUME_US500=0.1 for index CFDs whose
 # volume_min is 0.1; a volume below volume_min is rejected by the broker).
