@@ -1062,6 +1062,7 @@ def main() -> None:
                 symbol = cfg["symbol"]
                 enforce_pending_order_expiry(cfg, state)
                 monitor_pending_order_lifecycle(cfg, state)
+                monitor_position_lifecycle(cfg, state)
                 monitor_symbol_lifecycle(cfg, state)
                 data = rates(symbol)
                 if data is None:
