@@ -17,6 +17,7 @@ import sys
 import time
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 import MetaTrader5 as mt5
@@ -46,6 +47,13 @@ P_GAP_PRICE = float(os.getenv("SP2L_P_GAP_PRICE", "1.0"))
 SPIKE_MULTIPLIER = float(os.getenv("SP2L_SPIKE_MULTIPLIER", "1.5"))
 MAX_SL_DISTANCE = float(os.getenv("SP2L_MAX_SL_DISTANCE", "10.0"))
 TP_R = float(os.getenv("SP2L_TP_R", "1.0"))
+
+# Research-only session gate: London open -> New York close. Not canonical.
+SESSION_FILTER_ENABLED = os.getenv("SP2L_SESSION_FILTER_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
+LONDON_SESSION_OPEN = os.getenv("SP2L_LONDON_SESSION_OPEN", "08:00")
+NEW_YORK_SESSION_CLOSE = os.getenv("SP2L_NEW_YORK_SESSION_CLOSE", "17:00")
+LONDON_TZ = ZoneInfo("Europe/London")
+NEW_YORK_TZ = ZoneInfo("America/New_York")
 
 # Broker aliases. The terminal is still authoritative: these are only search hints.
 ALIASES = {
@@ -117,6 +125,31 @@ def discover_symbols(requested: list[str]) -> dict[str, dict]:
             result[base] = {"requested": base, "symbol": None, "method": None}
 
     return result
+
+
+def _parse_hhmm(value: str) -> tuple[int, int]:
+    hour, minute = (int(x) for x in value.split(":", 1))
+    if not (0 <= hour <= 23 and 0 <= minute <= 59):
+        raise ValueError(f"Invalid HH:MM value: {value}")
+    return hour, minute
+
+
+def _in_research_session(ts_utc: int) -> bool:
+    if not SESSION_FILTER_ENABLED:
+        return True
+    ts = datetime.fromtimestamp(int(ts_utc), timezone.utc)
+    london_hour, london_minute = _parse_hhmm(LONDON_SESSION_OPEN)
+    ny_hour, ny_minute = _parse_hhmm(NEW_YORK_SESSION_CLOSE)
+    london_open = ts.astimezone(LONDON_TZ).replace(hour=london_hour, minute=london_minute, second=0, microsecond=0)
+    ny_close = ts.astimezone(NEW_YORK_TZ).replace(hour=ny_hour, minute=ny_minute, second=0, microsecond=0)
+    return london_open.astimezone(timezone.utc) <= ts <= ny_close.astimezone(timezone.utc)
+
+
+def filter_rates_to_research_session(rates: np.ndarray) -> np.ndarray:
+    if not SESSION_FILTER_ENABLED:
+        return rates
+    mask = np.array([_in_research_session(int(t)) for t in rates["time"]], dtype=bool)
+    return rates[mask].copy()
 
 
 def detect(candles: np.ndarray, symbol: str) -> dict | None:
@@ -439,6 +472,7 @@ def run_symbol(symbol: str, rates: np.ndarray) -> dict:
     # Deduplicate timestamps defensively.
     _, idx = np.unique(rates["time"], return_index=True)
     rates = rates[np.sort(idx)]
+    rates = filter_rates_to_research_session(rates)
 
     signals = []
     data_gap_events = []
@@ -567,6 +601,14 @@ def main() -> int:
             "resolved_symbols": discovered,
             "period": {"start_utc": start.isoformat(), "end_utc": end.isoformat()},
             "timeframe": "M1",
+            "research_session_filter": {
+                "enabled": SESSION_FILTER_ENABLED,
+                "window": "London open -> New York close",
+                "london_open_local": LONDON_SESSION_OPEN,
+                "new_york_close_local": NEW_YORK_SESSION_CLOSE,
+                "timezones": {"london": "Europe/London", "new_york": "America/New_York"},
+                "canonical": False,
+            },
             "geometry": {
                 "p_gap_price": P_GAP_PRICE,
                 "spike_multiplier": SPIKE_MULTIPLIER,
@@ -580,7 +622,7 @@ def main() -> int:
                 "This is not a broker-independent tick backtest; it uses MT5 M1 OHLC history.",
                 "Pending-limit fill semantics remain unresolved: a bar is eligible only if it reaches the theoretical entry.",
                 "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries; same-day M1 gaps are retained as data-quality events and signals crossing them are excluded from decisive performance.",
-                "MT5 Python API does not expose symbol session-trade intervals in this environment; observed history coverage is descriptive only and is not a canonical Strategy A session rule.",
+                "The research replay filters M1 bars to London open through New York close using named local time zones with DST; this is an explicit research-test constraint, not a canonical Strategy A session rule.",
                 "If one M1 candle touches both SL and TP, the result is AMBIGUOUS rather than guessed.",
                 "The detector is the existing author-replica research detector; this run does not promote geometry to canonical.",
             ],
