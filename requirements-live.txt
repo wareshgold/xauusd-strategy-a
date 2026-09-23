@@ -1,4 +1,6 @@
 MetaTrader5
 openpyxl
+# Live dashboard (read-only session status page, 127.0.0.1 only).
+Flask
 # IANA timezone database for Python on Windows (session timezone handling).
 tzdata
