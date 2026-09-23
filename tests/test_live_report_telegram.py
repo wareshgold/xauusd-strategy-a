@@ -190,6 +190,8 @@ def test_unconfigured_credentials_log_failure(monkeypatch, tmp_path):
     )
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
     monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
+    # isolate from the developer machine's real config/telegram.json
+    monkeypatch.setattr(telegram_client, "TELEGRAM_CONFIG", tmp_path / "missing.json")
     record = send_report(
         "📊 SP2L Weekly Report",
         report_type="weekly",

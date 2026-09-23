@@ -24,7 +24,9 @@ class TelegramSendResult:
 
 def read_telegram_config() -> tuple[str | None, str | None]:
     try:
-        payload = json.loads(TELEGRAM_CONFIG.read_text(encoding="utf-8"))
+        # utf-8-sig: PowerShell's Set-Content -Encoding utf8 writes a BOM;
+        # a plain utf-8 read chokes on it and silently reports NOT_CONFIGURED.
+        payload = json.loads(TELEGRAM_CONFIG.read_text(encoding="utf-8-sig"))
         return payload.get("bot_token"), payload.get("chat_id")
     except Exception:
         return None, None

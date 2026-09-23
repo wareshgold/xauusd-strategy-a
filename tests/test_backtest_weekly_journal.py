@@ -158,7 +158,11 @@ def test_conversion_is_deterministic(tmp_path):
         assert (journal_dir_1 / name).read_bytes() == (journal_dir_2 / name).read_bytes()
 
 
-def test_telegram_destination_status_reports_mode():
+def test_telegram_destination_status_reports_mode(monkeypatch, tmp_path):
+    # env={} is empty, but read_telegram_env falls back to config/telegram.json;
+    # point that fallback at a missing file so the test stays machine-isolated.
+    from scripts import telegram_client as _tc
+    monkeypatch.setattr(_tc, "TELEGRAM_CONFIG", tmp_path / "missing.json")
     missing = telegram_delivery_status({})
     assert missing == {"bot_configured": False, "chat_configured": False, "mode": "MOCK"}
     full = telegram_delivery_status({"TELEGRAM_BOT_TOKEN": "x", "TELEGRAM_CHAT_ID": "y"})

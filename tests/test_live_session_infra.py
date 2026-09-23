@@ -305,9 +305,14 @@ def test_adapter_batch_all_or_nothing(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
-def test_diagnostic_reports_not_configured_without_secrets(monkeypatch):
+def test_diagnostic_reports_not_configured_without_secrets(monkeypatch, tmp_path):
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
     monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
+    # isolate from the developer machine's real config/telegram.json:
+    # telegram_diagnostic pulls read_telegram_env from telegram_client, so
+    # patch the config path at the source module.
+    from scripts import telegram_client as _tc
+    monkeypatch.setattr(_tc, "TELEGRAM_CONFIG", tmp_path / "missing.json")
     result = tg_diag.diagnose()
     assert result["configured"] is False
     assert result["delivery_mode"] == "MOCK"
@@ -331,7 +336,11 @@ def test_diagnostic_masks_credentials_never_exposes_them(monkeypatch):
     assert chat not in json.dumps(result)
 
 
-def test_get_me_skipped_without_token(monkeypatch):
+def test_get_me_skipped_without_token(monkeypatch, tmp_path):
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    # env={} means "empty environment", but read_telegram_env still falls
+    # back to config/telegram.json — isolate at the source module.
+    from scripts import telegram_client as _tc
+    monkeypatch.setattr(_tc, "TELEGRAM_CONFIG", tmp_path / "missing.json")
     result = tg_diag.diagnose(do_get_me=True, env={})
     assert result["get_me"] == {"ok": False, "detail": "NOT_CONFIGURED (no token)"}
