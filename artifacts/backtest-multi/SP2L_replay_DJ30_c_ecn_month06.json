@@ -1,0 +1,654 @@
+{
+  "research_only": true,
+  "source": "MetaTrader5.copy_rates_from",
+  "timestamp_basis": "epoch rendered as UTC; historical MT5 timestamp mapping remains unresolved",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "DJ30.c.ecn",
+  "timeframe": "M1",
+  "requested_interval_utc": {
+    "start": "2026-06-12T00:00:00+00:00",
+    "end": "2026-07-01T00:00:00+00:00"
+  },
+  "expected_minute_span": 27361,
+  "raw_returned_bars": 17213,
+  "filtered_bars_in_interval": 17213,
+  "raw_bars_discarded_outside_interval": 0,
+  "actual_first_utc": "2026-06-12T08:34:00+00:00",
+  "actual_last_utc": "2026-06-30T23:57:00+00:00",
+  "unique_timestamps": true,
+  "chronological": true,
+  "gap_count": 12,
+  "gaps": [
+    {
+      "from_utc": "2026-06-12T23:57:00+00:00",
+      "to_utc": "2026-06-15T01:01:00+00:00",
+      "missing_minutes": 2943
+    },
+    {
+      "from_utc": "2026-06-15T23:58:00+00:00",
+      "to_utc": "2026-06-16T01:01:00+00:00",
+      "missing_minutes": 62
+    },
+    {
+      "from_utc": "2026-06-16T23:57:00+00:00",
+      "to_utc": "2026-06-17T01:01:00+00:00",
+      "missing_minutes": 63
+    },
+    {
+      "from_utc": "2026-06-17T23:57:00+00:00",
+      "to_utc": "2026-06-18T01:01:00+00:00",
+      "missing_minutes": 63
+    },
+    {
+      "from_utc": "2026-06-18T23:57:00+00:00",
+      "to_utc": "2026-06-19T01:01:00+00:00",
+      "missing_minutes": 63
+    },
+    {
+      "from_utc": "2026-06-19T20:00:00+00:00",
+      "to_utc": "2026-06-22T01:01:00+00:00",
+      "missing_minutes": 3180
+    },
+    {
+      "from_utc": "2026-06-22T23:58:00+00:00",
+      "to_utc": "2026-06-23T01:01:00+00:00",
+      "missing_minutes": 62
+    },
+    {
+      "from_utc": "2026-06-23T23:57:00+00:00",
+      "to_utc": "2026-06-24T01:01:00+00:00",
+      "missing_minutes": 63
+    },
+    {
+      "from_utc": "2026-06-24T23:57:00+00:00",
+      "to_utc": "2026-06-25T01:01:00+00:00",
+      "missing_minutes": 63
+    },
+    {
+      "from_utc": "2026-06-25T23:57:00+00:00",
+      "to_utc": "2026-06-26T01:01:00+00:00",
+      "missing_minutes": 63
+    },
+    {
+      "from_utc": "2026-06-26T23:57:00+00:00",
+      "to_utc": "2026-06-29T01:01:00+00:00",
+      "missing_minutes": 2943
+    },
+    {
+      "from_utc": "2026-06-29T23:57:00+00:00",
+      "to_utc": "2026-06-30T01:01:00+00:00",
+      "missing_minutes": 63
+    }
+  ],
+  "config": {
+    "pGapPrice": 1.0,
+    "spikeMultiplier": 1.5,
+    "maxSlPrice": 10.0,
+    "tpR": 1.0
+  },
+  "signals_detected": 29,
+  "trades_closed_or_ambiguous": 29,
+  "wins": 23,
+  "losses": 6,
+  "ambiguous": 0,
+  "open_or_unresolved": 0,
+  "win_rate_decisive": 0.7931034482758621,
+  "totalR": 17,
+  "profit_factor": 3.8333333333333335,
+  "signals": [
+    {
+      "index": 1170,
+      "direction": "BUY",
+      "entry": 51595.8,
+      "sl": 51588.8,
+      "tp": 51602.8,
+      "time": 1781499960,
+      "time_utc": "2026-06-15T05:06:00+00:00"
+    },
+    {
+      "index": 1393,
+      "direction": "BUY",
+      "entry": 51703.05,
+      "sl": 51694.55,
+      "tp": 51711.55,
+      "time": 1781513340,
+      "time_utc": "2026-06-15T08:49:00+00:00"
+    },
+    {
+      "index": 1636,
+      "direction": "BUY",
+      "entry": 51588.8,
+      "sl": 51581.3,
+      "tp": 51596.3,
+      "time": 1781527920,
+      "time_utc": "2026-06-15T12:52:00+00:00"
+    },
+    {
+      "index": 1697,
+      "direction": "BUY",
+      "entry": 51606.3,
+      "sl": 51605.8,
+      "tp": 51606.8,
+      "time": 1781531580,
+      "time_utc": "2026-06-15T13:53:00+00:00"
+    },
+    {
+      "index": 2550,
+      "direction": "BUY",
+      "entry": 51691.3,
+      "sl": 51684.3,
+      "tp": 51698.3,
+      "time": 1781586480,
+      "time_utc": "2026-06-16T05:08:00+00:00"
+    },
+    {
+      "index": 2656,
+      "direction": "SELL",
+      "entry": 51716.3,
+      "sl": 51726.3,
+      "tp": 51706.3,
+      "time": 1781592840,
+      "time_utc": "2026-06-16T06:54:00+00:00"
+    },
+    {
+      "index": 2888,
+      "direction": "SELL",
+      "entry": 51777.3,
+      "sl": 51782.3,
+      "tp": 51772.3,
+      "time": 1781606760,
+      "time_utc": "2026-06-16T10:46:00+00:00"
+    },
+    {
+      "index": 3206,
+      "direction": "BUY",
+      "entry": 51835.65,
+      "sl": 51825.65,
+      "tp": 51845.65,
+      "time": 1781625840,
+      "time_utc": "2026-06-16T16:04:00+00:00"
+    },
+    {
+      "index": 3953,
+      "direction": "SELL",
+      "entry": 52060.8,
+      "sl": 52067.3,
+      "tp": 52054.3,
+      "time": 1781674440,
+      "time_utc": "2026-06-17T05:34:00+00:00"
+    },
+    {
+      "index": 4606,
+      "direction": "SELL",
+      "entry": 51989.05,
+      "sl": 51996.55,
+      "tp": 51981.55,
+      "time": 1781713620,
+      "time_utc": "2026-06-17T16:27:00+00:00"
+    },
+    {
+      "index": 6432,
+      "direction": "BUY",
+      "entry": 51611.53,
+      "sl": 51604.64,
+      "tp": 51618.42,
+      "time": 1781826960,
+      "time_utc": "2026-06-18T23:56:00+00:00"
+    },
+    {
+      "index": 6449,
+      "direction": "SELL",
+      "entry": 51613.0,
+      "sl": 51620.5,
+      "tp": 51605.5,
+      "time": 1781831760,
+      "time_utc": "2026-06-19T01:16:00+00:00"
+    },
+    {
+      "index": 6460,
+      "direction": "BUY",
+      "entry": 51574.9,
+      "sl": 51567.4,
+      "tp": 51582.4,
+      "time": 1781832420,
+      "time_utc": "2026-06-19T01:27:00+00:00"
+    },
+    {
+      "index": 6682,
+      "direction": "SELL",
+      "entry": 51474.8,
+      "sl": 51480.3,
+      "tp": 51469.3,
+      "time": 1781845740,
+      "time_utc": "2026-06-19T05:09:00+00:00"
+    },
+    {
+      "index": 7247,
+      "direction": "BUY",
+      "entry": 51426.65,
+      "sl": 51418.55,
+      "tp": 51434.75,
+      "time": 1781879640,
+      "time_utc": "2026-06-19T14:34:00+00:00"
+    },
+    {
+      "index": 8403,
+      "direction": "BUY",
+      "entry": 51600.65,
+      "sl": 51594.15,
+      "tp": 51607.15,
+      "time": 1782139800,
+      "time_utc": "2026-06-22T14:50:00+00:00"
+    },
+    {
+      "index": 8930,
+      "direction": "SELL",
+      "entry": 51751.93,
+      "sl": 51759.81,
+      "tp": 51744.05,
+      "time": 1782171420,
+      "time_utc": "2026-06-22T23:37:00+00:00"
+    },
+    {
+      "index": 8950,
+      "direction": "BUY",
+      "entry": 51767.05,
+      "sl": 51759.19,
+      "tp": 51774.91,
+      "time": 1782172620,
+      "time_utc": "2026-06-22T23:57:00+00:00"
+    },
+    {
+      "index": 10312,
+      "direction": "SELL",
+      "entry": 51672.75,
+      "sl": 51681.1,
+      "tp": 51664.4,
+      "time": 1782258060,
+      "time_utc": "2026-06-23T23:41:00+00:00"
+    },
+    {
+      "index": 10702,
+      "direction": "SELL",
+      "entry": 51639.1,
+      "sl": 51649.1,
+      "tp": 51629.1,
+      "time": 1782285240,
+      "time_utc": "2026-06-24T07:14:00+00:00"
+    },
+    {
+      "index": 11420,
+      "direction": "BUY",
+      "entry": 52130.59,
+      "sl": 52126.57,
+      "tp": 52134.60999999999,
+      "time": 1782328320,
+      "time_utc": "2026-06-24T19:12:00+00:00"
+    },
+    {
+      "index": 12150,
+      "direction": "BUY",
+      "entry": 51841.3,
+      "sl": 51834.8,
+      "tp": 51847.8,
+      "time": 1782375900,
+      "time_utc": "2026-06-25T08:25:00+00:00"
+    },
+    {
+      "index": 12352,
+      "direction": "SELL",
+      "entry": 51905.5,
+      "sl": 51914.5,
+      "tp": 51896.5,
+      "time": 1782388020,
+      "time_utc": "2026-06-25T11:47:00+00:00"
+    },
+    {
+      "index": 14765,
+      "direction": "BUY",
+      "entry": 51985.05,
+      "sl": 51976.55,
+      "tp": 51993.55,
+      "time": 1782713160,
+      "time_utc": "2026-06-29T06:06:00+00:00"
+    },
+    {
+      "index": 14836,
+      "direction": "SELL",
+      "entry": 51955.55,
+      "sl": 51958.05,
+      "tp": 51953.05,
+      "time": 1782717420,
+      "time_utc": "2026-06-29T07:17:00+00:00"
+    },
+    {
+      "index": 15946,
+      "direction": "SELL",
+      "entry": 52126.8,
+      "sl": 52133.8,
+      "tp": 52119.8,
+      "time": 1782787800,
+      "time_utc": "2026-06-30T02:50:00+00:00"
+    },
+    {
+      "index": 16137,
+      "direction": "SELL",
+      "entry": 52129.3,
+      "sl": 52135.3,
+      "tp": 52123.3,
+      "time": 1782799260,
+      "time_utc": "2026-06-30T06:01:00+00:00"
+    },
+    {
+      "index": 16544,
+      "direction": "BUY",
+      "entry": 52282.0,
+      "sl": 52273.5,
+      "tp": 52290.5,
+      "time": 1782823680,
+      "time_utc": "2026-06-30T12:48:00+00:00"
+    },
+    {
+      "index": 17194,
+      "direction": "SELL",
+      "entry": 52234.59,
+      "sl": 52236.43,
+      "tp": 52232.74999999999,
+      "time": 1782862680,
+      "time_utc": "2026-06-30T23:38:00+00:00"
+    }
+  ],
+  "trades": [
+    {
+      "index": 1170,
+      "direction": "BUY",
+      "entry": 51595.8,
+      "sl": 51588.8,
+      "tp": 51602.8,
+      "time": 1781499960,
+      "time_utc": "2026-06-15T05:06:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 1393,
+      "direction": "BUY",
+      "entry": 51703.05,
+      "sl": 51694.55,
+      "tp": 51711.55,
+      "time": 1781513340,
+      "time_utc": "2026-06-15T08:49:00+00:00",
+      "outcome": "LOSS"
+    },
+    {
+      "index": 1636,
+      "direction": "BUY",
+      "entry": 51588.8,
+      "sl": 51581.3,
+      "tp": 51596.3,
+      "time": 1781527920,
+      "time_utc": "2026-06-15T12:52:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 1697,
+      "direction": "BUY",
+      "entry": 51606.3,
+      "sl": 51605.8,
+      "tp": 51606.8,
+      "time": 1781531580,
+      "time_utc": "2026-06-15T13:53:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 2550,
+      "direction": "BUY",
+      "entry": 51691.3,
+      "sl": 51684.3,
+      "tp": 51698.3,
+      "time": 1781586480,
+      "time_utc": "2026-06-16T05:08:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 2656,
+      "direction": "SELL",
+      "entry": 51716.3,
+      "sl": 51726.3,
+      "tp": 51706.3,
+      "time": 1781592840,
+      "time_utc": "2026-06-16T06:54:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 2888,
+      "direction": "SELL",
+      "entry": 51777.3,
+      "sl": 51782.3,
+      "tp": 51772.3,
+      "time": 1781606760,
+      "time_utc": "2026-06-16T10:46:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 3206,
+      "direction": "BUY",
+      "entry": 51835.65,
+      "sl": 51825.65,
+      "tp": 51845.65,
+      "time": 1781625840,
+      "time_utc": "2026-06-16T16:04:00+00:00",
+      "outcome": "LOSS"
+    },
+    {
+      "index": 3953,
+      "direction": "SELL",
+      "entry": 52060.8,
+      "sl": 52067.3,
+      "tp": 52054.3,
+      "time": 1781674440,
+      "time_utc": "2026-06-17T05:34:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 4606,
+      "direction": "SELL",
+      "entry": 51989.05,
+      "sl": 51996.55,
+      "tp": 51981.55,
+      "time": 1781713620,
+      "time_utc": "2026-06-17T16:27:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 6432,
+      "direction": "BUY",
+      "entry": 51611.53,
+      "sl": 51604.64,
+      "tp": 51618.42,
+      "time": 1781826960,
+      "time_utc": "2026-06-18T23:56:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 6449,
+      "direction": "SELL",
+      "entry": 51613.0,
+      "sl": 51620.5,
+      "tp": 51605.5,
+      "time": 1781831760,
+      "time_utc": "2026-06-19T01:16:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 6460,
+      "direction": "BUY",
+      "entry": 51574.9,
+      "sl": 51567.4,
+      "tp": 51582.4,
+      "time": 1781832420,
+      "time_utc": "2026-06-19T01:27:00+00:00",
+      "outcome": "LOSS"
+    },
+    {
+      "index": 6682,
+      "direction": "SELL",
+      "entry": 51474.8,
+      "sl": 51480.3,
+      "tp": 51469.3,
+      "time": 1781845740,
+      "time_utc": "2026-06-19T05:09:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 7247,
+      "direction": "BUY",
+      "entry": 51426.65,
+      "sl": 51418.55,
+      "tp": 51434.75,
+      "time": 1781879640,
+      "time_utc": "2026-06-19T14:34:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 8403,
+      "direction": "BUY",
+      "entry": 51600.65,
+      "sl": 51594.15,
+      "tp": 51607.15,
+      "time": 1782139800,
+      "time_utc": "2026-06-22T14:50:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 8930,
+      "direction": "SELL",
+      "entry": 51751.93,
+      "sl": 51759.81,
+      "tp": 51744.05,
+      "time": 1782171420,
+      "time_utc": "2026-06-22T23:37:00+00:00",
+      "outcome": "LOSS"
+    },
+    {
+      "index": 8950,
+      "direction": "BUY",
+      "entry": 51767.05,
+      "sl": 51759.19,
+      "tp": 51774.91,
+      "time": 1782172620,
+      "time_utc": "2026-06-22T23:57:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 10312,
+      "direction": "SELL",
+      "entry": 51672.75,
+      "sl": 51681.1,
+      "tp": 51664.4,
+      "time": 1782258060,
+      "time_utc": "2026-06-23T23:41:00+00:00",
+      "outcome": "LOSS"
+    },
+    {
+      "index": 10702,
+      "direction": "SELL",
+      "entry": 51639.1,
+      "sl": 51649.1,
+      "tp": 51629.1,
+      "time": 1782285240,
+      "time_utc": "2026-06-24T07:14:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 11420,
+      "direction": "BUY",
+      "entry": 52130.59,
+      "sl": 52126.57,
+      "tp": 52134.60999999999,
+      "time": 1782328320,
+      "time_utc": "2026-06-24T19:12:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 12150,
+      "direction": "BUY",
+      "entry": 51841.3,
+      "sl": 51834.8,
+      "tp": 51847.8,
+      "time": 1782375900,
+      "time_utc": "2026-06-25T08:25:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 12352,
+      "direction": "SELL",
+      "entry": 51905.5,
+      "sl": 51914.5,
+      "tp": 51896.5,
+      "time": 1782388020,
+      "time_utc": "2026-06-25T11:47:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 14765,
+      "direction": "BUY",
+      "entry": 51985.05,
+      "sl": 51976.55,
+      "tp": 51993.55,
+      "time": 1782713160,
+      "time_utc": "2026-06-29T06:06:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 14836,
+      "direction": "SELL",
+      "entry": 51955.55,
+      "sl": 51958.05,
+      "tp": 51953.05,
+      "time": 1782717420,
+      "time_utc": "2026-06-29T07:17:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 15946,
+      "direction": "SELL",
+      "entry": 52126.8,
+      "sl": 52133.8,
+      "tp": 52119.8,
+      "time": 1782787800,
+      "time_utc": "2026-06-30T02:50:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 16137,
+      "direction": "SELL",
+      "entry": 52129.3,
+      "sl": 52135.3,
+      "tp": 52123.3,
+      "time": 1782799260,
+      "time_utc": "2026-06-30T06:01:00+00:00",
+      "outcome": "LOSS"
+    },
+    {
+      "index": 16544,
+      "direction": "BUY",
+      "entry": 52282.0,
+      "sl": 52273.5,
+      "tp": 52290.5,
+      "time": 1782823680,
+      "time_utc": "2026-06-30T12:48:00+00:00",
+      "outcome": "WIN"
+    },
+    {
+      "index": 17194,
+      "direction": "SELL",
+      "entry": 52234.59,
+      "sl": 52236.43,
+      "tp": 52232.74999999999,
+      "time": 1782862680,
+      "time_utc": "2026-06-30T23:38:00+00:00",
+      "outcome": "WIN"
+    }
+  ]
+}

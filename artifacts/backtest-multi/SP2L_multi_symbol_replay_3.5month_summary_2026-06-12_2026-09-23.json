@@ -1,0 +1,70 @@
+{
+  "research_only": true,
+  "canonical": false,
+  "note": "Frozen research parameters (P-Gap 1.0 price units, spike x1.5, MaxSL 10.0, TP 1R) applied unchanged across symbols and months. Replay of MT5 terminal M1 data via scripts/run-author-replica-mt5-api.py in four monthly windows.",
+  "generated_utc": "2026-09-23T13:30:00+00:00",
+  "period_utc": {
+    "start": "2026-06-12T00:00:00Z",
+    "end": "2026-09-23T00:00:00Z"
+  },
+  "months": {
+    "june_12_30": {
+      "files": [
+        "SP2L_replay_XAUUSD_ecn_month06.json",
+        "SP2L_replay_USTEC_c_ecn_month06.json",
+        "SP2L_replay_DJ30_c_ecn_month06.json"
+      ],
+      "XAUUSD.ecn": {"signals": 96, "wins": 54, "losses": 42, "ambiguous": 0, "net_r": 12, "win_rate_decisive": 0.5625},
+      "USTEC.c.ecn": {"signals": 37, "wins": 26, "losses": 8, "ambiguous": 3, "net_r": 18, "win_rate_decisive": 0.7647},
+      "DJ30.c.ecn": {"signals": 29, "wins": 23, "losses": 6, "ambiguous": 0, "net_r": 17, "win_rate_decisive": 0.7931}
+    },
+    "july": {
+      "files": [
+        "SP2L_replay_XAUUSD_ecn_month07.json",
+        "SP2L_replay_USTEC_c_ecn_month07.json",
+        "SP2L_replay_DJ30_c_ecn_month07.json"
+      ],
+      "XAUUSD.ecn": {"signals": 132, "wins": 81, "losses": 51, "ambiguous": 0, "net_r": 30, "win_rate_decisive": 0.6136},
+      "USTEC.c.ecn": {"signals": 67, "wins": 48, "losses": 17, "ambiguous": 2, "net_r": 31, "win_rate_decisive": 0.7385},
+      "DJ30.c.ecn": {"signals": 60, "wins": 44, "losses": 16, "ambiguous": 0, "net_r": 28, "win_rate_decisive": 0.7333}
+    },
+    "august": {
+      "files": [
+        "SP2L_replay_XAUUSD_ecn_month08.json",
+        "SP2L_replay_USTEC_c_ecn_month08.json",
+        "SP2L_replay_DJ30_c_ecn_month08.json"
+      ],
+      "XAUUSD.ecn": {"signals": 155, "wins": 101, "losses": 53, "ambiguous": 1, "net_r": 48, "win_rate_decisive": 0.6558},
+      "USTEC.c.ecn": {"signals": 87, "wins": 61, "losses": 26, "ambiguous": 0, "net_r": 35, "win_rate_decisive": 0.7011},
+      "DJ30.c.ecn": {"signals": 61, "wins": 39, "losses": 20, "ambiguous": 1, "net_r": 19, "win_rate_decisive": 0.6610}
+    },
+    "september_1_22": {
+      "files": [
+        "SP2L_replay_XAUUSD_ecn_month09.json",
+        "SP2L_replay_USTEC_c_ecn_month09.json",
+        "SP2L_replay_DJ30_c_ecn_month09.json"
+      ],
+      "XAUUSD.ecn": {"signals": 119, "wins": 76, "losses": 40, "ambiguous": 3, "net_r": 36, "win_rate_decisive": 0.6552},
+      "USTEC.c.ecn": {"signals": 84, "wins": 52, "losses": 29, "ambiguous": 3, "net_r": 23, "win_rate_decisive": 0.6419},
+      "DJ30.c.ecn": {"signals": 28, "wins": 20, "losses": 8, "ambiguous": 0, "net_r": 12, "win_rate_decisive": 0.7143}
+    }
+  },
+  "totals": {
+    "XAUUSD.ecn": {"signals": 502, "wins": 312, "losses": 186, "ambiguous": 4, "net_r": 126, "win_rate_decisive": 0.6265, "profit_factor": 1.677},
+    "USTEC.c.ecn": {"signals": 275, "wins": 187, "losses": 80, "ambiguous": 8, "net_r": 107, "win_rate_decisive": 0.7004, "profit_factor": 2.337},
+    "DJ30.c.ecn": {"signals": 178, "wins": 126, "losses": 50, "ambiguous": 1, "net_r": 76, "win_rate_decisive": 0.7159, "profit_factor": 2.52}
+  },
+  "combined": {"signals": 955, "wins": 625, "losses": 316, "ambiguous": 13, "net_r": 309},
+  "data_quality": {
+    "unique_timestamps_all_runs": true,
+    "chronological_all_runs": true,
+    "runs": 12,
+    "note": "Each monthly window independently verified unique and chronological M1 timestamps; Jun window starts at the terminal's earliest available bar (2026-06-12)."
+  },
+  "limitations": [
+    "1R-per-win accounting; spread/commission/swap not modeled (index spreads exceed gold's).",
+    "SL/TP ordering within a single M1 bar is unknowable from M1 data (AMBIGUOUS rows).",
+    "Replay uses theoretical entry levels; the live session fills limit orders at those levels or not at all.",
+    "Sample covers a mostly-trending summer period; drawdown behavior in adverse regimes is untested."
+  ]
+}
