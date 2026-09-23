@@ -103,6 +103,21 @@ def _utc_day_key(ts: int) -> str:
     return datetime.fromtimestamp(int(ts), timezone.utc).strftime("%Y-%m-%d")
 
 
+def execution_mode_line() -> str:
+    """Self-declared execution mode from this process's operator flags."""
+    live = os.getenv("LIVE_TRADING_ENABLE", "false").lower()
+    allow = os.getenv("ALLOW_REAL_EXECUTION", "false").lower()
+    if live == "true" and allow == "true":
+        return (
+            "🟩 Execution: LIVE-DEMO\n"
+            f"   LIVE_TRADING_ENABLE={live} · ALLOW_REAL_EXECUTION={allow}"
+        )
+    return (
+        "🟨 Execution: DRY-RUN\n"
+        f"   LIVE_TRADING_ENABLE={live} · ALLOW_REAL_EXECUTION={allow}"
+    )
+
+
 def build_daily_summary(state: dict) -> str | None:
     """Deterministic daily summary over the events already recorded today (UTC)."""
     if not EVENTS.exists():
@@ -153,7 +168,7 @@ def build_daily_summary(state: dict) -> str | None:
     for symbol in sorted(per_symbol):
         b = per_symbol[symbol]
         lines.append(f"- {symbol}: sig {b['signals']} · ✅ {b['wins']} · ❌ {b['losses']} · net {b['net']:+.2f}")
-    lines += ["", "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"]
+    lines += ["", execution_mode_line(), "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"]
     return "\n".join(lines)
 
 
@@ -902,20 +917,13 @@ def main() -> None:
     )
     # Self-declared execution mode: the session's own operator flags, as seen
     # by this process. LIVE-DEMO still requires the DEMO-ONLY account guard.
-    live_flag = os.getenv("LIVE_TRADING_ENABLE", "false").lower()
-    allow_flag = os.getenv("ALLOW_REAL_EXECUTION", "false").lower()
-    if live_flag == "true" and allow_flag == "true":
-        mode_label, mode_icon = "LIVE-DEMO", "🟩"
-    else:
-        mode_label, mode_icon = "DRY-RUN", "🟨"
     startup_banner = gateway.send_telegram_message(
         "🟢 SP2L Forward Test — started\n"
         f"Account: {account.login} ({account.server}, DEMO)\n"
         f"Symbols: {', '.join(c['symbol'] for c in configs)}\n"
         f"Order mode: {ORDER_MODE}\n"
         f"Volume: {volume_summary} · TP {TP_R:.1f}R\n"
-        f"{mode_icon} Execution: {mode_label}\n"
-        f"   LIVE_TRADING_ENABLE={live_flag} · ALLOW_REAL_EXECUTION={allow_flag}\n"
+        f"{execution_mode_line()}\n"
         "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"
     )
     log_event({

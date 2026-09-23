@@ -41,6 +41,21 @@ def notify(text: str) -> None:
     print(f"[watchdog] telegram: {result.detail}")
 
 
+def execution_mode_line() -> str:
+    """Self-declared execution mode from this process's operator flags."""
+    live = os.getenv("LIVE_TRADING_ENABLE", "false").lower()
+    allow = os.getenv("ALLOW_REAL_EXECUTION", "false").lower()
+    if live == "true" and allow == "true":
+        return (
+            "🟩 Execution: LIVE-DEMO\n"
+            f"   LIVE_TRADING_ENABLE={live} · ALLOW_REAL_EXECUTION={allow}"
+        )
+    return (
+        "🟨 Execution: DRY-RUN\n"
+        f"   LIVE_TRADING_ENABLE={live} · ALLOW_REAL_EXECUTION={allow}"
+    )
+
+
 def spawn_runner() -> subprocess.Popen:
     LOG.parent.mkdir(parents=True, exist_ok=True)
     log_handle = LOG.open("ab")
@@ -76,6 +91,7 @@ def main() -> None:
     notify(
         "🟢 SP2L Forward watchdog started\n"
         f"Runner: {RUNNER.name}\n"
+        f"{execution_mode_line()}\n"
         "⚠️ RESEARCH / DEMO ONLY"
     )
 
@@ -90,15 +106,17 @@ def main() -> None:
             "🔴 SP2L Forward runner DOWN\n"
             f"exit code: {code}\n"
             f"started: {started}\n"
-            f"restarts so far: {restarts}/{MAX_RESTARTS}"
+            f"restarts so far: {restarts}/{MAX_RESTARTS}\n"
+            f"{execution_mode_line()}"
         )
         restarts += 1
         time.sleep(RESTART_DELAY_SECONDS)
-        notify("🟠 SP2L Forward runner restarting…")
+        notify(f"🟠 SP2L Forward runner restarting…\n{execution_mode_line()}")
 
     notify(
         "⛔ SP2L Forward watchdog giving up\n"
-        f"max restarts reached ({MAX_RESTARTS}). Check terminal/MT5."
+        f"max restarts reached ({MAX_RESTARTS}). Check terminal/MT5.\n"
+        f"{execution_mode_line()}"
     )
     WATCHDOG_PID.unlink(missing_ok=True)
 
