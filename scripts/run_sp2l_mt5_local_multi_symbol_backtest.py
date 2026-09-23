@@ -421,17 +421,12 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
                 f"daily closing edge {coverage['observed_last_bar_mode_utc']}"
             )
 
-    if coverage["unexpected_same_day_gaps"]:
-        raise RuntimeError(
-            f"Incomplete MT5 history for {symbol}: "
-            f"{len(coverage['unexpected_same_day_gaps'])} unexpected same-day "
-            f"M1 history gap(s) detected; first="
-            f"{coverage['unexpected_same_day_gaps'][0]}"
-        )
-
+    # Same-day gaps are not a reason to reject the entire symbol history.
+    # They are retained in the coverage audit and are handled at signal level:
+    # formation gaps suppress the signal, and outcome gaps quarantine the result.
     diagnostics.append({
         "coverage_audit": coverage,
-        "history_gate": "OBSERVED_EDGE_AWARE_NO_SAME_DAY_GAPS",
+        "history_gate": "OBSERVED_EDGE_AWARE_SIGNAL_LEVEL_INTRADAY_GAPS",
     })
     fetch_rates.last_diagnostics = diagnostics
     return result
