@@ -1,6 +1,6 @@
 """Research-only multi-symbol SP2L author-replica forward runner.
 
-Runs XAUUSD, EURUSD and BTCUSD concurrently in one MT5 Python process.
+Runs XAUUSD, Dow Jones and Nasdaq concurrently in one MT5 Python process.
 It does not define or promote canonical Strategy A geometry.
 
 Symbol names are resolved from the connected MT5 terminal. Pip size is derived
@@ -27,7 +27,6 @@ import live_mt5_gateway as gateway
 # first entry. Order here defines the magic-number slot (MAGIC_BASE+index+1).
 SYMBOL_ALIASES = {
     "XAUUSD": ["XAUUSD"],
-    "BTCUSD": ["BTCUSD"],
     "USTEC100": ["USTEC100", "USTEC", "NASDAQ", "NAS100", "US100", "NDX"],
     "NASDAQ": ["NASDAQ", "USTEC", "USTEC100", "NAS100", "US100", "NDX"],
     "DAWJONES": ["DAWJONES", "DJ30", "DOWJONES", "US30", "DJI", "DOW"],
@@ -41,7 +40,7 @@ SYMBOL_ALIASES = {
 
 BASE_SYMBOLS = tuple(
     s.strip().upper()
-    for s in os.getenv("SP2L_SYMBOLS", "XAUUSD,EURUSD,BTCUSD").split(",")
+    for s in os.getenv("SP2L_SYMBOLS", "XAUUSD,DAWJONES,USTEC100").split(",")
     if s.strip()
 )
 TIMEFRAME = mt5.TIMEFRAME_M1
