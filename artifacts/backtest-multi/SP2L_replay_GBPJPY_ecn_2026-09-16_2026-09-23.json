@@ -1,0 +1,46 @@
+{
+  "research_only": true,
+  "source": "MetaTrader5.copy_rates_from",
+  "timestamp_basis": "epoch rendered as UTC; historical MT5 timestamp mapping remains unresolved",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "GBPJPY.ecn",
+  "timeframe": "M1",
+  "requested_interval_utc": {
+    "start": "2026-09-16T00:00:00+00:00",
+    "end": "2026-09-23T00:00:00+00:00"
+  },
+  "expected_minute_span": 10081,
+  "raw_returned_bars": 10081,
+  "filtered_bars_in_interval": 7200,
+  "raw_bars_discarded_outside_interval": 2881,
+  "actual_first_utc": "2026-09-16T00:00:00+00:00",
+  "actual_last_utc": "2026-09-23T00:00:00+00:00",
+  "unique_timestamps": true,
+  "chronological": true,
+  "gap_count": 1,
+  "gaps": [
+    {
+      "from_utc": "2026-09-18T23:58:00+00:00",
+      "to_utc": "2026-09-21T00:00:00+00:00",
+      "missing_minutes": 2881
+    }
+  ],
+  "config": {
+    "pGapPrice": 1.0,
+    "spikeMultiplier": 1.5,
+    "maxSlPrice": 10.0,
+    "tpR": 1.0
+  },
+  "signals_detected": 0,
+  "trades_closed_or_ambiguous": 0,
+  "wins": 0,
+  "losses": 0,
+  "ambiguous": 0,
+  "open_or_unresolved": 0,
+  "win_rate_decisive": null,
+  "totalR": 0,
+  "profit_factor": null,
+  "signals": [],
+  "trades": []
+}

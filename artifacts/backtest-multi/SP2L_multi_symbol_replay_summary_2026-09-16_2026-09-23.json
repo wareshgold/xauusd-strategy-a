@@ -1,0 +1,278 @@
+{
+  "research_only": true,
+  "canonical": false,
+  "note": "Frozen research parameters (P-Gap 1.0 price units, MaxSL 10.0, spike x1.5, TP 1R) applied unchanged across symbols.",
+  "generated_utc": "2026-09-23T08:44:05.891305+00:00",
+  "symbols": [
+    {
+      "symbol": "BTCUSD.ecn",
+      "bars_analyzed": 7194,
+      "gap_count": 3,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 0,
+      "wins": 0,
+      "losses": 0,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": null,
+      "net_R": 0,
+      "profit_factor": null,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "DJ30.c.ecn",
+      "bars_analyzed": 6878,
+      "gap_count": 8,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 10,
+      "wins": 6,
+      "losses": 4,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": 0.6,
+      "net_R": 2,
+      "profit_factor": 1.5,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "EURUSD.ecn",
+      "bars_analyzed": 7197,
+      "gap_count": 4,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 0,
+      "wins": 0,
+      "losses": 0,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": null,
+      "net_R": 0,
+      "profit_factor": null,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "GBPJPY.ecn",
+      "bars_analyzed": 7200,
+      "gap_count": 1,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 0,
+      "wins": 0,
+      "losses": 0,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": null,
+      "net_R": 0,
+      "profit_factor": null,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "GBPUSD.ecn",
+      "bars_analyzed": 7199,
+      "gap_count": 2,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 0,
+      "wins": 0,
+      "losses": 0,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": null,
+      "net_R": 0,
+      "profit_factor": null,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "US500.c.ecn",
+      "bars_analyzed": 6873,
+      "gap_count": 16,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 8,
+      "wins": 3,
+      "losses": 5,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": 0.375,
+      "net_R": -2,
+      "profit_factor": 0.6,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "USDJPY.ecn",
+      "bars_analyzed": 7196,
+      "gap_count": 2,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 0,
+      "wins": 0,
+      "losses": 0,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": null,
+      "net_R": 0,
+      "profit_factor": null,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "USTEC.c.ecn",
+      "bars_analyzed": 6881,
+      "gap_count": 5,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 26,
+      "wins": 14,
+      "losses": 10,
+      "ambiguous": 2,
+      "unresolved": 0,
+      "win_rate_decisive": 0.5833333333333334,
+      "net_R": 4,
+      "profit_factor": 1.4,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "XAGUSD.ecn",
+      "bars_analyzed": 6898,
+      "gap_count": 4,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 0,
+      "wins": 0,
+      "losses": 0,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": null,
+      "net_R": 0,
+      "profit_factor": null,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    },
+    {
+      "symbol": "XAUUSD.ecn",
+      "bars_analyzed": 6895,
+      "gap_count": 4,
+      "data_unique": true,
+      "data_chronological": true,
+      "signals": 26,
+      "wins": 16,
+      "losses": 10,
+      "ambiguous": 0,
+      "unresolved": 0,
+      "win_rate_decisive": 0.6153846153846154,
+      "net_R": 6,
+      "profit_factor": 1.6,
+      "config": {
+        "pGapPrice": 1.0,
+        "spikeMultiplier": 1.5,
+        "maxSlPrice": 10.0,
+        "tpR": 1.0
+      },
+      "interval_utc": {
+        "start": "2026-09-16T00:00:00+00:00",
+        "end": "2026-09-23T00:00:00+00:00"
+      },
+      "source": "MetaTrader5.copy_rates_from",
+      "research_only": true
+    }
+  ]
+}

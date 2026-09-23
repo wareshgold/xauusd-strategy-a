@@ -23,3 +23,5 @@ runtime/processed/
 scripts/__pycache__/
 tests/__pycache__/
 *.ex5
+# Telegram credentials (bot token + chat id) — never commit
+config/telegram.json

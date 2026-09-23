@@ -21,7 +21,14 @@ import MetaTrader5 as mt5
 
 import live_mt5_gateway as gateway
 
-BASE_SYMBOLS = ("XAUUSD", "EURUSD", "BTCUSD")
+# Symbol selection is configuration only (research/forward-test scope):
+# override with SP2L_SYMBOLS="XAUUSD,GBPUSD,USTEC"; XAUUSD stays the default
+# first entry. Order here defines the magic-number slot (MAGIC_BASE+index+1).
+BASE_SYMBOLS = tuple(
+    s.strip().upper()
+    for s in os.getenv("SP2L_SYMBOLS", "XAUUSD,EURUSD,BTCUSD").split(",")
+    if s.strip()
+)
 TIMEFRAME = mt5.TIMEFRAME_M1
 P_GAP_PRICE = float(os.getenv("SP2L_P_GAP_PRICE", "1.0"))
 SPIKE_MULTIPLIER = float(os.getenv("SP2L_SPIKE_MULTIPLIER", "1.5"))
@@ -38,6 +45,11 @@ ORDER_MODE = os.getenv("MT5_FORWARD_ORDER_MODE", "PENDING_LIMIT_RESEARCH")
 # real R:R 0.34 instead of 1:1).
 os.environ.setdefault("MT5_FORWARD_ORDER_MODE", ORDER_MODE)
 MAGIC_BASE = int(os.getenv("SP2L_MAGIC_BASE", "26092200"))
+# Per-symbol volume override (e.g. SP2L_VOLUME_US500=0.1 for index CFDs whose
+# volume_min is 0.1; a volume below volume_min is rejected by the broker).
+def _volume_for(base: str) -> float:
+    override = os.getenv(f"SP2L_VOLUME_{base}")
+    return float(override) if override else VOLUME
 IRAN_TZ = timezone(timedelta(hours=3, minutes=30))
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -540,7 +552,7 @@ def send_signal(candidate: dict, pip_size: float):
         f"➕ <b>2X Entry</b> {candidate['secondary_entry_2x']:.{digits}f}  <i>(research)</i>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"📦 <b>Order</b>   Pending Limit\n"
-        f"⚖️ <b>Volume</b>  {VOLUME:.2f}\n"
+        f"⚖️ <b>Volume</b>  {candidate.get('volume', VOLUME):.2f}\n"
         f"🕒 <b>Signal</b>  {t:%H:%M:%S} (UTC+3:30)\n\n"
         f"🆔 <code>AUTHOR_REPLICA_MULTI_{candidate['trigger_time']}_{symbol}_{candidate['direction']}</code>\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
@@ -555,7 +567,7 @@ def execute_candidate(candidate: dict, magic: int) -> dict:
     payload = gateway.Signal(
         direction=candidate["direction"], symbol=symbol,
         entry=float(candidate["theoretical_entry"]), sl=float(candidate["sl"]),
-        tp=float(candidate["tp"]), volume=VOLUME,
+        tp=float(candidate["tp"]), volume=float(candidate.get("volume", VOLUME)),
         signal_id=f"AUTHOR_REPLICA_MULTI_{candidate['trigger_time']}_{symbol}_{candidate['direction']}",
         source="AUTHOR_REPLICA_MULTI_FORWARD_TEST", status="APPROVED",
     )
@@ -748,6 +760,7 @@ def main() -> None:
             continue
         cfg = symbol_config(symbol)
         cfg["magic"] = MAGIC_BASE + index + 1
+        cfg["volume"] = _volume_for(base.upper().split(".")[0])
         configs.append(cfg)
 
     if not configs:
@@ -768,12 +781,15 @@ def main() -> None:
         },
     })
 
+    volume_summary = ", ".join(
+        "{}={:.2f}".format(c["symbol"], c.get("volume", VOLUME)) for c in configs
+    )
     startup_banner = gateway.send_telegram_message(
         "🟢 SP2L Forward Test — started\n"
         f"Account: {account.login} ({account.server}, DEMO)\n"
         f"Symbols: {', '.join(c['symbol'] for c in configs)}\n"
         f"Order mode: {ORDER_MODE}\n"
-        f"Volume: {VOLUME:.2f} · TP {TP_R:.1f}R\n"
+        f"Volume: {volume_summary} · TP {TP_R:.1f}R\n"
         "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"
     )
     log_event({
@@ -846,7 +862,7 @@ def main() -> None:
                     "event": "ORDER_ATTEMPT", "symbol": symbol,
                     "signal_id": trigger_key, "direction": candidate["direction"],
                     "entry": candidate["theoretical_entry"], "sl": candidate["sl"],
-                    "tp": candidate["tp"], "volume": VOLUME,
+                    "tp": candidate["tp"], "volume": candidate.get("volume", VOLUME),
                     "bid": float(tick.bid) if tick else None,
                     "ask": float(tick.ask) if tick else None,
                     "magic": cfg["magic"], "canonical": False,

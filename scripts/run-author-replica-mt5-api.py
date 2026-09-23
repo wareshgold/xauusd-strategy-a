@@ -97,7 +97,11 @@ def main():
     expected_minutes = int((end - start).total_seconds() // 60) + 1
 
     if not mt5.initialize():
-        raise SystemExit(f"MT5 initialize failed: {mt5.last_error()}")
+        # Non-default terminal install (e.g. Otet Group): resolve explicitly.
+        from mt5_terminal_resolver import find_mt5_terminal
+        path = find_mt5_terminal()
+        if path is None or not mt5.initialize(path=str(path)):
+            raise SystemExit(f"MT5 initialize failed: {mt5.last_error()}")
     try:
         if not mt5.symbol_select(SYMBOL, True):
             raise SystemExit(f"symbol_select failed for {SYMBOL}: {mt5.last_error()}")
