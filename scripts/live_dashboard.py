@@ -243,6 +243,7 @@ def today_stats() -> tuple[str, str, str]:
                 elif kind == "TELEGRAM_DEAL_LIFECYCLE":
                     net_ev = float(ev.get("net", 0.0) or 0.0)
                     net += net_ev
+                    b["net"] += net_ev
                     if int(ev.get("entry", -1)) == getattr(mt5, "DEAL_ENTRY_IN", 0):
                         fills += 1
                     else:
