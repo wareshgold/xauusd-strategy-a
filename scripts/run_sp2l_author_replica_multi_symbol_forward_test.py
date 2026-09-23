@@ -741,6 +741,37 @@ def enforce_pending_order_expiry(cfg: dict, state: dict) -> None:
         _cancel_pending_order(order, state)
 
 
+def monitor_position_lifecycle(cfg: dict, state: dict) -> None:
+    """Record broker-side position SL/TP directly after pending-order fills."""
+    symbol, magic = cfg["symbol"], cfg["magic"]
+    positions = mt5.positions_get(symbol=symbol) or []
+    for position in positions:
+        position_id = int(getattr(position, "ticket", 0) or 0)
+        if not position_id:
+            continue
+        position_magic = int(getattr(position, "magic", 0) or 0)
+        if position_magic != magic and position_id not in state["positions"]:
+            continue
+        marker = f"POSITION:{position_id}:{float(getattr(position, 'sl', 0.0) or 0.0)}:{float(getattr(position, 'tp', 0.0) or 0.0)}"
+        if marker in state["order_states"]:
+            continue
+        state["order_states"].add(marker)
+        log_event({
+            "event": "POSITION_LIFECYCLE",
+            "symbol": symbol,
+            "position": position_id,
+            "magic": position_magic,
+            "type": int(getattr(position, "type", -1)),
+            "volume": float(getattr(position, "volume", 0.0) or 0.0),
+            "price_open": float(getattr(position, "price_open", 0.0) or 0.0),
+            "price_current": float(getattr(position, "price_current", 0.0) or 0.0),
+            "sl": float(getattr(position, "sl", 0.0) or 0.0),
+            "tp": float(getattr(position, "tp", 0.0) or 0.0),
+            "profit": float(getattr(position, "profit", 0.0) or 0.0),
+            "canonical": False,
+        })
+
+
 def monitor_pending_order_lifecycle(cfg: dict, state: dict) -> None:
     """Observe broker-side pending-order state without changing execution semantics."""
     symbol, magic = cfg["symbol"], cfg["magic"]
