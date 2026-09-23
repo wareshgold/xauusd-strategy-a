@@ -435,6 +435,10 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
     })
     fetch_rates.last_diagnostics = diagnostics
     return result
+def _gap_after(prev_ts: int, curr_ts: int) -> int:
+    return max(0, int((curr_ts - prev_ts) // 60) - 1)
+
+
 def run_symbol(symbol: str, rates: np.ndarray) -> dict:
     rates = np.sort(rates, order="time")
     # Deduplicate timestamps defensively.
@@ -442,14 +446,37 @@ def run_symbol(symbol: str, rates: np.ndarray) -> dict:
     rates = rates[np.sort(idx)]
 
     signals = []
+    data_gap_events = []
     last_signal_time = None
     for i in range(4, len(rates) - 1):
+        formation_gap = None
+        for j in range(i - 4, i):
+            missing = _gap_after(int(rates[j]["time"]), int(rates[j + 1]["time"]))
+            if missing:
+                formation_gap = True
+                break
+        if formation_gap:
+            continue
+
         window = rates[: i + 1]
         candidate = detect(window, symbol)
         if candidate is None or candidate["signal_time"] == last_signal_time:
             continue
         last_signal_time = candidate["signal_time"]
+
         result, exit_index, r = outcome(rates, i, candidate)
+        if exit_index is not None:
+            for j in range(i, exit_index):
+                missing = _gap_after(int(rates[j]["time"]), int(rates[j + 1]["time"]))
+                if missing:
+                    data_gap_events.append({
+                        "from_utc": datetime.fromtimestamp(int(rates[j]["time"]), timezone.utc).isoformat(),
+                        "to_utc": datetime.fromtimestamp(int(rates[j + 1]["time"]), timezone.utc).isoformat(),
+                        "missing_minutes": missing,
+                    })
+                    result, exit_index, r = "DATA_GAP", None, None
+                    break
+
         signals.append({
             **candidate,
             "result": result,
@@ -461,6 +488,7 @@ def run_symbol(symbol: str, rates: np.ndarray) -> dict:
     losses = sum(x["result"] == "LOSS" for x in signals)
     ambiguous = sum(x["result"] == "AMBIGUOUS" for x in signals)
     open_end = sum(x["result"] == "OPEN_AT_END" for x in signals)
+    data_gap = sum(x["result"] == "DATA_GAP" for x in signals)
     decisive = wins + losses
     net_r = wins - losses
     pf = wins / losses if losses else (float("inf") if wins else None)
@@ -493,6 +521,8 @@ def run_symbol(symbol: str, rates: np.ndarray) -> dict:
         "losses": losses,
         "ambiguous": ambiguous,
         "open_at_end": open_end,
+        "data_gap": data_gap,
+        "data_gap_events_affecting_signals": data_gap_events,
         "decisive": decisive,
         "win_rate_pct": (100 * wins / decisive if decisive else None),
         "wilson_95_ci_pct": [ci_low, ci_high],
@@ -554,7 +584,7 @@ def main() -> int:
                 "Historical bars are pulled directly from the connected MT5 terminal at run time.",
                 "This is not a broker-independent tick backtest; it uses MT5 M1 OHLC history.",
                 "Pending-limit fill semantics remain unresolved: a bar is eligible only if it reaches the theoretical entry.",
-                "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries, while unexpected same-day M1 gaps fail the research data-quality gate.",
+                "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries; same-day M1 gaps are retained as data-quality events and signals crossing them are excluded from decisive performance.",
                 "MT5 Python API does not expose symbol session-trade intervals in this environment; observed history coverage is descriptive only and is not a canonical Strategy A session rule.",
                 "If one M1 candle touches both SL and TP, the result is AMBIGUOUS rather than guessed.",
                 "The detector is the existing author-replica research detector; this run does not promote geometry to canonical.",
