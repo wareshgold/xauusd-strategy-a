@@ -249,49 +249,15 @@ def max_drawdown_and_losses(results: list[float]) -> tuple[float, int]:
     return dd, max_run
 
 
-def _infer_mt5_time_offset_seconds(symbol: str) -> int:
-    """Infer the terminal's observed timestamp offset from the local UTC clock.
-
-    MT5 documentation specifies UTC timestamps, but this broker terminal has
-    empirically exposed a +3h timestamp offset in the connected environment.
-    We therefore normalize only the observed terminal timestamps and record the
-    offset as acquisition metadata; no SP2L geometry or outcome rule depends on it.
-    An explicit SP2L_MT5_TIME_OFFSET_HOURS overrides auto-detection.
-    """
-    explicit = os.getenv("SP2L_MT5_TIME_OFFSET_HOURS")
-    if explicit is not None:
-        hours = float(explicit)
-        if abs(hours) > 14:
-            raise ValueError("SP2L_MT5_TIME_OFFSET_HOURS must be between -14 and +14")
-        return int(round(hours * 3600))
-
-    tick = mt5.symbol_info_tick(symbol)
-    if tick is None or not getattr(tick, "time", None):
-        raise RuntimeError(f"Cannot infer MT5 timestamp offset for {symbol}: no tick time")
-
-    delta = float(tick.time) - datetime.now(timezone.utc).timestamp()
-    offset = int(round(delta / 3600.0) * 3600)
-    residual = abs(delta - offset)
-    if abs(offset) > 14 * 3600 or residual > 15 * 60:
-        raise RuntimeError(
-            f"Unstable MT5 timestamp offset for {symbol}: observed delta={delta:.1f}s "
-            f"rounded_offset={offset}s residual={residual:.1f}s"
-        )
-    return offset
-
-
 def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
-    """Fetch M1 history in bounded UTC date ranges and normalize observed MT5 time.
+    """Fetch M1 history in bounded UTC date ranges and validate MT5 UTC timestamps.
 
-    MT5 terminals can cap copy_rates_from/copy_rates_range responses around
-    MAX_BARS_IN_CHART. Small date windows avoid silently truncating a long
-    request. Every chunk is independently retried and the final result is
-    coverage-checked before replay.
-
-    The connected Otet terminal currently exposes timestamps three hours ahead
-    of the local UTC clock. The offset is inferred from the live tick (or can be
-    explicitly supplied with SP2L_MT5_TIME_OFFSET_HOURS), then subtracted from
-    returned bar timestamps before UTC coverage validation.
+    MT5's copy_rates_range() returns bar timestamps that this terminal exposes
+    in UTC epoch form. A separate copy_rates_from_pos() observation showed a
+    +3h-looking current-bar timestamp, but that behavior must not be applied to
+    range-requested historical bars. This acquisition path therefore uses the
+    documented/range-observed UTC timestamps without any broker offset
+    transformation. The observation is retained as an audit note only.
     """
     if not mt5.symbol_select(symbol, True):
         raise RuntimeError(f"symbol_select failed for {symbol}: {mt5.last_error()}")
@@ -303,7 +269,6 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
 
     start = start.astimezone(timezone.utc)
     end = end.astimezone(timezone.utc)
-    offset_seconds = _infer_mt5_time_offset_seconds(symbol)
     cursor = start
     chunks: list[np.ndarray] = []
     diagnostics: list[dict] = []
@@ -338,15 +303,14 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
             "start_utc": cursor.isoformat(),
             "end_utc": chunk_end.isoformat(),
             "bars": int(len(rates)),
-            "timestamp_offset_seconds": offset_seconds,
-            "timestamp_offset_hours": offset_seconds / 3600,
+            "timestamp_normalization": "NONE_COPY_RATES_RANGE_UTC",
             "first_bar_observed_utc": datetime.fromtimestamp(raw_first, timezone.utc).isoformat(),
             "last_bar_observed_utc": datetime.fromtimestamp(raw_last, timezone.utc).isoformat(),
         })
 
-        normalized = rates.copy()
-        normalized["time"] = normalized["time"].astype(np.int64) - offset_seconds
-        chunks.append(normalized)
+        # Do not shift range-requested bar timestamps. Direct observation of
+        # copy_rates_range() on XAUUSD.ecn returned exact requested UTC edges.
+        chunks.append(rates.copy())
 
         next_cursor = chunk_end + timedelta(minutes=1)
         if next_cursor <= cursor:
@@ -369,23 +333,19 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
     edge_tolerance = 60
     if first_ts > start_ts + edge_tolerance:
         raise RuntimeError(
-            f"Incomplete MT5 history for {symbol}: first normalized bar "
+            f"Incomplete MT5 history for {symbol}: first bar "
             f"{datetime.fromtimestamp(first_ts, timezone.utc).isoformat()} "
             f"is after requested start {start.isoformat()}"
         )
     if last_ts < end_ts - edge_tolerance:
         raise RuntimeError(
-            f"Incomplete MT5 history for {symbol}: last normalized bar "
+            f"Incomplete MT5 history for {symbol}: last bar "
             f"{datetime.fromtimestamp(last_ts, timezone.utc).isoformat()} "
             f"is before requested end {end.isoformat()}"
         )
 
     fetch_rates.last_diagnostics = diagnostics
     return result
-
-
-fetch_rates.last_diagnostics = []
-
 def run_symbol(symbol: str, rates: np.ndarray) -> dict:
     rates = np.sort(rates, order="time")
     # Deduplicate timestamps defensively.
