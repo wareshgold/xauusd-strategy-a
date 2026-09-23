@@ -173,6 +173,49 @@ def effective_mode() -> str:
     return "LIVE" if (LIVE_TRADING_ENABLE and ALLOW_REAL_EXECUTION) else "DRY-RUN"
 
 
+def _verify_pending_order_levels(order_ticket: int, expected_price: float, expected_sl: float, expected_tp: float) -> dict:
+    """Verify broker-stored pending-order price/SL/TP against the submitted levels."""
+    if not order_ticket:
+        return {"verified": False, "reason": "NO_ORDER_TICKET"}
+    info = mt5.symbol_info(SYMBOL)
+    point = float(getattr(info, "point", 0.0) or 0.0) if info else 0.0
+    tolerance = max(point * 2.0, 1e-12)
+
+    order = None
+    active = mt5.orders_get(ticket=order_ticket) or []
+    if active:
+        order = active[0]
+        source = "ACTIVE_ORDER"
+    else:
+        history = mt5.history_orders_get(ticket=order_ticket) or []
+        if history:
+            order = history[-1]
+            source = "HISTORY_ORDER"
+
+    if order is None:
+        return {"verified": False, "reason": "ORDER_NOT_FOUND_AFTER_PLACEMENT", "ticket": order_ticket}
+
+    observed = {
+        "price": float(getattr(order, "price_open", getattr(order, "price", 0.0)) or 0.0),
+        "sl": float(getattr(order, "sl", 0.0) or 0.0),
+        "tp": float(getattr(order, "tp", 0.0) or 0.0),
+        "source": source,
+    }
+    checks = {
+        "price": abs(observed["price"] - expected_price) <= tolerance,
+        "sl": abs(observed["sl"] - expected_sl) <= tolerance,
+        "tp": abs(observed["tp"] - expected_tp) <= tolerance,
+    }
+    return {
+        "verified": all(checks.values()),
+        "tolerance": tolerance,
+        "checks": checks,
+        "expected": {"price": expected_price, "sl": expected_sl, "tp": expected_tp},
+        "observed": observed,
+        "ticket": order_ticket,
+    }
+
+
 def execute_signal(signal: Signal) -> dict:
     exposure_count = active_exposure_count()
     if exposure_count >= MAX_OPEN_POSITIONS:
@@ -289,9 +332,45 @@ def execute_signal(signal: Signal) -> dict:
         result = mt5.order_send(request)
         if result is None:
             return {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
-        return {"ok": result.retcode in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED),
+
+        ok = result.retcode in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED)
+        verification = None
+        if ok and result.order:
+            verification = _verify_pending_order_levels(
+                int(result.order),
+                signal.entry,
+                signal.sl,
+                signal.tp,
+            )
+            if not verification["verified"]:
+                # Fail closed for research/demo: never accept a pending order
+                # whose broker-stored SL/TP differs from the signal levels.
+                active = mt5.orders_get(ticket=int(result.order)) or []
+                if active:
+                    cancel_request = {
+                        "action": mt5.TRADE_ACTION_REMOVE,
+                        "order": int(result.order),
+                        "symbol": SYMBOL,
+                        "magic": MAGIC,
+                        "comment": "SP2L-SL-VERIFY-FAIL"[:31],
+                    }
+                    cancel_result = mt5.order_send(cancel_request)
+                    return {
+                        "ok": False,
+                        "dry_run": False,
+                        "retcode": result.retcode,
+                        "order": result.order,
+                        "deal": result.deal,
+                        "comment": result.comment,
+                        "order_mode": order_mode,
+                        "reason": "BROKER_STORED_LEVELS_MISMATCH",
+                        "verification": verification,
+                        "cancel_retcode": getattr(cancel_result, "retcode", None),
+                    }
+        return {"ok": ok,
                 "dry_run": False, "retcode": result.retcode, "order": result.order,
-                "deal": result.deal, "comment": result.comment, "order_mode": order_mode}
+                "deal": result.deal, "comment": result.comment, "order_mode": order_mode,
+                "verification": verification}
 
     # Existing MARKET mode remains available for research compatibility.
     if signal.direction == "SELL":
