@@ -1,0 +1,537 @@
+{
+  "research_only": true,
+  "canonical": false,
+  "note": "User-requested experiment: frozen author-replica signal detection with FIXED symmetric SL=TP widths (20/40/60 pips) instead of the strategy's spike-extreme SL + 1R TP. Session filter London open -> NY close evaluated in NY wall clock (03:00..16:59 ET). No orders placed; no strategy rule modified or promoted.",
+  "generated_utc": "2026-09-23T12:45:24.118828+00:00",
+  "signal_detection_source": "scripts\\run-author-replica-mt5-api.py",
+  "strategy_parameters_frozen": {
+    "pGapPrice": 1.0,
+    "spikeMultiplier": 1.5,
+    "note": "MAX_SL / TP_R do not apply: SL and TP are synthetic fixed widths for this matrix only"
+  },
+  "session_window": {
+    "definition": "London open -> NY close",
+    "ny_wall_clock": "03:00..16:59 America/New_York, Mon-Fri",
+    "dst_limitation": "US/UK DST mismatch weeks shift London open by 1h relative to 03:00 ET"
+  },
+  "trigger_contiguity_guard_seconds": 60,
+  "both_touch_policy": "AMBIGUOUS (conservative)",
+  "symbols": {
+    "XAUUSD.ecn": {
+      "symbol": "XAUUSD.ecn",
+      "data_integrity": {
+        "bars": 99000,
+        "unique_timestamps": true,
+        "chronological": true,
+        "gap_count": 72,
+        "first_utc": "2026-06-15T07:27:00+00:00",
+        "last_utc": "2026-09-23T12:45:00+00:00"
+      },
+      "candidates_in_session": 301,
+      "candidates_by_direction": {
+        "BUY": 156,
+        "SELL": 145
+      },
+      "fixed_sltp_modes": {
+        "REPO_PIP": {
+          "pip_size": 0.01,
+          "widths": {
+            "20": {
+              "sl_tp_distance_price": 0.2,
+              "wins": 144,
+              "losses": 62,
+              "ambiguous": 95,
+              "unresolved": 0,
+              "win_rate_decisive": 0.699,
+              "profit_factor_decisive": 2.3226,
+              "net_r": 82,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 72,
+                  "LOSS": 34,
+                  "AMBIGUOUS": 50,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 72,
+                  "LOSS": 28,
+                  "AMBIGUOUS": 45,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "40": {
+              "sl_tp_distance_price": 0.4,
+              "wins": 158,
+              "losses": 69,
+              "ambiguous": 74,
+              "unresolved": 0,
+              "win_rate_decisive": 0.696,
+              "profit_factor_decisive": 2.2899,
+              "net_r": 89,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 81,
+                  "LOSS": 37,
+                  "AMBIGUOUS": 38,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 77,
+                  "LOSS": 32,
+                  "AMBIGUOUS": 36,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "60": {
+              "sl_tp_distance_price": 0.6,
+              "wins": 169,
+              "losses": 79,
+              "ambiguous": 53,
+              "unresolved": 0,
+              "win_rate_decisive": 0.6815,
+              "profit_factor_decisive": 2.1392,
+              "net_r": 90,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 86,
+                  "LOSS": 42,
+                  "AMBIGUOUS": 28,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 83,
+                  "LOSS": 37,
+                  "AMBIGUOUS": 25,
+                  "UNRESOLVED": 0
+                }
+              }
+            }
+          }
+        },
+        "INDEX_POINT": {
+          "pip_size": 1.0,
+          "widths": {
+            "20": {
+              "sl_tp_distance_price": 20.0,
+              "wins": 172,
+              "losses": 127,
+              "ambiguous": 0,
+              "unresolved": 2,
+              "win_rate_decisive": 0.5753,
+              "profit_factor_decisive": 1.3543,
+              "net_r": 45,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 93,
+                  "LOSS": 63,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 79,
+                  "LOSS": 64,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 2
+                }
+              }
+            },
+            "40": {
+              "sl_tp_distance_price": 40.0,
+              "wins": 154,
+              "losses": 144,
+              "ambiguous": 0,
+              "unresolved": 3,
+              "win_rate_decisive": 0.5168,
+              "profit_factor_decisive": 1.0694,
+              "net_r": 10,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 82,
+                  "LOSS": 74,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 72,
+                  "LOSS": 70,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 3
+                }
+              }
+            },
+            "60": {
+              "sl_tp_distance_price": 60.0,
+              "wins": 155,
+              "losses": 139,
+              "ambiguous": 0,
+              "unresolved": 7,
+              "win_rate_decisive": 0.5272,
+              "profit_factor_decisive": 1.1151,
+              "net_r": 16,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 70,
+                  "LOSS": 84,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 2
+                },
+                "SELL": {
+                  "WIN": 85,
+                  "LOSS": 55,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 5
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "USTEC.c.ecn": {
+      "symbol": "USTEC.c.ecn",
+      "data_integrity": {
+        "bars": 99000,
+        "unique_timestamps": true,
+        "chronological": true,
+        "gap_count": 75,
+        "first_utc": "2026-06-15T03:47:00+00:00",
+        "last_utc": "2026-09-23T12:45:00+00:00"
+      },
+      "candidates_in_session": 503,
+      "candidates_by_direction": {
+        "BUY": 243,
+        "SELL": 260
+      },
+      "fixed_sltp_modes": {
+        "REPO_PIP": {
+          "pip_size": 0.01,
+          "widths": {
+            "20": {
+              "sl_tp_distance_price": 0.2,
+              "wins": 228,
+              "losses": 67,
+              "ambiguous": 208,
+              "unresolved": 0,
+              "win_rate_decisive": 0.7729,
+              "profit_factor_decisive": 3.403,
+              "net_r": 161,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 116,
+                  "LOSS": 31,
+                  "AMBIGUOUS": 96,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 112,
+                  "LOSS": 36,
+                  "AMBIGUOUS": 112,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "40": {
+              "sl_tp_distance_price": 0.4,
+              "wins": 233,
+              "losses": 68,
+              "ambiguous": 202,
+              "unresolved": 0,
+              "win_rate_decisive": 0.7741,
+              "profit_factor_decisive": 3.4265,
+              "net_r": 165,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 117,
+                  "LOSS": 31,
+                  "AMBIGUOUS": 95,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 116,
+                  "LOSS": 37,
+                  "AMBIGUOUS": 107,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "60": {
+              "sl_tp_distance_price": 0.6,
+              "wins": 237,
+              "losses": 69,
+              "ambiguous": 197,
+              "unresolved": 0,
+              "win_rate_decisive": 0.7745,
+              "profit_factor_decisive": 3.4348,
+              "net_r": 168,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 119,
+                  "LOSS": 32,
+                  "AMBIGUOUS": 92,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 118,
+                  "LOSS": 37,
+                  "AMBIGUOUS": 105,
+                  "UNRESOLVED": 0
+                }
+              }
+            }
+          }
+        },
+        "INDEX_POINT": {
+          "pip_size": 1.0,
+          "widths": {
+            "20": {
+              "sl_tp_distance_price": 20.0,
+              "wins": 300,
+              "losses": 201,
+              "ambiguous": 2,
+              "unresolved": 0,
+              "win_rate_decisive": 0.5988,
+              "profit_factor_decisive": 1.4925,
+              "net_r": 99,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 146,
+                  "LOSS": 96,
+                  "AMBIGUOUS": 1,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 154,
+                  "LOSS": 105,
+                  "AMBIGUOUS": 1,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "40": {
+              "sl_tp_distance_price": 40.0,
+              "wins": 288,
+              "losses": 215,
+              "ambiguous": 0,
+              "unresolved": 0,
+              "win_rate_decisive": 0.5726,
+              "profit_factor_decisive": 1.3395,
+              "net_r": 73,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 135,
+                  "LOSS": 108,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 153,
+                  "LOSS": 107,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "60": {
+              "sl_tp_distance_price": 60.0,
+              "wins": 260,
+              "losses": 243,
+              "ambiguous": 0,
+              "unresolved": 0,
+              "win_rate_decisive": 0.5169,
+              "profit_factor_decisive": 1.07,
+              "net_r": 17,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 128,
+                  "LOSS": 115,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 132,
+                  "LOSS": 128,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "DJ30.c.ecn": {
+      "symbol": "DJ30.c.ecn",
+      "data_integrity": {
+        "bars": 99000,
+        "unique_timestamps": true,
+        "chronological": true,
+        "gap_count": 136,
+        "first_utc": "2026-06-15T02:21:00+00:00",
+        "last_utc": "2026-09-23T12:45:00+00:00"
+      },
+      "candidates_in_session": 419,
+      "candidates_by_direction": {
+        "BUY": 202,
+        "SELL": 217
+      },
+      "fixed_sltp_modes": {
+        "REPO_PIP": {
+          "pip_size": 0.01,
+          "widths": {
+            "20": {
+              "sl_tp_distance_price": 0.2,
+              "wins": 222,
+              "losses": 58,
+              "ambiguous": 139,
+              "unresolved": 0,
+              "win_rate_decisive": 0.7929,
+              "profit_factor_decisive": 3.8276,
+              "net_r": 164,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 99,
+                  "LOSS": 33,
+                  "AMBIGUOUS": 70,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 123,
+                  "LOSS": 25,
+                  "AMBIGUOUS": 69,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "40": {
+              "sl_tp_distance_price": 0.4,
+              "wins": 224,
+              "losses": 58,
+              "ambiguous": 137,
+              "unresolved": 0,
+              "win_rate_decisive": 0.7943,
+              "profit_factor_decisive": 3.8621,
+              "net_r": 166,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 100,
+                  "LOSS": 33,
+                  "AMBIGUOUS": 69,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 124,
+                  "LOSS": 25,
+                  "AMBIGUOUS": 68,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "60": {
+              "sl_tp_distance_price": 0.6,
+              "wins": 227,
+              "losses": 61,
+              "ambiguous": 131,
+              "unresolved": 0,
+              "win_rate_decisive": 0.7882,
+              "profit_factor_decisive": 3.7213,
+              "net_r": 166,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 102,
+                  "LOSS": 34,
+                  "AMBIGUOUS": 66,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 125,
+                  "LOSS": 27,
+                  "AMBIGUOUS": 65,
+                  "UNRESOLVED": 0
+                }
+              }
+            }
+          }
+        },
+        "INDEX_POINT": {
+          "pip_size": 1.0,
+          "widths": {
+            "20": {
+              "sl_tp_distance_price": 20.0,
+              "wins": 283,
+              "losses": 133,
+              "ambiguous": 3,
+              "unresolved": 0,
+              "win_rate_decisive": 0.6803,
+              "profit_factor_decisive": 2.1278,
+              "net_r": 150,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 138,
+                  "LOSS": 63,
+                  "AMBIGUOUS": 1,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 145,
+                  "LOSS": 70,
+                  "AMBIGUOUS": 2,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "40": {
+              "sl_tp_distance_price": 40.0,
+              "wins": 243,
+              "losses": 176,
+              "ambiguous": 0,
+              "unresolved": 0,
+              "win_rate_decisive": 0.58,
+              "profit_factor_decisive": 1.3807,
+              "net_r": 67,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 115,
+                  "LOSS": 87,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 0
+                },
+                "SELL": {
+                  "WIN": 128,
+                  "LOSS": 89,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 0
+                }
+              }
+            },
+            "60": {
+              "sl_tp_distance_price": 60.0,
+              "wins": 233,
+              "losses": 183,
+              "ambiguous": 1,
+              "unresolved": 2,
+              "win_rate_decisive": 0.5601,
+              "profit_factor_decisive": 1.2732,
+              "net_r": 50,
+              "by_direction": {
+                "BUY": {
+                  "WIN": 119,
+                  "LOSS": 82,
+                  "AMBIGUOUS": 0,
+                  "UNRESOLVED": 1
+                },
+                "SELL": {
+                  "WIN": 114,
+                  "LOSS": 101,
+                  "AMBIGUOUS": 1,
+                  "UNRESOLVED": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
