@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -869,7 +870,75 @@ def _resolve_terminal_path() -> str | None:
     return str(found) if found else None
 
 
+def _build_banner_text(account, configs) -> str:
+    """Compose the startup banner (shared by the real start and --banner-only)."""
+    volume_summary = ", ".join(
+        "{}={:.2f}".format(c["symbol"], c.get("volume", VOLUME)) for c in configs
+    )
+    # Self-declared execution mode: the session's own operator flags, as seen
+    # by this process. LIVE-DEMO still requires the DEMO-ONLY account guard.
+    return (
+        "🟢 SP2L Forward Test — started\n"
+        f"Account: {account.login} ({account.server}, DEMO)\n"
+        f"Symbols: {', '.join(c['symbol'] for c in configs)}\n"
+        f"Order mode: {ORDER_MODE}\n"
+        f"Volume: {volume_summary} · TP {TP_R:.1f}R\n"
+        f"{execution_mode_line()}\n"
+        "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"
+    )
+
+
+def run_banner_only() -> int:
+    """--banner-only: verify Telegram config + banner rendering, then exit.
+
+    Renders and sends exactly the same startup banner a real session would
+    send, without starting the scan loop, without acquiring the runner lock
+    and without placing any order. Connects to MT5 read-only for the account
+    and symbol facts (banner content), DEMO-only as always.
+    """
+    mt5_path = _resolve_terminal_path()
+    initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
+    if not initialized:
+        raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+    try:
+        account = mt5.account_info()
+        if account is None or int(account.trade_mode) != 0:
+            raise RuntimeError("DEMO-ONLY GUARD: a DEMO MT5 account is required")
+        configs = []
+        for index, base in enumerate(BASE_SYMBOLS):
+            symbol = resolve_symbol(base)
+            if symbol is None:
+                continue
+            if not mt5.symbol_select(symbol, True):
+                continue
+            cfg = symbol_config(symbol)
+            cfg["magic"] = MAGIC_BASE + index + 1
+            cfg["volume"] = _volume_for(base.upper().split(".")[0])
+            configs.append(cfg)
+        if not configs:
+            raise RuntimeError("None of the configured symbols could be resolved in MT5")
+        text = _build_banner_text(account, configs)
+        result = gateway.send_telegram_message(text)
+        log_event({
+            "event": "BANNER_ONLY_TELEGRAM",
+            "success": bool(getattr(result, "success", False)),
+            "detail": getattr(result, "detail", None),
+            "symbols": [c["symbol"] for c in configs],
+            "canonical": False,
+        })
+        print("\n" + text)
+        print(
+            f"\n[banner-only] telegram: success={getattr(result, 'success', False)} "
+            f"detail={getattr(result, 'detail', None)}"
+        )
+        return 0 if getattr(result, "success", False) else 1
+    finally:
+        mt5.shutdown()
+
+
 def main() -> None:
+    if "--banner-only" in sys.argv:
+        raise SystemExit(run_banner_only())
     mt5_path = _resolve_terminal_path()
     initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
     if not initialized:
@@ -912,20 +981,7 @@ def main() -> None:
         },
     })
 
-    volume_summary = ", ".join(
-        "{}={:.2f}".format(c["symbol"], c.get("volume", VOLUME)) for c in configs
-    )
-    # Self-declared execution mode: the session's own operator flags, as seen
-    # by this process. LIVE-DEMO still requires the DEMO-ONLY account guard.
-    startup_banner = gateway.send_telegram_message(
-        "🟢 SP2L Forward Test — started\n"
-        f"Account: {account.login} ({account.server}, DEMO)\n"
-        f"Symbols: {', '.join(c['symbol'] for c in configs)}\n"
-        f"Order mode: {ORDER_MODE}\n"
-        f"Volume: {volume_summary} · TP {TP_R:.1f}R\n"
-        f"{execution_mode_line()}\n"
-        "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"
-    )
+    startup_banner = gateway.send_telegram_message(_build_banner_text(account, configs))
     log_event({
         "event": "START_TELEGRAM",
         "success": bool(getattr(startup_banner, "success", False)),
