@@ -249,48 +249,105 @@ def max_drawdown_and_losses(results: list[float]) -> tuple[float, int]:
 
 
 def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
-    """Fetch M1 history backwards in bounded chunks."""
+    """Fetch M1 history in bounded UTC date ranges.
+
+    MT5 terminals can cap copy_rates_from/copy_rates_range responses around
+    MAX_BARS_IN_CHART. Small date windows avoid silently truncating a long
+    request. Every chunk is independently retried and the final result is
+    coverage-checked before replay.
+    """
     if not mt5.symbol_select(symbol, True):
         raise RuntimeError(f"symbol_select failed for {symbol}: {mt5.last_error()}")
 
-    start_ts = int(start.timestamp())
-    end_ts = int(end.timestamp())
-    cursor = end
-    chunks = []
-    seen = set()
-    chunk_size = 10000
+    chunk_days = float(os.getenv("SP2L_MT5_HISTORY_CHUNK_DAYS", "7"))
+    max_retries = int(os.getenv("SP2L_MT5_HISTORY_RETRIES", "3"))
+    if chunk_days <= 0:
+        raise ValueError("SP2L_MT5_HISTORY_CHUNK_DAYS must be > 0")
 
-    while int(cursor.timestamp()) >= start_ts:
-        rates = mt5.copy_rates_from(symbol, mt5.TIMEFRAME_M1, cursor, chunk_size)
+    start = start.astimezone(timezone.utc)
+    end = end.astimezone(timezone.utc)
+    cursor = start
+    chunks: list[np.ndarray] = []
+    diagnostics: list[dict] = []
+
+    while cursor < end:
+        chunk_end = min(cursor + timedelta(days=chunk_days), end)
+        rates = None
+        last_error = None
+
+        for attempt in range(1, max_retries + 1):
+            rates = mt5.copy_rates_range(
+                symbol,
+                mt5.TIMEFRAME_M1,
+                cursor,
+                chunk_end,
+            )
+            if rates is not None and len(rates):
+                break
+            last_error = mt5.last_error()
+            # A failed MT5 call can be transient; retry the same bounded range.
+            time.sleep(0.25 * attempt)
+
         if rates is None or len(rates) == 0:
             raise RuntimeError(
-                f"copy_rates_from returned no data for {symbol} at "
-                f"{cursor.isoformat()}: {mt5.last_error()}"
+                f"MT5 history chunk failed for {symbol}: "
+                f"{cursor.isoformat()}..{chunk_end.isoformat()} "
+                f"after {max_retries} attempts: {last_error or mt5.last_error()}"
             )
 
-        before = len(seen)
-        for row in rates:
-            ts = int(row["time"])
-            if start_ts <= ts <= end_ts and ts not in seen:
-                seen.add(ts)
-                chunks.append(row)
+        # copy_rates_range is inclusive at both ends; deduplication below makes
+        # adjacent chunks safe even when the boundary candle appears twice.
+        chunks.append(rates)
+        diagnostics.append({
+            "start_utc": cursor.isoformat(),
+            "end_utc": chunk_end.isoformat(),
+            "bars": int(len(rates)),
+            "first_bar_utc": datetime.fromtimestamp(int(rates["time"][0]), timezone.utc).isoformat(),
+            "last_bar_utc": datetime.fromtimestamp(int(rates["time"][-1]), timezone.utc).isoformat(),
+        })
 
-        oldest = int(rates["time"][0])
-        if oldest <= start_ts or len(rates) < chunk_size:
-            break
-
-        next_ts = oldest - 60
-        if next_ts >= int(cursor.timestamp()) or len(seen) == before:
+        next_cursor = chunk_end + timedelta(minutes=1)
+        if next_cursor <= cursor:
             raise RuntimeError(f"MT5 history pagination made no progress for {symbol}")
-        cursor = datetime.fromtimestamp(next_ts, timezone.utc)
+        cursor = next_cursor
 
     if not chunks:
         raise RuntimeError(f"No M1 bars found for {symbol} in {start.isoformat()}..{end.isoformat()}")
 
-    result = np.array(chunks, dtype=rates.dtype)
+    result = np.concatenate(chunks)
     result.sort(order="time")
+    _, idx = np.unique(result["time"], return_index=True)
+    result = result[np.sort(idx)]
+
+    first_ts = int(result["time"][0])
+    last_ts = int(result["time"][-1])
+    start_ts = int(start.timestamp())
+    end_ts = int(end.timestamp())
+
+    # Do not let an incomplete history set produce a misleading COMPLETE report.
+    # A small edge tolerance is allowed because broker history may not contain
+    # the exact requested endpoint minute.
+    edge_tolerance = 60
+    if first_ts > start_ts + edge_tolerance:
+        raise RuntimeError(
+            f"Incomplete MT5 history for {symbol}: first bar "
+            f"{datetime.fromtimestamp(first_ts, timezone.utc).isoformat()} "
+            f"is after requested start {start.isoformat()}"
+        )
+    if last_ts < end_ts - edge_tolerance:
+        raise RuntimeError(
+            f"Incomplete MT5 history for {symbol}: last bar "
+            f"{datetime.fromtimestamp(last_ts, timezone.utc).isoformat()} "
+            f"is before requested end {end.isoformat()}"
+        )
+
+    # Return diagnostics separately through the function attribute so callers
+    # can keep the replay API unchanged while recording acquisition evidence.
+    fetch_rates.last_diagnostics = diagnostics
     return result
 
+
+fetch_rates.last_diagnostics = []
 
 def run_symbol(symbol: str, rates: np.ndarray) -> dict:
     rates = np.sort(rates, order="time")
@@ -423,6 +480,7 @@ def main() -> int:
             try:
                 rates = fetch_rates(symbol, start, end)
                 result = run_symbol(symbol, rates)
+                result["history_chunks"] = fetch_rates.last_diagnostics
                 report["outcomes"][base] = result
                 combined_results.extend(
                     {"base": base, **x} for x in result["signals_detail"]
@@ -458,13 +516,17 @@ def main() -> int:
         path = OUT_DIR / f"SP2L_MT5_LOCAL_MULTI_SYMBOL_{stamp}.json"
         path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
+        failed = [k for k, v in report["outcomes"].items() if v.get("status") == "FAILED"]
+        report["status"] = "COMPLETE" if not failed else "INCOMPLETE_HISTORY"
+        report["failed_symbols"] = failed
+
         print(json.dumps({
-            "status": "COMPLETE",
+            "status": report["status"],
             "report": str(path),
             "resolved_symbols": {k: v["symbol"] for k, v in discovered.items()},
             "combined": report["combined"],
         }, indent=2))
-        return 0
+        return 0 if not failed else 3
     finally:
         mt5.shutdown()
 
