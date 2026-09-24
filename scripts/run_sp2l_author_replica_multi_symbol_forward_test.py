@@ -15,7 +15,8 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, time as dt_time
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 import MetaTrader5 as mt5
@@ -80,6 +81,54 @@ DAILY_SUMMARY_UTC_HOUR = int(os.getenv("SP2L_DAILY_SUMMARY_UTC_HOUR", "21"))
 # after N minutes (0 disables). Research/infrastructure only — never touches
 # open positions, foreign/manual orders, or SL/TP semantics.
 PENDING_TTL_MINUTES = float(os.getenv("SP2L_PENDING_TTL_MINUTES", "30"))
+
+SESSION_START_LONDON = os.getenv("SP2L_SESSION_START_LONDON", "").strip()
+SESSION_END_NEW_YORK = os.getenv("SP2L_SESSION_END_NEW_YORK", "").strip()
+LONDON_TZ = ZoneInfo("Europe/London")
+NEW_YORK_TZ = ZoneInfo("America/New_York")
+
+def _parse_hhmm(value: str, name: str) -> dt_time:
+    try:
+        hour, minute = (int(x) for x in value.split(":"))
+        if not (0 <= hour <= 23 and 0 <= minute <= 59):
+            raise ValueError
+        return dt_time(hour, minute)
+    except Exception as exc:
+        raise RuntimeError(f"Invalid {name}={value!r}; expected HH:MM") from exc
+
+def session_gate_status(trigger_ts: int | float | None) -> tuple[bool, str]:
+    if not SESSION_START_LONDON or not SESSION_END_NEW_YORK:
+        return False, "SESSION_WINDOW_NOT_CONFIGURED"
+    start = _parse_hhmm(SESSION_START_LONDON, "SP2L_SESSION_START_LONDON")
+    end = _parse_hhmm(SESSION_END_NEW_YORK, "SP2L_SESSION_END_NEW_YORK")
+    if trigger_ts is None:
+        return False, "TRIGGER_TIME_MISSING"
+    utc_dt = datetime.fromtimestamp(int(trigger_ts), timezone.utc)
+    london = utc_dt.astimezone(LONDON_TZ)
+    new_york = utc_dt.astimezone(NEW_YORK_TZ)
+    start_utc = london.replace(hour=start.hour, minute=start.minute, second=0, microsecond=0).astimezone(timezone.utc)
+    end_utc = new_york.replace(hour=end.hour, minute=end.minute, second=0, microsecond=0).astimezone(timezone.utc)
+    if end_utc <= start_utc:
+        return False, "SESSION_BOUNDARY_INVALID_FOR_DATE"
+    allowed = start_utc <= utc_dt <= end_utc
+    return allowed, ("IN_SESSION" if allowed else "OUT_OF_SESSION")
+
+def volume_guard(cfg: dict) -> tuple[bool, str]:
+    requested = float(cfg.get("volume", VOLUME))
+    minimum = float(cfg.get("volume_min", 0.0) or 0.0)
+    maximum = float(cfg.get("volume_max", 0.0) or 0.0)
+    step = float(cfg.get("volume_step", 0.0) or 0.0)
+    if minimum > 0 and requested < minimum:
+        return False, f"VOLUME_BELOW_MIN(requested={requested},min={minimum})"
+    if maximum > 0 and requested > maximum:
+        return False, f"VOLUME_ABOVE_MAX(requested={requested},max={maximum})"
+    if step > 0 and minimum > 0:
+        steps = round((requested - minimum) / step)
+        if abs((minimum + steps * step) - requested) > max(step * 1e-6, 1e-9):
+            return False, f"VOLUME_OFF_STEP(requested={requested},step={step},min={minimum})"
+    return True, "VOLUME_VALID"
+
+
 RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
 
 
@@ -1071,67 +1120,43 @@ def main() -> None:
                 trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}" if candidate else None
                 if candidate is None or seen_trigger.get(symbol) == trigger_key:
                     continue
-
                 candidate["signal_id"] = trigger_key
-                if trigger_key not in state["notified"]:
-                    telegram_result = send_signal(candidate, cfg["pip_size"])
-                    telegram_success = bool(getattr(telegram_result, "success", False))
-                    log_event({
-                        "event": "TELEGRAM_SIGNAL",
-                        "symbol": symbol,
-                        "signal_id": trigger_key,
-                        "success": telegram_success,
-                        "detail": getattr(telegram_result, "detail", None),
-                        "canonical": False,
-                    })
-                    if telegram_success:
-                        state["notified"].add(trigger_key)
+
+                in_session, session_reason = session_gate_status(candidate["trigger_time"])
+                log_event({"event":"SESSION_GATE","symbol":symbol,"signal_id":trigger_key,"trigger_time":candidate["trigger_time"],"allowed":in_session,"reason":session_reason,"session_start_london":SESSION_START_LONDON or None,"session_end_new_york":SESSION_END_NEW_YORK or None,"canonical":False})
+                if not in_session:
+                    seen_trigger[symbol] = trigger_key
                     save_state(state)
-                log_event({
-                    "event": "CANDIDATE", "symbol": symbol,
-                    "signal_id": trigger_key, "candidate": candidate,
-                    "pip_size": cfg["pip_size"], "pip_method": cfg["pip_method"],
-                    "f13_2x": {
-                        "status": "SOURCE_CONFIRMED_RELATION_ONLY",
-                        "secondary_entry": candidate["secondary_entry_2x"],
-                        "formula": "Entry + 0.5 * (StopLoss - Entry)",
-                        "execution": "NOT_EXECUTED_UNRESOLVED_LIFECYCLE",
-                    },
-                    "execution_semantics": ORDER_MODE,
-                })
+                    continue
+
+                volume_ok, volume_reason = volume_guard(cfg)
+                if not volume_ok:
+                    log_event({"event":"EXECUTION_BLOCKED_VOLUME","symbol":symbol,"signal_id":trigger_key,"requested_volume":float(cfg.get("volume",VOLUME)),"volume_min":cfg.get("volume_min"),"volume_max":cfg.get("volume_max"),"volume_step":cfg.get("volume_step"),"reason":volume_reason,"canonical":False})
+                    seen_trigger[symbol] = trigger_key
+                    save_state(state)
+                    continue
+
+                log_event({"event":"CANDIDATE","symbol":symbol,"signal_id":trigger_key,"candidate":candidate,"pip_size":cfg["pip_size"],"pip_method":cfg["pip_method"],"f13_2x":{"status":"SOURCE_CONFIRMED_RELATION_ONLY","secondary_entry":candidate["secondary_entry_2x"],"formula":"Entry + 0.5 * (StopLoss - Entry)","execution":"NOT_EXECUTED_UNRESOLVED_LIFECYCLE"},"execution_semantics":ORDER_MODE})
                 tick = mt5.symbol_info_tick(symbol)
-                log_event({
-                    "event": "ORDER_ATTEMPT", "symbol": symbol,
-                    "signal_id": trigger_key, "direction": candidate["direction"],
-                    "entry": candidate["theoretical_entry"], "sl": candidate["sl"],
-                    "tp": candidate["tp"], "volume": candidate.get("volume", VOLUME),
-                    "bid": float(tick.bid) if tick else None,
-                    "ask": float(tick.ask) if tick else None,
-                    "magic": cfg["magic"], "canonical": False,
-                })
+                log_event({"event":"ORDER_ATTEMPT","symbol":symbol,"signal_id":trigger_key,"direction":candidate["direction"],"entry":candidate["theoretical_entry"],"sl":candidate["sl"],"tp":candidate["tp"],"volume":candidate.get("volume",VOLUME),"bid":float(tick.bid) if tick else None,"ask":float(tick.ask) if tick else None,"magic":cfg["magic"],"canonical":False})
                 try:
                     result = execute_candidate(candidate, cfg["magic"])
                 except Exception as exc:
-                    result = {
-                        "ok": False,
-                        "error": f"execute_candidate_exception: {type(exc).__name__}: {exc}",
-                    }
-                # Persist execution identifiers immediately. MT5 may report a
-                # closing deal with a different identifier and some brokers
-                # may not carry the original magic onto the closing deal.
-                result_order = int(result.get("order", 0) or 0)
-                result_deal = int(result.get("deal", 0) or 0)
+                    result = {"ok":False,"error":f"execute_candidate_exception: {type(exc).__name__}: {exc}"}
+                result_order = int(result.get("order",0) or 0)
+                result_deal = int(result.get("deal",0) or 0)
                 if result_order:
                     state["orders"].add(result_order)
-                log_event({
-                    "event": "ORDER_RESULT", "symbol": symbol,
-                    "signal_id": trigger_key, "result": result,
-                    "tracked_order": result_order or None,
-                    "tracked_deal": result_deal or None,
-                    "demo_only": True, "success": bool(result.get("ok")),
-                })
-                if bool(result.get("ok")):
+                order_ok = bool(result.get("ok"))
+                log_event({"event":"ORDER_RESULT","symbol":symbol,"signal_id":trigger_key,"result":result,"tracked_order":result_order or None,"tracked_deal":result_deal or None,"demo_only":True,"success":order_ok})
+                if order_ok:
                     seen_trigger[symbol] = trigger_key
+                    if trigger_key not in state["notified"]:
+                        telegram_result = send_signal(candidate, cfg["pip_size"])
+                        telegram_success = bool(getattr(telegram_result,"success",False))
+                        log_event({"event":"TELEGRAM_SIGNAL","symbol":symbol,"signal_id":trigger_key,"success":telegram_success,"detail":getattr(telegram_result,"detail",None),"canonical":False})
+                        if telegram_success:
+                            state["notified"].add(trigger_key)
                 save_state(state)
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
