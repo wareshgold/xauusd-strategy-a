@@ -80,13 +80,48 @@ def stop_everything() -> None:
         WATCHDOG_PID.unlink(missing_ok=True)
 
 
+def acquire_watchdog_lock() -> bool:
+    """Atomically enforce one watchdog process per checkout."""
+    WATCHDOG_PID.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fd = os.open(str(WATCHDOG_PID), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(str(os.getpid()))
+        return True
+    except FileExistsError:
+        try:
+            pid = int(WATCHDOG_PID.read_text(encoding="utf-8").strip() or 0)
+            if pid > 0 and pid != os.getpid():
+                try:
+                    os.kill(pid, 0)
+                    print(f"[watchdog] already running pid {pid}; refusing duplicate")
+                    return False
+                except OSError:
+                    WATCHDOG_PID.unlink(missing_ok=True)
+                    return acquire_watchdog_lock()
+        except (OSError, ValueError):
+            return False
+    except OSError:
+        return False
+    return False
+
+
+def release_watchdog_lock() -> None:
+    try:
+        if WATCHDOG_PID.exists() and WATCHDOG_PID.read_text(encoding="utf-8").strip() == str(os.getpid()):
+            WATCHDOG_PID.unlink()
+    except OSError:
+        pass
+
+
 def main() -> None:
     if "--stop" in sys.argv:
         stop_everything()
         return
 
-    WATCHDOG_PID.parent.mkdir(parents=True, exist_ok=True)
-    WATCHDOG_PID.write_text(str(os.getpid()), encoding="utf-8")
+    if not acquire_watchdog_lock():
+        return
+
 
     notify(
         "🟢 SP2L Forward watchdog started\n"
@@ -118,7 +153,7 @@ def main() -> None:
         f"max restarts reached ({MAX_RESTARTS}). Check terminal/MT5.\n"
         f"{execution_mode_line()}"
     )
-    WATCHDOG_PID.unlink(missing_ok=True)
+    release_watchdog_lock()
 
 
 if __name__ == "__main__":
