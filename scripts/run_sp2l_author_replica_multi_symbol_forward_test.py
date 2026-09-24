@@ -63,8 +63,24 @@ MAGIC_BASE = int(os.getenv("SP2L_MAGIC_BASE", "26092200"))
 # Per-symbol volume override (e.g. SP2L_VOLUME_US500=0.1 for index CFDs whose
 # volume_min is 0.1; a volume below volume_min is rejected by the broker).
 def _volume_for(base: str) -> float:
-    override = os.getenv(f"SP2L_VOLUME_{base}")
-    return float(override) if override else VOLUME
+    # Accept both the configured base symbol name and the common short alias.
+    # Example: DAWJONES resolves to DJ30.c.ecn, so support both
+    # SP2L_VOLUME_DAWJONES and SP2L_VOLUME_DJ30 without changing strategy
+    # geometry or broker-derived volume validation.
+    candidates = [base]
+    if base == "DAWJONES":
+        candidates.append("DJ30")
+    elif base == "DJ30":
+        candidates.append("DAWJONES")
+    if base == "USTEC100":
+        candidates.append("USTEC")
+    elif base == "USTEC":
+        candidates.append("USTEC100")
+    for name in candidates:
+        override = os.getenv(f"SP2L_VOLUME_{name}")
+        if override:
+            return float(override)
+    return VOLUME
 IRAN_TZ = timezone(timedelta(hours=3, minutes=30))
 
 ROOT = Path(__file__).resolve().parents[1]
