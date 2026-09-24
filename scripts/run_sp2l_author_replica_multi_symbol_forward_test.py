@@ -419,9 +419,10 @@ def load_state() -> dict:
             "positions": {int(k) for k in raw.get("positions", [])},
             "position_orders": {str(k): {int(v) for v in vals} for k, vals in raw.get("position_orders", {}).items()},
             "order_states": {str(k) for k in raw.get("order_states", [])},
+            "pending_signal_notifications": {str(k): v for k, v in raw.get("pending_signal_notifications", {}).items()},
         }
     except Exception:
-        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set()}
+        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}}
 
 
 def reconcile_state_from_events(state: dict) -> None:
@@ -495,6 +496,7 @@ def save_state(state: dict) -> None:
         "positions": sorted(state["positions"])[-1000:],
         "position_orders": {k: sorted(v) for k, v in state.get("position_orders", {}).items()},
         "order_states": sorted(state["order_states"])[-2000:],
+        "pending_signal_notifications": state.get("pending_signal_notifications", {}),
     }, indent=2), encoding="utf-8")
 
 
@@ -1113,6 +1115,17 @@ def main() -> None:
         while deadline is None or time.time() < deadline:
             for cfg in configs:
                 symbol = cfg["symbol"]
+                pending_signals = state.setdefault("pending_signal_notifications", {})
+                for pending_id, pending_candidate in list(pending_signals.items()):
+                    if str(pending_candidate.get("symbol")) != symbol:
+                        continue
+                    retry_result = send_signal(pending_candidate, cfg["pip_size"])
+                    retry_ok = bool(getattr(retry_result, "success", False))
+                    log_event({"event":"TELEGRAM_SIGNAL_RETRY","symbol":symbol,"signal_id":pending_id,"success":retry_ok,"detail":getattr(retry_result,"detail",None),"canonical":False})
+                    if retry_ok:
+                        state["notified"].add(pending_id)
+                        pending_signals.pop(pending_id, None)
+                save_state(state)
                 enforce_pending_order_expiry(cfg, state)
                 monitor_pending_order_lifecycle(cfg, state)
                 monitor_position_lifecycle(cfg, state)
@@ -1161,6 +1174,8 @@ def main() -> None:
                         log_event({"event":"TELEGRAM_SIGNAL","symbol":symbol,"signal_id":trigger_key,"success":telegram_success,"detail":getattr(telegram_result,"detail",None),"canonical":False})
                         if telegram_success:
                             state["notified"].add(trigger_key)
+                        else:
+                            state.setdefault("pending_signal_notifications", {})[trigger_key] = dict(candidate)
                 save_state(state)
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
