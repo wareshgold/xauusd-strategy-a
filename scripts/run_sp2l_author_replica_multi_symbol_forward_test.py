@@ -112,6 +112,47 @@ def _parse_hhmm(value: str, name: str) -> dt_time:
     except Exception as exc:
         raise RuntimeError(f"Invalid {name}={value!r}; expected HH:MM") from exc
 
+_OFFSET_CACHE: dict = {"value": None, "at": 0.0}
+
+
+def mt5_server_offset_strict() -> timedelta:
+    """Broker-server offset for trading decisions (session gate). Fails closed.
+
+    Uses the freshest tick among the forward symbols: a tick can never be in the
+    future, so stale ticks from closed markets only under-estimate the offset.
+    Raises RuntimeError instead of silently returning 0.
+    """
+    now = time.time()
+    best = None
+    for base in BASE_SYMBOLS:
+        symbol = resolve_symbol(base)
+        if not symbol:
+            continue
+        tick = mt5.symbol_info_tick(symbol)
+        tick_time = int(getattr(tick, "time", 0) or 0) if tick else 0
+        if tick_time > 0:
+            diff = tick_time - now
+            if best is None or diff > best:
+                best = diff
+    if best is not None:
+        hours = round(best / 3600)
+        if abs(best - hours * 3600) <= 900 and -12 <= hours <= 14:
+            value = timedelta(hours=hours)
+            _OFFSET_CACHE["value"], _OFFSET_CACHE["at"] = value, now
+            return value
+    cached = _OFFSET_CACHE["value"]
+    if cached is not None and now - _OFFSET_CACHE["at"] <= 3600:
+        return cached
+    raise RuntimeError("MT5 server offset unavailable: no fresh tick within 15 minutes of a whole hour")
+
+
+def _trigger_utc_iso(ts):
+    try:
+        return (datetime.fromtimestamp(int(ts), timezone.utc) - mt5_server_offset_strict()).isoformat()
+    except Exception:
+        return None
+
+
 def session_gate_status(trigger_ts: int | float | None) -> tuple[bool, str]:
     if not SESSION_START_LONDON or not SESSION_END_NEW_YORK:
         return False, "SESSION_WINDOW_NOT_CONFIGURED"
@@ -119,7 +160,10 @@ def session_gate_status(trigger_ts: int | float | None) -> tuple[bool, str]:
     end = _parse_hhmm(SESSION_END_NEW_YORK, "SP2L_SESSION_END_NEW_YORK")
     if trigger_ts is None:
         return False, "TRIGGER_TIME_MISSING"
-    utc_dt = datetime.fromtimestamp(int(trigger_ts), timezone.utc)
+    try:
+        utc_dt = datetime.fromtimestamp(int(trigger_ts), timezone.utc) - mt5_server_offset_strict()
+    except Exception:
+        return False, "SERVER_OFFSET_UNAVAILABLE"
     london = utc_dt.astimezone(LONDON_TZ)
     new_york = utc_dt.astimezone(NEW_YORK_TZ)
     start_utc = london.replace(hour=start.hour, minute=start.minute, second=0, microsecond=0).astimezone(timezone.utc)
@@ -1197,7 +1241,7 @@ def main() -> None:
                 candidate["signal_id"] = trigger_key
 
                 in_session, session_reason = session_gate_status(candidate["trigger_time"])
-                log_event({"event":"SESSION_GATE","symbol":symbol,"signal_id":trigger_key,"trigger_time":candidate["trigger_time"],"allowed":in_session,"reason":session_reason,"session_start_london":SESSION_START_LONDON or None,"session_end_new_york":SESSION_END_NEW_YORK or None,"canonical":False})
+                log_event({"event":"SESSION_GATE","symbol":symbol,"signal_id":trigger_key,"trigger_time":candidate["trigger_time"],"trigger_utc":_trigger_utc_iso(candidate["trigger_time"]),"allowed":in_session,"reason":session_reason,"session_start_london":SESSION_START_LONDON or None,"session_end_new_york":SESSION_END_NEW_YORK or None,"canonical":False})
                 if not in_session:
                     seen_trigger[symbol] = trigger_key
                     save_state(state)
