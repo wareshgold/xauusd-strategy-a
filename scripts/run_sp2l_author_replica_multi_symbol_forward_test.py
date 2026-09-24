@@ -224,7 +224,7 @@ def build_daily_summary(state: dict) -> str | None:
         f"📊 SP2L Forward — Daily Summary (UTC {today})\n",
         f"Signals: {signals} · Fills: {fills} · Closed: {closes}",
         f"Closed results: ✅ {wins} · ❌ {losses}",
-        f"Closed net: {sum(float(v["net"]) for v in per_symbol.values()):+.2f} USD",
+        f"Closed net: {sum(float(v['net']) for v in per_symbol.values()):+.2f} USD",
         "",
         "Per symbol:",
     ]
