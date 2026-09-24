@@ -224,7 +224,7 @@ def build_daily_summary(state: dict) -> str | None:
         f"📊 SP2L Forward — Daily Summary (UTC {today})\n",
         f"Signals: {signals} · Fills: {fills} · Closed: {closes}",
         f"Closed results: ✅ {wins} · ❌ {losses}",
-        f"Closed net: {net:+.2f} USD",
+        f"Closed net: {sum(float(v["net"]) for v in per_symbol.values()):+.2f} USD",
         "",
         "Per symbol:",
     ]
@@ -922,6 +922,7 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             continue
         text = lifecycle_message(deal, symbol, pip, magic)
         result = gateway.send_telegram_message(text, parse_mode="HTML")
+        telegram_success = bool(getattr(result, "success", False))
         exit_price = float(deal.price)
         signed_move = None
         pips_result = None
@@ -946,10 +947,13 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             "commission": commission,
             "swap": swap,
             "net": net,
-            "telegram": {"success": result.success, "detail": result.detail},
+            "telegram": {"success": telegram_success, "detail": result.detail},
             "canonical": False,
         })
-        state["deals"].add(ticket)
+        # Mark the deal delivered only after Telegram confirms success.
+        # Failed sends remain eligible for retry on the next poll.
+        if telegram_success:
+            state["deals"].add(ticket)
     save_state(state)
 
 
