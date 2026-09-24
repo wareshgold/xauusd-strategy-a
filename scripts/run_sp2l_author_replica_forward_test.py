@@ -141,75 +141,28 @@ def rates(count: int = 10):
 
 
 def detect(candles):
-    # Use the last FOUR COMPLETED M1 candles. The current forming candle is excluded.
-    a, spike, correction, trigger = candles[-5], candles[-4], candles[-3], candles[-2]
+    """Map the shared research detector to the forward-runner signal schema."""
+    from sp2l_author_replica_detector import detect as detect_author_replica
 
-    spike_body_buy = float(spike["close"] - spike["open"])
-    spike_body_sell = float(spike["open"] - spike["close"])
-
-    buy = (
-        trigger["low"] < correction["low"]
-        and correction["close"] > spike["close"]
-        and correction["open"] > spike["open"]
-        and spike["close"] > a["close"]
-        and spike["open"] > a["open"]
-        and correction["close"] > correction["open"]
-        and spike["close"] > spike["open"]
-        and a["close"] > a["open"]
-        and correction["low"] > a["high"] + P_GAP_PRICE
-        and spike_body_buy > SPIKE_MULTIPLIER * (correction["close"] - correction["open"])
-        and spike_body_buy > SPIKE_MULTIPLIER * (a["close"] - a["open"])
-        and spike_body_buy > SPIKE_MULTIPLIER * (trigger["close"] - trigger["open"])
+    signal = detect_author_replica(
+        candles,
+        p_gap_price=P_GAP_PRICE,
+        spike_multiplier=SPIKE_MULTIPLIER,
+        max_sl_distance=MAX_SL_DISTANCE,
+        tp_r=TP_R,
     )
-
-    sell = (
-        trigger["high"] > correction["high"]
-        and correction["close"] < spike["close"]
-        and correction["open"] < spike["open"]
-        and spike["close"] < a["close"]
-        and spike["open"] < a["open"]
-        and correction["close"] < correction["open"]
-        and spike["close"] < spike["open"]
-        and a["close"] < a["open"]
-        and correction["high"] < a["low"] - P_GAP_PRICE
-        and spike_body_sell > SPIKE_MULTIPLIER * (correction["open"] - correction["close"])
-        and spike_body_sell > SPIKE_MULTIPLIER * (a["open"] - a["close"])
-        and spike_body_sell > SPIKE_MULTIPLIER * (trigger["open"] - trigger["close"])
-    )
-
-    if buy == sell:
+    if signal is None:
         return None
 
-    if buy:
-        entry = float(trigger["low"])
-        sl = float(spike["low"])
-        risk = entry - sl
-        if 0 < risk <= MAX_SL_DISTANCE:
-            return {
-                "direction": "BUY",
-                "trigger_time": int(trigger["time"]),
-                "theoretical_entry": entry,
-                "sl": sl,
-                "risk": risk,
-                "tp": entry + TP_R * risk,
-                "secondary_entry_2x": entry + 0.5 * (sl - entry),
-            }
-
-    if sell:
-        entry = float(trigger["high"])
-        sl = float(spike["high"])
-        risk = sl - entry
-        if 0 < risk <= MAX_SL_DISTANCE:
-            return {
-                "direction": "SELL",
-                "trigger_time": int(trigger["time"]),
-                "theoretical_entry": entry,
-                "sl": sl,
-                "risk": risk,
-                "tp": entry - TP_R * risk,
-                "secondary_entry_2x": entry + 0.5 * (sl - entry),
-            }
-    return None
+    return {
+        "direction": signal["direction"],
+        "trigger_time": signal["signal_time"],
+        "theoretical_entry": signal["entry"],
+        "sl": signal["sl"],
+        "risk": signal["risk"],
+        "tp": signal["tp"],
+        "secondary_entry_2x": signal["entry"] + 0.5 * (signal["sl"] - signal["entry"]),
+    }
 
 
 def telegram_send(text: str) -> dict:
