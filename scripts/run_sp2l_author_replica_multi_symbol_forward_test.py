@@ -450,6 +450,8 @@ def detect(candles, symbol: str):
                 "direction": "BUY", "trigger_time": int(trigger["time"]),
                 "theoretical_entry": entry, "sl": sl, "risk": risk,
                 "tp": entry + TP_R * risk,
+                "shadow_sl_author_a": float(a["low"]), "shadow_risk_author_a": entry - float(a["low"]),
+                "shadow_valid_author_a": 0 < entry - float(a["low"]) <= MAX_SL_DISTANCE,
                 "secondary_entry_2x": entry + 0.5 * (sl - entry),
                 "symbol": symbol,
             }
@@ -462,6 +464,8 @@ def detect(candles, symbol: str):
                 "direction": "SELL", "trigger_time": int(trigger["time"]),
                 "theoretical_entry": entry, "sl": sl, "risk": risk,
                 "tp": entry - TP_R * risk,
+                "shadow_sl_author_a": float(a["high"]), "shadow_risk_author_a": float(a["high"]) - entry,
+                "shadow_valid_author_a": 0 < float(a["high"]) - entry <= MAX_SL_DISTANCE,
                 "secondary_entry_2x": entry + 0.5 * (sl - entry),
                 "symbol": symbol,
             }
