@@ -82,8 +82,8 @@ DAILY_SUMMARY_UTC_HOUR = int(os.getenv("SP2L_DAILY_SUMMARY_UTC_HOUR", "21"))
 # open positions, foreign/manual orders, or SL/TP semantics.
 PENDING_TTL_MINUTES = float(os.getenv("SP2L_PENDING_TTL_MINUTES", "30"))
 
-SESSION_START_LONDON = os.getenv("SP2L_SESSION_START_LONDON", "").strip()
-SESSION_END_NEW_YORK = os.getenv("SP2L_SESSION_END_NEW_YORK", "").strip()
+SESSION_START_LONDON = os.getenv("SP2L_SESSION_START_LONDON", "08:00").strip()
+SESSION_END_NEW_YORK = os.getenv("SP2L_SESSION_END_NEW_YORK", "17:00").strip()
 LONDON_TZ = ZoneInfo("Europe/London")
 NEW_YORK_TZ = ZoneInfo("America/New_York")
 
