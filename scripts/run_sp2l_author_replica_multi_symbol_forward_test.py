@@ -1239,6 +1239,7 @@ def main() -> None:
                 if candidate is None or seen_trigger.get(symbol) == trigger_key:
                     continue
                 candidate["signal_id"] = trigger_key
+                candidate["volume"] = float(cfg.get("volume", VOLUME))
 
                 in_session, session_reason = session_gate_status(candidate["trigger_time"])
                 log_event({"event":"SESSION_GATE","symbol":symbol,"signal_id":trigger_key,"trigger_time":candidate["trigger_time"],"trigger_utc":_trigger_utc_iso(candidate["trigger_time"]),"allowed":in_session,"reason":session_reason,"session_start_london":SESSION_START_LONDON or None,"session_end_new_york":SESSION_END_NEW_YORK or None,"canonical":False})
