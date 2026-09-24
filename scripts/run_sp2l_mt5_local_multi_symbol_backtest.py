@@ -153,69 +153,16 @@ def filter_rates_to_research_session(rates: np.ndarray) -> np.ndarray:
 
 
 def detect(candles: np.ndarray, symbol: str) -> dict | None:
-    a, spike, correction, trigger = candles[-5], candles[-4], candles[-3], candles[-2]
-    spike_body_buy = float(spike["close"] - spike["open"])
-    spike_body_sell = float(spike["open"] - spike["close"])
+    """Map the shared research detector to the backtest signal schema."""
+    from sp2l_author_replica_detector import detect as detect_author_replica
 
-    buy = (
-        trigger["low"] < correction["low"]
-        and correction["close"] > spike["close"]
-        and correction["open"] > spike["open"]
-        and spike["close"] > a["close"]
-        and spike["open"] > a["open"]
-        and correction["close"] > correction["open"]
-        and spike["close"] > spike["open"]
-        and a["close"] > a["open"]
-        and correction["low"] > a["high"] + P_GAP_PRICE
-        and spike_body_buy > SPIKE_MULTIPLIER * (correction["close"] - correction["open"])
-        and spike_body_buy > SPIKE_MULTIPLIER * (a["close"] - a["open"])
-        and spike_body_buy > SPIKE_MULTIPLIER * (trigger["close"] - trigger["open"])
+    return detect_author_replica(
+        candles,
+        p_gap_price=P_GAP_PRICE,
+        spike_multiplier=SPIKE_MULTIPLIER,
+        max_sl_distance=MAX_SL_DISTANCE,
+        tp_r=TP_R,
     )
-
-    sell = (
-        trigger["high"] > correction["high"]
-        and correction["close"] < spike["close"]
-        and correction["open"] < spike["open"]
-        and spike["close"] < a["close"]
-        and spike["open"] < a["open"]
-        and correction["close"] < correction["open"]
-        and spike["close"] < spike["open"]
-        and a["close"] < a["open"]
-        and correction["high"] < a["low"] - P_GAP_PRICE
-        and spike_body_sell > SPIKE_MULTIPLIER * (correction["open"] - correction["close"])
-        and spike_body_sell > SPIKE_MULTIPLIER * (a["open"] - a["close"])
-        and spike_body_sell > SPIKE_MULTIPLIER * (trigger["open"] - trigger["close"])
-    )
-
-    if buy == sell:
-        return None
-
-    if buy:
-        entry, sl = float(trigger["low"]), float(spike["low"])
-        risk = entry - sl
-        if 0 < risk <= MAX_SL_DISTANCE:
-            return {
-                "direction": "BUY",
-                "signal_time": int(trigger["time"]),
-                "entry": entry,
-                "sl": sl,
-                "risk": risk,
-                "tp": entry + TP_R * risk,
-            }
-
-    if sell:
-        entry, sl = float(trigger["high"]), float(spike["high"])
-        risk = sl - entry
-        if 0 < risk <= MAX_SL_DISTANCE:
-            return {
-                "direction": "SELL",
-                "signal_time": int(trigger["time"]),
-                "entry": entry,
-                "sl": sl,
-                "risk": risk,
-                "tp": entry - TP_R * risk,
-            }
-    return None
 
 
 def outcome(candles: np.ndarray, signal_index: int, signal: dict) -> tuple[str, int | None, float | None, dict]:
