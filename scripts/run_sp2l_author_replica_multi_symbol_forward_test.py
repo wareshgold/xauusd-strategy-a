@@ -420,9 +420,10 @@ def load_state() -> dict:
             "position_orders": {str(k): {int(v) for v in vals} for k, vals in raw.get("position_orders", {}).items()},
             "order_states": {str(k) for k in raw.get("order_states", [])},
             "pending_signal_notifications": {str(k): v for k, v in raw.get("pending_signal_notifications", {}).items()},
+            "signal_orders": {str(k): v for k, v in raw.get("signal_orders", {}).items()},
         }
     except Exception:
-        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}}
+        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}}
 
 
 def reconcile_state_from_events(state: dict) -> None:
@@ -430,6 +431,8 @@ def reconcile_state_from_events(state: dict) -> None:
     if not EVENTS.exists():
         return
     successful = {}
+    recovered_candidates = {}
+    recovered_signal_orders = {}
     recovered_order_states = set()
     recovered_orders = set()
     recovered_positions = set()
@@ -441,13 +444,26 @@ def reconcile_state_from_events(state: dict) -> None:
             except json.JSONDecodeError:
                 continue
             signal_id = event.get("signal_id")
-            if event.get("event") == "ORDER_RESULT" and bool(event.get("success")):
+            if event.get("event") == "CANDIDATE" and signal_id:
+                recovered_candidates[str(signal_id)] = dict(event.get("candidate") or {})
+            elif event.get("event") == "ORDER_RESULT" and bool(event.get("success")):
                 if signal_id:
                     successful[str(signal_id)] = str(signal_id)
                 order_id = int(event.get("tracked_order") or 0)
                 deal_id = int(event.get("tracked_deal") or 0)
                 if order_id:
                     recovered_orders.add(order_id)
+                    candidate = recovered_candidates.get(str(signal_id), {})
+                    if candidate:
+                        recovered_signal_orders[str(order_id)] = {
+                            "signal_id": str(signal_id), "symbol": str(event.get("symbol") or candidate.get("symbol") or ""),
+                            "direction": str(candidate.get("direction") or ""),
+                            "theoretical_entry": float(candidate.get("theoretical_entry", 0.0) or 0.0),
+                            "sl": float(candidate.get("sl", 0.0) or 0.0),
+                            "tp": float(candidate.get("tp", 0.0) or 0.0),
+                            "risk": float(candidate.get("risk", 0.0) or 0.0),
+                            "trigger_time": int(candidate.get("trigger_time", 0) or 0),
+                        }
                 if deal_id:
                     recovered_deals.add(deal_id)
             elif event.get("event") == "PENDING_ORDER_LIFECYCLE":
@@ -485,6 +501,7 @@ def reconcile_state_from_events(state: dict) -> None:
     state["positions"].update(recovered_positions)
     state["deals"].update(recovered_deals)
     state["order_states"].update(recovered_order_states)
+    state.setdefault("signal_orders", {}).update(recovered_signal_orders)
 
 
 def save_state(state: dict) -> None:
@@ -497,6 +514,7 @@ def save_state(state: dict) -> None:
         "position_orders": {k: sorted(v) for k, v in state.get("position_orders", {}).items()},
         "order_states": sorted(state["order_states"])[-2000:],
         "pending_signal_notifications": state.get("pending_signal_notifications", {}),
+        "signal_orders": state.get("signal_orders", {}),
     }, indent=2), encoding="utf-8")
 
 
@@ -626,14 +644,15 @@ def lifecycle_levels(deal, symbol: str):
     return sl, tp
 
 
-def send_signal(candidate: dict, pip_size: float):
+def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = None):
     symbol = candidate["symbol"]
     digits = int(mt5.symbol_info(symbol).digits)
     t = display_time_from_mt5(candidate["trigger_time"])
     risk_pips = candidate["risk"] / pip_size if pip_size else 0.0
     icon = "🟢" if candidate["direction"] == "BUY" else "🔴"
+    order_line = f"📦 <b>Order</b>   Pending Limit PLACED · #{order_ticket}" if order_ticket else "📦 <b>Order</b>   Pending Limit"
     text = (
-        f"{icon} <b>SP2L — {symbol} {candidate['direction']}</b>\n"
+        f"{icon} <b>SP2L — {symbol} {candidate['direction']} — PENDING PLACED</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"📌 <b>Entry</b>   {candidate['theoretical_entry']:.{digits}f}\n"
         f"🛑 <b>SL</b>      {candidate['sl']:.{digits}f}\n"
@@ -641,7 +660,7 @@ def send_signal(candidate: dict, pip_size: float):
         f"📏 <b>Risk</b>    {candidate['risk']:.{digits}f}  ({risk_pips:.0f} pip)\n"
         f"➕ <b>2X Entry</b> {candidate['secondary_entry_2x']:.{digits}f}  <i>(research)</i>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
-        f"📦 <b>Order</b>   Pending Limit\n"
+        f"{order_line}\n"
         f"⚖️ <b>Volume</b>  {candidate.get('volume', VOLUME):.2f}\n"
         f"🕒 <b>Signal</b>  {t:%H:%M:%S} (UTC+3:30)\n\n"
         f"🆔 <code>AUTHOR_REPLICA_MULTI_{candidate['trigger_time']}_{symbol}_{candidate['direction']}</code>\n"
@@ -918,6 +937,12 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         _remember_position_links(state, deal)
         is_entry_deal = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
         entry_price = float(deal.price) if is_entry_deal else position_entry_price(deal, magic)
+        execution_meta = state.get("signal_orders", {}).get(str(order), {})
+        if not execution_meta and position:
+            for linked_order in state.get("position_orders", {}).get(str(position), set()):
+                execution_meta = state.get("signal_orders", {}).get(str(linked_order), {})
+                if execution_meta:
+                    break
         if not is_entry_deal and entry_price is None:
             # Exit whose own-position entry cannot be resolved yet: defer the
             # notification to the next poll instead of sending wrong numbers.
@@ -937,12 +962,28 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         commission = float(getattr(deal, "commission", 0.0))
         swap = float(getattr(deal, "swap", 0.0))
         net = profit + commission + swap
+        theoretical_entry = float(execution_meta.get("theoretical_entry", 0.0) or 0.0) or None
+        theoretical_sl = float(execution_meta.get("sl", 0.0) or 0.0) or None
+        theoretical_tp = float(execution_meta.get("tp", 0.0) or 0.0) or None
+        entry_slippage = (float(entry_price) - theoretical_entry) if is_entry_deal and entry_price is not None and theoretical_entry is not None else None
+        actual_r = None
+        if not is_entry_deal and entry_price is not None and theoretical_sl is not None:
+            actual_risk = abs(float(entry_price) - theoretical_sl)
+            if actual_risk > 0:
+                signed_move_actual = exit_price - float(entry_price) if side == "BUY" else float(entry_price) - exit_price
+                actual_r = signed_move_actual / actual_risk
         log_event({
             "event": "TELEGRAM_DEAL_LIFECYCLE", "symbol": symbol,
             "deal": ticket, "order": order, "position": position,
+            "signal_id": execution_meta.get("signal_id"),
             "entry": int(getattr(deal, "entry", -1)),
             "reason": int(getattr(deal, "reason", -1)),
             "entry_price": entry_price,
+            "theoretical_entry": theoretical_entry,
+            "theoretical_sl": theoretical_sl,
+            "theoretical_tp": theoretical_tp,
+            "entry_slippage": entry_slippage,
+            "actual_r": actual_r,
             "exit_price": exit_price,
             "pips_result": pips_result,
             "profit": profit,
@@ -1164,18 +1205,30 @@ def main() -> None:
                 result_deal = int(result.get("deal",0) or 0)
                 if result_order:
                     state["orders"].add(result_order)
+                    state.setdefault("signal_orders", {})[str(result_order)] = {
+                        "signal_id": trigger_key, "symbol": symbol, "direction": candidate["direction"],
+                        "theoretical_entry": float(candidate["theoretical_entry"]), "sl": float(candidate["sl"]),
+                        "tp": float(candidate["tp"]), "risk": float(candidate["risk"]), "trigger_time": int(candidate["trigger_time"]),
+                    }
                 order_ok = bool(result.get("ok"))
                 log_event({"event":"ORDER_RESULT","symbol":symbol,"signal_id":trigger_key,"result":result,"tracked_order":result_order or None,"tracked_deal":result_deal or None,"demo_only":True,"success":order_ok})
                 if order_ok:
                     seen_trigger[symbol] = trigger_key
                     if trigger_key not in state["notified"]:
-                        telegram_result = send_signal(candidate, cfg["pip_size"])
+                        telegram_result = send_signal(candidate, cfg["pip_size"], result_order or None)
                         telegram_success = bool(getattr(telegram_result,"success",False))
                         log_event({"event":"TELEGRAM_SIGNAL","symbol":symbol,"signal_id":trigger_key,"success":telegram_success,"detail":getattr(telegram_result,"detail",None),"canonical":False})
                         if telegram_success:
                             state["notified"].add(trigger_key)
                         else:
                             state.setdefault("pending_signal_notifications", {})[trigger_key] = dict(candidate)
+                else:
+                    seen_trigger[symbol] = trigger_key
+                    log_event({
+                        "event": "EXECUTION_BLOCKED", "symbol": symbol, "signal_id": trigger_key,
+                        "reason": result.get("reason") or result.get("error") or "ORDER_REJECTED",
+                        "result": result, "canonical": False,
+                    })
                 save_state(state)
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
