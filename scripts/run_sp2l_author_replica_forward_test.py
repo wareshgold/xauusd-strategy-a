@@ -31,9 +31,6 @@ from pathlib import Path
 
 import MetaTrader5 as mt5
 
-from live_mt5_gateway import Signal, execute_signal
-from telegram_client import send_telegram_message
-
 SYMBOL = "XAUUSD.ecn"
 TIMEFRAME = mt5.TIMEFRAME_M1
 P_GAP_PRICE = 1.0
@@ -53,7 +50,13 @@ SL_ANCHOR = "SPIKE_CANDLE_EXTREME_RESEARCH"
 # not silently converted into a level change. Pending-order lifecycle remains
 # unresolved and non-canonical.
 DEMO_ORDER_MODE = "PENDING_LIMIT_RESEARCH"
+
+# Set the execution mode BEFORE importing the gateway. The gateway reads its
+# environment at module import time; setting it afterwards is too late.
 os.environ.setdefault("MT5_FORWARD_ORDER_MODE", DEMO_ORDER_MODE)
+
+from live_mt5_gateway import Signal, execute_signal
+from telegram_client import send_telegram_message
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "runtime"
@@ -214,7 +217,7 @@ def telegram_send(text: str) -> dict:
     return {"success": result.success, "detail": result.detail}
 
 
-def format_trigger_message(candidate: dict) -> str:
+def format_order_status_message(candidate: dict, result: dict) -> str:
     direction = candidate["direction"]
     icon = "🟢" if direction == "BUY" else "🔴"
     entry = float(candidate["theoretical_entry"])
@@ -222,27 +225,35 @@ def format_trigger_message(candidate: dict) -> str:
     tp = float(candidate["tp"])
     risk = abs(entry - sl)
     risk_pips = risk / PIP_SIZE
-    secondary = float(candidate["secondary_entry_2x"])
     trigger_time = datetime.fromtimestamp(
         int(candidate["trigger_time"]), timezone.utc
     ).astimezone(timezone(timedelta(hours=3, minutes=30)))
 
+    accepted = bool(result.get("ok")) and not bool(result.get("dry_run"))
+    if accepted:
+        title = f"{icon} <b>SP2L — XAUUSD {direction} — PENDING ORDER ACCEPTED</b>"
+        order_line = f"📦 <b>Order</b>   Pending Limit accepted by MT5"
+    else:
+        title = f"⚠️ <b>SP2L — XAUUSD {direction} — ORDER REJECTED</b>"
+        order_line = f"📦 <b>Order</b>   Not placed"
+
+    reason = result.get("reason")
+    reason_line = f"\n❗ <b>Reason</b>  {reason}" if reason else ""
+    order_id = result.get("order")
+    order_line += f"\n🆔 <b>Order ID</b> {order_id}" if order_id else ""
+
     return (
-        f"{icon} <b>SP2L — XAUUSD {direction}</b>\n"
+        f"{title}\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"📌 <b>Entry</b>   {entry:.2f}\n"
         f"🛑 <b>SL</b>      {sl:.2f}\n"
         f"🎯 <b>TP (1R)</b>  {tp:.2f}\n"
         f"📏 <b>Risk</b>    {risk:.2f}  ({risk_pips:.0f} pip)\n"
-        f"➕ <b>2X Entry</b> {secondary:.2f}  <i>(research)</i>\n"
-        f"━━━━━━━━━━━━━━━━━━\n"
-        f"📦 <b>Order</b>   Pending Limit\n"
-        f"⚖️ <b>Volume</b>  {VOLUME:.2f}\n"
-        f"🕒 <b>Signal</b>  {trigger_time.strftime('%H:%M:%S')} (UTC+3:30)\n\n"
-        f"🆔 <code>{candidate['signal_id']}</code>\n"
-        f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
+        f"{order_line}\n"
+        f"🕒 <b>Signal</b>  {trigger_time.strftime('%H:%M:%S')} (UTC+3:30)\n"
+        f"🆔 <code>{candidate['signal_id']}</code>"
+        f"{reason_line}"
     )
-
 
 def open_positions():
     return list(mt5.positions_get(symbol=SYMBOL) or [])
@@ -498,13 +509,8 @@ def main():
                     },
                     "execution_semantics": "PENDING_LIMIT_RESEARCH",
                 })
-                telegram_result = telegram_send(format_trigger_message(candidate))
-                log_event({
-                    "event": "TELEGRAM_SIGNAL",
-                    "signal_id": signal_id,
-                    "result": telegram_result,
-                    "trigger_notification": True,
-                })
+                # Do not notify Telegram before the broker result. A candidate
+                # is not a trade, and a rejected order must never look like one.
                 tick_before_order = mt5.symbol_info_tick(SYMBOL)
                 log_event({
                     "event": "ORDER_ATTEMPT",
@@ -548,6 +554,14 @@ def main():
                         "order_mode": DEMO_ORDER_MODE,
                         "canonical": False,
                     })
+                    telegram_result = telegram_send(format_order_status_message(candidate, result))
+                    log_event({
+                        "event": "TELEGRAM_ORDER_STATUS",
+                        "signal_id": signal_id,
+                        "status": "REJECTED",
+                        "result": telegram_result,
+                        "canonical": False,
+                    })
                 else:
                     log_event({
                         "event": "ORDER_PLACED",
@@ -565,6 +579,15 @@ def main():
                         "dry_run": result.get("dry_run"),
                         "canonical": False,
                     })
+                    if not result.get("dry_run"):
+                        telegram_result = telegram_send(format_order_status_message(candidate, result))
+                        log_event({
+                            "event": "TELEGRAM_ORDER_STATUS",
+                            "signal_id": signal_id,
+                            "status": "PENDING_ORDER_ACCEPTED",
+                            "result": telegram_result,
+                            "canonical": False,
+                        })
 
                 # Do not retry or move the strategy levels when the theoretical
                 # entry has already been crossed. Fill/activation semantics are
