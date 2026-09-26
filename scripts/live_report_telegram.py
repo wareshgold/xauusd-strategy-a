@@ -21,11 +21,11 @@ from datetime import datetime
 from typing import Any
 
 try:
-    from live_journal import record_report
-    from telegram_client import send_telegram_message, telegram_delivery_status
-except ModuleNotFoundError:
     from scripts.live_journal import record_report
     from scripts.telegram_client import send_telegram_message, telegram_delivery_status
+except ModuleNotFoundError:
+    from live_journal import record_report
+    from telegram_client import send_telegram_message, telegram_delivery_status
 
 TITLES = {
     "daily": "📊 SP2L Daily Report",
