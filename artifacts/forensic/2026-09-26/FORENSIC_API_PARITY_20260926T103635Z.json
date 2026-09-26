@@ -1,0 +1,209 @@
+{
+  "status": "COMPLETE",
+  "research_only": true,
+  "canonical": false,
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "acquisition_comparison": [
+    "mt5.copy_rates_range",
+    "mt5.copy_rates_from"
+  ],
+  "timestamp_basis": "raw MT5 epoch plus UTC rendering; no timestamp normalization",
+  "windows": [
+    {
+      "window_utc": {
+        "start": "2026-09-24T09:55:00+00:00",
+        "end": "2026-09-24T10:20:00+00:00"
+      },
+      "expected_minutes": 26,
+      "copy_rates_range": {
+        "count": 26,
+        "first": {
+          "time_raw": 1790243700,
+          "time_utc_interpreted": "2026-09-24T09:55:00+00:00",
+          "open": 4276.88,
+          "high": 4278.17,
+          "low": 4276.86,
+          "close": 4278.12,
+          "tick_volume": 271,
+          "spread": 18,
+          "real_volume": 0
+        },
+        "last": {
+          "time_raw": 1790245200,
+          "time_utc_interpreted": "2026-09-24T10:20:00+00:00",
+          "open": 4286.73,
+          "high": 4286.73,
+          "low": 4284.65,
+          "close": 4284.84,
+          "tick_volume": 271,
+          "spread": 18,
+          "real_volume": 0
+        }
+      },
+      "copy_rates_from": {
+        "count": 26,
+        "first": {
+          "time_raw": 1790243700,
+          "time_utc_interpreted": "2026-09-24T09:55:00+00:00",
+          "open": 4276.88,
+          "high": 4278.17,
+          "low": 4276.86,
+          "close": 4278.12,
+          "tick_volume": 271,
+          "spread": 18,
+          "real_volume": 0
+        },
+        "last": {
+          "time_raw": 1790245200,
+          "time_utc_interpreted": "2026-09-24T10:20:00+00:00",
+          "open": 4286.73,
+          "high": 4286.73,
+          "low": 4284.65,
+          "close": 4284.84,
+          "tick_volume": 271,
+          "spread": 18,
+          "real_volume": 0
+        }
+      },
+      "parity": {
+        "exact_ohlc_time_sequence_equal": true,
+        "only_in_range_count": 0,
+        "only_in_from_count": 0,
+        "first_difference_index": null
+      }
+    },
+    {
+      "window_utc": {
+        "start": "2026-09-24T11:40:00+00:00",
+        "end": "2026-09-24T12:10:00+00:00"
+      },
+      "expected_minutes": 31,
+      "copy_rates_range": {
+        "count": 31,
+        "first": {
+          "time_raw": 1790250000,
+          "time_utc_interpreted": "2026-09-24T11:40:00+00:00",
+          "open": 4268.31,
+          "high": 4268.77,
+          "low": 4266.32,
+          "close": 4266.55,
+          "tick_volume": 453,
+          "spread": 18,
+          "real_volume": 0
+        },
+        "last": {
+          "time_raw": 1790251800,
+          "time_utc_interpreted": "2026-09-24T12:10:00+00:00",
+          "open": 4262.9,
+          "high": 4265.36,
+          "low": 4262.9,
+          "close": 4264.33,
+          "tick_volume": 407,
+          "spread": 18,
+          "real_volume": 0
+        }
+      },
+      "copy_rates_from": {
+        "count": 31,
+        "first": {
+          "time_raw": 1790250000,
+          "time_utc_interpreted": "2026-09-24T11:40:00+00:00",
+          "open": 4268.31,
+          "high": 4268.77,
+          "low": 4266.32,
+          "close": 4266.55,
+          "tick_volume": 453,
+          "spread": 18,
+          "real_volume": 0
+        },
+        "last": {
+          "time_raw": 1790251800,
+          "time_utc_interpreted": "2026-09-24T12:10:00+00:00",
+          "open": 4262.9,
+          "high": 4265.36,
+          "low": 4262.9,
+          "close": 4264.33,
+          "tick_volume": 407,
+          "spread": 18,
+          "real_volume": 0
+        }
+      },
+      "parity": {
+        "exact_ohlc_time_sequence_equal": true,
+        "only_in_range_count": 0,
+        "only_in_from_count": 0,
+        "first_difference_index": null
+      }
+    },
+    {
+      "window_utc": {
+        "start": "2026-09-24T12:30:00+00:00",
+        "end": "2026-09-24T13:00:00+00:00"
+      },
+      "expected_minutes": 31,
+      "copy_rates_range": {
+        "count": 31,
+        "first": {
+          "time_raw": 1790253000,
+          "time_utc_interpreted": "2026-09-24T12:30:00+00:00",
+          "open": 4255.61,
+          "high": 4257.38,
+          "low": 4254.37,
+          "close": 4257.04,
+          "tick_volume": 596,
+          "spread": 18,
+          "real_volume": 0
+        },
+        "last": {
+          "time_raw": 1790254800,
+          "time_utc_interpreted": "2026-09-24T13:00:00+00:00",
+          "open": 4255.39,
+          "high": 4258.35,
+          "low": 4254.6,
+          "close": 4258.28,
+          "tick_volume": 334,
+          "spread": 18,
+          "real_volume": 0
+        }
+      },
+      "copy_rates_from": {
+        "count": 31,
+        "first": {
+          "time_raw": 1790253000,
+          "time_utc_interpreted": "2026-09-24T12:30:00+00:00",
+          "open": 4255.61,
+          "high": 4257.38,
+          "low": 4254.37,
+          "close": 4257.04,
+          "tick_volume": 596,
+          "spread": 18,
+          "real_volume": 0
+        },
+        "last": {
+          "time_raw": 1790254800,
+          "time_utc_interpreted": "2026-09-24T13:00:00+00:00",
+          "open": 4255.39,
+          "high": 4258.35,
+          "low": 4254.6,
+          "close": 4258.28,
+          "tick_volume": 334,
+          "spread": 18,
+          "real_volume": 0
+        }
+      },
+      "parity": {
+        "exact_ohlc_time_sequence_equal": true,
+        "only_in_range_count": 0,
+        "only_in_from_count": 0,
+        "first_difference_index": null
+      }
+    }
+  ],
+  "notes": [
+    "Exact equality is evidence of API parity for the observed windows only.",
+    "Inequality does not by itself prove a forward-loop miss.",
+    "No Strategy A geometry or fill rule is changed.",
+    "This runner does not place orders or send Telegram messages."
+  ]
+}

@@ -64,9 +64,10 @@ def main():
     parser.add_argument("--windows", nargs="*", default=None,
                         help="UTC start/end pairs, e.g. START END START END")
     parser.add_argument("--output", default=None)
+    parser.add_argument("--mt5-path", default=None, help="Explicit path to MT5 terminal64.exe")
     args = parser.parse_args()
-
-    if not mt5.initialize():
+    init_kwargs = {} if args.mt5_path is None else {"path": args.mt5_path}
+    if not mt5.initialize(**init_kwargs):
         raise SystemExit(f"MT5 initialize failed: {mt5.last_error()}")
 
     try:
