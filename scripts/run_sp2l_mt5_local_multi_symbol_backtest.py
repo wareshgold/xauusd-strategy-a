@@ -43,7 +43,7 @@ REQUESTED_BASES = (
 )
 
 DEFAULT_DAYS = int(os.getenv("SP2L_MT5_BACKTEST_DAYS", "103"))
-P_GAP_PRICE = float(os.getenv("SP2L_P_GAP_PRICE", "1.0"))
+P_GAP_PRICE = float(os.getenv("SP2L_P_GAP_PRICE", "0.0"))
 SPIKE_MULTIPLIER = float(os.getenv("SP2L_SPIKE_MULTIPLIER", "1.5"))
 MAX_SL_DISTANCE = float(os.getenv("SP2L_MAX_SL_DISTANCE", "10.0"))
 TP_R = float(os.getenv("SP2L_TP_R", "1.0"))
@@ -682,7 +682,7 @@ def main() -> int:
                 "The research replay filters M1 bars to London open through New York close using named local time zones with DST; this is an explicit research-test constraint, not a canonical Strategy A session rule.",
                 "Outcome diagnostics record theoretical fill/exit sequencing, fill latency, exit reason, and the OHLC bar used for each decision.",
                 "A same-bar entry+TP event is AMBIGUOUS because M1 OHLC cannot prove whether the pending entry filled before TP; same-bar entry+SL is treated as LOSS because SL lies beyond the entry in the trade direction.",
-                "The detector is the existing author-replica research detector; this run does not promote geometry to canonical.",
+                "The detector is the source-aligned research detector with strict P-Gap separation (p_gap_price=0.0); this run does not promote geometry to canonical.",
             ],
         }
 
