@@ -24,6 +24,8 @@ import MetaTrader5 as mt5
 import numpy as np
 
 from mt5_terminal_resolver import find_mt5_terminal
+from sp2l_author_replica_detector import RESEARCH_DETECTOR_REVISION
+from sp2l_research_manifest_gate import assert_manifest_compatible
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "artifacts" / "backtest-mt5-local"
@@ -629,6 +631,14 @@ def main() -> int:
     parser.add_argument("--symbols", default=",".join(REQUESTED_BASES))
     args = parser.parse_args()
 
+    manifest_compatibility = assert_manifest_compatible(
+        p_gap_price=P_GAP_PRICE,
+        spike_multiplier=SPIKE_MULTIPLIER,
+        max_sl_distance=MAX_SL_DISTANCE,
+        tp_r=TP_R,
+        detector_revision=RESEARCH_DETECTOR_REVISION,
+    )
+
     if not mt5.initialize():
         terminal = find_mt5_terminal()
         if terminal is None or not mt5.initialize(path=str(terminal)):
@@ -666,6 +676,7 @@ def main() -> int:
                 "timezones": {"london": "Europe/London", "new_york": "America/New_York"},
                 "canonical": False,
             },
+            "manifest_compatibility": manifest_compatibility,
             "geometry": {
                 "p_gap_price": P_GAP_PRICE,
                 "spike_multiplier": SPIKE_MULTIPLIER,
