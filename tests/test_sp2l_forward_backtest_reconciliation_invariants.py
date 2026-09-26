@@ -84,3 +84,11 @@ def test_explicit_session_disagreement_is_session_mismatch():
     result = reconcile(report([historical]), [forward])
     row = result["rows"][0]
     assert row["classification"] == "SESSION_MISMATCH"
+
+
+def test_signal_id_cannot_override_mismatched_raw_trigger_time():
+    events = [forward_candidate(101)]
+    events[0]["signal_id"] = "AUTHOR_REPLICA_FT_100_BUY"
+    result = reconcile(report([candidate(100)]), events)
+    row = result["rows"][0]
+    assert row["classification"] == "TIMESTAMP_UNRESOLVED"
