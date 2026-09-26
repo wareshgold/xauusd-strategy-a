@@ -1,0 +1,33 @@
+{
+  "status": "ANALYZED",
+  "research_only": true,
+  "canonical": false,
+  "input": "artifacts\\forensic\\runtime\\SP2L_FORWARD_FORENSIC_TELEMETRY_20260926T055934Z.jsonl",
+  "start_events": 1,
+  "poll_events": 450,
+  "stop_events": 1,
+  "stop_present": true,
+  "first_poll_utc": "2026-09-26T05:59:34.203753+00:00",
+  "last_poll_utc": "2026-09-26T06:14:34.085929+00:00",
+  "returned_count_distribution": {
+    "10": 450
+  },
+  "poll_interval_seconds": {
+    "min": 1.987323,
+    "median": 2.005182,
+    "max": 2.058721,
+    "over_3s": 0,
+    "over_10s": 0
+  },
+  "wall_clock_minus_newest_bar_seconds": {
+    "min": 21754.203753,
+    "median": 22204.1168665,
+    "max": 22654.085929
+  },
+  "non_monotonic_poll_ids": [],
+  "terminal_disconnected_poll_ids": [],
+  "mt5_non_success_errors": [],
+  "detector_signal_count": 0,
+  "detector_signals": [],
+  "interpretation_scope": "This report describes only the telemetry observation interval. It cannot prove runner uptime or detector behavior on dates not covered by this capture."
+}
