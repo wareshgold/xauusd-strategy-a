@@ -69,3 +69,24 @@ The next source-resolution target is now precise:
 **identify the exact two candle roles represented by the non-overlapping High/Low pair in the SP2L P-Gap examples, including the delayed-P-Gap variant.**
 
 No detector/backtest change is justified yet.
+
+
+## Source-aligned research branch — 2026-09-26
+
+A separate research branch now tests the **strict separation form without an invented numeric threshold**:
+
+- BUY research condition: `correction.low > a.high`
+- SELL research condition: `correction.high < a.low`
+- Existing window: `a, spike, correction, trigger = [-5],[-4],[-3],[-2]`
+- Therefore the research implementation tests the t vs t-2 relationship in that existing window.
+- `p_gap_price=0.0` is the source-aligned threshold setting; positive values remain counterfactual sensitivity tests.
+
+This branch is explicitly **RESEARCH-ONLY**. It does not claim that the SP2L source has frozen the universal candle index across all P-Gap variants. The source transcript explicitly describes more than one ordering in which P-Gap can appear.
+
+The purpose of the next one-month MT5 replay is therefore:
+1. quantify the effect of removing the unsupported +1 price threshold;
+2. compare the source-aligned strict-separation candidate with the prior research implementation;
+3. preserve all data/session/timestamp/fill caveats;
+4. do NOT select the formula because it produces better backtest performance.
+
+Production/live canonical promotion remains blocked until candle-role mapping is source-frozen.
