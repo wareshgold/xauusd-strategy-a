@@ -1,0 +1,1147 @@
+{
+  "status": "COMPLETE",
+  "source": "CONNECTED_MT5_TERMINAL",
+  "generated_utc": "2026-09-23T12:17:11.129937+00:00",
+  "requested_bases": [
+    "XAUUSD",
+    "DAWJONES",
+    "USTEC100"
+  ],
+  "resolved_symbols": {
+    "XAUUSD": {
+      "requested": "XAUUSD",
+      "symbol": "XAUUSD.ecn",
+      "method": "SUFFIX:.ecn",
+      "digits": 2,
+      "point": 0.01,
+      "trade_mode": 4,
+      "bid": 4315.55,
+      "ask": 4315.73
+    },
+    "DAWJONES": {
+      "requested": "DAWJONES",
+      "symbol": "DJ30.c.ecn",
+      "method": "DISCOVERED_PREFIX",
+      "digits": 2,
+      "point": 0.01,
+      "trade_mode": 4,
+      "bid": 51708.05,
+      "ask": 51710.95
+    },
+    "USTEC100": {
+      "requested": "USTEC100",
+      "symbol": "USTEC.c.ecn",
+      "method": "DISCOVERED_PREFIX",
+      "digits": 2,
+      "point": 0.01,
+      "trade_mode": 4,
+      "bid": 30631.93,
+      "ask": 30634.43
+    }
+  },
+  "period": {
+    "start_utc": "2026-09-21T00:00:00+00:00",
+    "end_utc": "2026-09-23T15:16:00+00:00"
+  },
+  "timeframe": "M1",
+  "geometry": {
+    "p_gap_price": 1.0,
+    "spike_multiplier": 1.5,
+    "max_sl_distance": 10.0,
+    "tp_r": 1.0,
+    "canonical": false
+  },
+  "outcomes": {
+    "XAUUSD": {
+      "symbol": "XAUUSD.ecn",
+      "bars": 3615,
+      "first_bar_utc": "2026-09-21T01:00:00+00:00",
+      "last_bar_utc": "2026-09-23T15:16:00+00:00",
+      "signals": 18,
+      "wins": 7,
+      "losses": 11,
+      "ambiguous": 0,
+      "open_at_end": 0,
+      "data_gap": 0,
+      "data_gap_events_affecting_signals": [],
+      "decisive": 18,
+      "win_rate_pct": 38.888888888888886,
+      "wilson_95_ci_pct": [
+        20.30524657216362,
+        61.3809583977621
+      ],
+      "net_r": -4,
+      "profit_factor_simplified": 0.6363636363636364,
+      "max_drawdown_r": 4.0,
+      "max_consecutive_losses": 3,
+      "by_direction": {
+        "BUY": {
+          "signals": 9,
+          "wins": 3,
+          "losses": 6,
+          "ambiguous": 0,
+          "decisive": 9,
+          "win_rate_pct": 33.333333333333336,
+          "wilson_95_ci_pct": [
+            12.05838183869109,
+            64.57978644196037
+          ],
+          "net_r": -3
+        },
+        "SELL": {
+          "signals": 9,
+          "wins": 4,
+          "losses": 5,
+          "ambiguous": 0,
+          "decisive": 9,
+          "win_rate_pct": 44.44444444444444,
+          "wilson_95_ci_pct": [
+            18.87785210976645,
+            73.3348706504507
+          ],
+          "net_r": -1
+        }
+      },
+      "signals_detail": [
+        {
+          "direction": "SELL",
+          "signal_time": 1789962660,
+          "entry": 4365.99,
+          "sl": 4369.23,
+          "risk": 3.2399999999997817,
+          "tp": 4362.75,
+          "result": "LOSS",
+          "exit_time": 1789963140,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1789987320,
+          "entry": 4349.23,
+          "sl": 4350.38,
+          "risk": 1.1500000000005457,
+          "tp": 4348.079999999999,
+          "result": "WIN",
+          "exit_time": 1789987500,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789989480,
+          "entry": 4352.79,
+          "sl": 4350.32,
+          "risk": 2.4700000000002547,
+          "tp": 4355.26,
+          "result": "LOSS",
+          "exit_time": 1789991700,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789994760,
+          "entry": 4346.9,
+          "sl": 4344.87,
+          "risk": 2.0299999999997453,
+          "tp": 4348.929999999999,
+          "result": "LOSS",
+          "exit_time": 1789994940,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789996620,
+          "entry": 4355.07,
+          "sl": 4353.84,
+          "risk": 1.2299999999995634,
+          "tp": 4356.299999999999,
+          "result": "LOSS",
+          "exit_time": 1789996740,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790002680,
+          "entry": 4368.2,
+          "sl": 4370.81,
+          "risk": 2.610000000000582,
+          "tp": 4365.589999999999,
+          "result": "WIN",
+          "exit_time": 1790002980,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790039940,
+          "entry": 4351.08,
+          "sl": 4349.33,
+          "risk": 1.75,
+          "tp": 4352.83,
+          "result": "WIN",
+          "exit_time": 1790048340,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790065920,
+          "entry": 4329.67,
+          "sl": 4333.22,
+          "risk": 3.550000000000182,
+          "tp": 4326.12,
+          "result": "WIN",
+          "exit_time": 1790066040,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790089440,
+          "entry": 4324.59,
+          "sl": 4322.51,
+          "risk": 2.0799999999999272,
+          "tp": 4326.67,
+          "result": "LOSS",
+          "exit_time": 1790089740,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790091120,
+          "entry": 4338.72,
+          "sl": 4335.26,
+          "risk": 3.4600000000000364,
+          "tp": 4342.18,
+          "result": "LOSS",
+          "exit_time": 1790091840,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790092560,
+          "entry": 4333.82,
+          "sl": 4332.65,
+          "risk": 1.1700000000000728,
+          "tp": 4334.99,
+          "result": "WIN",
+          "exit_time": 1790092740,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790096160,
+          "entry": 4332.82,
+          "sl": 4337.09,
+          "risk": 4.270000000000437,
+          "tp": 4328.549999999999,
+          "result": "LOSS",
+          "exit_time": 1790096280,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790111220,
+          "entry": 4354.31,
+          "sl": 4351.71,
+          "risk": 2.600000000000364,
+          "tp": 4356.910000000001,
+          "result": "LOSS",
+          "exit_time": 1790112960,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790136720,
+          "entry": 4349.23,
+          "sl": 4350.75,
+          "risk": 1.5200000000004366,
+          "tp": 4347.709999999999,
+          "result": "WIN",
+          "exit_time": 1790136900,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790142240,
+          "entry": 4336.29,
+          "sl": 4335.01,
+          "risk": 1.2799999999997453,
+          "tp": 4337.57,
+          "result": "WIN",
+          "exit_time": 1790142360,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790143020,
+          "entry": 4334.84,
+          "sl": 4336.09,
+          "risk": 1.25,
+          "tp": 4333.59,
+          "result": "LOSS",
+          "exit_time": 1790143740,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790153100,
+          "entry": 4331.58,
+          "sl": 4335.29,
+          "risk": 3.7100000000000364,
+          "tp": 4327.87,
+          "result": "LOSS",
+          "exit_time": 1790154000,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790162340,
+          "entry": 4318.6,
+          "sl": 4320.23,
+          "risk": 1.6299999999991996,
+          "tp": 4316.970000000001,
+          "result": "LOSS",
+          "exit_time": 1790162460,
+          "r": -1.0
+        }
+      ],
+      "history_chunks": [
+        {
+          "start_utc": "2026-09-21T00:00:00+00:00",
+          "end_utc": "2026-09-23T15:16:00+00:00",
+          "bars": 3615,
+          "timestamp_normalization": "NONE_COPY_RATES_RANGE_UTC",
+          "first_bar_observed_utc": "2026-09-21T01:00:00+00:00",
+          "last_bar_observed_utc": "2026-09-23T15:16:00+00:00"
+        },
+        {
+          "coverage_audit": {
+            "observed_trading_dates": 3,
+            "observed_first_bar_mode_utc_minute": 60,
+            "observed_last_bar_mode_utc_minute": 1438,
+            "observed_first_bar_mode_utc": "01:00",
+            "observed_last_bar_mode_utc": "23:58",
+            "unexpected_same_day_gaps": [],
+            "cross_day_gaps": [
+              {
+                "from_utc": "2026-09-21T23:58:00+00:00",
+                "to_utc": "2026-09-22T01:00:00+00:00",
+                "missing_minutes": 61
+              },
+              {
+                "from_utc": "2026-09-22T23:58:00+00:00",
+                "to_utc": "2026-09-23T01:00:00+00:00",
+                "missing_minutes": 61
+              }
+            ]
+          },
+          "history_gate": "OBSERVED_EDGE_AWARE_SIGNAL_LEVEL_INTRADAY_GAPS"
+        }
+      ]
+    },
+    "DAWJONES": {
+      "symbol": "DJ30.c.ecn",
+      "bars": 3609,
+      "first_bar_utc": "2026-09-21T01:01:00+00:00",
+      "last_bar_utc": "2026-09-23T15:16:00+00:00",
+      "signals": 22,
+      "wins": 8,
+      "losses": 9,
+      "ambiguous": 4,
+      "open_at_end": 1,
+      "data_gap": 0,
+      "data_gap_events_affecting_signals": [],
+      "decisive": 17,
+      "win_rate_pct": 47.05882352941177,
+      "wilson_95_ci_pct": [
+        26.165106442409435,
+        69.03676493999558
+      ],
+      "net_r": -1,
+      "profit_factor_simplified": 0.8888888888888888,
+      "max_drawdown_r": 5.0,
+      "max_consecutive_losses": 4,
+      "by_direction": {
+        "BUY": {
+          "signals": 13,
+          "wins": 4,
+          "losses": 7,
+          "ambiguous": 2,
+          "decisive": 11,
+          "win_rate_pct": 36.36363636363637,
+          "wilson_95_ci_pct": [
+            15.166471095367573,
+            64.6198825492151
+          ],
+          "net_r": -3
+        },
+        "SELL": {
+          "signals": 9,
+          "wins": 4,
+          "losses": 2,
+          "ambiguous": 2,
+          "decisive": 6,
+          "win_rate_pct": 66.66666666666667,
+          "wilson_95_ci_pct": [
+            29.999331513839202,
+            90.32285888942195
+          ],
+          "net_r": 2
+        }
+      },
+      "signals_detail": [
+        {
+          "direction": "BUY",
+          "signal_time": 1789970760,
+          "entry": 51840.44,
+          "sl": 51836.94,
+          "risk": 3.5,
+          "tp": 51843.94,
+          "result": "LOSS",
+          "exit_time": 1789970880,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789985100,
+          "entry": 51957.14,
+          "sl": 51953.14,
+          "risk": 4.0,
+          "tp": 51961.14,
+          "result": "WIN",
+          "exit_time": 1789985460,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1789999860,
+          "entry": 52083.79,
+          "sl": 52086.69,
+          "risk": 2.900000000001455,
+          "tp": 52080.89,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790000100,
+          "r": null
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790000700,
+          "entry": 52104.69,
+          "sl": 52111.24,
+          "risk": 6.549999999995634,
+          "tp": 52098.14000000001,
+          "result": "LOSS",
+          "exit_time": 1790000820,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790005320,
+          "entry": 52122.69,
+          "sl": 52119.19,
+          "risk": 3.5,
+          "tp": 52126.19,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790005440,
+          "r": null
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790020860,
+          "entry": 52004.27,
+          "sl": 51996.15,
+          "risk": 8.119999999995343,
+          "tp": 52012.38999999999,
+          "result": "LOSS",
+          "exit_time": 1790020980,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790032680,
+          "entry": 52042.4,
+          "sl": 52047.4,
+          "risk": 5.0,
+          "tp": 52037.4,
+          "result": "LOSS",
+          "exit_time": 1790033340,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790073000,
+          "entry": 52047.5,
+          "sl": 52040.0,
+          "risk": 7.5,
+          "tp": 52055.0,
+          "result": "LOSS",
+          "exit_time": 1790073180,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790084700,
+          "entry": 52200.0,
+          "sl": 52199.5,
+          "risk": 0.5,
+          "tp": 52200.5,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790084820,
+          "r": null
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790106060,
+          "entry": 51807.05,
+          "sl": 51799.05,
+          "risk": 8.0,
+          "tp": 51815.05,
+          "result": "WIN",
+          "exit_time": 1790107380,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790109960,
+          "entry": 51817.55,
+          "sl": 51809.55,
+          "risk": 8.0,
+          "tp": 51825.55,
+          "result": "LOSS",
+          "exit_time": 1790110080,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790111460,
+          "entry": 51867.55,
+          "sl": 51864.05,
+          "risk": 3.5,
+          "tp": 51871.05,
+          "result": "LOSS",
+          "exit_time": 1790111580,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790116980,
+          "entry": 51948.55,
+          "sl": 51956.55,
+          "risk": 8.0,
+          "tp": 51940.55,
+          "result": "WIN",
+          "exit_time": 1790117220,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790117340,
+          "entry": 51944.55,
+          "sl": 51937.55,
+          "risk": 7.0,
+          "tp": 51951.55,
+          "result": "LOSS",
+          "exit_time": 1790117460,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790138100,
+          "entry": 51887.8,
+          "sl": 51889.8,
+          "risk": 2.0,
+          "tp": 51885.8,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790138220,
+          "r": null
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790141280,
+          "entry": 51898.8,
+          "sl": 51894.3,
+          "risk": 4.5,
+          "tp": 51903.3,
+          "result": "WIN",
+          "exit_time": 1790141760,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790154480,
+          "entry": 51931.4,
+          "sl": 51924.4,
+          "risk": 7.0,
+          "tp": 51938.4,
+          "result": "LOSS",
+          "exit_time": 1790154720,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790158260,
+          "entry": 51940.5,
+          "sl": 51942.5,
+          "risk": 2.0,
+          "tp": 51938.5,
+          "result": "WIN",
+          "exit_time": 1790158440,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790159640,
+          "entry": 51921.5,
+          "sl": 51927.0,
+          "risk": 5.5,
+          "tp": 51916.0,
+          "result": "WIN",
+          "exit_time": 1790159760,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790160120,
+          "entry": 51924.0,
+          "sl": 51920.5,
+          "risk": 3.5,
+          "tp": 51927.5,
+          "result": "WIN",
+          "exit_time": 1790161560,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790165520,
+          "entry": 51891.5,
+          "sl": 51897.5,
+          "risk": 6.0,
+          "tp": 51885.5,
+          "result": "WIN",
+          "exit_time": 1790165940,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790175960,
+          "entry": 51766.05,
+          "sl": 51775.05,
+          "risk": 9.0,
+          "tp": 51757.05,
+          "result": "OPEN_AT_END",
+          "exit_time": null,
+          "r": null
+        }
+      ],
+      "history_chunks": [
+        {
+          "start_utc": "2026-09-21T00:00:00+00:00",
+          "end_utc": "2026-09-23T15:16:00+00:00",
+          "bars": 3609,
+          "timestamp_normalization": "NONE_COPY_RATES_RANGE_UTC",
+          "first_bar_observed_utc": "2026-09-21T01:01:00+00:00",
+          "last_bar_observed_utc": "2026-09-23T15:16:00+00:00"
+        },
+        {
+          "coverage_audit": {
+            "observed_trading_dates": 3,
+            "observed_first_bar_mode_utc_minute": 61,
+            "observed_last_bar_mode_utc_minute": 1437,
+            "observed_first_bar_mode_utc": "01:01",
+            "observed_last_bar_mode_utc": "23:57",
+            "unexpected_same_day_gaps": [
+              {
+                "from_utc": "2026-09-23T02:05:00+00:00",
+                "to_utc": "2026-09-23T02:07:00+00:00",
+                "missing_minutes": 1
+              }
+            ],
+            "cross_day_gaps": [
+              {
+                "from_utc": "2026-09-21T23:57:00+00:00",
+                "to_utc": "2026-09-22T01:01:00+00:00",
+                "missing_minutes": 63
+              },
+              {
+                "from_utc": "2026-09-22T23:57:00+00:00",
+                "to_utc": "2026-09-23T01:01:00+00:00",
+                "missing_minutes": 63
+              }
+            ]
+          },
+          "history_gate": "OBSERVED_EDGE_AWARE_SIGNAL_LEVEL_INTRADAY_GAPS"
+        }
+      ]
+    },
+    "USTEC100": {
+      "symbol": "USTEC.c.ecn",
+      "bars": 3610,
+      "first_bar_utc": "2026-09-21T01:01:00+00:00",
+      "last_bar_utc": "2026-09-23T15:16:00+00:00",
+      "signals": 33,
+      "wins": 7,
+      "losses": 19,
+      "ambiguous": 7,
+      "open_at_end": 0,
+      "data_gap": 0,
+      "data_gap_events_affecting_signals": [],
+      "decisive": 26,
+      "win_rate_pct": 26.923076923076923,
+      "wilson_95_ci_pct": [
+        13.704448322018376,
+        46.08304037917617
+      ],
+      "net_r": -12,
+      "profit_factor_simplified": 0.3684210526315789,
+      "max_drawdown_r": 14.0,
+      "max_consecutive_losses": 10,
+      "by_direction": {
+        "BUY": {
+          "signals": 12,
+          "wins": 4,
+          "losses": 6,
+          "ambiguous": 2,
+          "decisive": 10,
+          "win_rate_pct": 40.0,
+          "wilson_95_ci_pct": [
+            16.818032970623616,
+            68.73262302663417
+          ],
+          "net_r": -2
+        },
+        "SELL": {
+          "signals": 21,
+          "wins": 3,
+          "losses": 13,
+          "ambiguous": 5,
+          "decisive": 16,
+          "win_rate_pct": 18.75,
+          "wilson_95_ci_pct": [
+            6.591599071428142,
+            43.008880961974135
+          ],
+          "net_r": -10
+        }
+      },
+      "signals_detail": [
+        {
+          "direction": "SELL",
+          "signal_time": 1789960320,
+          "entry": 29753.18,
+          "sl": 29754.93,
+          "risk": 1.75,
+          "tp": 29751.43,
+          "result": "AMBIGUOUS",
+          "exit_time": 1789960920,
+          "r": null
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789963260,
+          "entry": 29796.06,
+          "sl": 29790.91,
+          "risk": 5.150000000001455,
+          "tp": 29801.210000000003,
+          "result": "WIN",
+          "exit_time": 1789966140,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1789964640,
+          "entry": 29818.68,
+          "sl": 29821.43,
+          "risk": 2.75,
+          "tp": 29815.93,
+          "result": "LOSS",
+          "exit_time": 1789964760,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1789968780,
+          "entry": 29780.43,
+          "sl": 29789.31,
+          "risk": 8.880000000001019,
+          "tp": 29771.55,
+          "result": "LOSS",
+          "exit_time": 1789969320,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789969020,
+          "entry": 29782.56,
+          "sl": 29779.91,
+          "risk": 2.650000000001455,
+          "tp": 29785.210000000003,
+          "result": "WIN",
+          "exit_time": 1789969200,
+          "r": 1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789969440,
+          "entry": 29787.31,
+          "sl": 29783.91,
+          "risk": 3.400000000001455,
+          "tp": 29790.710000000003,
+          "result": "WIN",
+          "exit_time": 1789970040,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1789975920,
+          "entry": 29793.53,
+          "sl": 29801.43,
+          "risk": 7.900000000001455,
+          "tp": 29785.629999999997,
+          "result": "LOSS",
+          "exit_time": 1789976880,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789982280,
+          "entry": 29825.31,
+          "sl": 29820.43,
+          "risk": 4.880000000001019,
+          "tp": 29830.190000000002,
+          "result": "LOSS",
+          "exit_time": 1789982400,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1789995540,
+          "entry": 29945.46,
+          "sl": 29952.71,
+          "risk": 7.25,
+          "tp": 29938.21,
+          "result": "LOSS",
+          "exit_time": 1789995660,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1789998000,
+          "entry": 29961.06,
+          "sl": 29960.58,
+          "risk": 0.47999999999956344,
+          "tp": 29961.54,
+          "result": "LOSS",
+          "exit_time": 1789998120,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1789999740,
+          "entry": 29937.06,
+          "sl": 29939.08,
+          "risk": 2.0200000000004366,
+          "tp": 29935.04,
+          "result": "LOSS",
+          "exit_time": 1790000040,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790012640,
+          "entry": 30219.68,
+          "sl": 30224.15,
+          "risk": 4.470000000001164,
+          "tp": 30215.21,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790012760,
+          "r": null
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790021640,
+          "entry": 30383.37,
+          "sl": 30377.23,
+          "risk": 6.139999999999418,
+          "tp": 30389.51,
+          "result": "LOSS",
+          "exit_time": 1790022120,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790023740,
+          "entry": 30412.56,
+          "sl": 30416.97,
+          "risk": 4.4099999999998545,
+          "tp": 30408.15,
+          "result": "LOSS",
+          "exit_time": 1790024040,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790028360,
+          "entry": 30477.45,
+          "sl": 30480.25,
+          "risk": 2.7999999999992724,
+          "tp": 30474.65,
+          "result": "LOSS",
+          "exit_time": 1790028480,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790032680,
+          "entry": 30463.64,
+          "sl": 30473.25,
+          "risk": 9.610000000000582,
+          "tp": 30454.03,
+          "result": "LOSS",
+          "exit_time": 1790033100,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790033220,
+          "entry": 30470.96,
+          "sl": 30464.95,
+          "risk": 6.009999999998399,
+          "tp": 30476.969999999998,
+          "result": "LOSS",
+          "exit_time": 1790033760,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790039160,
+          "entry": 30497.44,
+          "sl": 30493.14,
+          "risk": 4.299999999999272,
+          "tp": 30501.739999999998,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790039460,
+          "r": null
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790067360,
+          "entry": 30521.8,
+          "sl": 30528.8,
+          "risk": 7.0,
+          "tp": 30514.8,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790081520,
+          "r": null
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790069460,
+          "entry": 30482.05,
+          "sl": 30475.93,
+          "risk": 6.119999999998981,
+          "tp": 30488.17,
+          "result": "WIN",
+          "exit_time": 1790069940,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790085780,
+          "entry": 30507.2,
+          "sl": 30511.55,
+          "risk": 4.349999999998545,
+          "tp": 30502.850000000002,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790085900,
+          "r": null
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790095440,
+          "entry": 30603.05,
+          "sl": 30593.18,
+          "risk": 9.869999999998981,
+          "tp": 30612.92,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790095560,
+          "r": null
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790102940,
+          "entry": 30607.7,
+          "sl": 30602.7,
+          "risk": 5.0,
+          "tp": 30612.7,
+          "result": "LOSS",
+          "exit_time": 1790103120,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790103780,
+          "entry": 30605.58,
+          "sl": 30611.2,
+          "risk": 5.619999999998981,
+          "tp": 30599.960000000003,
+          "result": "LOSS",
+          "exit_time": 1790103900,
+          "r": -1.0
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790104140,
+          "entry": 30623.93,
+          "sl": 30614.7,
+          "risk": 9.229999999999563,
+          "tp": 30633.16,
+          "result": "LOSS",
+          "exit_time": 1790104680,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790116980,
+          "entry": 30732.68,
+          "sl": 30742.55,
+          "risk": 9.869999999998981,
+          "tp": 30722.81,
+          "result": "LOSS",
+          "exit_time": 1790117220,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790131620,
+          "entry": 30753.68,
+          "sl": 30761.05,
+          "risk": 7.369999999998981,
+          "tp": 30746.31,
+          "result": "LOSS",
+          "exit_time": 1790131920,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790134200,
+          "entry": 30752.93,
+          "sl": 30756.05,
+          "risk": 3.1199999999989814,
+          "tp": 30749.81,
+          "result": "WIN",
+          "exit_time": 1790134740,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790135760,
+          "entry": 30725.68,
+          "sl": 30730.05,
+          "risk": 4.369999999998981,
+          "tp": 30721.31,
+          "result": "WIN",
+          "exit_time": 1790135880,
+          "r": 1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790144220,
+          "entry": 30706.68,
+          "sl": 30712.93,
+          "risk": 6.25,
+          "tp": 30700.43,
+          "result": "LOSS",
+          "exit_time": 1790144580,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790167620,
+          "entry": 30718.8,
+          "sl": 30725.18,
+          "risk": 6.380000000001019,
+          "tp": 30712.42,
+          "result": "LOSS",
+          "exit_time": 1790168520,
+          "r": -1.0
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790174340,
+          "entry": 30635.55,
+          "sl": 30637.18,
+          "risk": 1.6300000000010186,
+          "tp": 30633.92,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790174700,
+          "r": null
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790175780,
+          "entry": 30656.2,
+          "sl": 30660.83,
+          "risk": 4.630000000001019,
+          "tp": 30651.57,
+          "result": "WIN",
+          "exit_time": 1790175960,
+          "r": 1.0
+        }
+      ],
+      "history_chunks": [
+        {
+          "start_utc": "2026-09-21T00:00:00+00:00",
+          "end_utc": "2026-09-23T15:16:00+00:00",
+          "bars": 3610,
+          "timestamp_normalization": "NONE_COPY_RATES_RANGE_UTC",
+          "first_bar_observed_utc": "2026-09-21T01:01:00+00:00",
+          "last_bar_observed_utc": "2026-09-23T15:16:00+00:00"
+        },
+        {
+          "coverage_audit": {
+            "observed_trading_dates": 3,
+            "observed_first_bar_mode_utc_minute": 61,
+            "observed_last_bar_mode_utc_minute": 1437,
+            "observed_first_bar_mode_utc": "01:01",
+            "observed_last_bar_mode_utc": "23:57",
+            "unexpected_same_day_gaps": [],
+            "cross_day_gaps": [
+              {
+                "from_utc": "2026-09-21T23:57:00+00:00",
+                "to_utc": "2026-09-22T01:01:00+00:00",
+                "missing_minutes": 63
+              },
+              {
+                "from_utc": "2026-09-22T23:57:00+00:00",
+                "to_utc": "2026-09-23T01:01:00+00:00",
+                "missing_minutes": 63
+              }
+            ]
+          },
+          "history_gate": "OBSERVED_EDGE_AWARE_SIGNAL_LEVEL_INTRADAY_GAPS"
+        }
+      ]
+    }
+  },
+  "notes": [
+    "Historical bars are pulled directly from the connected MT5 terminal at run time.",
+    "This is not a broker-independent tick backtest; it uses MT5 M1 OHLC history.",
+    "Pending-limit fill semantics remain unresolved: a bar is eligible only if it reaches the theoretical entry.",
+    "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries; same-day M1 gaps are retained as data-quality events and signals crossing them are excluded from decisive performance.",
+    "MT5 Python API does not expose symbol session-trade intervals in this environment; observed history coverage is descriptive only and is not a canonical Strategy A session rule.",
+    "If one M1 candle touches both SL and TP, the result is AMBIGUOUS rather than guessed.",
+    "The detector is the existing author-replica research detector; this run does not promote geometry to canonical."
+  ],
+  "combined": {
+    "decisive": 61,
+    "wins": 22,
+    "losses": 39,
+    "win_rate_pct": 36.0655737704918,
+    "wilson_95_ci_pct": [
+      25.174111519874508,
+      48.60809463466307
+    ],
+    "net_r": -17,
+    "profit_factor_simplified": 0.5641025641025641,
+    "max_drawdown_r": 21.0,
+    "max_consecutive_losses": 7
+  },
+  "failed_symbols": []
+}

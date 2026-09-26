@@ -1,0 +1,99 @@
+{
+  "status": "INCOMPLETE_HISTORY",
+  "source": "CONNECTED_MT5_TERMINAL",
+  "generated_utc": "2026-09-23T12:16:21.953409+00:00",
+  "requested_bases": [
+    "XAUUSD",
+    "DAWJONES",
+    "USTEC100"
+  ],
+  "resolved_symbols": {
+    "XAUUSD": {
+      "requested": "XAUUSD",
+      "symbol": "XAUUSD.ecn",
+      "method": "SUFFIX:.ecn",
+      "digits": 2,
+      "point": 0.01,
+      "trade_mode": 4,
+      "bid": 4316.99,
+      "ask": 4317.17
+    },
+    "DAWJONES": {
+      "requested": "DAWJONES",
+      "symbol": "DJ30.c.ecn",
+      "method": "DISCOVERED_PREFIX",
+      "digits": 2,
+      "point": 0.01,
+      "trade_mode": 4,
+      "bid": 51718.05,
+      "ask": 51720.95
+    },
+    "USTEC100": {
+      "requested": "USTEC100",
+      "symbol": "USTEC.c.ecn",
+      "method": "DISCOVERED_PREFIX",
+      "digits": 2,
+      "point": 0.01,
+      "trade_mode": 4,
+      "bid": 30639.45,
+      "ask": 30641.95
+    }
+  },
+  "period": {
+    "start_utc": "2026-09-21T00:00:00+00:00",
+    "end_utc": "2026-09-23T23:59:59+00:00"
+  },
+  "timeframe": "M1",
+  "geometry": {
+    "p_gap_price": 1.0,
+    "spike_multiplier": 1.5,
+    "max_sl_distance": 10.0,
+    "tp_r": 1.0,
+    "canonical": false
+  },
+  "outcomes": {
+    "XAUUSD": {
+      "status": "FAILED",
+      "symbol": "XAUUSD.ecn",
+      "error": "Incomplete MT5 history for XAUUSD.ecn: last bar 2026-09-23T15:16:00+00:00 is before requested end 2026-09-23T23:59:59+00:00 and does not match the recurring observed daily closing edge 23:58"
+    },
+    "DAWJONES": {
+      "status": "FAILED",
+      "symbol": "DJ30.c.ecn",
+      "error": "Incomplete MT5 history for DJ30.c.ecn: last bar 2026-09-23T15:16:00+00:00 is before requested end 2026-09-23T23:59:59+00:00 and does not match the recurring observed daily closing edge 23:57"
+    },
+    "USTEC100": {
+      "status": "FAILED",
+      "symbol": "USTEC.c.ecn",
+      "error": "Incomplete MT5 history for USTEC.c.ecn: last bar 2026-09-23T15:16:00+00:00 is before requested end 2026-09-23T23:59:59+00:00 and does not match the recurring observed daily closing edge 23:57"
+    }
+  },
+  "notes": [
+    "Historical bars are pulled directly from the connected MT5 terminal at run time.",
+    "This is not a broker-independent tick backtest; it uses MT5 M1 OHLC history.",
+    "Pending-limit fill semantics remain unresolved: a bar is eligible only if it reaches the theoretical entry.",
+    "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries; same-day M1 gaps are retained as data-quality events and signals crossing them are excluded from decisive performance.",
+    "MT5 Python API does not expose symbol session-trade intervals in this environment; observed history coverage is descriptive only and is not a canonical Strategy A session rule.",
+    "If one M1 candle touches both SL and TP, the result is AMBIGUOUS rather than guessed.",
+    "The detector is the existing author-replica research detector; this run does not promote geometry to canonical."
+  ],
+  "combined": {
+    "decisive": 0,
+    "wins": 0,
+    "losses": 0,
+    "win_rate_pct": null,
+    "wilson_95_ci_pct": [
+      null,
+      null
+    ],
+    "net_r": 0,
+    "profit_factor_simplified": null,
+    "max_drawdown_r": 0.0,
+    "max_consecutive_losses": 0
+  },
+  "failed_symbols": [
+    "XAUUSD",
+    "DAWJONES",
+    "USTEC100"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "status": "INCOMPLETE_HISTORY",
+  "source": "CONNECTED_MT5_TERMINAL",
+  "generated_utc": "2026-09-26T05:13:56.793326+00:00",
+  "requested_bases": [
+    "XAUUSD.ECN"
+  ],
+  "resolved_symbols": {
+    "XAUUSD.ECN": {
+      "requested": "XAUUSD.ECN",
+      "symbol": "XAUUSD.ecn",
+      "method": "DISCOVERED_PREFIX",
+      "digits": 2,
+      "point": 0.01,
+      "trade_mode": 4,
+      "bid": 4286.05,
+      "ask": 4286.27
+    }
+  },
+  "period": {
+    "start_utc": "2026-06-15T05:13:56.793326+00:00",
+    "end_utc": "2026-09-26T05:13:56.793326+00:00"
+  },
+  "timeframe": "M1",
+  "research_session_filter": {
+    "enabled": true,
+    "window": "London open -> New York close",
+    "london_open_local": "08:00",
+    "new_york_close_local": "17:00",
+    "timezones": {
+      "london": "Europe/London",
+      "new_york": "America/New_York"
+    },
+    "canonical": false
+  },
+  "geometry": {
+    "p_gap_price": 1.0,
+    "spike_multiplier": 1.5,
+    "max_sl_distance": 10.0,
+    "tp_r": 1.0,
+    "canonical": false
+  },
+  "outcomes": {
+    "XAUUSD.ECN": {
+      "status": "FAILED",
+      "symbol": "XAUUSD.ecn",
+      "error": "Incomplete MT5 history for XAUUSD.ecn: first observed trading date 2026-06-16 is after requested start date 2026-06-15"
+    }
+  },
+  "notes": [
+    "Historical bars are pulled directly from the connected MT5 terminal at run time.",
+    "This is not a broker-independent tick backtest; it uses MT5 M1 OHLC history.",
+    "Pending-limit fill semantics remain unresolved: a bar is eligible only if it reaches the theoretical entry.",
+    "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries; same-day M1 gaps are retained as data-quality events and signals crossing them are excluded from decisive performance.",
+    "The research replay filters M1 bars to London open through New York close using named local time zones with DST; this is an explicit research-test constraint, not a canonical Strategy A session rule.",
+    "Outcome diagnostics record theoretical fill/exit sequencing, fill latency, exit reason, and the OHLC bar used for each decision.",
+    "A same-bar entry+TP event is AMBIGUOUS because M1 OHLC cannot prove whether the pending entry filled before TP; same-bar entry+SL is treated as LOSS because SL lies beyond the entry in the trade direction.",
+    "The detector is the existing author-replica research detector; this run does not promote geometry to canonical."
+  ],
+  "combined": {
+    "decisive": 0,
+    "wins": 0,
+    "losses": 0,
+    "win_rate_pct": null,
+    "wilson_95_ci_pct": [
+      null,
+      null
+    ],
+    "net_r": 0,
+    "profit_factor_simplified": null,
+    "max_drawdown_r": 0.0,
+    "max_consecutive_losses": 0
+  },
+  "failed_symbols": [
+    "XAUUSD.ECN"
+  ]
+}

@@ -1,0 +1,632 @@
+{
+  "status": "COMPLETE",
+  "source": "CONNECTED_MT5_TERMINAL",
+  "generated_utc": "2026-09-26T05:14:26.192063+00:00",
+  "requested_bases": [
+    "XAUUSD.ECN"
+  ],
+  "resolved_symbols": {
+    "XAUUSD.ECN": {
+      "requested": "XAUUSD.ECN",
+      "symbol": "XAUUSD.ecn",
+      "method": "DISCOVERED_PREFIX",
+      "digits": 2,
+      "point": 0.01,
+      "trade_mode": 4,
+      "bid": 4286.05,
+      "ask": 4286.27
+    }
+  },
+  "period": {
+    "start_utc": "2026-09-24T00:00:00+00:00",
+    "end_utc": "2026-09-25T23:59:59+00:00"
+  },
+  "timeframe": "M1",
+  "research_session_filter": {
+    "enabled": true,
+    "window": "London open -> New York close",
+    "london_open_local": "08:00",
+    "new_york_close_local": "17:00",
+    "timezones": {
+      "london": "Europe/London",
+      "new_york": "America/New_York"
+    },
+    "canonical": false
+  },
+  "geometry": {
+    "p_gap_price": 1.0,
+    "spike_multiplier": 1.5,
+    "max_sl_distance": 10.0,
+    "tp_r": 1.0,
+    "canonical": false
+  },
+  "outcomes": {
+    "XAUUSD.ECN": {
+      "symbol": "XAUUSD.ecn",
+      "bars": 1682,
+      "first_bar_utc": "2026-09-24T07:00:00+00:00",
+      "last_bar_utc": "2026-09-25T21:00:00+00:00",
+      "signals": 13,
+      "wins": 1,
+      "losses": 5,
+      "ambiguous": 7,
+      "open_at_end": 0,
+      "data_gap": 0,
+      "data_gap_events_affecting_signals": [],
+      "decisive": 6,
+      "win_rate_pct": 16.666666666666668,
+      "wilson_95_ci_pct": [
+        3.0053369748306635,
+        56.35028221864702
+      ],
+      "net_r": -4,
+      "profit_factor_simplified": 0.2,
+      "max_drawdown_r": 4.0,
+      "max_consecutive_losses": 4,
+      "by_direction": {
+        "BUY": {
+          "signals": 5,
+          "wins": 0,
+          "losses": 2,
+          "ambiguous": 3,
+          "decisive": 2,
+          "win_rate_pct": 0.0,
+          "wilson_95_ci_pct": [
+            0.0,
+            65.76197724933469
+          ],
+          "net_r": -2
+        },
+        "SELL": {
+          "signals": 8,
+          "wins": 1,
+          "losses": 3,
+          "ambiguous": 4,
+          "decisive": 4,
+          "win_rate_pct": 25.0,
+          "wilson_95_ci_pct": [
+            4.558726080970055,
+            69.93581574175981
+          ],
+          "net_r": -2
+        }
+      },
+      "signals_detail": [
+        {
+          "direction": "BUY",
+          "signal_time": 1790239680,
+          "entry": 4284.0,
+          "sl": 4282.33,
+          "risk": 1.6700000000000728,
+          "tp": 4285.67,
+          "result": "LOSS",
+          "exit_time": 1790239860,
+          "r": -1.0,
+          "outcome_trace": {
+            "signal_index": 109,
+            "signal_time": 1790239680,
+            "fill_index": 110,
+            "fill_time": 1790239800,
+            "fill_price": 4284.0,
+            "fill_bar": {
+              "open": 4283.1,
+              "high": 4284.26,
+              "low": 4282.56,
+              "close": 4283.06
+            },
+            "bars_waiting_for_fill": 0,
+            "exit_index": 111,
+            "exit_time": 1790239860,
+            "exit_reason": "SL",
+            "exit_bar": {
+              "open": 4282.96,
+              "high": 4283.23,
+              "low": 4282.12,
+              "close": 4282.21
+            },
+            "bars_held": 1,
+            "entry_to_sl_distance": 1.6700000000000728,
+            "entry_to_tp_distance": 1.6700000000000728
+          }
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790244420,
+          "entry": 4280.71,
+          "sl": 4279.5,
+          "risk": 1.2100000000000364,
+          "tp": 4281.92,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790246460,
+          "r": null,
+          "outcome_trace": {
+            "signal_index": 188,
+            "signal_time": 1790244420,
+            "fill_index": 221,
+            "fill_time": 1790246460,
+            "fill_price": 4280.71,
+            "fill_bar": {
+              "open": 4282.26,
+              "high": 4282.39,
+              "low": 4280.19,
+              "close": 4281.02
+            },
+            "bars_waiting_for_fill": 32,
+            "exit_index": 221,
+            "exit_time": 1790246460,
+            "exit_reason": "ENTRY_TP_SAME_BAR_ORDER_UNRESOLVED",
+            "exit_bar": {
+              "open": 4282.26,
+              "high": 4282.39,
+              "low": 4280.19,
+              "close": 4281.02
+            },
+            "bars_held": 0,
+            "entry_to_sl_distance": 1.2100000000000364,
+            "entry_to_tp_distance": 1.2100000000000364
+          }
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790250900,
+          "entry": 4263.12,
+          "sl": 4267.61,
+          "risk": 4.489999999999782,
+          "tp": 4258.63,
+          "result": "WIN",
+          "exit_time": 1790252820,
+          "r": 1.0,
+          "outcome_trace": {
+            "signal_index": 296,
+            "signal_time": 1790250900,
+            "fill_index": 301,
+            "fill_time": 1790251260,
+            "fill_price": 4263.12,
+            "fill_bar": {
+              "open": 4263.07,
+              "high": 4267.28,
+              "low": 4262.29,
+              "close": 4265.06
+            },
+            "bars_waiting_for_fill": 4,
+            "exit_index": 327,
+            "exit_time": 1790252820,
+            "exit_reason": "TP",
+            "exit_bar": {
+              "open": 4261.66,
+              "high": 4261.78,
+              "low": 4258.25,
+              "close": 4258.88
+            },
+            "bars_held": 26,
+            "entry_to_sl_distance": 4.489999999999782,
+            "entry_to_tp_distance": 4.489999999999782
+          }
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790253900,
+          "entry": 4253.37,
+          "sl": 4254.5,
+          "risk": 1.1300000000001091,
+          "tp": 4252.24,
+          "result": "LOSS",
+          "exit_time": 1790254080,
+          "r": -1.0,
+          "outcome_trace": {
+            "signal_index": 346,
+            "signal_time": 1790253900,
+            "fill_index": 347,
+            "fill_time": 1790254020,
+            "fill_price": 4253.37,
+            "fill_bar": {
+              "open": 4253.85,
+              "high": 4254.42,
+              "low": 4253.03,
+              "close": 4253.72
+            },
+            "bars_waiting_for_fill": 0,
+            "exit_index": 348,
+            "exit_time": 1790254080,
+            "exit_reason": "SL",
+            "exit_bar": {
+              "open": 4253.66,
+              "high": 4255.74,
+              "low": 4253.13,
+              "close": 4253.41
+            },
+            "bars_held": 1,
+            "entry_to_sl_distance": 1.1300000000001091,
+            "entry_to_tp_distance": 1.1300000000001091
+          }
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790256660,
+          "entry": 4248.92,
+          "sl": 4249.28,
+          "risk": 0.3599999999996726,
+          "tp": 4248.56,
+          "result": "LOSS",
+          "exit_time": 1790256780,
+          "r": -1.0,
+          "outcome_trace": {
+            "signal_index": 392,
+            "signal_time": 1790256660,
+            "fill_index": 393,
+            "fill_time": 1790256780,
+            "fill_price": 4248.92,
+            "fill_bar": {
+              "open": 4251.64,
+              "high": 4254.11,
+              "low": 4251.55,
+              "close": 4252.31
+            },
+            "bars_waiting_for_fill": 0,
+            "exit_index": 393,
+            "exit_time": 1790256780,
+            "exit_reason": "SL_AFTER_ENTRY_SAME_BAR",
+            "exit_bar": {
+              "open": 4251.64,
+              "high": 4254.11,
+              "low": 4251.55,
+              "close": 4252.31
+            },
+            "bars_held": 0,
+            "entry_to_sl_distance": 0.3599999999996726,
+            "entry_to_tp_distance": 0.3599999999996726
+          }
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790265900,
+          "entry": 4282.53,
+          "sl": 4284.1,
+          "risk": 1.5700000000006185,
+          "tp": 4280.959999999999,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790266260,
+          "r": null,
+          "outcome_trace": {
+            "signal_index": 546,
+            "signal_time": 1790265900,
+            "fill_index": 551,
+            "fill_time": 1790266260,
+            "fill_price": 4282.53,
+            "fill_bar": {
+              "open": 4280.59,
+              "high": 4282.81,
+              "low": 4280.51,
+              "close": 4281.33
+            },
+            "bars_waiting_for_fill": 4,
+            "exit_index": 551,
+            "exit_time": 1790266260,
+            "exit_reason": "ENTRY_TP_SAME_BAR_ORDER_UNRESOLVED",
+            "exit_bar": {
+              "open": 4280.59,
+              "high": 4282.81,
+              "low": 4280.51,
+              "close": 4281.33
+            },
+            "bars_held": 0,
+            "entry_to_sl_distance": 1.5700000000006185,
+            "entry_to_tp_distance": 1.5700000000006185
+          }
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790325660,
+          "entry": 4273.15,
+          "sl": 4269.71,
+          "risk": 3.4399999999996,
+          "tp": 4276.589999999999,
+          "result": "LOSS",
+          "exit_time": 1790326380,
+          "r": -1.0,
+          "outcome_trace": {
+            "signal_index": 943,
+            "signal_time": 1790325660,
+            "fill_index": 944,
+            "fill_time": 1790325780,
+            "fill_price": 4273.15,
+            "fill_bar": {
+              "open": 4272.98,
+              "high": 4273.89,
+              "low": 4272.09,
+              "close": 4273.6
+            },
+            "bars_waiting_for_fill": 0,
+            "exit_index": 954,
+            "exit_time": 1790326380,
+            "exit_reason": "SL",
+            "exit_bar": {
+              "open": 4270.26,
+              "high": 4270.26,
+              "low": 4268.38,
+              "close": 4268.69
+            },
+            "bars_held": 10,
+            "entry_to_sl_distance": 3.4399999999996,
+            "entry_to_tp_distance": 3.4399999999996
+          }
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790328240,
+          "entry": 4279.18,
+          "sl": 4281.06,
+          "risk": 1.8800000000001091,
+          "tp": 4277.3,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790330400,
+          "r": null,
+          "outcome_trace": {
+            "signal_index": 986,
+            "signal_time": 1790328240,
+            "fill_index": 1021,
+            "fill_time": 1790330400,
+            "fill_price": 4279.18,
+            "fill_bar": {
+              "open": 4275.77,
+              "high": 4280.3,
+              "low": 4275.77,
+              "close": 4279.78
+            },
+            "bars_waiting_for_fill": 34,
+            "exit_index": 1021,
+            "exit_time": 1790330400,
+            "exit_reason": "ENTRY_TP_SAME_BAR_ORDER_UNRESOLVED",
+            "exit_bar": {
+              "open": 4275.77,
+              "high": 4280.3,
+              "low": 4275.77,
+              "close": 4279.78
+            },
+            "bars_held": 0,
+            "entry_to_sl_distance": 1.8800000000001091,
+            "entry_to_tp_distance": 1.8800000000001091
+          }
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790343240,
+          "entry": 4306.79,
+          "sl": 4307.97,
+          "risk": 1.180000000000291,
+          "tp": 4305.61,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790343420,
+          "r": null,
+          "outcome_trace": {
+            "signal_index": 1236,
+            "signal_time": 1790343240,
+            "fill_index": 1238,
+            "fill_time": 1790343420,
+            "fill_price": 4306.79,
+            "fill_bar": {
+              "open": 4306.67,
+              "high": 4307.01,
+              "low": 4305.42,
+              "close": 4305.43
+            },
+            "bars_waiting_for_fill": 1,
+            "exit_index": 1238,
+            "exit_time": 1790343420,
+            "exit_reason": "ENTRY_TP_SAME_BAR_ORDER_UNRESOLVED",
+            "exit_bar": {
+              "open": 4306.67,
+              "high": 4307.01,
+              "low": 4305.42,
+              "close": 4305.43
+            },
+            "bars_held": 0,
+            "entry_to_sl_distance": 1.180000000000291,
+            "entry_to_tp_distance": 1.180000000000291
+          }
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790349780,
+          "entry": 4303.02,
+          "sl": 4301.29,
+          "risk": 1.730000000000473,
+          "tp": 4304.750000000001,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790349900,
+          "r": null,
+          "outcome_trace": {
+            "signal_index": 1345,
+            "signal_time": 1790349780,
+            "fill_index": 1346,
+            "fill_time": 1790349900,
+            "fill_price": 4303.02,
+            "fill_bar": {
+              "open": 4303.46,
+              "high": 4307.23,
+              "low": 4302.94,
+              "close": 4307.17
+            },
+            "bars_waiting_for_fill": 0,
+            "exit_index": 1346,
+            "exit_time": 1790349900,
+            "exit_reason": "ENTRY_TP_SAME_BAR_ORDER_UNRESOLVED",
+            "exit_bar": {
+              "open": 4303.46,
+              "high": 4307.23,
+              "low": 4302.94,
+              "close": 4307.17
+            },
+            "bars_held": 0,
+            "entry_to_sl_distance": 1.730000000000473,
+            "entry_to_tp_distance": 1.730000000000473
+          }
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790355960,
+          "entry": 4260.21,
+          "sl": 4266.64,
+          "risk": 6.430000000000291,
+          "tp": 4253.78,
+          "result": "LOSS",
+          "exit_time": 1790356140,
+          "r": -1.0,
+          "outcome_trace": {
+            "signal_index": 1448,
+            "signal_time": 1790355960,
+            "fill_index": 1449,
+            "fill_time": 1790356080,
+            "fill_price": 4260.21,
+            "fill_bar": {
+              "open": 4262.87,
+              "high": 4266.56,
+              "low": 4261.95,
+              "close": 4266.22
+            },
+            "bars_waiting_for_fill": 0,
+            "exit_index": 1450,
+            "exit_time": 1790356140,
+            "exit_reason": "SL",
+            "exit_bar": {
+              "open": 4265.91,
+              "high": 4267.2,
+              "low": 4264.86,
+              "close": 4266.37
+            },
+            "bars_held": 1,
+            "entry_to_sl_distance": 6.430000000000291,
+            "entry_to_tp_distance": 6.430000000000291
+          }
+        },
+        {
+          "direction": "BUY",
+          "signal_time": 1790360880,
+          "entry": 4279.44,
+          "sl": 4275.37,
+          "risk": 4.069999999999709,
+          "tp": 4283.509999999999,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790361000,
+          "r": null,
+          "outcome_trace": {
+            "signal_index": 1530,
+            "signal_time": 1790360880,
+            "fill_index": 1531,
+            "fill_time": 1790361000,
+            "fill_price": 4279.44,
+            "fill_bar": {
+              "open": 4279.76,
+              "high": 4285.54,
+              "low": 4279.2,
+              "close": 4282.21
+            },
+            "bars_waiting_for_fill": 0,
+            "exit_index": 1531,
+            "exit_time": 1790361000,
+            "exit_reason": "ENTRY_TP_SAME_BAR_ORDER_UNRESOLVED",
+            "exit_bar": {
+              "open": 4279.76,
+              "high": 4285.54,
+              "low": 4279.2,
+              "close": 4282.21
+            },
+            "bars_held": 0,
+            "entry_to_sl_distance": 4.069999999999709,
+            "entry_to_tp_distance": 4.069999999999709
+          }
+        },
+        {
+          "direction": "SELL",
+          "signal_time": 1790361600,
+          "entry": 4278.55,
+          "sl": 4280.16,
+          "risk": 1.6099999999996726,
+          "tp": 4276.9400000000005,
+          "result": "AMBIGUOUS",
+          "exit_time": 1790362440,
+          "r": null,
+          "outcome_trace": {
+            "signal_index": 1542,
+            "signal_time": 1790361600,
+            "fill_index": 1555,
+            "fill_time": 1790362440,
+            "fill_price": 4278.55,
+            "fill_bar": {
+              "open": 4272.65,
+              "high": 4280.03,
+              "low": 4272.42,
+              "close": 4277.54
+            },
+            "bars_waiting_for_fill": 12,
+            "exit_index": 1555,
+            "exit_time": 1790362440,
+            "exit_reason": "ENTRY_TP_SAME_BAR_ORDER_UNRESOLVED",
+            "exit_bar": {
+              "open": 4272.65,
+              "high": 4280.03,
+              "low": 4272.42,
+              "close": 4277.54
+            },
+            "bars_held": 0,
+            "entry_to_sl_distance": 1.6099999999996726,
+            "entry_to_tp_distance": 1.6099999999996726
+          }
+        }
+      ],
+      "history_chunks": [
+        {
+          "start_utc": "2026-09-24T00:00:00+00:00",
+          "end_utc": "2026-09-25T23:59:59+00:00",
+          "bars": 2757,
+          "timestamp_normalization": "NONE_COPY_RATES_RANGE_UTC",
+          "first_bar_observed_utc": "2026-09-24T01:00:00+00:00",
+          "last_bar_observed_utc": "2026-09-25T23:57:00+00:00"
+        },
+        {
+          "coverage_audit": {
+            "observed_trading_dates": 2,
+            "observed_first_bar_mode_utc_minute": 60,
+            "observed_last_bar_mode_utc_minute": 1438,
+            "observed_first_bar_mode_utc": "01:00",
+            "observed_last_bar_mode_utc": "23:58",
+            "unexpected_same_day_gaps": [],
+            "cross_day_gaps": [
+              {
+                "from_utc": "2026-09-24T23:58:00+00:00",
+                "to_utc": "2026-09-25T01:00:00+00:00",
+                "missing_minutes": 61
+              }
+            ]
+          },
+          "history_gate": "OBSERVED_EDGE_AWARE_SIGNAL_LEVEL_INTRADAY_GAPS"
+        }
+      ]
+    }
+  },
+  "notes": [
+    "Historical bars are pulled directly from the connected MT5 terminal at run time.",
+    "This is not a broker-independent tick backtest; it uses MT5 M1 OHLC history.",
+    "Pending-limit fill semantics remain unresolved: a bar is eligible only if it reaches the theoretical entry.",
+    "History completeness is edge-aware: recurring observed daily data edges may explain outside-session request boundaries; same-day M1 gaps are retained as data-quality events and signals crossing them are excluded from decisive performance.",
+    "The research replay filters M1 bars to London open through New York close using named local time zones with DST; this is an explicit research-test constraint, not a canonical Strategy A session rule.",
+    "Outcome diagnostics record theoretical fill/exit sequencing, fill latency, exit reason, and the OHLC bar used for each decision.",
+    "A same-bar entry+TP event is AMBIGUOUS because M1 OHLC cannot prove whether the pending entry filled before TP; same-bar entry+SL is treated as LOSS because SL lies beyond the entry in the trade direction.",
+    "The detector is the existing author-replica research detector; this run does not promote geometry to canonical."
+  ],
+  "combined": {
+    "decisive": 6,
+    "wins": 1,
+    "losses": 5,
+    "win_rate_pct": 16.666666666666668,
+    "wilson_95_ci_pct": [
+      3.0053369748306635,
+      56.35028221864702
+    ],
+    "net_r": -4,
+    "profit_factor_simplified": 0.2,
+    "max_drawdown_r": 4.0,
+    "max_consecutive_losses": 4
+  },
+  "failed_symbols": []
+}

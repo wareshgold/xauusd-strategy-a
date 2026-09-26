@@ -1,0 +1,22 @@
+{
+  "summary": {
+    "status": "ANALYZED",
+    "research_only": true,
+    "canonical": false,
+    "symbol": "XAUUSD.ecn",
+    "timeframe": "M1",
+    "forward_uptime_intervals": [
+      {
+        "start": "2026-09-21T06:06:38.206242+00:00",
+        "stop": null
+      }
+    ],
+    "mt5_returned_bars": 75,
+    "candidates_inside_forward_uptime": 0,
+    "forward_matches": 0,
+    "genuine_forward_uptime_misses": 0,
+    "result_csv": "SP2L_FORWARD_UPTIME_MISS_AUDIT_20260921T072144Z.csv",
+    "geometry_note": "Current research author-replica only; no canonical inference."
+  },
+  "rows": []
+}
