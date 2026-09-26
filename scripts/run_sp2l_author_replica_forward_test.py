@@ -133,6 +133,84 @@ def init() -> None:
     })
 
 
+FORENSIC_STEP3_TELEMETRY = os.getenv("SP2L_FORENSIC_STEP3_TELEMETRY", "1") == "1"
+
+
+def _bar_snapshot(candles):
+    """Research-only raw rolling-window snapshot; no geometry or execution changes."""
+    if candles is None:
+        return None
+    bars = []
+    for idx, bar in enumerate(candles):
+        raw_time = int(bar["time"])
+        bars.append({
+            "array_index": idx,
+            "raw_time": raw_time,
+            "interpreted_utc": datetime.fromtimestamp(raw_time, timezone.utc).isoformat(),
+            "open": float(bar["open"]),
+            "high": float(bar["high"]),
+            "low": float(bar["low"]),
+            "close": float(bar["close"]),
+            "tick_volume": int(bar["tick_volume"]),
+            "spread": int(bar["spread"]),
+            "real_volume": int(bar["real_volume"]),
+        })
+    return bars
+
+
+def log_step3_poll_telemetry(*, poll_id, poll_started_mono, candles, rates_error, detector_result):
+    """Emit Step 3 forensic telemetry without altering detector/execution behavior."""
+    if not FORENSIC_STEP3_TELEMETRY:
+        return
+    terminal = mt5.terminal_info()
+    account = mt5.account_info()
+    tick = mt5.symbol_info_tick(SYMBOL)
+    elapsed_ms = (time.monotonic() - poll_started_mono) * 1000.0
+    log_event({
+        "event": "DATA_SNAPSHOT",
+        "forensic_step": 3,
+        "poll_id": poll_id,
+        "wall_clock_utc": utc_now(),
+        "raw_bars": _bar_snapshot(candles),
+        "array_order": "oldest_to_newest_as_returned",
+        "returned_bar_count": int(len(candles)) if candles is not None else 0,
+        "rates_last_error": list(rates_error) if isinstance(rates_error, tuple) else rates_error,
+    })
+    log_event({
+        "event": "DETECTOR_RESULT",
+        "forensic_step": 3,
+        "poll_id": poll_id,
+        "wall_clock_utc": utc_now(),
+        "result": detector_result,
+        "detector_window": "candles[-5], candles[-4], candles[-3], candles[-2]",
+        "signal_time_source": "candles[-2].time_when_signal_exists",
+    })
+    log_event({
+        "event": "POLL_HEALTH",
+        "forensic_step": 3,
+        "poll_id": poll_id,
+        "wall_clock_utc": utc_now(),
+        "elapsed_ms": round(elapsed_ms, 3),
+        "poll_interval_seconds": POLL_SECONDS,
+        "mt5_last_error_at_health_check": list(mt5.last_error()) if isinstance(mt5.last_error(), tuple) else mt5.last_error(),
+        "tick": {
+            "bid": float(tick.bid) if tick else None,
+            "ask": float(tick.ask) if tick else None,
+            "time": int(tick.time) if tick else None,
+            "time_msc": int(tick.time_msc) if tick else None,
+        },
+        "terminal": {
+            "connected": bool(getattr(terminal, "connected", False)) if terminal else None,
+            "trade_allowed": bool(getattr(terminal, "trade_allowed", False)) if terminal else None,
+            "tradeapi_disabled": bool(getattr(terminal, "tradeapi_disabled", False)) if terminal else None,
+        },
+        "account": {
+            "login": int(getattr(account, "login", 0)) if account else None,
+            "trade_mode": int(getattr(account, "trade_mode", -1)) if account else None,
+        },
+    })
+
+
 def rates(count: int = 10):
     data = mt5.copy_rates_from_pos(SYMBOL, TIMEFRAME, 0, count)
     if data is None or len(data) < 6:
@@ -436,15 +514,41 @@ def main():
     if seconds:
         deadline = time.time() + int(seconds)
 
+    poll_id = 0
+    previous_poll_mono = None
     try:
         while deadline is None or time.time() < deadline:
+            poll_id += 1
+            poll_started_mono = time.monotonic()
+            inter_poll_gap_ms = (
+                (poll_started_mono - previous_poll_mono) * 1000.0
+                if previous_poll_mono is not None else None
+            )
+            previous_poll_mono = poll_started_mono
             data = rates()
+            rates_error = mt5.last_error()
             monitor_trade_lifecycle(lifecycle_state)
+            candidate = detect(data) if data is not None else None
+            if FORENSIC_STEP3_TELEMETRY:
+                log_step3_poll_telemetry(
+                    poll_id=poll_id,
+                    poll_started_mono=poll_started_mono,
+                    candles=data,
+                    rates_error=rates_error,
+                    detector_result=candidate,
+                )
+                log_event({
+                    "event": "POLL_HEALTH",
+                    "forensic_step": 3,
+                    "poll_id": poll_id,
+                    "wall_clock_utc": utc_now(),
+                    "subtype": "INTER_POLL_GAP",
+                    "inter_poll_gap_ms": round(inter_poll_gap_ms, 3) if inter_poll_gap_ms is not None else None,
+                })
             if data is None:
                 time.sleep(POLL_SECONDS)
                 continue
 
-            candidate = detect(data)
             if candidate is not None and candidate["trigger_time"] != seen_trigger:
                 seen_trigger = candidate["trigger_time"]
                 candidate["signal_id"] = f"AUTHOR_REPLICA_FT_{seen_trigger}_{candidate['direction']}"
