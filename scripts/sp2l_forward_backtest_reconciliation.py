@@ -168,8 +168,12 @@ def exact_level_match(back: dict[str, Any], forward_candidate: dict[str, Any]) -
     c = forward_candidate.get("candidate")
     if not isinstance(c, dict):
         return False
+    # signal_id is only an index key. Never let it override the raw trigger
+    # timestamp carried by the candidate payload.
+    trigger_match = c.get("trigger_time") == back["trigger_time_raw"]
     return (
-        c.get("direction") == back["direction"]
+        trigger_match
+        and c.get("direction") == back["direction"]
         and c.get("theoretical_entry") == back["entry"]
         and c.get("sl") == back["sl"]
         and c.get("tp") == back["tp"]
