@@ -25,9 +25,11 @@ from pathlib import Path
 import MetaTrader5 as mt5
 
 try:
-    from scripts.sp2l_author_replica_detector import detect
+    from scripts.sp2l_author_replica_detector import detect, RESEARCH_DETECTOR_REVISION
 except ModuleNotFoundError:
-    from sp2l_author_replica_detector import detect
+    from sp2l_author_replica_detector import detect, RESEARCH_DETECTOR_REVISION
+
+from sp2l_research_manifest_gate import assert_manifest_compatible
 
 
 SYMBOL = "XAUUSD.ecn"
@@ -37,6 +39,13 @@ P_GAP_PRICE = 1.0
 SPIKE_MULTIPLIER = 1.5
 MAX_SL_DISTANCE = 10.0
 TP_R = 1.0
+MANIFEST_COMPATIBILITY = assert_manifest_compatible(
+    p_gap_price=P_GAP_PRICE,
+    spike_multiplier=SPIKE_MULTIPLIER,
+    max_sl_distance=MAX_SL_DISTANCE,
+    tp_r=TP_R,
+    detector_revision=RESEARCH_DETECTOR_REVISION,
+)
 POLL_SECONDS = float(os.getenv("FORENSIC_POLL_SECONDS", "2"))
 DURATION_SECONDS = int(os.getenv("FORENSIC_DURATION_SECONDS", "900"))
 
@@ -215,6 +224,7 @@ def main():
             "window": WINDOW,
             "poll_seconds": POLL_SECONDS,
             "duration_seconds": DURATION_SECONDS,
+            "manifest_compatibility": MANIFEST_COMPATIBILITY,
             "detector_config": {
                 "pGapPrice": P_GAP_PRICE,
                 "spikeMultiplier": SPIKE_MULTIPLIER,
