@@ -1,0 +1,20 @@
+name: SP2L forensic deterministic checks
+
+on:
+  push:
+    branches:
+      - "research/sp2l-f13-forensic-repro-*"
+  pull_request:
+
+jobs:
+  forensic-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run shared detector fixture
+        run: python scripts/test_sp2l_author_replica_detector_consistency.py
+      - name: Run reconciliation tests
+        run: python -m pytest -q tests/test_reconcile_sp2l_forward_backtest.py
