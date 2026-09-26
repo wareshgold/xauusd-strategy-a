@@ -125,22 +125,8 @@ def candidate_events(candidate: dict[str, Any], events: list[dict[str, Any]]) ->
     signal_time = candidate["trigger_time_raw"]
     direction = candidate["direction"]
     wanted = f"AUTHOR_REPLICA_FT_{signal_time}_{direction}" if signal_time is not None and direction else None
-    if wanted:
-        exact = [e for e in events if str(e.get("signal_id", "")) == wanted]
-        # A signal_id is only an index key. If the payload carried by that
-        # event disagrees with the historical raw trigger timestamp, the ID
-        # must not override the raw timestamp identity. Fall through to the
-        # exact raw-trigger search instead.
-        exact_raw = [
-            e for e in exact
-            if isinstance(e.get("candidate"), dict)
-            and e["candidate"].get("trigger_time") == signal_time
-        ]
-        if exact_raw:
-            return exact_raw
-
-    # No timezone conversion or fuzzy timestamp matching is allowed.
-    # We can only match an explicit exact trigger_time field if present.
+    # First establish the trusted candidate identity from an explicit raw
+    # trigger timestamp. A signal_id alone is never sufficient.
     exact_time = []
     for e in events:
         c = e.get("candidate")
@@ -151,7 +137,29 @@ def candidate_events(candidate: dict[str, Any], events: list[dict[str, Any]]) ->
             et = e.get("trigger_time")
         if et is not None and signal_time is not None and int(et) == int(signal_time):
             exact_time.append(e)
-    return exact_time
+
+    if not exact_time:
+        return []
+
+    # Once a candidate event has proven the raw identity, its signal_id may be
+    # used to collect ancillary execution/lifecycle records (which may not
+    # carry their own trigger_time). It remains an index key, not identity.
+    trusted_ids = {
+        str(e.get("signal_id"))
+        for e in exact_time
+        if e.get("signal_id") is not None
+    }
+    related = [
+        e for e in events
+        if e.get("signal_id") is not None
+        and str(e.get("signal_id")) in trusted_ids
+    ]
+
+    # Preserve every exact raw candidate plus all lifecycle/order records
+    # attached to the trusted ID. Never admit a candidate with a conflicting
+    # raw trigger timestamp merely because its ID matches.
+    related_ids = {id(e) for e in related}
+    return related + [e for e in exact_time if id(e) not in related_ids]
 
 
 def extract_forward_candidates(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
