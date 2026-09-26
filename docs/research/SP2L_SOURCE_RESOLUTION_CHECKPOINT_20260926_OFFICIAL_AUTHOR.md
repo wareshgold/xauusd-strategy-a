@@ -1,74 +1,71 @@
-# SP2L SOURCE RESOLUTION CHECKPOINT — 2026-09-26 — PRESSURE GAP FORMULA UPDATE
+# SP2L SOURCE RESOLUTION CHECKPOINT — 2026-09-26 — PRESSURE GAP CANDLE-MAPPING PASS
 
 Branch: research/sp2l-f13-forensic-repro-2026-09-26
 
-## P-Gap identity
+## New source evidence — P-Gap candle relationship
 
-P-Gap = Pressure Gap (گپ فشار). They are the same concept, not two different geometries.
+The primary SP2L transcript gives a more specific visual/candle-level description of P-Gap:
 
-## Source-derived Gap formula
+- At 34:14, P-Gap is presented as a practical marker for identifying the relevant breakout.
+- At 34:25, the instructor describes the first case as a gap where the **high and low do not overlap**.
+- At 34:35, the instructor explicitly says that in another case the gap is not present initially but **forms on the next candle**.
+- At 34:44–35:02, two structural orders are treated as the same concept:
+  1. breakout first, then higher lows, then P-Gap;
+  2. higher lows first, then P-Gap.
+- At 35:37, both cases are explicitly described as P-Gap cases.
+- At 36:05, these are treated as valid spike variants.
 
-The source material states:
+This is stronger evidence than the earlier generic Gap statement because it is directly inside the SP2L lesson and explicitly names the structure as P-Gap.
 
-> به فاصله بین سقف ۲ کندل قبل و کف کندل حاضر دقت کنید که اگر فاصله داشت گپ ایجاد شده است.
+## What this resolves
 
-This gives the executable gap relation:
+### P-Gap = Pressure Gap
+SOURCE-CONFIRMED.
 
-### Bullish gap
+### Geometric property
+A source-confirmed P-Gap example has a **non-overlap / separation between the relevant candle high and low**.
+
+The source wording supports the geometric idea:
+
+`relevant High < relevant Low`
+
+with the directional mirror for the opposite side.
+
+### Candle indexing
+The new evidence shows that P-Gap **cannot yet be safely hard-coded to one universal fixed index such as t-2**.
+
+The source explicitly presents two valid structural orderings:
+- breakout → follow-through / higher lows → P-Gap
+- higher lows → P-Gap
+
+Therefore the previously considered generic relation:
+
 `Low[t] > High[t-2]`
 
-### Bearish gap
-The direct source text shown in the recovered material states the bullish orientation. The bearish expression is the mathematical mirror:
-
-`High[t] < Low[t-2]`
-
-The bearish mirror is therefore retained as **source-aligned inference**, not falsely labeled as a verbatim source formula.
-
-## Pressure Gap classification
-
-The same source material defines Pressure Gap as a gap that occurs after approximately 10–30 candles of trend/pressure, when buying pressure temporarily stops and a trend bar then appears, increasing the probability of a trend beginning/continuing.
-
-Therefore the current source-aligned decomposition is:
-
-`GAP(t) = Low[t] > High[t-2]` for bullish, or the mirrored bearish relation.
-
-`P_GAP(t) = GAP(t) + Pressure-Gap contextual classification`
-
-The formula for the geometric gap is now resolved at the source level. What remains unresolved is the fully deterministic encoding of the **pressure context**:
-- exact definition of “10–30 candles in trend”
-- exact definition of “pressure stops”
-- exact trend-bar requirements
-- exact mapping of `t` to the SP2L Spike candle
-- whether any minimum price-distance threshold is required beyond strict separation.
+remains a **generic Gap candidate**, not the frozen SP2L P-Gap index formula.
 
 ## Important correction
 
-The old candidate:
+The previous checkpoint statement that the base Gap formula was sufficient to define the P-Gap geometry is now narrowed.
 
-`low[1] > high[3] + 1`
+Current source-aligned status:
 
-is **not** the source formula and remains rejected as canonical.
+- P-Gap identity: SOURCE-CONFIRMED
+- P-Gap non-overlap property: SOURCE-CONFIRMED
+- P-Gap exact candle pair/index: STILL UNRESOLVED
+- P-Gap exact OHLC field mapping: PARTIALLY-CONFIRMED (high/low non-overlap), not fully indexed
+- P-Gap bullish/bearish executable mirror: NOT YET SOURCE-VERIFIED
+- Pressure context: SOURCE-DESCRIBED, deterministic Boolean still unresolved
+- SP2L Spike mapping: PARTIALLY-CONFIRMED
+- Frozen Geometry: BLOCKED
 
-The source-derived relationship is instead based on:
+## Evidence boundary
 
-`Low[current] > High[two-candles-before]`
+Do NOT promote `Low[t] > High[t-2]` as the canonical SP2L P-Gap formula from the generic Gap lesson alone.
 
-with the bearish mathematical mirror:
+Do NOT restore the old candidate `low[1] > high[3] + 1`.
 
-`High[current] < Low[two-candles-before]`.
+The next source-resolution target is now precise:
+**identify the exact two candle roles represented by the non-overlapping High/Low pair in the SP2L P-Gap examples, including the delayed-P-Gap variant.**
 
-## Gate
-
-P-GAP = PRESSURE GAP: SOURCE-CONFIRMED
-BASE GAP GEOMETRY: SOURCE-DERIVED / RESOLVED
-BULLISH GAP RELATION: SOURCE-CONFIRMED
-BEARISH GAP RELATION: SOURCE-ALIGNED MIRROR
-PRESSURE CONTEXT: PARTIALLY-RESOLVED
-SP2L SPIKE INDEX MAPPING: UNRESOLVED
-FROZEN SP2L GEOMETRY: BLOCKED
-DETECTOR PROMOTION: BLOCKED
-PRODUCTION: NOT READY
-
-## Non-negotiable
-
-Do not modify the detector or backtest from this checkpoint until synthetic fixtures verify that the source-derived gap relation is mapped to the correct SP2L candle roles.
+No detector/backtest change is justified yet.
