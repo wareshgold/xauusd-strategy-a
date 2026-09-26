@@ -15,10 +15,12 @@ Additional author-hosted source:
 
 ## Newly confirmed / strengthened source facts
 
-1. P-Gap terminology
-   - V1 explicitly equates P-GAP with pressure gap.
+1. P-Gap / Pressure Gap identity
+   - P-GAP and Pressure Gap (گپ فشار) are the same source concept.
+   - Therefore the executable formula sought for P-Gap is the **Pressure Gap formula**; they are not two different geometries.
+   - V1 explicitly says P-GAP = گپ فشار.
    - V1 explicitly shows/labels “Valid BO = P-Gap”.
-   - Author-hosted SP2L page states a valid spike includes a price gap (P-Gap).
+   - The Gap course separately teaches the pressure-gap concept.
 
 2. Second-leg trigger concept
    - Author-hosted SP2L page states:
@@ -52,8 +54,11 @@ Additional author-hosted source:
 
 ## Explicitly unresolved
 
-### P-Gap executable geometry
-- exact two candles
+### P-Gap = Pressure Gap executable geometry
+The formula target is now explicitly defined as the **Pressure Gap formula**, not a separate P-Gap formula.
+
+Still unresolved from the inspected evidence:
+- exact two candles used by the Pressure Gap formula
 - exact High/Low/Close fields
 - wick vs body semantics
 - bullish/bearish mirror
@@ -61,7 +66,7 @@ Additional author-hosted source:
 - minimum numeric gap threshold
 - exact relationship to the specific spike candle
 
-The generic V2 statement “high of two candles ago vs low of current candle” is not promoted to P-Gap because the slide labels generic Gap, not Pressure Gap.
+The generic V2 statement “high of two candles ago vs low of current candle” is not promoted to the Pressure Gap formula because that slide labels generic “Gap”, not Pressure Gap.
 
 ### SL executable geometry
 - exact origin candle identity in deterministic candle terms
@@ -84,8 +89,8 @@ The generic V2 statement “high of two candles ago vs low of current candle” 
 ## Gate
 
 SOURCE RESOLUTION: PARTIAL
-P-GAP CONCEPT: SOURCE-CONFIRMED
-P-GAP GEOMETRY: BLOCKED
+P-GAP / PRESSURE GAP CONCEPT: SOURCE-CONFIRMED
+P-GAP / PRESSURE GAP FORMULA: UNRESOLVED
 SL ORIGIN CONCEPT: SOURCE-CONFIRMED AT CONCEPT LEVEL
 SL EXECUTABLE FORMULA: BLOCKED
 2X EXISTENCE: SOURCE-CONFIRMED
@@ -101,10 +106,11 @@ PRODUCTION: NOT READY
 
 ## Non-negotiable interpretation policy
 
-- No guessed P-Gap formula.
+- Do not invent a separate P-Gap geometry apart from Pressure Gap.
+- Do not invent the Pressure Gap formula from the generic Gap example.
 - No guessed candle indexing.
 - No guessed wick/body semantics.
 - No guessed spread arithmetic.
 - No guessed 2X reconciliation.
 - No guessed AB=CD anchors/tolerance.
-- No detector/backtest promotion from this checkpoint.
+- No detector/backtest promotion.
