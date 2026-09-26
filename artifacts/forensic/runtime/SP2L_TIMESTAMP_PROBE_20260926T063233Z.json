@@ -1,0 +1,782 @@
+[
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 1,
+    "wall_clock_utc": "2026-09-26T06:31:33.739310+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23673.73931,
+      "wall_minus_tick": 23614.73931,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 2,
+    "wall_clock_utc": "2026-09-26T06:31:35.741750+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23675.74175,
+      "wall_minus_tick": 23616.74175,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 3,
+    "wall_clock_utc": "2026-09-26T06:31:37.742663+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23677.742663,
+      "wall_minus_tick": 23618.742663,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 4,
+    "wall_clock_utc": "2026-09-26T06:31:39.744961+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23679.744961,
+      "wall_minus_tick": 23620.744961,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 5,
+    "wall_clock_utc": "2026-09-26T06:31:41.746306+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23681.746306,
+      "wall_minus_tick": 23622.746306,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 6,
+    "wall_clock_utc": "2026-09-26T06:31:43.748082+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23683.748082,
+      "wall_minus_tick": 23624.748082,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 7,
+    "wall_clock_utc": "2026-09-26T06:31:45.749778+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23685.749778,
+      "wall_minus_tick": 23626.749778,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 8,
+    "wall_clock_utc": "2026-09-26T06:31:47.751322+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23687.751322,
+      "wall_minus_tick": 23628.751322,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 9,
+    "wall_clock_utc": "2026-09-26T06:31:49.752717+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23689.752717,
+      "wall_minus_tick": 23630.752717,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 10,
+    "wall_clock_utc": "2026-09-26T06:31:51.753973+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23691.753973,
+      "wall_minus_tick": 23632.753973,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 11,
+    "wall_clock_utc": "2026-09-26T06:31:53.755320+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23693.75532,
+      "wall_minus_tick": 23634.75532,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 12,
+    "wall_clock_utc": "2026-09-26T06:31:55.756801+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23695.756801,
+      "wall_minus_tick": 23636.756801,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 13,
+    "wall_clock_utc": "2026-09-26T06:31:57.760954+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23697.760954,
+      "wall_minus_tick": 23638.760954,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 14,
+    "wall_clock_utc": "2026-09-26T06:31:59.762501+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23699.762501,
+      "wall_minus_tick": 23640.762501,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 15,
+    "wall_clock_utc": "2026-09-26T06:32:01.763905+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23701.763905,
+      "wall_minus_tick": 23642.763905,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 16,
+    "wall_clock_utc": "2026-09-26T06:32:03.765449+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23703.765449,
+      "wall_minus_tick": 23644.765449,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 17,
+    "wall_clock_utc": "2026-09-26T06:32:05.766938+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23705.766938,
+      "wall_minus_tick": 23646.766938,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 18,
+    "wall_clock_utc": "2026-09-26T06:32:07.768782+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23707.768782,
+      "wall_minus_tick": 23648.768782,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 19,
+    "wall_clock_utc": "2026-09-26T06:32:09.769879+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23709.769879,
+      "wall_minus_tick": 23650.769879,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 20,
+    "wall_clock_utc": "2026-09-26T06:32:11.770976+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23711.770976,
+      "wall_minus_tick": 23652.770976,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 21,
+    "wall_clock_utc": "2026-09-26T06:32:13.771926+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23713.771926,
+      "wall_minus_tick": 23654.771926,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 22,
+    "wall_clock_utc": "2026-09-26T06:32:15.773738+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23715.773738,
+      "wall_minus_tick": 23656.773738,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 23,
+    "wall_clock_utc": "2026-09-26T06:32:17.775332+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23717.775332,
+      "wall_minus_tick": 23658.775332,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 24,
+    "wall_clock_utc": "2026-09-26T06:32:19.776903+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23719.776903,
+      "wall_minus_tick": 23660.776903,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 25,
+    "wall_clock_utc": "2026-09-26T06:32:21.778485+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23721.778485,
+      "wall_minus_tick": 23662.778485,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 26,
+    "wall_clock_utc": "2026-09-26T06:32:23.780256+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23723.780256,
+      "wall_minus_tick": 23664.780256,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 27,
+    "wall_clock_utc": "2026-09-26T06:32:25.781712+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23725.781712,
+      "wall_minus_tick": 23666.781712,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 28,
+    "wall_clock_utc": "2026-09-26T06:32:27.783334+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23727.783334,
+      "wall_minus_tick": 23668.783334,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 29,
+    "wall_clock_utc": "2026-09-26T06:32:29.784843+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23729.784843,
+      "wall_minus_tick": 23670.784843,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  },
+  {
+    "event": "TIMESTAMP_PROBE",
+    "poll_id": 30,
+    "wall_clock_utc": "2026-09-26T06:32:31.786412+00:00",
+    "newest_bar": {
+      "raw_epoch": 1790380620,
+      "raw_time_utc": "2026-09-25T23:57:00+00:00",
+      "interpreted_time_utc": "2026-09-25T23:57:00+00:00"
+    },
+    "tick": {
+      "raw_epoch": 1790380679,
+      "raw_time_utc": "2026-09-25T23:57:59+00:00",
+      "bid": 4286.05,
+      "ask": 4286.27
+    },
+    "delta_seconds": {
+      "wall_minus_bar": 23731.786412,
+      "wall_minus_tick": 23672.786412,
+      "tick_minus_bar": 59.0
+    },
+    "rates_returned": 10,
+    "mt5_last_error_after_rates": [
+      1,
+      "Success"
+    ]
+  }
+]
