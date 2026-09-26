@@ -1,0 +1,19 @@
+name: SP2L forensic telemetry analysis
+
+on:
+  push:
+    branches:
+      - research/sp2l-f13-forensic-repro-2026-09-26
+    paths:
+      - "artifacts/forensic/runtime/SP2L_FORWARD_FORENSIC_TELEMETRY_*.jsonl"
+      - "scripts/analyze_sp2l_forensic_telemetry.py"
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analyze forensic telemetry
+        run: |
+          python scripts/analyze_sp2l_forensic_telemetry.py
