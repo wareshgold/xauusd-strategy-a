@@ -127,8 +127,17 @@ def candidate_events(candidate: dict[str, Any], events: list[dict[str, Any]]) ->
     wanted = f"AUTHOR_REPLICA_FT_{signal_time}_{direction}" if signal_time is not None and direction else None
     if wanted:
         exact = [e for e in events if str(e.get("signal_id", "")) == wanted]
-        if exact:
-            return exact
+        # A signal_id is only an index key. If the payload carried by that
+        # event disagrees with the historical raw trigger timestamp, the ID
+        # must not override the raw timestamp identity. Fall through to the
+        # exact raw-trigger search instead.
+        exact_raw = [
+            e for e in exact
+            if isinstance(e.get("candidate"), dict)
+            and e["candidate"].get("trigger_time") == signal_time
+        ]
+        if exact_raw:
+            return exact_raw
 
     # No timezone conversion or fuzzy timestamp matching is allowed.
     # We can only match an explicit exact trigger_time field if present.
