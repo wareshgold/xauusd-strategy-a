@@ -58,7 +58,7 @@ def test_exact_candidate_with_order_placed_is_match():
     )
     result = reconcile(backtest_report(), events)
     assert result["classification_counts"]["MATCH"] == 1
-    assert result["classification_counts"]["DATA_GAP"] == 1
+    assert result["classification_counts"]["TIMESTAMP_UNRESOLVED"] == 1
 
 
 def test_exact_candidate_without_execution_is_execution_mismatch():
