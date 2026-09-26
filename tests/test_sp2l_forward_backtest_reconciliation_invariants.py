@@ -101,3 +101,19 @@ def test_exact_raw_trigger_can_match_without_trusting_signal_id():
     row = result["rows"][0]
     assert row["classification"] == "EXECUTION_MISMATCH"
     assert row["forward_visible"] is True
+
+
+def test_conflicting_duplicate_candidate_payloads_fail_closed():
+    events = [
+        forward_candidate(100, entry=100.0),
+        forward_candidate(100, entry=100.5),
+        {
+            "event": "ORDER_PLACED",
+            "signal_id": "AUTHOR_REPLICA_FT_100_BUY",
+        },
+    ]
+    result = reconcile(report([candidate(100)]), events)
+    row = result["rows"][0]
+    assert row["classification"] == "DETECTOR_MISMATCH"
+    assert row["evidence_refs"]["forward_event_count"] == 3
+    assert row["entry_forward"] == 100.0
