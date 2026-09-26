@@ -92,3 +92,12 @@ def test_signal_id_cannot_override_mismatched_raw_trigger_time():
     result = reconcile(report([candidate(100)]), events)
     row = result["rows"][0]
     assert row["classification"] == "TIMESTAMP_UNRESOLVED"
+
+
+def test_exact_raw_trigger_can_match_without_trusting_signal_id():
+    events = [forward_candidate(100)]
+    events[0]["signal_id"] = "FORWARD_UNTRUSTED_ALIAS"
+    result = reconcile(report([candidate(100)]), events)
+    row = result["rows"][0]
+    assert row["classification"] == "EXECUTION_MISMATCH"
+    assert row["forward_visible"] is True
