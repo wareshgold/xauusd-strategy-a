@@ -145,9 +145,26 @@ def candidate_events(candidate: dict[str, Any], events: list[dict[str, Any]]) ->
     return exact_time
 
 
+def extract_forward_candidates(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [e for e in events if e.get("event") == "CANDIDATE"]
+
+
 def extract_forward_candidate(events: list[dict[str, Any]]) -> dict[str, Any] | None:
-    rows = [e for e in events if e.get("event") == "CANDIDATE"]
+    rows = extract_forward_candidates(events)
     return rows[0] if rows else None
+
+
+def candidate_payload_signature(event: dict[str, Any]) -> tuple[Any, ...] | None:
+    c = event.get("candidate")
+    if not isinstance(c, dict):
+        return None
+    return (
+        c.get("trigger_time"),
+        c.get("direction"),
+        c.get("theoretical_entry"),
+        c.get("sl"),
+        c.get("tp"),
+    )
 
 
 def extract_order_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -216,9 +233,19 @@ def classify(
             "notes": ["No forward CANDIDATE evidence is present in the supplied log."],
         }
 
-    fc = extract_forward_candidate(matching_events)
+    forward_candidates = extract_forward_candidates(matching_events)
+    fc = forward_candidates[0] if forward_candidates else None
     if fc is None:
         return {"classification": "DATA_GAP", "notes": ["Matched events lack a CANDIDATE record."]}
+
+    signatures = [candidate_payload_signature(e) for e in forward_candidates]
+    if any(sig is None for sig in signatures) or len(set(signatures)) > 1:
+        return {
+            "classification": "DETECTOR_MISMATCH",
+            "notes": [
+                "Multiple forward CANDIDATE records for one raw trigger identity contain conflicting payloads; no first-record selection was allowed."
+            ],
+        }
 
     if not exact_level_match(back, fc):
         return {
