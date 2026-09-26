@@ -24,12 +24,12 @@ import sys
 if __package__ in (None, ""):
     sys.path.insert(0, str(os.path.dirname(os.path.abspath(__file__))))
 
-try:  # direct-script compatibility (repo pattern)
+if __package__ in (None, ""):
     from telegram_client import (  # type: ignore
         read_telegram_env,
         telegram_delivery_status,
     )
-except ModuleNotFoundError:  # pytest / package mode
+else:
     from scripts.telegram_client import (  # type: ignore
         read_telegram_env,
         telegram_delivery_status,
