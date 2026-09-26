@@ -12,16 +12,16 @@ from __future__ import annotations
 def detect(
     candles,
     *,
-    p_gap_price: float = 1.0,
+    p_gap_price: float = 0.0,
     spike_multiplier: float = 1.5,
     max_sl_distance: float = 10.0,
     tp_r: float = 1.0,
 ):
-    """Return the research Author-Replica signal for a completed-bar window.
+    """Return the source-aligned research signal for a completed-bar window.
 
     The caller must provide at least six bars, with the final bar being the
     current/forming bar. The detector intentionally uses [-5],[-4],[-3],[-2].
-    This preserves the existing forward/backtest semantics exactly.
+    This preserves the existing forward/backtest window.\n\n    Source boundary: P-Gap is Pressure Gap; the relevant High/Low pair\n    must be strictly separated. No extra numeric gap threshold is source-confirmed.\n    Positive p_gap_price values are counterfactual sensitivity tests only.
     """
     a, spike, correction, trigger = candles[-5], candles[-4], candles[-3], candles[-2]
     spike_body_buy = float(spike["close"] - spike["open"])
