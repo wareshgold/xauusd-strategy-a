@@ -134,6 +134,7 @@ def init() -> None:
 
 
 FORENSIC_STEP3_TELEMETRY = os.getenv("SP2L_FORENSIC_STEP3_TELEMETRY", "1") == "1"
+FORENSIC_CAPTURE_ONLY = os.getenv("SP2L_FORENSIC_CAPTURE_ONLY", "0") == "1"
 
 
 def _bar_snapshot(candles):
@@ -527,7 +528,8 @@ def main():
             previous_poll_mono = poll_started_mono
             data = rates()
             rates_error = mt5.last_error()
-            monitor_trade_lifecycle(lifecycle_state)
+            if not FORENSIC_CAPTURE_ONLY:
+                monitor_trade_lifecycle(lifecycle_state)
             candidate = detect(data) if data is not None else None
             if FORENSIC_STEP3_TELEMETRY:
                 log_step3_poll_telemetry(
@@ -584,7 +586,18 @@ def main():
                     "reason": "SIGNAL_APPROVED_FOR_RESEARCH_EXECUTION",
                     "canonical": False,
                 })
-                result = send_demo_order(candidate)
+                if FORENSIC_CAPTURE_ONLY:
+                    log_event({
+                        "event": "FORENSIC_CAPTURE_ONLY",
+                        "forensic_step": 3,
+                        "signal_id": signal_id,
+                        "action": "NO_ORDER_NO_TELEGRAM",
+                        "reason": "Step 3 data acquisition capture mode",
+                        "canonical": False,
+                    })
+                    result = {"ok": True, "capture_only": True, "dry_run": True}
+                else:
+                    result = send_demo_order(candidate)
                 log_event({
                     "event": "ORDER_RESULT",
                     "signal_id": signal_id,
