@@ -90,3 +90,31 @@ The purpose of the next one-month MT5 replay is therefore:
 4. do NOT select the formula because it produces better backtest performance.
 
 Production/live canonical promotion remains blocked until candle-role mapping is source-frozen.
+
+
+## One-month MT5 replay result — 2026-09-26
+
+User-run connected-terminal replay:
+- Interval: 2026-08-26T00:00:00Z through 2026-09-25T23:59:59Z
+- Requested base: XAUUSD
+- Resolved symbol: XAUUSD.ecn
+- M1 bars: 19,343
+- Signals: 212
+- Decisive outcomes: 115
+- WIN: 28
+- LOSS: 87
+- Decisive WR: 24.3478%
+- 95% Wilson CI: 17.4164% to 32.9377%
+- Net R: -59
+- Simplified PF: 0.3218
+- Max DD: 59R
+- Max consecutive losses: 11
+
+Report:
+artifacts/backtest-mt5-local/SP2L_MT5_LOCAL_MULTI_SYMBOL_20260926T083809Z.json
+
+Interpretation:
+- This is strong negative research evidence for the current strict-separation implementation over this one-month replay.
+- It does NOT establish that the source Pressure Gap definition is wrong, because the exact SP2L candle-role mapping remains unresolved and the replay still has research-only session/fill/timestamp constraints.
+- The result does not justify canonical promotion, live use, or selecting this formula by performance.
+- Next required comparison is the same exact one-month interval with the prior research threshold (p_gap_price=1.0), followed by candidate-level diff; source resolution remains the deciding gate.
