@@ -14,11 +14,10 @@ It is NOT canonical Strategy A and must never be used for real-money execution.
 
 Execution note:
 The research backtest exposes a completed trigger candle and its theoretical
-trigger extreme as the entry. In live forward testing that exact historical
-price is not knowable after the candle closes, so this runner records the
-theoretical entry and executes a MARKET order at the first observed tick after
-the completed trigger. This execution difference is explicitly experimental
-and must not be promoted to canonical fill semantics.
+trigger extreme as the entry. In live forward testing the runner records that
+theoretical entry and uses the configured PENDING_LIMIT_RESEARCH mode. This
+execution difference is explicitly experimental and must not be promoted to
+canonical fill semantics.
 """
 
 from __future__ import annotations
