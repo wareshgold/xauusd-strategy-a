@@ -139,7 +139,11 @@ def write_event(event: dict) -> None:
 
 
 def main() -> None:
-    if not mt5.initialize():
+    terminal_path = os.getenv(
+        "MT5_TERMINAL_PATH",
+        r"C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe",
+    )
+    if not mt5.initialize(path=terminal_path, timeout=10000):
         raise RuntimeError(f"MT5 initialize failed: {mt5_error()}")
 
     try:
@@ -155,6 +159,7 @@ def main() -> None:
 
         write_event({
             "event": "FORENSIC_START",
+            "mt5_terminal_path": terminal_path,
             "ts_utc": utc_now(),
             "mode": "RESEARCH_FORENSIC_TELEMETRY",
             "canonical": False,
