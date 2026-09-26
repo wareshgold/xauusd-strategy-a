@@ -20,11 +20,21 @@ from pathlib import Path
 
 import MetaTrader5 as mt5
 
+from sp2l_author_replica_detector import RESEARCH_DETECTOR_REVISION
+from sp2l_research_manifest_gate import assert_manifest_compatible
+
 SYMBOL = os.getenv("TRADING_SYMBOL", "XAUUSD.ecn")
 P_GAP = float(os.getenv("PGAP_PRICE", "1"))
 SPIKE_MULT = float(os.getenv("SPIKE_MULTIPLIER", "1.5"))
 MAX_SL = float(os.getenv("MAX_SL_PRICE", "10"))
 TP_R = float(os.getenv("TP_R", "1"))
+MANIFEST_COMPATIBILITY = assert_manifest_compatible(
+    p_gap_price=P_GAP,
+    spike_multiplier=SPIKE_MULT,
+    max_sl_distance=MAX_SL,
+    tp_r=TP_R,
+    detector_revision=RESEARCH_DETECTOR_REVISION,
+)
 
 
 def parse_utc(value: str) -> datetime:
@@ -213,6 +223,7 @@ def main():
             "chronological": chronological,
             "gap_count": len(gaps),
             "gaps": gaps,
+            "manifest_compatibility": MANIFEST_COMPATIBILITY,
             "config": {
                 "pGapPrice": P_GAP,
                 "spikeMultiplier": SPIKE_MULT,
