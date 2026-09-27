@@ -84,13 +84,14 @@ def evaluate_after_fill(rates: np.ndarray, fill_index: int, signal: dict):
 def run(rates: np.ndarray, symbol: str) -> dict:
     from sp2l_strategy_a_v2_detector import detect_setup, find_first_entry
 
+    # Convert MT5 rows once; avoid rebuilding the full prefix on every candle.
+    candles = [as_candle(x) for x in rates]
     signals = []
     for i in range(2, len(rates) - 1):
-        window = [as_candle(x) for x in rates[: i + 1]]
-        setup = detect_setup(window)
+        setup = detect_setup(candles[: i + 1])
         if setup is None:
             continue
-        signal = find_first_entry(window, i, setup)
+        signal = find_first_entry(candles, i, setup)
         if signal is None:
             continue
         entry_index = int(signal["entry_index"])
