@@ -40,6 +40,37 @@ except ImportError:
     from scripts.sp2l_strategy_a_v2_detector import detect_setup, find_first_entry
 
 
+def resolve_symbol(requested: str) -> tuple[str, str]:
+    """Resolve a requested base symbol to the authoritative MT5 symbol."""
+    symbols = list(mt5.symbols_get() or [])
+    exact = {str(s.name): s for s in symbols}
+    candidate = requested.upper()
+
+    if candidate in exact:
+        return candidate, "EXACT"
+
+    for suffix in (".ecn", ".ECN", "m", ".m", "_ecn", "-ECN"):
+        resolved = candidate + suffix
+        if resolved in exact:
+            return resolved, f"SUFFIX:{suffix}"
+
+    normalized_requested = "".join(ch for ch in candidate if ch.isalnum())
+    matches = [
+        name
+        for name in exact
+        if (
+            "".join(ch for ch in name.upper() if ch.isalnum()) == normalized_requested
+            or "".join(ch for ch in name.upper() if ch.isalnum()).startswith(normalized_requested)
+        )
+    ]
+    if matches:
+        return sorted(matches, key=lambda x: (len(x), x))[0], "DISCOVERED_PREFIX"
+
+    raise RuntimeError(
+        f"symbol discovery failed: requested={requested} available_count={len(symbols)}"
+    )
+
+
 def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
     if not mt5.symbol_select(symbol, True):
         raise RuntimeError(f"symbol_select failed: {symbol} {mt5.last_error()}")
@@ -285,7 +316,8 @@ def main() -> int:
             return 2
 
     try:
-        symbol = args.symbol
+        requested_symbol = args.symbol
+        symbol, symbol_resolution = resolve_symbol(requested_symbol)
         rates = fetch_rates(symbol, start, end)
         signals = build_signals(rates)
         result = run_backtest(rates, signals)
@@ -294,8 +326,9 @@ def main() -> int:
             "status": "COMPLETE",
             "mode": "RESEARCH_ONLY_SP2L_STRATEGY_A_V2",
             "generated_utc": datetime.now(timezone.utc).isoformat(),
-            "symbol_requested": symbol,
+            "symbol_requested": requested_symbol,
             "symbol_used": symbol,
+            "symbol_resolution": symbol_resolution,
             "period": {
                 "start_utc": start.isoformat(),
                 "end_utc": end.isoformat(),
@@ -329,6 +362,7 @@ def main() -> int:
             },
             "results": result,
             "semantic_limits": [
+                "MT5 symbol discovery follows the existing project broker-suffix/prefix convention; this changes data access only, not V2 geometry or execution semantics.",
                 "V2 is a research comparator, not canonical Strategy A.",
                 "The 1.0 P-Gap threshold is an externally observed implementation contract, not source-resolved canonical geometry.",
                 "SL-first is an explicit OHLC convention and does not establish true intrabar chronology.",
