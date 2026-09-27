@@ -4,91 +4,108 @@ Status: RESEARCH ONLY. No canonical or production decision.
 
 ## Objective
 
-Measure whether the V2 candidate result is reproducible across symbols, timeframes,
-trading windows, and calendar weeks instead of relying on a single favorable interval.
+Measure reproducibility across XAUUSD and the selected FX population over many
+calendar weeks. A week is an independent observation; pooled metrics must not
+hide week-to-week instability.
 
-A week is treated as an independent observation. Aggregate metrics must not hide
-week-to-week instability.
+BTCUSD, DJ30 and USTEC/US100 are excluded from this matrix because their
+commission/minimum-volume characteristics are not aligned with the intended
+research population.
 
-## Matrix
+## Symbol matrix
 
-### Dimension A — symbol
+| ID | Symbol | Population | Pip convention |
+|---|---|---|---|
+| XAU | XAUUSD | Primary | broker contract metadata; report price move and pip-equivalent |
+| FX1 | USDJPY | FX | MT5 symbol contract; JPY pip convention |
+| FX2 | EURJPY | FX | MT5 symbol contract; JPY pip convention |
+| FX3 | GBPUSD | FX | MT5 symbol contract |
+| FX4 | GBPJPY | FX | MT5 symbol contract; JPY pip convention |
+| FX5 | EURUSD | FX | MT5 symbol contract |
+| FX6 | USDCHF | FX | MT5 symbol contract |
+| FX7 | USDCAD | FX | MT5 symbol contract |
 
-| ID | Symbol | Purpose |
+Do not hard-code one pip size for every instrument.
+
+The runner must obtain the symbol's point/digits and derive the reporting pip
+size from an explicit instrument convention. The convention used for every run
+must be stored in the artifact.
+
+For XAUUSD, report both raw price-unit profit/R and pip-equivalent movement.
+
+For FX, report:
+- pips per trade
+- total pips
+- average pips/trade
+- median pips/trade
+- winning/losing pips
+- BUY/SELL pips
+
+Pips are a reporting unit; R remains the normalized risk unit used by the V2
+candidate.
+
+## Timeframe matrix
+
+| ID | Timeframe | Role |
 |---|---|---|
-| S1 | XAUUSD (resolved broker symbol, currently XAUUSD.ecn) | Primary target |
-| S2 | BTCUSD | Cross-market diagnostic |
-| S3 | USTEC | Execution/market-structure diagnostic |
-| S4 | DJ30 | Execution/market-structure diagnostic |
+| T1 | M1 | Primary V2 definition |
+| T2 | M5 | Separate robustness candidate |
+| T3 | M15 | Separate robustness candidate |
 
-XAUUSD remains the primary Strategy A population. Other symbols are robustness
-diagnostics, not evidence that the strategy transfers universally.
+M1 remains the frozen V2 research definition. M5/M15 do not silently modify V2.
 
-### Dimension B — timeframe
+## Trading-window matrix
 
-| ID | Timeframe | Purpose |
-|---|---|---|
-| T1 | M1 | Current V2 definition |
-| T2 | M5 | Timeframe robustness diagnostic |
-| T3 | M15 | Timeframe robustness diagnostic |
-
-M1 is the only timeframe currently represented by the frozen V2 candidate.
-M5/M15 must be treated as separate research candidates, not silent substitutions.
-
-### Dimension C — trading window
-
-| ID | Window (UTC) | Purpose |
+| ID | Window UTC | Role |
 |---|---|---|
 | W0 | 00:00–24:00 | Full-day baseline |
-| W1 | 07:00–17:00 | London → New York overlap research |
-| W2 | 08:00–17:00 | Existing London→NY research convention |
+| W1 | 07:00–17:00 | London → New York diagnostic |
+| W2 | 08:00–17:00 | Existing London → New York convention |
 | W3 | 13:00–17:00 | New York core diagnostic |
 
-Session filtering is disabled in V2. These are observational slices unless a
-separate candidate is explicitly registered.
+Session-filtered runs are observational variants unless separately registered.
 
-### Dimension D — calendar sample
+## Calendar population
 
-Primary historical population:
-
+Primary:
 - 2026-01-01 → 2026-09-25
 - split into calendar weeks
-- retain every week with sufficient data
-- do not average away missing weeks
+- preserve every eligible week separately
 
-Secondary stability populations:
-
+Extended:
 - 2025 full year where MT5 history permits
 - 2024 full year where MT5 history permits
 
-The primary decision statistic is not one pooled win rate. Report the distribution
-of weekly results.
+The matrix must never collapse all weeks into a single number.
 
 ## Required weekly metrics
 
 For every symbol × timeframe × window × week:
 
-- bars available / missing
-- setups detected
+- bars available
+- missing bars / data gaps
+- setups
 - accepted signals
 - trades
 - wins / losses / ambiguous / EOD
 - win rate
 - net R
+- total pips
+- average pips/trade
+- median pips/trade
+- winning pips
+- losing pips
 - profit factor
 - max drawdown R
 - max consecutive losses
-- mean / median R
 - expectancy per trade
 - average risk
 - BUY / SELL split
 - duplicate/overlap count
-- data-gap count
 
 ## Statistical stability
 
 Report:
-
 1. pooled trade metrics
 2. median weekly net R
 3. mean weekly net R
@@ -99,17 +116,18 @@ Report:
 8. best week
 9. worst consecutive losing weeks
 10. bootstrap confidence interval for trade-level expectancy
-11. Wilson interval for weekly positive-week proportion
+11. Wilson interval for positive-week proportion
+12. pooled and weekly pip distributions
 
-Never treat the pooled result as sufficient evidence when weekly dispersion is high.
+A long sample is preferred because it provides more observations, but a longer
+sample must remain decomposed by week and year. More history does not make
+structural changes disappear.
 
-## Required comparisons
+## Comparison rules
 
-For each candidate variation, compare against V2-CANDIDATE-001 using stable
-setup keys and signal keys.
+For candidate variants, compare using stable setup keys and signal keys.
 
-Changes must be classified as:
-
+Classify changes as:
 - ADDED_SETUP
 - REMOVED_SETUP
 - CHANGED_ENTRY
@@ -119,37 +137,21 @@ Changes must be classified as:
 - DATA_MISSING
 - SAME
 
-No variant wins promotion merely because its backtest return is higher.
+Performance alone does not promote a variant.
 
-## Test ordering
-
-Run in this order:
+## Execution order
 
 1. XAUUSD M1 full-day, all weeks
 2. XAUUSD M1 session slices, all weeks
-3. XAUUSD M1 BUY vs SELL, all weeks
-4. XAUUSD M5 diagnostic
-5. XAUUSD M15 diagnostic
-6. BTCUSD M1 diagnostic
-7. USTEC M1 diagnostic
-8. DJ30 M1 diagnostic
-9. extended 2025 population
-10. extended 2024 population
-
-This keeps the primary research population separate from robustness diagnostics.
-
-## Interpretation rule
-
-A single profitable week is not evidence of a stable edge.
-
-A long sample with mixed positive and negative weeks is expected. The research
-question is whether the distribution is sufficiently reproducible and whether
-performance survives untouched time periods.
-
-Weekly results must always remain visible in the artifact; never report only the
-aggregate.
+3. XAUUSD M1 BUY vs SELL
+4. FX M1 full-day for USDJPY, EURJPY, GBPUSD, GBPJPY, EURUSD, USDCHF, USDCAD
+5. FX session slices
+6. XAUUSD M5/M15 robustness
+7. FX M5/M15 robustness
+8. extended 2025
+9. extended 2024
 
 ## Canonical status
 
-This matrix does not alter V2 geometry and does not make any timeframe, symbol,
-session, or filter canonical. It is a validation/robustness test plan.
+This matrix does not change V2 geometry and does not make another symbol,
+timeframe, session or pip convention canonical. It is a research/robustness plan.
