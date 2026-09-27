@@ -167,14 +167,23 @@ def main() -> int:
     p.add_argument("--mt5-path", required=False)
     args = p.parse_args()
 
-    initialized = mt5.initialize(path=args.mt5_path) if args.mt5_path else mt5.initialize()
+    print("[BASELINE_V2] starting", flush=True)
+    print(f"[BASELINE_V2] mt5_path={args.mt5_path}", flush=True)
+    print(f"[BASELINE_V2] window={args.start}..{args.end}", flush=True)
+    initialized = (
+        mt5.initialize(path=args.mt5_path, timeout=30000)
+        if args.mt5_path
+        else mt5.initialize(timeout=30000)
+    )
+    print(f"[BASELINE_V2] mt5_initialize={initialized} last_error={mt5.last_error()}", flush=True)
     if not initialized:
         terminal = find_mt5_terminal() if not args.mt5_path else None
-        if terminal is None or not mt5.initialize(path=str(terminal)):
+        if terminal is None or not mt5.initialize(path=str(terminal), timeout=30000):
             print(json.dumps({"status": "MT5_INIT_FAILED", "error": mt5.last_error()}, indent=2))
             return 2
 
     try:
+        print("[BASELINE_V2] resolving XAUUSD...", flush=True)
         symbol = "XAUUSD"
         matches = [s.name for s in (mt5.symbols_get() or []) if str(s.name).upper() == "XAUUSD.ECN"]
         if not matches:
@@ -182,10 +191,15 @@ def main() -> int:
         if not matches:
             raise RuntimeError("Could not resolve XAUUSD broker symbol")
         resolved = matches[0]
+        print(f"[BASELINE_V2] resolved_symbol={resolved}", flush=True)
 
         start, end = parse_ts(args.start), parse_ts(args.end)
+        print("[BASELINE_V2] downloading M1 history...", flush=True)
         rates = fetch_rates(resolved, start, end)
+        print(f"[BASELINE_V2] downloaded bars={len(rates)}", flush=True)
+        print("[BASELINE_V2] running V2 detector...", flush=True)
         result = run(rates, resolved)
+        print(f"[BASELINE_V2] signals={result["signals"]} decisive={result["decisive"]}", flush=True)
 
         report = {
             "status": "COMPLETE",
