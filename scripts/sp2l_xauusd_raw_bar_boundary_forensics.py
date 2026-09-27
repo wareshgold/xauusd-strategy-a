@@ -1,4 +1,4 @@
-"""XAUUSD raw-bar boundary forensic audit (research-only).
+""""XAUUSD raw-bar boundary forensic audit (research-only).
 
 Reads an existing matrix artifact, selects unresolved non-weekend gaps, and
 re-queries MT5 M1 history around each boundary. No session closure is inferred
@@ -67,6 +67,32 @@ def main():
     result={"status":"COMPLETE","research_only":True,"symbol":a.symbol,"cases":len(out),"source_matrix":a.matrix,"results":out}
     text=json.dumps(result,indent=2,ensure_ascii=False)
     if a.output: Path(a.output).write_text(text,encoding="utf-8")
-    print(text)
+
+    exact=sum(x["observed_boundary_pattern"]=="EXACT_60_MIN_HOUR_BOUNDARY" for x in out)
+    other=[x for x in out if x["observed_boundary_pattern"]!="EXACT_60_MIN_HOUR_BOUNDARY"]
+    first=out[0]["gap"].get("start_utc") if out else None
+    last=out[-1]["gap"].get("end_utc") if out else None
+    print(f"{a.symbol} RAW-BAR FORENSICS")
+    print("")
+    print(f"unique_gaps={len(out)}")
+    print(f"exact_60m_hour_boundary={exact}")
+    print(f"other_boundary={len(other)}")
+    print(f"first_gap={first}")
+    print(f"last_gap={last}")
+    if other:
+        print("")
+        print("OTHER_BOUNDARIES:")
+        for x in other[:10]:
+            g=x["gap"]
+            print(f'- {g.get("start_utc")} -> {g.get("end_utc")} [{x["observed_boundary_pattern"]}]')
+        if len(other)>10:
+            print(f"... {len(other)-10} more in JSON artifact")
+    print("")
+    print("status=COMPLETE")
+    print("research_only=true")
+    print("session_approval=NOT_ESTABLISHED")
+    if a.output:
+        print(f"artifact={a.output}")
 
 if __name__=="__main__": main()
+"
