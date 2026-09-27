@@ -141,14 +141,19 @@ def main():
             if not tick or not tick.time:raise RuntimeError("server offset unavailable")
             a.server_offset_hours=round((int(tick.time)-datetime.now(timezone.utc).timestamp())/3600)
         rows=[]; grid=0
-        for pg in floats(a.p_gaps):
-            for sp in floats(a.spikes):
-                for ms in floats(a.max_sls):
-                    for tp in floats(a.tp_rs):
-                        for ttl in floats(a.ttls):
+        p_gaps, spikes, max_sls, tp_rs, ttls = map(floats, (a.p_gaps, a.spikes, a.max_sls, a.tp_rs, a.ttls))
+        total = len(p_gaps) * len(spikes) * len(max_sls) * len(tp_rs) * len(ttls)
+        print(f"[MATRIX] XAUUSD Forward parameter matrix: {total} tests", flush=True)
+        for pg in p_gaps:
+            for sp in spikes:
+                for ms in max_sls:
+                    for tp in tp_rs:
+                        for ttl in ttls:
                             grid+=1;cfg={"p_gap":pg,"spike":sp,"max_sl":ms,"tp_r":tp}
                             x=replay(rates,symbol,cfg,a.volume,ttl,a.server_offset_hours)
                             rows.append({"pGap":pg,"spikeMultiplier":sp,"maxSL":ms,"tpR":tp,"ttlMinutes":ttl,**x})
+                            if grid == 1 or grid % 25 == 0 or grid == total:
+                                print(f"[{grid}/{total}] {100.0*grid/total:6.2f}% PGap={pg:g} Spike={sp:g} SL={ms:g} TP={tp:g} TTL={ttl:g} -> Filled={x[\"filled\"]} NetR={x[\"netR\"]:.1f}", flush=True)
         out={"status":"COMPLETE","canonical":False,"mode":"HISTORICAL_FORWARD_PARAMETER_MATRIX_RESEARCH","symbol":symbol,"timeframe":"M1","window":{"start":start.isoformat(),"end":end.isoformat()},"grid_size":grid,
              "rows":rows,"fixed_semantics":{"trigger":"first post-setup lower-low/higher-high","entry":"trigger candle low/high","slAnchor":"before-spike candle extreme","session":"London 08:00 -> New York 17:00","orderMode":"PENDING_LIMIT_RESEARCH","fillModel":"M1 touch","exitModel":"M1 SL/TP touch; dual touch ambiguous","F13_2X":"relation-only, not executed"},
              "warning":"Research-only sensitivity matrix. It does not define the best or canonical configuration. P-Gap, SL boundary, trigger acceptance and execution semantics remain source/research questions."}
