@@ -67,7 +67,7 @@ def candidate_from_window(window,symbol):
             e=dict(e); e["symbol"]=symbol; e["theoretical_entry"]=float(e["entry"])
             e["secondary_entry_2x"]=e["theoretical_entry"]+0.5*(float(e["sl"])-e["theoretical_entry"])
             e["tp"]=float(e["tp"]); candidates.append(e)
-    return max(candidates,key=lambda x:(int(x["trigger_time"]),x["direction"])) if candidates else None
+    return max(candidates,key=lambda x:(int(x["entry_time"]),x["direction"])) if candidates else None
 
 def replay(rates,symbol,volume,ttl_minutes,server_offset_hours,max_sl):
     pending=[]; open_trades=[]; closed=[]; expired=[]; skipped=[]; seen=set()
@@ -103,10 +103,10 @@ def replay(rates,symbol,volume,ttl_minutes,server_offset_hours,max_sl):
         if key in seen: continue
         seen.add(key)
         if float(c["risk"])<=0 or float(c["risk"])>max_sl: continue
-        if not session_ok(int(c["trigger_time"]),server_offset_hours): continue
+        if not session_ok(int(c["entry_time"]),server_offset_hours): continue
         c["signal_id"]=key; c["volume"]=volume; c["status"]="PENDING"
         c["entry"]=float(c["theoretical_entry"]); c["sl"]=float(c["sl"]); c["tp"]=float(c["tp"])
-        c["trigger_time"]=int(c["trigger_time"]); c["pending_expiry_time"]=c["trigger_time"]+int(ttl_minutes*60)
+        c["trigger_time"]=int(c["entry_time"]); c["pending_expiry_time"]=c["trigger_time"]+int(ttl_minutes*60)
         pending.append(c)
     return closed,expired,skipped,seen,open_trades,pending
 
