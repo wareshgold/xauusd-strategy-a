@@ -62,7 +62,7 @@ def main():
         "event_pair_counts":pair_counts,
         "event_pair_r_delta":pair_r,
         "r_delta_sum":r_delta_sum,
-        "rows":rows,
+        "rows":rows_out,
         "note":"Descriptive full-M1 reconciliation. R delta is taken from forensic row when present, otherwise reference_r-baseline_r. Event-pair association is not causal proof and does not define canonical execution semantics."
     }
     q=Path(a.output); q.parent.mkdir(parents=True,exist_ok=True)
