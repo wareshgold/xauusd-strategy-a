@@ -136,7 +136,6 @@ def contiguous_segments(rates: np.ndarray) -> list[np.ndarray]:
 
 def collect_v2(rates: np.ndarray) -> list[dict]:
     records = []
-    used_entry_keys: set[tuple] = set()
     for segment in contiguous_segments(rates):
         bars = [_bar(x) for x in segment]
         for c_pos in range(2, len(bars) - 1):
@@ -146,10 +145,9 @@ def collect_v2(rates: np.ndarray) -> list[dict]:
             entry = v2_find_first_entry(bars, c_pos, setup)
             if entry is None:
                 continue
-            entry_key = (int(entry["entry_time"]), entry["direction"])
-            if entry_key in used_entry_keys:
-                continue
-            used_entry_keys.add(entry_key)
+            # Preserve every setup for geometry reconciliation. Entry-key
+            # deduplication belongs to execution/backtest lifecycle handling,
+            # not to setup existence or geometry comparison.
             records.append({
             "direction": entry["direction"],
             "before_spike_time": int(entry["before_spike_time"]),
