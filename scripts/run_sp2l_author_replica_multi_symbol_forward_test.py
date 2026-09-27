@@ -405,72 +405,77 @@ def rates(symbol: str, count: int = 10):
 
 
 def detect(candles, symbol: str):
-    a, spike, correction, trigger = candles[-5], candles[-4], candles[-3], candles[-2]
-    spike_body_buy = float(spike["close"] - spike["open"])
-    spike_body_sell = float(spike["open"] - spike["close"])
+    """Exact V2 research geometry: 3-candle setup, then first later trigger.
+
+    The trigger candle is NOT part of setup detection. This mirrors the
+    reference V2 detector/find_first_entry contract used by the 222 checkpoint.
+    Fill/execution semantics remain research-only and are handled separately.
+    """
+    if candles is None or len(candles) < 3:
+        return None
+
+    before, spike, after = candles[-3], candles[-2], candles[-1]
+    ao, ah, al, ac = map(float, (before["open"], before["high"], before["low"], before["close"]))
+    bo, bh, bl, bc = map(float, (spike["open"], spike["high"], spike["low"], spike["close"]))
+    co, ch, cl, cc = map(float, (after["open"], after["high"], after["low"], after["close"]))
+    before_body = abs(ac - ao)
+    spike_body = abs(bc - bo)
+    after_body = abs(cc - co)
 
     buy = (
-        trigger["low"] < correction["low"]
-        and correction["close"] > spike["close"]
-        and correction["open"] > spike["open"]
-        and spike["close"] > a["close"]
-        and spike["open"] > a["open"]
-        and correction["close"] > correction["open"]
-        and spike["close"] > spike["open"]
-        and a["close"] > a["open"]
-        and correction["low"] > a["high"] + P_GAP_PRICE
-        and spike_body_buy > SPIKE_MULTIPLIER * (correction["close"] - correction["open"])
-        and spike_body_buy > SPIKE_MULTIPLIER * (a["close"] - a["open"])
-        and spike_body_buy > SPIKE_MULTIPLIER * (trigger["close"] - trigger["open"])
+        cc > bc and co > bo and
+        bc > ac and bo > ao and
+        cc > co and bc > bo and ac > ao and
+        cl > ah + P_GAP_PRICE and
+        spike_body > SPIKE_MULTIPLIER * before_body and
+        spike_body > SPIKE_MULTIPLIER * after_body
     )
-
     sell = (
-        trigger["high"] > correction["high"]
-        and correction["close"] < spike["close"]
-        and correction["open"] < spike["open"]
-        and spike["close"] < a["close"]
-        and spike["open"] < a["open"]
-        and correction["close"] < correction["open"]
-        and spike["close"] < spike["open"]
-        and a["close"] < a["open"]
-        and correction["high"] < a["low"] - P_GAP_PRICE
-        and spike_body_sell > SPIKE_MULTIPLIER * (correction["open"] - correction["close"])
-        and spike_body_sell > SPIKE_MULTIPLIER * (a["open"] - a["close"])
-        and spike_body_sell > SPIKE_MULTIPLIER * (trigger["open"] - trigger["close"])
+        cc < bc and co < bo and
+        bc < ac and bo < ao and
+        cc < co and bc < bo and ac < ao and
+        ch < al - P_GAP_PRICE and
+        spike_body > SPIKE_MULTIPLIER * before_body and
+        spike_body > SPIKE_MULTIPLIER * after_body
     )
 
     if buy == sell:
         return None
+    return {"direction": "BUY" if buy else "SELL", "setup_after_time": int(after["time"]), "symbol": symbol}
 
-    if buy:
-        entry, sl = float(trigger["low"]), float(spike["low"])
-        risk = entry - sl
-        if 0 < risk <= MAX_SL_DISTANCE:
+
+def find_first_entry(candles, start_index: int, setup: dict):
+    """Reference V2 first later lower-low/higher-high trigger and levels."""
+    direction = setup["direction"]
+    for j in range(start_index + 1, len(candles)):
+        prev = candles[j - 1]
+        cur = candles[j]
+        if direction == "BUY":
+            if float(cur["low"]) >= float(prev["low"]):
+                continue
+            entry = float(cur["low"])
+            sl = float(candles[start_index - 2]["low"])
+            risk = entry - sl
+            if risk <= 0 or risk > MAX_SL_DISTANCE:
+                return None
             return {
-                "direction": "BUY", "trigger_time": int(trigger["time"]),
+                "direction": "BUY", "trigger_time": int(cur["time"]),
                 "theoretical_entry": entry, "sl": sl, "risk": risk,
-                "tp": entry + TP_R * risk,
-                "shadow_sl_author_a": float(a["low"]), "shadow_risk_author_a": entry - float(a["low"]),
-                "shadow_valid_author_a": 0 < entry - float(a["low"]) <= MAX_SL_DISTANCE,
-                "secondary_entry_2x": entry + 0.5 * (sl - entry),
-                "symbol": symbol,
+                "tp": entry + TP_R * risk, "symbol": setup.get("symbol"),
             }
-
-    if sell:
-        entry, sl = float(trigger["high"]), float(spike["high"])
+        if float(cur["high"]) <= float(prev["high"]):
+            continue
+        entry = float(cur["high"])
+        sl = float(candles[start_index - 2]["high"])
         risk = sl - entry
-        if 0 < risk <= MAX_SL_DISTANCE:
-            return {
-                "direction": "SELL", "trigger_time": int(trigger["time"]),
-                "theoretical_entry": entry, "sl": sl, "risk": risk,
-                "tp": entry - TP_R * risk,
-                "shadow_sl_author_a": float(a["high"]), "shadow_risk_author_a": float(a["high"]) - entry,
-                "shadow_valid_author_a": 0 < float(a["high"]) - entry <= MAX_SL_DISTANCE,
-                "secondary_entry_2x": entry + 0.5 * (sl - entry),
-                "symbol": symbol,
-            }
+        if risk <= 0 or risk > MAX_SL_DISTANCE:
+            return None
+        return {
+            "direction": "SELL", "trigger_time": int(cur["time"]),
+            "theoretical_entry": entry, "sl": sl, "risk": risk,
+            "tp": entry - TP_R * risk, "symbol": setup.get("symbol"),
+        }
     return None
-
 
 def load_state() -> dict:
     try:
