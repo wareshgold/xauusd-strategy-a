@@ -106,11 +106,46 @@ def main() -> int:
 
             timestamps = [int(x["time"]) for x in rates] if bars else []
             gaps = 0
+            weekend_gap_minutes = 0
+            non_weekend_gap_minutes = 0
+            gap_intervals = []
+
+            def weekend_overlap_minutes(start_ts: int, end_ts: int) -> int:
+                start = datetime.fromtimestamp(start_ts, tz=timezone.utc)
+                end = datetime.fromtimestamp(end_ts, tz=timezone.utc)
+                total = 0
+                cursor = start
+                while cursor < end:
+                    next_day = (cursor + timedelta(days=1)).replace(
+                        hour=0, minute=0, second=0, microsecond=0
+                    ) + timedelta(days=1)
+                    segment_end = min(end, next_day)
+                    if cursor.weekday() in {5, 6}:
+                        total += int((segment_end - cursor).total_seconds() // 60)
+                    cursor = segment_end
+                return total
+
             if timestamps:
                 for prev, cur in zip(timestamps, timestamps[1:]):
                     delta = cur - prev
-                    if delta > 60:
-                        gaps += max(0, delta // 60 - 1)
+                    missing = max(0, delta // 60 - 1)
+                    if missing:
+                        weekend = weekend_overlap_minutes(prev + 60, cur)
+                        non_weekend = max(0, missing - weekend)
+                        gaps += missing
+                        weekend_gap_minutes += weekend
+                        non_weekend_gap_minutes += non_weekend
+                        gap_intervals.append({
+                            "start_utc": datetime.fromtimestamp(
+                                prev + 60, tz=timezone.utc
+                            ).isoformat(),
+                            "end_utc": datetime.fromtimestamp(
+                                cur - 60, tz=timezone.utc
+                            ).isoformat(),
+                            "missing_minutes": missing,
+                            "calendar_weekend_minutes": weekend,
+                            "non_weekend_minutes": non_weekend,
+                        })
 
             results.append({
                 "case_id": case.case_id,
@@ -125,6 +160,9 @@ def main() -> int:
                 "bars_m1": bars,
                 "expected_minutes": expected_minutes(week_start, week_end),
                 "internal_gap_minutes": gaps,
+                "calendar_weekend_gap_minutes": weekend_gap_minutes,
+                "non_weekend_gap_minutes": non_weekend_gap_minutes,
+                "gap_intervals": gap_intervals,
                 "point": contract.point,
                 "digits": contract.digits,
                 "pip_size": contract.pip_size,
