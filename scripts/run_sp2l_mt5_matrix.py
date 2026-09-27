@@ -14,6 +14,7 @@ from pathlib import Path
 
 import MetaTrader5 as mt5
 
+from discover_mt5_research_symbols import require_unique_resolution
 from mt5_terminal_resolver import find_mt5_terminal
 from sp2l_pip_contract import make_contract
 from sp2l_v2_test_matrix import build_matrix
@@ -41,31 +42,6 @@ def init_mt5(path: str | None) -> None:
 
     if not ok:
         raise RuntimeError(f"MT5 initialization failed: {mt5.last_error()}")
-
-
-def resolve_symbol(requested: str) -> str:
-    if mt5.symbol_info(requested) is not None:
-        return requested
-
-    candidates = [
-        requested + ".ecn",
-        requested + ".ECN",
-        requested + "m",
-        requested + ".",
-    ]
-    for candidate in candidates:
-        if mt5.symbol_info(candidate) is not None:
-            return candidate
-
-    matches = mt5.symbols_get(group=f"*{requested}*") or []
-    if len(matches) == 1:
-        return matches[0].name
-    if matches:
-        exactish = [s.name for s in matches if s.name.upper().startswith(requested.upper())]
-        if len(exactish) == 1:
-            return exactish[0]
-
-    raise RuntimeError(f"MT5 symbol not found: {requested}")
 
 
 def fetch_week(symbol: str, start: datetime, end: datetime):
@@ -101,6 +77,7 @@ def main() -> int:
     init_mt5(args.mt5_path)
 
     try:
+        symbol_map = require_unique_resolution(tuple(sorted(selected)))
         cases = [
             c for c in week_cases(start_date, end_date)
             if c.symbol.upper() in selected
@@ -109,7 +86,7 @@ def main() -> int:
 
         results = []
         for case in cases:
-            broker_symbol = resolve_symbol(case.symbol)
+            broker_symbol = symbol_map[case.symbol.upper()]
             info = mt5.symbol_info(broker_symbol)
             if info is None:
                 raise RuntimeError(f"symbol_info failed: {broker_symbol}")
@@ -170,6 +147,7 @@ def main() -> int:
             "start_date": start_date.isoformat(),
             "end_date_inclusive": args.end,
             "symbols_requested": sorted(selected),
+            "symbol_mapping": symbol_map,
             "population": args.population,
             "cases": len(results),
             "results": results,
