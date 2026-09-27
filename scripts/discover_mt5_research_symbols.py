@@ -12,6 +12,8 @@ from dataclasses import dataclass
 
 import MetaTrader5 as mt5
 
+from mt5_terminal_resolver import find_mt5_terminal
+
 
 @dataclass(frozen=True)
 class SymbolResolution:
@@ -26,6 +28,15 @@ def _base_name(name: str) -> str:
     value = name.upper().strip()
     # Keep the market root before broker decoration such as .ecn, -ECN, m, etc.
     return re.split(r"[._-]", value, maxsplit=1)[0].rstrip("M")
+
+
+def init_mt5(path: str | None = None) -> str:
+    if path and mt5.initialize(path=path):
+        return path
+    terminal = find_mt5_terminal()
+    if terminal is not None and mt5.initialize(path=str(terminal)):
+        return str(terminal)
+    raise RuntimeError(f"MT5 initialization failed: {mt5.last_error()}")
 
 
 def discover_symbols(requested_symbols: tuple[str, ...]) -> list[SymbolResolution]:
@@ -75,10 +86,16 @@ if __name__ == "__main__":
         "XAUUSD", "USDJPY", "EURJPY", "GBPUSD",
         "GBPJPY", "EURUSD", "USDCHF", "USDCAD",
     )
-    for resolution in discover_symbols(requested):
-        print(
-            f"{resolution.requested_symbol} -> "
-            f"{resolution.broker_symbol or '-'} "
-            f"[{resolution.status}] "
-            f"candidates={list(resolution.candidates)}"
-        )
+    terminal = init_mt5()
+    try:
+        print(f"MT5 terminal: {terminal}")
+        print(f"MT5 symbols available: {len(mt5.symbols_get() or ())}")
+        for resolution in discover_symbols(requested):
+            print(
+                f"{resolution.requested_symbol} -> "
+                f"{resolution.broker_symbol or '-'} "
+                f"[{resolution.status}] "
+                f"candidates={list(resolution.candidates)}"
+            )
+    finally:
+        mt5.shutdown()
