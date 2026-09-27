@@ -66,7 +66,18 @@ def classify_row(row: dict[str, Any]) -> dict[str, Any]:
 
 
 def evaluate_artifact(data: dict[str, Any]) -> dict[str, Any]:
-    rows = [classify_row(r) for r in data["results"]]
+    w0 = [
+        r for r in data["results"]
+        if r.get("session_start_utc") is None and r.get("session_end_utc") is None
+    ]
+    seen: set[tuple[str, str]] = set()
+    unique = []
+    for row in w0:
+        key = (row["requested_symbol"], row["week_start_utc"])
+        if key not in seen:
+            seen.add(key)
+            unique.append(row)
+    rows = [classify_row(r) for r in unique]
     return {
         "status": "COMPLETE",
         "mode": "RESEARCH_MT5_MATRIX_DATA_QUALITY_GATE",
@@ -78,6 +89,8 @@ def evaluate_artifact(data: dict[str, Any]) -> dict[str, Any]:
             "replay_rule": "DATA_QUALITY_UNRESOLVED rows must not be silently treated as complete",
         },
         "cases": len(rows),
+        "source_cases": len(data["results"]),
+        "deduplication": "one W0 full-week row per symbol/week",
         "pass_cases": sum(r["status"] == "PASS" for r in rows),
         "unresolved_cases": sum(r["status"] == "DATA_QUALITY_UNRESOLVED" for r in rows),
         "rows": rows,
