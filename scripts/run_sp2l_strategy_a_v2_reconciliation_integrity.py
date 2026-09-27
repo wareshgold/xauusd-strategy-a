@@ -133,7 +133,7 @@ def main() -> int:
                     "v2_entry_direct": None,
                     "v2_setup_present_in_collect_output": False,
                     "entry_key_in_collect_output": False,
-                    "entry_key_was_deduplicated": False,
+                    "entry_key_shared_with_other_setup": False,
                 })
 
         summary = {
