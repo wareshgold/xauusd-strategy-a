@@ -45,7 +45,7 @@ def fetch_mt5(symbol,start,end,path):
         if info is None or not info.visible:
             if not mt5.symbol_select(symbol,True):
                 raise RuntimeError(f"symbol unavailable: {symbol}")
-        rates=mt5.copy_rates_range(symbol,datetime.fromtimestamp(start,tz=timezone.utc),datetime.fromtimestamp(end,tz=timezone.utc))
+        rates=mt5.copy_rates_range(symbol,mt5.TIMEFRAME_M1,datetime.fromtimestamp(start,tz=timezone.utc),datetime.fromtimestamp(end,tz=timezone.utc))
         if rates is None:
             raise RuntimeError(f"copy_rates_range returned None: {mt5.last_error()}")
         out=[]
