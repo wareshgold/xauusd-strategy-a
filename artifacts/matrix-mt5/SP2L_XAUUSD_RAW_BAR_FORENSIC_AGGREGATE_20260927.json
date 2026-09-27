@@ -1,0 +1,47 @@
+{
+  "status": "COMPLETE",
+  "research_only": true,
+  "session_cause": "UNRESOLVED",
+  "session_approval": "NOT_ESTABLISHED",
+  "population": 58,
+  "pattern_counts": {
+    "EXACT_23_59_TO_01_00": 21,
+    "23:58_TO_01:00": 36,
+    "23:59_TO_00:59": 0,
+    "OTHER": 1
+  },
+  "weekday_counts": {
+    "Friday": 6,
+    "Monday": 10,
+    "Thursday": 15,
+    "Tuesday": 13,
+    "Wednesday": 14
+  },
+  "month_counts": {
+    "2026-06": 7,
+    "2026-07": 19,
+    "2026-08": 17,
+    "2026-09": 15
+  },
+  "observed_boundary_minutes_counts": {
+    "61": 21,
+    "62": 36,
+    "204": 1
+  },
+  "outliers": [
+    {
+      "gap_start_utc": "2026-09-07T21:37:00+00:00",
+      "gap_end_utc": "2026-09-08T00:59:00+00:00",
+      "last_bar_before_utc": "2026-09-07T21:36:00+00:00",
+      "first_bar_after_utc": "2026-09-08T01:00:00+00:00",
+      "pattern": "OTHER",
+      "observed_boundary_minutes": 204
+    }
+  ],
+  "interpretation": [
+    "Descriptive forensic evidence only.",
+    "Recurring raw-bar boundary patterns do not establish broker session or maintenance cause.",
+    "The 2026-09-07 non-rollover observation remains isolated as an outlier.",
+    "No session closure is inferred, approved, or promoted to canonical data rules."
+  ]
+}
