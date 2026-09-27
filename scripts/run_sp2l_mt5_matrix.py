@@ -110,27 +110,29 @@ def main() -> int:
             non_weekend_gap_minutes = 0
             gap_intervals = []
 
-            def weekend_overlap_minutes(start_ts: int, end_ts: int) -> int:
+            def weekend_closure_overlap_minutes(start_ts: int, end_ts: int) -> int:
+                """Classify the continuous Fri->Mon market-closure span.
+                
+                The existing day-of-week counter only marked Sat/Sun minutes,
+                which incorrectly exposed the Friday-evening and Monday-morning
+                portions of the same weekly closure as non-weekend gaps.
+                This is calendar classification only; it does not infer broker
+                session hours within Friday/Monday.
+                """
                 start = datetime.fromtimestamp(start_ts, tz=timezone.utc)
                 end = datetime.fromtimestamp(end_ts, tz=timezone.utc)
-                total = 0
-                cursor = start
-                while cursor < end:
-                    next_day = (cursor + timedelta(days=1)).replace(
-                        hour=0, minute=0, second=0, microsecond=0
-                    ) + timedelta(days=1)
-                    segment_end = min(end, next_day)
-                    if cursor.weekday() in {5, 6}:
-                        total += int((segment_end - cursor).total_seconds() // 60)
-                    cursor = segment_end
-                return total
+                if start.weekday() == 4 and end.weekday() == 0:
+                    return int((end - start).total_seconds() // 60)
+                if start.weekday() in {5, 6} and end.weekday() == 0:
+                    return int((end - start).total_seconds() // 60)
+                return 0
 
             if timestamps:
                 for prev, cur in zip(timestamps, timestamps[1:]):
                     delta = cur - prev
                     missing = max(0, delta // 60 - 1)
                     if missing:
-                        weekend = weekend_overlap_minutes(prev + 60, cur)
+                        weekend = weekend_closure_overlap_minutes(prev + 60, cur)
                         non_weekend = max(0, missing - weekend)
                         gaps += missing
                         weekend_gap_minutes += weekend
