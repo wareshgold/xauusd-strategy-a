@@ -181,20 +181,20 @@ def collect_source(rates: np.ndarray) -> list[dict]:
             )
             if candidate is None:
                 continue
-        records.append({
-            "direction": candidate["direction"],
-            "before_spike_time": int(bars[i - 4]["time"]),
-            "spike_time": int(bars[i - 3]["time"]),
-            "after_spike_time": int(bars[i - 2]["time"]),
-            "setup_time": int(bars[i - 2]["time"]),
-            "trigger_time": int(candidate["signal_time"]),
-            "entry_time": int(candidate["signal_time"]),
-            "entry": float(candidate["entry"]),
-            "sl": float(candidate["sl"]),
-            "risk": float(candidate["risk"]),
-            "tp": float(candidate["tp"]),
-            "source": "SOURCE_ALIGNED",
-        })
+            records.append({
+                "direction": candidate["direction"],
+                "before_spike_time": int(bars[i - 4]["time"]),
+                "spike_time": int(bars[i - 3]["time"]),
+                "after_spike_time": int(bars[i - 2]["time"]),
+                "setup_time": int(bars[i - 2]["time"]),
+                "trigger_time": int(candidate["signal_time"]),
+                "entry_time": int(candidate["signal_time"]),
+                "entry": float(candidate["entry"]),
+                "sl": float(candidate["sl"]),
+                "risk": float(candidate["risk"]),
+                "tp": float(candidate["tp"]),
+                "source": "SOURCE_ALIGNED",
+            })
     return records
 
 
