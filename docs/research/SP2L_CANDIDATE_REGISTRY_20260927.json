@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "registry_status": "RESEARCH_ONLY",
+  "candidates": [
+    {
+      "candidate_id": "V2-CANDIDATE-001",
+      "status": "RESEARCH_CANDIDATE",
+      "canonical": false,
+      "definition": {
+        "p_gap_price": 1.0,
+        "spike_multiplier": 1.5,
+        "max_sl_distance": 10.0,
+        "tp_r": 1.0,
+        "trigger": "V2 first post-setup lower-low/higher-high",
+        "entry": "trigger candle Low/High",
+        "sl_anchor": "candle before Spike Low/High",
+        "intrabar": "SL_FIRST_SAME_BAR",
+        "filters": {
+          "ema": false,
+          "atr": false,
+          "adx": false,
+          "trend": false,
+          "session": false
+        },
+        "second_entry": false
+      },
+      "last_replay": {
+        "window_utc": "2026-09-14T00:00:00Z/2026-09-25T23:59:59Z",
+        "signals": 222,
+        "trades": 204,
+        "wins": 127,
+        "losses": 77,
+        "win_rate_pct": 62.254901960784316,
+        "net_r": 50.0,
+        "profit_factor_simplified": 1.6493506493506493,
+        "max_drawdown_r": 6.0,
+        "max_consecutive_losses": 5
+      },
+      "reconciliation_status": {
+        "v2_setups": 139,
+        "source_aligned_setups": 53,
+        "common_setups": 53,
+        "v2_only_setups": 86,
+        "source_aligned_only_setups": 0,
+        "primary_divergence_area": "trigger semantics/indexing",
+        "resolved": false
+      },
+      "promotion_gate": {
+        "deterministic_replay": "PASS_WITH_RECONCILIATION_OPEN",
+        "setup_reconciliation": "BLOCKED",
+        "signal_reconciliation": "NOT_STARTED",
+        "execution_parity": "NOT_STARTED",
+        "untouched_validation": "NOT_STARTED",
+        "robustness_stability": "NOT_STARTED",
+        "fresh_holdout": "NOT_STARTED",
+        "production": "BLOCKED"
+      }
+    }
+  ]
+}
