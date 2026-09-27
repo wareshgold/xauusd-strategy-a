@@ -90,8 +90,9 @@ def _locate_record(record, bars_by_time):
     return before, spike, after
 
 
-def _v2_context(record, bars_by_time, ordered_times):
+def _v2_context(record, bars_by_time, segment_times_by_time):
     before, spike, after = _locate_record(record, bars_by_time)
+    ordered_times = segment_times_by_time[record["after_spike_time"]]
     after_pos = ordered_times.index(record["after_spike_time"])
     if after_pos + 1 >= len(ordered_times):
         return {"status": "NO_FOLLOWING_BAR"}
@@ -127,7 +128,7 @@ def main() -> int:
     parser.add_argument("--end", required=True)
     parser.add_argument("--symbol", default="XAUUSD")
     parser.add_argument("--mt5-path", required=True)
-    parser.add_argument("--v2-only-limit", type=int, default=10)
+    parser.add_argument("--v2-only-limit", type=int, default=0, help="Maximum V2-only cases to diagnose; 0 means all.")
     args = parser.parse_args()
 
     recon = json.loads(open(args.reconciliation_report, encoding="utf-8").read())
@@ -145,12 +146,15 @@ def main() -> int:
 
         segments = contiguous_segments(rates)
         bars_by_time = {}
-        ordered_times = []
+        segment_times_by_time = {}
+        segment_bars_by_time = {}
         for segment in segments:
             bars = [_bar(x) for x in segment]
+            segment_times = [b["time"] for b in bars]
             for b in bars:
                 bars_by_time[b["time"]] = b
-                ordered_times.append(b["time"])
+                segment_times_by_time[b["time"]] = segment_times
+                segment_bars_by_time[b["time"]] = bars
 
         c = recon["comparison"]
         v2_only = c["v2_only"]
@@ -159,9 +163,9 @@ def main() -> int:
         v2_cases = []
         reason_counts = {}
         for record in v2_only:
-            if len(v2_cases) >= args.v2_only_limit:
+            if args.v2_only_limit and len(v2_cases) >= args.v2_only_limit:
                 break
-            ctx = _v2_context(record, bars_by_time, ordered_times)
+            ctx = _v2_context(record, bars_by_time, segment_times_by_time)
             if "source_conditions" in ctx:
                 failed = ctx["source_conditions"]["failed_checks"]
                 for reason in failed:
@@ -174,10 +178,8 @@ def main() -> int:
         source_cases = []
         for record in source_only:
             before, spike, after = _locate_record(record, bars_by_time)
-            v2_entry = _find_v2_entry_from_setup(
-                record,
-                [bars_by_time[t] for t in ordered_times],
-            )
+            segment_bars = segment_bars_by_time.get(record["after_spike_time"], [])
+            v2_entry = _find_v2_entry_from_setup(record, segment_bars)
             source_cases.append({
                 "record": record,
                 "v2_entry_from_same_setup": v2_entry,
