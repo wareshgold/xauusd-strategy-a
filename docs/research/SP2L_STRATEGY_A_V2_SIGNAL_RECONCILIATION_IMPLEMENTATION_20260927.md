@@ -10,7 +10,7 @@ Implement the deterministic signal-set reconciliation experiment required before
 
 Branch: `research/sp2l-strategy-a-v2-2026-09-27`
 
-Latest reconciliation implementation commit: `dae8a9bd79f8c03fc079c483694cc99b4ecb3c6a`
+Latest reconciliation implementation fix commit: `81611d5f90fbf9bbf21b4b713afb8ade9179f6c6`
 
 Tool:
 
@@ -54,6 +54,12 @@ This experiment explains detector-level signal divergence. It does not decide wh
 
 The P-Gap threshold and session filter remain research-only.
 
+## Integrity correction
+
+The first reconciliation implementation deduplicated V2 records by `(entry_time, direction)`. The 2026-09-27 integrity audit proved that both prior SOURCE_ALIGNED_ONLY cases were directly detectable by V2 and had valid V2 entries, but were removed by that deduplication. This was a reconciliation-methodology defect, not evidence of geometry divergence.
+
+The fix preserves every V2 setup in the reconciliation set. The existing V2 detector and execution/backtest behavior are unchanged.
+
 ## Next action
 
-Pull the branch, compile the new reconciliation script, then run the fixed-window reconciliation. No optimization before the resulting artifact is reviewed.
+Pull the branch, compile the reconciliation script, rerun the fixed window, then inspect the new counts and common-case SL/trigger differences. No optimization before the resulting artifact is reviewed.
