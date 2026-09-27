@@ -627,10 +627,16 @@ def main() -> int:
     parser.add_argument("--start", default=None, help="UTC ISO, e.g. 2026-06-12T00:00:00Z")
     parser.add_argument("--end", default=None, help="UTC ISO, e.g. 2026-09-23T23:59:59Z")
     parser.add_argument("--symbols", default=",".join(REQUESTED_BASES))
+    parser.add_argument("--mt5-path", default=None, help="Explicit MT5 terminal executable path")
     args = parser.parse_args()
 
-    if not mt5.initialize():
-        terminal = find_mt5_terminal()
+    if args.mt5_path:
+        initialized = mt5.initialize(path=str(Path(args.mt5_path)))
+    else:
+        initialized = mt5.initialize()
+
+    if not initialized:
+        terminal = None if args.mt5_path else find_mt5_terminal()
         if terminal is None or not mt5.initialize(path=str(terminal)):
             print(json.dumps({
                 "status": "MT5_INIT_FAILED",
