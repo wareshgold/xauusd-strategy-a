@@ -444,6 +444,21 @@ def detect(candles, symbol: str):
     return {"direction": "BUY" if buy else "SELL", "setup_after_time": int(after["time"]), "symbol": symbol}
 
 
+def find_latest_candidate(candles, symbol: str):
+    """Scan completed 3-candle setups and return the latest eligible first trigger."""
+    candidates = []
+    for setup_end in range(2, len(candles) - 1):
+        setup = detect(candles[setup_end - 2:setup_end + 1], symbol)
+        if not setup:
+            continue
+        candidate = find_first_entry(candles, setup_end, setup)
+        if candidate is not None:
+            candidates.append(candidate)
+    if not candidates:
+        return None
+    return max(candidates, key=lambda x: (int(x["trigger_time"]), x["direction"]))
+
+
 def find_first_entry(candles, start_index: int, setup: dict):
     """Reference V2 first later lower-low/higher-high trigger and levels."""
     direction = setup["direction"]
@@ -1243,7 +1258,7 @@ def main() -> None:
                 data = rates(symbol)
                 if data is None:
                     continue
-                candidate = detect(data, symbol)
+                candidate = find_latest_candidate(data, symbol)
                 trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}" if candidate else None
                 if candidate is None or seen_trigger.get(symbol) == trigger_key:
                     continue
