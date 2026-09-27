@@ -258,6 +258,7 @@ def main() -> int:
             "v2_only_total": len(v2_only),
             "v2_only_diagnosed": len(v2_cases),
             "immediate_source_rejection_reason_counts": reason_counts,
+            "root_cause_counts": root_cause_counts,
             "source_aligned_only_total": len(source_only),
         }, indent=2))
         return 0
