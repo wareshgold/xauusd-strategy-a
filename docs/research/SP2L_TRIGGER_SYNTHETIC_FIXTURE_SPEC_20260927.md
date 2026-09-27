@@ -37,3 +37,8 @@ No fixture result may modify the V2 research contract, source-aligned detector, 
 Frozen trigger geometry remains blocked until primary-source evidence resolves the ambiguity.
 
 Current stage: SOURCE RESOLUTION → SYNTHETIC FIXTURES
+
+
+## Promotion gate
+
+No fixture result may modify the V2 research contract, source-aligned detector, or production execution code. Frozen trigger geometry remains blocked until primary-source evidence resolves the ambiguity.
