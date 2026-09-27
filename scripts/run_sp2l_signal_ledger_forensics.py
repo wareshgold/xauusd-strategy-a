@@ -93,7 +93,9 @@ def main():
           "preserve_input_order_within_fingerprint":True,"no_dict_overwrite":True,
           "fingerprint_fields":SIGNAL_FIELDS}
     }
-    Path(args.output).write_text(json.dumps(out,indent=2,ensure_ascii=False),encoding="utf-8")
+    output = Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(out,indent=2,ensure_ascii=False),encoding="utf-8")
     print(json.dumps(out,indent=2,ensure_ascii=False))
 
 if __name__ == "__main__":
