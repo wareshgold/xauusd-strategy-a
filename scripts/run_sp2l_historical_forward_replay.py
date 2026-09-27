@@ -99,7 +99,7 @@ def replay(rates,symbol,volume,ttl_minutes,server_offset_hours,max_sl):
         # replay the same 10-bar observation window over historical bars.
         w=rates[max(0,i-9):i+1]; c=candidate_from_window(w,symbol)
         if c is None: continue
-        key=f"{symbol}:{int(c['trigger_time'])}:{c['direction']}"
+        key=f"{symbol}:{int(c['entry_time'])}:{c['direction']}"
         if key in seen: continue
         seen.add(key)
         if float(c["risk"])<=0 or float(c["risk"])>max_sl: continue
