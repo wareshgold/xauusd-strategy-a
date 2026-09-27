@@ -1,4 +1,4 @@
-""""XAUUSD raw-bar boundary forensic audit (research-only).
+"""XAUUSD raw-bar boundary forensic audit (research-only).
 
 Reads an existing matrix artifact, selects unresolved non-weekend gaps, and
 re-queries MT5 M1 history around each boundary. No session closure is inferred
@@ -95,4 +95,3 @@ def main():
         print(f"artifact={a.output}")
 
 if __name__=="__main__": main()
-"
