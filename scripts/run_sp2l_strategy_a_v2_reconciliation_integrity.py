@@ -1,8 +1,8 @@
 """Research-only integrity audit for reconciliation source-only cases.
 
 This tool checks whether SOURCE_ALIGNED_ONLY setups are actually detectable by
-the V2 setup detector and whether collect_v2's entry-key deduplication removes
-them from the V2 result set.
+the V2 setup detector and verifies that reconciliation preserves every detected
+setup rather than applying execution-style entry-key deduplication.
 
 It does not change detector rules or reconciliation behavior.
 """
@@ -77,9 +77,9 @@ def main() -> int:
 
         segments = [[_bar(x) for x in segment] for segment in contiguous_segments(rates)]
 
-        # Reproduce collect_v2's output and its exact deduplication key.
+        # Reproduce the corrected geometry-reconciliation V2 output.
+        # Do not deduplicate by entry key: setup identity is the reconciliation unit.
         v2_records = []
-        used_entry_keys = set()
         setup_records = []
         for segment_index, bars in enumerate(segments):
             for i in range(2, len(bars)):
@@ -93,11 +93,7 @@ def main() -> int:
                 entry = find_first_entry(bars, i, setup)
                 if entry is None:
                     continue
-                key = _entry_key(entry)
-                already_used = key in used_entry_keys
-                if not already_used:
-                    used_entry_keys.add(key)
-                    v2_records.append(entry)
+                v2_records.append(entry)
 
         v2_by_setup = {_setup_key(x): x for x in v2_records}
         v2_entry_keys = {_entry_key(x) for x in v2_records}
@@ -122,12 +118,9 @@ def main() -> int:
                         "entry_key_in_collect_output": (
                             _entry_key(entry) in v2_entry_keys if entry is not None else False
                         ),
-                        "entry_key_was_deduplicated": (
-                            entry is not None and _entry_key(entry) not in {
-                                _entry_key(x)
-                                for x in v2_records
-                                if _setup_key(x) == _setup_key(record)
-                            }
+                        "entry_key_shared_with_other_setup": (
+                            entry is not None
+                            and sum(_entry_key(x) == _entry_key(entry) for x in v2_records) > 1
                         ),
                     })
                     break
@@ -157,12 +150,11 @@ def main() -> int:
             "entry_key_present_in_collect_v2_output": sum(
                 bool(x["entry_key_in_collect_output"]) for x in cases
             ),
-            "cases_likely_removed_by_entry_key_dedup": sum(
+            "cases_missing_from_corrected_collect_v2_output": sum(
                 bool(
                     x["v2_setup_detected_directly"]
                     and x["v2_entry_direct"] is not None
                     and not x["v2_setup_present_in_collect_output"]
-                    and x["entry_key_in_collect_output"]
                 )
                 for x in cases
             ),
@@ -184,7 +176,8 @@ def main() -> int:
             "collect_v2_reproduction": {
                 "setup_candidates": len(setup_records),
                 "v2_output_records": len(v2_records),
-                "entry_dedup_key": "(entry_time, direction)",
+                "entry_dedup_key": null,
+                "geometry_reconciliation_key": "(direction, before_spike_time, spike_time, after_spike_time)",
             },
             "summary": summary,
             "cases": cases,
@@ -192,6 +185,7 @@ def main() -> int:
                 "This audits reconciliation integrity only.",
                 "It does not decide which detector geometry is source-correct.",
                 "It does not modify collect_v2 or promote any rule.",
+                "Entry-key deduplication is intentionally excluded from geometry reconciliation.",
             ],
         }
 
