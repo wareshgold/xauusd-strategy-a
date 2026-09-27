@@ -8,9 +8,6 @@ from __future__ import annotations
 import argparse,json
 from pathlib import Path
 
-def fp(x):
-    return (x.get("direction"),x.get("entry_time"),x.get("entry"),x.get("sl"),x.get("tp"))
-
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--baseline-report",required=True)
@@ -35,7 +32,9 @@ def main():
 
     rows=[]
     for item in targets:
-        s=item["signal"]
+        # run_sp2l_population_delta_forensics persists the signal fields under
+        # "fields"; older/manual artifacts may expose them directly.
+        s=item.get("fields") or item.get("signal") or item
         ei=int(s["entry_index"])
         occupants=ref_by_index.get(ei,[])
         rows.append({
@@ -50,7 +49,8 @@ def main():
         })
 
     counts={}
-    for x in rows: counts[x["classification"]]=counts.get(x["classification"],0)+1
+    for x in rows:
+        counts[x["classification"]]=counts.get(x["classification"],0)+1
     out={
         "status":"COMPLETE","research_only":True,
         "purpose":"test_entry_index_collision_as_population_delta_explanation",
