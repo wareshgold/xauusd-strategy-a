@@ -17,6 +17,7 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("matrix"); p.add_argument("--mt5-path",required=True)
     p.add_argument("--symbol",default="XAUUSD"); p.add_argument("--limit",type=int,default=20)
+    p.add_argument("--unique-gaps",action="store_true",help="Deduplicate identical gap intervals repeated across matrix windows.")
     p.add_argument("--output")
     a=p.parse_args()
     d=json.loads(Path(a.matrix).read_text(encoding="utf-8"))
@@ -25,6 +26,15 @@ def main():
         if r.get("requested_symbol")!=a.symbol: continue
         for g in r.get("gap_intervals",[]):
             if g.get("non_weekend_minutes",0)>0: gaps.append((r,g))
+    if a.unique_gaps:
+        seen=set()
+        unique=[]
+        for r,g in gaps:
+            key=(r.get("broker_symbol"),g.get("start_utc"),g.get("end_utc"))
+            if key in seen: continue
+            seen.add(key)
+            unique.append((r,g))
+        gaps=unique
     gaps=gaps[:a.limit]
     if not mt5.initialize(path=a.mt5_path):
         raise SystemExit(f"MT5 initialize failed: {mt5.last_error()}")
@@ -40,9 +50,18 @@ def main():
                 rows.append({"time_utc":iso(t),"open":float(b["open"]),"high":float(b["high"]),"low":float(b["low"]),"close":float(b["close"]),"volume":int(b["tick_volume"])})
         before=[x for x in rows if dt(x["time_utc"])<s]
         after=[x for x in rows if dt(x["time_utc"])>=e]
+        last_before=before[-1] if before else None
+        first_after=after[0] if after else None
+        exact_hour_boundary = bool(
+            last_before and first_after
+            and dt(last_before["time_utc"]).minute == 59
+            and dt(first_after["time_utc"]).minute == 0
+            and (dt(first_after["time_utc"])-dt(last_before["time_utc"])) == timedelta(minutes=61)
+        )
         out.append({"case_id":r["case_id"],"gap":g,"broker_symbol":broker,
-                    "last_bar_before":before[-1] if before else None,
-                    "first_bar_after":after[0] if after else None,
+                    "last_bar_before":last_before,
+                    "first_bar_after":first_after,
+                    "observed_boundary_pattern": "EXACT_60_MIN_HOUR_BOUNDARY" if exact_hour_boundary else "OTHER",
                     "bars_returned":len(rows),"boundary_bars":rows})
     mt5.shutdown()
     result={"status":"COMPLETE","research_only":True,"symbol":a.symbol,"cases":len(out),"source_matrix":a.matrix,"results":out}
