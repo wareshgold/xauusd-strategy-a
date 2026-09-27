@@ -13,7 +13,17 @@ OUTCOME_FIELDS = ["result", "fill_time", "exit_time", "exit_reason"]
 
 def load(path):
     d = json.loads(Path(path).read_text(encoding="utf-8"))
-    return d, d.get("result", d).get("signals_detail", [])
+    container = d.get("result") if isinstance(d.get("result"), dict) else d
+    rows = d.get("signals_detail")
+    if not isinstance(rows, list):
+        rows = container.get("signals_detail", []) if isinstance(container, dict) else []
+    if not isinstance(rows, list):
+        rows = []
+    if not rows:
+        raise ValueError(
+            f"No signals_detail list found in {path}; refusing a false zero-signal reconciliation"
+        )
+    return d, rows
 
 def norm(v):
     return round(v, 8) if isinstance(v, float) else v
@@ -91,7 +101,8 @@ def main():
         "baseline_result":da.get("result",{}),"reference_result":db.get("result",{}),
         "matching_contract":{"preserve_duplicate_fingerprints":True,
           "preserve_input_order_within_fingerprint":True,"no_dict_overwrite":True,
-          "fingerprint_fields":SIGNAL_FIELDS}
+          "fingerprint_fields":SIGNAL_FIELDS,
+          "refuse_empty_ledger":True}
     }
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
