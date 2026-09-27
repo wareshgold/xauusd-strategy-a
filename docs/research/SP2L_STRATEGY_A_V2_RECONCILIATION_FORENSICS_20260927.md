@@ -70,3 +70,10 @@ any additional source resolution is required.
 
 Forward-test readiness remains a later gate. The market opening does not change
 the research/source hierarchy.
+
+
+## Reconciliation integrity correction
+
+The first artifact at 20260927T053636Z contained an entry-key deduplication defect. The integrity audit at 20260927T054525Z showed both SOURCE_ALIGNED_ONLY cases were directly detectable by V2 and were removed by `(entry_time, direction)` deduplication. Therefore that artifact is superseded for geometry conclusions.
+
+The reconciliation collector was corrected in commit `81611d5f90fbf9bbf21b4b713afb8ade9179f6c6` to preserve every setup with a valid V2 entry. A new fixed-window reconciliation must be generated before further forensic interpretation.
