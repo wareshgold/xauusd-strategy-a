@@ -123,23 +123,34 @@ def _bar(r) -> dict:
     }
 
 
+def contiguous_segments(rates: np.ndarray) -> list[np.ndarray]:
+    if len(rates) == 0:
+        return []
+    cuts = [0]
+    for i in range(1, len(rates)):
+        if int(rates[i]["time"]) - int(rates[i - 1]["time"]) != 60:
+            cuts.append(i)
+    cuts.append(len(rates))
+    return [rates[a:b] for a, b in zip(cuts, cuts[1:]) if b - a >= 3]
+
+
 def collect_v2(rates: np.ndarray) -> list[dict]:
     records = []
-    used_entry_indices: set[int] = set()
-    for c_pos in range(2, len(rates) - 1):
-        setup = v2_detect_setup([_bar(x) for x in rates[c_pos - 2:c_pos + 1]])
-        if setup is None:
-            continue
-        entry = v2_find_first_entry(
-            [_bar(x) for x in rates], c_pos, setup
-        )
-        if entry is None:
-            continue
-        entry_index = int(entry["entry_index"])
-        if entry_index in used_entry_indices:
-            continue
-        used_entry_indices.add(entry_index)
-        records.append({
+    used_entry_keys: set[tuple] = set()
+    for segment in contiguous_segments(rates):
+        bars = [_bar(x) for x in segment]
+        for c_pos in range(2, len(bars) - 1):
+            setup = v2_detect_setup(bars[c_pos - 2:c_pos + 1])
+            if setup is None:
+                continue
+            entry = v2_find_first_entry(bars, c_pos, setup)
+            if entry is None:
+                continue
+            entry_key = (int(entry["entry_time"]), entry["direction"])
+            if entry_key in used_entry_keys:
+                continue
+            used_entry_keys.add(entry_key)
+            records.append({
             "direction": entry["direction"],
             "before_spike_time": int(entry["before_spike_time"]),
             "spike_time": int(entry["spike_time"]),
@@ -158,17 +169,18 @@ def collect_v2(rates: np.ndarray) -> list[dict]:
 
 def collect_source(rates: np.ndarray) -> list[dict]:
     records = []
-    bars = [_bar(x) for x in rates]
-    for i in range(4, len(bars) - 1):
-        candidate = source_detect(
-            bars[: i + 1],
-            p_gap_price=P_GAP_PRICE,
-            spike_multiplier=SPIKE_MULTIPLIER,
-            max_sl_distance=MAX_SL_DISTANCE,
-            tp_r=TP_R,
-        )
-        if candidate is None:
-            continue
+    for segment in contiguous_segments(rates):
+        bars = [_bar(x) for x in segment]
+        for i in range(4, len(bars) - 1):
+            candidate = source_detect(
+                bars[: i + 1],
+                p_gap_price=P_GAP_PRICE,
+                spike_multiplier=SPIKE_MULTIPLIER,
+                max_sl_distance=MAX_SL_DISTANCE,
+                tp_r=TP_R,
+            )
+            if candidate is None:
+                continue
         records.append({
             "direction": candidate["direction"],
             "before_spike_time": int(bars[i - 4]["time"]),
@@ -277,6 +289,7 @@ def main() -> int:
             "history": {
                 "raw_bars": int(len(raw_rates)),
                 "session_filtered_bars": int(len(rates)),
+                "contiguous_segments": len(contiguous_segments(rates)),
             },
             "research_session_filter": {
                 "enabled": SESSION_FILTER_ENABLED,
