@@ -162,6 +162,7 @@ def main() -> int:
 
         v2_cases = []
         reason_counts = {}
+        root_cause_counts = {}
         for record in v2_only:
             if args.v2_only_limit and len(v2_cases) >= args.v2_only_limit:
                 break
@@ -170,8 +171,24 @@ def main() -> int:
                 failed = ctx["source_conditions"]["failed_checks"]
                 for reason in failed:
                     reason_counts[reason] = reason_counts.get(reason, 0) + 1
+            failed = set(ctx.get("source_conditions", {}).get("failed_checks", []))
+            trigger_fail = {"trigger_lower_low", "trigger_higher_high"} & failed
+            body_fail = "spike_body_vs_trigger" in failed
+            risk_fail = "source_risk_valid" in failed
+            if trigger_fail and body_fail:
+                root_cause = "TRIGGER_AND_TRIGGER_BODY_CONSTRAINT"
+            elif trigger_fail:
+                root_cause = "TRIGGER_TIMING_OR_ACCEPTANCE"
+            elif body_fail:
+                root_cause = "TRIGGER_BODY_CONSTRAINT"
+            elif risk_fail:
+                root_cause = "SOURCE_RISK_CONSTRAINT"
+            else:
+                root_cause = "NO_SOURCE_ROOT_CAUSE_IN_CHECKS"
+            root_cause_counts[root_cause] = root_cause_counts.get(root_cause, 0) + 1
             v2_cases.append({
                 "record": record,
+                "root_cause_class": root_cause,
                 **ctx,
             })
 
@@ -215,6 +232,7 @@ def main() -> int:
                 "total": len(v2_only),
                 "diagnosed_cases": len(v2_cases),
                 "immediate_source_rejection_reason_counts": reason_counts,
+                "root_cause_counts": root_cause_counts,
                 "cases": v2_cases,
             },
             "source_aligned_only": {
