@@ -176,7 +176,7 @@ def main() -> int:
             "collect_v2_reproduction": {
                 "setup_candidates": len(setup_records),
                 "v2_output_records": len(v2_records),
-                "entry_dedup_key": null,
+                "entry_dedup_key": None,
                 "geometry_reconciliation_key": "(direction, before_spike_time, spike_time, after_spike_time)",
             },
             "summary": summary,
