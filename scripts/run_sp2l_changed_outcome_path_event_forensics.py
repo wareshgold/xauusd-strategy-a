@@ -6,7 +6,7 @@ Research-only: no canonical execution semantics are inferred.
 from __future__ import annotations
 import argparse,json
 from pathlib import Path
-from datetime import datetime,timezone
+from datetime import datetime
 
 def ep(v):
     if v is None:return None
@@ -14,22 +14,24 @@ def ep(v):
     return int(datetime.fromisoformat(str(v).replace("Z","+00:00")).timestamp())
 
 def first_event(bars,start,end,direction,sl,tp):
-    if not isinstance(sl,(int,float)) or not isinstance(tp,(int,float)): return {"status":"UNRESOLVED"}
-    s=ep(start); e=ep(end) if end is not None else None
+    if not isinstance(sl,(int,float)) or not isinstance(tp,(int,float)):
+        return {"status":"UNRESOLVED","reason":"invalid_levels"}
+    s=ep(start); e=ep(end)
+    if s is None:return {"status":"UNRESOLVED","reason":"start_time_missing"}
     eligible=[b for b in bars if b["time"]>=s and (e is None or b["time"]<=e)]
     for b in eligible:
         sl_hit=b["low"]<=sl if direction=="BUY" else b["high"]>=sl
         tp_hit=b["high"]>=tp if direction=="BUY" else b["low"]<=tp
-        if sl_hit and tp_hit: ev="BOTH_SAME_M1"
-        elif sl_hit: ev="SL_TOUCH"
-        elif tp_hit: ev="TP_TOUCH"
-        else: continue
+        if sl_hit and tp_hit:ev="BOTH_SAME_M1"
+        elif sl_hit:ev="SL_TOUCH"
+        elif tp_hit:ev="TP_TOUCH"
+        else:continue
         return {"event":ev,"time":b["time_utc"],"bar":b}
     return {"event":"NO_LEVEL_TOUCH_IN_PATH","bars_scanned":len(eligible)}
 
 def direction_of(fp):
-    if isinstance(fp,str): return fp.split("|")[0]
-    if isinstance(fp,list) and fp: return str(fp[0])
+    if isinstance(fp,str):return fp.split("|")[0]
+    if isinstance(fp,list) and fp:return str(fp[0])
     return None
 
 def main():
@@ -46,7 +48,8 @@ def main():
         else:
             be=first_event(bars,b.get("fill_time"),b.get("exit_time"),direction,b.get("sl"),b.get("tp"))
             re=first_event(bars,r.get("activation_time"),r.get("exit_time"),direction,r.get("sl"),r.get("tp"))
-            if be.get("event")=="BOTH_SAME_M1" or re.get("event")=="BOTH_SAME_M1":c="SAME_BAR"
+            if be.get("status")=="UNRESOLVED" or re.get("status")=="UNRESOLVED":c="UNRESOLVED"
+            elif be.get("event")=="BOTH_SAME_M1" or re.get("event")=="BOTH_SAME_M1":c="SAME_BAR"
             elif be.get("event")=="NO_LEVEL_TOUCH_IN_PATH" or re.get("event")=="NO_LEVEL_TOUCH_IN_PATH":c="PATH_INCOMPLETE"
             elif be.get("event")!=re.get("event"):c="FIRST_EVENT_DIFFERENCE"
             else:c="SAME_FIRST_EVENT"
