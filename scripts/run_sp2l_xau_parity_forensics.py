@@ -182,8 +182,13 @@ def geometry_condition_audit(candles, i, direction):
     old_risk = (entry - old_sl) if direction == "BUY" else (old_sl - entry)
     current_risk = (entry - current_sl) if direction == "BUY" else (current_sl - entry)
 
-    old_buy_recomputed = all(_geometry_conditions(candles, i, "BUY").values())
-    old_sell_recomputed = all(_geometry_conditions(candles, i, "SELL").values())
+    # Recompute the exact old geometry: the old BUY candidate does NOT require
+    # spike.close > a.close. That predicate belongs only to the shared detector.
+    old_buy_conditions = _geometry_conditions(candles, i, "BUY")
+    old_buy_conditions.pop("spike_close_gt_a_close", None)
+    old_sell_conditions = _geometry_conditions(candles, i, "SELL")
+    old_buy_recomputed = all(old_buy_conditions.values())
+    old_sell_recomputed = all(old_sell_conditions.values())
     old_signal_expected = (
         None if old_buy_recomputed == old_sell_recomputed
         else (
