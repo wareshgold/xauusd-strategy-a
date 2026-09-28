@@ -134,6 +134,22 @@ def geometry_condition_audit(candles, i, direction):
 
     old_risk = (entry - old_sl) if direction == "BUY" else (old_sl - entry)
     current_risk = (entry - current_sl) if direction == "BUY" else (current_sl - entry)
+
+    # Reproduce the complete old candidate from the same named predicates.
+    # This is deliberately kept diagnostic: it does not change either candidate.
+    old_buy = all(v for k, v in old_geometry_conditions.items())
+    old_sell = all(
+        v for k, v in geometry_condition_audit(candles, i, "SELL")["conditions"].items()
+    )
+    old_signal_expected = (
+        None if old_buy == old_sell
+        else ("BUY" if old_buy and 0 < old_risk <= MAX_SL
+              else "SELL" if old_sell and 0 < (
+                  float(a["high"]) - float(trig["high"])
+              ) <= MAX_SL
+              else None)
+    )
+
     return {
         "conditions": conditions,
         "old_geometry_pass": all(old_geometry_conditions.values()),
@@ -145,6 +161,9 @@ def geometry_condition_audit(candles, i, direction):
         "current_risk": current_risk,
         "old_risk_pass": 0 < old_risk <= MAX_SL,
         "current_risk_pass": 0 < current_risk <= MAX_SL,
+        "old_buy_recomputed": old_buy,
+        "old_sell_recomputed": old_sell,
+        "old_signal_expected": old_signal_expected,
     }
 
 
@@ -408,7 +427,11 @@ def main():
                 f"failed={first['old_failed_conditions']} "
                 f"direct_old_signal_exists={first['direct_old_signal_exists']} "
                 f"entry={first['entry']} old_risk={first['old_risk']} "
-                f"conditions={first['conditions']}"
+                f"conditions={first['conditions']} "
+                f"old_buy_recomputed={first['old_buy_recomputed']} "
+                f"old_sell_recomputed={first['old_sell_recomputed']} "
+                f"old_signal_expected={first['old_signal_expected']} "
+                f"idx={current_index[(int(datetime.fromisoformat(first['signal_time'].replace('Z', '+00:00')).timestamp()), first['direction'])]}"
             )
 
         # Counterfactual decomposition on the COMMON signal set:
