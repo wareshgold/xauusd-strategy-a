@@ -1,32 +1,63 @@
 {
-  "mode": "RESEARCH_FORWARD_VALIDATION",
-  "created_utc": "2026-09-28",
-  "strategy": "SP2L",
+  "name": "SP2L_CLEAN_FORWARD_XAU_EUR_USDJPY_20260928",
+  "purpose": "research_only_clean_forward_validation",
+  "status": "ACTIVE_OBSERVATION",
+  "created_utc": "2026-09-28T00:00:00Z",
+  "rules": {
+    "canonical": false,
+    "source_aligned": true,
+    "ai_defined_rules": false,
+    "production_trading": false
+  },
   "symbols": {
     "XAUUSD.ecn": {
       "status": "READY_FOR_FORWARD_VALIDATION",
       "pGapPrice": 1.0,
       "spikeMultiplier": 1.5,
       "maxSlPrice": 10.0,
-      "tpR": 1.0
+      "tpR": 1.0,
+      "historical_evidence": {
+        "source": "artifacts/backtest-multi/SP2L_replay_XAUUSD_ecn_month06.json,month07.json,month08.json,month09.json",
+        "note": "Historical replay evidence exists for this configuration. Forward validation required."
+      }
     },
     "EURUSD.ecn": {
-      "status": "PARAMETER_RESOLUTION_REQUIRED"
+      "status": "READY_FOR_FORWARD_OBSERVATION_NO_HISTORICAL_SIGNAL_EVIDENCE",
+      "pGapPrice": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSlPrice": 10.0,
+      "tpR": 1.0,
+      "historical_evidence": {
+        "source": "artifacts/backtest-multi/SP2L_replay_EURUSD_ecn_2026-09-16_2026-09-23.json",
+        "signals": 0,
+        "note": "No historical signals detected in available replay window. No performance conclusion."
+      }
     },
     "USDJPY.ecn": {
-      "status": "PARAMETER_RESOLUTION_REQUIRED"
+      "status": "READY_FOR_FORWARD_OBSERVATION_NO_HISTORICAL_SIGNAL_EVIDENCE",
+      "pGapPrice": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSlPrice": 10.0,
+      "tpR": 1.0,
+      "historical_evidence": {
+        "source": "artifacts/backtest-multi/SP2L_replay_USDJPY_ecn_2026-09-16_2026-09-23.json",
+        "signals": 0,
+        "note": "No historical signals detected in available replay window. No performance conclusion."
+      }
     }
   },
   "execution": {
-    "orderMode": "PENDING_LIMIT_RESEARCH",
-    "pendingTtlMinutes": 30,
-    "session": "London_OPEN_to_NewYork_CLOSE"
+    "mode": "RESEARCH_AUTHOR_REPLICA_FORWARD",
+    "order_mode": "PENDING_LIMIT_RESEARCH",
+    "pending_ttl_candles": 30,
+    "session_filter": "LONDON_OPEN_TO_NEW_YORK_CLOSE",
+    "telegram_notifications": true,
+    "include_volume_in_notifications": false
   },
-  "notifications": {
-    "telegram": true
-  },
-  "constraints": {
-    "no_live_canonical_claim": true,
-    "research_only": true
+  "validation_requirements": {
+    "fresh_holdout_required": true,
+    "backtest_decides_rules": false,
+    "forward_results_decide_canonical_rules": false,
+    "minimum_goal": "collect_clean_forward_observation"
   }
 }
