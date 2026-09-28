@@ -24,8 +24,6 @@ class TelegramSendResult:
 
 def read_telegram_config() -> tuple[str | None, str | None]:
     try:
-        # utf-8-sig: PowerShell's Set-Content -Encoding utf8 writes a BOM;
-        # a plain utf-8 read chokes on it and silently reports NOT_CONFIGURED.
         payload = json.loads(TELEGRAM_CONFIG.read_text(encoding="utf-8-sig"))
         return payload.get("bot_token"), payload.get("chat_id")
     except Exception:
@@ -50,7 +48,12 @@ def telegram_delivery_status(env: dict | None = None) -> dict:
     }
 
 
-def send_telegram_message(text: str, *, bot_token=None, chat_id=None, timeout=15, parse_mode=None, retries=4, env=None):
+def send_telegram_message(text: str, *, bot_token=None, chat_id=None, timeout=15, parse_mode=None, retries=1, env=None):
+    """Send one Telegram notification attempt.
+
+    Forward research must not generate an unbounded retry stream. Higher-level
+    lifecycle code may decide whether a later notification is appropriate.
+    """
     if bot_token is None or chat_id is None:
         token, chat = read_telegram_env(env)
         bot_token = bot_token or token
