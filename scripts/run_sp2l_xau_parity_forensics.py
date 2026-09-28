@@ -119,6 +119,55 @@ def _geometry_conditions(candles, i, direction):
     }
 
 
+def old_candidate_recompute(candles, i):
+    """Pure reconstruction of old_signal() for forensic integrity checking."""
+    a, s, corr, trig = candles[i - 4], candles[i - 3], candles[i - 2], candles[i - 1]
+    buy = (
+        trig["low"] < corr["low"]
+        and corr["close"] > s["close"]
+        and corr["open"] > s["open"]
+        and s["open"] > a["open"]
+        and corr["close"] > corr["open"]
+        and s["close"] > s["open"]
+        and a["close"] > a["open"]
+        and corr["low"] > a["high"] + P_GAP
+        and body(s) > SPIKE_MULT * body(corr)
+        and body(s) > SPIKE_MULT * body(a)
+        and body(s) > SPIKE_MULT * body(trig)
+    )
+    sell = (
+        trig["high"] > corr["high"]
+        and corr["close"] < s["close"]
+        and corr["open"] < s["open"]
+        and s["close"] < a["close"]
+        and s["open"] < a["open"]
+        and corr["close"] < corr["open"]
+        and s["close"] < s["open"]
+        and a["close"] < a["open"]
+        and corr["high"] < a["low"] - P_GAP
+        and body(s) > SPIKE_MULT * body(corr)
+        and body(s) > SPIKE_MULT * body(a)
+        and body(s) > SPIKE_MULT * body(trig)
+    )
+    if buy == sell:
+        return None
+    if buy:
+        entry, sl = float(trig["low"]), float(a["low"])
+        risk = entry - sl
+        if 0 < risk <= MAX_SL:
+            return {"direction": "BUY", "signal_time": int(trig["time"]),
+                    "entry": entry, "sl": sl, "risk": risk,
+                    "tp": entry + TP_R * risk}
+    if sell:
+        entry, sl = float(trig["high"]), float(a["high"])
+        risk = sl - entry
+        if 0 < risk <= MAX_SL:
+            return {"direction": "SELL", "signal_time": int(trig["time"]),
+                    "entry": entry, "sl": sl, "risk": risk,
+                    "tp": entry - TP_R * risk}
+    return None
+
+
 def geometry_condition_audit(candles, i, direction):
     """Diagnostic decomposition only; does not alter either research candidate."""
     a, s, corr, trig = candles[i - 4], candles[i - 3], candles[i - 2], candles[i - 1]
@@ -390,7 +439,10 @@ def main():
         for row in current_only_geometry:
             key = (int(datetime.fromisoformat(row["signal_time"].replace("Z", "+00:00")).timestamp()), row["direction"])
             idx = current_index[key]
-            direct_old = old_signal(candles, idx)
+            direct_old = old_candidate_recompute(candles, idx)
+            implementation_old = old_signal(candles, idx)
+            if (direct_old is None) != (implementation_old is None):
+                raise RuntimeError(f"old candidate implementation mismatch at {row['signal_time']} {row['direction']}")
             row["direct_old_signal"] = direct_old
             row["direct_old_signal_exists"] = direct_old is not None
             row["direct_old_rejection_reason"] = (
