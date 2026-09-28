@@ -502,6 +502,17 @@ def main():
             "current_only": len(current_only),
             "sl_differences": len(sl_diffs),
             "outcome_differences": len(outcome_diffs),
+            "geometry_decomposition": {
+                "reason_counts": current_only_reason_counts,
+                "old_failed_condition_counts": dict(sorted(current_only_failed_condition_counts.items())),
+                "integrity_mismatch_rows": sum(
+                    1 for row in current_only_geometry
+                    if not row["old_signal_recomputed_pass"]
+                    and not row["old_geometry_pass"]
+                    and not row["old_failed_conditions"]
+                ),
+            },
+            "counterfactual_matrix": counterfactual_matrix,
             "report": str(out),
         }, indent=2))
     finally:
