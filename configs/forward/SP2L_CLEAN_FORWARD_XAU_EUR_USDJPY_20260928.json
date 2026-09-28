@@ -1,0 +1,32 @@
+{
+  "mode": "RESEARCH_FORWARD_VALIDATION",
+  "created_utc": "2026-09-28",
+  "strategy": "SP2L",
+  "symbols": {
+    "XAUUSD.ecn": {
+      "status": "READY_FOR_FORWARD_VALIDATION",
+      "pGapPrice": 1.0,
+      "spikeMultiplier": 1.5,
+      "maxSlPrice": 10.0,
+      "tpR": 1.0
+    },
+    "EURUSD.ecn": {
+      "status": "PARAMETER_RESOLUTION_REQUIRED"
+    },
+    "USDJPY.ecn": {
+      "status": "PARAMETER_RESOLUTION_REQUIRED"
+    }
+  },
+  "execution": {
+    "orderMode": "PENDING_LIMIT_RESEARCH",
+    "pendingTtlMinutes": 30,
+    "session": "London_OPEN_to_NewYork_CLOSE"
+  },
+  "notifications": {
+    "telegram": true
+  },
+  "constraints": {
+    "no_live_canonical_claim": true,
+    "research_only": true
+  }
+}
