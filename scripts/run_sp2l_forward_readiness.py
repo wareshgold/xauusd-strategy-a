@@ -130,25 +130,26 @@ def main() -> int:
         telegram_ok = bool(os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID"))
         results.append(check(
             "TELEGRAM_CONFIG",
-            telegram_ok,
-            "configured" if telegram_ok else "missing TELEGRAM_BOT_TOKEN and/or TELEGRAM_CHAT_ID",
+            True,
+            "configured" if telegram_ok else "optional; notifications disabled",
         ))
 
-        results.append(check(
-            "REAL_EXECUTION_FLAGS",
+        demo_execution_flags = (
             os.getenv("LIVE_TRADING_ENABLE", "false").lower() == "true"
-            and os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true",
-            "both enabled for DEMO order submission" if (
-                os.getenv("LIVE_TRADING_ENABLE", "false").lower() == "true"
-                and os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true"
-            ) else "not enabled; readiness only",
+            and os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true"
+        )
+        results.append(check(
+            "DEMO_EXECUTION_FLAGS",
+            demo_execution_flags,
+            "both enabled for DEMO order submission" if demo_execution_flags
+            else "not enabled; runner remains DRY-RUN and submits no broker orders",
         ))
 
         failures = [x for x in results if not x["ok"]]
         print("")
         print("SP2L V2 FORWARD READINESS")
         print(f"checked_utc={datetime.now(timezone.utc).isoformat()}")
-        print(f"status={'READY' if not failures else 'NOT_READY'}")
+        print(f"status={'READY_FOR_DEMO_FORWARD' if not failures else 'NOT_READY'}")
         print(f"checks={len(results)} failures={len(failures)}")
         print("NO ORDERS WERE SUBMITTED.")
         return 0 if not failures else 2
