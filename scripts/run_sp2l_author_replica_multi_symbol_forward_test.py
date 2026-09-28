@@ -1,6 +1,6 @@
 """Research-only multi-symbol SP2L author-replica forward runner.
 
-Runs XAUUSD, Dow Jones and Nasdaq concurrently in one MT5 Python process.
+Runs the explicitly configured research symbols in one MT5 Python process. The default Demo Forward scope is XAUUSD only.
 It does not define or promote canonical Strategy A geometry.
 
 Symbol names are resolved from the connected MT5 terminal. Pip size is derived
@@ -24,7 +24,7 @@ import MetaTrader5 as mt5
 import live_mt5_gateway as gateway
 
 # Symbol selection is configuration only (research/forward-test scope):
-# override with SP2L_SYMBOLS="XAUUSD,GBPUSD,USTEC"; XAUUSD stays the default
+# override with SP2L_SYMBOLS only when an additional symbol has been explicitly approved for research/forward testing
 # first entry. Order here defines the magic-number slot (MAGIC_BASE+index+1).
 SYMBOL_ALIASES = {
     "XAUUSD": ["XAUUSD"],
@@ -41,7 +41,7 @@ SYMBOL_ALIASES = {
 
 BASE_SYMBOLS = tuple(
     s.strip().upper()
-    for s in os.getenv("SP2L_SYMBOLS", "XAUUSD,DAWJONES,USTEC100").split(",")
+    for s in os.getenv("SP2L_SYMBOLS", "XAUUSD").split(",")
     if s.strip()
 )
 TIMEFRAME = mt5.TIMEFRAME_M1
