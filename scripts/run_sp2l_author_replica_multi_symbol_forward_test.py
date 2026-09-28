@@ -1279,7 +1279,7 @@ def main() -> None:
                     save_state(state)
                     continue
 
-                log_event({"event":"CANDIDATE","symbol":symbol,"signal_id":trigger_key,"candidate":candidate,"pip_size":cfg["pip_size"],"pip_method":cfg["pip_method"],"f13_2x":{"status":"SOURCE_CONFIRMED_RELATION_ONLY","secondary_entry":candidate["secondary_entry_2x"],"formula":"Entry + 0.5 * (StopLoss - Entry)","execution":"NOT_EXECUTED_UNRESOLVED_LIFECYCLE"},"execution_semantics":ORDER_MODE})
+                log_event({"event":"CANDIDATE","symbol":symbol,"signal_id":trigger_key,"candidate":candidate,"pip_size":cfg["pip_size"],"pip_method":cfg["pip_method"],"f13_2x":{"status":"SOURCE_CONFIRMED_RELATION_ONLY","secondary_entry":candidate.get("secondary_entry_2x"),"formula":"Entry + 0.5 * (StopLoss - Entry)","execution":"NOT_EXECUTED_UNRESOLVED_LIFECYCLE"},"execution_semantics":ORDER_MODE})
                 tick = mt5.symbol_info_tick(symbol)
                 log_event({"event":"ORDER_ATTEMPT","symbol":symbol,"signal_id":trigger_key,"direction":candidate["direction"],"entry":candidate["theoretical_entry"],"sl":candidate["sl"],"tp":candidate["tp"],"volume":candidate.get("volume",VOLUME),"bid":float(tick.bid) if tick else None,"ask":float(tick.ask) if tick else None,"magic":cfg["magic"],"canonical":False})
                 try:
