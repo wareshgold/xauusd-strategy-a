@@ -397,10 +397,18 @@ def main():
             and row["old_direction_exclusivity_pass"]
         ]
         if unresolved_rows:
+            first = unresolved_rows[0]
             raise RuntimeError(
-                "XAU parity diagnostic invariant failed: CURRENT-only rows cannot be "
-                "explained by the recomputed old candidate. First row: "
-                f"{unresolved_rows[0]['signal_time']} {unresolved_rows[0]['direction']}"
+                "XAU parity diagnostic invariant failed: CURRENT-only row contradicts "
+                "the direct old candidate. "
+                f"row={first['signal_time']} {first['direction']} "
+                f"old_geometry_pass={first['old_geometry_pass']} "
+                f"old_risk_pass={first['old_risk_pass']} "
+                f"opposite_geometry_pass={first['old_opposite_geometry_pass']} "
+                f"failed={first['old_failed_conditions']} "
+                f"direct_old_signal_exists={first['direct_old_signal_exists']} "
+                f"entry={first['entry']} old_risk={first['old_risk']} "
+                f"conditions={first['conditions']}"
             )
 
         # Counterfactual decomposition on the COMMON signal set:
