@@ -9,21 +9,17 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import MetaTrader5 as mt5
 import numpy as np
 
-from mt5_terminal_resolver import find_mt5_terminal
 from run_sp2l_mt5_local_multi_symbol_backtest import (
-    ALIASES,
     _gap_after,
     discover_symbols,
     fetch_rates,
-    filter_rates_to_research_session,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,8 +68,7 @@ def audit_symbol(rates: np.ndarray, p_gap: float, spike_mult: float, max_sl: flo
         "sell_risk": 0,
         "final_signals": 0,
     }
-
-    examples = {"near_misses": []}
+    examples = []
 
     for i in range(4, len(session_rates) - 1):
         counts["windows_considered"] += 1
@@ -92,7 +87,7 @@ def audit_symbol(rates: np.ndarray, p_gap: float, spike_mult: float, max_sl: flo
         sbuy = float(spike["close"] - spike["open"])
         ssell = float(spike["open"] - spike["close"])
 
-        buy_shape = (
+        buy_shape = bool(
             trigger["low"] < correction["low"]
             and correction["close"] > spike["close"]
             and correction["open"] > spike["open"]
@@ -110,7 +105,7 @@ def audit_symbol(rates: np.ndarray, p_gap: float, spike_mult: float, max_sl: flo
         )
         buy_risk = bool(0 < float(trigger["low"] - spike["low"]) <= max_sl)
 
-        sell_shape = (
+        sell_shape = bool(
             trigger["high"] > correction["high"]
             and correction["close"] < spike["close"]
             and correction["open"] < spike["open"]
@@ -150,19 +145,17 @@ def audit_symbol(rates: np.ndarray, p_gap: float, spike_mult: float, max_sl: flo
         ):
             counts["final_signals"] += 1
 
-        # Keep only a small deterministic sample of shape candidates that fail
-        # a later gate; this is for diagnosis, not parameter search.
-        if len(examples["near_misses"]) < 20 and (buy_shape or sell_shape):
-            examples["near_misses"].append({
+        if len(examples) < 20 and (buy_shape or sell_shape):
+            examples.append({
                 "signal_time": datetime.fromtimestamp(int(trigger["time"]), timezone.utc).isoformat(),
-                "buy_shape": buy_shape,
-                "buy_p_gap": buy_pgap,
-                "buy_spike_body": buy_spike,
-                "buy_risk": buy_risk,
-                "sell_shape": sell_shape,
-                "sell_p_gap": sell_pgap,
-                "sell_spike_body": sell_spike,
-                "sell_risk": sell_risk,
+                "buy_shape": bool(buy_shape),
+                "buy_p_gap": bool(buy_pgap),
+                "buy_spike_body": bool(buy_spike),
+                "buy_risk": bool(buy_risk),
+                "sell_shape": bool(sell_shape),
+                "sell_p_gap": bool(sell_pgap),
+                "sell_spike_body": bool(sell_spike),
+                "sell_risk": bool(sell_risk),
             })
 
     return {
@@ -173,7 +166,7 @@ def audit_symbol(rates: np.ndarray, p_gap: float, spike_mult: float, max_sl: flo
         "session_first_utc": datetime.fromtimestamp(int(session_rates[0]["time"]), timezone.utc).isoformat(),
         "session_last_utc": datetime.fromtimestamp(int(session_rates[-1]["time"]), timezone.utc).isoformat(),
         "counts": counts,
-        "near_miss_examples": examples["near_misses"],
+        "near_miss_examples": examples,
     }
 
 
@@ -192,7 +185,7 @@ def main() -> int:
     args = p.parse_args()
 
     if not mt5.initialize(path=str(Path(args.mt5_path))):
-        print(json.dumps({"status": "MT5_INIT_FAILED", "error": mt5.last_error()}, indent=2))
+        print(json.dumps({"status": "MT5_INIT_FAILED", "error": str(mt5.last_error())}, indent=2))
         return 2
 
     try:
@@ -243,9 +236,9 @@ def main() -> int:
                 args.london_open, args.new_york_close
             )
             result["symbol"] = symbol
-            result["digits"] = meta.get("digits")
-            result["point"] = meta.get("point")
-            result["trade_mode"] = meta.get("trade_mode")
+            result["digits"] = int(meta["digits"]) if meta.get("digits") is not None else None
+            result["point"] = float(meta["point"]) if meta.get("point") is not None else None
+            result["trade_mode"] = int(meta["trade_mode"]) if meta.get("trade_mode") is not None else None
             report["symbols"][base] = result
             c = result["counts"]
             print(
