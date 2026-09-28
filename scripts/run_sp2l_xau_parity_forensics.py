@@ -285,16 +285,47 @@ def main():
             "old_same_direction_geometry_pass_but_old_risk_rejected": 0,
             "old_same_direction_geometry_failed_extra_buy_spike_close_condition": 0,
             "old_same_direction_geometry_failed_other_conditions": 0,
+            "old_opposite_direction_also_passed_exclusivity_rejection": 0,
+            "diagnostic_integrity_mismatch": 0,
         }
         current_only_failed_condition_counts = {}
         for row in current_only_geometry:
             failed = row["old_failed_conditions"]
-            if row["old_geometry_pass"] and not row["old_risk_pass"]:
+            opposite = "SELL" if row["direction"] == "BUY" else "BUY"
+            opposite_audit = geometry_condition_audit(candles, current_index[(int(datetime.fromisoformat(row["signal_time"].replace("Z", "+00:00")).timestamp()), row["direction"])], opposite)
+
+            # The old candidate rejects a window when BOTH directions are true
+            # (buy == sell). The previous decomposition audited only the
+            # current signal's direction, so a row could look like
+            # "old geometry passed" even though old_signal() correctly
+            # returned None because the opposite direction also passed.
+            row["old_opposite_geometry_pass"] = opposite_audit["old_geometry_pass"]
+            row["old_direction_exclusivity_pass"] = not opposite_audit["old_geometry_pass"]
+            row["old_signal_recomputed_pass"] = (
+                row["old_geometry_pass"]
+                and row["old_direction_exclusivity_pass"]
+                and row["old_risk_pass"]
+            )
+
+            if row["old_geometry_pass"] and row["old_risk_pass"] and row["old_opposite_geometry_pass"]:
+                current_only_reason_counts["old_opposite_direction_also_passed_exclusivity_rejection"] += 1
+            elif row["old_geometry_pass"] and not row["old_risk_pass"]:
                 current_only_reason_counts["old_same_direction_geometry_pass_but_old_risk_rejected"] += 1
             elif row["direction"] == "BUY" and failed == ["spike_close_gt_a_close"]:
                 current_only_reason_counts["old_same_direction_geometry_failed_extra_buy_spike_close_condition"] += 1
-            else:
+            elif failed:
                 current_only_reason_counts["old_same_direction_geometry_failed_other_conditions"] += 1
+            else:
+                # This must never happen: if same-direction old geometry
+                # passes, risk passes, and opposite direction does not pass,
+                # old_signal() must have produced the signal.
+                current_only_reason_counts["diagnostic_integrity_mismatch"] += 1
+
+            if row["old_geometry_pass"] != (len(failed) == 0):
+                raise RuntimeError(
+                    f"geometry audit invariant failed for {row['signal_time']} {row['direction']}"
+                )
+
             for name in failed:
                 current_only_failed_condition_counts[name] = current_only_failed_condition_counts.get(name, 0) + 1
 
@@ -306,7 +337,8 @@ def main():
             "notes": [
                 "A CURRENT-only signal is first audited using the old candidate's same-direction geometry, then its old SL risk-cap gate.",
                 "The BUY-only spike_close_gt_a_close predicate is the extra shared-detector geometry condition versus the old candidate; it is diagnostic, not source-confirmed.",
-                "Rows are descriptive forensic evidence only and do not select or promote a canonical rule."
+                "Rows are descriptive forensic evidence only and do not select or promote a canonical rule.",
+                "Old-direction exclusivity is audited explicitly: old_signal() rejects windows where both BUY and SELL predicates are true."
             ],
         }
 
