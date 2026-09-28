@@ -17,6 +17,8 @@ PARAMS = ["pGap", "spikeMultiplier", "maxSL", "tpR", "pendingTtlMinutes"]
 def load_rows(path: Path) -> list[dict]:
     data = json.loads(path.read_text(encoding="utf-8"))
     rows = data.get("results") or data.get("rows") or []
+    if isinstance(rows, dict):
+        rows = list(rows.values())
     if not isinstance(rows, list) or not rows:
         raise ValueError("matrix artifact has no results/rows array")
     return rows
@@ -40,7 +42,7 @@ def main() -> int:
         "spikeMultiplier": ["spikeMultiplier", "spike_multiplier"],
         "maxSL": ["maxSL", "max_sl"],
         "tpR": ["tpR", "tp_r"],
-        "pendingTtlMinutes": ["pendingTtlMinutes", "pending_ttl_minutes", "ttl"],
+        "pendingTtlMinutes": ["pendingTtlMinutes", "pending_ttl_minutes", "ttl", "ttlMinutes"],
         "filled": ["filled"],
         "netR": ["netR", "net_r"],
         "wins": ["wins"],
