@@ -19,20 +19,44 @@ def f(row: dict[str, str], key: str) -> float:
     return float(row[key])
 
 
-def reconstruct_gross(net_r: float, pf: float) -> tuple[float, float]:
-    """Recover gross profit/loss R from net R and standard PF=P/L.
+def optional_f(row: dict[str, str], key: str) -> float | None:
+    raw = row.get(key, "").strip()
+    return None if raw == "" else float(raw)
 
-    This is used only when PF != 1.0. Rows with PF==1 and net!=0 are treated
-    as inconsistent rather than inventing a value.
+
+def reconstruct_gross(
+    net_r: float,
+    pf: float | None,
+    wins: int,
+    losses: int,
+) -> tuple[float, float]:
+    """Recover gross profit/loss R without inventing missing PF semantics.
+
+    Standard matrix semantics permit a blank PF when there are no losses
+    (infinite/undefined PF) or when there are no trades. Those cases are
+    reconstructable from the row's win/loss counts and net R. A finite PF is
+    required when losses exist.
     """
-    if not math.isfinite(pf) or pf <= 0:
+    if wins == 0 and losses == 0:
+        return (0.0, 0.0)
+
+    if losses == 0:
+        if wins > 0 and math.isfinite(net_r) and net_r > 0:
+            return (net_r, 0.0)
         return (math.nan, math.nan)
+
+    if pf is None or not math.isfinite(pf) or pf <= 0:
+        return (math.nan, math.nan)
+
     if abs(pf - 1.0) < 1e-12:
         if abs(net_r) < 1e-12:
-            return (0.0, 0.0)
+            return (math.nan, math.nan)
         return (math.nan, math.nan)
+
     loss = net_r / (pf - 1.0)
     profit = pf * loss
+    if not math.isfinite(profit) or not math.isfinite(loss) or loss < 0:
+        return (math.nan, math.nan)
     return (profit, abs(loss))
 
 
@@ -65,22 +89,34 @@ def main() -> int:
         gross_loss_r = 0.0
         pf_reconstruct_ok = True
         for r in rs:
-            p, l = reconstruct_gross(f(r, "net_r"), f(r, "profit_factor"))
+            p, l = reconstruct_gross(
+                f(r, "net_r"),
+                optional_f(r, "profit_factor"),
+                int(r["wins"]),
+                int(r["losses"]),
+            )
             if math.isnan(p) or math.isnan(l):
                 pf_reconstruct_ok = False
                 break
             gross_profit_r += p
             gross_loss_r += l
 
-        aggregate_pf = (
-            gross_profit_r / gross_loss_r
-            if pf_reconstruct_ok and gross_loss_r > 0
-            else None
-        )
-
         trades = sum(int(r["trades"]) for r in rs)
         wins = sum(int(r["wins"]) for r in rs)
         losses = sum(int(r["losses"]) for r in rs)
+        if pf_reconstruct_ok and gross_loss_r > 0:
+            aggregate_pf = gross_profit_r / gross_loss_r
+            aggregate_pf_status = "FINITE"
+        elif pf_reconstruct_ok and gross_profit_r > 0 and gross_loss_r == 0:
+            aggregate_pf = None
+            aggregate_pf_status = "INFINITE_NO_GROSS_LOSS"
+        elif pf_reconstruct_ok and trades == 0:
+            aggregate_pf = None
+            aggregate_pf_status = "UNDEFINED_NO_TRADES"
+        else:
+            aggregate_pf = None
+            aggregate_pf_status = "INVALID_RECONSTRUCTION"
+
         net_r = sum(f(r, "net_r") for r in rs)
         positive = sum(v > 0 for v in net_values)
         negative = sum(v < 0 for v in net_values)
@@ -103,6 +139,7 @@ def main() -> int:
             "mean_symbol_net_r": sum(net_values) / len(net_values),
             "median_symbol_net_r": median(net_values),
             "aggregate_profit_factor": aggregate_pf,
+            "aggregate_profit_factor_status": aggregate_pf_status,
             "worst_symbol_max_drawdown_r": worst_dd,
             "pf_reconstruction_ok": pf_reconstruct_ok,
         })
@@ -123,7 +160,10 @@ def main() -> int:
         "group_by": ["p_gap_pips", "spike_multiplier", "max_sl_pips"],
         "aggregation_notes": [
             "No configuration is promoted to canonical Strategy A.",
-            "Aggregate PF is reconstructed from row-level net_r and PF using standard PF=gross_profit/gross_loss; it is null if reconstruction is not mathematically valid.",
+            "Aggregate PF is reconstructed from row-level net_r and PF using standard PF=gross_profit/gross_loss.",
+            "A blank PF with wins>0 and losses=0 is treated as zero gross loss; aggregate status records the resulting infinite/undefined PF semantics.",
+            "A zero-trade row contributes zero gross profit and zero gross loss; it does not invalidate the aggregate.",
+            "Rows with losses require a finite row-level PF; otherwise aggregate PF reconstruction is marked invalid.",
             "Worst drawdown is the maximum reported single-symbol drawdown, not a portfolio-level drawdown.",
             "USD P&L is intentionally not inferred here; it requires broker/account-aware historical monetary calculation at 0.01 lot."
         ],
@@ -138,7 +178,7 @@ def main() -> int:
             f"{i:02d} PGap={x['p_gap_pips']} Spike={x['spike_multiplier']} SL={x['max_sl_pips']} "
             f"Trades={x['trades']} WR={x['win_rate_pct']:.2f}% NetR={x['net_r']:.4f} "
             f"Pos/Neg={x['positive_symbols']}/{x['negative_symbols']} "
-            f"PF={x['aggregate_profit_factor'] if x['aggregate_profit_factor'] is not None else 'NA'}"
+            f"PF={x['aggregate_profit_factor'] if x['aggregate_profit_factor'] is not None else x['aggregate_profit_factor_status']}"
         )
     return 0
 
