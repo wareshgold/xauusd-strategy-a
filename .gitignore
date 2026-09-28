@@ -25,3 +25,7 @@ tests/__pycache__/
 *.ex5
 # Telegram credentials (bot token + chat id) — never commit
 config/telegram.json
+
+# SP2L live forward runtime state
+runtime/*.lock
+runtime/*_state.json

@@ -1,0 +1,551 @@
+{
+  "status": "COMPLETE",
+  "research_only": true,
+  "canonical": false,
+  "purpose": "ZERO_SIGNAL_GATE_AUDIT",
+  "period": {
+    "start_utc": "2026-08-26T00:00:00+00:00",
+    "end_utc": "2026-09-25T23:59:59+00:00"
+  },
+  "session": {
+    "enabled": true,
+    "london_open_local": "08:00",
+    "new_york_close_local": "17:00",
+    "timezones": {
+      "london": "Europe/London",
+      "new_york": "America/New_York"
+    }
+  },
+  "geometry": {
+    "p_gap_price": 1.0,
+    "spike_multiplier": 1.25,
+    "max_sl_by_symbol": {
+      "EURUSD": 10.0,
+      "USDJPY": 50.0
+    }
+  },
+  "resolved_symbols": {
+    "EURUSD": {
+      "requested": "EURUSD",
+      "symbol": "EURUSD.ecn",
+      "method": "SUFFIX:.ecn",
+      "digits": 5,
+      "point": 1e-05,
+      "trade_mode": 4,
+      "bid": 1.1372,
+      "ask": 1.13724
+    },
+    "USDJPY": {
+      "requested": "USDJPY",
+      "symbol": "USDJPY.ecn",
+      "method": "SUFFIX:.ecn",
+      "digits": 3,
+      "point": 0.001,
+      "trade_mode": 4,
+      "bid": 157.009,
+      "ask": 157.018
+    }
+  },
+  "symbols": {
+    "EURUSD": {
+      "raw_bars": 33102,
+      "session_bars": 19343,
+      "raw_first_utc": "2026-08-26T00:00:00+00:00",
+      "raw_last_utc": "2026-09-25T23:58:00+00:00",
+      "session_first_utc": "2026-08-26T07:00:00+00:00",
+      "session_last_utc": "2026-09-25T21:00:00+00:00",
+      "counts": {
+        "windows_considered": 19338,
+        "formation_gap_free": 19250,
+        "buy_shape": 440,
+        "buy_p_gap": 0,
+        "buy_spike_body": 0,
+        "buy_risk": 0,
+        "sell_shape": 380,
+        "sell_p_gap": 0,
+        "sell_spike_body": 0,
+        "sell_risk": 0,
+        "final_signals": 0
+      },
+      "near_miss_examples": [
+        {
+          "signal_time": "2026-08-26T07:27:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T08:09:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": true,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T08:36:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T08:42:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": false,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T09:20:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T09:53:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T10:12:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T10:18:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T11:00:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T11:46:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T12:21:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T13:03:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": true,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T13:19:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": true,
+          "sell_risk": true
+        },
+        {
+          "signal_time": "2026-08-26T13:44:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T14:10:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": true
+        },
+        {
+          "signal_time": "2026-08-26T14:33:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T15:02:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": true,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T15:41:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": true
+        },
+        {
+          "signal_time": "2026-08-26T15:51:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T16:05:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        }
+      ],
+      "symbol": "EURUSD.ecn",
+      "digits": 5,
+      "point": 1e-05,
+      "trade_mode": 4
+    },
+    "USDJPY": {
+      "raw_bars": 33092,
+      "session_bars": 19343,
+      "raw_first_utc": "2026-08-26T00:00:00+00:00",
+      "raw_last_utc": "2026-09-25T23:58:00+00:00",
+      "session_first_utc": "2026-08-26T07:00:00+00:00",
+      "session_last_utc": "2026-09-25T21:00:00+00:00",
+      "counts": {
+        "windows_considered": 19338,
+        "formation_gap_free": 19250,
+        "buy_shape": 553,
+        "buy_p_gap": 0,
+        "buy_spike_body": 0,
+        "buy_risk": 0,
+        "sell_shape": 511,
+        "sell_p_gap": 0,
+        "sell_spike_body": 0,
+        "sell_risk": 0,
+        "final_signals": 0
+      },
+      "near_miss_examples": [
+        {
+          "signal_time": "2026-08-26T07:29:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": true
+        },
+        {
+          "signal_time": "2026-08-26T08:29:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": true,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T08:39:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T08:49:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T09:09:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T09:13:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T09:42:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": true,
+          "sell_risk": true
+        },
+        {
+          "signal_time": "2026-08-26T10:12:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": true,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T10:16:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T10:34:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": true
+        },
+        {
+          "signal_time": "2026-08-26T10:45:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T11:28:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T11:59:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T12:38:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T12:50:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T13:09:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T13:12:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T13:24:00+00:00",
+          "buy_shape": false,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": false,
+          "sell_shape": true,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T13:54:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": true,
+          "buy_risk": false,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        },
+        {
+          "signal_time": "2026-08-26T14:25:00+00:00",
+          "buy_shape": true,
+          "buy_p_gap": false,
+          "buy_spike_body": false,
+          "buy_risk": true,
+          "sell_shape": false,
+          "sell_p_gap": false,
+          "sell_spike_body": false,
+          "sell_risk": false
+        }
+      ],
+      "symbol": "USDJPY.ecn",
+      "digits": 3,
+      "point": 0.001,
+      "trade_mode": 4
+    }
+  },
+  "notes": [
+    "This is a gate decomposition of the existing research detector, not a new detector.",
+    "No parameter sweep or optimization is performed.",
+    "Counts are descriptive diagnostics only and cannot promote unresolved geometry to canonical.",
+    "The session-gated counts intentionally use the same named London/New York session used by the selected replay."
+  ]
+}
