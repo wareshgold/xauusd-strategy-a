@@ -235,6 +235,86 @@ def main():
                 for k in sorted(keys)
             ]
 
+
+        # Counterfactual decomposition on the COMMON signal set:
+        # hold signal geometry and entry fixed, then vary only SL anchor and
+        # outcome semantics. Descriptive forensic analysis only.
+        def outcome_old_semantics(signal, signal_index):
+            return old_outcome(candles, signal, signal_index)[0]
+
+        def outcome_pending_semantics(signal, signal_index):
+            return current_outcome(candles, signal, signal_index)[0]
+
+        anchor_variants = {}
+        for key in sorted(common_keys):
+            o, c = old[key], current[key]
+            entry = o["entry"]
+            direction = o["direction"]
+            variants = {
+                "OLD_SL_OLD_OUTCOME": o,
+                "OLD_SL_PENDING_OUTCOME": {
+                    **o,
+                    "risk": abs(entry - o["sl"]),
+                    "tp": entry + TP_R * abs(entry - o["sl"]) if direction == "BUY"
+                    else entry - TP_R * abs(entry - o["sl"]),
+                },
+                "CURRENT_SL_OLD_OUTCOME": {
+                    **c,
+                    "risk": abs(entry - c["sl"]),
+                    "tp": entry + TP_R * abs(entry - c["sl"]) if direction == "BUY"
+                    else entry - TP_R * abs(entry - c["sl"]),
+                },
+                "CURRENT_SL_PENDING_OUTCOME": c,
+            }
+            for name, sig in variants.items():
+                signal_index = old_index[key]
+                if name.endswith("OLD_OUTCOME"):
+                    outcome = outcome_old_semantics(sig, signal_index)
+                else:
+                    outcome = outcome_pending_semantics(sig, signal_index)
+                anchor_variants.setdefault(name, []).append(outcome)
+
+        def summarize_outcomes(rows):
+            wins = rows.count("WIN")
+            losses = rows.count("LOSS")
+            ambiguous = rows.count("AMBIGUOUS")
+            opened = rows.count("OPEN_AT_END")
+            decisive = wins + losses
+            return {
+                "signals": len(rows),
+                "wins": wins,
+                "losses": losses,
+                "ambiguous": ambiguous,
+                "open_at_end": opened,
+                "decisive": decisive,
+                "win_rate_decisive": wins / decisive if decisive else None,
+                "totalR_decisive": wins - losses,
+            }
+
+        counterfactual_matrix = {
+            name: summarize_outcomes(rows)
+            for name, rows in anchor_variants.items()
+        }
+
+        sl_axis_delta = {
+            "old_outcome": {
+                "from": "OLD_SL_OLD_OUTCOME",
+                "to": "CURRENT_SL_OLD_OUTCOME",
+                "win_delta": counterfactual_matrix["CURRENT_SL_OLD_OUTCOME"]["wins"] - counterfactual_matrix["OLD_SL_OLD_OUTCOME"]["wins"],
+                "loss_delta": counterfactual_matrix["CURRENT_SL_OLD_OUTCOME"]["losses"] - counterfactual_matrix["OLD_SL_OLD_OUTCOME"]["losses"],
+                "wr_delta": counterfactual_matrix["CURRENT_SL_OLD_OUTCOME"]["win_rate_decisive"] - counterfactual_matrix["OLD_SL_OLD_OUTCOME"]["win_rate_decisive"],
+                "totalR_delta": counterfactual_matrix["CURRENT_SL_OLD_OUTCOME"]["totalR_decisive"] - counterfactual_matrix["OLD_SL_OLD_OUTCOME"]["totalR_decisive"],
+            },
+            "pending_vs_old_outcome_with_old_sl": {
+                "from": "OLD_SL_OLD_OUTCOME",
+                "to": "OLD_SL_PENDING_OUTCOME",
+                "win_delta": counterfactual_matrix["OLD_SL_PENDING_OUTCOME"]["wins"] - counterfactual_matrix["OLD_SL_OLD_OUTCOME"]["wins"],
+                "loss_delta": counterfactual_matrix["OLD_SL_PENDING_OUTCOME"]["losses"] - counterfactual_matrix["OLD_SL_OLD_OUTCOME"]["losses"],
+                "wr_delta": counterfactual_matrix["OLD_SL_PENDING_OUTCOME"]["win_rate_decisive"] - counterfactual_matrix["OLD_SL_OLD_OUTCOME"]["win_rate_decisive"],
+                "totalR_delta": counterfactual_matrix["OLD_SL_PENDING_OUTCOME"]["totalR_decisive"] - counterfactual_matrix["OLD_SL_OLD_OUTCOME"]["totalR_decisive"],
+            },
+        }
+
         result = {
             "research_only": True,
             "source": "ONE_COMMON_COPY_RATES_RANGE_DATASET",
@@ -251,7 +331,7 @@ def main():
                 "signals": len(current), "current_only_vs_old": len(current_only),
                 "common": len(common_keys)
             },
-            "divergence": {
+            "counterfactual_decomposition": {\n                "matrix": counterfactual_matrix,\n                "axis_deltas": sl_axis_delta,\n            },\n            "divergence": {
                 "old_only_signals": key_rows(old_only),
                 "current_only_signals": key_rows(current_only),
                 "common_signal_sl_differences": sl_diffs,
@@ -265,7 +345,7 @@ def main():
                 "Old candidate uses spike-start candle a as SL anchor.",
                 "Shared detector uses spike candle as SL anchor.",
                 "Old BUY does not require spike.close > a.close; shared detector does.",
-                "Outcome comparison is descriptive only; neither semantics is canonical."
+                "Outcome comparison is descriptive only; neither semantics is canonical.",\n                "Counterfactual matrix holds the 167 common signals and their entry fixed, then varies only SL anchor and outcome semantics.",\n                "The counterfactual matrix is diagnostic and must not be used to select or promote a canonical rule."
             ],
         }
 
