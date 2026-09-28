@@ -78,27 +78,40 @@ def detect(a,b,c,gap_price,spike):
     if buy==sell:return None
     return "BUY" if buy else "SELL"
 
-def signals(rates,gap_price,spike,maxsl_price):
-    out=[]; used=set()
+def first_trigger_indices(rates):
+    n=len(rates); next_buy=[-1]*n; next_sell=[-1]*n; nb=ns=-1
+    for j in range(n-1,1,-1):
+        if float(rates[j]["low"]) < float(rates[j-1]["low"]): nb=j
+        if float(rates[j]["high"]) > float(rates[j-1]["high"]): ns=j
+        next_buy[j-1]=nb; next_sell[j-1]=ns
+    return next_buy,next_sell
+
+def setup_candidates(rates,gap_price,spike,next_buy,next_sell):
+    out=[]
     for i in range(2,len(rates)-1):
         direction=detect(rates[i-2],rates[i-1],rates[i],gap_price,spike)
         if not direction: continue
-        before=rates[i-2]
-        for j in range(i+1,len(rates)):
-            cur,prev=rates[j],rates[j-1]
-            triggered=(float(cur["low"])<float(prev["low"])) if direction=="BUY" else (float(cur["high"])>float(prev["high"]))
-            if not triggered: continue
-            entry=float(cur["low"] if direction=="BUY" else cur["high"])
-            sl=float(before["low"] if direction=="BUY" else before["high"])
-            risk=(entry-sl) if direction=="BUY" else (sl-entry)
-            if risk<=0 or risk>maxsl_price: break
-            if j in used: break
-            used.add(j)
-            tp=entry+risk if direction=="BUY" else entry-risk
-            out.append({"direction":direction,"entry_index":j,"entry_time":int(cur["time"]),"entry":entry,"sl":sl,"tp":tp,"risk":risk})
-            break
-    return sorted(out,key=lambda x:(x["entry_index"],x["direction"]))
+        j=next_buy[i] if direction=="BUY" else next_sell[i]
+        if j < 0 or j <= i: continue
+        before=rates[i-2]; cur=rates[j]
+        entry=float(cur["low"] if direction=="BUY" else cur["high"])
+        sl=float(before["low"] if direction=="BUY" else before["high"])
+        risk=(entry-sl) if direction=="BUY" else (sl-entry)
+        out.append({"direction":direction,"entry_index":j,"entry_time":int(cur["time"]),"entry":entry,"sl":sl,"risk":risk})
+    return out
 
+def signals_from_candidates(candidates,maxsl_price):
+    out=[]; used=set()
+    for x in candidates:
+        risk=float(x["risk"])
+        if risk<=0 or risk>maxsl_price: continue
+        j=int(x["entry_index"])
+        if j in used: continue
+        used.add(j)
+        entry=float(x["entry"]); sl=float(x["sl"])
+        tp=entry+risk if x["direction"]=="BUY" else entry-risk
+        out.append({**x,"tp":tp})
+    return sorted(out,key=lambda x:(x['entry_index'],x['direction']))
 def outcomes(rates,sigs):
     by={x["entry_index"]:x for x in sigs}; active=None; trades=[]
     for i,b in enumerate(rates):
@@ -151,6 +164,8 @@ def main():
         if t is None or not mt5.initialize(path=str(t)): raise RuntimeError(f"MT5 init failed: {mt5.last_error()}")
     try:
         rows=[]; history={}; errors=[]
+        total_tests=len(requested)*len(gaps)*len(spikes)*len(maxsls)
+        completed_tests=0
         requested=[x.strip() for x in a.symbols.split(",") if x.strip()]
         for req in requested:
             try:
@@ -161,14 +176,20 @@ def main():
                               "pip_size":pip,"pip_method":method,"bars":len(rates),
                               "first_bar_utc":datetime.fromtimestamp(int(rates[0]["time"]),timezone.utc).isoformat(),
                               "last_bar_utc":datetime.fromtimestamp(int(rates[-1]["time"]),timezone.utc).isoformat()}
+                next_buy,next_sell=first_trigger_indices(rates)
                 for gap in gaps:
                     for spike in spikes:
+                        candidates=setup_candidates(rates,gap*pip,spike,next_buy,next_sell)
                         for msl in maxsls:
-                            sig=signals(rates,gap*pip,spike,msl*pip)
+                            sig=signals_from_candidates(candidates,msl*pip)
                             z=outcomes(rates,sig)
                             rows.append({"symbol_requested":req,"symbol_used":sym,"p_gap_pips":gap,
                                          "spike_multiplier":spike,"max_sl_pips":msl,
                                          "p_gap_price":gap*pip,"max_sl_price":msl*pip,**z})
+                            completed_tests+=1
+                            if completed_tests==1 or completed_tests%10==0 or completed_tests==total_tests:
+                                pct=100.0*completed_tests/total_tests
+                                print(f"[FX-DISCOVERY] [{completed_tests}/{total_tests}] {pct:6.2f}% {req} PGap={gap:g} Spike={spike:g} SL={msl:g} -> Signals={z["signals"]} Trades={z["trades"]} NetR={z["net_r"]:+.1f}",flush=True)
             except Exception as e:
                 errors.append({"symbol_requested":req,"error":str(e)})
         stamp=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"); prefix=a.output_prefix or f"SP2L_MT5_FX_DISCOVERY_MATRIX_{stamp}"
