@@ -132,6 +132,8 @@ def geometry_condition_audit(candles, i, direction):
         old_sl = float(a["high"])
         current_sl = float(s["high"])
 
+    old_risk = (entry - old_sl) if direction == "BUY" else (old_sl - entry)
+    current_risk = (entry - current_sl) if direction == "BUY" else (current_sl - entry)
     return {
         "conditions": conditions,
         "old_geometry_pass": all(old_geometry_conditions.values()),
@@ -139,10 +141,10 @@ def geometry_condition_audit(candles, i, direction):
         "old_failed_conditions": [k for k, v in old_geometry_conditions.items() if not v],
         "current_failed_conditions": [k for k, v in conditions.items() if not v],
         "entry": entry,
-        "old_risk": abs(entry - old_sl),
-        "current_risk": abs(entry - current_sl),
-        "old_risk_pass": 0 < abs(entry - old_sl) <= MAX_SL,
-        "current_risk_pass": 0 < abs(entry - current_sl) <= MAX_SL,
+        "old_risk": old_risk,
+        "current_risk": current_risk,
+        "old_risk_pass": 0 < old_risk <= MAX_SL,
+        "current_risk_pass": 0 < current_risk <= MAX_SL,
     }
 
 
