@@ -283,12 +283,17 @@ def main():
         old_index = {}
         current_index = {}
 
-        for i in range(4, len(candles) - 1):
-            o = old_signal(candles, i)
+        # Align both candidates to the exact same four source bars.
+        # The shared detector receives one additional forming bar and uses
+        # [-5:-1], so its trigger is candles[i-2]. The historical candidate
+        # is therefore evaluated at i-1, whose a/s/corr/trig are identical.
+        for i in range(5, len(candles) - 1):
+            o_idx = i - 1
+            o = old_signal(candles, o_idx)
             if o:
                 key = (o["signal_time"], o["direction"])
                 old[key] = o
-                old_index[key] = i
+                old_index[key] = o_idx
             c = current_signal(candles, i)
             if c:
                 key = (c["signal_time"], c["direction"])
