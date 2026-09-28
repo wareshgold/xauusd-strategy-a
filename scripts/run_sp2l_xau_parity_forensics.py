@@ -310,7 +310,8 @@ def main():
         current_only_geometry = []
         for key in current_only:
             idx = current_index[key]
-            audit = geometry_condition_audit(candles, idx, key[1])
+            old_idx = idx - 1
+            audit = geometry_condition_audit(candles, old_idx, key[1])
             current_only_geometry.append({
                 "signal_time": iso(key[0]),
                 "direction": key[1],
@@ -328,7 +329,7 @@ def main():
         for row in current_only_geometry:
             failed = row["old_failed_conditions"]
             opposite = "SELL" if row["direction"] == "BUY" else "BUY"
-            opposite_audit = geometry_condition_audit(candles, current_index[(int(datetime.fromisoformat(row["signal_time"].replace("Z", "+00:00")).timestamp()), row["direction"])], opposite)
+            opposite_audit = geometry_condition_audit(candles, current_index[(int(datetime.fromisoformat(row["signal_time"].replace("Z", "+00:00")).timestamp()), row["direction"])] - 1, opposite)
 
             # The old candidate rejects a window when BOTH directions are true
             # (buy == sell). The previous decomposition audited only the
@@ -411,8 +412,9 @@ def main():
         for row in current_only_geometry:
             key = (int(datetime.fromisoformat(row["signal_time"].replace("Z", "+00:00")).timestamp()), row["direction"])
             idx = current_index[key]
-            direct_old = old_candidate_recompute(candles, idx)
-            implementation_old = old_signal(candles, idx)
+            old_idx = idx - 1
+            direct_old = old_candidate_recompute(candles, old_idx)
+            implementation_old = old_signal(candles, old_idx)
             if (direct_old is None) != (implementation_old is None):
                 raise RuntimeError(f"old candidate implementation mismatch at {row['signal_time']} {row['direction']}")
             row["direct_old_signal"] = direct_old
