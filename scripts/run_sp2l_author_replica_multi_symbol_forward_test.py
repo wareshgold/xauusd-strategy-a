@@ -758,7 +758,6 @@ def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = Non
     )
     return gateway.send_telegram_message(text, parse_mode="HTML")
 
-
 def execute_candidate(candidate: dict, magic: int) -> dict:
     symbol = candidate["symbol"]
     gateway.SYMBOL = symbol
@@ -904,3 +903,429 @@ def enforce_pending_order_expiry(cfg: dict, state: dict) -> None:
 def monitor_position_lifecycle(cfg: dict, state: dict) -> None:
     """Record broker-side position SL/TP directly after pending-order fills."""
     symbol, magic = cfg["symbol"], cfg["magic"]
+    positions = mt5.positions_get(symbol=symbol) or []
+    for position in positions:
+        position_id = int(getattr(position, "ticket", 0) or 0)
+        if not position_id:
+            continue
+        position_magic = int(getattr(position, "magic", 0) or 0)
+        if position_magic != magic and position_id not in state["positions"]:
+            continue
+        marker = f"POSITION:{position_id}:{float(getattr(position, 'sl', 0.0) or 0.0)}:{float(getattr(position, 'tp', 0.0) or 0.0)}"
+        if marker in state["order_states"]:
+            continue
+        state["order_states"].add(marker)
+        log_event({
+            "event": "POSITION_LIFECYCLE",
+            "symbol": symbol,
+            "position": position_id,
+            "magic": position_magic,
+            "type": int(getattr(position, "type", -1)),
+            "volume": float(getattr(position, "volume", 0.0) or 0.0),
+            "price_open": float(getattr(position, "price_open", 0.0) or 0.0),
+            "price_current": float(getattr(position, "price_current", 0.0) or 0.0),
+            "sl": float(getattr(position, "sl", 0.0) or 0.0),
+            "tp": float(getattr(position, "tp", 0.0) or 0.0),
+            "profit": float(getattr(position, "profit", 0.0) or 0.0),
+            "canonical": False,
+        })
+
+
+def monitor_pending_order_lifecycle(cfg: dict, state: dict) -> None:
+    """Observe broker-side pending-order state without changing execution semantics."""
+    symbol, magic = cfg["symbol"], cfg["magic"]
+    start = datetime.now(timezone.utc) - timedelta(hours=24)
+    end = datetime.now(timezone.utc)
+    orders = mt5.history_orders_get(start, end, group=symbol) or []
+    active = mt5.orders_get(symbol=symbol) or []
+    orders = list(orders) + list(active)
+    seen_local = set()
+    for order in sorted(orders, key=lambda x: (int(getattr(x, "time_setup", 0) or 0), int(getattr(x, "ticket", 0) or 0))):
+        ticket = int(getattr(order, "ticket", 0) or 0)
+        if not ticket or ticket in seen_local:
+            continue
+        seen_local.add(ticket)
+        order_magic = int(getattr(order, "magic", 0) or 0)
+        if order_magic != magic and ticket not in state["orders"]:
+            continue
+        state_name = order_state_name(order)
+        marker = f"{ticket}:{state_name}"
+        if marker in state["order_states"]:
+            continue
+        state["orders"].add(ticket)
+        state["order_states"].add(marker)
+        log_event({
+            "event": "PENDING_ORDER_LIFECYCLE",
+            "symbol": symbol,
+            "order": ticket,
+            "state": state_name,
+            "state_code": int(getattr(order, "state", -1)),
+            "type": int(getattr(order, "type", -1)),
+            "type_time": int(getattr(order, "type_time", -1)),
+            "time_setup": int(getattr(order, "time_setup", 0) or 0),
+            "time_done": int(getattr(order, "time_done", 0) or 0),
+            "magic": order_magic,
+            "position_id": int(getattr(order, "position_id", 0) or 0),
+            "position_by_id": int(getattr(order, "position_by_id", 0) or 0),
+            "volume_initial": float(getattr(order, "volume_initial", 0.0) or 0.0),
+            "volume_current": float(getattr(order, "volume_current", 0.0) or 0.0),
+            "price_open": float(getattr(order, "price_open", 0.0) or 0.0),
+            "price_current": float(getattr(order, "price_current", 0.0) or 0.0),
+            "sl": float(getattr(order, "sl", 0.0) or 0.0),
+            "tp": float(getattr(order, "tp", 0.0) or 0.0),
+            "canonical": False,
+        })
+
+
+def _remember_position_links(state: dict, deal) -> None:
+    """Persist the broker position id and both entry/exit order ids for correlation."""
+    position = int(getattr(deal, "position_id", 0) or 0)
+    order = int(getattr(deal, "order", 0) or 0)
+    if position:
+        state["positions"].add(position)
+        state.setdefault("position_orders", {}).setdefault(str(position), set())
+        if order:
+            state["position_orders"][str(position)].add(order)
+    if order:
+        state["orders"].add(order)
+
+
+def _reconcile_history_position_links(state: dict, symbol: str, magic: int) -> None:
+    """Build position->orders/deals links from broker history before lifecycle filtering."""
+    start = datetime.now(timezone.utc) - timedelta(hours=24)
+    deals = mt5.history_deals_get(start, datetime.now(timezone.utc), group=symbol) or []
+    for deal in deals:
+        order = int(getattr(deal, "order", 0) or 0)
+        position = int(getattr(deal, "position_id", 0) or 0)
+        deal_magic = int(getattr(deal, "magic", 0) or 0)
+        if deal_magic == magic or order in state["orders"] or position in state["positions"]:
+            _remember_position_links(state, deal)
+
+
+def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
+    symbol, magic, pip = cfg["symbol"], cfg["magic"], cfg["pip_size"]
+    _reconcile_history_position_links(state, symbol, magic)
+    start = datetime.now(timezone.utc) - timedelta(hours=24)
+    deals = mt5.history_deals_get(start, datetime.now(timezone.utc), group=symbol) or []
+    for deal in sorted(deals, key=lambda x: (int(x.time), int(x.ticket))):
+        ticket = int(deal.ticket)
+        if ticket in state["deals"]:
+            continue
+        order = int(getattr(deal, "order", 0) or 0)
+        position = int(getattr(deal, "position_id", 0) or 0)
+        deal_magic = int(getattr(deal, "magic", 0) or 0)
+        position_orders = state.get("position_orders", {}).get(str(position), set())
+        linked = (
+            deal_magic == magic
+            or order in state["orders"]
+            or position in state["positions"]
+            or bool(position_orders)
+        )
+        if not linked:
+            continue
+        _remember_position_links(state, deal)
+        is_entry_deal = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
+        entry_price = float(deal.price) if is_entry_deal else position_entry_price(deal, magic)
+        execution_meta = state.get("signal_orders", {}).get(str(order), {})
+        if not execution_meta and position:
+            for linked_order in state.get("position_orders", {}).get(str(position), set()):
+                execution_meta = state.get("signal_orders", {}).get(str(linked_order), {})
+                if execution_meta:
+                    break
+        if not is_entry_deal and entry_price is None:
+            # Exit whose own-position entry cannot be resolved yet: defer the
+            # notification to the next poll instead of sending wrong numbers.
+            continue
+        text = lifecycle_message(deal, symbol, pip, magic)
+        result = gateway.send_telegram_message(text, parse_mode="HTML")
+        telegram_success = bool(getattr(result, "success", False))
+        exit_price = float(deal.price)
+        signed_move = None
+        pips_result = None
+        if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN and entry_price is not None and pip > 0:
+            deal_type = getattr(deal, "type", None)
+            side = "SELL" if deal_type == mt5.DEAL_TYPE_BUY else "BUY"
+            signed_move = exit_price - entry_price if side == "BUY" else entry_price - exit_price
+            pips_result = signed_move / pip
+        profit = float(getattr(deal, "profit", 0.0))
+        commission = float(getattr(deal, "commission", 0.0))
+        swap = float(getattr(deal, "swap", 0.0))
+        net = profit + commission + swap
+        theoretical_entry = float(execution_meta.get("theoretical_entry", 0.0) or 0.0) or None
+        theoretical_sl = float(execution_meta.get("sl", 0.0) or 0.0) or None
+        theoretical_tp = float(execution_meta.get("tp", 0.0) or 0.0) or None
+        entry_slippage = (float(entry_price) - theoretical_entry) if is_entry_deal and entry_price is not None and theoretical_entry is not None else None
+        actual_r = None
+        if not is_entry_deal and entry_price is not None and theoretical_sl is not None:
+            actual_risk = abs(float(entry_price) - theoretical_sl)
+            if actual_risk > 0:
+                signed_move_actual = exit_price - float(entry_price) if side == "BUY" else float(entry_price) - exit_price
+                actual_r = signed_move_actual / actual_risk
+        log_event({
+            "event": "TELEGRAM_DEAL_LIFECYCLE", "symbol": symbol,
+            "deal": ticket, "order": order, "position": position,
+            "signal_id": execution_meta.get("signal_id"),
+            "entry": int(getattr(deal, "entry", -1)),
+            "reason": int(getattr(deal, "reason", -1)),
+            "entry_price": entry_price,
+            "theoretical_entry": theoretical_entry,
+            "theoretical_sl": theoretical_sl,
+            "theoretical_tp": theoretical_tp,
+            "entry_slippage": entry_slippage,
+            "actual_r": actual_r,
+            "exit_price": exit_price,
+            "pips_result": pips_result,
+            "profit": profit,
+            "commission": commission,
+            "swap": swap,
+            "net": net,
+            "telegram": {"success": telegram_success, "detail": result.detail},
+            "canonical": False,
+        })
+        # Mark the deal delivered only after Telegram confirms success.
+        # Failed sends remain eligible for retry on the next poll.
+        if telegram_success:
+            state["deals"].add(ticket)
+    save_state(state)
+
+
+def _resolve_terminal_path() -> str | None:
+    """Explicit env override first, then the repo terminal auto-resolver."""
+    env = os.getenv("MT5_TERMINAL_PATH")
+    if env:
+        return env
+    try:
+        import mt5_terminal_resolver
+    except ModuleNotFoundError:
+        try:
+            from scripts import mt5_terminal_resolver  # type: ignore
+        except ModuleNotFoundError:
+            return None
+    found = mt5_terminal_resolver.find_mt5_terminal()
+    return str(found) if found else None
+
+
+def _build_banner_text(account, configs) -> str:
+    """Compose the startup banner (shared by the real start and --banner-only)."""
+    volume_summary = ", ".join(
+        "{}={:.2f}".format(c["symbol"], c.get("volume", VOLUME)) for c in configs
+    )
+    # Self-declared execution mode: the session's own operator flags, as seen
+    # by this process. LIVE-DEMO still requires the DEMO-ONLY account guard.
+    return (
+        "🟢 SP2L Forward Test — started\n"
+        f"Account: {account.login} ({account.server}, DEMO)\n"
+        f"Symbols: {', '.join(c['symbol'] for c in configs)}\n"
+        f"Order mode: {ORDER_MODE}\n"
+        f"Volume: {volume_summary} · TP {TP_R:.1f}R\n"
+        f"{execution_mode_line()}\n"
+        "⚠️ RESEARCH / DEMO ONLY — NOT CANONICAL"
+    )
+
+
+def run_banner_only() -> int:
+    """--banner-only: verify Telegram config + banner rendering, then exit.
+
+    Renders and sends exactly the same startup banner a real session would
+    send, without starting the scan loop, without acquiring the runner lock
+    and without placing any order. Connects to MT5 read-only for the account
+    and symbol facts (banner content), DEMO-only as always.
+    """
+    mt5_path = _resolve_terminal_path()
+    initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
+    if not initialized:
+        raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+    try:
+        account = mt5.account_info()
+        if account is None or int(account.trade_mode) != 0:
+            raise RuntimeError("DEMO-ONLY GUARD: a DEMO MT5 account is required")
+        configs = []
+        for index, base in enumerate(BASE_SYMBOLS):
+            symbol = resolve_symbol(base)
+            if symbol is None:
+                continue
+            if not mt5.symbol_select(symbol, True):
+                continue
+            cfg = symbol_config(symbol)
+            cfg["magic"] = MAGIC_BASE + index + 1
+            cfg["volume"] = _volume_for(base.upper().split(".")[0])
+            configs.append(cfg)
+        if not configs:
+            raise RuntimeError("None of the configured symbols could be resolved in MT5")
+        text = _build_banner_text(account, configs)
+        result = gateway.send_telegram_message(text)
+        log_event({
+            "event": "BANNER_ONLY_TELEGRAM",
+            "success": bool(getattr(result, "success", False)),
+            "detail": getattr(result, "detail", None),
+            "symbols": [c["symbol"] for c in configs],
+            "canonical": False,
+        })
+        print("\n" + text)
+        print(
+            f"\n[banner-only] telegram: success={getattr(result, 'success', False)} "
+            f"detail={getattr(result, 'detail', None)}"
+        )
+        return 0 if getattr(result, "success", False) else 1
+    finally:
+        mt5.shutdown()
+
+
+def main() -> None:
+    if "--banner-only" in sys.argv:
+        raise SystemExit(run_banner_only())
+    mt5_path = _resolve_terminal_path()
+    initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
+    if not initialized:
+        raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+
+    account = mt5.account_info()
+    if account is None or int(account.trade_mode) != 0:
+        raise RuntimeError("DEMO-ONLY GUARD: a DEMO MT5 account is required")
+
+    configs = []
+    for index, base in enumerate(BASE_SYMBOLS):
+        symbol = resolve_symbol(base)
+        if symbol is None:
+            log_event({"event": "SYMBOL_UNAVAILABLE", "base": base})
+            continue
+        if not mt5.symbol_select(symbol, True):
+            log_event({"event": "SYMBOL_SELECT_FAILED", "symbol": symbol, "error": str(mt5.last_error())})
+            continue
+        cfg = symbol_config(symbol)
+        cfg["magic"] = MAGIC_BASE + index + 1
+        cfg["volume"] = _volume_for(base.upper().split(".")[0])
+        configs.append(cfg)
+
+    if not configs:
+        raise RuntimeError(f"None of the configured symbols could be resolved in MT5: {BASE_SYMBOLS}")
+
+    log_event({
+        "event": "START",
+        "mode": "RESEARCH_AUTHOR_REPLICA_MULTI_SYMBOL_FORWARD_TEST",
+        "canonical": False,
+        "account_login": int(account.login),
+        "account_server": str(account.server),
+        "account_trade_mode": int(account.trade_mode),
+        "config": {
+            "pGapPrice": P_GAP_PRICE, "spikeMultiplier": SPIKE_MULTIPLIER,
+            "maxSlDistance": MAX_SL_DISTANCE, "tpR": TP_R, "volume": VOLUME,
+            "orderMode": ORDER_MODE, "slAnchor": SL_ANCHOR,
+            "pendingTtlMinutes": PENDING_TTL_MINUTES,
+            "symbols": configs,
+        },
+    })
+
+    startup_banner = gateway.send_telegram_message(_build_banner_text(account, configs))
+    log_event({
+        "event": "START_TELEGRAM",
+        "success": bool(getattr(startup_banner, "success", False)),
+        "detail": getattr(startup_banner, "detail", None),
+        "canonical": False,
+    })
+
+    state = load_state()
+    state.setdefault("position_orders", {})
+    deadline = None
+    seconds = os.getenv("FORWARD_TEST_SECONDS")
+    if seconds:
+        deadline = time.time() + int(seconds)
+    reconcile_state_from_events(state)
+    save_state(state)
+    seen_trigger = state["seen"]
+
+    holder_pid = acquire_runner_lock()
+    if holder_pid is not None:
+        raise RuntimeError(
+            f"Another forward runner is already active (pid {holder_pid}). "
+            "Stop it first — two runners would duplicate every order."
+        )
+
+    try:
+        while deadline is None or time.time() < deadline:
+            for cfg in configs:
+                symbol = cfg["symbol"]
+                pending_signals = state.setdefault("pending_signal_notifications", {})
+                for pending_id, pending_candidate in list(pending_signals.items()):
+                    if str(pending_candidate.get("symbol")) != symbol:
+                        continue
+                    retry_result = send_signal(pending_candidate, cfg["pip_size"])
+                    retry_ok = bool(getattr(retry_result, "success", False))
+                    log_event({"event":"TELEGRAM_SIGNAL_RETRY","symbol":symbol,"signal_id":pending_id,"success":retry_ok,"detail":getattr(retry_result,"detail",None),"canonical":False})
+                    if retry_ok:
+                        state["notified"].add(pending_id)
+                        pending_signals.pop(pending_id, None)
+                save_state(state)
+                enforce_pending_order_expiry(cfg, state)
+                monitor_pending_order_lifecycle(cfg, state)
+                monitor_position_lifecycle(cfg, state)
+                monitor_symbol_lifecycle(cfg, state)
+                data = rates(symbol)
+                if data is None:
+                    continue
+                candidate = find_latest_candidate(data, symbol)
+                trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}" if candidate else None
+                if candidate is None or seen_trigger.get(symbol) == trigger_key:
+                    continue
+                candidate["signal_id"] = trigger_key
+                candidate["volume"] = float(cfg.get("volume", VOLUME))
+
+                in_session, session_reason = session_gate_status(candidate["trigger_time"])
+                log_event({"event":"SESSION_GATE","symbol":symbol,"signal_id":trigger_key,"trigger_time":candidate["trigger_time"],"trigger_utc":_trigger_utc_iso(candidate["trigger_time"]),"allowed":in_session,"reason":session_reason,"session_start_london":SESSION_START_LONDON or None,"session_end_new_york":SESSION_END_NEW_YORK or None,"canonical":False})
+                if not in_session:
+                    seen_trigger[symbol] = trigger_key
+                    save_state(state)
+                    continue
+
+                volume_ok, volume_reason = volume_guard(cfg)
+                if not volume_ok:
+                    log_event({"event":"EXECUTION_BLOCKED_VOLUME","symbol":symbol,"signal_id":trigger_key,"requested_volume":float(cfg.get("volume",VOLUME)),"volume_min":cfg.get("volume_min"),"volume_max":cfg.get("volume_max"),"volume_step":cfg.get("volume_step"),"reason":volume_reason,"canonical":False})
+                    seen_trigger[symbol] = trigger_key
+                    save_state(state)
+                    continue
+
+                log_event({"event":"CANDIDATE","symbol":symbol,"signal_id":trigger_key,"candidate":candidate,"pip_size":cfg["pip_size"],"pip_method":cfg["pip_method"],"f13_2x":{"status":"SOURCE_CONFIRMED_RELATION_ONLY","secondary_entry":candidate.get("secondary_entry_2x"),"formula":"Entry + 0.5 * (StopLoss - Entry)","execution":"NOT_EXECUTED_UNRESOLVED_LIFECYCLE"},"execution_semantics":ORDER_MODE})
+                tick = mt5.symbol_info_tick(symbol)
+                log_event({"event":"ORDER_ATTEMPT","symbol":symbol,"signal_id":trigger_key,"direction":candidate["direction"],"entry":candidate["theoretical_entry"],"sl":candidate["sl"],"tp":candidate["tp"],"volume":candidate.get("volume",VOLUME),"bid":float(tick.bid) if tick else None,"ask":float(tick.ask) if tick else None,"magic":cfg["magic"],"canonical":False})
+                try:
+                    result = execute_candidate(candidate, cfg["magic"])
+                except Exception as exc:
+                    result = {"ok":False,"error":f"execute_candidate_exception: {type(exc).__name__}: {exc}"}
+                result_order = int(result.get("order",0) or 0)
+                result_deal = int(result.get("deal",0) or 0)
+                if result_order:
+                    state["orders"].add(result_order)
+                    state.setdefault("signal_orders", {})[str(result_order)] = {
+                        "signal_id": trigger_key, "symbol": symbol, "direction": candidate["direction"],
+                        "theoretical_entry": float(candidate["theoretical_entry"]), "sl": float(candidate["sl"]),
+                        "tp": float(candidate["tp"]), "risk": float(candidate["risk"]), "trigger_time": int(candidate["trigger_time"]),
+                    }
+                order_ok = bool(result.get("ok"))
+                log_event({"event":"ORDER_RESULT","symbol":symbol,"signal_id":trigger_key,"result":result,"tracked_order":result_order or None,"tracked_deal":result_deal or None,"demo_only":True,"success":order_ok})
+                if order_ok:
+                    seen_trigger[symbol] = trigger_key
+                    if trigger_key not in state["notified"]:
+                        telegram_result = send_signal(candidate, cfg["pip_size"], result_order or None)
+                        telegram_success = bool(getattr(telegram_result,"success",False))
+                        log_event({"event":"TELEGRAM_SIGNAL","symbol":symbol,"signal_id":trigger_key,"success":telegram_success,"detail":getattr(telegram_result,"detail",None),"canonical":False})
+                        if telegram_success:
+                            state["notified"].add(trigger_key)
+                        else:
+                            state.setdefault("pending_signal_notifications", {})[trigger_key] = dict(candidate)
+                else:
+                    seen_trigger[symbol] = trigger_key
+                    log_event({
+                        "event": "EXECUTION_BLOCKED", "symbol": symbol, "signal_id": trigger_key,
+                        "reason": result.get("reason") or result.get("error") or "ORDER_REJECTED",
+                        "result": result, "canonical": False,
+                    })
+                save_state(state)
+            maybe_send_daily_summary(state)
+            time.sleep(POLL_SECONDS)
+    finally:
+        release_runner_lock()
+        mt5.shutdown()
+
+
+if __name__ == "__main__":
+    main()
