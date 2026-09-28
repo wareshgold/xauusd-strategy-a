@@ -331,7 +331,11 @@ def main():
                 "signals": len(current), "current_only_vs_old": len(current_only),
                 "common": len(common_keys)
             },
-            "counterfactual_decomposition": {\n                "matrix": counterfactual_matrix,\n                "axis_deltas": sl_axis_delta,\n            },\n            "divergence": {
+            "counterfactual_decomposition": {
+                "matrix": counterfactual_matrix,
+                "axis_deltas": sl_axis_delta,
+            },
+            "divergence": {
                 "old_only_signals": key_rows(old_only),
                 "current_only_signals": key_rows(current_only),
                 "common_signal_sl_differences": sl_diffs,
@@ -345,7 +349,9 @@ def main():
                 "Old candidate uses spike-start candle a as SL anchor.",
                 "Shared detector uses spike candle as SL anchor.",
                 "Old BUY does not require spike.close > a.close; shared detector does.",
-                "Outcome comparison is descriptive only; neither semantics is canonical.",\n                "Counterfactual matrix holds the 167 common signals and their entry fixed, then varies only SL anchor and outcome semantics.",\n                "The counterfactual matrix is diagnostic and must not be used to select or promote a canonical rule."
+                "Outcome comparison is descriptive only; neither semantics is canonical.",
+                "Counterfactual matrix holds the common signals and their entry fixed, then varies only SL anchor and outcome semantics.",
+                "The counterfactual matrix is diagnostic and must not be used to select or promote a canonical rule."
             ],
         }
 
