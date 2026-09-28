@@ -38,7 +38,8 @@ def body(c):
     return abs(c["close"] - c["open"])
 
 
-def old_signal(candles, i):
+def _old_candidate_signal(candles, i):
+    """Single authoritative implementation of the historical research candidate."""
     a, s, corr, trig = candles[i - 4], candles[i - 3], candles[i - 2], candles[i - 1]
     buy = (
         trig["low"] < corr["low"]
@@ -84,6 +85,11 @@ def old_signal(candles, i):
                     "entry": entry, "sl": sl, "risk": risk,
                     "tp": entry - TP_R * risk}
     return None
+
+
+def old_signal(candles, i):
+    """Compatibility wrapper; all old-candidate behavior lives in one function."""
+    return _old_candidate_signal(candles, i)
 
 
 def _geometry_conditions(candles, i, direction):
@@ -120,52 +126,8 @@ def _geometry_conditions(candles, i, direction):
 
 
 def old_candidate_recompute(candles, i):
-    """Pure reconstruction of old_signal() for forensic integrity checking."""
-    a, s, corr, trig = candles[i - 4], candles[i - 3], candles[i - 2], candles[i - 1]
-    buy = (
-        trig["low"] < corr["low"]
-        and corr["close"] > s["close"]
-        and corr["open"] > s["open"]
-        and s["open"] > a["open"]
-        and corr["close"] > corr["open"]
-        and s["close"] > s["open"]
-        and a["close"] > a["open"]
-        and corr["low"] > a["high"] + P_GAP
-        and body(s) > SPIKE_MULT * body(corr)
-        and body(s) > SPIKE_MULT * body(a)
-        and body(s) > SPIKE_MULT * body(trig)
-    )
-    sell = (
-        trig["high"] > corr["high"]
-        and corr["close"] < s["close"]
-        and corr["open"] < s["open"]
-        and s["close"] < a["close"]
-        and s["open"] < a["open"]
-        and corr["close"] < corr["open"]
-        and s["close"] < s["open"]
-        and a["close"] < a["open"]
-        and corr["high"] < a["low"] - P_GAP
-        and body(s) > SPIKE_MULT * body(corr)
-        and body(s) > SPIKE_MULT * body(a)
-        and body(s) > SPIKE_MULT * body(trig)
-    )
-    if buy == sell:
-        return None
-    if buy:
-        entry, sl = float(trig["low"]), float(a["low"])
-        risk = entry - sl
-        if 0 < risk <= MAX_SL:
-            return {"direction": "BUY", "signal_time": int(trig["time"]),
-                    "entry": entry, "sl": sl, "risk": risk,
-                    "tp": entry + TP_R * risk}
-    if sell:
-        entry, sl = float(trig["high"]), float(a["high"])
-        risk = sl - entry
-        if 0 < risk <= MAX_SL:
-            return {"direction": "SELL", "signal_time": int(trig["time"]),
-                    "entry": entry, "sl": sl, "risk": risk,
-                    "tp": entry - TP_R * risk}
-    return None
+    """Compatibility alias for the authoritative old candidate."""
+    return _old_candidate_signal(candles, i)
 
 
 def geometry_condition_audit(candles, i, direction):
