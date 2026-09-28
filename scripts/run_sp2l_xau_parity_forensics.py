@@ -86,6 +86,66 @@ def old_signal(candles, i):
     return None
 
 
+def geometry_condition_audit(candles, i, direction):
+    """Return named geometry predicates plus the old risk-cap predicate.
+
+    This is diagnostic only. It decomposes signal-set divergence without
+    changing either research candidate or promoting any rule to canonical.
+    """
+    a, s, corr, trig = candles[i - 4], candles[i - 3], candles[i - 2], candles[i - 1]
+    if direction == "BUY":
+        conditions = {
+            "trigger_low_lt_correction_low": trig["low"] < corr["low"],
+            "correction_close_gt_spike_close": corr["close"] > s["close"],
+            "correction_open_gt_spike_open": corr["open"] > s["open"],
+            "spike_close_gt_a_close": s["close"] > a["close"],
+            "spike_open_gt_a_open": s["open"] > a["open"],
+            "correction_bullish": corr["close"] > corr["open"],
+            "spike_bullish": s["close"] > s["open"],
+            "a_bullish": a["close"] > a["open"],
+            "p_gap_buy": corr["low"] > a["high"] + P_GAP,
+            "spike_body_gt_mult_correction": (s["close"] - s["open"]) > SPIKE_MULT * (corr["close"] - corr["open"]),
+            "spike_body_gt_mult_a": (s["close"] - s["open"]) > SPIKE_MULT * (a["close"] - a["open"]),
+            "spike_body_gt_mult_trigger": (s["close"] - s["open"]) > SPIKE_MULT * (trig["close"] - trig["open"]),
+        }
+        old_geometry_conditions = {k: v for k, v in conditions.items() if k != "spike_close_gt_a_close"}
+        entry = float(trig["low"])
+        old_sl = float(a["low"])
+        current_sl = float(s["low"])
+    else:
+        conditions = {
+            "trigger_high_gt_correction_high": trig["high"] > corr["high"],
+            "correction_close_lt_spike_close": corr["close"] < s["close"],
+            "correction_open_lt_spike_open": corr["open"] < s["open"],
+            "spike_close_lt_a_close": s["close"] < a["close"],
+            "spike_open_lt_a_open": s["open"] < a["open"],
+            "correction_bearish": corr["close"] < corr["open"],
+            "spike_bearish": s["close"] < s["open"],
+            "a_bearish": a["close"] < a["open"],
+            "p_gap_sell": corr["high"] < a["low"] - P_GAP,
+            "spike_body_gt_mult_correction": (s["open"] - s["close"]) > SPIKE_MULT * (corr["open"] - corr["close"]),
+            "spike_body_gt_mult_a": (s["open"] - s["close"]) > SPIKE_MULT * (a["open"] - a["close"]),
+            "spike_body_gt_mult_trigger": (s["open"] - s["close"]) > SPIKE_MULT * (trig["open"] - trig["close"]),
+        }
+        old_geometry_conditions = conditions.copy()
+        entry = float(trig["high"])
+        old_sl = float(a["high"])
+        current_sl = float(s["high"])
+
+    return {
+        "conditions": conditions,
+        "old_geometry_pass": all(old_geometry_conditions.values()),
+        "current_geometry_pass": all(conditions.values()),
+        "old_failed_conditions": [k for k, v in old_geometry_conditions.items() if not v],
+        "current_failed_conditions": [k for k, v in conditions.items() if not v],
+        "entry": entry,
+        "old_risk": abs(entry - old_sl),
+        "current_risk": abs(entry - current_sl),
+        "old_risk_pass": 0 < abs(entry - old_sl) <= MAX_SL,
+        "current_risk_pass": 0 < abs(entry - current_sl) <= MAX_SL,
+    }
+
+
 def current_signal(candles, i):
     # Shared detector expects the final element to be the forming/current bar.
     # The same four completed bars are therefore candles[i-4:i].
@@ -208,6 +268,47 @@ def main():
         common_keys = old_keys & current_keys
         old_only = sorted(old_keys - current_keys)
         current_only = sorted(current_keys - old_keys)
+
+        # Geometry decomposition for CURRENT-only signals. This distinguishes
+        # true geometry divergence from the old candidate's SL/risk-cap gate.
+        current_only_geometry = []
+        for key in current_only:
+            idx = current_index[key]
+            audit = geometry_condition_audit(candles, idx, key[1])
+            current_only_geometry.append({
+                "signal_time": iso(key[0]),
+                "direction": key[1],
+                **audit,
+            })
+
+        current_only_reason_counts = {
+            "old_same_direction_geometry_pass_but_old_risk_rejected": 0,
+            "old_same_direction_geometry_failed_extra_buy_spike_close_condition": 0,
+            "old_same_direction_geometry_failed_other_conditions": 0,
+        }
+        current_only_failed_condition_counts = {}
+        for row in current_only_geometry:
+            failed = row["old_failed_conditions"]
+            if row["old_geometry_pass"] and not row["old_risk_pass"]:
+                current_only_reason_counts["old_same_direction_geometry_pass_but_old_risk_rejected"] += 1
+            elif row["direction"] == "BUY" and failed == ["spike_close_gt_a_close"]:
+                current_only_reason_counts["old_same_direction_geometry_failed_extra_buy_spike_close_condition"] += 1
+            else:
+                current_only_reason_counts["old_same_direction_geometry_failed_other_conditions"] += 1
+            for name in failed:
+                current_only_failed_condition_counts[name] = current_only_failed_condition_counts.get(name, 0) + 1
+
+        geometry_decomposition = {
+            "current_only_count": len(current_only_geometry),
+            "reason_counts": current_only_reason_counts,
+            "old_failed_condition_counts": dict(sorted(current_only_failed_condition_counts.items())),
+            "rows": current_only_geometry,
+            "notes": [
+                "A CURRENT-only signal is first audited using the old candidate's same-direction geometry, then its old SL risk-cap gate.",
+                "The BUY-only spike_close_gt_a_close predicate is the extra shared-detector geometry condition versus the old candidate; it is diagnostic, not source-confirmed.",
+                "Rows are descriptive forensic evidence only and do not select or promote a canonical rule."
+            ],
+        }
 
         sl_diffs = []
         outcome_diffs = []
@@ -335,6 +436,7 @@ def main():
                 "matrix": counterfactual_matrix,
                 "axis_deltas": sl_axis_delta,
             },
+            "geometry_divergence_decomposition": geometry_decomposition,
             "divergence": {
                 "old_only_signals": key_rows(old_only),
                 "current_only_signals": key_rows(current_only),
