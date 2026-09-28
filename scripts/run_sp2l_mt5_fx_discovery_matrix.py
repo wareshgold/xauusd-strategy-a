@@ -164,9 +164,9 @@ def main():
         if t is None or not mt5.initialize(path=str(t)): raise RuntimeError(f"MT5 init failed: {mt5.last_error()}")
     try:
         rows=[]; history={}; errors=[]
+        requested=[x.strip() for x in a.symbols.split(",") if x.strip()]
         total_tests=len(requested)*len(gaps)*len(spikes)*len(maxsls)
         completed_tests=0
-        requested=[x.strip() for x in a.symbols.split(",") if x.strip()]
         for req in requested:
             try:
                 sym,res=resolve_symbol(req); info=mt5.symbol_info(sym)
