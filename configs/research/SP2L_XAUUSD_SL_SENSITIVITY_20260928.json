@@ -1,0 +1,18 @@
+{
+  "schema": "sp2l.research.xauusd.sl_sensitivity.v1",
+  "date": "2026-09-28",
+  "research_only": true,
+  "canonical": false,
+  "symbol": "XAUUSD.ecn",
+  "pip_convention_source": "artifacts/backtest-multi/SP2L_fixed_sltp_matrix_full_history.json",
+  "pip_mode": "PRACTICAL_GOLD0.10_IDX1.0",
+  "pip_size_price": 0.1,
+  "sl_pips": [20, 30, 40, 50],
+  "sl_price_distances": [2.0, 3.0, 4.0, 5.0],
+  "tp_mode": "1R",
+  "pGapPrice": 1.0,
+  "spikeMultiplier": 1.5,
+  "session": "LONDON_OPEN_TO_NEW_YORK_CLOSE",
+  "selection_policy": "descriptive_only_no_canonical_winner",
+  "forward_policy": "do_not_modify_active_forward_configuration"
+}
