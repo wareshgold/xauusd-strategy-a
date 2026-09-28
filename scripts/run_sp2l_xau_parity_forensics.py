@@ -366,11 +366,40 @@ def main():
             for name in failed:
                 current_only_failed_condition_counts[name] = current_only_failed_condition_counts.get(name, 0) + 1
 
+        # Deterministic fixture-oriented classification. This does not promote
+        # any predicate to canonical status; it records which old predicate
+        # families exclude each CURRENT-only window and explicitly marks their
+        # source status as unresolved unless independently source-confirmed.
+        source_status_by_condition = {
+            "trigger_low_lt_correction_low": "SOURCE_ALIGNED_F12_DIRECTIONAL_TRIGGER_BUT_TOUCH_SEMANTICS_UNRESOLVED",
+            "trigger_high_gt_correction_high": "SOURCE_ALIGNED_F12_DIRECTIONAL_TRIGGER_BUT_TOUCH_SEMANTICS_UNRESOLVED",
+            "p_gap_buy": "SOURCE_CONFIRMED_P_GAP_CONCEPT_NUMERIC_THRESHOLD_UNRESOLVED",
+            "p_gap_sell": "SOURCE_CONFIRMED_P_GAP_CONCEPT_NUMERIC_THRESHOLD_UNRESOLVED",
+            "spike_close_gt_a_close": "NOT_OLD_CANDIDATE_PREDICATE_SOURCE_STATUS_UNRESOLVED",
+        }
+        fixture_condition_summary = []
+        for row in current_only_geometry:
+            fixture_condition_summary.append({
+                "signal_time": row["signal_time"],
+                "direction": row["direction"],
+                "failed_old_conditions": row["old_failed_conditions"],
+                "source_status": {
+                    name: source_status_by_condition.get(name, "UNRESOLVED_SOURCE_SEMANTICS")
+                    for name in row["old_failed_conditions"]
+                },
+            })
+        fixture_failure_family_counts = {}
+        for row in fixture_condition_summary:
+            for name in row["failed_old_conditions"]:
+                fixture_failure_family_counts[name] = fixture_failure_family_counts.get(name, 0) + 1
+
         geometry_decomposition = {
             "current_only_count": len(current_only_geometry),
             "reason_counts": current_only_reason_counts,
             "old_failed_condition_counts": dict(sorted(current_only_failed_condition_counts.items())),
             "rows": current_only_geometry,
+            "fixture_condition_summary": fixture_condition_summary,
+            "fixture_failure_family_counts": dict(sorted(fixture_failure_family_counts.items())),
             "notes": [
                 "A CURRENT-only signal is first audited using the old candidate's same-direction geometry, then its old SL risk-cap gate.",
                 "The BUY-only spike_close_gt_a_close predicate is the extra shared-detector geometry condition versus the old candidate; it is diagnostic, not source-confirmed.",
