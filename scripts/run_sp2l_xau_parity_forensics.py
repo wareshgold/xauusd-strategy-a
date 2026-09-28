@@ -369,6 +369,38 @@ def main():
             ]
 
 
+        # Recompute old_signal() directly for every CURRENT-only row and record
+        # the exact old candidate predicates. This is the authoritative forensic
+        # cross-check; the named audit above is explanatory only.
+        for row in current_only_geometry:
+            key = (int(datetime.fromisoformat(row["signal_time"].replace("Z", "+00:00")).timestamp()), row["direction"])
+            idx = current_index[key]
+            direct_old = old_signal(candles, idx)
+            row["direct_old_signal"] = direct_old
+            row["direct_old_signal_exists"] = direct_old is not None
+            row["direct_old_rejection_reason"] = (
+                None if direct_old is not None
+                else "old_signal_returned_none; inspect raw predicate audit"
+            )
+
+        # Diagnostic invariant: every CURRENT-only row must have a concrete
+        # explanation under the direct old candidate: risk rejection, direction
+        # exclusivity, or at least one failed old predicate. If not, stop rather
+        # than publishing a misleading decomposition.
+        unresolved_rows = [
+            row for row in current_only_geometry
+            if row["direct_old_signal_exists"] is False
+            and row["old_geometry_pass"]
+            and row["old_risk_pass"]
+            and row["old_direction_exclusivity_pass"]
+        ]
+        if unresolved_rows:
+            raise RuntimeError(
+                "XAU parity diagnostic invariant failed: CURRENT-only rows cannot be "
+                "explained by the recomputed old candidate. First row: "
+                f"{unresolved_rows[0]['signal_time']} {unresolved_rows[0]['direction']}"
+            )
+
         # Counterfactual decomposition on the COMMON signal set:
         # hold signal geometry and entry fixed, then vary only SL anchor and
         # outcome semantics. Descriptive forensic analysis only.
