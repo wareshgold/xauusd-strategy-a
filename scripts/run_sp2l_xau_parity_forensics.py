@@ -86,15 +86,10 @@ def old_signal(candles, i):
     return None
 
 
-def geometry_condition_audit(candles, i, direction):
-    """Return named geometry predicates plus the old risk-cap predicate.
-
-    This is diagnostic only. It decomposes signal-set divergence without
-    changing either research candidate or promoting any rule to canonical.
-    """
+def _geometry_conditions(candles, i, direction):
     a, s, corr, trig = candles[i - 4], candles[i - 3], candles[i - 2], candles[i - 1]
     if direction == "BUY":
-        conditions = {
+        return {
             "trigger_low_lt_correction_low": trig["low"] < corr["low"],
             "correction_close_gt_spike_close": corr["close"] > s["close"],
             "correction_open_gt_spike_open": corr["open"] > s["open"],
@@ -108,46 +103,45 @@ def geometry_condition_audit(candles, i, direction):
             "spike_body_gt_mult_a": (s["close"] - s["open"]) > SPIKE_MULT * (a["close"] - a["open"]),
             "spike_body_gt_mult_trigger": (s["close"] - s["open"]) > SPIKE_MULT * (trig["close"] - trig["open"]),
         }
-        old_geometry_conditions = {k: v for k, v in conditions.items() if k != "spike_close_gt_a_close"}
-        entry = float(trig["low"])
-        old_sl = float(a["low"])
-        current_sl = float(s["low"])
+    return {
+        "trigger_high_gt_correction_high": trig["high"] > corr["high"],
+        "correction_close_lt_spike_close": corr["close"] < s["close"],
+        "correction_open_lt_spike_open": corr["open"] < s["open"],
+        "spike_close_lt_a_close": s["close"] < a["close"],
+        "spike_open_lt_a_open": s["open"] < a["open"],
+        "correction_bearish": corr["close"] < corr["open"],
+        "spike_bearish": s["close"] < s["open"],
+        "a_bearish": a["close"] < a["open"],
+        "p_gap_sell": corr["high"] < a["low"] - P_GAP,
+        "spike_body_gt_mult_correction": (s["open"] - s["close"]) > SPIKE_MULT * (corr["open"] - corr["close"]),
+        "spike_body_gt_mult_a": (s["open"] - s["close"]) > SPIKE_MULT * (a["open"] - a["close"]),
+        "spike_body_gt_mult_trigger": (s["open"] - s["close"]) > SPIKE_MULT * (trig["open"] - trig["close"]),
+    }
+
+
+def geometry_condition_audit(candles, i, direction):
+    """Diagnostic decomposition only; does not alter either research candidate."""
+    a, s, corr, trig = candles[i - 4], candles[i - 3], candles[i - 2], candles[i - 1]
+    conditions = _geometry_conditions(candles, i, direction)
+    old_geometry_conditions = dict(conditions)
+    if direction == "BUY":
+        old_geometry_conditions.pop("spike_close_gt_a_close", None)
+        entry, old_sl, current_sl = float(trig["low"]), float(a["low"]), float(s["low"])
     else:
-        conditions = {
-            "trigger_high_gt_correction_high": trig["high"] > corr["high"],
-            "correction_close_lt_spike_close": corr["close"] < s["close"],
-            "correction_open_lt_spike_open": corr["open"] < s["open"],
-            "spike_close_lt_a_close": s["close"] < a["close"],
-            "spike_open_lt_a_open": s["open"] < a["open"],
-            "correction_bearish": corr["close"] < corr["open"],
-            "spike_bearish": s["close"] < s["open"],
-            "a_bearish": a["close"] < a["open"],
-            "p_gap_sell": corr["high"] < a["low"] - P_GAP,
-            "spike_body_gt_mult_correction": (s["open"] - s["close"]) > SPIKE_MULT * (corr["open"] - corr["close"]),
-            "spike_body_gt_mult_a": (s["open"] - s["close"]) > SPIKE_MULT * (a["open"] - a["close"]),
-            "spike_body_gt_mult_trigger": (s["open"] - s["close"]) > SPIKE_MULT * (trig["open"] - trig["close"]),
-        }
-        old_geometry_conditions = conditions.copy()
-        entry = float(trig["high"])
-        old_sl = float(a["high"])
-        current_sl = float(s["high"])
+        entry, old_sl, current_sl = float(trig["high"]), float(a["high"]), float(s["high"])
 
     old_risk = (entry - old_sl) if direction == "BUY" else (old_sl - entry)
     current_risk = (entry - current_sl) if direction == "BUY" else (current_sl - entry)
 
-    # Reproduce the complete old candidate from the same named predicates.
-    # This is deliberately kept diagnostic: it does not change either candidate.
-    old_buy = all(v for k, v in old_geometry_conditions.items())
-    old_sell = all(
-        v for k, v in geometry_condition_audit(candles, i, "SELL")["conditions"].items()
-    )
+    old_buy_recomputed = all(_geometry_conditions(candles, i, "BUY").values())
+    old_sell_recomputed = all(_geometry_conditions(candles, i, "SELL").values())
     old_signal_expected = (
-        None if old_buy == old_sell
-        else ("BUY" if old_buy and 0 < old_risk <= MAX_SL
-              else "SELL" if old_sell and 0 < (
-                  float(a["high"]) - float(trig["high"])
-              ) <= MAX_SL
-              else None)
+        None if old_buy_recomputed == old_sell_recomputed
+        else (
+            "BUY" if old_buy_recomputed and direction == "BUY" and 0 < (float(trig["low"]) - float(a["low"])) <= MAX_SL
+            else "SELL" if old_sell_recomputed and direction == "SELL" and 0 < (float(a["high"]) - float(trig["high"])) <= MAX_SL
+            else None
+        )
     )
 
     return {
@@ -161,8 +155,8 @@ def geometry_condition_audit(candles, i, direction):
         "current_risk": current_risk,
         "old_risk_pass": 0 < old_risk <= MAX_SL,
         "current_risk_pass": 0 < current_risk <= MAX_SL,
-        "old_buy_recomputed": old_buy,
-        "old_sell_recomputed": old_sell,
+        "old_buy_recomputed": old_buy_recomputed,
+        "old_sell_recomputed": old_sell_recomputed,
         "old_signal_expected": old_signal_expected,
     }
 
