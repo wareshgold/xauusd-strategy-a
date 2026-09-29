@@ -1414,7 +1414,6 @@ def main() -> None:
                         else:
                             state.setdefault("pending_signal_notifications", {})[trigger_key] = dict(candidate)
                 else:
-                    v2_ledger.record_blocked(state, candidate, result.get("reason") or result.get("error") or "ORDER_REJECTED", "EXECUTION")
                     seen_trigger[symbol] = trigger_key
                     log_event({
                         "event": "EXECUTION_BLOCKED", "symbol": symbol, "signal_id": trigger_key,
