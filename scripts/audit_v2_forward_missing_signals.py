@@ -1,25 +1,10 @@
-"""Deterministic forensic audit for backtest signals missing from V2 forward events.
+"""Deterministic forensic audit for V2 backtest signals missing from forward events.
 
 Research-only. This tool does not alter detector geometry or execution semantics.
 
-For each backtest signal absent from the forward event log, it reconstructs the
-exact runner's 10-bar polling view around the signal trigger and classifies
-whether the signal was:
-
-- VISIBLE_AT_TRIGGER: the runner's 10-bar window can produce that signal when
-  the trigger bar is the latest completed bar.
-- VISIBLE_BUT_LATER_CANDIDATE_REPLACES: the signal is visible after the trigger,
-  but find_latest_candidate selects a newer candidate before the signal can be
-  observed.
-- NOT_VISIBLE_IN_10_BAR_LOOKBACK: the runner's current 10-bar history cannot
-  reproduce the backtest signal at the trigger.
-- NOT_REPRODUCED_FROM_MT5_HISTORY: the current MT5 history does not reproduce
-  the signal under the runner's exact detector.
-- NO_POST_TRIGGER_WINDOW: insufficient historical bars were returned.
-
-The tool intentionally does not claim why a live process missed a signal when
-the historical reconstruction cannot establish that fact. Runtime polling,
-process uptime, and state suppression require forward telemetry evidence.
+The V2 XAUUSD backtest artifact is single-symbol and its signals_detail rows
+do not repeat a symbol field. This audit therefore assigns the requested
+resolved symbol to each detail row instead of filtering on a missing field.
 """
 
 from __future__ import annotations
@@ -27,7 +12,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -61,19 +45,19 @@ def load_backtest(path: str, symbol: str, start: int, end: int):
     details = (data.get("outcomes") or {}).get("signals_detail") or []
     rows = []
     for row in details:
-        if str(row.get("symbol")) != symbol:
+        # The V2 XAUUSD artifact is single-symbol; rows omit "symbol".
+        row_symbol = str(row.get("symbol") or symbol)
+        if row_symbol != symbol:
             continue
         ts = int(row.get("entry_time", row.get("trigger_time", 0)) or 0)
         if start <= ts < end:
             direction = str(row.get("direction", "")).upper()
-            rows.append(
-                {
-                    "signal_id": f"{symbol}:{ts}:{direction}",
-                    "trigger_time": ts,
-                    "direction": direction,
-                    "result": row.get("result"),
-                }
-            )
+            rows.append({
+                "signal_id": f"{symbol}:{ts}:{direction}",
+                "trigger_time": ts,
+                "direction": direction,
+                "result": row.get("result"),
+            })
     return rows
 
 
@@ -133,15 +117,8 @@ def find_first_entry(candles, start_index: int, setup: dict):
             risk = entry - sl
             if risk <= 0 or risk > MAX_SL_DISTANCE:
                 return None
-            return {
-                "direction": "BUY",
-                "trigger_time": int(cur["time"]),
-                "theoretical_entry": entry,
-                "sl": sl,
-                "risk": risk,
-                "tp": entry + TP_R * risk,
-                "symbol": setup["symbol"],
-            }
+            return {"direction": "BUY", "trigger_time": int(cur["time"]), "theoretical_entry": entry,
+                    "sl": sl, "risk": risk, "tp": entry + TP_R * risk, "symbol": setup["symbol"]}
         if float(cur["high"]) <= float(prev["high"]):
             continue
         entry = float(cur["high"])
@@ -149,15 +126,8 @@ def find_first_entry(candles, start_index: int, setup: dict):
         risk = sl - entry
         if risk <= 0 or risk > MAX_SL_DISTANCE:
             return None
-        return {
-            "direction": "SELL",
-            "trigger_time": int(cur["time"]),
-            "theoretical_entry": entry,
-            "sl": sl,
-            "risk": risk,
-            "tp": entry - TP_R * risk,
-            "symbol": setup["symbol"],
-        }
+        return {"direction": "SELL", "trigger_time": int(cur["time"]), "theoretical_entry": entry,
+                "sl": sl, "risk": risk, "tp": entry - TP_R * risk, "symbol": setup["symbol"]}
     return None
 
 
@@ -177,78 +147,42 @@ def candidate_id(candidate):
     return f"{candidate['symbol']}:{candidate['trigger_time']}:{candidate['direction']}"
 
 
-def classify_signal(rows, target):
-    target_ts = target["trigger_time"]
-    target_id = target["signal_id"]
-    exact = [r for r in rows if candidate_id(r) == target_id]
-    if exact:
-        return "VISIBLE_AT_TRIGGER", target_id, 0
-
-    newer = [r for r in rows if int(r["trigger_time"]) > target_ts]
-    if newer:
-        latest = max(newer, key=lambda x: (int(x["trigger_time"]), x["direction"]))
-        return "VISIBLE_BUT_LATER_CANDIDATE_REPLACES", candidate_id(latest), int(latest["trigger_time"] - target_ts)
-
-    return "NO_MATCH", None, None
-
-
 def audit_signal(symbol: str, target_ts: int, target_id: str):
     start_dt = datetime.fromtimestamp(target_ts, timezone.utc) - timedelta(minutes=15)
     end_dt = datetime.fromtimestamp(target_ts, timezone.utc) + timedelta(minutes=12)
     rates = mt5.copy_rates_range(symbol, TIMEFRAME, start_dt, end_dt)
     if rates is None or len(rates) == 0:
-        return {
-            "classification": "NOT_REPRODUCED_FROM_MT5_HISTORY",
-            "target_signal_id": target_id,
-            "bars_returned": 0,
-        }
+        return {"classification": "NOT_REPRODUCED_FROM_MT5_HISTORY", "target_signal_id": target_id, "bars_returned": 0}
 
-    bars = [row for row in rates if int(row["time"]) <= target_ts + 10 * 60]
-    at_trigger = [row for row in bars if int(row["time"]) <= target_ts][-LOOKBACK_BARS:]
-    target_candidate = find_latest_candidate(at_trigger, symbol)
+    full = [row for row in rates if int(row["time"]) <= target_ts + 10 * 60]
+    at_trigger = [row for row in full if int(row["time"]) <= target_ts][-LOOKBACK_BARS:]
+    selected = find_latest_candidate(at_trigger, symbol)
 
-    if target_candidate is not None and candidate_id(target_candidate) == target_id:
-        return {
-            "classification": "VISIBLE_AT_TRIGGER",
-            "target_signal_id": target_id,
-            "bars_returned": len(rates),
-            "window_bars_at_trigger": len(at_trigger),
-            "selected_at_trigger": candidate_id(target_candidate),
-        }
+    if selected is not None and candidate_id(selected) == target_id:
+        return {"classification": "VISIBLE_AT_TRIGGER", "target_signal_id": target_id,
+                "bars_returned": len(rates), "window_bars_at_trigger": len(at_trigger),
+                "selected_at_trigger": candidate_id(selected)}
 
-    full_after = [row for row in rates if int(row["time"]) <= target_ts + 10 * 60]
     snapshots = []
-    times = sorted({int(row["time"]) for row in full_after if int(row["time"]) >= target_ts})
-    for snap_ts in times:
-        window = [row for row in full_after if int(row["time"]) <= snap_ts][-LOOKBACK_BARS:]
-        selected = find_latest_candidate(window, symbol)
-        if selected is not None:
-            snapshots.append((snap_ts, selected))
+    for snap_ts in sorted({int(row["time"]) for row in full if int(row["time"]) >= target_ts}):
+        window = [row for row in full if int(row["time"]) <= snap_ts][-LOOKBACK_BARS:]
+        chosen = find_latest_candidate(window, symbol)
+        if chosen is not None:
+            snapshots.append((snap_ts, chosen))
 
-    for snap_ts, selected in snapshots:
-        if candidate_id(selected) == target_id:
-            return {
-                "classification": "VISIBLE_AFTER_TRIGGER",
-                "target_signal_id": target_id,
-                "bars_returned": len(rates),
-                "first_selected_time": snap_ts,
-                "first_selected_id": target_id,
-            }
+    for snap_ts, chosen in snapshots:
+        if candidate_id(chosen) == target_id:
+            return {"classification": "VISIBLE_AFTER_TRIGGER", "target_signal_id": target_id,
+                    "bars_returned": len(rates), "first_selected_time": snap_ts,
+                    "first_selected_id": target_id}
 
-    newer = [(ts, c) for ts, c in snapshots if int(c["trigger_time"]) > target_ts]
+    newer = [(ts, chosen) for ts, chosen in snapshots if int(chosen["trigger_time"]) > target_ts]
     if newer:
-        ts, selected = newer[0]
-        return {
-            "classification": "VISIBLE_BUT_LATER_CANDIDATE_REPLACES",
-            "target_signal_id": target_id,
-            "bars_returned": len(rates),
-            "replacement_signal_id": candidate_id(selected),
-            "replacement_trigger_time": int(selected["trigger_time"]),
-            "replacement_seen_at": ts,
-        }
+        ts, chosen = newer[0]
+        return {"classification": "VISIBLE_BUT_LATER_CANDIDATE_REPLACES", "target_signal_id": target_id,
+                "bars_returned": len(rates), "replacement_signal_id": candidate_id(chosen),
+                "replacement_trigger_time": int(chosen["trigger_time"]), "replacement_seen_at": ts}
 
-    # Re-run the complete local history through the target time. If the exact
-    # target never appears, distinguish missing lookback from geometry/history.
     full_to_trigger = [row for row in rates if int(row["time"]) <= target_ts]
     complete_candidates = []
     for setup_end in range(2, len(full_to_trigger) - 1):
@@ -259,19 +193,10 @@ def audit_signal(symbol: str, target_ts: int, target_id: str):
         if c is not None:
             complete_candidates.append(c)
     if any(candidate_id(c) == target_id for c in complete_candidates):
-        return {
-            "classification": "NOT_VISIBLE_IN_10_BAR_LOOKBACK",
-            "target_signal_id": target_id,
-            "bars_returned": len(rates),
-            "complete_history_reproduces": True,
-        }
-
-    return {
-        "classification": "NOT_REPRODUCED_FROM_MT5_HISTORY",
-        "target_signal_id": target_id,
-        "bars_returned": len(rates),
-        "complete_history_reproduces": False,
-    }
+        return {"classification": "NOT_VISIBLE_IN_10_BAR_LOOKBACK", "target_signal_id": target_id,
+                "bars_returned": len(rates), "complete_history_reproduces": True}
+    return {"classification": "NOT_REPRODUCED_FROM_MT5_HISTORY", "target_signal_id": target_id,
+            "bars_returned": len(rates), "complete_history_reproduces": False}
 
 
 def main():
@@ -282,15 +207,12 @@ def main():
     forward_ids = load_forward_ids(args.events)
     missing = [r for r in backtest if r["signal_id"] not in forward_ids]
 
-    mt5_path = args.mt5_path
-    initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
+    initialized = mt5.initialize(path=args.mt5_path) if args.mt5_path else mt5.initialize()
     if not initialized:
         raise SystemExit(f"MT5 initialize failed: {mt5.last_error()}")
     try:
-        rows = []
-        for target in missing:
-            result = audit_signal(args.symbol, target["trigger_time"], target["signal_id"])
-            rows.append({**target, **result})
+        rows = [dict(target, **audit_signal(args.symbol, target["trigger_time"], target["signal_id"]))
+                for target in missing]
     finally:
         mt5.shutdown()
 
@@ -300,28 +222,16 @@ def main():
 
     report = {
         "status": "COMPLETE",
-        "scope": {
-            "symbol": args.symbol,
-            "start_utc": args.start,
-            "end_utc": args.end,
-            "lookback_bars": LOOKBACK_BARS,
-            "p_gap_price": P_GAP_PRICE,
-            "spike_multiplier": SPIKE_MULTIPLIER,
-            "max_sl_distance": MAX_SL_DISTANCE,
-            "tp_r": TP_R,
-        },
-        "population": {
-            "backtest_signals": len(backtest),
-            "forward_signal_ids": len(forward_ids),
-            "missing_signals": len(missing),
-        },
+        "scope": {"symbol": args.symbol, "start_utc": args.start, "end_utc": args.end,
+                  "lookback_bars": LOOKBACK_BARS, "p_gap_price": P_GAP_PRICE,
+                  "spike_multiplier": SPIKE_MULTIPLIER, "max_sl_distance": MAX_SL_DISTANCE, "tp_r": TP_R},
+        "population": {"backtest_signals": len(backtest), "forward_signal_ids": len(forward_ids),
+                       "missing_signals": len(missing)},
         "classification_counts": counts,
         "signals": rows,
-        "semantic_limit": (
-            "Historical reconstruction only. A VISIBLE_AT_TRIGGER result does not "
-            "prove the live process polled at that instant; it establishes that the "
-            "runner's exact 10-bar detector could have observed the signal."
-        ),
+        "semantic_limit": ("Historical reconstruction only. VISIBLE_AT_TRIGGER proves only that the "
+                           "runner's exact 10-bar detector could have observed the signal; it does "
+                           "not prove the live process was polling at that instant."),
     }
     print(json.dumps(report, indent=2, sort_keys=True))
 
