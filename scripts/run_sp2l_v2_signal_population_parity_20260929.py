@@ -157,7 +157,7 @@ def latest_candidate(window):
         candidate = first_entry(window, setup_end, setup)
         if candidate is not None:
             candidates.append(candidate)
-    return max(candidates, key=lambda x: (x["trigger_time"], x["direction"])) if candidates else None
+    return max(candidates, key=lambda x: (trigger_time(x), x["direction"])) if candidates else None
 
 
 def session_allowed(ts):
@@ -169,13 +169,31 @@ def session_allowed(ts):
     return start <= utc_dt <= end
 
 
+def trigger_time(s):
+    """Normalize reference-ledger and forward-emulation trigger naming."""
+    if "trigger_time" in s:
+        return int(s["trigger_time"])
+    return int(s["entry_time"])
+
+
+def entry_price(s):
+    if "theoretical_entry" in s:
+        return float(s["theoretical_entry"])
+    return float(s["entry"])
+
+
 def key(s):
-    return (int(s["trigger_time"]), str(s["direction"]))
+    return (trigger_time(s), str(s["direction"]))
 
 
 def comparable(a, b):
-    fields = ("direction", "theoretical_entry", "sl", "risk", "tp")
-    return all(float(a[f]) == float(b[f]) if f != "direction" else a[f] == b[f] for f in fields)
+    return (
+        a["direction"] == b["direction"]
+        and entry_price(a) == entry_price(b)
+        and float(a["sl"]) == float(b["sl"])
+        and float(a["risk"]) == float(b["risk"])
+        and float(a["tp"]) == float(b["tp"])
+    )
 
 
 def main():
@@ -287,6 +305,7 @@ def main():
             "period": {"start_utc": start.isoformat(), "end_utc": end.isoformat()},
             "rolling_window_bars": ROLLING_BARS,
             "forward_emulation": {
+                "signal_key_normalization": "reference entry_time == forward trigger_time; reference entry == forward theoretical_entry",
                 "acquisition": "copy_rates_range",
                 "window": "last 10 M1 bars at each observed bar",
                 "candidate_selection": "latest trigger time",
