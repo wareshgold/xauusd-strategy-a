@@ -1,4 +1,4 @@
-"""Research-only multi-symbol SP2L author-replica forward runner.
+﻿"""Research-only multi-symbol SP2L author-replica forward runner.
 
 Runs the explicitly configured research symbols in one MT5 Python process. The default Demo Forward scope is XAUUSD only.
 It does not define or promote canonical Strategy A geometry.
@@ -102,6 +102,45 @@ SESSION_START_LONDON = os.getenv("SP2L_SESSION_START_LONDON", "08:00").strip()
 SESSION_END_NEW_YORK = os.getenv("SP2L_SESSION_END_NEW_YORK", "17:00").strip()
 LONDON_TZ = ZoneInfo("Europe/London")
 NEW_YORK_TZ = ZoneInfo("America/New_York")
+
+def _safe_call(fn, label: str, state: dict) -> None:
+    """Execute a monitoring function and swallow any exception.
+
+    Infrastructure robustness only. Never lets a transient MT5/Telegram
+    failure terminate the forward runner loop.
+    """
+    try:
+        fn()
+    except Exception as exc:
+        log_event({
+            "event": f"{label}_ERROR",
+            "error": f"{type(exc).__name__}: {exc}",
+            "canonical": False,
+        })
+
+
+def _save_state_safe(state: dict) -> None:
+    try:
+        save_state(state)
+    except Exception as exc:
+        log_event({
+            "event": "STATE_SAVE_ERROR",
+            "error": f"{type(exc).__name__}: {exc}",
+            "canonical": False,
+        })
+
+
+def _session_gate_safe(trigger_ts, state: dict):
+    try:
+        return session_gate_status(trigger_ts)
+    except Exception as exc:
+        log_event({
+            "event": "SESSION_GATE_ERROR",
+            "error": f"{type(exc).__name__}: {exc}",
+            "canonical": False,
+        })
+        return False, str(exc)
+
 
 def _parse_hhmm(value: str, name: str) -> dt_time:
     try:
@@ -307,14 +346,17 @@ def maybe_send_daily_summary(state: dict) -> None:
     if summary is None:
         state[key] = today
         return
-    result = gateway.send_telegram_message(summary)
+    try:
+        result = gateway.send_telegram_message(summary)
+    except Exception as exc:
+        result = type("SummaryResult", (), {"success": False, "detail": f"TELEGRAM_EXCEPTION: {type(exc).__name__}: {exc}"})()
     log_event({
         "event": "DAILY_SUMMARY", "success": bool(getattr(result, "success", False)),
         "detail": getattr(result, "detail", None), "utc_day": today, "canonical": False,
     })
     if getattr(result, "success", False):
         state[key] = today
-    save_state(state)
+    _save_state_safe(state)
 
 
 def log_event(event: dict) -> None:
@@ -613,32 +655,35 @@ def position_entry_price(deal, magic: int | None = None) -> float | None:
     nine unrelated entry deals). Entry deals are additionally filtered to
     this runner's magic so manual or foreign positions can never be mixed
     in; with no matching entry the function returns None and the caller
-defers the notification instead of inventing numbers.
+    defers the notification instead of inventing numbers.
     """
     position_id = int(getattr(deal, "position_id", 0) or 0)
     if not position_id:
         return None
-    history = mt5.history_deals_get(position=position_id) or []
-    if not history:
-        start = datetime.fromtimestamp(int(deal.time), timezone.utc) - timedelta(days=7)
-        end = datetime.fromtimestamp(int(deal.time), timezone.utc) + timedelta(seconds=1)
-        history = [
-            d for d in (mt5.history_deals_get(start, end) or [])
-            if int(getattr(d, "position_id", 0) or 0) == position_id
+    try:
+        history = mt5.history_deals_get(position=position_id) or []
+        if not history:
+            start = datetime.fromtimestamp(int(deal.time), timezone.utc) - timedelta(days=7)
+            end = datetime.fromtimestamp(int(deal.time), timezone.utc) + timedelta(seconds=1)
+            history = [
+                d for d in (mt5.history_deals_get(start, end) or [])
+                if int(getattr(d, "position_id", 0) or 0) == position_id
+            ]
+        entries = [
+            d for d in history
+            if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN
+            and (magic is None or int(getattr(d, "magic", 0) or 0) == magic)
         ]
-    entries = [
-        d for d in history
-        if int(getattr(d, "entry", -1)) == mt5.DEAL_ENTRY_IN
-        and (magic is None or int(getattr(d, "magic", 0) or 0) == magic)
-    ]
-    if not entries:
+        if not entries:
+            return None
+        total_volume = sum(float(getattr(d, "volume", 0.0) or 0.0) for d in entries)
+        if total_volume <= 0:
+            return None
+        return sum(
+            float(d.price) * float(getattr(d, "volume", 0.0) or 0.0) for d in entries
+        ) / total_volume
+    except Exception:
         return None
-    total_volume = sum(float(getattr(d, "volume", 0.0) or 0.0) for d in entries)
-    if total_volume <= 0:
-        return None
-    return sum(
-        float(d.price) * float(getattr(d, "volume", 0.0) or 0.0) for d in entries
-    ) / total_volume
 
 
 def lifecycle_message(deal, symbol: str, pip_size: float, magic: int | None = None) -> str:
@@ -667,7 +712,8 @@ def lifecycle_message(deal, symbol: str, pip_size: float, magic: int | None = No
         icon = "🔵" if pips is not None and pips > 0 else "🟠"
 
     dt = display_time_from_mt5(int(deal.time))
-    digits = max(2, int(mt5.symbol_info(symbol).digits))
+    info = mt5.symbol_info(symbol)
+    digits = max(2, int(info.digits)) if info is not None else 2
     entry_str = f"{entry:.{digits}f}" if entry is not None else "n/a (unlinked)"
     reason = lifecycle_reason(deal)
     reason_icon = {"TAKE PROFIT": "🎯", "STOP LOSS": "🛑"}.get(reason, "☑️")
@@ -730,7 +776,8 @@ def lifecycle_levels(deal, symbol: str):
 
 def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = None):
     symbol = candidate["symbol"]
-    digits = int(mt5.symbol_info(symbol).digits)
+    info = mt5.symbol_info(symbol)
+    digits = int(info.digits) if info is not None else 2
     t = display_time_from_mt5(candidate["trigger_time"])
     risk_pips = candidate["risk"] / pip_size if pip_size else 0.0
     icon = "🟢" if candidate["direction"] == "BUY" else "🔴"
@@ -756,7 +803,10 @@ def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = Non
         f"🆔 <code>AUTHOR_REPLICA_MULTI_{candidate['trigger_time']}_{symbol}_{candidate['direction']}</code>\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
-    return gateway.send_telegram_message(text, parse_mode="HTML")
+    try:
+        return gateway.send_telegram_message(text, parse_mode="HTML")
+    except Exception as exc:
+        return type("SignalResult", (), {"success": False, "detail": f"TELEGRAM_EXCEPTION: {type(exc).__name__}: {exc}"})()
 
 def execute_candidate(candidate: dict, magic: int) -> dict:
     symbol = candidate["symbol"]
@@ -819,20 +869,23 @@ def _cancel_pending_order(order, state: dict) -> None:
             "reason": "LIVE_TRADING_ENABLE=false",
         }
     else:
-        account = mt5.account_info()
-        if account is None or int(account.trade_mode) != 0:
-            result = {"ok": False, "reason": "DEMO_ACCOUNT_REQUIRED"}
-        else:
-            send = mt5.order_send(cancel_request)
-            if send is None:
-                result = {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
+        try:
+            account = mt5.account_info()
+            if account is None or int(account.trade_mode) != 0:
+                result = {"ok": False, "reason": "DEMO_ACCOUNT_REQUIRED"}
             else:
-                result = {
-                    "ok": send.retcode == mt5.TRADE_RETCODE_DONE,
-                    "dry_run": False,
-                    "retcode": send.retcode,
-                    "comment": send.comment,
-                }
+                send = mt5.order_send(cancel_request)
+                if send is None:
+                    result = {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
+                else:
+                    result = {
+                        "ok": send.retcode == mt5.TRADE_RETCODE_DONE,
+                        "dry_run": False,
+                        "retcode": send.retcode,
+                        "comment": send.comment,
+                    }
+        except Exception as exc:
+            result = {"ok": False, "reason": f"CANCEL_EXCEPTION: {type(exc).__name__}: {exc}"}
 
     outcome = "CANCELLED" if result.get("ok") else f"CANCEL_FAILED({result.get('reason') or result.get('retcode')})"
     log_event({
@@ -862,12 +915,15 @@ def _cancel_pending_order(order, state: dict) -> None:
         f"🆔 <code>{ticket}</code>\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
-    tg = gateway.send_telegram_message(text, parse_mode="HTML")
+    try:
+        tg = gateway.send_telegram_message(text, parse_mode="HTML")
+    except Exception as exc:
+        tg = type("ExpiryResult", (), {"success": False, "detail": f"TELEGRAM_EXCEPTION: {type(exc).__name__}: {exc}"})()
     state["order_states"].add(f"{ticket}:EXPIRY_NOTIFIED:{outcome}")
     log_event({
         "event": "TELEGRAM_PENDING_EXPIRED", "symbol": symbol,
         "order": ticket, "outcome": outcome,
-        "telegram": {"success": tg.success, "detail": tg.detail},
+        "telegram": {"success": getattr(tg, "success", False), "detail": getattr(tg, "detail", None)},
         "canonical": False,
     })
 
@@ -1037,7 +1093,10 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             # notification to the next poll instead of sending wrong numbers.
             continue
         text = lifecycle_message(deal, symbol, pip, magic)
-        result = gateway.send_telegram_message(text, parse_mode="HTML")
+        try:
+            result = gateway.send_telegram_message(text, parse_mode="HTML")
+        except Exception as exc:
+            result = type("LifecycleResult", (), {"success": False, "detail": f"TELEGRAM_EXCEPTION: {type(exc).__name__}: {exc}"})()
         telegram_success = bool(getattr(result, "success", False))
         exit_price = float(deal.price)
         signed_move = None
@@ -1086,7 +1145,7 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         # Failed sends remain eligible for retry on the next poll.
         if telegram_success:
             state["deals"].add(ticket)
-    save_state(state)
+    _save_state_safe(state)
 
 
 def _resolve_terminal_path() -> str | None:
@@ -1146,7 +1205,10 @@ def run_banner_only() -> int:
                 continue
             if not mt5.symbol_select(symbol, True):
                 continue
-            cfg = symbol_config(symbol)
+            try:
+                cfg = symbol_config(symbol)
+            except Exception:
+                continue
             cfg["magic"] = MAGIC_BASE + index + 1
             cfg["volume"] = _volume_for(base.upper().split(".")[0])
             configs.append(cfg)
@@ -1192,7 +1254,11 @@ def main() -> None:
         if not mt5.symbol_select(symbol, True):
             log_event({"event": "SYMBOL_SELECT_FAILED", "symbol": symbol, "error": str(mt5.last_error())})
             continue
-        cfg = symbol_config(symbol)
+        try:
+            cfg = symbol_config(symbol)
+        except Exception as exc:
+            log_event({"event": "SYMBOL_CONFIG_ERROR", "symbol": symbol, "error": f"{type(exc).__name__}: {exc}"})
+            continue
         cfg["magic"] = MAGIC_BASE + index + 1
         cfg["volume"] = _volume_for(base.upper().split(".")[0])
         configs.append(cfg)
@@ -1249,17 +1315,39 @@ def main() -> None:
                 for pending_id, pending_candidate in list(pending_signals.items()):
                     if str(pending_candidate.get("symbol")) != symbol:
                         continue
-                    retry_result = send_signal(pending_candidate, cfg["pip_size"])
+                    try:
+                        retry_result = send_signal(pending_candidate, cfg["pip_size"])
+                    except Exception as exc:
+                        retry_result = type("RetryResult", (), {"success": False, "detail": f"TELEGRAM_EXCEPTION: {type(exc).__name__}: {exc}"})()
                     retry_ok = bool(getattr(retry_result, "success", False))
-                    log_event({"event":"TELEGRAM_SIGNAL_RETRY","symbol":symbol,"signal_id":pending_id,"success":retry_ok,"detail":getattr(retry_result,"detail",None),"canonical":False})
+                    retry_detail = getattr(retry_result, "detail", None)
+
+                    log_event({
+                        "event":"TELEGRAM_SIGNAL_RETRY",
+                        "symbol":symbol,
+                        "signal_id":pending_id,
+                        "success":retry_ok,
+                        "detail":retry_detail,
+                        "canonical":False
+                    })
+
                     if retry_ok:
                         state["notified"].add(pending_id)
                         pending_signals.pop(pending_id, None)
-                save_state(state)
-                enforce_pending_order_expiry(cfg, state)
-                monitor_pending_order_lifecycle(cfg, state)
-                monitor_position_lifecycle(cfg, state)
-                monitor_symbol_lifecycle(cfg, state)
+                    else:
+                        state.setdefault("telegram_failed_signals", {})
+                        state["telegram_failed_signals"][pending_id] = {
+                            "symbol": symbol,
+                            "detail": retry_detail,
+                            "ts_utc": datetime.now(timezone.utc).isoformat()
+                        }
+                        pending_signals.pop(pending_id, None)
+
+                _save_state_safe(state)
+                _safe_call(lambda: enforce_pending_order_expiry(cfg, state), "ENFORCE_PENDING_ORDER_EXPIRY", state)
+                _safe_call(lambda: monitor_pending_order_lifecycle(cfg, state), "MONITOR_PENDING_ORDER_LIFECYCLE", state)
+                _safe_call(lambda: monitor_position_lifecycle(cfg, state), "MONITOR_POSITION_LIFECYCLE", state)
+                _safe_call(lambda: monitor_symbol_lifecycle(cfg, state), "MONITOR_SYMBOL_LIFECYCLE", state)
                 data = rates(symbol)
                 if data is None:
                     continue
@@ -1270,18 +1358,18 @@ def main() -> None:
                 candidate["signal_id"] = trigger_key
                 candidate["volume"] = float(cfg.get("volume", VOLUME))
 
-                in_session, session_reason = session_gate_status(candidate["trigger_time"])
+                in_session, session_reason = _session_gate_safe(candidate["trigger_time"], state)
                 log_event({"event":"SESSION_GATE","symbol":symbol,"signal_id":trigger_key,"trigger_time":candidate["trigger_time"],"trigger_utc":_trigger_utc_iso(candidate["trigger_time"]),"allowed":in_session,"reason":session_reason,"session_start_london":SESSION_START_LONDON or None,"session_end_new_york":SESSION_END_NEW_YORK or None,"canonical":False})
                 if not in_session:
                     seen_trigger[symbol] = trigger_key
-                    save_state(state)
+                    _save_state_safe(state)
                     continue
 
                 volume_ok, volume_reason = volume_guard(cfg)
                 if not volume_ok:
                     log_event({"event":"EXECUTION_BLOCKED_VOLUME","symbol":symbol,"signal_id":trigger_key,"requested_volume":float(cfg.get("volume",VOLUME)),"volume_min":cfg.get("volume_min"),"volume_max":cfg.get("volume_max"),"volume_step":cfg.get("volume_step"),"reason":volume_reason,"canonical":False})
                     seen_trigger[symbol] = trigger_key
-                    save_state(state)
+                    _save_state_safe(state)
                     continue
 
                 log_event({"event":"CANDIDATE","symbol":symbol,"signal_id":trigger_key,"candidate":candidate,"pip_size":cfg["pip_size"],"pip_method":cfg["pip_method"],"f13_2x":{"status":"SOURCE_CONFIRMED_RELATION_ONLY","secondary_entry":candidate.get("secondary_entry_2x"),"formula":"Entry + 0.5 * (StopLoss - Entry)","execution":"NOT_EXECUTED_UNRESOLVED_LIFECYCLE"},"execution_semantics":ORDER_MODE})
@@ -1305,7 +1393,10 @@ def main() -> None:
                 if order_ok:
                     seen_trigger[symbol] = trigger_key
                     if trigger_key not in state["notified"]:
-                        telegram_result = send_signal(candidate, cfg["pip_size"], result_order or None)
+                        try:
+                            telegram_result = send_signal(candidate, cfg["pip_size"], result_order or None)
+                        except Exception as exc:
+                            telegram_result = type("SignalResult", (), {"success": False, "detail": f"TELEGRAM_EXCEPTION: {type(exc).__name__}: {exc}"})()
                         telegram_success = bool(getattr(telegram_result,"success",False))
                         log_event({"event":"TELEGRAM_SIGNAL","symbol":symbol,"signal_id":trigger_key,"success":telegram_success,"detail":getattr(telegram_result,"detail",None),"canonical":False})
                         if telegram_success:
@@ -1319,8 +1410,8 @@ def main() -> None:
                         "reason": result.get("reason") or result.get("error") or "ORDER_REJECTED",
                         "result": result, "canonical": False,
                     })
-                save_state(state)
-            maybe_send_daily_summary(state)
+                _save_state_safe(state)
+            _safe_call(lambda: maybe_send_daily_summary(state), "MAYBE_SEND_DAILY_SUMMARY", state)
             time.sleep(POLL_SECONDS)
     finally:
         release_runner_lock()
