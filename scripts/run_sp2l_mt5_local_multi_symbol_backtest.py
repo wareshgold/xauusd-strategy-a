@@ -493,7 +493,17 @@ def fetch_rates(symbol: str, start: datetime, end: datetime) -> np.ndarray:
                 f"daily opening edge {coverage['observed_first_bar_mode_utc']}"
             )
 
-    if last_dt.date() < end.date():
+    # A request ending exactly at 00:00 UTC is an exclusive-style boundary
+    # for the preceding calendar day. This is needed for parity with the
+    # recorded monthly replay artifacts, whose interval end is the next day's
+    # 00:00 while the final observed trading bar is on the preceding day.
+    end_is_exclusive_midnight = (
+        end.hour == 0 and end.minute == 0 and end.second == 0 and end.microsecond == 0
+    )
+    if last_dt.date() < end.date() and not (
+        end_is_exclusive_midnight
+        and last_dt.date() == (end - timedelta(days=1)).date()
+    ):
         raise RuntimeError(
             f"Incomplete MT5 history for {symbol}: last observed trading date "
             f"{last_dt.date().isoformat()} is before requested end date "
