@@ -132,6 +132,9 @@ def first_entry(candles, start_index, setup):
                 "direction": "BUY", "trigger_time": int(cur["time"]),
                 "theoretical_entry": entry, "sl": sl, "risk": risk,
                 "tp": entry + TP_R * risk,
+                "setup_after_time": int(setup["setup_after_time"]),
+                "before_spike_time": int(candles[start_index - 2]["time"]),
+                "spike_time": int(candles[start_index - 1]["time"]),
             }
         if float(cur["high"]) <= float(prev["high"]):
             continue
@@ -304,6 +307,9 @@ def main():
                 "trigger_utc": datetime.fromtimestamp(trigger_time(s), timezone.utc).isoformat(),
                 "direction": str(s["direction"]),
                 "entry": entry_price(s),
+                "setup_after_time": int(s.get("setup_after_time", s.get("after_spike_time", 0))),
+                "before_spike_time": int(s.get("before_spike_time", 0)),
+                "spike_time": int(s.get("spike_time", 0)),
                 "sl": float(s["sl"]),
                 "risk": float(s["risk"]),
                 "tp": float(s["tp"]),
@@ -363,6 +369,22 @@ def main():
                 "session_gated_direction_counts": session_direction_counts,
                 "non_reference_examples": [describe_key(k) for k in sorted(surfaced_non_reference)[:20]],
                 "level_mismatches": mismatches,
+                "mismatch_setup_identity": [
+                    {
+                        "key": m["key"],
+                        "reference_setup": {
+                            "before_spike_time": m["reference"].get("before_spike_time"),
+                            "spike_time": m["reference"].get("spike_time"),
+                            "after_spike_time": m["reference"].get("after_spike_time"),
+                        },
+                        "forward_setup": {
+                            "before_spike_time": m["forward_emulation"].get("before_spike_time"),
+                            "spike_time": m["forward_emulation"].get("spike_time"),
+                            "after_spike_time": m["forward_emulation"].get("setup_after_time"),
+                        },
+                    }
+                    for m in mismatches
+                ],
             },            "level_mismatches": mismatches,
             "limits": [
                 "Research-only reconciliation; no orders are placed.",
