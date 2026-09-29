@@ -48,6 +48,27 @@ os.environ.setdefault("LIVE_TRADING_ENABLE", "true")
 os.environ.setdefault("ALLOW_REAL_EXECUTION", "true")
 
 
+def _suppress_heartbeat_stdout() -> None:
+    """Keep HEARTBEAT in the ledger but remove it from the runner console.
+
+    This is display-only. The heartbeat JSON written by the base runner is
+    preserved byte-for-byte in structure; all non-heartbeat logging remains
+    untouched and continues through the original logger.
+    """
+    original_log_event = runner.log_event
+
+    def log_event(event: dict) -> None:
+        if event.get("event") != "HEARTBEAT":
+            original_log_event(event)
+            return
+
+        payload = {"ts_utc": runner.now_utc(), **event}
+        with runner.EVENTS.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, separators=(",", ":")) + "\n")
+
+    runner.log_event = log_event
+
+
 def _start_heartbeat_monitor() -> None:
     """Open a separate PowerShell window for display-only heartbeat telemetry.
 
@@ -74,5 +95,6 @@ def _start_heartbeat_monitor() -> None:
 
 
 if __name__ == "__main__":
+    _suppress_heartbeat_stdout()
     _start_heartbeat_monitor()
     runner.main()
