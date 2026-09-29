@@ -129,13 +129,8 @@ def max_dd(results):
 
 def run(rates: np.ndarray) -> dict:
     signals = []
-    used_entry_until = -1
-
     # The detector evaluates the completed three-candle setup ending at i.
     for i in range(2, len(rates)):
-        if i <= used_entry_until:
-            continue
-
         setup = detect_setup(rates[: i + 1])
         if setup is None:
             continue
@@ -165,7 +160,6 @@ def run(rates: np.ndarray) -> dict:
             "r": r,
             "exit_reason": reason,
         })
-        used_entry_until = entry_index
 
     wins = sum(x["result"] == "WIN" for x in signals)
     losses = sum(x["result"] == "LOSS" for x in signals)
