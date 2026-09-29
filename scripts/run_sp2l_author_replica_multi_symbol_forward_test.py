@@ -22,6 +22,7 @@ from pathlib import Path
 import MetaTrader5 as mt5
 
 import live_mt5_gateway as gateway
+import sp2l_v2_forward_ledger as v2_ledger
 
 # Symbol selection is configuration only (research/forward-test scope):
 # override with SP2L_SYMBOLS only when an additional symbol has been explicitly approved for research/forward testing
@@ -547,9 +548,10 @@ def load_state() -> dict:
             "order_states": {str(k) for k in raw.get("order_states", [])},
             "pending_signal_notifications": {str(k): v for k, v in raw.get("pending_signal_notifications", {}).items()},
             "signal_orders": {str(k): v for k, v in raw.get("signal_orders", {}).items()},
+            "v2_forward_ledger": raw.get("v2_forward_ledger", {}),
         }
     except Exception:
-        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}}
+        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}, "v2_forward_ledger": {}}
 
 
 def reconcile_state_from_events(state: dict) -> None:
@@ -641,6 +643,7 @@ def save_state(state: dict) -> None:
         "order_states": sorted(state["order_states"])[-2000:],
         "pending_signal_notifications": state.get("pending_signal_notifications", {}),
         "signal_orders": state.get("signal_orders", {}),
+        "v2_forward_ledger": state.get("v2_forward_ledger", {}),
     }, indent=2), encoding="utf-8")
 
 
@@ -888,6 +891,7 @@ def _cancel_pending_order(order, state: dict) -> None:
             result = {"ok": False, "reason": f"CANCEL_EXCEPTION: {type(exc).__name__}: {exc}"}
 
     outcome = "CANCELLED" if result.get("ok") else f"CANCEL_FAILED({result.get('reason') or result.get('retcode')})"
+    v2_ledger.record_expired_order(state, ticket)
     log_event({
         "event": "PENDING_ORDER_EXPIRED",
         "symbol": symbol, "order": ticket,
@@ -1010,6 +1014,7 @@ def monitor_pending_order_lifecycle(cfg: dict, state: dict) -> None:
             continue
         state["orders"].add(ticket)
         state["order_states"].add(marker)
+        v2_ledger.record_order_lifecycle(state, ticket, state_name, int(getattr(order, "position_id", 0) or 0) or None)
         log_event({
             "event": "PENDING_ORDER_LIFECYCLE",
             "symbol": symbol,
@@ -1120,6 +1125,7 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             if actual_risk > 0:
                 signed_move_actual = exit_price - float(entry_price) if side == "BUY" else float(entry_price) - exit_price
                 actual_r = signed_move_actual / actual_risk
+        v2_ledger.record_deal(state, execution_meta, {"deal": ticket, "order": order, "position": position, "entry": int(getattr(deal, "entry", -1)), "entry_price": entry_price, "entry_slippage": entry_slippage, "exit_price": exit_price, "actual_r": actual_r, "net": net, "reason": int(getattr(deal, "reason", -1))})
         log_event({
             "event": "TELEGRAM_DEAL_LIFECYCLE", "symbol": symbol,
             "deal": ticket, "order": order, "position": position,
@@ -1359,14 +1365,17 @@ def main() -> None:
                 candidate["volume"] = float(cfg.get("volume", VOLUME))
 
                 in_session, session_reason = _session_gate_safe(candidate["trigger_time"], state)
+                v2_ledger.record_detected(state, candidate)
                 log_event({"event":"SESSION_GATE","symbol":symbol,"signal_id":trigger_key,"trigger_time":candidate["trigger_time"],"trigger_utc":_trigger_utc_iso(candidate["trigger_time"]),"allowed":in_session,"reason":session_reason,"session_start_london":SESSION_START_LONDON or None,"session_end_new_york":SESSION_END_NEW_YORK or None,"canonical":False})
                 if not in_session:
+                    v2_ledger.record_blocked(state, candidate, session_reason, "SESSION_GATE")
                     seen_trigger[symbol] = trigger_key
                     _save_state_safe(state)
                     continue
 
                 volume_ok, volume_reason = volume_guard(cfg)
                 if not volume_ok:
+                    v2_ledger.record_blocked(state, candidate, volume_reason, "VOLUME_GUARD")
                     log_event({"event":"EXECUTION_BLOCKED_VOLUME","symbol":symbol,"signal_id":trigger_key,"requested_volume":float(cfg.get("volume",VOLUME)),"volume_min":cfg.get("volume_min"),"volume_max":cfg.get("volume_max"),"volume_step":cfg.get("volume_step"),"reason":volume_reason,"canonical":False})
                     seen_trigger[symbol] = trigger_key
                     _save_state_safe(state)
@@ -1389,6 +1398,7 @@ def main() -> None:
                         "tp": float(candidate["tp"]), "risk": float(candidate["risk"]), "trigger_time": int(candidate["trigger_time"]),
                     }
                 order_ok = bool(result.get("ok"))
+                v2_ledger.record_order_result(state, candidate, result)
                 log_event({"event":"ORDER_RESULT","symbol":symbol,"signal_id":trigger_key,"result":result,"tracked_order":result_order or None,"tracked_deal":result_deal or None,"demo_only":True,"success":order_ok})
                 if order_ok:
                     seen_trigger[symbol] = trigger_key
@@ -1404,6 +1414,7 @@ def main() -> None:
                         else:
                             state.setdefault("pending_signal_notifications", {})[trigger_key] = dict(candidate)
                 else:
+                    v2_ledger.record_blocked(state, candidate, result.get("reason") or result.get("error") or "ORDER_REJECTED", "EXECUTION")
                     seen_trigger[symbol] = trigger_key
                     log_event({
                         "event": "EXECUTION_BLOCKED", "symbol": symbol, "signal_id": trigger_key,
