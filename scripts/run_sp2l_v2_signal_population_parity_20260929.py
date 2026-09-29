@@ -295,6 +295,30 @@ def main():
             else:
                 surfaced_allowed.append(k)
 
+        def describe_key(k):
+            s = ref_by_key.get(tuple(k)) or surfaced_by_key.get(tuple(k))
+            if s is None:
+                return {"trigger_time": int(k[0]), "direction": str(k[1])}
+            return {
+                "trigger_time": trigger_time(s),
+                "trigger_utc": datetime.fromtimestamp(trigger_time(s), timezone.utc).isoformat(),
+                "direction": str(s["direction"]),
+                "entry": entry_price(s),
+                "sl": float(s["sl"]),
+                "risk": float(s["risk"]),
+                "tp": float(s["tp"]),
+            }
+
+        session_gated_records = [
+            surfaced_by_key[k] for k in surfaced_reference
+            if not surfaced_by_key[k]["session_allowed"]
+        ]
+        session_hour_counts = {}
+        session_direction_counts = {"BUY": 0, "SELL": 0}
+        for s in session_gated_records:
+            dt = datetime.fromtimestamp(trigger_time(s), timezone.utc)
+            session_hour_counts[str(dt.hour)] = session_hour_counts.get(str(dt.hour), 0) + 1
+            session_direction_counts[str(s["direction"])] += 1
         report = {
             "status": "COMPLETE",
             "mode": "RESEARCH_ONLY_SP2L_V2_SIGNAL_POPULATION_PARITY",
@@ -329,7 +353,17 @@ def main():
                 "surfaced_but_session_gated": [list(k) for k in surfaced_gated],
                 "surfaced_and_session_allowed": [list(k) for k in surfaced_allowed],
             },
-            "level_mismatches": mismatches,
+            "forensic_detail": {
+                "not_visible_count": len(not_visible),
+                "not_visible_examples": [describe_key(k) for k in not_visible[:20]],
+                "session_gated_count": len(session_gated_records),
+                "session_gated_examples_first_20": [describe_key(key(s)) for s in sorted(session_gated_records, key=lambda x: (trigger_time(x), x["direction"]))[:20]],
+                "session_gated_examples_last_20": [describe_key(key(s)) for s in sorted(session_gated_records, key=lambda x: (trigger_time(x), x["direction"]))[-20:]],
+                "session_gated_utc_hour_counts": session_hour_counts,
+                "session_gated_direction_counts": session_direction_counts,
+                "non_reference_examples": [describe_key(k) for k in sorted(surfaced_non_reference)[:20]],
+                "level_mismatches": mismatches,
+            },            "level_mismatches": mismatches,
             "limits": [
                 "Research-only reconciliation; no orders are placed.",
                 "This emulates the forward runner's rolling window, not its live polling cadence.",
