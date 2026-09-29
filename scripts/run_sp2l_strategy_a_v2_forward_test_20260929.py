@@ -11,7 +11,11 @@ the underlying gateway requires a DEMO account.
 
 from __future__ import annotations
 
+import json
 import os
+import subprocess
+import sys
+from pathlib import Path
 
 # Match the recovered V2 reference backtest exactly.
 os.environ["SP2L_SYMBOLS"] = "XAUUSD"
@@ -43,5 +47,32 @@ runner.rates = rates
 os.environ.setdefault("LIVE_TRADING_ENABLE", "true")
 os.environ.setdefault("ALLOW_REAL_EXECUTION", "true")
 
+
+def _start_heartbeat_monitor() -> None:
+    """Open a separate PowerShell window for display-only heartbeat telemetry.
+
+    The monitor only tails the runner's existing event ledger. It never
+    initializes MT5, evaluates candidates, or performs any trading action.
+    """
+    root = Path(__file__).resolve().parents[1]
+    monitor = root / "scripts" / "monitor_sp2l_v2_forward_heartbeat.py"
+    events = root / "artifacts" / "forward-test" / "SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl"
+    command = (
+        f'& "{sys.executable}" "{monitor}" '
+        f'--events "{events}"'
+    )
+    subprocess.Popen(
+        [
+            "powershell.exe",
+            "-NoProfile",
+            "-NoExit",
+            "-Command",
+            command,
+        ],
+        creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0),
+    )
+
+
 if __name__ == "__main__":
+    _start_heartbeat_monitor()
     runner.main()
