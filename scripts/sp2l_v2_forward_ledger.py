@@ -5,7 +5,7 @@ canonical geometry, fill semantics, or a production trading rule.
 
 The ledger is intentionally observational in this phase:
 DETECTED -> ORDER_PLACED/ORDER_REJECTED -> FILLED -> CLOSED
-                                      \-> EXPIRED
+                                      -> EXPIRED
 
 A signal may also be marked SUPPRESSED/BLOCKED before execution.  Such records
 remain in the ledger so Backtest/Forward population differences are attributable
