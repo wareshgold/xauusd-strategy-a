@@ -1358,6 +1358,9 @@ def main() -> None:
     reconcile_state_from_events(state)
     save_state(state)
     seen_trigger = state["seen"]
+    loop_started_at = time.time()
+    last_heartbeat_at = 0.0
+    last_bar_by_symbol: dict[str, int] = {}
 
     holder_pid = acquire_runner_lock()
     if holder_pid is not None:
