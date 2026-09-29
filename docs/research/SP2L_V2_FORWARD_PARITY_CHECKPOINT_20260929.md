@@ -105,3 +105,28 @@ No fresh forward performance claim should be compared directly with the 61.6519%
 are all explicitly reconciled.
 
 The next engineering step is therefore a deterministic V2 forward-parity harness/check, not parameter tuning and not a new trading run.
+
+## Signal-population parity — next gate
+
+Commit `f03a38f85dd0a15665171c74c51eba54bb154ed3` adds:
+
+- `scripts/run_sp2l_v2_signal_population_parity_20260929.py`
+- research-only replay of the recovered V2 signal ledger
+- deterministic emulation of the forward runner's rolling `copy_rates_from_pos(..., 10)` view
+- latest-candidate selection and first-unseen trigger behavior
+- London 08:00 through New York 17:00 session-gate attribution
+- non-overlapping buckets for:
+  - reference signals not visible in the 10-bar window
+  - visible but suppressed by latest-candidate selection
+  - surfaced but rejected by the session gate
+  - surfaced and session-allowed
+- exact level comparison for common trigger keys
+
+This harness deliberately uses `copy_rates_range` for historical acquisition so the comparison isolates the forward-window population semantics rather than introducing a second history API difference.
+
+### Required local run
+
+After pulling the branch, run the harness against the recovered reference artifact and the same MT5 terminal. Do not change V2 geometry or start/alter production execution as part of this step.
+
+The resulting JSON is the population-parity evidence needed before comparing forward performance with the 61.6519% V2 reference result.
+
