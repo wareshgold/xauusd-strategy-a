@@ -14,7 +14,7 @@ from __future__ import annotations
 import os
 
 # Match the recovered V2 reference backtest exactly.
-os.environ["SP2L_SYMBOLS"] = os.getenv("SP2L_SYMBOLS", "XAUUSD")
+os.environ["SP2L_SYMBOLS"] = "XAUUSD"
 os.environ["SP2L_P_GAP_PRICE"] = "1.0"
 os.environ["SP2L_SPIKE_MULTIPLIER"] = "1.5"
 os.environ["SP2L_MAX_SL_DISTANCE"] = "10.0"
