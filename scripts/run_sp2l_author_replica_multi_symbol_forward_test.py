@@ -52,6 +52,7 @@ MAX_SL_DISTANCE = float(os.getenv("SP2L_MAX_SL_DISTANCE", "10.0"))
 TP_R = float(os.getenv("SP2L_TP_R", "1.0"))
 VOLUME = float(os.getenv("SP2L_VOLUME", "0.01"))
 POLL_SECONDS = float(os.getenv("SP2L_POLL_SECONDS", "2"))
+HEARTBEAT_SECONDS = float(os.getenv("SP2L_HEARTBEAT_SECONDS", "60"))
 ORDER_MODE = os.getenv("MT5_FORWARD_ORDER_MODE", "PENDING_LIMIT_RESEARCH")
 # The gateway re-reads this variable at execution time (its own default is
 # MARKET). Publish the runner's declared mode, otherwise orders silently
@@ -358,6 +359,58 @@ def maybe_send_daily_summary(state: dict) -> None:
     if getattr(result, "success", False):
         state[key] = today
     _save_state_safe(state)
+
+
+def emit_heartbeat(state: dict, configs: list[dict], loop_started_at: float, last_bar_by_symbol: dict[str, int]) -> None:
+    """Emit periodic research-only liveness telemetry for an idle forward runner.
+
+    Observability only: this function never changes candidate detection, order
+    execution, geometry, population, or canonical status.
+    """
+    terminal = None
+    try:
+        terminal = mt5.terminal_info()
+    except Exception:
+        terminal = None
+
+    symbols = {}
+    for cfg in configs:
+        symbol = str(cfg.get("symbol") or "")
+        last_bar = last_bar_by_symbol.get(symbol)
+        symbols[symbol] = {
+            "last_bar_time": int(last_bar) if last_bar else None,
+            "last_bar_utc": datetime.fromtimestamp(int(last_bar), timezone.utc).isoformat() if last_bar else None,
+        }
+
+    active_orders = 0
+    active_positions = 0
+    for cfg in configs:
+        symbol = str(cfg.get("symbol") or "")
+        try:
+            active_orders += len(mt5.orders_get(symbol=symbol) or [])
+        except Exception:
+            pass
+        try:
+            active_positions += len(mt5.positions_get(symbol=symbol) or [])
+        except Exception:
+            pass
+
+    ledger_summary = v2_ledger.summarize(state)
+    log_event({
+        "event": "HEARTBEAT",
+        "canonical": False,
+        "pid": os.getpid(),
+        "uptime_seconds": round(max(0.0, time.time() - loop_started_at), 1),
+        "mt5_connected": bool(getattr(terminal, "connected", False)) if terminal is not None else False,
+        "trade_allowed": bool(getattr(terminal, "trade_allowed", False)) if terminal is not None else False,
+        "account_trade_mode": int(getattr(terminal, "trade_mode", -1)) if terminal is not None else None,
+        "symbols": symbols,
+        "active_orders": active_orders,
+        "active_positions": active_positions,
+        "ledger": ledger_summary,
+        "state_seen": len(state.get("seen", {})),
+        "state_notified": len(state.get("notified", set())),
+    })
 
 
 def log_event(event: dict) -> None:
@@ -1357,6 +1410,10 @@ def main() -> None:
                 data = rates(symbol)
                 if data is None:
                     continue
+                try:
+                    last_bar_by_symbol[symbol] = int(data[-1]["time"])
+                except Exception:
+                    pass
                 candidate = find_latest_candidate(data, symbol)
                 trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}" if candidate else None
                 if candidate is None or seen_trigger.get(symbol) == trigger_key:
@@ -1422,6 +1479,9 @@ def main() -> None:
                     })
                 _save_state_safe(state)
             _safe_call(lambda: maybe_send_daily_summary(state), "MAYBE_SEND_DAILY_SUMMARY", state)
+            if HEARTBEAT_SECONDS > 0 and time.time() - last_heartbeat_at >= HEARTBEAT_SECONDS:
+                _safe_call(lambda: emit_heartbeat(state, configs, loop_started_at, last_bar_by_symbol), "HEARTBEAT", state)
+                last_heartbeat_at = time.time()
             time.sleep(POLL_SECONDS)
     finally:
         release_runner_lock()
