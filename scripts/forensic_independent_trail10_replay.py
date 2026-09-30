@@ -272,16 +272,27 @@ def fetch_bars(symbol: str, mt5_path: str, start: int, end: int) -> list[Bar]:
 
         # Use UTC-naive datetimes. This matches the known-working MT5 Python
         # integration in this repo while preserving UTC epoch semantics.
-        dt_from = datetime.utcfromtimestamp(start)
-        dt_to = datetime.utcfromtimestamp(end)
-        rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M1, dt_from, dt_to)
-        if rates is None:
-            err = mt5.last_error()
-            raise RuntimeError(
-                f"copy_rates_range failed: {err}; "
-                f"symbol={symbol} start_epoch={start} end_epoch={end} "
-                f"start_utc={dt_from.isoformat()} end_utc={dt_to.isoformat()}"
-            )
+        # MT5 can reject a long range when the terminal's history cache
+        # does not cover the entire interval. Fetch in bounded UTC chunks.
+        chunk_seconds = 7 * 24 * 60 * 60
+        rows = []
+        cursor = start
+        while cursor < end:
+            chunk_end = min(cursor + chunk_seconds, end)
+            dt_from = datetime.utcfromtimestamp(cursor)
+            dt_to = datetime.utcfromtimestamp(chunk_end)
+            rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M1, dt_from, dt_to)
+            if rates is None:
+                err = mt5.last_error()
+                raise RuntimeError(
+                    f"copy_rates_range failed: {err}; "
+                    f"symbol={symbol} start_epoch={cursor} end_epoch={chunk_end} "
+                    f"start_utc={dt_from.isoformat()} end_utc={dt_to.isoformat()}"
+                )
+            rows.extend(rates)
+            cursor = chunk_end
+        rows_by_time = {int(r["time"]): r for r in rows}
+        rates = [rows_by_time[t] for t in sorted(rows_by_time)]
         bars = [
             Bar(
                 time=int(r["time"]),
