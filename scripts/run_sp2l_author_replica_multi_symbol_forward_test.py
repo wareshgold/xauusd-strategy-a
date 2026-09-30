@@ -1112,6 +1112,11 @@ def _remember_position_links(state: dict, deal) -> None:
         state["orders"].add(order)
 
 
+def _deal_notification_is_terminal(state: dict, ticket: int) -> bool:
+    """Return True once a lifecycle Telegram attempt has been made for a deal."""
+    return ticket in state.get("deals", set()) or str(ticket) in state.get("deal_notifications", {})
+
+
 def _deal_is_authorized(state: dict, deal) -> bool:
     """Return True only for an execution linked to a runner-created order.
 
@@ -1145,7 +1150,7 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
     deals = mt5.history_deals_get(start, datetime.now(timezone.utc), group=symbol) or []
     for deal in sorted(deals, key=lambda x: (int(x.time), int(x.ticket))):
         ticket = int(deal.ticket)
-        if ticket in state["deals"]:
+        if _deal_notification_is_terminal(state, ticket):
             continue
         deal_notifications = state.setdefault("deal_notifications", {})
         if str(ticket) in deal_notifications:
