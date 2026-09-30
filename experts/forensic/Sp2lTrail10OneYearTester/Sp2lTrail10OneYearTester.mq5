@@ -6,15 +6,24 @@
 #property strict
 #property version "1.0"
 
-#define START_UTC 1758758400   // 2025-09-25 00:00 UTC
-#define END_UTC   1790294400   // 2026-09-25 00:00 UTC
+input group "SP2L Trail-10 One-Year Fixed Contract"
+input datetime InpStartUTC = D'2025.09.25 00:00:00'; // fixed research start (UTC)
+input datetime InpEndUTC   = D'2026.09.25 00:00:00'; // fixed research end (UTC)
+input double InpPGAP       = 1.0;
+input double InpSpikeMult  = 1.5;
+input double InpMaxSL      = 10.0;
+input double InpRR         = 1.0;
+input double InpTrailPips  = 10.0; // 1 pip = 0.10 XAU price
+input double InpVolumeLots = 0.01;
 
-const double PGAP=1.0;
-const double SPIKE_MULT=1.5;
-const double MAX_SL=10.0;
-const double RR=1.0;
-const double TRAIL_PIPS=10.0;  // 1 pip = 0.10 XAU price
-const double VOLUME_LOTS=0.01;
+datetime START_UTC;
+datetime END_UTC;
+double PGAP;
+double SPIKE_MULT;
+double MAX_SL;
+double RR;
+double TRAIL_PIPS;
+double VOLUME_LOTS;
 
 struct Signal {
    int setup_index;
@@ -133,6 +142,15 @@ void ExportHistoryCsv() {
 }
 
 int OnInit() {
+   START_UTC=InpStartUTC;
+   END_UTC=InpEndUTC;
+   PGAP=InpPGAP;
+   SPIKE_MULT=InpSpikeMult;
+   MAX_SL=InpMaxSL;
+   RR=InpRR;
+   TRAIL_PIPS=InpTrailPips;
+   VOLUME_LOTS=InpVolumeLots;
+
    ArraySetAsSeries(g_rates,false);
    ResetLastError();
    datetime start=(datetime)START_UTC, end=(datetime)END_UTC;
