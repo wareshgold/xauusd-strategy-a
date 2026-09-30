@@ -57,6 +57,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--reconciliation", required=True)
     ap.add_argument("--output", required=True)
+    ap.add_argument("--volume", type=float, default=0.01, help="Lot volume used for USD reporting when reconciliation contains accounting data.")
     args = ap.parse_args()
 
     doc = load(args.reconciliation)
@@ -89,6 +90,9 @@ def main():
             "wilson95_low_pct": lo,
             "wilson95_high_pct": hi,
             "net_R": s["net_R"],
+            "net_usd": s.get("net_usd"),
+            "gross_profit_usd": s.get("gross_profit_usd"),
+            "gross_loss_usd": s.get("gross_loss_usd"),
             "profit_factor": s["profit_factor"],
             "max_drawdown_R": s["max_drawdown_R"],
             "max_losing_streak": s["max_losing_streak"],
@@ -168,6 +172,7 @@ def main():
         "current_forward_baseline": {
             "win_rate_decisive_pct": baseline["win_rate_decisive_pct"],
             "net_R": baseline["net_R"],
+            "net_usd": baseline.get("net_usd"),
             "signals": baseline["signals"],
             "decisive": baseline["decisive"],
         },
@@ -179,6 +184,7 @@ def main():
                 "WR_pct": v["win_rate_decisive_pct"],
                 "WR95": [v["wilson95_low_pct"], v["wilson95_high_pct"]],
                 "net_R": v["net_R"],
+                "net_usd": v.get("net_usd"),
                 "PF": v["profit_factor"],
                 "DD_R": v["max_drawdown_R"],
                 "max_loss_streak": v["max_losing_streak"],
