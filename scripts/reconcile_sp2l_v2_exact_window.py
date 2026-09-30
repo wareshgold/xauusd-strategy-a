@@ -212,11 +212,30 @@ def main():
         (backtest_signal_counts - runtime_signal_counts).values()
     )
 
-    # Level 3: among signal matches, expose SL agreement/mismatch and outcomes.
-    # Keep all rows for this diagnostic; do not require SL equality.
+    # Split the backtest artifact into signal/ledger rows and completed trade rows.
+    # In the current V2 artifact, signal-ledger rows do not carry completion/outcome,
+    # while trades_detail rows do. This prevents signal rows from being mistaken for trades.
+    backtest_trade_rows = [row for row in backtest_rows if row["completed"] is True]
+    backtest_signal_rows = [row for row in backtest_rows if row["completed"] is None]
+
+    # Level 3: compare runtime trades against completed backtest trades only.
     runtime_by_signal = {signal_key(row): row for row in runtime_rows}
-    backtest_by_signal = {signal_key(row): row for row in backtest_rows}
-    matched_signal_keys = sorted(set(runtime_by_signal) & set(backtest_by_signal))
+    backtest_trade_by_signal = {signal_key(row): row for row in backtest_trade_rows}
+    matched_trade_signal_keys = sorted(
+        set(runtime_by_signal) & set(backtest_trade_by_signal)
+    )
+    sl_match_count = 0
+    outcome_match_count = 0
+    outcome_comparable_count = 0
+    runtime_outcome_counts = Counter()
+    backtest_outcome_counts = Counter()
+    outcome_cross_tab = Counter()
+    sl_mismatch_examples = []
+    outcome_mismatch_examples = []
+
+    for match_key in matched_trade_signal_keys:
+        runtime_row = runtime_by_signal[match_key]
+        backtest_row = backtest_trade_by_signal[match_key]
     sl_match_count = 0
     outcome_match_count = 0
     outcome_comparable_count = 0
@@ -283,6 +302,18 @@ def main():
         for row in backtest_rows
     )
 
+    signal_ledger_counts = Counter(signal_key(row) for row in backtest_signal_rows)
+    runtime_signal_counts_for_ledger = Counter(signal_key(row) for row in runtime_rows)
+    ledger_common = sum(
+        (runtime_signal_counts_for_ledger & signal_ledger_counts).values()
+    )
+    ledger_runtime_only = sum(
+        (runtime_signal_counts_for_ledger - signal_ledger_counts).values()
+    )
+    ledger_backtest_only = sum(
+        (signal_ledger_counts - runtime_signal_counts_for_ledger).values()
+    )
+
     runtime_exact_only = [
         row for row in runtime_rows
         if runtime_exact_counts[exact_key(row)] > backtest_exact_counts[exact_key(row)]
@@ -316,10 +347,11 @@ def main():
                 "backtest_only": backtest_signal_only_count,
                 "coverage_match_pct": 100.0 * signal_common / max(len(runtime_rows), len(backtest_rows)),
             },
-            "level_3_matched_signal_diagnostics": {
-                "matched_signal_keys": len(matched_signal_keys),
+            "level_3_runtime_vs_completed_backtest_trade": {
+                "backtest_trade_rows": len(backtest_trade_rows),
+                "matched_trade_signal_keys": len(matched_trade_signal_keys),
                 "sl_match": sl_match_count,
-                "sl_mismatch": len(matched_signal_keys) - sl_match_count,
+                "sl_mismatch": len(matched_trade_signal_keys) - sl_match_count,
                 "outcome_comparable": outcome_comparable_count,
                 "outcome_match": outcome_match_count,
                 "outcome_mismatch": outcome_comparable_count - outcome_match_count,
@@ -330,8 +362,18 @@ def main():
                     for (runtime, backtest), count in outcome_cross_tab.items()
                 },
                 "backtest_completion_status": dict(backtest_completed_counts),
+                "signal_ledger_rows": len(backtest_signal_rows),
                 "sl_mismatch_examples": sl_mismatch_examples,
                 "outcome_mismatch_examples": outcome_mismatch_examples,
+            },
+            "signal_ledger_reconciliation": {
+                "definition": "runtime signal identity vs backtest non-completed signal/ledger rows",
+                "runtime_signals": len(runtime_rows),
+                "backtest_signal_ledger_rows": len(backtest_signal_rows),
+                "common": ledger_common,
+                "runtime_only": ledger_runtime_only,
+                "backtest_only": ledger_backtest_only,
+                "coverage_match_pct": 100.0 * ledger_common / max(len(runtime_rows), len(backtest_signal_rows)),
             },
         },
         "matching_key": "entry_time_utc + direction + entry + sl",
@@ -344,7 +386,8 @@ def main():
         "notes": [
             "Diagnostic only; does not alter geometry or execution semantics.",
             "Level 1 is strict identity including SL; Level 2 isolates signal identity by ignoring SL.",
-            "Level 3 is descriptive only: it reports SL agreement and outcome agreement for Level-2 matches.",
+            "Level 3 compares runtime rows only against completed backtest trade rows; signal-ledger rows are excluded from outcome comparison.",
+            "Signal-ledger reconciliation is reported separately from completed-trade reconciliation.",
             "A JSON summary without trade-level records cannot support trade-level reconciliation.",
         ],
     }
