@@ -204,6 +204,10 @@ def summarize(rows: list[dict]) -> dict:
         "max_drawdown_R": dd,
         "max_losing_streak": max_streak,
         "trailing_activated_count": sum(r["trailing_activated"] for r in rows),
+        "net_usd": sum(float(r["pnl_usd"]) for r in rows if r["pnl_usd"] is not None),
+        "gross_profit_usd": sum(float(r["pnl_usd"]) for r in rows if r["pnl_usd"] is not None and float(r["pnl_usd"]) > 0),
+        "gross_loss_usd": -sum(float(r["pnl_usd"]) for r in rows if r["pnl_usd"] is not None and float(r["pnl_usd"]) < 0),
+        "average_initial_risk_usd": sum(float(r["risk_usd"]) for r in rows) / len(rows) if rows else None,
     }
 
 
@@ -215,6 +219,7 @@ def main() -> int:
     ap.add_argument("--trail-pips", nargs="+", type=float, default=DEFAULT_TRAIL_PIPS)
     ap.add_argument("--mt5-path", default=None)
     ap.add_argument("--output", default=None)
+    ap.add_argument("--volume", type=float, default=0.01, help="Lot volume used only for USD P&L reporting.")
     args = ap.parse_args()
 
     start = parse_ts(args.start)
@@ -229,6 +234,10 @@ def main() -> int:
 
     try:
         symbol = resolve_xauusd()
+        symbol_info = mt5.symbol_info(symbol)
+        if symbol_info is None:
+            raise RuntimeError(f"symbol_info failed: {symbol}: {mt5.last_error()}")
+        contract_size = float(symbol_info.trade_contract_size)
         rates = fetch_rates(symbol, start, end)
         population = build_population(rates)
         variants = []
@@ -243,6 +252,8 @@ def main() -> int:
                         "rr": rr,
                         "trail_pips": trail_pips,
                         **outcome,
+                        "risk_usd": float(signal["risk"]) * contract_size * args.volume,
+                        "pnl_usd": (float(outcome["r"]) * float(signal["risk"]) * contract_size * args.volume) if outcome["r"] is not None else None,
                         "exit_time": (
                             int(rates[outcome["exit_index"]]["time"])
                             if outcome["exit_index"] is not None else None
@@ -270,6 +281,11 @@ def main() -> int:
             },
             "period": {"start_utc": start.isoformat(), "end_utc": end.isoformat()},
             "resolved_symbol": symbol,
+            "accounting": {
+                "volume_lots": args.volume,
+                "contract_size": contract_size,
+                "usd_pnl_formula": "R * abs(entry-initial_sl) * contract_size * volume",
+            },
             "bars": int(len(rates)),
             "population_signals": len(population),
             "matrix": {
