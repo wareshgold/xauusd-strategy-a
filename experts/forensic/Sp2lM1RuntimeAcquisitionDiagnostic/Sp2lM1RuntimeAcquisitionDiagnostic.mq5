@@ -4,23 +4,20 @@
 //| No Strategy A geometry, signals, trades, or performance logic.   |
 //+------------------------------------------------------------------+
 #property strict
-#property version "1.0"
+#property version "2.0"
 
 input group "Runtime M1 Acquisition Diagnostic"
 input datetime InpStartUTC = D'2025.09.25 00:00:00';
 input datetime InpEndUTC   = D'2026.09.25 00:00:00';
-input int InpProbeEverySeconds = 60;
+input datetime InpProbeUTC1 = D'2026.01.02 00:05:00';
+input datetime InpProbeUTC2 = D'2026.06.20 00:05:00';
+input datetime InpProbeUTC3 = D'2026.09.24 23:55:00';
 
-datetime g_last_probe=0;
-bool g_done=false;
-
-string Ts(datetime t) { return TimeToString(t,TIME_DATE|TIME_MINUTES|TIME_SECONDS); }
-
-void ProbeAt(datetime sim_time,string label) {
+bool ProbeAt(datetime requested_start,datetime requested_end,string label) {
    MqlRates rates[];
    ArraySetAsSeries(rates,false);
    ResetLastError();
-   int copied=CopyRates(_Symbol,PERIOD_M1,InpStartUTC,InpEndUTC,rates);
+   int copied=CopyRates(_Symbol,PERIOD_M1,requested_start,requested_end,rates);
    int err=GetLastError();
 
    datetime first=0,last=0;
@@ -29,59 +26,35 @@ void ProbeAt(datetime sim_time,string label) {
       last=rates[copied-1].time;
    }
 
-   bool start_ok=(copied>0 && first<=InpStartUTC);
-   bool end_ok=(copied>0 && last>=InpEndUTC-60);
-   Print("RUNTIME_PROBE label=",label,
-         " sim_time=",Ts(sim_time),
-         " requested_start=",Ts(InpStartUTC),
-         " requested_end=",Ts(InpEndUTC),
+   bool start_ok=(copied>0 && first<=requested_start);
+   bool end_ok=(copied>0 && last>=requested_end-60);
+
+   Print("BOUNDED_PROBE label=",label,
+         " requested_start=",TimeToString(requested_start,TIME_DATE|TIME_MINUTES|TIME_SECONDS),
+         " requested_end=",TimeToString(requested_end,TIME_DATE|TIME_MINUTES|TIME_SECONDS),
          " copied=",copied,
          " copy_error=",err,
-         " first_utc=",copied>0 ? Ts(first) : "",
-         " last_utc=",copied>0 ? Ts(last) : "",
+         " first_utc=",copied>0 ? TimeToString(first,TIME_DATE|TIME_MINUTES|TIME_SECONDS) : "",
+         " last_utc=",copied>0 ? TimeToString(last,TIME_DATE|TIME_MINUTES|TIME_SECONDS) : "",
          " start_covered=",start_ok ? "true":"false",
          " end_covered=",end_ok ? "true":"false");
+
+   return (copied>0);
 }
 
 int OnInit() {
-   EventSetTimer(InpProbeEverySeconds>0 ? InpProbeEverySeconds : 60);
-   Print("RUNTIME_ACQUISITION_DIAGNOSTIC_START symbol=",_Symbol,
-         " period=M1 start_utc=",Ts(InpStartUTC),
-         " end_utc=",Ts(InpEndUTC));
-   ProbeAt(TimeCurrent(),"INIT");
+   Print("BOUNDED_RUNTIME_ACQUISITION_START symbol=",_Symbol,
+         " tester_time=",TimeToString(TimeCurrent(),TIME_DATE|TIME_MINUTES|TIME_SECONDS));
+
+   // These probes deliberately use small, local windows around dates that
+   // distinguish the known Dec-2025 M1 boundary from 2026 availability.
+   ProbeAt(D'2025.12.31 23:55:00',D'2026.01.01 00:05:00',"BOUNDARY_DEC_JAN");
+   ProbeAt(D'2026.01.02 00:00:00',D'2026.01.02 00:10:00',"JAN_2026");
+   ProbeAt(D'2026.06.20 00:00:00',D'2026.06.20 00:10:00',"JUN_2026");
+   ProbeAt(D'2026.09.24 23:50:00',D'2026.09.25 00:00:00',"SEP_2026");
+
+   Print("BOUNDED_RUNTIME_ACQUISITION_END canonical=false strategy_logic=false");
    return INIT_SUCCEEDED;
 }
 
-void OnTick() {
-   datetime now=TimeCurrent();
-   if(g_done) return;
-
-   // Probe on each new simulated minute so we observe acquisition as the
-   // Tester advances through the requested historical interval.
-   static datetime last_bar=0;
-   MqlRates bar[];
-   ArraySetAsSeries(bar,true);
-   if(CopyRates(_Symbol,PERIOD_M1,0,1,bar)==1) {
-      if(bar[0].time!=last_bar) {
-         last_bar=bar[0].time;
-         if(now>=InpStartUTC && now<=InpEndUTC)
-            ProbeAt(now,"NEW_M1_BAR");
-      }
-   }
-
-   if(now>=InpEndUTC) {
-      ProbeAt(now,"END_REACHED");
-      g_done=true;
-   }
-}
-
-void OnTimer() {
-   datetime now=TimeCurrent();
-   if(!g_done && now>=InpStartUTC && now<=InpEndUTC)
-      ProbeAt(now,"TIMER");
-}
-
-void OnDeinit(const int reason) {
-   EventKillTimer();
-   Print("RUNTIME_ACQUISITION_DIAGNOSTIC_END canonical=false strategy_logic=false");
-}
+void OnTick() {}
