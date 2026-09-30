@@ -5,8 +5,11 @@
 #property strict
 #property version   "1.0"
 
-input datetime InpStartUTC = D'2026.06.28 00:00';
-input datetime InpEndUTC   = D'2026.09.25 00:00';
+// Unix epoch seconds. Using epoch values avoids broker/local timezone parsing.
+// 2026-06-28 00:00:00 UTC = 1782604800
+// 2026-09-25 00:00:00 UTC = 1790294400
+input long     InpStartUnixUTC = 1782604800;
+input long     InpEndUnixUTC   = 1790294400;
 input double   InpPGAP      = 1.0;
 input double   InpSpikeMult = 1.5;
 input double   InpMaxSL     = 10.0;
@@ -215,7 +218,9 @@ int OnInit()
 {
    ArraySetAsSeries(g_rates,false);
 
-   int copied=CopyRates(_Symbol,PERIOD_M1,InpStartUTC,InpEndUTC,g_rates);
+   datetime start_utc=(datetime)InpStartUnixUTC;
+   datetime end_utc=(datetime)InpEndUnixUTC;
+   int copied=CopyRates(_Symbol,PERIOD_M1,start_utc,end_utc,g_rates);
    if(copied<=0)
    {
       Print("COPY_RATES_FAILED err=",GetLastError()," symbol=",_Symbol);
@@ -329,8 +334,8 @@ int OnInit()
       "mode=NON_CANONICAL_FORENSIC\n"+
       "experiment=SP2L_V2_MT5_STRATEGY_TESTER_REPLICA\n"+
       "symbol="+_Symbol+"\n"+
-      "start_utc="+TimeToString(InpStartUTC,TIME_DATE|TIME_MINUTES)+"\n"+
-      "end_utc="+TimeToString(InpEndUTC,TIME_DATE|TIME_MINUTES)+"\n"+
+      "start_utc="+TimeToString(start_utc,TIME_DATE|TIME_MINUTES)+"\n"+
+      "end_utc="+TimeToString(end_utc,TIME_DATE|TIME_MINUTES)+"\n"+
       "bars="+IntegerToString(copied)+"\n"+
       "signals="+IntegerToString(signals)+"\n"+
       "decisive="+IntegerToString(decisive)+"\n"+
