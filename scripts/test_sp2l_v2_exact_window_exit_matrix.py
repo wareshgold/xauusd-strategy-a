@@ -28,12 +28,12 @@ def rates(rows):
     return out
 
 
-def signal(direction="BUY", entry_index=0, entry=100.0, sl=99.0):
+def signal(direction="BUY", entry_index=0, entry=100.0, sl=99.0, entry_time=None):
     return {
         "signal_index": 0,
         "setup_time": 0,
         "entry_index": entry_index,
-        "entry_time": entry_index,
+        "entry_time": entry_index if entry_time is None else entry_time,
         "entry": entry,
         "sl": sl,
         "risk": abs(entry - sl),
@@ -87,7 +87,7 @@ def test_no_tp_trailing_exits_on_next_bar():
 
 def test_no_tp_does_not_have_a_hidden_tp():
     out = simulate(
-        rates([(101.5, 99.9), (101.4, 100.6), (101.3, 100.8)]),
+        rates([(103.0, 99.9), (103.0, 102.6), (103.0, 102.4)]),
         signal(),
         exit_mode="NO_TP_TRAILING",
         trail_pips=5.0,
