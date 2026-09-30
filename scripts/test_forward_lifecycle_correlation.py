@@ -6,7 +6,7 @@ cannot be authorized by a shared magic number or stale state membership alone.
 
 from types import SimpleNamespace
 
-from run_sp2l_author_replica_multi_symbol_forward_test import _deal_is_authorized
+from run_sp2l_author_replica_multi_symbol_forward_test import _deal_is_authorized, _deal_notification_is_terminal
 
 
 def deal(*, order=0, position=0, magic=26092201):
@@ -38,6 +38,17 @@ def main() -> None:
     state["orders"] = {62240004}
     state["positions"] = {70003}
     assert not _deal_is_authorized(state, deal(order=62240004, position=70003))
+
+    # A successful or failed prior Telegram attempt is terminal for the broker deal.
+    # This prevents duplicate messages when a network timeout may have occurred
+    # after Telegram accepted the request.
+    assert _deal_notification_is_terminal(
+        {"deals": set(), "deal_notifications": {"61451085": {"status": "ATTEMPTED"}}},
+        61451085,
+    )
+    assert not _deal_notification_is_terminal(
+        {"deals": set(), "deal_notifications": {}}, 61451085
+    )
 
     print("FORWARD_LIFECYCLE_CORRELATION_TESTS: PASS")
 
