@@ -4,19 +4,15 @@ Runs the exact V2 population/exit engine over non-overlapping time windows.
 Trailing remains NON_CANONICAL_FORENSIC. This script does not select or
 promote any parameter.
 
-Default windows are the three months immediately preceding the current
-3-month reference period:
-  2026-03-28..2026-04-28
-  2026-04-28..2026-05-28
-  2026-05-28..2026-06-28
-
-The comparison set is RR=1 with trailing OFF, 10, 20, 30 and 50 pips.
+The runner now refuses to produce strategy results when MT5 history does not
+cover the requested window. This prevents a successful-but-truncated
+copy_rates_range response from being interpreted as a zero-signal window.
 """
 from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import MetaTrader5 as mt5
@@ -38,9 +34,41 @@ DEFAULT_WINDOWS = [
     ("2026-05-28T00:00:00Z", "2026-06-28T00:00:00Z"),
 ]
 DEFAULT_TRAILS = [0.0, 10.0, 20.0, 30.0, 50.0]
+HISTORY_EDGE_TOLERANCE = timedelta(days=3)
 
 
-def run_window(symbol, rates, trails, contract_size, volume):
+def history_coverage(rates, start, end):
+    if rates is None or len(rates) == 0:
+        return {
+            "sufficient": False,
+            "reason": "NO_M1_HISTORY",
+            "bars": 0,
+            "first_utc": None,
+            "last_utc": None,
+        }
+
+    times = sorted({int(row["time"]) for row in rates})
+    first = datetime.fromtimestamp(times[0], tz=timezone.utc)
+    last = datetime.fromtimestamp(times[-1], tz=timezone.utc)
+    leading = max(0.0, (first - start).total_seconds())
+    trailing = max(0.0, (end - last).total_seconds())
+    sufficient = (
+        first <= start + HISTORY_EDGE_TOLERANCE
+        and last >= end - HISTORY_EDGE_TOLERANCE
+    )
+    reason = "SUFFICIENT_EDGE_COVERAGE" if sufficient else "TRUNCATED_HISTORY"
+    return {
+        "sufficient": sufficient,
+        "reason": reason,
+        "bars": int(len(times)),
+        "first_utc": first.isoformat(),
+        "last_utc": last.isoformat(),
+        "leading_uncovered_minutes": int(leading // 60),
+        "trailing_uncovered_minutes": int(trailing // 60),
+    }
+
+
+def run_window(rates, trails, contract_size, volume):
     population = build_population(rates)
     variants = []
     for trail_pips in trails:
@@ -91,22 +119,46 @@ def main():
         contract_size = float(info.trade_contract_size)
 
         windows = []
+        insufficient = []
         for start_text, end_text in DEFAULT_WINDOWS:
             start = parse_ts(start_text)
             end = parse_ts(end_text)
             rates = fetch_rates(symbol, start, end)
-            population, variants = run_window(
-                symbol, rates, DEFAULT_TRAILS, contract_size, args.volume
-            )
-            windows.append({
-                "period": {"start_utc": start.isoformat(), "end_utc": end.isoformat()},
-                "bars": int(len(rates)),
-                "population_signals": len(population),
-                "variants": variants,
-            })
+            coverage = history_coverage(rates, start, end)
 
+            window = {
+                "period": {
+                    "start_utc": start.isoformat(),
+                    "end_utc": end.isoformat(),
+                },
+                "history_coverage": coverage,
+            }
+
+            if coverage["sufficient"]:
+                population, variants = run_window(
+                    rates, DEFAULT_TRAILS, contract_size, args.volume
+                )
+                window.update({
+                    "bars": int(len(rates)),
+                    "population_signals": len(population),
+                    "variants": variants,
+                })
+            else:
+                window.update({
+                    "bars": int(len(rates)),
+                    "population_signals": None,
+                    "variants": None,
+                })
+                insufficient.append({
+                    "period": window["period"],
+                    "reason": coverage["reason"],
+                })
+
+            windows.append(window)
+
+        status = "COMPLETE" if not insufficient else "HISTORY_INSUFFICIENT"
         result = {
-            "status": "COMPLETE",
+            "status": status,
             "mode": "NON_CANONICAL_FORENSIC",
             "experiment": "V2_XAUUSD_RR1_TRAILING_PRE_BASELINE_STABILITY_WINDOWS",
             "population_contract": {
@@ -125,10 +177,19 @@ def main():
                 "contract_size": contract_size,
                 "usd_pnl_formula": "R * abs(entry-initial_sl) * contract_size * volume",
             },
+            "history_policy": {
+                "edge_tolerance_days": 3,
+                "behavior": (
+                    "Do not calculate signals/outcomes for a window unless the "
+                    "returned M1 history reaches both requested edges within tolerance."
+                ),
+            },
             "windows": windows,
+            "insufficient_windows": insufficient,
             "interpretation_boundary": (
                 "Pre-baseline stability evidence only. No trailing variant is "
-                "selected, ranked, canonicalized, or treated as a production rule."
+                "selected, ranked, canonicalized, or treated as a production rule. "
+                "Insufficient history produces no zero-signal strategy evidence."
             ),
         }
 
@@ -138,7 +199,7 @@ def main():
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text + "\n", encoding="utf-8")
         print(text)
-        return 0
+        return 0 if not insufficient else 3
     finally:
         mt5.shutdown()
 
