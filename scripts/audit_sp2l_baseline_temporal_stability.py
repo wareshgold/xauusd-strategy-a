@@ -334,7 +334,7 @@ def main() -> int:
             f"{row['window']}: signals={row['signals']} "
             f"decisive={row['decisive']} wins={row['wins']} losses={row['losses']} "
             f"ambiguous={row['ambiguous']} "
-            f"wr={'NA' if row['win_rate_decisive_pct'] is None else f\"{row['win_rate_decisive_pct']:.6f}\"}%"
+            f"wr={row['win_rate_decisive_pct']:.6f}%" if row['win_rate_decisive_pct'] is not None else "wr=NA%"
             f"net_R={row['net_R']:.6f} PF={row['profit_factor']}"
         )
     print(json.dumps(report, indent=2))
