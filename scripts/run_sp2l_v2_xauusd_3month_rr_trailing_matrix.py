@@ -175,7 +175,7 @@ def simulate(rates: np.ndarray, signal: dict, rr: float, trail_pips: float) -> d
             "reason": "OPEN_OR_UNRESOLVED", "trailing_activated": active}
 
 
-def summarize(rows: list[dict]) -> dict:
+def summarize(rows: list[dict], contract_size: float, volume: float) -> dict:
     decisive = [r for r in rows if r["result"] in {"WIN", "LOSS", "BREAKEVEN"}]
     wins = [r for r in decisive if r["result"] == "WIN"]
     losses = [r for r in decisive if r["result"] == "LOSS"]
@@ -262,7 +262,7 @@ def main() -> int:
                 variants.append({
                     "rr": rr,
                     "trail_pips": trail_pips,
-                    "summary": summarize(rows),
+                    "summary": summarize(rows, contract_size, args.volume),
                     "trades": rows,
                 })
 
