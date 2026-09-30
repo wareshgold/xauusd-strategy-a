@@ -47,7 +47,7 @@ DEFAULT_WINDOWS = (
 
 @dataclass(frozen=True)
 class Trade:
-    signal_id: int
+    signal_id: str
     setup_time: int
     entry_time: int
     result: str
@@ -117,7 +117,7 @@ def load_trades(path: str) -> list[Trade]:
         for row in reader:
             out.append(
                 Trade(
-                    signal_id=int(row["signal_id"]),
+                    signal_id=row["signal_id"].strip(),
                     setup_time=epoch(row["setup_time_utc"]),
                     entry_time=epoch(row["entry_time_utc"]),
                     result=row["result"].strip().upper(),
