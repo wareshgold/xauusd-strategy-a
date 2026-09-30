@@ -175,7 +175,7 @@ def simulate_baseline(rates: np.ndarray, signal: dict) -> dict:
     return {"result": "OPEN_OR_UNRESOLVED", "r": None, "exit_index": None, "reason": "OPEN_OR_UNRESOLVED"}
 
 
-def summarize_baseline(rows: list[dict]) -> dict:
+def summarize_baseline(rows: list[dict], contract_size: float, volume: float) -> dict:
     decisive = [r for r in rows if r["result"] in {"WIN", "LOSS"}]
     wins = sum(r["result"] == "WIN" for r in decisive)
     losses = sum(r["result"] == "LOSS" for r in decisive)
@@ -188,6 +188,9 @@ def summarize_baseline(rows: list[dict]) -> dict:
         "open_or_unresolved": sum(r["result"] == "OPEN_OR_UNRESOLVED" for r in rows),
         "win_rate_decisive_pct": 100 * wins / len(decisive) if decisive else None,
         "net_R": wins - losses,
+        "net_usd": sum(float(r["r"]) * float(r["risk"]) * contract_size * volume for r in rows if finite(r.get("r"))),
+        "gross_profit_usd": sum(float(r["r"]) * float(r["risk"]) * contract_size * volume for r in rows if finite(r.get("r")) and float(r["r"]) > 0),
+        "gross_loss_usd": -sum(float(r["r"]) * float(r["risk"]) * contract_size * volume for r in rows if finite(r.get("r")) and float(r["r"]) < 0),
     }
 
 
@@ -247,6 +250,7 @@ def main() -> int:
     ap.add_argument("--end", default="2026-09-25T00:00:00Z")
     ap.add_argument("--mt5-path", required=True)
     ap.add_argument("--output", required=True)
+    ap.add_argument("--volume", type=float, default=0.01, help="Lot volume used only for USD P&L reporting.")
     args = ap.parse_args()
 
     matrix_path = Path(args.matrix)
@@ -261,6 +265,10 @@ def main() -> int:
 
     try:
         symbol = resolve_xauusd()
+        symbol_info = mt5.symbol_info(symbol)
+        if symbol_info is None:
+            raise RuntimeError(f"symbol_info failed: {symbol}: {mt5.last_error()}")
+        contract_size = float(symbol_info.trade_contract_size)
         rates = fetch_rates(symbol, start, end)
         population = build_population(rates)
         integrity = validate_population(matrix, population)
@@ -271,7 +279,7 @@ def main() -> int:
                 **signal,
                 **simulate_baseline(rates, signal),
             })
-        baseline_summary = summarize_baseline(baseline_rows)
+        baseline_summary = summarize_baseline(baseline_rows, contract_size, args.volume)
         baseline_by_key = {identity(x): x for x in baseline_rows}
 
         reconciliations = [
@@ -292,6 +300,11 @@ def main() -> int:
             "matrix_sha256": __import__("hashlib").sha256(matrix_path.read_bytes()).hexdigest(),
             "period": {"start_utc": start.isoformat(), "end_utc": end.isoformat()},
             "resolved_symbol": symbol,
+            "accounting": {
+                "volume_lots": args.volume,
+                "contract_size": contract_size,
+                "usd_pnl_formula": "R * abs(entry-initial_sl) * contract_size * volume",
+            },
             "bars": len(rates),
             "population": {
                 "signals": len(population),
