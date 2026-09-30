@@ -39,9 +39,17 @@ def dominates(a, b):
     # on at least one. Higher WR/NetR/PF are better; lower DD/streak are better.
     keys_hi = ("win_rate_decisive_pct", "net_R", "profit_factor")
     keys_lo = ("max_drawdown_R", "max_losing_streak")
-    ge = all(a[k] >= b[k] for k in keys_hi)
+
+    def hi_value(row, key):
+        value = row[key]
+        return float("inf") if key == "profit_factor" and value is None else value
+
+    ge = all(hi_value(a, k) >= hi_value(b, k) for k in keys_hi)
     le = all(a[k] <= b[k] for k in keys_lo)
-    strict = any(a[k] > b[k] for k in keys_hi) or any(a[k] < b[k] for k in keys_lo)
+    strict = (
+        any(hi_value(a, k) > hi_value(b, k) for k in keys_hi)
+        or any(a[k] < b[k] for k in keys_lo)
+    )
     return ge and le and strict
 
 
