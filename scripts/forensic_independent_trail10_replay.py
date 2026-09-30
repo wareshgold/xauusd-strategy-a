@@ -61,6 +61,7 @@ def parse_args() -> argparse.Namespace:
                    help="Trailing distance in XAU price. MT5 InpTrailPips=10 => 1.0.")
     p.add_argument("--output-json", default="")
     p.add_argument("--output-csv", default="")
+    p.add_argument("--population-json", default="")
     p.add_argument("--tol", type=float, default=1e-8)
     return p.parse_args()
 
@@ -308,6 +309,28 @@ def fetch_bars(symbol: str, mt5_path: str, start: int, end: int) -> list[Bar]:
         mt5.shutdown()
 
 
+
+def write_population_snapshot(path: str, signals: list[Signal], bars: list[Bar]) -> None:
+    rows = []
+    for s in signals:
+        b0, b1, b2 = bars[s.setup_index - 2], bars[s.setup_index - 1], bars[s.setup_index]
+        rows.append({
+            "signal_id": f"{s.index}_{s.entry_time}_{s.direction}",
+            "setup_time": s.setup_time,
+            "entry_time": s.entry_time,
+            "direction": s.direction,
+            "setup_index": s.setup_index,
+            "entry_index": s.entry_index,
+            "entry": s.entry,
+            "sl": s.sl,
+            "risk": s.risk,
+            "before": asdict(b0),
+            "spike": asdict(b1),
+            "after": asdict(b2),
+        })
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(rows, f, indent=2)
+
 def load_csv(path: str) -> list[dict[str, str]]:
     with open(path, "r", encoding="utf-8-sig", newline="") as f:
         return list(csv.DictReader(f))
@@ -424,6 +447,9 @@ def main() -> int:
 
     signals = build_signals(bars, args.pgap, args.spike_mult, args.max_sl)
     print(f"signals={len(signals)}")
+
+    if args.population_json:
+        write_population_snapshot(args.population_json, signals, bars)
 
     replayed = [replay_signal(bars, s, args.rr, args.trail_price) for s in signals]
     csv_rows = load_csv(args.csv)
