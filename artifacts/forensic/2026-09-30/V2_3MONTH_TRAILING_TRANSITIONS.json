@@ -1,0 +1,11 @@
+{
+  "status": "COMPLETE",
+  "population_signals": 1508,
+  "identity_mismatches": 0,
+  "variants": [
+    {"trail_pips":10.0,"net_R_delta":171.3383065133,"net_USD_delta":817.14,"transitions":{"AMBIGUOUS_TO_AMBIGUOUS":1,"AMBIGUOUS_TO_WIN":2,"LOSS_TO_BREAKEVEN":2,"LOSS_TO_LOSS":17,"LOSS_TO_WIN":462,"WIN_TO_AMBIGUOUS":57,"WIN_TO_WIN":967}},
+    {"trail_pips":20.0,"net_R_delta":90.9421172925,"net_USD_delta":501.95,"transitions":{"AMBIGUOUS_TO_AMBIGUOUS":3,"LOSS_TO_BREAKEVEN":1,"LOSS_TO_LOSS":161,"LOSS_TO_WIN":319,"WIN_TO_AMBIGUOUS":31,"WIN_TO_BREAKEVEN":2,"WIN_TO_WIN":991}},
+    {"trail_pips":30.0,"net_R_delta":45.9724985023,"net_USD_delta":276.37,"transitions":{"AMBIGUOUS_TO_AMBIGUOUS":3,"LOSS_TO_LOSS":308,"LOSS_TO_WIN":173,"WIN_TO_AMBIGUOUS":8,"WIN_TO_BREAKEVEN":1,"WIN_TO_WIN":1015}},
+    {"trail_pips":50.0,"net_R_delta":9.4470662538,"net_USD_delta":75.76,"transitions":{"AMBIGUOUS_TO_AMBIGUOUS":3,"LOSS_TO_LOSS":442,"LOSS_TO_WIN":39,"WIN_TO_WIN":1024}}
+  ]
+}
