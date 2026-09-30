@@ -5,7 +5,7 @@ run_sp2l_strategy_a_v2_xauusd_mt5_backtest.py. Only exit policy varies.
 
 Matrix defaults:
   RR = 1R, 2R, 3R
-  trailing distance = 5, 10, 15, 20 pips
+  trailing distance = 0 (OFF), 10, 20, 30, 50 pips
 
 Trailing is NON_CANONICAL_FORENSIC:
 - favorable M1 extreme activates trailing after price moves by trail distance
@@ -32,7 +32,7 @@ from sp2l_strategy_a_v2_detector import detect_setup, find_first_entry
 
 PIP_SIZE = 0.10
 DEFAULT_RR = [1.0, 2.0, 3.0]
-DEFAULT_TRAIL_PIPS = [5.0, 10.0, 15.0, 20.0]
+DEFAULT_TRAIL_PIPS = [0.0, 10.0, 20.0, 30.0, 50.0]
 
 
 def sha256_file(path: Path) -> str:
@@ -117,6 +117,7 @@ def simulate(rates: np.ndarray, signal: dict, rr: float, trail_pips: float) -> d
     initial_sl = signal["sl"]
     risk = abs(entry - initial_sl)
     tp = entry + rr * risk if direction == "BUY" else entry - rr * risk
+    trailing_enabled = trail_pips > 0.0
     trail = trail_pips * PIP_SIZE
 
     current_sl = initial_sl
@@ -144,11 +145,12 @@ def simulate(rates: np.ndarray, signal: dict, rr: float, trail_pips: float) -> d
             if tp_hit:
                 return {"result": "WIN", "r": rr, "exit_index": i,
                         "reason": "TP", "trailing_activated": active}
-            best = max(best, high)
-            if not active and best >= entry + trail:
-                active = True
-            if active:
-                current_sl = max(current_sl, best - trail)
+            if trailing_enabled:
+                best = max(best, high)
+                if not active and best >= entry + trail:
+                    active = True
+                if active:
+                    current_sl = max(current_sl, best - trail)
         else:
             sl_hit = high >= current_sl
             tp_hit = low <= tp
@@ -164,11 +166,12 @@ def simulate(rates: np.ndarray, signal: dict, rr: float, trail_pips: float) -> d
             if tp_hit:
                 return {"result": "WIN", "r": rr, "exit_index": i,
                         "reason": "TP", "trailing_activated": active}
-            best = min(best, low)
-            if not active and best <= entry - trail:
-                active = True
-            if active:
-                current_sl = min(current_sl, best + trail)
+            if trailing_enabled:
+                best = min(best, low)
+                if not active and best <= entry - trail:
+                    active = True
+                if active:
+                    current_sl = min(current_sl, best + trail)
         i += 1
 
     return {"result": "OPEN_OR_UNRESOLVED", "r": None, "exit_index": None,
@@ -216,7 +219,8 @@ def main() -> int:
     ap.add_argument("--start", default="2026-06-28T00:00:00Z")
     ap.add_argument("--end", default="2026-09-25T00:00:00Z")
     ap.add_argument("--rr", nargs="+", type=float, default=DEFAULT_RR)
-    ap.add_argument("--trail-pips", nargs="+", type=float, default=DEFAULT_TRAIL_PIPS)
+    ap.add_argument("--trail-pips", nargs="+", type=float, default=DEFAULT_TRAIL_PIPS,
+                    help="Trailing distance in pips; 0 means trailing OFF.")
     ap.add_argument("--mt5-path", default=None)
     ap.add_argument("--output", default=None)
     ap.add_argument("--volume", type=float, default=0.01, help="Lot volume used only for USD P&L reporting.")
@@ -291,6 +295,7 @@ def main() -> int:
             "matrix": {
                 "rr_values": args.rr,
                 "trail_pips_values": args.trail_pips,
+                "trail_zero_semantics": "OFF",
                 "trail_price_multiplier": PIP_SIZE,
                 "trailing_policy": "favorable M1 extreme updates SL for next candle only",
                 "same_bar_policy": "AMBIGUOUS when active SL and TP both touched",
