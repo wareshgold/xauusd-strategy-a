@@ -3,7 +3,7 @@
 Independent raw-M1 replay audit for the non-canonical SP2L V2 MT5 trail experiment.
 
 This is deliberately separate from the MQL5 EA implementation. It:
-1) fetches raw M1 OHLC from MetaTrader 5,
+1) loads exact M1 OHLC exported by the MT5 Tester (preferred),
 2) reconstructs the same signal population,
 3) independently replays RR=1 with trailing,
 4) compares every trade against the MT5 tester CSV.
@@ -49,7 +49,8 @@ class Signal:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--symbol", default="XAUUSD.ecn")
-    p.add_argument("--mt5-path", required=True)
+    p.add_argument("--mt5-path", default="")
+    p.add_argument("--history-csv", default="", help="Exact M1 CSV exported by Sp2lV2Mt5Tester. Avoids MT5 Python history API.")
     p.add_argument("--csv", required=True)
     p.add_argument("--start", default="2025-09-25T00:00:00Z")
     p.add_argument("--end", default="2026-09-25T00:00:00Z")
@@ -255,6 +256,24 @@ def replay_signal(
     }
 
 
+def load_history_csv(path: str, start: int, end: int) -> list[Bar]:
+    rows: list[Bar] = []
+    with open(path, "r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        required = {"time_epoch_utc", "open", "high", "low", "close"}
+        missing = required.difference(reader.fieldnames or [])
+        if missing:
+            raise RuntimeError(f"History CSV missing columns: {sorted(missing)}")
+        for row in reader:
+            t = int(float(row["time_epoch_utc"]))
+            if start <= t <= end:
+                rows.append(Bar(t, float(row["open"]), float(row["high"]), float(row["low"]), float(row["close"])))
+    rows.sort(key=lambda b: b.time)
+    if not rows:
+        raise RuntimeError(f"History CSV contains no bars in requested interval: {path}")
+    return rows
+
+
 def fetch_bars(symbol: str, mt5_path: str, start: int, end: int) -> list[Bar]:
     try:
         import MetaTrader5 as mt5
@@ -431,8 +450,10 @@ def main() -> int:
 
     if not os.path.exists(args.csv):
         raise SystemExit(f"CSV not found: {args.csv}")
-    if not os.path.exists(args.mt5_path):
-        raise SystemExit(f"MT5 terminal not found: {args.mt5_path}")
+    if args.history_csv and not os.path.exists(args.history_csv):
+        raise SystemExit(f"History CSV not found: {args.history_csv}")
+    if not args.history_csv and not args.mt5_path:
+        raise SystemExit("Provide --history-csv from MT5 Tester, or --mt5-path for legacy API acquisition.")
 
     print("INDEPENDENT_SP2L_TRAIL_REPLAY")
     print(f"symbol={args.symbol}")
@@ -440,7 +461,14 @@ def main() -> int:
     print(f"end_utc={datetime.fromtimestamp(end, tz=timezone.utc).isoformat()}")
     print(f"trail_price={args.trail_price}")
 
-    bars = fetch_bars(args.symbol, args.mt5_path, start, end)
+    if args.history_csv:
+        print(f"history_csv={os.path.abspath(args.history_csv)}")
+        bars = load_history_csv(args.history_csv, start, end)
+        history_source = "MT5_TESTER_EXPORTED_M1"
+    else:
+        bars = fetch_bars(args.symbol, args.mt5_path, start, end)
+        history_source = "MT5_PYTHON_API"
+    print(f"history_source={history_source}")
     print(f"bars={len(bars)}")
     if not bars:
         raise SystemExit("No M1 bars returned.")
@@ -469,6 +497,8 @@ def main() -> int:
             "rr": args.rr,
             "trail_price": args.trail_price,
             "source_csv": os.path.abspath(args.csv),
+            "history_source": history_source,
+            "history_csv": os.path.abspath(args.history_csv) if args.history_csv else "",
             "same_bar_policy": "AMBIGUOUS when active SL and TP both touched",
             "intrabar_order": "NOT_INFERRED_FROM_M1_OHLC",
         }
