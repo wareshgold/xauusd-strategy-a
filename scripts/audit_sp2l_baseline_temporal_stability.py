@@ -66,7 +66,10 @@ class Window:
 def parse_utc(value: str) -> datetime:
     if value.endswith("Z"):
         value = value[:-1] + "+00:00"
-    dt = datetime.fromisoformat(value)
+    try:
+        dt = datetime.fromisoformat(value)
+    except ValueError:
+        dt = datetime.strptime(value, "%Y.%m.%d %H:%M:%S")
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
