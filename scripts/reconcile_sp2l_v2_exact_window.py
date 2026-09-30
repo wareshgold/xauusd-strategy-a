@@ -41,6 +41,20 @@ def normalize(row):
         out["entry_time_utc"] = row["timestamp"]
     if out["direction"] is not None:
         out["direction"] = str(out["direction"]).upper()
+    # The MT5 V2 backtest artifact stores completed-trade outcomes as
+    # signed R values plus exit_reason, rather than a result field.
+    if out["result"] is None and out["r"] not in ("", None):
+        try:
+            r_value = float(out["r"])
+        except (TypeError, ValueError):
+            r_value = None
+        if r_value is not None:
+            if r_value > 0:
+                out["result"] = "WIN"
+            elif r_value < 0:
+                out["result"] = "LOSS"
+            else:
+                out["result"] = "BREAKEVEN"
     return out
 
 
@@ -58,7 +72,15 @@ def flatten(obj):
 def parse_time(value):
     if value is None:
         return None
-    text = str(value).strip().replace("Z", "+00:00")
+    if isinstance(value, (int, float)):
+        return datetime.fromtimestamp(value, tz=timezone.utc)
+    text = str(value).strip()
+    try:
+        numeric = float(text)
+        return datetime.fromtimestamp(numeric, tz=timezone.utc)
+    except ValueError:
+        pass
+    text = text.replace("Z", "+00:00")
     formats = (
         lambda: datetime.fromisoformat(text),
         lambda: datetime.strptime(text, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc),
