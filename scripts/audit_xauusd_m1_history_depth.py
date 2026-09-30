@@ -2,11 +2,11 @@
 
 Research-only utility. It does not run Strategy A and does not infer any
 strategy rule. It uses copy_rates_from_pos starting at the newest M1 bar to
-measure the oldest bar the terminal currently exposes, then reports internal
-gaps and terminal max-bars metadata.
+measure the oldest bar the terminal currently exposes.
 
-This exists because copy_rates_range can return a misleading successful
-response when the requested period predates the available history.
+MT5 limits the number of bars returned by the terminal's Max bars in chart
+setting. The audit therefore caps the request to the reported terminal
+maxbars instead of treating an oversized request as a history failure.
 """
 from __future__ import annotations
 
@@ -51,7 +51,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mt5-path", required=True)
     ap.add_argument("--symbol", default="XAUUSD.ecn")
-    ap.add_argument("--count", type=int, default=1_000_000)
+    ap.add_argument(
+        "--count",
+        type=int,
+        default=100_000,
+        help="Requested M1 bars; capped to terminal maxbars.",
+    )
     ap.add_argument("--output", default=None)
     args = ap.parse_args()
 
@@ -77,7 +82,18 @@ def main():
 
         info = mt5.symbol_info(symbol)
         terminal = mt5.terminal_info()
-        rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, 0, args.count)
+        maxbars = getattr(terminal, "maxbars", None)
+        if not isinstance(maxbars, int) or maxbars <= 0:
+            print(json.dumps({
+                "status": "INVALID_TERMINAL_MAXBARS",
+                "maxbars": maxbars,
+            }, indent=2))
+            return 2
+
+        requested_count = min(args.count, maxbars)
+        rates = mt5.copy_rates_from_pos(
+            symbol, mt5.TIMEFRAME_M1, 0, requested_count
+        )
         error = mt5.last_error()
         summary = summarize(rates)
 
@@ -90,13 +106,15 @@ def main():
                 "timeframe": "M1",
                 "start_pos": 0,
                 "requested_count": args.count,
+                "effective_count": requested_count,
+                "capped_to_maxbars": args.count > maxbars,
             },
             "terminal": {
                 "name": getattr(terminal, "name", None),
                 "build": getattr(terminal, "build", None),
                 "connected": getattr(terminal, "connected", None),
                 "trade_allowed": getattr(terminal, "trade_allowed", None),
-                "maxbars": getattr(terminal, "maxbars", None),
+                "maxbars": maxbars,
             },
             "symbol_info": {
                 "point": getattr(info, "point", None),
