@@ -996,7 +996,11 @@ def enforce_pending_order_expiry(cfg: dict, state: dict) -> None:
         if not ticket:
             continue
         order_magic = int(getattr(order, "magic", 0) or 0)
-        if order_magic != magic and ticket not in state["orders"]:
+        # Lifecycle notifications are authorized only for orders created by
+        # this runner and recorded in signal_orders. A shared magic number is
+        # not sufficient evidence of ownership because other research/manual
+        # activity can use the same account and magic.
+        if ticket not in state.get("signal_orders", {}):
             continue  # never touch foreign/manual orders
         order_type = int(getattr(order, "type", -1))
         if order_type not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
@@ -1092,7 +1096,7 @@ def monitor_pending_order_lifecycle(cfg: dict, state: dict) -> None:
 
 
 def _remember_position_links(state: dict, deal) -> None:
-    """Persist the broker position id and both entry/exit order ids for correlation."""
+    """Persist links only after an execution has been authoritatively authorized."""
     position = int(getattr(deal, "position_id", 0) or 0)
     order = int(getattr(deal, "order", 0) or 0)
     if position:
@@ -1104,15 +1108,29 @@ def _remember_position_links(state: dict, deal) -> None:
         state["orders"].add(order)
 
 
+def _deal_is_authorized(state: dict, deal) -> bool:
+    """Return True only for an execution linked to a runner-created order.
+
+    Magic numbers, historical state membership, and symbol ownership are not
+    sufficient: they can accidentally correlate unrelated account activity.
+    Entry deals must point directly to a known signal order. Exit deals may
+    point to a position previously linked to one of those signal orders.
+    """
+    order = int(getattr(deal, "order", 0) or 0)
+    position = int(getattr(deal, "position_id", 0) or 0)
+    known_orders = {int(k) for k in state.get("signal_orders", {}).keys()}
+    if order and order in known_orders:
+        return True
+    linked_orders = state.get("position_orders", {}).get(str(position), set()) if position else set()
+    return any(int(linked) in known_orders for linked in linked_orders)
+
+
 def _reconcile_history_position_links(state: dict, symbol: str, magic: int) -> None:
-    """Build position->orders/deals links from broker history before lifecycle filtering."""
+    """Build links only from broker deals already tied to a known signal order."""
     start = datetime.now(timezone.utc) - timedelta(hours=24)
     deals = mt5.history_deals_get(start, datetime.now(timezone.utc), group=symbol) or []
     for deal in deals:
-        order = int(getattr(deal, "order", 0) or 0)
-        position = int(getattr(deal, "position_id", 0) or 0)
-        deal_magic = int(getattr(deal, "magic", 0) or 0)
-        if deal_magic == magic or order in state["orders"] or position in state["positions"]:
+        if _deal_is_authorized(state, deal):
             _remember_position_links(state, deal)
 
 
@@ -1128,14 +1146,11 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         order = int(getattr(deal, "order", 0) or 0)
         position = int(getattr(deal, "position_id", 0) or 0)
         deal_magic = int(getattr(deal, "magic", 0) or 0)
-        position_orders = state.get("position_orders", {}).get(str(position), set())
-        linked = (
-            deal_magic == magic
-            or order in state["orders"]
-            or position in state["positions"]
-            or bool(position_orders)
-        )
-        if not linked:
+        # Fail closed: a deal is lifecycle-worthy only when it is linked to
+        # a runner-created order recorded in signal_orders, directly or via
+        # the position established by that order. Do not use magic/order/position
+        # membership alone; those sets contain historical telemetry as well.
+        if not _deal_is_authorized(state, deal):
             continue
         _remember_position_links(state, deal)
         is_entry_deal = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
