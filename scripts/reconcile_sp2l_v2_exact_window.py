@@ -245,7 +245,7 @@ def main():
     sl_mismatch_examples = []
     outcome_mismatch_examples = []
 
-    for match_key in matched_signal_keys:
+    for match_key in matched_trade_signal_keys:
         runtime_row = runtime_by_signal[match_key]
         backtest_row = backtest_by_signal[match_key]
         runtime_sl = number(runtime_row["sl"])
