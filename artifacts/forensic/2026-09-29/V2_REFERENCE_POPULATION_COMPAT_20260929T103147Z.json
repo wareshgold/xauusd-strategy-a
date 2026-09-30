@@ -1,0 +1,45 @@
+{
+  "status": "COMPLETE",
+  "mode": "RESEARCH_ONLY_V2_REFERENCE_POPULATION_COMPAT",
+  "generated_utc": "2026-09-29T10:31:47.247392+00:00",
+  "resolved_symbol": "XAUUSD.ecn",
+  "period": {
+    "start_utc": "2026-06-29T01:00:00+00:00",
+    "end_utc": "2026-09-24T20:30:00+00:00"
+  },
+  "bars": 87673,
+  "first_bar_utc": "2026-06-29T01:00:00+00:00",
+  "last_bar_utc": "2026-09-24T20:30:00+00:00",
+  "contract": {
+    "p_gap_price": 1.0,
+    "spike_multiplier": 1.5,
+    "max_sl_distance": 10.0,
+    "tp_r": 1.0,
+    "overlap_suppression": "historical_reference_used_entry_until",
+    "canonical": false
+  },
+  "results": {
+    "raw_setup_candidates": 1628,
+    "suppressed_by_overlap": 34,
+    "accepted_valid_entries": 1472,
+    "wins": 1000,
+    "losses": 470,
+    "ambiguous": 2,
+    "open_at_end": 0,
+    "decisive": 1470,
+    "win_rate_pct": 68.02721088435374,
+    "net_r": 530,
+    "reference": {
+      "bars": 87673,
+      "signals": 1472,
+      "trades": 1356,
+      "wins": 836,
+      "losses": 520
+    }
+  },
+  "semantic_limits": [
+    "Compatibility reconstruction only; overlap suppression is not promoted to canonical Strategy A.",
+    "The historical reference ledger is not embedded; matching aggregate counts is necessary but not sufficient for exact provenance.",
+    "Same-bar SL/TP is quarantined as AMBIGUOUS."
+  ]
+}

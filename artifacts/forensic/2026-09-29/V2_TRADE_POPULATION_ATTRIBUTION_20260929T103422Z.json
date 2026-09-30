@@ -1,0 +1,34 @@
+{
+  "status": "COMPLETE",
+  "mode": "RESEARCH_ONLY_V2_TRADE_POPULATION_ATTRIBUTION",
+  "generated_utc": "2026-09-29T10:34:22.719533+00:00",
+  "resolved_symbol": "XAUUSD.ecn",
+  "bars": 87673,
+  "period": {
+    "start_utc": "2026-06-29T01:00:00+00:00",
+    "end_utc": "2026-09-24T20:30:00+00:00"
+  },
+  "results": {
+    "signal_population": 1472,
+    "trade_population": 1360,
+    "skipped_by_trade_overlap": 112,
+    "wins": 925,
+    "losses": 433,
+    "ambiguous": 2,
+    "decisive": 1358,
+    "win_rate_pct": 68.11487481590575,
+    "net_r": 492,
+    "reference": {
+      "bars": 87673,
+      "signals": 1472,
+      "trades": 1356,
+      "wins": 836,
+      "losses": 520
+    }
+  },
+  "semantic_limits": [
+    "Lifecycle overlap is a hypothesis for historical attribution, not a canonical rule.",
+    "Signal population is reconstructed with the previously verified historical entry-boundary suppression.",
+    "Same-bar SL/TP remains AMBIGUOUS."
+  ]
+}
