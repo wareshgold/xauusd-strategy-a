@@ -270,11 +270,18 @@ def fetch_bars(symbol: str, mt5_path: str, start: int, end: int) -> list[Bar]:
         if not mt5.symbol_select(symbol, True):
             raise RuntimeError(f"symbol_select failed for {symbol}: {mt5.last_error()}")
 
-        dt_from = datetime.fromtimestamp(start, tz=timezone.utc)
-        dt_to = datetime.fromtimestamp(end, tz=timezone.utc)
+        # Use UTC-naive datetimes. This matches the known-working MT5 Python
+        # integration in this repo while preserving UTC epoch semantics.
+        dt_from = datetime.utcfromtimestamp(start)
+        dt_to = datetime.utcfromtimestamp(end)
         rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M1, dt_from, dt_to)
         if rates is None:
-            raise RuntimeError(f"copy_rates_range failed: {mt5.last_error()}")
+            err = mt5.last_error()
+            raise RuntimeError(
+                f"copy_rates_range failed: {err}; "
+                f"symbol={symbol} start_epoch={start} end_epoch={end} "
+                f"start_utc={dt_from.isoformat()} end_utc={dt_to.isoformat()}"
+            )
         bars = [
             Bar(
                 time=int(r["time"]),
