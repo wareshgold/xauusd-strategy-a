@@ -44,6 +44,18 @@ def assert_close(actual, expected, name):
         raise AssertionError(f"{name}: expected {expected}, got {actual}")
 
 
+def test_zero_trailing_is_explicitly_off():
+    # 0 pip must disable trailing, not activate it immediately.
+    # Without this guard, the favorable high on bar 0 would set the SL to
+    # the entry-side extreme and convert the later loss into a false WIN.
+    r = rates([(100.5, 99.5), (100.5, 99.8), (100.5, 99.0)])
+    out = simulate(r, signal(), rr=1.0, trail_pips=0.0)
+    assert out["result"] == "LOSS"
+    assert out["reason"] == "SL"
+    assert_close(out["r"], -1.0, "zero-trailing OFF R")
+    assert out["trailing_activated"] is False
+
+
 def test_tp_without_trailing():
     r = rates([(100.4, 99.8), (101.1, 100.2)])
     out = simulate(r, signal(), rr=1.0, trail_pips=5.0)
@@ -104,6 +116,7 @@ def test_trailing_does_not_extend_tp():
 
 def main():
     tests = [
+        test_zero_trailing_is_explicitly_off,
         test_tp_without_trailing,
         test_same_bar_sl_tp_is_ambiguous,
         test_trailing_activates_only_after_favorable_move_and_next_bar_exit,
