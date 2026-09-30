@@ -16,6 +16,7 @@ input double   InpMaxSL     = 10.0;
 input double   InpRR         = 1.0;
 input double   InpTrailPips  = 0.0;   // 0 = OFF; 1 pip = 0.10 XAU price
 input double   InpVolumeLots = 0.01;
+input bool     InpExportHistoryCsv = true; // Export exact Tester M1 input for independent replay audit.
 
 struct Signal
 {
@@ -195,6 +196,35 @@ string ResultForSignal(const Signal &s, double &realized_r, int &exit_index, boo
    return "OPEN_OR_UNRESOLVED";
 }
 
+void ExportHistoryCsv(const datetime start_utc,const datetime end_utc)
+{
+   if(!InpExportHistoryCsv) return;
+
+   string filename="SP2L_V2_MT5_HISTORY_"+IntegerToString((int)start_utc)+"_"+IntegerToString((int)end_utc)+".csv";
+   int h=FileOpen(filename,FILE_WRITE|FILE_CSV|FILE_ANSI,',');
+   if(h==INVALID_HANDLE)
+   {
+      Print("HISTORY_FILE_OPEN_FAILED err=",GetLastError()," file=",filename);
+      return;
+   }
+
+   FileWrite(h,"time_epoch_utc","open","high","low","close","tick_volume","spread","real_volume");
+   for(int i=0;i<ArraySize(g_rates);i++)
+   {
+      FileWrite(h,
+                (long)g_rates[i].time,
+                DoubleToString(g_rates[i].open,_Digits),
+                DoubleToString(g_rates[i].high,_Digits),
+                DoubleToString(g_rates[i].low,_Digits),
+                DoubleToString(g_rates[i].close,_Digits),
+                (long)g_rates[i].tick_volume,
+                g_rates[i].spread,
+                (long)g_rates[i].real_volume);
+   }
+   FileClose(h);
+   Print("OUTPUT_HISTORY_CSV=",filename," bars=",ArraySize(g_rates));
+}
+
 void WriteText(const string filename,const string text)
 {
    int h=FileOpen(filename,FILE_WRITE|FILE_TXT|FILE_ANSI);
@@ -232,6 +262,8 @@ int OnInit()
          " bars=",copied,
          " first=",TimeToString(g_rates[0].time,TIME_DATE|TIME_MINUTES),
          " last=",TimeToString(g_rates[copied-1].time,TIME_DATE|TIME_MINUTES));
+
+   ExportHistoryCsv(start_utc,end_utc);
 
    ArrayResize(g_signals,0);
 
