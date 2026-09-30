@@ -44,9 +44,9 @@ double Body(const MqlRates &c, const string direction)
 bool Setup(const int i, const string direction)
 {
    if(i<2) return false;
-   const MqlRates &before=g_rates[i-2];
-   const MqlRates &spike =g_rates[i-1];
-   const MqlRates &after =g_rates[i];
+   MqlRates before=g_rates[i-2];
+   MqlRates spike =g_rates[i-1];
+   MqlRates after =g_rates[i];
 
    if(direction=="BUY")
       return after.close>spike.close &&
