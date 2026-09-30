@@ -24,6 +24,8 @@ ALIASES = {
     "sl": ["sl", "stop_loss", "stopLoss", "stop"],
     "result": ["result", "outcome", "status"],
     "r": ["r", "R", "result_r", "net_r"],
+    "completed": ["completed", "is_completed", "complete"],
+    "exit_time_utc": ["exit_time_utc", "exit_time", "exit_utc", "exitTimeUtc"],
 }
 
 
@@ -55,6 +57,13 @@ def normalize(row):
                 out["result"] = "LOSS"
             else:
                 out["result"] = "BREAKEVEN"
+    if out["completed"] is not None:
+        text = str(out["completed"]).strip().lower()
+        out["completed"] = text in {"true", "1", "yes", "y"}
+    elif out["r"] not in ("", None):
+        out["completed"] = True
+    else:
+        out["completed"] = None
     return out
 
 
@@ -204,12 +213,16 @@ def main():
     )
 
     # Level 3: among signal matches, expose SL agreement/mismatch and outcomes.
+    # Keep all rows for this diagnostic; do not require SL equality.
     runtime_by_signal = {signal_key(row): row for row in runtime_rows}
     backtest_by_signal = {signal_key(row): row for row in backtest_rows}
     matched_signal_keys = sorted(set(runtime_by_signal) & set(backtest_by_signal))
     sl_match_count = 0
     outcome_match_count = 0
     outcome_comparable_count = 0
+    runtime_outcome_counts = Counter()
+    backtest_outcome_counts = Counter()
+    outcome_cross_tab = Counter()
     sl_mismatch_examples = []
     outcome_mismatch_examples = []
 
@@ -242,6 +255,10 @@ def main():
             if backtest_row["result"] is not None
             else None
         )
+        runtime_outcome_counts[runtime_result or "NO_OUTCOME"] += 1
+        backtest_outcome_counts[backtest_result or "NO_OUTCOME"] += 1
+        outcome_cross_tab[(runtime_result or "NO_OUTCOME", backtest_result or "NO_OUTCOME")] += 1
+
         if runtime_result in {"WIN", "LOSS", "BREAKEVEN"} and backtest_result in {
             "WIN",
             "LOSS",
@@ -258,6 +275,13 @@ def main():
                     "runtime_r": number(runtime_row["r"]),
                     "backtest_r": number(backtest_row["r"]),
                 })
+
+    backtest_completed_counts = Counter(
+        "COMPLETED" if row["completed"] is True else
+        "INCOMPLETE" if row["completed"] is False else
+        "UNKNOWN"
+        for row in backtest_rows
+    )
 
     runtime_exact_only = [
         row for row in runtime_rows
@@ -299,6 +323,13 @@ def main():
                 "outcome_comparable": outcome_comparable_count,
                 "outcome_match": outcome_match_count,
                 "outcome_mismatch": outcome_comparable_count - outcome_match_count,
+                "runtime_outcome_counts": dict(runtime_outcome_counts),
+                "backtest_outcome_counts": dict(backtest_outcome_counts),
+                "outcome_cross_tab": {
+                    f"{runtime}|{backtest}": count
+                    for (runtime, backtest), count in outcome_cross_tab.items()
+                },
+                "backtest_completion_status": dict(backtest_completed_counts),
                 "sl_mismatch_examples": sl_mismatch_examples,
                 "outcome_mismatch_examples": outcome_mismatch_examples,
             },
