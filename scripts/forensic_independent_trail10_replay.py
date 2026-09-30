@@ -296,7 +296,8 @@ def load_csv(path: str) -> list[dict[str, str]]:
 
 
 def parse_csv_epoch(value: str) -> int:
-    return int(parse_utc(value.replace(" ", "T") + "+00:00").timestamp())
+    normalized = value.strip().replace(".", "-", 2).replace(" ", "T", 1)
+    return int(parse_utc(normalized).timestamp())
 
 
 def nearly_equal(a: float, b: float, tol: float) -> bool:
