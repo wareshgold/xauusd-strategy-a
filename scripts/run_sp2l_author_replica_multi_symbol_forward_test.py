@@ -601,10 +601,11 @@ def load_state() -> dict:
             "order_states": {str(k) for k in raw.get("order_states", [])},
             "pending_signal_notifications": {str(k): v for k, v in raw.get("pending_signal_notifications", {}).items()},
             "signal_orders": {str(k): v for k, v in raw.get("signal_orders", {}).items()},
+            "deal_notifications": {str(k): dict(v) for k, v in raw.get("deal_notifications", {}).items()},
             "v2_forward_ledger": raw.get("v2_forward_ledger", {}),
         }
     except Exception:
-        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}, "v2_forward_ledger": {}}
+        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}, "deal_notifications": {}, "v2_forward_ledger": {}}
 
 
 def reconcile_state_from_events(state: dict) -> None:
@@ -667,6 +668,8 @@ def reconcile_state_from_events(state: dict) -> None:
                     recovered_orders.add(order_id)
                 if position_id:
                     recovered_positions.add(position_id)
+                if deal_id:
+                    state.setdefault("deal_notifications", {}).setdefault(str(deal_id), {"status": "ATTEMPTED", "recovered_from_event": True})
             elif event.get("event") == "TELEGRAM_SIGNAL" and bool(event.get("success")):
                 if signal_id:
                     state["notified"].add(str(signal_id))
@@ -696,6 +699,7 @@ def save_state(state: dict) -> None:
         "order_states": sorted(state["order_states"])[-2000:],
         "pending_signal_notifications": state.get("pending_signal_notifications", {}),
         "signal_orders": state.get("signal_orders", {}),
+        "deal_notifications": state.get("deal_notifications", {}),
         "v2_forward_ledger": state.get("v2_forward_ledger", {}),
     }, indent=2), encoding="utf-8")
 
@@ -1143,6 +1147,11 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
         ticket = int(deal.ticket)
         if ticket in state["deals"]:
             continue
+        deal_notifications = state.setdefault("deal_notifications", {})
+        if str(ticket) in deal_notifications:
+            # At-most-once lifecycle notification: a transport timeout can be
+            # ambiguous because Telegram may have accepted the request.
+            continue
         order = int(getattr(deal, "order", 0) or 0)
         position = int(getattr(deal, "position_id", 0) or 0)
         deal_magic = int(getattr(deal, "magic", 0) or 0)
@@ -1166,6 +1175,13 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             # notification to the next poll instead of sending wrong numbers.
             continue
         text = lifecycle_message(deal, symbol, pip, magic)
+        # Persist the attempt marker BEFORE network I/O. An exception/timeout
+        # after Telegram accepted the request must never cause a second message.
+        deal_notifications[str(ticket)] = {
+            "status": "ATTEMPTED", "ts_utc": now_utc(),
+            "symbol": symbol, "order": order, "position": position,
+        }
+        _save_state_safe(state)
         try:
             result = gateway.send_telegram_message(text, parse_mode="HTML")
         except Exception as exc:
@@ -1215,8 +1231,9 @@ def monitor_symbol_lifecycle(cfg: dict, state: dict) -> None:
             "telegram": {"success": telegram_success, "detail": result.detail},
             "canonical": False,
         })
-        # Mark the deal delivered only after Telegram confirms success.
-        # Failed sends remain eligible for retry on the next poll.
+        # A lifecycle notification is terminal after its first send attempt.
+        # Successful delivery also enters the legacy delivered set; failed or
+        # ambiguous transport outcomes remain recorded in deal_notifications.
         if telegram_success:
             state["deals"].add(ticket)
     _save_state_safe(state)
