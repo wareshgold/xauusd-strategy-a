@@ -122,14 +122,22 @@ def number(value):
     return round(float(value), 5) if value not in (None, "") else None
 
 
-def key(row):
+def signal_key(row):
     timestamp = parse_time(row["entry_time_utc"])
     return (
         timestamp.isoformat() if timestamp else "",
         row["direction"] or "",
         number(row["entry"]),
-        number(row["sl"]),
     )
+
+
+def exact_key(row):
+    return signal_key(row) + (number(row["sl"]),)
+
+
+def key(row):
+    # Backward-compatible alias for the original strict reconciliation key.
+    return exact_key(row)
 
 
 def stats(rows):
@@ -179,22 +187,85 @@ def main():
             "If the backtest artifact stores only a summary, supply its trade-level CSV/export."
         )
 
-    runtime_keys = [key(row) for row in runtime_rows]
-    backtest_keys = [key(row) for row in backtest_rows]
-    runtime_counts = Counter(runtime_keys)
-    backtest_counts = Counter(backtest_keys)
+    # Level 1: strict identity, including SL.
+    runtime_exact_counts = Counter(exact_key(row) for row in runtime_rows)
+    backtest_exact_counts = Counter(exact_key(row) for row in backtest_rows)
+    exact_common = sum((runtime_exact_counts & backtest_exact_counts).values())
 
-    common = sum((runtime_counts & backtest_counts).values())
-    runtime_only_count = sum((runtime_counts - backtest_counts).values())
-    backtest_only_count = sum((backtest_counts - runtime_counts).values())
+    # Level 2: signal identity, deliberately ignoring SL.
+    runtime_signal_counts = Counter(signal_key(row) for row in runtime_rows)
+    backtest_signal_counts = Counter(signal_key(row) for row in backtest_rows)
+    signal_common = sum((runtime_signal_counts & backtest_signal_counts).values())
+    runtime_signal_only_count = sum(
+        (runtime_signal_counts - backtest_signal_counts).values()
+    )
+    backtest_signal_only_count = sum(
+        (backtest_signal_counts - runtime_signal_counts).values()
+    )
 
-    runtime_only = [
+    # Level 3: among signal matches, expose SL agreement/mismatch and outcomes.
+    runtime_by_signal = {signal_key(row): row for row in runtime_rows}
+    backtest_by_signal = {signal_key(row): row for row in backtest_rows}
+    matched_signal_keys = sorted(set(runtime_by_signal) & set(backtest_by_signal))
+    sl_match_count = 0
+    outcome_match_count = 0
+    outcome_comparable_count = 0
+    sl_mismatch_examples = []
+    outcome_mismatch_examples = []
+
+    for match_key in matched_signal_keys:
+        runtime_row = runtime_by_signal[match_key]
+        backtest_row = backtest_by_signal[match_key]
+        runtime_sl = number(runtime_row["sl"])
+        backtest_sl = number(backtest_row["sl"])
+        if runtime_sl == backtest_sl:
+            sl_match_count += 1
+        elif len(sl_mismatch_examples) < 25:
+            sl_mismatch_examples.append({
+                "signal_key": match_key,
+                "runtime_sl": runtime_sl,
+                "backtest_sl": backtest_sl,
+                "delta_sl": (
+                    round(runtime_sl - backtest_sl, 5)
+                    if runtime_sl is not None and backtest_sl is not None
+                    else None
+                ),
+            })
+
+        runtime_result = (
+            str(runtime_row["result"]).upper()
+            if runtime_row["result"] is not None
+            else None
+        )
+        backtest_result = (
+            str(backtest_row["result"]).upper()
+            if backtest_row["result"] is not None
+            else None
+        )
+        if runtime_result in {"WIN", "LOSS", "BREAKEVEN"} and backtest_result in {
+            "WIN",
+            "LOSS",
+            "BREAKEVEN",
+        }:
+            outcome_comparable_count += 1
+            if runtime_result == backtest_result:
+                outcome_match_count += 1
+            elif len(outcome_mismatch_examples) < 25:
+                outcome_mismatch_examples.append({
+                    "signal_key": match_key,
+                    "runtime_result": runtime_result,
+                    "backtest_result": backtest_result,
+                    "runtime_r": number(runtime_row["r"]),
+                    "backtest_r": number(backtest_row["r"]),
+                })
+
+    runtime_exact_only = [
         row for row in runtime_rows
-        if runtime_counts[key(row)] > backtest_counts[key(row)]
+        if runtime_exact_counts[exact_key(row)] > backtest_exact_counts[exact_key(row)]
     ]
-    backtest_only = [
+    backtest_exact_only = [
         row for row in backtest_rows
-        if backtest_counts[key(row)] > runtime_counts[key(row)]
+        if backtest_exact_counts[exact_key(row)] > runtime_exact_counts[exact_key(row)]
     ]
 
     result = {
@@ -206,15 +277,43 @@ def main():
         },
         "runtime": stats(runtime_rows),
         "backtest": stats(backtest_rows),
+        "three_level_match": {
+            "level_1_exact_identity": {
+                "definition": "entry_time_utc + direction + entry + sl",
+                "common": exact_common,
+                "runtime_only": sum((runtime_exact_counts - backtest_exact_counts).values()),
+                "backtest_only": sum((backtest_exact_counts - runtime_exact_counts).values()),
+                "coverage_match_pct": 100.0 * exact_common / max(len(runtime_rows), len(backtest_rows)),
+            },
+            "level_2_signal_identity": {
+                "definition": "entry_time_utc + direction + entry (SL ignored)",
+                "common": signal_common,
+                "runtime_only": runtime_signal_only_count,
+                "backtest_only": backtest_signal_only_count,
+                "coverage_match_pct": 100.0 * signal_common / max(len(runtime_rows), len(backtest_rows)),
+            },
+            "level_3_matched_signal_diagnostics": {
+                "matched_signal_keys": len(matched_signal_keys),
+                "sl_match": sl_match_count,
+                "sl_mismatch": len(matched_signal_keys) - sl_match_count,
+                "outcome_comparable": outcome_comparable_count,
+                "outcome_match": outcome_match_count,
+                "outcome_mismatch": outcome_comparable_count - outcome_match_count,
+                "sl_mismatch_examples": sl_mismatch_examples,
+                "outcome_mismatch_examples": outcome_mismatch_examples,
+            },
+        },
         "matching_key": "entry_time_utc + direction + entry + sl",
-        "common_trades": common,
-        "runtime_only": runtime_only_count,
-        "backtest_only": backtest_only_count,
-        "coverage_match_pct": 100.0 * common / max(len(runtime_rows), len(backtest_rows)),
-        "runtime_only_examples": runtime_only[:25],
-        "backtest_only_examples": backtest_only[:25],
+        "common_trades": exact_common,
+        "runtime_only": sum((runtime_exact_counts - backtest_exact_counts).values()),
+        "backtest_only": sum((backtest_exact_counts - runtime_exact_counts).values()),
+        "coverage_match_pct": 100.0 * exact_common / max(len(runtime_rows), len(backtest_rows)),
+        "runtime_only_examples": runtime_exact_only[:25],
+        "backtest_only_examples": backtest_exact_only[:25],
         "notes": [
             "Diagnostic only; does not alter geometry or execution semantics.",
+            "Level 1 is strict identity including SL; Level 2 isolates signal identity by ignoring SL.",
+            "Level 3 is descriptive only: it reports SL agreement and outcome agreement for Level-2 matches.",
             "A JSON summary without trade-level records cannot support trade-level reconciliation.",
         ],
     }
