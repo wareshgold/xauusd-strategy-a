@@ -169,7 +169,7 @@ def level_prices(trade):
     return entry - risk, entry - 2 * risk, entry + risk
 
 
-def excursion(trade, bars):
+def excursion(trade, bars, analysis_end_ts):
     r1, r2, initial_sl = level_prices(trade)
     d = trade["direction"]
     max_fav = float("-inf")
@@ -356,7 +356,7 @@ def main():
         rows = []
         for trade in trades:
             bars = load_bars(args.symbol, trade["entry_ts"], end_ts)
-            ex = excursion(trade, bars) if bars else {
+            ex = excursion(trade, bars, end_ts) if bars else {
                 "mfe_r": None, "mae_r": None, "first_1r_ts": None, "first_2r_ts": None,
                 "first_1r_before_historical_exit": False,
                 "first_2r_before_historical_exit": False,
@@ -414,7 +414,7 @@ def main():
         "limitations": [
             "NON_CANONICAL_FORENSIC only; no Strategy A geometry or exit rule is changed.",
             "Historical lifecycle events define the initial population; broker cross-validation is reported separately.",
-            "MFE/MAE and level reachability are measured from actual broker entry and runner-recorded theoretical SL.",
+            "MFE/MAE and level reachability are measured from actual broker entry through analysis end, using the runner-recorded theoretical SL as the R denominator.",
             "M1 OHLC cannot establish intrabar ordering; conflicts are fail-closed as AMBIGUOUS_INTRABAR.",
             "A broker-missing/mismatched lifecycle record is not treated as authoritative merely because Telegram contains it.",
         ],
