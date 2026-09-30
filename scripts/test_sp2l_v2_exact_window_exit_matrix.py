@@ -111,20 +111,21 @@ def test_sell_no_tp_trailing():
 
 def test_london_new_york_session_uses_dst_aware_utc_window():
     # 2026-08-26: London 08:00 = 07:00 UTC; NY 17:00 = 21:00 UTC.
-    assert in_london_to_new_york_session(0) is False
-    assert in_london_to_new_york_session(7 * 3600) is True
-    assert in_london_to_new_york_session(21 * 3600) is True
-    assert in_london_to_new_york_session(21 * 3600 + 60) is False
+    # 2026-08-26: 07:00 UTC = 08:00 London; 21:00 UTC = 17:00 New York.
+    assert in_london_to_new_york_session(1787727540) is False
+    assert in_london_to_new_york_session(1787727600) is True
+    assert in_london_to_new_york_session(1787778000) is True
+    assert in_london_to_new_york_session(1787778060) is False
 
 
 def test_session_filter_is_entry_only():
     population = [
-        signal(entry_time=7 * 3600),
-        signal(entry_time=22 * 3600),
+        signal(entry_time=1787727600),
+        signal(entry_time=1787778060),
     ]
     selected = filter_population(population, "LONDON_TO_NEW_YORK")
     assert len(selected) == 1
-    assert selected[0]["entry_time"] == 7 * 3600
+    assert selected[0]["entry_time"] == 1787727600
 
 
 def main():
