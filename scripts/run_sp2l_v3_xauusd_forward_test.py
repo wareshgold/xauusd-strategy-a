@@ -1,4 +1,4 @@
-"""SP2L V3 XAUUSD Demo forward runner: frozen V2 geometry + research Trail 10.
+"""SP2L V3 XAUUSD Demo forward runner: frozen V2 geometry + research RR2/Trail 4.
 
 Trailing is evaluated from the latest COMPLETED M1 bar, matching the V3
 historical model. The initial TP remains fixed. Broker fills/exits are recorded
@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 import time
 import MetaTrader5 as mt5
-import sp2l_v3_config as cfg
+import sp2l_v3_rr2_trail4_config as cfg
 
 os.environ["SP2L_SYMBOLS"]="XAUUSD"
 os.environ["SP2L_P_GAP_PRICE"]=str(cfg.P_GAP_PRICE)
@@ -26,8 +26,8 @@ import run_sp2l_author_replica_multi_symbol_forward_test as runner
 runner.detect=cfg.detect
 runner.find_first_entry=cfg.find_first_entry
 runner.find_latest_candidate=cfg.find_latest_candidate
-runner.EVENTS=runner.ARTIFACTS / "SP2L_V3_XAUUSD_TRAIL10_FORWARD_EVENTS.jsonl"
-runner.STATE_FILE=runner.RUNTIME / "sp2l_v3_xauusd_trail10_forward_state.json"
+runner.EVENTS=runner.ARTIFACTS / "SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl"
+runner.STATE_FILE=runner.RUNTIME / "sp2l_v3_xauusd_rr2_trail4_forward_state.json"
 runner.session_gate_status=lambda trigger_ts:(True,"V3_ALL_MARKET_HOURS")
 _original_rates=runner.rates
 runner.rates=lambda symbol,count=10:_original_rates(symbol,30)

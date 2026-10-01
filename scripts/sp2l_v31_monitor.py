@@ -1,6 +1,6 @@
 """SP2L V3.1 XAUUSD forward-test monitoring dashboard.
 
-Read-only operator UI for the V3 RR2/Trail3 forward session.
+Read-only operator UI for the V3 RR2/Trail4 forward session.
 It reads the V3.1 state/event files and probes MT5 without sending orders.
 Binds to localhost only. It never changes strategy state or execution.
 
@@ -24,8 +24,8 @@ except Exception:
     mt5 = None
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE_FILE = ROOT / "runtime" / "sp2l_v3_xauusd_rr2_trail3_forward_state.json"
-EVENTS = ROOT / "artifacts" / "forward-test" / "SP2L_V3_XAUUSD_RR2_TRAIL3_FORWARD_EVENTS.jsonl"
+STATE_FILE = ROOT / "runtime" / "sp2l_v3_xauusd_rr2_trail4_forward_state.json"
+EVENTS = ROOT / "artifacts" / "forward-test" / "SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl"
 PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8790"))
 REFRESH = 3
 MT5_PATH = os.getenv("MT5_PATH", r"C:\Program Files\Otet Group MT5 Terminal\terminal64.exe")

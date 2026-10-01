@@ -1,16 +1,17 @@
 """SP2L V3 XAUUSD 3-month MT5 backtest.
 
-Uses the exact V3 geometry/trailing definitions in sp2l_v3_config.py.
+Uses the exact V3 geometry/trailing definitions from a selectable config module
+(frozen baseline sp2l_v3_config, or a variant such as
+sp2l_v3_rr2_trail4_config for the live forward settings).
 Writes JSON trade journal, CSV trade journal, and an official run snapshot.
 Research only; no production decisioning.
 """
 from __future__ import annotations
-import argparse, csv, hashlib, json
+import argparse, csv, hashlib, importlib, json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import MetaTrader5 as mt5
 import numpy as np
-import sp2l_v3_config as cfg
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "artifacts" / "v3"
@@ -44,7 +45,10 @@ def main():
     ap.add_argument("--symbol", default="XAUUSD.ecn")
     ap.add_argument("--start", default="2026-07-01T00:00:00+00:00")
     ap.add_argument("--end", default="2026-10-01T00:00:00+00:00")
+    ap.add_argument("--config-module", default="sp2l_v3_config",
+                    help="python module providing the V3 geometry/trailing config")
     args=ap.parse_args()
+    cfg=importlib.import_module(args.config_module)
     start=datetime.fromisoformat(args.start); end=datetime.fromisoformat(args.end)
     if not mt5.initialize(path=args.mt5_path):
         raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
@@ -109,7 +113,7 @@ def main():
         wins=[t for t in decisive if t["realized_R"]>0]; losses=[t for t in decisive if t["realized_R"]<0]
         net_R=sum(t["realized_R"] for t in decisive)
         gross_profit=sum(t["realized_R"] for t in wins); gross_loss=abs(sum(t["realized_R"] for t in losses))
-        result={"version":cfg.VERSION,"research_only":True,"symbol":args.symbol,"timeframe":"M1",
+        result={"version":cfg.VERSION,"configModule":args.config_module,"research_only":True,"symbol":args.symbol,"timeframe":"M1",
           "start_utc":start.isoformat(),"end_utc":end.isoformat(),"bars":len(bars),
           "config":{"pGapPrice":cfg.P_GAP_PRICE,"spikeMultiplier":cfg.SPIKE_MULTIPLIER,"maxSlDistance":cfg.MAX_SL_DISTANCE,
                     "tpR":cfg.TP_R,"trailPips":cfg.TRAIL_PIPS,"trailDistancePrice":cfg.TRAIL_DISTANCE_PRICE,
@@ -121,7 +125,8 @@ def main():
                      "netR":net_R,"profitFactor":(gross_profit/gross_loss if gross_loss else None)},
           "trades":trades}
         stamp=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        base=OUT/f"SP2L_V3_XAUUSD_TRAIL10_3M_{stamp}"
+        slug=cfg.VERSION.rsplit("_",1)[0]
+        base=OUT/f"{slug}_3M_{stamp}"
         raw=json.dumps(result,indent=2,ensure_ascii=False)
         (base.with_suffix(".json")).write_text(raw,encoding="utf-8")
         with (base.with_suffix(".csv")).open("w",newline="",encoding="utf-8") as f:
@@ -130,6 +135,7 @@ def main():
         sha=hashlib.sha256(raw.encode()).hexdigest()
         snap=f"""# SP2L V3 Official Run Snapshot
 Version: {cfg.VERSION}
+Config module: {args.config_module}
 Commit/branch must be recorded from Git after pull.
 Symbol: {args.symbol}
 Window UTC: {start.isoformat()} → {end.isoformat()}
