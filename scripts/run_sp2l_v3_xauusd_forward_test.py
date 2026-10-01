@@ -37,7 +37,8 @@ def trail_positions(cfg_runtime,state):
     _original_monitor(cfg_runtime,state)
     symbol=cfg_runtime["symbol"]; magic=cfg_runtime["magic"]
     info=mt5.symbol_info(symbol)
-    if info is None: return
+    tick=mt5.symbol_info_tick(symbol)
+    if info is None or tick is None: return
     # Bar 0 is forming; bar 1 is the latest completed M1 candle.
     bars=mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, 1, 1)
     if bars is None or len(bars)!=1: return
@@ -45,17 +46,32 @@ def trail_positions(cfg_runtime,state):
     completed_bar_time=int(b["time"])
     high=float(b["high"]); low=float(b["low"])
     positions=mt5.positions_get(symbol=symbol) or []
+    attempts=state.setdefault("trail_attempts", set())
+    point=float(getattr(info,"point",0.0) or 0.0)
+    stops_level=int(getattr(info,"trade_stops_level",0) or 0)
+    freeze_level=int(getattr(info,"trade_freeze_level",0) or 0)
+    min_distance=max(stops_level,freeze_level)*point
+    bid=float(getattr(tick,"bid",0.0) or 0.0)
+    ask=float(getattr(tick,"ask",0.0) or 0.0)
     for p in positions:
         if int(getattr(p,"magic",0) or 0)!=magic: continue
+        ticket=int(getattr(p,"ticket",0) or 0)
         entry=float(getattr(p,"price_open",0) or 0)
         old_sl=float(getattr(p,"sl",0) or 0)
         tp=float(getattr(p,"tp",0) or 0)
-        if entry<=0: continue
+        if entry<=0 or ticket<=0: continue
+        attempt_key=f"{ticket}:{completed_bar_time}"
+        if attempt_key in attempts: continue
         if int(p.type)==mt5.POSITION_TYPE_BUY:
             favorable=high-entry
             if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
             new_sl=cfg.trail_stop("BUY",high)
             if new_sl<=old_sl or new_sl>=high: continue
+            # MT5 requires a BUY SL to remain below current Bid and outside
+            # the broker's stops/freeze distance. The historical trail target
+            # is retained; execution is deferred when the broker rejects the
+            # target as currently unplaceable.
+            if bid <= 0 or new_sl >= bid - min_distance: continue
             direction="BUY"
         else:
             favorable=entry-low
@@ -63,14 +79,18 @@ def trail_positions(cfg_runtime,state):
             new_sl=cfg.trail_stop("SELL",low)
             if old_sl>0 and new_sl>=old_sl: continue
             if new_sl<=low: continue
+            # MT5 requires a SELL SL to remain above current Ask and outside
+            # the broker's stops/freeze distance.
+            if ask <= 0 or new_sl <= ask + min_distance: continue
             direction="SELL"
         request={"action":mt5.TRADE_ACTION_SLTP,"symbol":symbol,
-                 "position":int(p.ticket),"sl":float(new_sl),"tp":tp}
+                 "position":ticket,"sl":float(new_sl),"tp":tp}
         send=mt5.order_send(request)
         ok=bool(send and send.retcode==mt5.TRADE_RETCODE_DONE)
+        attempts.add(attempt_key)
         runner.log_event({
             "event":"TRAIL_UPDATE","version":cfg.VERSION,"symbol":symbol,
-            "position":int(p.ticket),"direction":direction,
+            "position":ticket,"direction":direction,
             "completed_bar_time":completed_bar_time,
             "bar_high":high,"bar_low":low,"entry":entry,
             "old_sl":old_sl,"new_sl":float(new_sl),"tp":tp,
