@@ -1,8 +1,9 @@
 # SP2L V3 — Official Research Snapshot
 
-**Version:** SP2L_V3_XAUUSD_TRAIL10_20261001  
-**Branch:** research/sp2l-strategy-a-v3-trailing10-20261001  
-**Scope:** XAUUSD.ecn / M1 / 3-month MT5 research  
+**Version:** SP2L_V3_XAUUSD_TRAIL10_20261001
+**Branch:** research/sp2l-strategy-a-v3-trailing10-20261001
+**Snapshot commit:** 7fb33189e3ef76da746218f9115ca55482bc3a08
+**Scope:** XAUUSD.ecn / M1 / 3-month MT5 research
 **Status:** RESEARCH VARIANT — NOT CANONICAL
 
 ## Frozen configuration
@@ -17,24 +18,27 @@
 - Volume: 0.01
 - Trailing stop: 10 pips
 - XAUUSD pip size: 0.10 price units
-- Therefore Trail 10 = 1.00 price unit
-- TP remains fixed at the initial 1R level
+- Trail 10 = 1.00 price unit
+- TP remains fixed at initial 1R
 
 ## Trailing semantics
-Trailing is a research execution variant. It is activated only after favorable movement reaches 10 pips. The stop is monotonic: it may move only in the profitable direction. The V3 historical simulation uses completed M1 bar high/low extremes. If the same completed M1 bar touches both the active SL and fixed TP, the trade is marked **AMBIGUOUS** rather than assigning an outcome.
+Trailing is a research execution variant. It activates after favorable movement reaches 10 pips. The stop is monotonic. Historical Python simulation uses completed M1 bar high/low extremes. A completed M1 bar touching both active SL and fixed TP is AMBIGUOUS.
+
+## Artifacts in this V3 branch
+- scripts/sp2l_v3_config.py
+- scripts/run_sp2l_v3_xauusd_backtest.py
+- scripts/run_sp2l_v3_xauusd_forward_test.py
+- MQL5/Experts/SP2L_V3_XAUUSD_TRAIL10.mq5
+- docs/research/SP2L_V3_RUNBOOK_20261001.md
+- this official snapshot
 
 ## Reproducibility contract
-Every 3-month run writes:
-1. JSON trade journal with every signal and exit field.
-2. CSV trade journal.
-3. SHA-256 hash of the JSON result.
-4. Run snapshot containing the exact configuration and data window.
-5. Forward JSONL event stream containing candidate, order, broker lifecycle, and TRAIL_UPDATE events.
+Every Python 3-month run writes JSON trade journal, CSV trade journal, SHA-256, and run snapshot. Forward writes a V3-isolated JSONL event stream with candidate/order/broker lifecycle/trailing events. MT5 Strategy Tester writes its own CSV journal.
 
-## Important source boundary
-Trail 10 is not promoted to a canonical Strategy A rule by this snapshot. It is an explicitly named research variant because source evidence does not establish the exact trailing execution semantics.
+## Source boundary
+Trail 10 is NOT promoted to canonical Strategy A. The exact trailing execution semantics are a research variant. Backtest performance cannot promote it.
 
-## Required 3-month window
-Default: **2026-07-01T00:00:00Z through 2026-10-01T00:00:00Z**.
+## Required first historical window
+2026-07-01T00:00:00Z through 2026-10-01T00:00:00Z.
 
-The MT5 broker's actual available bars, symbol specification, and returned bar count must be preserved in the generated snapshot. No missing-data interpolation is permitted.
+The actual MT5 bar count, symbol specification, and data availability must be preserved in generated outputs. No missing-data interpolation is permitted.
