@@ -6,6 +6,7 @@ as observed facts; no canonical production decision is made here.
 """
 from __future__ import annotations
 import os
+import time
 import MetaTrader5 as mt5
 import sp2l_v3_config as cfg
 
@@ -24,7 +25,19 @@ import run_sp2l_author_replica_multi_symbol_forward_test as runner
 
 runner.detect=cfg.detect
 runner.find_first_entry=cfg.find_first_entry
-runner.find_latest_candidate=cfg.find_latest_candidate
+_original_find_latest_candidate=cfg.find_latest_candidate
+# Forward-only freshness gate: never execute a candidate whose trigger candle
+# completed before this process started. Historical replay belongs to backtests;
+# live forward execution must wait for a newly formed setup after START.
+_FORWARD_START_EPOCH = time.time()
+def _forward_find_latest_candidate(candles, symbol):
+    candidate = _original_find_latest_candidate(candles, symbol)
+    if candidate is None:
+        return None
+    if int(candidate.get("trigger_time", 0) or 0) < int(_FORWARD_START_EPOCH):
+        return None
+    return candidate
+runner.find_latest_candidate=_forward_find_latest_candidate
 runner.EVENTS=runner.ARTIFACTS / "SP2L_V3_XAUUSD_TRAIL10_FORWARD_EVENTS.jsonl"
 runner.STATE_FILE=runner.RUNTIME / "sp2l_v3_xauusd_trail10_forward_state.json"
 runner.session_gate_status=lambda trigger_ts:(True,"V3_ALL_MARKET_HOURS")
