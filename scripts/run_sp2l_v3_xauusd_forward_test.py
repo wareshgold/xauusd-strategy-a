@@ -30,7 +30,7 @@ runner.EVENTS=runner.ARTIFACTS / "SP2L_V3_XAUUSD_TRAIL10_FORWARD_EVENTS.jsonl"
 runner.STATE_FILE=runner.RUNTIME / "sp2l_v3_xauusd_trail10_forward_state.json"
 runner.session_gate_status=lambda trigger_ts:(True,"V3_ALL_MARKET_HOURS")
 _original_rates=runner.rates
-runner.rates=lambda symbol,count=10:_original_rates(symbol,120)
+runner.rates=lambda symbol,count=10:_original_rates(symbol,30)
 
 _original_monitor=runner.monitor_position_lifecycle
 def trail_positions(cfg_runtime,state):
@@ -229,33 +229,30 @@ runner.monitor_position_lifecycle=trail_positions
 runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
 
 def _v3_main():
-    # Every V3 start gets a clean broker-lifecycle ledger. Existing broker
-    # orders/positions are never attributed to this run. On the first scan
-    # after MT5 initialization, seed the latest already-formed candidate as
-    # seen so a restart cannot replay an old setup into Telegram/order execution.
+    # V3 forward-session boundary: only newly formed triggers after startup
+    # are eligible for execution. Recent M1 history is context, not backlog.
     original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
     original_find = runner.find_latest_candidate
-    startup_seeded = set()
+    session_cutoff_epoch = int(_RUN_STARTED_UTC.timestamp())
 
-    def _startup_seed_find(data, symbol):
+    def _forward_session_find(data, symbol):
         candidate = original_find(data, symbol)
-        if symbol not in startup_seeded:
-            startup_seeded.add(symbol)
-            if candidate is not None:
-                trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}"
-                _startup_seed_find.seen.setdefault(symbol, trigger_key)
-                return None
+        if candidate is None:
+            return None
+        trigger_time = int(candidate.get("trigger_time", 0) or 0)
+        if trigger_time <= session_cutoff_epoch:
+            return None
         return candidate
 
-    _startup_seed_find.seen = {}
-    runner.load_state = lambda: {"seen": dict(_startup_seed_find.seen), "notified": set(), "deals": set(), "orders": set(), "positions": set(), "order_states": set(), "position_orders": {}, "signal_orders": {}, "pending_signal_notifications": {}}
+    runner.load_state = lambda: _fresh_v3_state()
     runner.reconcile_state_from_events = lambda state: None
-    runner.find_latest_candidate = _startup_seed_find
+    runner.find_latest_candidate = _forward_session_find
     try:
         _original_main()
     finally:
         runner.load_state, runner.reconcile_state_from_events = original_load, original_reconcile
         runner.find_latest_candidate = original_find
+
 
 runner.main=_v3_main
 
