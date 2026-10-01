@@ -2,7 +2,7 @@
 
 **Version:** SP2L_V3_XAUUSD_TRAIL10_20261001
 **Branch:** research/sp2l-strategy-a-v3-trailing10-20261001
-**Snapshot commit:** 7fb33189e3ef76da746218f9115ca55482bc3a08
+**Snapshot baseline commit:** 113e79c77f0f3130e06cf08043cfbe85c255e416
 **Scope:** XAUUSD.ecn / M1 / 3-month MT5 research
 **Status:** RESEARCH VARIANT — NOT CANONICAL
 
@@ -22,7 +22,7 @@
 - TP remains fixed at initial 1R
 
 ## Trailing semantics
-Trailing is a research execution variant. It activates after favorable movement reaches 10 pips. The stop is monotonic. Historical Python simulation uses completed M1 bar high/low extremes. A completed M1 bar touching both active SL and fixed TP is AMBIGUOUS.
+Trailing is a research execution variant. It activates after favorable movement reaches 10 pips. The stop is monotonic. Historical Python simulation and the V3 forward wrapper evaluate trailing from completed M1 bar high/low extremes. A completed M1 bar touching both active SL and fixed TP is AMBIGUOUS in the historical model.
 
 ## Artifacts in this V3 branch
 - scripts/sp2l_v3_config.py
