@@ -256,10 +256,18 @@ def _v3_main():
     # Candidate trigger_time is stamped in MT5 broker/server epoch, not host UTC epoch.
     # Convert the process-start boundary into the same clock before filtering,
     # otherwise a broker +3h offset makes pre-start candidates look future-dated.
-    server_offset = runner.mt5_server_offset_strict()
-    session_cutoff_epoch = int(_RUN_STARTED_UTC.timestamp() + server_offset.total_seconds())
+    # MT5 is only initialized inside _original_main(), and the strict offset query
+    # needs live ticks, so resolve the cutoff lazily on first use instead of here.
+    cutoff_cache: dict = {}
+
+    def _session_cutoff_epoch() -> int:
+        if "epoch" not in cutoff_cache:
+            server_offset = runner.mt5_server_offset_strict()
+            cutoff_cache["epoch"] = int(_RUN_STARTED_UTC.timestamp() + server_offset.total_seconds())
+        return int(cutoff_cache["epoch"])
 
     def _forward_session_find(data, symbol):
+        session_cutoff_epoch = _session_cutoff_epoch()
         candidate = original_find(data, symbol)
         if candidate is None:
             return None

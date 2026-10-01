@@ -25,3 +25,8 @@ tests/__pycache__/
 *.ex5
 # Telegram credentials (bot token + chat id) — never commit
 config/telegram.json
+runtime/*.lock
+runtime/*_state.json
+tmp_*.py
+*.bak
+.freebuff/
