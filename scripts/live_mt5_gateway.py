@@ -140,9 +140,18 @@ def active_orders() -> list:
     return list(orders or [])
 
 def active_exposure_count() -> int:
-    # Research forward guard: count both open positions and pending orders so
-    # one unresolved GTC pending order cannot be followed by another signal.
-    return len(open_positions()) + len(active_orders())
+    # Research forward guard: count only this gateway's own broker exposure.
+    # The V3 runner sets MAGIC immediately before execute_signal(). Manual or
+    # foreign-strategy XAUUSD positions/orders must not block the V3 signal.
+    own_positions = [
+        p for p in open_positions()
+        if int(getattr(p, "magic", 0) or 0) == int(MAGIC)
+    ]
+    own_orders = [
+        o for o in active_orders()
+        if int(getattr(o, "magic", 0) or 0) == int(MAGIC)
+    ]
+    return len(own_positions) + len(own_orders)
 
 
 def format_signal(signal: Signal, mode: str, result: dict | None = None) -> str:
