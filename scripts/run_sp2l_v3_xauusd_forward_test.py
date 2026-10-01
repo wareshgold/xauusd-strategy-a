@@ -7,6 +7,7 @@ as observed facts; no canonical production decision is made here.
 from __future__ import annotations
 import os
 import time
+from datetime import datetime, timezone
 import MetaTrader5 as mt5
 import sp2l_v3_config as cfg
 
@@ -29,12 +30,35 @@ _original_find_latest_candidate=cfg.find_latest_candidate
 # Forward-only freshness gate: never execute a candidate whose trigger candle
 # completed before this process started. Historical replay belongs to backtests;
 # live forward execution must wait for a newly formed setup after START.
+# MT5 bar timestamps are in the broker/server clock. Convert START into the
+# same timestamp basis before applying the forward-only freshness gate.
+# This deliberately does not infer UTC from the broker clock.
+_FORWARD_START_SERVER_TS = None
+
+def _server_now_timestamp():
+    tick = mt5.symbol_info_tick("XAUUSD.ecn")
+    if tick is None or int(getattr(tick, "time", 0) or 0) <= 0:
+        return None
+    return int(tick.time)
+
+def _init_forward_start_server_ts():
+    global _FORWARD_START_SERVER_TS
+    server_now = _server_now_timestamp()
+    if server_now is None:
+        return
+    # The local wall clock and MT5 server clock are sampled at the same instant.
+    # Store the server-clock equivalent of process START.
+    _FORWARD_START_SERVER_TS = int(server_now - (time.time() - _FORWARD_START_EPOCH))
+
 _FORWARD_START_EPOCH = time.time()
+_init_forward_start_server_ts()
+
 def _forward_find_latest_candidate(candles, symbol):
     candidate = _original_find_latest_candidate(candles, symbol)
     if candidate is None:
         return None
-    if int(candidate.get("trigger_time", 0) or 0) < int(_FORWARD_START_EPOCH):
+    trigger_ts = int(candidate.get("trigger_time", 0) or 0)
+    if _FORWARD_START_SERVER_TS is not None and trigger_ts < _FORWARD_START_SERVER_TS:
         return None
     return candidate
 runner.find_latest_candidate=_forward_find_latest_candidate
