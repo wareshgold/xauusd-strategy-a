@@ -79,5 +79,139 @@ def trail_positions(cfg_runtime,state):
             "comment":str(send.comment) if send else None,"canonical":False})
 runner.monitor_position_lifecycle=trail_positions
 
+# V3 RUN-ISOLATION: never replay pre-existing broker history into Telegram or
+# Forward-Test statistics. Only broker objects created/tracked by THIS process
+# are eligible for lifecycle reporting/cancellation.
+from datetime import datetime, timezone
+_RUN_STARTED_UTC = datetime.now(timezone.utc)
+_original_main = runner.main
+
+def _fresh_v3_state():
+    return {"seen": {}, "notified": set(), "deals": set(), "orders": set(),
+            "positions": set(), "order_states": set(), "position_orders": {},
+            "signal_orders": {}, "pending_signal_notifications": {}}
+
+def _run_scoped_pending(cfg_runtime, state):
+    symbol, magic = cfg_runtime["symbol"], cfg_runtime["magic"]
+    for order in (mt5.orders_get(symbol=symbol) or []):
+        ticket = int(getattr(order, "ticket", 0) or 0)
+        if ticket in state["orders"] and int(getattr(order, "magic", 0) or 0) == magic:
+            runner._cancel_pending_order(order, state)
+
+def _run_scoped_pending_lifecycle(cfg_runtime, state):
+    symbol = cfg_runtime["symbol"]
+    tracked = set(state["orders"])
+    orders = (mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
+    orders += list(mt5.orders_get(symbol=symbol) or [])
+    for order in orders:
+        ticket = int(getattr(order, "ticket", 0) or 0)
+        if ticket not in tracked:
+            continue
+        state_name = runner.order_state_name(order)
+        marker = f"{ticket}:{state_name}"
+        if marker in state["order_states"]:
+            continue
+        state["order_states"].add(marker)
+        runner.log_event({
+            "event":"PENDING_ORDER_LIFECYCLE","version":cfg.VERSION,
+            "symbol":symbol,"order":ticket,"state":state_name,
+            "state_code":int(getattr(order,"state",-1)),
+            "type":int(getattr(order,"type",-1)),
+            "time_setup":int(getattr(order,"time_setup",0) or 0),
+            "time_done":int(getattr(order,"time_done",0) or 0),
+            "magic":int(getattr(order,"magic",0) or 0),
+            "position_id":int(getattr(order,"position_id",0) or 0),
+            "volume_initial":float(getattr(order,"volume_initial",0.0) or 0.0),
+            "volume_current":float(getattr(order,"volume_current",0.0) or 0.0),
+            "price_open":float(getattr(order,"price_open",0.0) or 0.0),
+            "price_current":float(getattr(order,"price_current",0.0) or 0.0),
+            "sl":float(getattr(order,"sl",0.0) or 0.0),
+            "tp":float(getattr(order,"tp",0.0) or 0.0),
+            "canonical":False})
+
+def _run_scoped_position_lifecycle(cfg_runtime, state):
+    symbol, magic = cfg_runtime["symbol"], cfg_runtime["magic"]
+    for position in (mt5.positions_get(symbol=symbol) or []):
+        position_id = int(getattr(position,"ticket",0) or 0)
+        if position_id not in state["positions"] or int(getattr(position,"magic",0) or 0) != magic:
+            continue
+        marker=f"POSITION:{position_id}:{float(getattr(position,'sl',0.0) or 0.0)}:{float(getattr(position,'tp',0.0) or 0.0)}"
+        if marker in state["order_states"]:
+            continue
+        state["order_states"].add(marker)
+        runner.log_event({
+            "event":"POSITION_LIFECYCLE","version":cfg.VERSION,"symbol":symbol,
+            "position":position_id,"magic":magic,
+            "type":int(getattr(position,"type",-1)),
+            "volume":float(getattr(position,"volume",0.0) or 0.0),
+            "price_open":float(getattr(position,"price_open",0.0) or 0.0),
+            "price_current":float(getattr(position,"price_current",0.0) or 0.0),
+            "sl":float(getattr(position,"sl",0.0) or 0.0),
+            "tp":float(getattr(position,"tp",0.0) or 0.0),
+            "profit":float(getattr(position,"profit",0.0) or 0.0),
+            "canonical":False})
+
+def _run_scoped_symbol_lifecycle(cfg_runtime, state):
+    symbol, magic, pip = cfg_runtime["symbol"], cfg_runtime["magic"], cfg_runtime["pip_size"]
+    tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
+    if not tracked_orders and not tracked_positions:
+        return
+    deals = mt5.history_deals_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or []
+    for deal in sorted(deals, key=lambda x:(int(x.time), int(x.ticket))):
+        ticket=int(deal.ticket)
+        if ticket in state["deals"]:
+            continue
+        order=int(getattr(deal,"order",0) or 0)
+        position=int(getattr(deal,"position_id",0) or 0)
+        if order not in tracked_orders and position not in tracked_positions:
+            continue
+        runner._remember_position_links(state, deal)
+        is_entry = int(getattr(deal,"entry",-1)) == mt5.DEAL_ENTRY_IN
+        entry_price=float(deal.price) if is_entry else runner.position_entry_price(deal, magic)
+        if not is_entry and entry_price is None:
+            continue
+        execution_meta={}
+        for linked_order in state.get("position_orders",{}).get(str(position),set()):
+            execution_meta=state.get("signal_orders",{}).get(str(linked_order),{})
+            if execution_meta: break
+        tg=runner.gateway.send_telegram_message(
+            runner.lifecycle_message(deal,symbol,pip,magic), parse_mode="HTML")
+        profit=float(getattr(deal,"profit",0.0) or 0.0)
+        commission=float(getattr(deal,"commission",0.0) or 0.0)
+        swap=float(getattr(deal,"swap",0.0) or 0.0)
+        runner.log_event({
+            "event":"TELEGRAM_DEAL_LIFECYCLE","version":cfg.VERSION,
+            "symbol":symbol,"deal":ticket,"order":order,"position":position,
+            "signal_id":execution_meta.get("signal_id"),
+            "entry":int(getattr(deal,"entry",-1)),
+            "reason":int(getattr(deal,"reason",-1)),
+            "entry_price":entry_price,
+            "theoretical_entry":execution_meta.get("theoretical_entry"),
+            "theoretical_sl":execution_meta.get("sl"),
+            "theoretical_tp":execution_meta.get("tp"),
+            "exit_price":float(deal.price),"profit":profit,
+            "commission":commission,"swap":swap,"net":profit+commission+swap,
+            "telegram":{"success":bool(getattr(tg,"success",False)),"detail":getattr(tg,"detail",None)},
+            "canonical":False})
+        if getattr(tg,"success",False):
+            state["deals"].add(ticket)
+
+runner.enforce_pending_order_expiry=_run_scoped_pending
+runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
+runner.monitor_position_lifecycle=trail_positions
+runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
+
+def _v3_main():
+    # Every V3 start gets a clean session ledger. Existing broker
+    # orders/positions are never attributed to this run.
+    original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
+    runner.load_state, runner.reconcile_state_from_events = _fresh_v3_state, lambda state: None
+    try:
+        _original_main()
+    finally:
+        runner.load_state, runner.reconcile_state_from_events = original_load, original_reconcile
+
+runner.main=_v3_main
+
 if __name__=="__main__":
     runner.main()
