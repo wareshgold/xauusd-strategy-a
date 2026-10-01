@@ -253,7 +253,11 @@ def _v3_main():
     # are eligible for execution. Recent M1 history is context, not backlog.
     original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
     original_find = runner.find_latest_candidate
-    session_cutoff_epoch = int(_RUN_STARTED_UTC.timestamp())
+    # Candidate trigger_time is stamped in MT5 broker/server epoch, not host UTC epoch.
+    # Convert the process-start boundary into the same clock before filtering,
+    # otherwise a broker +3h offset makes pre-start candidates look future-dated.
+    server_offset = runner.mt5_server_offset_strict()
+    session_cutoff_epoch = int(_RUN_STARTED_UTC.timestamp() + server_offset.total_seconds())
 
     def _forward_session_find(data, symbol):
         candidate = original_find(data, symbol)
