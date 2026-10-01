@@ -92,11 +92,37 @@ def _fresh_v3_state():
             "signal_orders": {}, "pending_signal_notifications": {}}
 
 def _run_scoped_pending(cfg_runtime, state):
+    """Expire this run's pending limits using local monotonic age.
+
+    MT5 order.time_setup is a broker/server timestamp and can be offset from
+    the Python host clock. Comparing it with time.time() can make a fresh
+    order appear hours old and cause immediate cancellation. This V3 runner
+    records time.monotonic() when the order is created and uses that same
+    clock for TTL. Orders without a creation marker are left untouched.
+    """
+    ttl_minutes = float(cfg_runtime.get("pending_ttl_minutes", os.getenv("SP2L_PENDING_TTL_MINUTES", "30")))
+    if ttl_minutes <= 0:
+        return
     symbol, magic = cfg_runtime["symbol"], cfg_runtime["magic"]
+    now = time.monotonic()
+    created = state.setdefault("order_created_monotonic", {})
     for order in (mt5.orders_get(symbol=symbol) or []):
         ticket = int(getattr(order, "ticket", 0) or 0)
-        if ticket in state["orders"] and int(getattr(order, "magic", 0) or 0) == magic:
-            runner._cancel_pending_order(order, state)
+        if ticket not in state["orders"] or int(getattr(order, "magic", 0) or 0) != magic:
+            continue
+        order_type = int(getattr(order, "type", -1))
+        if order_type not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
+            continue
+        created_at = created.get(str(ticket))
+        if created_at is None:
+            continue
+        age_minutes = max(0.0, (now - float(created_at)) / 60.0)
+        if age_minutes < ttl_minutes:
+            continue
+        marker = f"{ticket}:EXPIRY_NOTIFIED:"
+        if any(s.startswith(marker) for s in state["order_states"]):
+            continue
+        runner._cancel_pending_order(order, state)
 
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol = cfg_runtime["symbol"]
