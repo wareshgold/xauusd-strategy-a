@@ -103,7 +103,7 @@ runner.monitor_position_lifecycle=trail_positions
 # V3 RUN-ISOLATION: never replay pre-existing broker history into Telegram or
 # Forward-Test statistics. Only broker objects created/tracked by THIS process
 # are eligible for lifecycle reporting/cancellation.
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
 
@@ -148,8 +148,12 @@ def _run_scoped_pending(cfg_runtime, state):
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol = cfg_runtime["symbol"]
     tracked = set(state["orders"])
-    orders = (mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
-    orders += list(mt5.orders_get(symbol=symbol) or [])
+    # Wide window: MT5 history APIs compare raw host epochs against broker-server
+    # epochs (+3h here), so a narrow run-scoped window misses this run's own orders
+    # for hours. Isolation comes from the tracked-ticket filter below, not the window.
+    window = timedelta(days=1)
+    orders = list(mt5.history_orders_get(_RUN_STARTED_UTC - window, datetime.now(timezone.utc) + window, group=symbol) or ())
+    orders += list(mt5.orders_get(symbol=symbol) or ())
     for order in orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
         if ticket not in tracked:
@@ -203,7 +207,8 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
     if not tracked_orders and not tracked_positions:
         return
-    deals = mt5.history_deals_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or []
+    window = timedelta(days=1)
+    deals = list(mt5.history_deals_get(_RUN_STARTED_UTC - window, datetime.now(timezone.utc) + window, group=symbol) or ())
     for deal in sorted(deals, key=lambda x:(int(x.time), int(x.ticket))):
         ticket=int(deal.ticket)
         if ticket in state["deals"]:
