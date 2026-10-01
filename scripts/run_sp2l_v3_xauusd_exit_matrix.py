@@ -27,16 +27,22 @@ XAU_PIP_SIZE_PRICE = cfg.XAU_PIP_SIZE_PRICE
 VARIANTS = [
     ("RR1_NO_TRAIL", 1.0, 0.0),
     ("RR2_NO_TRAIL", 2.0, 0.0),
+    ("RR1_TRAIL3", 1.0, 3.0),
+    ("RR1_TRAIL4", 1.0, 4.0),
     ("RR1_TRAIL5", 1.0, 5.0),
+    ("RR1_TRAIL6", 1.0, 6.0),
+    ("RR1_TRAIL7", 1.0, 7.0),
+    ("RR1_TRAIL8", 1.0, 8.0),
+    ("RR1_TRAIL9", 1.0, 9.0),
     ("RR1_TRAIL10", 1.0, 10.0),
-    ("RR1_TRAIL15", 1.0, 15.0),
-    ("RR1_TRAIL20", 1.0, 20.0),
-    ("RR1_TRAIL30", 1.0, 30.0),
+    ("RR2_TRAIL3", 2.0, 3.0),
+    ("RR2_TRAIL4", 2.0, 4.0),
     ("RR2_TRAIL5", 2.0, 5.0),
+    ("RR2_TRAIL6", 2.0, 6.0),
+    ("RR2_TRAIL7", 2.0, 7.0),
+    ("RR2_TRAIL8", 2.0, 8.0),
+    ("RR2_TRAIL9", 2.0, 9.0),
     ("RR2_TRAIL10", 2.0, 10.0),
-    ("RR2_TRAIL15", 2.0, 15.0),
-    ("RR2_TRAIL20", 2.0, 20.0),
-    ("RR2_TRAIL30", 2.0, 30.0),
 ]
 
 
@@ -315,7 +321,7 @@ def main():
             all_trades.extend(rows)
 
         result = {
-            "version": "SP2L_V3_EXIT_MATRIX_20261001",
+            "version": "SP2L_V3_TRAIL_SENSITIVITY_20261001",
             "research_only": True,
             "symbol": args.symbol,
             "timeframe": "M1",
@@ -388,7 +394,7 @@ def main():
         sha = hashlib.sha256(raw.encode()).hexdigest()
         snap = f"""# SP2L V3 Exit Matrix Snapshot
 
-Version: SP2L_V3_EXIT_MATRIX_20261001
+Version: SP2L_V3_TRAIL_SENSITIVITY_20261001
 Window UTC: {start.isoformat()} → {end.isoformat()}
 Symbol: {args.symbol}
 Timeframe: M1
