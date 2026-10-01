@@ -797,7 +797,7 @@ def _cancel_pending_order(order, state: dict) -> None:
     ticket = int(getattr(order, "ticket", 0) or 0)
     symbol = str(getattr(order, "symbol", "") or "")
     setup_ts = int(getattr(order, "time_setup", 0) or 0)
-    age_minutes = (time.time() - setup_ts) / 60.0 if setup_ts else 0.0
+    age_minutes = ((time.time() + mt5_server_offset_strict().total_seconds()) - setup_ts) / 60.0 if setup_ts else 0.0
     digits_info = mt5.symbol_info(symbol)
     digits = max(2, int(getattr(digits_info, "digits", 2) or 2)) if digits_info else 2
 
@@ -886,7 +886,7 @@ def enforce_pending_order_expiry(cfg: dict, state: dict) -> None:
         setup_ts = int(getattr(order, "time_setup", 0) or 0)
         if not setup_ts:
             continue
-        age_minutes = (time.time() - setup_ts) / 60.0
+        age_minutes = ((time.time() + mt5_server_offset_strict().total_seconds()) - setup_ts) / 60.0
         if age_minutes < PENDING_TTL_MINUTES:
             continue
         marker = f"{ticket}:EXPIRY_NOTIFIED:"
