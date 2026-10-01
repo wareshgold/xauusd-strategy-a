@@ -361,7 +361,7 @@ def main():
         csv_path = base.with_suffix(".csv")
         with csv_path.open("w", newline="", encoding="utf-8") as f:
             fields = [
-                "variant", "direction", "signal_time_utc", "theoretical_entry",
+                "variant", "direction", "trigger_time", "signal_time_utc", "theoretical_entry",
                 "risk", "initial_sl", "initial_tp", "tp_r", "trail_pips",
                 "trail_distance_price", "final_sl", "trailing_activated",
                 "max_favorable_price", "exit_time_utc", "exit_price", "reason",
