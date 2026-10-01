@@ -1,0 +1,1 @@
+variant,direction,signal_time_utc,theoretical_entry,risk,initial_sl,initial_tp,tp_r,trail_pips,trail_distance_price,final_sl,trailing_activated,max_favorable_price,exit_time_utc,exit_price,reason,ambiguous,realized_price,realized_R,risk_usd,realized_usd
