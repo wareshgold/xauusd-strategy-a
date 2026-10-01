@@ -6,9 +6,10 @@ Research only; no production decisioning.
 """
 from __future__ import annotations
 import argparse, csv, hashlib, json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import MetaTrader5 as mt5
+import numpy as np
 import sp2l_v3_config as cfg
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +17,26 @@ OUT = ROOT / "artifacts" / "v3"
 OUT.mkdir(parents=True, exist_ok=True)
 
 def iso(ts): return datetime.fromtimestamp(int(ts), timezone.utc).isoformat()
+
+def fetch_m1_rates(symbol, start, end):
+    if not mt5.symbol_select(symbol, True):
+        raise RuntimeError(f"symbol_select failed: {symbol} {mt5.last_error()}")
+
+    chunks=[]; cur=start.astimezone(timezone.utc); end=end.astimezone(timezone.utc)
+    while cur < end:
+        chunk_end=min(cur+timedelta(days=7), end)
+        rates=mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M1, cur, chunk_end)
+        if rates is None or len(rates)==0:
+            raise RuntimeError(
+                f"history failed {cur.isoformat()}..{chunk_end.isoformat()}: {mt5.last_error()}"
+            )
+        chunks.append(rates.copy())
+        cur=chunk_end+timedelta(minutes=1)
+
+    bars=np.concatenate(chunks)
+    bars.sort(order="time")
+    _, idx=np.unique(bars["time"], return_index=True)
+    return bars[np.sort(idx)]
 
 def main():
     ap=argparse.ArgumentParser()
@@ -31,7 +52,7 @@ def main():
         info=mt5.symbol_info(args.symbol)
         if info is None: raise RuntimeError(f"Symbol unavailable: {args.symbol}")
         if not mt5.symbol_select(args.symbol, True): raise RuntimeError("symbol_select failed")
-        bars=mt5.copy_rates_range(args.symbol, mt5.TIMEFRAME_M1, start, end)
+        bars=fetch_m1_rates(args.symbol, start, end)
         if bars is None or len(bars)<10: raise RuntimeError(f"Insufficient M1 data: {mt5.last_error()}")
         trades=[]; seen=set()
         # A candidate is evaluated using completed bars only. Outcome is then
