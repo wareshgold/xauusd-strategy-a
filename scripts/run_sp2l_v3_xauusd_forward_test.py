@@ -1,13 +1,11 @@
 """SP2L V3 XAUUSD Demo forward runner: frozen V2 geometry + research Trail 10.
 
-The underlying V2 execution runner remains responsible for MT5/Telegram
-lifecycle. This wrapper replaces geometry with sp2l_v3_config, disables the
-session gate, isolates V3 artifacts/state, and applies a monotonic broker-side
-10-pip trailing SL while keeping the initial TP fixed.
+Trailing is evaluated from the latest COMPLETED M1 bar, matching the V3
+historical model. The initial TP remains fixed. Broker fills/exits are recorded
+as observed facts; no canonical production decision is made here.
 """
 from __future__ import annotations
-import os, sys, time, json
-from pathlib import Path
+import os
 import MetaTrader5 as mt5
 import sp2l_v3_config as cfg
 
@@ -37,8 +35,14 @@ _original_monitor=runner.monitor_position_lifecycle
 def trail_positions(cfg_runtime,state):
     _original_monitor(cfg_runtime,state)
     symbol=cfg_runtime["symbol"]; magic=cfg_runtime["magic"]
-    info=mt5.symbol_info(symbol); tick=mt5.symbol_info_tick(symbol)
-    if info is None or tick is None: return
+    info=mt5.symbol_info(symbol)
+    if info is None: return
+    # Bar 0 is forming; bar 1 is the latest completed M1 candle.
+    bars=mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, 1, 1)
+    if bars is None or len(bars)!=1: return
+    b=bars[0]
+    completed_bar_time=int(b["time"])
+    high=float(b["high"]); low=float(b["low"])
     positions=mt5.positions_get(symbol=symbol) or []
     for p in positions:
         if int(getattr(p,"magic",0) or 0)!=magic: continue
@@ -47,26 +51,32 @@ def trail_positions(cfg_runtime,state):
         tp=float(getattr(p,"tp",0) or 0)
         if entry<=0: continue
         if int(p.type)==mt5.POSITION_TYPE_BUY:
-            favorable=float(tick.bid)-entry
+            favorable=high-entry
             if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
-            new_sl=float(tick.bid)-cfg.TRAIL_DISTANCE_PRICE
-            if new_sl<=old_sl or new_sl>=float(tick.bid): continue
+            new_sl=cfg.trail_stop("BUY",high)
+            if new_sl<=old_sl or new_sl>=high: continue
+            direction="BUY"
         else:
-            favorable=entry-float(tick.ask)
+            favorable=entry-low
             if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
-            new_sl=float(tick.ask)+cfg.TRAIL_DISTANCE_PRICE
+            new_sl=cfg.trail_stop("SELL",low)
             if old_sl>0 and new_sl>=old_sl: continue
-            if new_sl<=float(tick.ask): continue
-        request={"action":mt5.TRADE_ACTION_SLTP,"symbol":symbol,"position":int(p.ticket),"sl":new_sl,"tp":tp}
+            if new_sl<=low: continue
+            direction="SELL"
+        request={"action":mt5.TRADE_ACTION_SLTP,"symbol":symbol,
+                 "position":int(p.ticket),"sl":float(new_sl),"tp":tp}
         send=mt5.order_send(request)
         ok=bool(send and send.retcode==mt5.TRADE_RETCODE_DONE)
-        runner.log_event({"event":"TRAIL_UPDATE","version":cfg.VERSION,"symbol":symbol,"position":int(p.ticket),
-          "direction":"BUY" if int(p.type)==mt5.POSITION_TYPE_BUY else "SELL",
-          "entry":entry,"old_sl":old_sl,"new_sl":new_sl,"tp":tp,
-          "trail_pips":cfg.TRAIL_PIPS,"trail_distance_price":cfg.TRAIL_DISTANCE_PRICE,
-          "current_bid":float(tick.bid),"current_ask":float(tick.ask),"success":ok,
-          "retcode":int(send.retcode) if send else None,
-          "comment":str(send.comment) if send else None,"canonical":False})
+        runner.log_event({
+            "event":"TRAIL_UPDATE","version":cfg.VERSION,"symbol":symbol,
+            "position":int(p.ticket),"direction":direction,
+            "completed_bar_time":completed_bar_time,
+            "bar_high":high,"bar_low":low,"entry":entry,
+            "old_sl":old_sl,"new_sl":float(new_sl),"tp":tp,
+            "trail_pips":cfg.TRAIL_PIPS,
+            "trail_distance_price":cfg.TRAIL_DISTANCE_PRICE,
+            "success":ok,"retcode":int(send.retcode) if send else None,
+            "comment":str(send.comment) if send else None,"canonical":False})
 runner.monitor_position_lifecycle=trail_positions
 
 if __name__=="__main__":
