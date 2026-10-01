@@ -230,29 +230,32 @@ runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
 
 def _v3_main():
     # Every V3 start gets a clean broker-lifecycle ledger. Existing broker
-    # orders/positions are never attributed to this run. Before entering the
-    # live loop, seed the latest already-formed candidate as seen so a restart
-    # cannot replay an old setup and send it to Telegram/order execution again.
+    # orders/positions are never attributed to this run. On the first scan
+    # after MT5 initialization, seed the latest already-formed candidate as
+    # seen so a restart cannot replay an old setup into Telegram/order execution.
     original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
-    runner.load_state, runner.reconcile_state_from_events = _fresh_v3_state, lambda state: None
+    original_find = runner.find_latest_candidate
+    startup_seeded = set()
+
+    def _startup_seed_find(data, symbol):
+        candidate = original_find(data, symbol)
+        if symbol not in startup_seeded:
+            startup_seeded.add(symbol)
+            if candidate is not None:
+                trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}"
+                _startup_seed_find.seen.setdefault(symbol, trigger_key)
+                return None
+        return candidate
+
+    _startup_seed_find.seen = {}
+    runner.load_state = lambda: {"seen": dict(_startup_seed_find.seen), "notified": set(), "deals": set(), "orders": set(), "positions": set(), "order_states": set(), "position_orders": {}, "signal_orders": {}, "pending_signal_notifications": {}}
+    runner.reconcile_state_from_events = lambda state: None
+    runner.find_latest_candidate = _startup_seed_find
     try:
-        state = _fresh_v3_state()
-        for cfg_runtime in runner.load_configs():
-            symbol = cfg_runtime["symbol"]
-            data = runner.rates(symbol)
-            if data is None:
-                continue
-            candidate = runner.find_latest_candidate(data, symbol)
-            if candidate is None:
-                continue
-            trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}"
-            state["seen"][symbol] = trigger_key
-        # The base runner will call load_state() itself. This wrapper therefore
-        # exposes the startup baseline through a one-shot loader.
-        runner.load_state = lambda: state
         _original_main()
     finally:
         runner.load_state, runner.reconcile_state_from_events = original_load, original_reconcile
+        runner.find_latest_candidate = original_find
 
 runner.main=_v3_main
 
