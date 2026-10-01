@@ -180,6 +180,7 @@ runner.monitor_position_lifecycle=trail_positions
 from datetime import datetime, timezone
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
+_original_enforce_pending_order_expiry = runner.enforce_pending_order_expiry
 
 def _fresh_v3_state():
     return {"seen": {}, "notified": set(), "deals": set(), "orders": set(),
@@ -187,11 +188,12 @@ def _fresh_v3_state():
             "signal_orders": {}, "pending_signal_notifications": {}}
 
 def _run_scoped_pending(cfg_runtime, state):
-    symbol, magic = cfg_runtime["symbol"], cfg_runtime["magic"]
-    for order in (mt5.orders_get(symbol=symbol) or []):
-        ticket = int(getattr(order, "ticket", 0) or 0)
-        if ticket in state["orders"] and int(getattr(order, "magic", 0) or 0) == magic:
-            runner._cancel_pending_order(order, state)
+    # Reuse the base runner's TTL guard. The previous V3 override cancelled
+    # every tracked pending order on every poll, ignoring PENDING_TTL_MINUTES.
+    # The base implementation already scopes expiry to this runner's tracked
+    # orders and uses the monotonic creation timestamp, so there is no wall-clock
+    # or broker-server timezone ambiguity.
+    _original_enforce_pending_order_expiry(cfg_runtime, state)
 
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol = cfg_runtime["symbol"]
