@@ -65,6 +65,23 @@ def _forward_find_latest_candidate(candles, symbol):
     candidate = _original_find_latest_candidate(candles, symbol)
     if candidate is None:
         return None
+
+    # MT5 is initialized by runner.main(), so retry watermark initialization
+    # lazily on the first post-initialize candidate scan.
+    if _FORWARD_START_SERVER_TS is None:
+        _init_forward_start_server_ts()
+
+    # Fail closed: without a server-clock watermark, do not execute anything.
+    if _FORWARD_START_SERVER_TS is None:
+        runner.log_event({
+            "event": "STARTUP_WATERMARK_UNAVAILABLE",
+            "symbol": symbol,
+            "executed": False,
+            "reason": "MT5_SERVER_TICK_UNAVAILABLE",
+            "canonical": False,
+        })
+        return None
+
     if _candidate_is_stale(candidate, _FORWARD_START_SERVER_TS):
         runner.log_event({
             "event": "STALE_STARTUP_CANDIDATE_BLOCKED",
