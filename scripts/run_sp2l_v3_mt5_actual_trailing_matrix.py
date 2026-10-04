@@ -80,8 +80,15 @@ def main():
     end=utc(a.end) if a.end else datetime.now(timezone.utc); start=utc(a.start)
     if not mt5.initialize(path=a.mt5_path): raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
     try:
+        info=mt5.symbol_info(a.symbol)
+        if info is None:
+            raise RuntimeError(f"symbol_info failed for {a.symbol}: {mt5.last_error()}")
+        if float(info.point) <= 0:
+            raise RuntimeError(f"Invalid MT5 point for {a.symbol}: {info.point}")
+        PIP=float(info.point)
         ts=trades(a.symbol,start,end,a.magic)
-        if not a.allow_count_diff and len(ts)!=a.expected_trades: raise RuntimeError(f"Expected {a.expected_trades} completed positions, found {len(ts)}. Inspect history first; use --allow-count-diff only deliberately.")
+        if a.expected_trades is not None and len(ts)!=a.expected_trades:
+            raise RuntimeError(f"Expected {a.expected_trades} completed positions, found {len(ts)}.")
         if not ts: raise RuntimeError("No completed trades found.")
         bars=m1(a.symbol,datetime.fromtimestamp(min(x["entry_time"] for x in ts),timezone.utc)-timedelta(minutes=2),datetime.fromtimestamp(max(x["exit_time"] for x in ts),timezone.utc)+timedelta(minutes=2))
         matrix=[]; detail=[]
