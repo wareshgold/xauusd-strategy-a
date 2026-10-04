@@ -34,6 +34,7 @@ _original_find_latest_candidate=cfg.find_latest_candidate
 # same timestamp basis before applying the forward-only freshness gate.
 # This deliberately does not infer UTC from the broker clock.
 _FORWARD_START_SERVER_TS = None
+_STALE_STARTUP_CANDIDATES_CONSUMED = set()
 
 def _server_now_timestamp():
     tick = mt5.symbol_info_tick("XAUUSD.ecn")
@@ -51,7 +52,6 @@ def _init_forward_start_server_ts():
     _FORWARD_START_SERVER_TS = int(server_now - (time.time() - _FORWARD_START_EPOCH))
 
 _FORWARD_START_EPOCH = time.time()
-_init_forward_start_server_ts()
 
 def _candidate_is_stale(candidate, watermark):
     """Return True when a candidate belongs to the pre-startup replay window."""
@@ -70,6 +70,14 @@ def _forward_find_latest_candidate(candles, symbol):
     # lazily on the first post-initialize candidate scan.
     if _FORWARD_START_SERVER_TS is None:
         _init_forward_start_server_ts()
+        if _FORWARD_START_SERVER_TS is not None:
+            runner.log_event({
+                "event": "FORWARD_START_WATERMARK_INITIALIZED",
+                "symbol": symbol,
+                "startup_watermark_server_ts": _FORWARD_START_SERVER_TS,
+                "executed": False,
+                "canonical": False,
+            })
 
     # Fail closed: without a server-clock watermark, do not execute anything.
     if _FORWARD_START_SERVER_TS is None:
@@ -83,15 +91,18 @@ def _forward_find_latest_candidate(candles, symbol):
         return None
 
     if _candidate_is_stale(candidate, _FORWARD_START_SERVER_TS):
-        runner.log_event({
-            "event": "STALE_STARTUP_CANDIDATE_BLOCKED",
-            "symbol": symbol,
-            "trigger_time": int(candidate.get("trigger_time", 0) or 0),
-            "startup_watermark_server_ts": _FORWARD_START_SERVER_TS,
-            "reason": "TRIGGER_AT_OR_BEFORE_FORWARD_START",
-            "executed": False,
-            "canonical": False,
-        })
+        stale_key = (symbol, int(candidate.get("trigger_time", 0) or 0))
+        if stale_key not in _STALE_STARTUP_CANDIDATES_CONSUMED:
+            _STALE_STARTUP_CANDIDATES_CONSUMED.add(stale_key)
+            runner.log_event({
+                "event": "STALE_STARTUP_CANDIDATE_BLOCKED",
+                "symbol": symbol,
+                "trigger_time": stale_key[1],
+                "startup_watermark_server_ts": _FORWARD_START_SERVER_TS,
+                "reason": "TRIGGER_AT_OR_BEFORE_FORWARD_START",
+                "executed": False,
+                "canonical": False,
+            })
         return None
     return candidate
 runner.find_latest_candidate=_forward_find_latest_candidate
