@@ -1,4 +1,4 @@
-"""SP2L V3 XAUUSD Demo forward runner: frozen V2 geometry + research Trail 10.
+﻿"""SP2L V3 XAUUSD Demo forward runner: frozen V2 geometry + research Trail 10.
 
 Trailing is evaluated from the latest COMPLETED M1 bar, matching the V3
 historical model. The initial TP remains fixed. Broker fills/exits are recorded
@@ -135,6 +135,18 @@ def trail_positions(cfg_runtime,state):
     bid=float(getattr(tick,"bid",0.0) or 0.0)
     ask=float(getattr(tick,"ask",0.0) or 0.0)
     point=float(getattr(info,"point",0.0) or 0.0)
+    if point <= 0:
+        return
+
+    # Research unit mapping for V3:
+    # ACT10 = 10 MT5 points
+    # TRAIL2 = 2 MT5 points
+    # These are MT5-point units, not source-confirmed "pip" semantics.
+    activation_points=10.0
+    trail_points=2.0
+    activation_price=activation_points*point
+    trail_distance_price=trail_points*point
+
     stops_level_points=int(getattr(info,"trade_stops_level",0) or 0)
     min_stop_distance=stops_level_points*point
 
@@ -154,8 +166,8 @@ def trail_positions(cfg_runtime,state):
 
         if int(p.type)==mt5.POSITION_TYPE_BUY:
             favorable=high-entry
-            if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
-            new_sl=cfg.trail_stop("BUY",high)
+            if favorable < activation_price: continue
+            new_sl=high-trail_distance_price
             if new_sl<=old_sl or new_sl>=high: continue
             # BUY SL must remain below the current Bid and broker stop level.
             max_valid_sl=bid-min_stop_distance
@@ -173,8 +185,8 @@ def trail_positions(cfg_runtime,state):
             direction="BUY"
         else:
             favorable=entry-low
-            if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
-            new_sl=cfg.trail_stop("SELL",low)
+            if favorable < activation_price: continue
+            new_sl=low+trail_distance_price
             if old_sl>0 and new_sl>=old_sl: continue
             if new_sl<=low: continue
             # SELL SL must remain above the current Ask and broker stop level.
@@ -211,8 +223,12 @@ def trail_positions(cfg_runtime,state):
             "completed_bar_time":completed_bar_time,
             "bar_high":high,"bar_low":low,"entry":entry,
             "old_sl":old_sl,"new_sl":float(new_sl),"tp":tp,
-            "trail_pips":cfg.TRAIL_PIPS,
-            "trail_distance_price":cfg.TRAIL_DISTANCE_PRICE,
+            "trail_unit":"MT5_POINT",
+            "trail_activation_points":float(activation_points),
+            "trail_activation_price":float(activation_price),
+            "trail_distance_points":float(trail_points),
+            "trail_distance_price":float(trail_distance_price),
+            "mt5_point":float(point),
             "success":ok,"retcode":int(send.retcode) if send else None,
             "comment":str(send.comment) if send else None,"canonical":False})
 
@@ -242,7 +258,7 @@ def _run_scoped_pending(cfg_runtime, state):
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol = cfg_runtime["symbol"]
     tracked = set(state["orders"])
-    orders = (mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
+    orders = list(mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
     orders += list(mt5.orders_get(symbol=symbol) or [])
     for order in orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
