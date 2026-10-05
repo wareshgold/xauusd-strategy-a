@@ -273,7 +273,11 @@ def today_stats() -> tuple[str, str, str]:
                 except Exception:
                     continue
                 events.append(ev)
-                if not str(ev.get("ts_utc", "")).startswith(today):
+                try:
+                    ev_dt = datetime.fromisoformat(str(ev.get("ts_utc", "")).replace("Z", "+00:00")).astimezone(IRAN_TZ)
+                except (ValueError, TypeError):
+                    continue
+                if ev_dt.strftime("%Y-%m-%d") != today:
                     continue
                 sym = str(ev.get("symbol") or "?")
                 b = per_symbol.setdefault(sym, {"sig": 0, "w": 0, "l": 0, "net": 0.0})
