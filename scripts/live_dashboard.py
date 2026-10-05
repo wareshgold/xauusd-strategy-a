@@ -322,7 +322,7 @@ def today_stats() -> tuple[str, str, str]:
         for s, b in sorted(per_symbol.items())
     ]
     stats = (
-        f"<h2>Today (UTC {today})</h2><table>"
+        f"<h2>Today (Tehran {today})</h2><table>"
         f"<tr><th>Signals</th><th>Fills</th><th>Closed</th><th>✅</th><th>❌</th><th>Net USD</th></tr>"
         f"<tr><td class='big'>{signals}</td><td>{fills}</td><td>{closes}</td>"
         f"<td class='ok'>{wins}</td><td class='bad'>{losses}</td><td class='big'>{net:+.2f}</td></tr>"
@@ -335,7 +335,7 @@ def today_stats() -> tuple[str, str, str]:
         for o in orders[-12:]
     )
     orders_html = (
-        f"<h2>Today's orders</h2><table><tr><th>Time UTC</th><th>Symbol</th><th>Dir</th><th>Outcome</th></tr>{order_rows}</table>"
+        f"<h2>Today's orders</h2><table><tr><th>Time Tehran</th><th>Symbol</th><th>Dir</th><th>Outcome</th></tr>{order_rows}</table>"
         if order_rows else "<h2>Today's orders</h2><p class='dim'>none yet today</p>"
     )
     return stats, orders_html, events
@@ -359,7 +359,7 @@ def render() -> str:
         )
     events_html = (
         "<h2>Last 40 events (newest first)</h2><table>"
-        "<tr><th>Time UTC</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>"
+        "<tr><th>Time Tehran</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>"
         + "".join(ev_rows) + "</table>"
     )
     return (
