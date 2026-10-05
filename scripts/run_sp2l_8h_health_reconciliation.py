@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -78,10 +77,6 @@ def load_events(path: Path):
         except Exception:
             continue
     return events
-
-
-def event_key(obj):
-    return (str(obj.get("symbol", "")), int(obj.get("candidate", obj).get("trigger_time", 0) or 0), str(obj.get("candidate", obj).get("direction", "")))
 
 
 def candidate_key(c):
@@ -197,10 +192,13 @@ def main():
             print("LATEST_START_UTC=NOT_FOUND")
         print()
 
+        # Match the live runner's 120-bar (2h) warm-up window so a setup
+        # formed shortly before the health window can still produce a trigger
+        # inside the window. Warm-up bars are never counted as 8h candidates.
         rates = mt5.copy_rates_range(
             args.symbol,
             mt5.TIMEFRAME_M1,
-            datetime.fromtimestamp(start_ts - 180, tz=timezone.utc),
+            datetime.fromtimestamp(start_ts - 7200, tz=timezone.utc),
             datetime.fromtimestamp(end_ts, tz=timezone.utc),
         )
         if rates is None:
@@ -378,6 +376,7 @@ def main():
             "point": point,
             "latest_runner_start_utc": session_start_dt.isoformat() if latest_start else None,
             "m1_bars": len(rates),
+            "m1_warmup_seconds": 7200,
             "replay_candidates_8h": len(all_replay),
             "replay_candidates_after_latest_start": len(session_replay),
             "live_candidate_events_after_latest_start": len(live_candidates),
