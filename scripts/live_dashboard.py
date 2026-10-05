@@ -28,6 +28,7 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 from flask import Flask, Response
@@ -101,13 +102,14 @@ def _runner_mode_from_process() -> tuple[str, str] | None:
         return None
 
 STATE_FILE = ROOT / "runtime" / "sp2l_multi_symbol_forward_state.json"
+HEALTH_FILE = ROOT / "runtime" / "sp2l_multi_symbol_forward_health.json"
 RUNNER_LOCK = ROOT / "runtime" / "sp2l_multi_symbol_forward_runner.lock"
 WATCHDOG_PID = ROOT / "runtime" / "forward_watchdog.pid"
 EVENTS = ROOT / "artifacts" / "forward-test" / "SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl"
 
 PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8790"))
 REFRESH_SECONDS = 5
-IRAN_TZ = timezone(__import__("datetime").timedelta(hours=3, minutes=30))
+IRAN_TZ = ZoneInfo("Asia/Tehran")
 
 app = Flask(__name__)
 
@@ -142,6 +144,45 @@ def _read_pid(path: Path) -> int:
         return int(path.read_text(encoding="utf-8").strip() or 0)
     except Exception:
         return 0
+
+
+def runner_health() -> str:
+    """Read-only operational health written by the live runner."""
+    try:
+        raw = json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
+        ts = str(raw.get("ts_utc") or "")
+        beat_dt = datetime.fromisoformat(ts.replace("Z", "+00:00")) if ts else None
+        age = time.time() - beat_dt.timestamp() if beat_dt else 999999.0
+        pid = int(raw.get("pid") or 0)
+        alive = _proc_alive(pid)
+        mt5_ok = raw.get("mt5_connected") is True
+        poll_ok = raw.get("poll_ok") is True
+        cpu_delta = float(raw.get("process_cpu_delta") or 0.0)
+        m1_ts = raw.get("m1_bar_time")
+        m1_text = "—"
+        if m1_ts:
+            m1_text = datetime.fromtimestamp(int(m1_ts), timezone.utc).astimezone(IRAN_TZ).strftime("%H:%M:%S")
+        if age <= 45 and alive:
+            health = '<span class="ok">🟢 HEALTHY</span>'
+        elif age <= 120 and alive:
+            health = '<span class="warn">🟡 STALE</span>'
+        else:
+            health = '<span class="bad">🔴 OFFLINE / STALE</span>'
+        poll = '<span class="ok">OK</span>' if poll_ok else '<span class="bad">FAILED</span>'
+        mt5 = '<span class="ok">CONNECTED</span>' if mt5_ok else '<span class="bad">DISCONNECTED</span>'
+        activity = '<span class="ok">ACTIVE</span>' if cpu_delta > 0 else '<span class="warn">NO CPU DELTA</span>'
+        return (
+            '<h2>Runner Health</h2><table>'
+            f"<tr><th>Overall</th><td class='big'>{health}</td></tr>"
+            f"<tr><th>Process</th><td>{'alive' if alive else 'dead'} (PID {pid})</td></tr>"
+            f"<tr><th>MT5</th><td>{mt5}</td></tr>"
+            f"<tr><th>Market poll</th><td>{poll} · M1 {m1_text} Tehran</td></tr>"
+            f"<tr><th>CPU activity</th><td>{activity} · Δ {cpu_delta:.6f}s</td></tr>"
+            f"<tr><th>Heartbeat</th><td>{age:.0f}s ago</td></tr>"
+            '</table>'
+        )
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return '<h2>Runner Health</h2><p class="bad">🔴 NO HEALTH TELEMETRY — runner health file not available</p>'
 
 
 def session_status() -> str:
@@ -217,7 +258,7 @@ def mt5_status() -> str:
 
 
 def today_stats() -> tuple[str, str, str]:
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(IRAN_TZ).strftime("%Y-%m-%d")
     signals = fills = closes = 0
     wins = losses = 0
     net = 0.0
@@ -257,14 +298,14 @@ def today_stats() -> tuple[str, str, str]:
                 elif kind == "ORDER_RESULT":
                     res = ev.get("result") or {}
                     orders.append({
-                        "t": ev.get("ts_utc", "")[11:19],
+                        "t": (datetime.fromisoformat(ev.get("ts_utc", "").replace("Z","+00:00")).astimezone(IRAN_TZ).strftime("%H:%M:%S") if ev.get("ts_utc") else "—"),
                         "sym": sym,
                         "dir": str(ev.get("signal_id", "")).rsplit(":", 1)[-1],
                         "outcome": "FILLED/PLACED" if res.get("ok") else f"REJECT {res.get('reason') or res.get('retcode')}",
                     })
                 elif kind == "PENDING_ORDER_EXPIRED":
                     orders.append({
-                        "t": ev.get("ts_utc", "")[11:19],
+                        "t": (datetime.fromisoformat(ev.get("ts_utc", "").replace("Z","+00:00")).astimezone(IRAN_TZ).strftime("%H:%M:%S") if ev.get("ts_utc") else "—"),
                         "sym": sym,
                         "dir": "—",
                         "outcome": f"EXPIRED ({ev.get('outcome')})",
@@ -300,7 +341,7 @@ def render() -> str:
     stats, orders_html, events = today_stats()
     ev_rows = []
     for ev in reversed(events[-40:]):
-        t = str(ev.get("ts_utc", ""))[11:19]
+        t = (datetime.fromisoformat(str(ev.get("ts_utc", "")).replace("Z","+00:00")).astimezone(IRAN_TZ).strftime("%H:%M:%S") if ev.get("ts_utc") else "—")
         kind = str(ev.get("event", "?"))
         sym = str(ev.get("symbol") or "")
         detail = ev.get("detail") or ev.get("outcome") or (
@@ -318,7 +359,7 @@ def render() -> str:
         + "".join(ev_rows) + "</table>"
     )
     return (
-        _PG_UP + session_status() + mt5_status() + stats + orders_html + events_html
+        _PG_UP + session_status() + runner_health() + mt5_status() + stats + orders_html + events_html
         + f"<p class='dim'>{datetime.now(IRAN_TZ).strftime('%H:%M:%S')} Iran time · "
         + "read-only page · dashboard never places orders</p></body></html>"
     )
