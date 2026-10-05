@@ -190,6 +190,38 @@ def volume_guard(cfg: dict) -> tuple[bool, str]:
 
 
 RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
+RUNNER_HEALTH_FILE = RUNTIME / "sp2l_multi_symbol_forward_health.json"
+HEALTH_HEARTBEAT_SECONDS = float(os.getenv("SP2L_HEALTH_HEARTBEAT_SECONDS", "15"))
+
+
+def write_runner_health(*, poll_ok: bool | None = None, symbol: str | None = None, m1_bar_time: int | None = None, mt5_connected: bool | None = None) -> None:
+    """Write read-only operational health telemetry; never affects trading decisions."""
+    now_mono = time.monotonic()
+    last = getattr(write_runner_health, "_last_mono", 0.0)
+    if last and now_mono - last < HEALTH_HEARTBEAT_SECONDS and poll_ok is None:
+        return
+    write_runner_health._last_mono = now_mono
+    current_cpu = time.process_time()
+    previous_cpu = getattr(write_runner_health, "_last_cpu", current_cpu)
+    write_runner_health._last_cpu = current_cpu
+    try:
+        payload = {
+            "ts_utc": now_utc(),
+            "pid": os.getpid(),
+            "poll_ok": poll_ok,
+            "symbol": symbol,
+            "m1_bar_time": int(m1_bar_time) if m1_bar_time else None,
+            "mt5_connected": mt5_connected,
+            "process_cpu_seconds": current_cpu,
+            "process_cpu_delta": max(0.0, current_cpu - previous_cpu),
+            "canonical": False,
+        }
+        RUNNER_HEALTH_FILE.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+    except OSError:
+        pass
+
+
+
 
 
 def acquire_runner_lock() -> int | None:
@@ -1264,7 +1296,12 @@ def main() -> None:
                 monitor_symbol_lifecycle(cfg, state)
                 data = rates(symbol)
                 if data is None:
+                    term = mt5.terminal_info()
+                    write_runner_health(poll_ok=False, symbol=symbol, mt5_connected=bool(term and term.connected))
                     continue
+                latest_m1_bar_time = int(data[-1]["time"]) if len(data) else None
+                term = mt5.terminal_info()
+                write_runner_health(poll_ok=True, symbol=symbol, m1_bar_time=latest_m1_bar_time, mt5_connected=bool(term and term.connected))
                 candidate = find_latest_candidate(data, symbol)
                 trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}" if candidate else None
                 if candidate is None or seen_trigger.get(symbol) == trigger_key:
