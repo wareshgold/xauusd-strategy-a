@@ -100,7 +100,7 @@ def main():
             prefix=rows[:i+1]
             setup=detect_setup(prefix,args.symbol)
             if not setup: continue
-            c=causal_candidate_for_setup(prefix,i-2,setup)
+            c=causal_candidate_for_setup(prefix,i,setup)
             # detect() over prefix ends at i; setup_end is i-2? We report the
             # actual three-bar setup and its immediate next-bar trigger.
             if c and start.timestamp() <= c["trigger_time"] <= end.timestamp():
