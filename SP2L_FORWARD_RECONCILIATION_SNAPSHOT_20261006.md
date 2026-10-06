@@ -14,7 +14,7 @@ Workflow position:
 
 SOURCE RESOLUTION -> SYNTHETIC FIXTURES -> FROZEN GEOMETRY -> DEV -> UNTOUCHED VALIDATION -> ROBUSTNESS/STABILITY -> FRESH HOLDOUT -> PRODUCTION
 
-Current position: **DEV / FORWARD RECONCILIATION / EXPERIMENTAL TRAILING SEMANTICS AUDIT**
+Current position: **DEV / FORWARD RECONCILIATION / LIVE DEMO RUN — SEMANTICS AUDIT CONTINUES**
 
 ---
 
@@ -26,9 +26,13 @@ Branch:
 
 `research/sp2l-v3-forward-reconciliation-20261003`
 
-GitHub branch HEAD at snapshot creation:
+GitHub branch HEAD after forward-runner lifecycle fixes:
 
-`c752e7a401a6f08d305f8473993696d856a4b3dc`
+`00aa64bfb3b89dd09b53d3f09ddc55bec3635580`
+
+Relevant fixes since the health snapshot:
+- `fdc77f2a201d43877bdff0b24406ffdb4f5e50d4` — V3 forward lifecycle history queries now use the observed MT5 server-clock domain.
+- `00aa64bfb3b89dd09b53d3f09ddc55bec3635580` — Telegram TP label now reflects configured `TP_R` (2R), avoiding misleading 1R reporting.
 
 Latest commit:
 
