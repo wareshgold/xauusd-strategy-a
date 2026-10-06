@@ -72,3 +72,46 @@ def test_registered_identity_validates_historical_test_spec():
     assert registry.validate_spec(spec, "CONTENT-ABC") is spec
     with pytest.raises(DatasetRegistryError):
         registry.validate_spec(spec, "CONTENT-CHANGED")
+
+
+
+def artifact(sha="a" * 64, artifact_id="ART-001"):
+    from strategy_factory.datasets import DatasetArtifact
+    return DatasetArtifact(
+        artifact_id=artifact_id,
+        location="artifacts/datasets/sample.csv",
+        content_sha256=sha,
+        byte_size=128,
+        format="CSV",
+    )
+
+
+def test_artifact_hash_is_bound_to_dataset_content_identity():
+    registry = DatasetRegistry()
+    d = dataset(role=DatasetRole.FRESH_HOLDOUT, immutable=True)
+    identity = registry.register(d, "a" * 64, artifact=artifact())
+    assert identity.artifact is not None
+    assert identity.artifact.content_sha256 == "a" * 64
+
+
+def test_artifact_hash_mismatch_is_rejected():
+    registry = DatasetRegistry()
+    d = dataset(role=DatasetRole.FRESH_HOLDOUT, immutable=True)
+    with pytest.raises(DatasetRegistryError):
+        registry.register(d, "b" * 64, artifact=artifact())
+
+
+def test_locked_artifact_cannot_be_replaced():
+    registry = DatasetRegistry()
+    d = dataset(role=DatasetRole.FRESH_HOLDOUT, immutable=True)
+    registry.register(d, "a" * 64, artifact=artifact())
+    with pytest.raises(DatasetRegistryError):
+        registry.register(d, "a" * 64, artifact=artifact(artifact_id="ART-002"))
+
+
+def test_artifact_metadata_validation_is_strict():
+    from strategy_factory.datasets import DatasetArtifact
+    with pytest.raises(DatasetRegistryError):
+        DatasetArtifact("ART", "x", "not-a-sha", 1, "CSV").validate()
+    with pytest.raises(DatasetRegistryError):
+        DatasetArtifact("ART", "x", "a" * 64, -1, "CSV").validate()
