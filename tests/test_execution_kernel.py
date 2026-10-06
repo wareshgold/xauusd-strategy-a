@@ -82,6 +82,46 @@ def test_sell_tick_hits_stop_then_does_not_look_ahead():
     assert result.metrics.net_r == -1.0
 
 
+def test_tick_feasible_rejects_ohlc_only_events():
+    with pytest.raises(ExecutionKernelError, match="bid and ask"):
+        HistoricalExecutionKernel().execute(
+            semantics=ExecutionSemantics.TICK_FEASIBLE,
+            instructions=[instruction()],
+            events=[
+                MarketEvent(
+                    "2026-01-01T00:00:00Z",
+                    0,
+                    high=103.0,
+                    low=98.0,
+                )
+            ],
+        )
+
+
+def test_tick_feasible_does_not_fallback_from_missing_quote_side():
+    with pytest.raises(ExecutionKernelError, match="bid and ask"):
+        HistoricalExecutionKernel().execute(
+            semantics=ExecutionSemantics.TICK_FEASIBLE,
+            instructions=[instruction()],
+            events=[
+                MarketEvent(
+                    "2026-01-01T00:00:00Z",
+                    0,
+                    bid=100.0,
+                    high=103.0,
+                    low=98.0,
+                ),
+                MarketEvent(
+                    "2026-01-01T00:00:01Z",
+                    1,
+                    bid=102.0,
+                    high=102.0,
+                    low=102.0,
+                ),
+            ],
+        )
+
+
 def test_events_must_be_strictly_chronological():
     with pytest.raises(ExecutionKernelError):
         HistoricalExecutionKernel().execute(
