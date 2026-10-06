@@ -57,3 +57,5 @@ from .source_resolution import (
 from .readiness import SourceReadiness, evaluate_source_readiness
 from .source_ledger import ResolutionRecord, ResolutionStatus, SourceLedgerError, SourceResolutionLedger
 from .source_gate import SourceGateResult, SourceGateStatus, evaluate_source_gate
+
+from .passport_gate import PassportEligibility, evaluate_passport_eligibility
