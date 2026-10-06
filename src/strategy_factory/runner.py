@@ -11,6 +11,7 @@ from .execution import ExecutionReceipt, execution_gate
 from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
 from .models import GateResult, GateStatus
 from .research_provenance import ResearchProvenanceResult, evaluate_research_provenance
+from .research_record import ResearchRecord, ResearchRecordLedger
 from .runs import ResearchRunError, ResearchRunIdentity, ResearchRunLedger
 from .snapshot import ReadinessSnapshot
 from .test_contract import HistoricalTestSpec
@@ -53,9 +54,11 @@ class ResearchJobRunner:
         *,
         runs: ResearchRunLedger,
         evidence: EvidenceLedger,
+        records: ResearchRecordLedger | None = None,
     ) -> None:
         self.runs = runs
         self.evidence = evidence
+        self.records = records or ResearchRecordLedger()
         self._completed_jobs: set[str] = set()
 
     def run(
@@ -198,6 +201,11 @@ class ResearchJobRunner:
                 "end-to-end research provenance gate rejected the result"
             )
 
+        record = ResearchRecord.from_components(
+            run, evidence, snapshot, audit, provenance
+        )
+        record = self.records.record(record)
+
         self._completed_jobs.add(job.job_id)
 
         return ResearchJobRunResult(
@@ -209,5 +217,6 @@ class ResearchJobRunner:
             snapshot=snapshot,
             audit=audit,
             provenance=provenance,
+            record=record,
             gates=(execution_result, acceptance, provenance_gate),
         )
