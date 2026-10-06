@@ -33,6 +33,34 @@ class DatasetArtifact:
             "format": self.format,
         }
 
+
+@dataclass(frozen=True)
+class DatasetArtifact:
+    """Immutable reference to the concrete stored dataset artifact."""
+
+    artifact_id: str
+    location: str
+    content_sha256: str
+    byte_size: int
+    format: str
+
+    def validate(self) -> None:
+        if not self.artifact_id or not self.location or not self.content_sha256 or not self.format:
+            raise DatasetRegistryError("artifact identity, location, hash, and format are required")
+        if len(self.content_sha256) != 64 or any(c not in "0123456789abcdef" for c in self.content_sha256.lower()):
+            raise DatasetRegistryError("artifact content_sha256 must be a 64-character hexadecimal SHA-256")
+        if self.byte_size < 0:
+            raise DatasetRegistryError("artifact byte_size cannot be negative")
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "artifact_id": self.artifact_id,
+            "location": self.location,
+            "content_sha256": self.content_sha256,
+            "byte_size": self.byte_size,
+            "format": self.format,
+        }
+
 from .test_contract import ContractViolation, DatasetRole, HistoricalTestSpec, TestDataset
 
 
@@ -49,6 +77,7 @@ class DatasetIdentity:
     immutable: bool
     locked: bool = False
     artifact: DatasetArtifact | None = None
+    artifact: DatasetArtifact | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -58,6 +87,7 @@ class DatasetIdentity:
             "role": self.role.value,
             "immutable": self.immutable,
             "locked": self.locked,
+            "artifact": None if self.artifact is None else self.artifact.as_dict(),
             "artifact": None if self.artifact is None else self.artifact.as_dict(),
         }
 
