@@ -70,7 +70,7 @@ class ResearchRecord:
     def validate(self) -> None:
         if not self.run_id or not self.strategy_id or not self.strategy_revision:
             raise ResearchRecordError("research record identity is incomplete")
-        if self.provenance_status is not ResearchProvenanceStatus.PASS:
+        if self.provenance_status.value != ResearchProvenanceStatus.PASS.value:
             raise ResearchRecordError("research record requires PASS provenance status")
         expected = hashlib.sha256(self._payload(self.as_dict(include_fingerprint=False))).hexdigest()
         if self.fingerprint != expected:
@@ -91,7 +91,7 @@ class ResearchRecord:
         evidence.validate()
         snapshot.validate()
         audit.validate()
-        if provenance.status is not ResearchProvenanceStatus.PASS:
+        if provenance.status.value != ResearchProvenanceStatus.PASS.value:
             raise ResearchRecordError("cannot record non-PASS research provenance")
         if evidence.run_id != run.run_id or evidence.run_fingerprint != run.fingerprint:
             raise ResearchRecordError("evidence is not bound to research run")
