@@ -232,3 +232,36 @@ Commits:
 - `9c4e3a60` bind EvidenceBundle to ResearchMetrics.
 - `67f0dcb6` update provenance tests.
 - `82a50a07` export metrics contract.
+
+
+## Increment 2026-10-06 — Historical Execution Contract
+
+Added:
+- `src/strategy_factory/execution.py`
+- `tests/test_execution_contract.py`
+
+The execution contract binds:
+- HistoricalTestSpec
+- ResearchRunIdentity
+- ExecutionReceipt
+- declared ExecutionSemantics
+- strategy revision
+- execution engine revision
+- input fingerprint
+- completed execution
+- typed ResearchMetrics
+
+The contract explicitly prevents a receipt declared as `TICK_FEASIBLE` from being accepted when the test spec/run declare `BAR_CLOSE_RESEARCH`, or vice versa.
+
+Important boundary:
+- This layer does **not** implement a backtest engine.
+- It does **not** prove tick feasibility by itself.
+- It records and validates the semantics claimed by an execution adapter.
+- It does not define strategy geometry, optimization criteria, profitability thresholds, or production decisions.
+
+Gate added:
+- `EXECUTION_CONTRACT`
+
+Commits:
+- `0239944d` execution contract.
+- `dc75b6d9` execution contract tests.
