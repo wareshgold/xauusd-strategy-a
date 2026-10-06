@@ -315,7 +315,31 @@ The kernel will eventually handle explicitly declared mechanics such as:
 BAR_CLOSE_RESEARCH and TICK_FEASIBLE must remain distinct. A model cannot claim tick feasibility merely because it was run on M1 bars.
 
 ### Phase 5 — SP2L Strategy Engine / Source Resolution
-Status: BLOCKED BY SOURCE RESOLUTION / FROZEN GEOMETRY
+Status: SOURCE RESOLUTION ACTIVE — FROZEN GEOMETRY BLOCKED
+
+Source-resolution ledger expanded from 6 to 18 explicit blocking questions.
+
+Confirmed source meaning remains limited to what the evidence supports:
+- P.GAP is distinct from Common GAP; valid BO is P-Gap.
+- F12 describes BUY retrace to previous-candle Low and SELL retrace to previous-candle High, but executable interaction/fill semantics remain unresolved.
+- F13 confirms the 2X secondary-entry 50% relation; complete execution/management semantics remain unresolved.
+- F10 places the stop behind the candle where the Spike started, but the exact anchor remains unresolved.
+- C04 confirms the trade-template concepts SL / Entry / TP1 / TP2 / 2X, without freezing unsupported formulas.
+- C05 references the 15-minute MA50, while exact timeframe/MA semantics remain unresolved.
+- C06 references deletion of an unfilled Buy Limit within 1–2 candidate candles; exact deterministic lifecycle semantics remain unresolved.
+
+Additional source-gated questions now explicitly tracked:
+- P-Gap OHLC construction, referenced candles, equality boundaries, and relevant High/Low selection.
+- Entry and Leg-2-origin anchors.
+- AB=CD A/B/C/D anchors and tolerance.
+- TP1 and TP2 formulas.
+- Full 2X execution/sizing/target/reward-management semantics.
+- Bearish symmetry.
+- Exact timeframe/MA semantics.
+
+Primary source archive status independently remains: G4 exact OHLC endpoints UNRESOLVED, F10 stop geometry UNRESOLVED, F14 AB=CD anchors/tolerance PARTIAL/UNRESOLVED, F15 bearish mirror source-consistent but not independently frozen, Frozen Geometry BLOCKED.
+
+No canonical Strategy Engine implementation is permitted while any blocking question remains OPEN.
 
 Only after canonical source resolution and frozen geometry.
 
