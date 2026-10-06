@@ -54,7 +54,7 @@ def test_wrong_record_is_rejected():
 def test_profile_change_changes_evidence_fingerprint():
     run, evidence, snapshot, audit, provenance = chain(DatasetRole.DEVELOPMENT.value)
     from strategy_factory.research_record import ResearchRecord
-    record = ResearchRecord.from_components(run=run, audit=audit, provenance=provenance)
+    record = ResearchRecord.from_components(run, evidence, snapshot, audit, provenance)
     first = bind_stability_evidence(record, profile())
     changed = evaluate_stability((StabilitySegment("S1", "A", 10, 0.3, 0.6), StabilitySegment("S2", "B", 12, -0.1, 0.5)))
     second = bind_stability_evidence(record, changed)
