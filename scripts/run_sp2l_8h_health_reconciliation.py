@@ -58,6 +58,30 @@ def iso(ts):
     return datetime.fromtimestamp(int(ts), tz=timezone.utc).isoformat()
 
 
+def mt5_server_offset_seconds(symbol: str) -> int:
+    """Return the broker/server clock offset used by MT5 bar timestamps."""
+    tick = mt5.symbol_info_tick(symbol)
+    tick_ts = int(getattr(tick, "time", 0) or 0) if tick else 0
+    if tick_ts <= 0:
+        raise RuntimeError("MT5 server clock unavailable: no symbol tick")
+    delta = tick_ts - int(datetime.now(timezone.utc).timestamp())
+    hours = round(delta / 3600)
+    if abs(delta - hours * 3600) > 900 or not (-12 <= hours <= 14):
+        raise RuntimeError(f"MT5 server offset is not a stable whole-hour offset: {delta}s")
+    return int(hours * 3600)
+
+
+def server_ts_from_utc_dt(utc_dt: datetime, server_offset_seconds: int) -> int:
+    return int(utc_dt.timestamp()) + int(server_offset_seconds)
+
+
+def server_dt_for_mt5_api(utc_dt: datetime, server_offset_seconds: int) -> datetime:
+    return datetime.fromtimestamp(
+        server_ts_from_utc_dt(utc_dt, server_offset_seconds),
+        tz=timezone.utc,
+    )
+
+
 def event_ts(obj):
     try:
         return datetime.fromisoformat(str(obj["ts_utc"]).replace("Z", "+00:00"))
@@ -178,8 +202,15 @@ def main():
             and t <= end_dt
         ]
         latest_start = max(starts, key=event_ts) if starts else None
+        # Event timestamps are UTC; MT5 candle/order timestamps in this
+        # terminal use broker/server-clock epoch values. Convert the runner
+        # START instant before comparing it with candidate trigger_time.
+        server_offset_seconds = mt5_server_offset_seconds(args.symbol)
         session_start_dt = event_ts(latest_start) if latest_start else start_dt
-        session_start_ts = max(start_ts, int(session_start_dt.timestamp()))
+        session_start_ts = max(
+            start_ts + server_offset_seconds,
+            server_ts_from_utc_dt(session_start_dt, server_offset_seconds),
+        )
 
         print("=== RUNNER SESSION ===")
         print(f"EVENT_FILE={event_path}")
@@ -188,8 +219,13 @@ def main():
         if latest_start:
             print(f"LATEST_START_UTC={session_start_dt.isoformat()}")
             print(f"LATEST_START_ACCOUNT={login}")
+            print(f"MT5_SERVER_OFFSET_SECONDS={server_offset_seconds}")
+            print(f"LATEST_START_SERVER_TS={session_start_ts}")
+            print(f"LATEST_START_SERVER_TIME={iso(session_start_ts)}")
         else:
             print("LATEST_START_UTC=NOT_FOUND")
+            print(f"MT5_SERVER_OFFSET_SECONDS={server_offset_seconds}")
+            print(f"LATEST_START_SERVER_TS={session_start_ts}")
         print()
 
         # Match the live runner's 120-bar (2h) warm-up window so a setup
@@ -198,8 +234,8 @@ def main():
         rates = mt5.copy_rates_range(
             args.symbol,
             mt5.TIMEFRAME_M1,
-            datetime.fromtimestamp(start_ts - 7200, tz=timezone.utc),
-            datetime.fromtimestamp(end_ts, tz=timezone.utc),
+            server_dt_for_mt5_api(start_dt - timedelta(seconds=7200), server_offset_seconds),
+            server_dt_for_mt5_api(end_dt, server_offset_seconds),
         )
         if rates is None:
             raise SystemExit(f"M1 copy_rates_range failed: {mt5.last_error()}")
@@ -290,8 +326,8 @@ def main():
 
         # MT5 history. We deliberately do not infer fills from price touching;
         # actual broker orders/deals are the execution truth.
-        hist_from = datetime.fromtimestamp(start_ts, tz=timezone.utc)
-        hist_to = datetime.fromtimestamp(end_ts, tz=timezone.utc)
+        hist_from = server_dt_for_mt5_api(start_dt, server_offset_seconds)
+        hist_to = server_dt_for_mt5_api(end_dt, server_offset_seconds)
         orders = list(mt5.history_orders_get(hist_from, hist_to, group=args.symbol) or [])
         deals = list(mt5.history_deals_get(hist_from, hist_to, group=args.symbol) or [])
 
@@ -375,6 +411,9 @@ def main():
             "magic": args.magic,
             "point": point,
             "latest_runner_start_utc": session_start_dt.isoformat() if latest_start else None,
+            "mt5_server_offset_seconds": server_offset_seconds,
+            "latest_runner_start_server_ts": session_start_ts,
+            "latest_runner_start_server_time": iso(session_start_ts),
             "m1_bars": len(rates),
             "m1_warmup_seconds": 7200,
             "replay_candidates_8h": len(all_replay),
