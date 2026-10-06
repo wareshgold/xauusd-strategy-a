@@ -185,3 +185,27 @@ Added:
 - Ledger entries are deterministic and serializable for later audit/persistence layers.
 
 No strategy geometry, optimizer, signal generation, or production decision logic was added.
+
+
+## Increment 2026-10-06 — Research Run Ledger + Evidence Provenance
+
+Added:
+- `src/strategy_factory/runs.py`: immutable research-run identity and deterministic run fingerprint.
+- `src/strategy_factory/evidence.py`: evidence bundles bound to an exact research-run fingerprint.
+- `src/strategy_factory/provenance.py`: standalone provenance gate.
+- `tests/test_research_run_provenance.py`: run/evidence identity, contamination, artifact, and gate coverage.
+
+Governance:
+- A research result is not valid evidence without complete provenance.
+- Run identity binds strategy revision, manifest revision, dataset identity/fingerprint, artifact identity, execution semantics, parameters, objective, and purpose.
+- Reusing a run_id with different provenance is blocked.
+- Evidence with a mismatched run fingerprint is blocked.
+- Holdout datasets remain blocked for fitting/optimization through the existing usage ledger.
+- Provenance is a separate gate and does not silently change production eligibility or define canonical strategy rules.
+- No live runner, MT5 execution, signal generation, optimizer, or SP2L geometry was added.
+
+Commits:
+- `324a7354` research-run ledger.
+- `7d43b06f` evidence bundle ledger.
+- `0e217fd1` provenance gate.
+- `6580d920` provenance tests.
