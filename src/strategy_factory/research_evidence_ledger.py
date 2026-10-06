@@ -56,7 +56,10 @@ class ResearchEvidenceLedger:
         self._entries: list[ResearchEvidenceLedgerEntry] = []
 
     def record(self, bundle: ResearchEvidenceBundle) -> ResearchEvidenceLedgerEntry:
-        bundle.validate()
+        try:
+            bundle.validate()
+        except Exception as exc:
+            raise ResearchEvidenceLedgerError("invalid research evidence bundle") from exc
         candidate = ResearchEvidenceLedgerEntry(
             bundle_fingerprint=bundle.fingerprint,
             run_id=bundle.run_id,
