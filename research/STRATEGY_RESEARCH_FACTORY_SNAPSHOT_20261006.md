@@ -93,3 +93,23 @@ Commits:
 - `9b6d26c6` synthetic fixture suite.
 - `a27f6120` compiler/fixture tests.
 - `c86f9d09` fixture accounting fix.
+
+
+## Increment 2026-10-06 — SP2L Synthetic Fixtures
+
+Added:
+- `src/strategy_factory/sp2l_fixtures.py`: six source-constrained SP2L synthetic fixtures.
+- `tests/test_sp2l_synthetic_fixtures.py`: deterministic fixture coverage.
+- `FixtureExpectation.BLOCKED` and `FixtureBlocked` for intentionally non-executable unresolved cases.
+
+Fixture policy:
+- F13 2X midpoint is executable as a source-confirmed arithmetic contract.
+- C05 M15 MA50 is represented as a source-confirmed contract.
+- F12, F10, C06 and C01 executable geometry/semantics remain BLOCKED where source resolution is incomplete.
+- No P-Gap formula, fill semantics, SL anchor, or pending-order lifetime was invented.
+- Synthetic fixtures are not trading signals and do not generate BUY/SELL decisions.
+
+Commits:
+- `85155e70` explicit BLOCKED fixture outcome.
+- `e0daf7ba` source-aligned SP2L synthetic fixtures.
+- `6fbf9fdc` SP2L synthetic fixture tests.
