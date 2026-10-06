@@ -28,3 +28,14 @@ from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_s
 from .runner import ResearchJobRunResult, ResearchJobRunner, ResearchJobRunnerError
 from .synthetic import SyntheticExecutionAdapter, SyntheticExecutionError, SyntheticExecutionFixture
 from .data import DatasetIngestionError, HistoricalDatasetAdapter, LoadedDataset
+
+from .execution_kernel import (
+    AmbiguityPolicy,
+    EntryInstruction,
+    ExecutionKernelError,
+    HistoricalExecutionKernel,
+    KernelResult,
+    MarketEvent,
+    Side,
+    TradeOutcome,
+)
