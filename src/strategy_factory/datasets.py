@@ -101,6 +101,7 @@ def fingerprint_dataset(dataset: TestDataset, content_fingerprint: str) -> str:
     dataset.validate()
     if not content_fingerprint:
         raise DatasetRegistryError("content fingerprint is required")
+    content_fingerprint = content_fingerprint.lower()
     payload = {
         "data_revision": dataset.data_revision,
         "start": dataset.start,
