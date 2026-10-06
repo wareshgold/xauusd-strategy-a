@@ -87,3 +87,5 @@ from .research_evidence_bundle import (
     validate_research_evidence_bundle,
 )
 from .research_evidence_ledger import ResearchEvidenceLedger, ResearchEvidenceLedgerEntry, ResearchEvidenceLedgerError
+
+from .research_acceptance import ResearchAcceptance, ResearchAcceptanceError, evaluate_research_acceptance
