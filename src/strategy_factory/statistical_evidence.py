@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 from typing import Any
@@ -32,9 +32,8 @@ class StatisticalEvidence:
     def _payload(values: dict[str, Any]) -> bytes:
         return json.dumps(values, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
 
-    def as_dict(self, *, include_fingerprint: bool = True) -> dict[str, Any]:
-        self.validate()
-        data = {
+    def _fingerprint_payload(self) -> dict[str, Any]:
+        return {
             "evidence_revision": self.evidence_revision,
             "run_id": self.run_id,
             "run_fingerprint": self.run_fingerprint,
@@ -45,6 +44,10 @@ class StatisticalEvidence:
             "strategy_revision": self.strategy_revision,
             "statistical_result": self.statistical_result.as_dict(),
         }
+
+    def as_dict(self, *, include_fingerprint: bool = True) -> dict[str, Any]:
+        self.validate()
+        data = self._fingerprint_payload()
         if include_fingerprint:
             data["fingerprint"] = self.fingerprint
         return data
@@ -53,7 +56,7 @@ class StatisticalEvidence:
         if not self.run_id or not self.run_fingerprint:
             raise StatisticalEvidenceError("statistical evidence identity is incomplete")
         self.statistical_result.validate()
-        expected = hashlib.sha256(self._payload(self.as_dict(include_fingerprint=False))).hexdigest()
+        expected = hashlib.sha256(self._payload(self._fingerprint_payload())).hexdigest()
         if self.fingerprint != expected:
             raise StatisticalEvidenceError("statistical evidence fingerprint mismatch")
 
@@ -82,8 +85,8 @@ def bind_statistical_evidence(
         statistical_result=result,
         fingerprint="",
     )
-    fingerprint = hashlib.sha256(evidence._payload(evidence.as_dict(include_fingerprint=False))).hexdigest()
-    return StatisticalEvidence(**{**evidence.__dict__, "fingerprint": fingerprint})
+    fingerprint = hashlib.sha256(evidence._payload(evidence._fingerprint_payload())).hexdigest()
+    return replace(evidence, fingerprint=fingerprint)
 
 
 def validate_statistical_evidence_binding(
