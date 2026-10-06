@@ -5,6 +5,34 @@ import hashlib
 import json
 from typing import Any
 
+
+@dataclass(frozen=True)
+class DatasetArtifact:
+    """Immutable reference to the concrete stored dataset artifact."""
+
+    artifact_id: str
+    location: str
+    content_sha256: str
+    byte_size: int
+    format: str
+
+    def validate(self) -> None:
+        if not self.artifact_id or not self.location or not self.content_sha256 or not self.format:
+            raise DatasetRegistryError("artifact identity, location, hash, and format are required")
+        if len(self.content_sha256) != 64 or any(c not in "0123456789abcdef" for c in self.content_sha256.lower()):
+            raise DatasetRegistryError("artifact content_sha256 must be a 64-character hexadecimal SHA-256")
+        if self.byte_size < 0:
+            raise DatasetRegistryError("artifact byte_size cannot be negative")
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "artifact_id": self.artifact_id,
+            "location": self.location,
+            "content_sha256": self.content_sha256,
+            "byte_size": self.byte_size,
+            "format": self.format,
+        }
+
 from .test_contract import ContractViolation, DatasetRole, HistoricalTestSpec, TestDataset
 
 
@@ -20,6 +48,7 @@ class DatasetIdentity:
     role: DatasetRole
     immutable: bool
     locked: bool = False
+    artifact: DatasetArtifact | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -29,6 +58,7 @@ class DatasetIdentity:
             "role": self.role.value,
             "immutable": self.immutable,
             "locked": self.locked,
+            "artifact": None if self.artifact is None else self.artifact.as_dict(),
         }
 
 
@@ -63,24 +93,13 @@ class DatasetRegistry:
         self._records: dict[str, DatasetIdentity] = {}
         self._fingerprints: dict[str, str] = {}
 
-    def register(
-        self,
-        dataset: TestDataset,
-        content_fingerprint: str,
-        *,
-        lock: bool = False,
-    ) -> DatasetIdentity:
-        dataset.validate()
-        fingerprint = fingerprint_dataset(dataset, content_fingerprint)
-        existing = self._records.get(dataset.dataset_id)
+    def register(\n        self,\n        dataset: TestDataset,\n        content_fingerprint: str,\n        *,\n        lock: bool = False,\n        artifact: DatasetArtifact | None = None,\n    ) -> DatasetIdentity:\n        dataset.validate()\n        if artifact is not None:\n            artifact.validate()\n            if artifact.content_sha256 != content_fingerprint.lower():\n                raise DatasetRegistryError("artifact SHA-256 does not match content_fingerprint")\n        fingerprint = fingerprint_dataset(dataset, content_fingerprint.lower())\n        existing = self._records.get(dataset.dataset_id)
         if existing is not None:
             if existing.fingerprint != fingerprint or existing.data_revision != dataset.data_revision:
                 raise DatasetRegistryError(
                     f"dataset_id {dataset.dataset_id!r} already has a different identity"
                 )
-            if existing.role is not dataset.role:
-                raise DatasetRegistryError("dataset role cannot change after registration")
-            if existing.locked and not lock:
+            if existing.role is not dataset.role:\n                raise DatasetRegistryError("dataset role cannot change after registration")\n            if artifact is not None and existing.artifact is not None and artifact != existing.artifact:\n                raise DatasetRegistryError("registered dataset artifact cannot change")\n            if artifact is not None and existing.artifact is None:\n                raise DatasetRegistryError("registered dataset cannot acquire a new artifact after identity is locked")\n            if existing.locked and not lock:
                 return existing
             return existing
 
@@ -99,8 +118,7 @@ class DatasetRegistry:
             fingerprint=fingerprint,
             role=dataset.role,
             immutable=dataset.immutable,
-            locked=lock or dataset.role is not DatasetRole.DEVELOPMENT,
-        )
+            locked=lock or dataset.role is not DatasetRole.DEVELOPMENT,\n            artifact=artifact,\n        )
         self._records[dataset.dataset_id] = identity
         self._fingerprints[fingerprint] = dataset.dataset_id
         return identity
