@@ -5,9 +5,14 @@ from enum import Enum
 from typing import Any, Callable
 
 
+class FixtureBlocked(RuntimeError):
+    """Raised when a fixture is intentionally non-executable."""
+
+
 class FixtureExpectation(str, Enum):
     ACCEPT = "ACCEPT"
     REJECT = "REJECT"
+    BLOCKED = "BLOCKED"
 
 
 @dataclass(frozen=True)
@@ -42,6 +47,9 @@ class FixtureSuite:
                 evaluator(fixture.input_data)
                 actual = FixtureExpectation.ACCEPT.value
                 details: dict[str, Any] = {}
+            except FixtureBlocked as exc:
+                actual = FixtureExpectation.BLOCKED.value
+                details = {"reason": str(exc)}
             except Exception as exc:
                 actual = FixtureExpectation.REJECT.value
                 details = {"error": str(exc)}
