@@ -531,15 +531,17 @@ def load_state() -> dict:
             "seen": {str(k): v for k, v in raw.get("seen", {}).items()},
             "notified": {str(k) for k in raw.get("notified", [])},
             "deals": {int(k) for k in raw.get("deals", [])},
+            "deal_notifications": {int(k) for k in raw.get("deal_notifications", [])},
             "orders": {int(k) for k in raw.get("orders", [])},
             "positions": {int(k) for k in raw.get("positions", [])},
             "position_orders": {str(k): {int(v) for v in vals} for k, vals in raw.get("position_orders", {}).items()},
             "order_states": {str(k) for k in raw.get("order_states", [])},
             "pending_signal_notifications": {str(k): v for k, v in raw.get("pending_signal_notifications", {}).items()},
             "signal_orders": {str(k): v for k, v in raw.get("signal_orders", {}).items()},
+            "order_created_monotonic": {str(k): float(v) for k, v in raw.get("order_created_monotonic", {}).items()},
         }
     except Exception:
-        return {"seen": {}, "notified": set(), "deals": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}}
+        return {"seen": {}, "notified": set(), "deals": set(), "deal_notifications": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}, "order_created_monotonic": {}}
 
 
 def reconcile_state_from_events(state: dict) -> None:
@@ -625,12 +627,14 @@ def save_state(state: dict) -> None:
         "seen": state["seen"],
         "notified": sorted(state["notified"])[-1000:],
         "deals": sorted(state["deals"])[-1000:],
+        "deal_notifications": sorted(state.get("deal_notifications", set()))[-1000:],
         "orders": sorted(state["orders"])[-1000:],
         "positions": sorted(state["positions"])[-1000:],
         "position_orders": {k: sorted(v) for k, v in state.get("position_orders", {}).items()},
         "order_states": sorted(state["order_states"])[-2000:],
         "pending_signal_notifications": state.get("pending_signal_notifications", {}),
         "signal_orders": state.get("signal_orders", {}),
+        "order_created_monotonic": state.get("order_created_monotonic", {}),
     }, indent=2), encoding="utf-8")
 
 
