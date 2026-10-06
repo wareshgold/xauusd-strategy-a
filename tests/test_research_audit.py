@@ -85,9 +85,23 @@ def test_audit_rejects_mismatched_manifest_revision():
     )
     snapshot = build_readiness_snapshot(manifest, passport, SourceResolutionLedger())
     run = make_run(manifest)
-    run = ResearchRunIdentity(**(run.as_dict() | {"manifest_revision": "OTHER"}))
     evidence = make_evidence(run)
+
+    mismatched_manifest = build_sp2l_research_manifest()
+    mismatched_manifest.revision = "OTHER"
+    mismatched_passport = StrategyPassport(
+        strategy_id=mismatched_manifest.strategy_id,
+        source_revision=mismatched_manifest.revision,
+        geometry_revision="GEOMETRY-PENDING",
+        code_revision="CODE-PENDING",
+        data_revision="DATA-PENDING",
+        execution_model="TICK_FEASIBLE_RESEARCH_ONLY",
+        parameter_set={"canonical": False},
+    )
+    mismatched_snapshot = build_readiness_snapshot(
+        mismatched_manifest, mismatched_passport, SourceResolutionLedger()
+    )
 
     import pytest
     with pytest.raises(AuditBindingError, match="manifest_revision"):
-        bind_research_audit(run, snapshot, evidence)
+        bind_research_audit(run, mismatched_snapshot, evidence)
