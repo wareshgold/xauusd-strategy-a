@@ -244,7 +244,7 @@ Purpose:
 This phase is infrastructure validation, not Strategy A validation.
 
 ### Phase 3 — Historical data adapter / dataset ingestion
-Status: IMPLEMENTED — VERIFICATION PENDING
+Status: VERIFIED — 120 TESTS PASS
 
 Create a deployment-neutral historical-data boundary.
 
@@ -270,7 +270,26 @@ Requirements:
 The data layer must not define strategy geometry.
 
 ### Phase 4 — Generic deterministic historical execution kernel
-Status: PLANNED
+Status: IMPLEMENTED — VERIFICATION PENDING
+
+Added:
+- src/strategy_factory/execution_kernel.py
+- tests/test_execution_kernel.py
+
+The kernel is strategy-agnostic and defines only generic execution mechanics:
+- strictly chronological market-event processing;
+- explicit BUY/SELL entry instructions;
+- deterministic SL/TP lifecycle;
+- explicit BAR_CLOSE_RESEARCH vs TICK_FEASIBLE semantics;
+- explicit same-event ambiguity policy;
+- blocked ambiguity as a first-class outcome;
+- deterministic R accounting, gross profit/loss, PF, and drawdown metrics.
+
+Critical boundary:
+- TICK_FEASIBLE requires ordered observations; an OHLC bar is never treated as an ordered tick stream.
+- BAR_CLOSE_RESEARCH may expose same-event SL/TP ambiguity, but the chosen resolution policy must be explicit.
+- No SP2L geometry, trailing rule, P-Gap logic, fill semantics, or production order logic is implemented here.
+
 
 Build the execution kernel independently from SP2L-specific signal geometry.
 
@@ -418,8 +437,8 @@ Do not:
 
 ## Immediate next milestone
 
-Verify Phase 3 locally with the dataset-adapter suite and the full Factory suite.
+Verify Phase 4 locally with the execution-kernel suite and the full Factory suite.
 
-After Phase 3 is green, freeze the ingestion boundary and proceed to Phase 4: Generic Deterministic Historical Execution Kernel.
+After Phase 4 is green, freeze the generic execution mechanics and proceed to Phase 5 only after source resolution/frozen geometry permits a Strategy Engine.
 
 The active forward-test workstream remains untouched.
