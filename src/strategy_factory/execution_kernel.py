@@ -111,10 +111,29 @@ def _hit_levels(
     instruction: EntryInstruction,
     event: MarketEvent,
 ) -> tuple[bool, bool]:
+    """Evaluate exits using the causal executable side of the quote.
+
+    For a BUY position, exits are evaluated against BID because the long
+    position is closed by selling. For a SELL position, exits are evaluated
+    against ASK because the short position is closed by buying.
+
+    OHLC high/low are used only when quote-side observations are unavailable,
+    which is appropriate for BAR_CLOSE_RESEARCH but does not manufacture tick
+    ordering for TICK_FEASIBLE.
+    """
+    if instruction.side is Side.BUY:
+        exit_price = event.bid
+        if exit_price is not None:
+            return exit_price <= instruction.stop_loss, exit_price >= instruction.take_profit
+        if event.high is None or event.low is None:
+            return False, False
+        return event.low <= instruction.stop_loss, event.high >= instruction.take_profit
+
+    exit_price = event.ask
+    if exit_price is not None:
+        return exit_price >= instruction.stop_loss, exit_price <= instruction.take_profit
     if event.high is None or event.low is None:
         return False, False
-    if instruction.side is Side.BUY:
-        return event.low <= instruction.stop_loss, event.high >= instruction.take_profit
     return event.high >= instruction.stop_loss, event.low <= instruction.take_profit
 
 
@@ -177,7 +196,7 @@ class HistoricalExecutionKernel:
             if entry_event is None:
                 continue
             for event in ordered:
-                if (event.timestamp, event.sequence) < (
+                if (event.timestamp, event.sequence) <= (
                     entry_event.timestamp,
                     entry_event.sequence,
                 ):
