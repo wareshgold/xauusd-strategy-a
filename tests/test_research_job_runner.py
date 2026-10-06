@@ -1,4 +1,7 @@
+import hashlib
 import pytest
+
+from strategy_factory.snapshot import ReadinessSnapshot
 
 from strategy_factory.adapter import build_execution_receipt
 from strategy_factory.datasets import DatasetRegistry
@@ -57,6 +60,31 @@ def make_runner():
     return ResearchJobRunner(runs=runs, evidence=evidence)
 
 
+def make_snapshot(spec):
+    payload = ReadinessSnapshot._fingerprint_payload(
+        snapshot_revision="READINESS-SNAPSHOT-TEST",
+        strategy_id=spec.strategy_id,
+        manifest_revision="M1",
+        manifest_fingerprint="m" * 64,
+        passport_fingerprint="p" * 64,
+        source_ledger={},
+        source_readiness={},
+        passport_eligibility={},
+    )
+    fingerprint = hashlib.sha256(payload).hexdigest()
+    return ReadinessSnapshot(
+        snapshot_revision="READINESS-SNAPSHOT-TEST",
+        strategy_id=spec.strategy_id,
+        manifest_revision="M1",
+        manifest_fingerprint="m" * 64,
+        passport_fingerprint="p" * 64,
+        source_ledger={},
+        source_readiness={},
+        passport_eligibility={},
+        fingerprint=fingerprint,
+    )
+
+
 class FakeAdapter:
     engine_revision = "ENGINE-1"
 
@@ -81,15 +109,19 @@ def test_runner_completes_end_to_end():
     runner = make_runner()
     adapter = FakeAdapter()
 
-    result = runner.run(job=job, spec=spec, adapter=adapter)
+    result = runner.run(job=job, spec=spec, adapter=adapter), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
     assert result.accepted
     assert result.run.run_id == "JOB-1"
     assert result.receipt.execution_id == "EX-1"
     assert result.evidence.run_id == result.run.run_id
+    assert result.dataset_provenance.status.value == "PASS"
+    assert result.audit.run_fingerprint == result.run.fingerprint
+    assert result.provenance.status.value == "PASS"
     assert [gate.name for gate in result.gates] == [
         "EXECUTION_CONTRACT",
         "EVIDENCE_ACCEPTANCE",
+        "RESEARCH_PROVENANCE",
     ]
     assert adapter.calls == 1
 
@@ -98,10 +130,10 @@ def test_runner_does_not_execute_completed_job_twice():
     spec, job = make_spec_and_job()
     runner = make_runner()
     adapter = FakeAdapter()
-    runner.run(job=job, spec=spec, adapter=adapter)
+    runner.run(job=job, spec=spec, adapter=adapter), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=job, spec=spec, adapter=adapter)
+        runner.run(job=job, spec=spec, adapter=adapter), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
     assert adapter.calls == 1
 
@@ -135,7 +167,7 @@ def test_runner_rejects_dataset_fingerprint_mismatch():
     runner = make_runner()
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=bad_job, spec=spec, adapter=FakeAdapter())
+        runner.run(job=bad_job, spec=spec, adapter=FakeAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
 
 def test_runner_rejects_adapter_identity_mismatch():
@@ -157,7 +189,7 @@ def test_runner_rejects_adapter_identity_mismatch():
             )
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=job, spec=spec, adapter=BadAdapter())
+        runner.run(job=job, spec=spec, adapter=BadAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
 
 def test_runner_rejects_incomplete_adapter_execution():
@@ -176,13 +208,13 @@ def test_runner_rejects_incomplete_adapter_execution():
             )
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=job, spec=spec, adapter=IncompleteAdapter())
+        runner.run(job=job, spec=spec, adapter=IncompleteAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
 
 def test_runner_evidence_is_derived_from_receipt():
     spec, job = make_spec_and_job()
     runner = make_runner()
-    result = runner.run(job=job, spec=spec, adapter=FakeAdapter())
+    result = runner.run(job=job, spec=spec, adapter=FakeAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
     assert result.evidence.metrics == result.receipt.metrics
     assert result.evidence.result["execution_id"] == result.receipt.execution_id
@@ -192,7 +224,7 @@ def test_runner_evidence_is_derived_from_receipt():
 def test_runner_preserves_declared_execution_semantics():
     spec, job = make_spec_and_job()
     runner = make_runner()
-    result = runner.run(job=job, spec=spec, adapter=FakeAdapter())
+    result = runner.run(job=job, spec=spec, adapter=FakeAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
     assert result.run.execution_semantics is ExecutionSemantics.TICK_FEASIBLE
     assert result.receipt.execution_semantics is ExecutionSemantics.TICK_FEASIBLE
@@ -211,7 +243,7 @@ def test_runner_creates_reproducible_run_identity():
 def test_runner_never_requires_strategy_geometry():
     spec, job = make_spec_and_job()
     runner = make_runner()
-    result = runner.run(job=job, spec=spec, adapter=FakeAdapter())
+    result = runner.run(job=job, spec=spec, adapter=FakeAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
 
     assert result.accepted
     assert result.run.strategy_id == "SP2L-A"
