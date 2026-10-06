@@ -70,7 +70,7 @@ def test_wrong_run_identity_is_rejected():
     run = make_run()
     binding = bind_research_run_config(run, make_provenance())
     other = replace(run, run_id="RUN-OTHER")
-    with pytest.raises(ResearchRunConfigBindingError, match="does not match research run"):
+    with pytest.raises(ResearchRunConfigBindingLedgerError, match="does not match research run"):
         ResearchRunConfigBindingLedger().record(other, binding)
 
 
