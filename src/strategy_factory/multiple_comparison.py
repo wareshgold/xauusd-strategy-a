@@ -51,7 +51,7 @@ class MultipleComparisonResult:
 
 def _bonferroni(values: tuple[float, ...]) -> tuple[float, ...]:
     n = len(values)
-    return tuple(min(1.0, p * n) for p in values)
+    return tuple(min(1.0, round(p * n, 15)) for p in values)
 
 
 def _holm(values: tuple[float, ...]) -> tuple[float, ...]:
@@ -60,7 +60,7 @@ def _holm(values: tuple[float, ...]) -> tuple[float, ...]:
     running = 0.0
     n = len(values)
     for rank, (index, p_value) in enumerate(ordered):
-        candidate = min(1.0, (n - rank) * p_value)
+        candidate = min(1.0, round((n - rank) * p_value, 15))
         running = max(running, candidate)
         adjusted[index] = running
     return tuple(adjusted)
