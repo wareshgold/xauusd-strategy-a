@@ -113,3 +113,22 @@ Commits:
 - `85155e70` explicit BLOCKED fixture outcome.
 - `e0daf7ba` source-aligned SP2L synthetic fixtures.
 - `6fbf9fdc` SP2L synthetic fixture tests.
+
+
+## Increment 2026-10-06 — Historical Test Engine Contract
+
+Added:
+- `src/strategy_factory/test_contract.py`: deterministic historical-test boundary.
+- `tests/test_historical_test_contract.py`: contract coverage.
+
+Contract policy:
+- Dataset roles are explicitly separated: DEVELOPMENT, UNTOUCHED_VALIDATION, FRESH_HOLDOUT.
+- Untouched validation and fresh holdout datasets must be marked immutable at the contract boundary.
+- Execution semantics are explicit; TICK_FEASIBLE and BAR_CLOSE_RESEARCH cannot be conflated.
+- Every test identifies strategy revision, dataset revision, time range, source, execution semantics, parameters, and objective.
+- The contract contains no SP2L geometry, signal generation, optimizer, or production decision logic.
+- Physical/versioned holdout protection remains a later dataset-registry responsibility.
+
+Commits:
+- `f16e9aaa` historical test contract.
+- `ee504bf1` historical test contract tests.
