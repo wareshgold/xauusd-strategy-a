@@ -23,7 +23,7 @@ def test_conflicting_certification_for_same_run_is_rejected():
     *chain, certification = certified_chain()
     ledger = ResearchCertificationLedger()
     ledger.record(certification, strategy_id="SP2L", strategy_revision="R1")
-    changed = certify_research_result(*chain[:-1], certification_revision="OTHER")
+    changed = certify_research_result(*chain, certification_revision="OTHER")
     assert changed.fingerprint != certification.fingerprint
     with pytest.raises(ResearchCertificationLedgerError, match="conflicting"):
         ledger.record(changed, strategy_id="SP2L", strategy_revision="R1")
