@@ -113,7 +113,7 @@ IRAN_TZ = ZoneInfo("Asia/Tehran")
 
 def _active_forward_paths() -> tuple[Path, Path]:
     """Resolve the event/state files belonging to the currently running profile."""
-    event_candidates = sorted((ARTIFACTS / "forward-test").glob("*_FORWARD_EVENTS.jsonl"), key=lambda p: p.stat().st_mtime if p.exists() else 0.0, reverse=True)
+    event_candidates = sorted(ARTIFACTS.glob("*_FORWARD_EVENTS.jsonl"), key=lambda p: p.stat().st_mtime if p.exists() else 0.0, reverse=True)
     event = event_candidates[0] if event_candidates else EVENTS
     stem = event.stem[:-len("_FORWARD_EVENTS")]
     state = RUNTIME / (stem.lower() + "_forward_state.json")
@@ -124,7 +124,11 @@ def _active_forward_paths() -> tuple[Path, Path]:
 
 def _mt5_server_offset_seconds(symbol: str = "XAUUSD.ecn") -> int:
     """Infer broker-server clock offset for display only."""
+    initialized_here = False
     try:
+        if not mt5.terminal_info():
+            path = find_mt5_terminal()
+            initialized_here = bool(mt5.initialize(path=str(path)) if path else mt5.initialize())
         tick = mt5.symbol_info_tick(symbol)
         if not tick:
             return 0
@@ -132,6 +136,9 @@ def _mt5_server_offset_seconds(symbol: str = "XAUUSD.ecn") -> int:
         return offset if abs(offset) <= 18 * 3600 else 0
     except Exception:
         return 0
+    finally:
+        if initialized_here:
+            mt5.shutdown()
 
 app = Flask(__name__)
 
