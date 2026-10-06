@@ -72,3 +72,5 @@ from .research_provenance import ResearchProvenanceResult, ResearchProvenanceSta
 from .research_record import ResearchRecord, ResearchRecordError, ResearchRecordLedger
 
 from .statistics import ConfidenceInterval, StatisticalValidationError, StatisticalValidationResult, evaluate_statistical_validation
+
+from .statistical_evidence import StatisticalEvidence, StatisticalEvidenceError, bind_statistical_evidence, validate_statistical_evidence_binding
