@@ -33,6 +33,20 @@ def make_spec(dataset, test_id="TEST-001"):
     )
 
 
+VALID_METRICS = ResearchMetrics(
+    trades=10,
+    decisive_trades=10,
+    wins=6,
+    losses=4,
+    ambiguous=0,
+    win_rate=0.6,
+    net_r=2.5,
+    profit_factor=1.4,
+    max_drawdown_r=1.2,
+    gross_profit_r=6.0,
+    gross_loss_r=-3.5,
+)
+
 def make_run():
     registry = DatasetRegistry()
     dataset = make_dataset()
