@@ -16,7 +16,7 @@ from strategy_factory.statistical_evidence import bind_statistical_evidence
 from strategy_factory.stability import evaluate_stability, StabilitySegment
 from strategy_factory.stability_evidence import bind_stability_evidence
 from strategy_factory.unified_research_quality import UnifiedResearchQualityError, evaluate_unified_research_quality
-from strategy_factory.statistics import evaluate_statistical_validation
+from strategy_factory.statistics import ResearchMetrics, evaluate_statistical_validation
 from strategy_factory.test_contract import DatasetRole
 from tests.test_research_record import chain
 
@@ -40,11 +40,11 @@ def full_chain():
     comp = comparison(); adj = adjust_p_values((.01,), method="HOLM"); ce = bind_statistical_comparison_evidence(comp, adj)
     cledger = StatisticalComparisonEvidenceLedger(); cledger.record(ce)
     gate = evaluate_comparison_validation_gate(comp, adj, ce, cledger, StatisticalComparisonUsageLedger())
-    return record, bundle, rledger, acceptance, gate
+    return record, stat, stability, bundle, rledger, acceptance, gate
 
 
 def test_unified_quality_passes():
-    record, bundle, ledger, acceptance, gate = full_chain()
+    record, stat, stability, bundle, ledger, acceptance, gate = full_chain()
     stat = bind_statistical_evidence(record, evaluate_statistical_validation(raw.metrics, role=DatasetRole.DEVELOPMENT, trade_returns_r=(1.0,)))
     stability = bind_stability_evidence(record, evaluate_stability((StabilitySegment("S1","seg",1,1.0,1.0),)))
     result = evaluate_unified_research_quality(
@@ -56,10 +56,14 @@ def test_unified_quality_passes():
 
 
 def test_unified_quality_rejects_evidence_mismatch():
-    record, bundle, ledger, acceptance, gate = full_chain()
-    _, _, _, _, _ = full_chain()
+    record, _, _, bundle, ledger, acceptance, gate = full_chain()
     stat = bind_statistical_evidence(record, evaluate_statistical_validation(
-        record.metrics, role=DatasetRole.DEVELOPMENT, trade_returns_r=(2.0,)
+        ResearchMetrics(
+            trades=1, decisive_trades=1, wins=1, losses=0, ambiguous=0,
+            win_rate=1.0, net_r=2.0, profit_factor=None, max_drawdown_r=0.0,
+            gross_profit_r=2.0, gross_loss_r=0.0
+        ),
+        role=DatasetRole.DEVELOPMENT, trade_returns_r=(2.0,)
     ))
     stability = bind_stability_evidence(record, evaluate_stability((StabilitySegment("S1","seg",1,2.0,2.0),)))
     with pytest.raises(UnifiedResearchQualityError):
@@ -67,7 +71,7 @@ def test_unified_quality_rejects_evidence_mismatch():
 
 
 def test_unified_quality_rejects_non_pass_comparison():
-    record, bundle, ledger, acceptance, _ = full_chain()
+    record, _, _, bundle, ledger, acceptance, _ = full_chain()
     bad = replace(
         gate,
         status="BLOCKED",
