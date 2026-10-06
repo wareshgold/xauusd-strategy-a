@@ -11,12 +11,8 @@ from test_research_certification import certified_chain
 
 def package_chain():
     record, statistical, stability, bundle, research_ledger, acceptance, gate, quality, certification = certified_chain()
-    snapshot = None
-    # certified_chain derives the snapshot through the ResearchRecord; recover it
-    # from the fixture's full chain by rebuilding the source fixture is intentionally
-    # kept inside the existing test helper.
-    from test_research_job_runner import build_ready_context
-    snapshot = build_ready_context().snapshot
+    from tests.test_research_record import chain
+    _, _, snapshot, _, _ = chain("DEVELOPMENT")
     cert_ledger = ResearchCertificationLedger()
     cert_entry = cert_ledger.record(
         certification,
@@ -48,8 +44,8 @@ def test_audit_package_rejects_tampering():
 
 def test_audit_package_rejects_unregistered_certification():
     record, statistical, stability, bundle, research_ledger, acceptance, gate, quality, certification = certified_chain()
-    from test_research_job_runner import build_ready_context
-    snapshot = build_ready_context().snapshot
+    from tests.test_research_record import chain
+    _, _, snapshot, _, _ = chain("DEVELOPMENT")
     with pytest.raises(ResearchAuditPackageError, match="certification is not registered"):
         build_research_audit_package(
             snapshot, record, statistical, stability, bundle, research_ledger,
