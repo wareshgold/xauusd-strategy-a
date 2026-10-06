@@ -67,3 +67,29 @@ Created from forward-reconciliation branch head 171c1d7b687f04b0f282e8db2a0e1f53
 ## Safety
 
 No live runner files, forward state, event logs, or production execution rules are modified by this factory foundation.
+
+
+## Increment 2026-10-06 — Strategy Lab → Compiler / Fixtures
+
+Added:
+- `src/strategy_factory/manifest.py`: evidence, authority, unresolved-question and manifest models.
+- `src/strategy_factory/sp2l_manifest.py`: source-aligned SP2L research manifest.
+- `src/strategy_factory/compiler.py`: canonical-only deterministic compiler interface.
+- `src/strategy_factory/fixtures.py`: deterministic synthetic fixture suite.
+- `tests/test_strategy_manifest.py`
+- `tests/test_strategy_compiler_and_fixtures.py`
+
+Governance:
+- An unresolved/non-canonical manifest cannot compile.
+- The compiler contains no SP2L geometry and does not infer missing semantics.
+- Synthetic fixtures are the contract boundary before historical testing.
+- Current SP2L manifest is intentionally non-canonical.
+
+Commits:
+- `abe18ca3` Strategy Manifest evidence/unresolved ledger.
+- `38f1b21a` source-aligned SP2L manifest.
+- `d0b8d7e0` manifest tests.
+- `ed692042` canonical-only compiler interface.
+- `9b6d26c6` synthetic fixture suite.
+- `a27f6120` compiler/fixture tests.
+- `c86f9d09` fixture accounting fix.
