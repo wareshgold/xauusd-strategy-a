@@ -172,3 +172,16 @@ Governance:
 Commit:
 - `29544f7c` concrete dataset artifact identity controls.
 - `8917351c` artifact locking and validation tests.
+
+
+## Increment 2026-10-06 — Dataset Usage Ledger + Contamination Controls
+
+Added:
+- `DatasetUsageLedger` records each accepted dataset consumption with test/strategy identity, dataset role/revision, registered vs observed fingerprint, artifact identity, purpose, and disposition.
+- DEVELOPMENT datasets may be used for DEVELOPMENT purposes.
+- UNTOUCHED_VALIDATION and FRESH_HOLDOUT datasets are blocked for DEVELOPMENT, OPTIMIZATION, and PARAMETER_FIT purposes.
+- Observed content must match the registered dataset identity.
+- When a registered artifact exists, the observed artifact must match the registered artifact exactly.
+- Ledger entries are deterministic and serializable for later audit/persistence layers.
+
+No strategy geometry, optimizer, signal generation, or production decision logic was added.
