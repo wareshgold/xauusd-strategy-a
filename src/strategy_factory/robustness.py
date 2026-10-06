@@ -263,4 +263,6 @@ def build_robustness_matrix(
         fingerprint="",
     )
     fingerprint = hashlib.sha256(matrix._payload(matrix._fingerprint_payload())).hexdigest()
-    return RobustnessMatrix(**{**matrix.__dict__, "fingerprint": fingerprint})
+    final = RobustnessMatrix(**{**matrix.__dict__, "fingerprint": fingerprint})
+    final.validate()
+    return final
