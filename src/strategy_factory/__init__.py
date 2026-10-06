@@ -70,3 +70,5 @@ from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus
 from .research_provenance import ResearchProvenanceResult, ResearchProvenanceStatus, evaluate_research_provenance
 
 from .research_record import ResearchRecord, ResearchRecordError, ResearchRecordLedger
+
+from .statistics import ConfidenceInterval, StatisticalValidationError, StatisticalValidationResult, evaluate_statistical_validation
