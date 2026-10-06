@@ -206,9 +206,11 @@ def main():
         # terminal use broker/server-clock epoch values. Convert the runner
         # START instant before comparing it with candidate trigger_time.
         server_offset_seconds = mt5_server_offset_seconds(args.symbol)
+        window_start_server_ts = start_ts + server_offset_seconds
+        window_end_server_ts = end_ts + server_offset_seconds
         session_start_dt = event_ts(latest_start) if latest_start else start_dt
         session_start_ts = max(
-            start_ts + server_offset_seconds,
+            window_start_server_ts,
             server_ts_from_utc_dt(session_start_dt, server_offset_seconds),
         )
 
@@ -248,7 +250,12 @@ def main():
             print(f"M1_LAST={iso(rates[-1]['time'])}")
         print()
 
-        all_replay = replay_candidates(rates, args.symbol, start_ts, end_ts)
+        all_replay = replay_candidates(
+            rates,
+            args.symbol,
+            window_start_server_ts,
+            window_end_server_ts,
+        )
         session_replay = [
             c for c in all_replay if int(c["trigger_time"]) >= session_start_ts
         ]
@@ -405,6 +412,8 @@ def main():
             "read_only": True,
             "window_start_utc": start_dt.isoformat(),
             "window_end_utc": end_dt.isoformat(),
+            "mt5_window_start_server_ts": window_start_server_ts,
+            "mt5_window_end_server_ts": window_end_server_ts,
             "account_login": login,
             "server": getattr(account, "server", None),
             "symbol": args.symbol,
