@@ -340,10 +340,19 @@ def main():
         # "missing". This is a history-scope fix only and does not alter any
         # strategy/detector/execution rule.
         hist_start_dt = session_start_dt if latest_start else start_dt
-        hist_from = server_dt_for_mt5_api(hist_start_dt, server_offset_seconds)
-        hist_to = server_dt_for_mt5_api(end_dt, server_offset_seconds)
-        orders = list(mt5.history_orders_get(hist_from, hist_to, group=args.symbol) or [])
-        deals = list(mt5.history_deals_get(hist_from, hist_to, group=args.symbol) or [])
+
+        # IMPORTANT: MT5 history_orders_get/history_deals_get request bounds
+        # are supplied as UTC-aware datetimes. Do not apply the broker/server
+        # offset here. Returned order/deal timestamps are broker-server clock
+        # values and are converted to UTC only for reporting.
+        #
+        # server_dt_for_mt5_api() is appropriate for the terminal bar-data
+        # request path above, but applying that conversion to the history API
+        # expands the requested interval by +3h on this broker. That caused
+        # orders that had not happened at HEALTH_END_UTC to leak into the
+        # reconciliation as "unexpected" orders.
+        orders = list(mt5.history_orders_get(hist_start_dt, end_dt, group=args.symbol) or [])
+        deals = list(mt5.history_deals_get(hist_start_dt, end_dt, group=args.symbol) or [])
 
         orders = [
             o for o in orders
