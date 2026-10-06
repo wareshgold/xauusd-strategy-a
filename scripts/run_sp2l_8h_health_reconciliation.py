@@ -341,18 +341,34 @@ def main():
         # strategy/detector/execution rule.
         hist_start_dt = session_start_dt if latest_start else start_dt
 
-        # IMPORTANT: MT5 history_orders_get/history_deals_get request bounds
-        # are supplied as UTC-aware datetimes. Do not apply the broker/server
-        # offset here. Returned order/deal timestamps are broker-server clock
-        # values and are converted to UTC only for reporting.
-        #
-        # server_dt_for_mt5_api() is appropriate for the terminal bar-data
-        # request path above, but applying that conversion to the history API
-        # expands the requested interval by +3h on this broker. That caused
-        # orders that had not happened at HEALTH_END_UTC to leak into the
-        # reconciliation as "unexpected" orders.
-        orders = list(mt5.history_orders_get(hist_start_dt, end_dt, group=args.symbol) or [])
-        deals = list(mt5.history_deals_get(hist_start_dt, end_dt, group=args.symbol) or [])
+        # MT5 history timestamps are broker/server-clock values on this
+        # terminal. The history API uses those server-clock bounds, while
+        # health-window semantics are UTC. Query the server-clock interval,
+        # then filter returned records by their broker timestamp converted
+        # back to UTC. This prevents both false "missing" orders and leakage
+        # of orders that occur after HEALTH_END_UTC.
+        hist_start_dt = session_start_dt
+        hist_from = server_dt_for_mt5_api(hist_start_dt, server_offset_seconds)
+        hist_to = server_dt_for_mt5_api(end_dt, server_offset_seconds)
+        orders = list(mt5.history_orders_get(hist_from, hist_to, group=args.symbol) or [])
+        deals = list(mt5.history_deals_get(hist_from, hist_to, group=args.symbol) or [])
+
+        def order_in_utc_scope(o):
+            ts = int(getattr(o, "time_done", 0) or getattr(o, "time_setup", 0) or 0)
+            if ts <= 0:
+                return False
+            utc_ts = ts - server_offset_seconds
+            return int(hist_start_dt.timestamp()) <= utc_ts <= int(end_dt.timestamp())
+
+        def deal_in_utc_scope(d):
+            ts = int(getattr(d, "time", 0) or 0)
+            if ts <= 0:
+                return False
+            utc_ts = ts - server_offset_seconds
+            return int(hist_start_dt.timestamp()) <= utc_ts <= int(end_dt.timestamp())
+
+        orders = [o for o in orders if order_in_utc_scope(o)]
+        deals = [d for d in deals if deal_in_utc_scope(d)]
 
         orders = [
             o for o in orders
