@@ -153,3 +153,22 @@ Commits:
 - `a3f94e6b` add immutable dataset registry and identity controls.
 - `508131c6` make dataset fingerprint independent of registry label.
 - `154adb99` / `6ee1b942` add registry tests and test-spec binding coverage.
+
+
+## Increment 2026-10-06 — Concrete Dataset Artifact Identity
+
+Added:
+- `DatasetArtifact` in `src/strategy_factory/datasets.py` for a concrete stored artifact identity.
+- SHA-256, byte-size, format, and location are validated as artifact metadata.
+- Registered artifact identity is bound to the dataset content fingerprint and cannot be silently replaced.
+- `tests/test_dataset_registry.py` now covers artifact/hash binding, mismatch rejection, locked-artifact replacement rejection, and strict artifact metadata validation.
+
+Governance:
+- The registry still does not read or mutate market-data files itself.
+- The caller supplies the artifact SHA-256; the registry verifies consistency with the declared content fingerprint.
+- This establishes an auditable artifact identity contract without claiming physical filesystem immutability.
+- Persistent storage, artifact acquisition, and OS/object-store write protection remain future infrastructure work.
+
+Commit:
+- `29544f7c` concrete dataset artifact identity controls.
+- `8917351c` artifact locking and validation tests.
