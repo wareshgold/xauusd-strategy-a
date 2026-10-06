@@ -132,3 +132,24 @@ Contract policy:
 Commits:
 - `f16e9aaa` historical test contract.
 - `ee504bf1` historical test contract tests.
+
+
+## Increment 2026-10-06 — Dataset Registry + Immutable Identity
+
+Added:
+- `src/strategy_factory/datasets.py`: deterministic dataset fingerprinting and an in-memory registry contract.
+- `tests/test_dataset_registry.py`: identity, revision, immutability, holdout-isolation, and test-spec binding coverage.
+
+Registry policy:
+- Dataset identity is derived from canonical metadata plus a caller-supplied stable content fingerprint; the registry does not inspect market-data bytes itself.
+- DEVELOPMENT, UNTOUCHED_VALIDATION, and FRESH_HOLDOUT remain explicit roles.
+- Validation/holdout datasets must be immutable and are locked on registration.
+- A registered dataset_id cannot silently change revision or content identity.
+- The same dataset fingerprint cannot be registered under another dataset_id, preventing holdout reuse under a renamed identity.
+- HistoricalTestSpec can be checked against the registered fingerprint before execution.
+- Persistence and physical artifact locking are intentionally deferred to a later registry/storage increment.
+
+Commits:
+- `a3f94e6b` add immutable dataset registry and identity controls.
+- `508131c6` make dataset fingerprint independent of registry label.
+- `154adb99` / `6ee1b942` add registry tests and test-spec binding coverage.
