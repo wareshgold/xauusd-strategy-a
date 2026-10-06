@@ -50,10 +50,7 @@ def make_spec_and_job():
 def make_runner():
     registry = DatasetRegistry()
     spec, _ = make_spec_and_job()
-    registry.register(
-        spec.dataset,
-        content_fingerprint="a" * 64,
-    )
+    registry.register(spec.dataset, content_fingerprint="a" * 64)
     usage = DatasetUsageLedger(registry)
     runs = ResearchRunLedger(registry, usage)
     evidence = EvidenceLedger(runs)
@@ -126,17 +123,19 @@ def test_runner_rejects_job_test_mismatch():
         runner.run(job=job, spec=changed, adapter=FakeAdapter())
 
 
-def test_runner_rejects_dataset_mismatch():
+def test_runner_rejects_dataset_fingerprint_mismatch():
     spec, job = make_spec_and_job()
+    bad_job = ResearchJobSpec(
+        **{
+            **job.as_dict(),
+            "dataset_fingerprint": "b" * 64,
+            "execution_semantics": ExecutionSemantics(job.execution_semantics),
+        }
+    )
     runner = make_runner()
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(
-            job=job,
-            spec=spec,
-            adapter=FakeAdapter(),
-            purpose="PARAMETER_FIT",
-        )
+        runner.run(job=bad_job, spec=spec, adapter=FakeAdapter())
 
 
 def test_runner_rejects_adapter_identity_mismatch():
@@ -203,7 +202,6 @@ def test_runner_preserves_declared_execution_semantics():
 def test_runner_creates_reproducible_run_identity():
     spec, job = make_spec_and_job()
     first = make_runner().run(job=job, spec=spec, adapter=FakeAdapter())
-
     second = make_runner().run(job=job, spec=spec, adapter=FakeAdapter())
 
     assert first.run.fingerprint == second.run.fingerprint
