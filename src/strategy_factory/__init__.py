@@ -89,3 +89,9 @@ from .research_evidence_bundle import (
 from .research_evidence_ledger import ResearchEvidenceLedger, ResearchEvidenceLedgerEntry, ResearchEvidenceLedgerError
 
 from .research_acceptance import ResearchAcceptance, ResearchAcceptanceError, evaluate_research_acceptance
+from .research_comparison import (
+    ComparisonObservation,
+    ResearchComparison,
+    ResearchComparisonError,
+    build_research_comparison,
+)
