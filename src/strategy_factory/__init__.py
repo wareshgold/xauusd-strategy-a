@@ -100,3 +100,4 @@ from .robustness import RobustnessMatrixError, RobustnessMember, RobustnessMatri
 from .robustness_ledger import RobustnessMatrixLedger, RobustnessMatrixLedgerEntry, RobustnessMatrixLedgerError
 from .robustness_governance import RobustnessUsage, RobustnessUsageDisposition, RobustnessUsageError, RobustnessUsageLedger
 from .multiple_comparison import MultipleComparisonError, MultipleComparisonResult, adjust_p_values
+from .statistical_comparison_evidence import StatisticalComparisonEvidence, StatisticalComparisonEvidenceError, bind_statistical_comparison_evidence, validate_statistical_comparison_evidence
