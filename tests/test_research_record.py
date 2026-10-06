@@ -12,7 +12,7 @@ from strategy_factory.sp2l_manifest import build_sp2l_research_manifest
 from strategy_factory.source_ledger import SourceResolutionLedger
 from strategy_factory.test_contract import ExecutionSemantics
 
-def chain():
+def chain(dataset_role="DEVELOPMENT"):
     manifest = build_sp2l_research_manifest()
     passport = StrategyPassport(
         strategy_id=manifest.strategy_id, source_revision=manifest.revision,
@@ -24,7 +24,7 @@ def chain():
     run = ResearchRunIdentity(
         run_id="RUN-001", strategy_id=manifest.strategy_id,
         strategy_revision="RESEARCH-001", manifest_revision=manifest.revision,
-        dataset_id="DEV-001", dataset_role="DEVELOPMENT", data_revision="DATA-001",
+        dataset_id=f"{dataset_role}-001", dataset_role=dataset_role, data_revision="DATA-001",
         dataset_fingerprint="a" * 64, artifact_id=None,
         execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH,
         parameters={"sample": "synthetic"},
