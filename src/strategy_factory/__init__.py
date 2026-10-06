@@ -16,4 +16,4 @@ from .provenance import provenance_gate, metrics_gate
 from .metrics import MetricsContractError, ResearchMetrics
 
 from .execution import ExecutionContractError, ExecutionReceipt, execution_gate, validate_execution_binding
-from .acceptance import EvidenceAcceptanceError if False else evidence_acceptance_gate, validate_evidence_acceptance
+from .acceptance import evidence_acceptance_gate, validate_evidence_acceptance
