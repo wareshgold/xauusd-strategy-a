@@ -59,7 +59,7 @@ class ResearchEvidenceLedger:
         try:
             bundle.validate()
         except ResearchEvidenceBundleError as exc:
-            raise ResearchEvidenceLedgerError("invalid research evidence bundle") from exc
+            raise ResearchEvidenceLedgerError(str(exc)) from exc
         candidate = ResearchEvidenceLedgerEntry(
             bundle_fingerprint=bundle.fingerprint,
             run_id=bundle.run_id,
