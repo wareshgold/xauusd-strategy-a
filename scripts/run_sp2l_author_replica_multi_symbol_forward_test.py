@@ -538,10 +538,9 @@ def load_state() -> dict:
             "order_states": {str(k) for k in raw.get("order_states", [])},
             "pending_signal_notifications": {str(k): v for k, v in raw.get("pending_signal_notifications", {}).items()},
             "signal_orders": {str(k): v for k, v in raw.get("signal_orders", {}).items()},
-            "order_created_monotonic": {str(k): float(v) for k, v in raw.get("order_created_monotonic", {}).items()},
         }
     except Exception:
-        return {"seen": {}, "notified": set(), "deals": set(), "deal_notifications": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}, "order_created_monotonic": {}}
+        return {"seen": {}, "notified": set(), "deals": set(), "deal_notifications": set(), "orders": set(), "positions": set(), "position_orders": {}, "order_states": set(), "pending_signal_notifications": {}, "signal_orders": {}}
 
 
 def reconcile_state_from_events(state: dict) -> None:
@@ -634,7 +633,6 @@ def save_state(state: dict) -> None:
         "order_states": sorted(state["order_states"])[-2000:],
         "pending_signal_notifications": state.get("pending_signal_notifications", {}),
         "signal_orders": state.get("signal_orders", {}),
-        "order_created_monotonic": state.get("order_created_monotonic", {}),
     }, indent=2), encoding="utf-8")
 
 
