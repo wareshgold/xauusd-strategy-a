@@ -85,6 +85,13 @@ def manifest_fingerprint(manifest: StrategyManifest) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def passport_fingerprint(passport: StrategyPassport) -> str:
+    payload = json.dumps(
+        passport.as_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def build_readiness_snapshot(
     manifest: StrategyManifest,
     passport: StrategyPassport,
