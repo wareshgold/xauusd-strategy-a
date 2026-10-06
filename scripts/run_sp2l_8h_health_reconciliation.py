@@ -333,7 +333,14 @@ def main():
 
         # MT5 history. We deliberately do not infer fills from price touching;
         # actual broker orders/deals are the execution truth.
-        hist_from = server_dt_for_mt5_api(start_dt, server_offset_seconds)
+        # Reconcile the broker history against the whole active runner session,
+        # not merely the trailing 8h reporting window. A runner START can be
+        # older than 8h while its lifecycle events are still intentionally in
+        # scope; querying only start_dt falsely labels those earlier orders as
+        # "missing". This is a history-scope fix only and does not alter any
+        # strategy/detector/execution rule.
+        hist_start_dt = session_start_dt if latest_start else start_dt
+        hist_from = server_dt_for_mt5_api(hist_start_dt, server_offset_seconds)
         hist_to = server_dt_for_mt5_api(end_dt, server_offset_seconds)
         orders = list(mt5.history_orders_get(hist_from, hist_to, group=args.symbol) or [])
         deals = list(mt5.history_deals_get(hist_from, hist_to, group=args.symbol) or [])
@@ -350,17 +357,46 @@ def main():
         ]
 
         print("=== MT5 HISTORY ===")
+        print(f"MT5_HISTORY_START_UTC={hist_start_dt.isoformat()}")
+        print(f"MT5_HISTORY_END_UTC={end_dt.isoformat()}")
         print(f"MT5_ORDERS={len(orders)}")
         print(f"MT5_DEALS={len(deals)}")
 
-        event_order_ids = {o["order"] for o in order_results if o["order"]}
-        mt5_order_ids = {int(o.ticket) for o in orders}
-        missing_orders = sorted(event_order_ids - mt5_order_ids)
-        unexpected_orders = sorted(mt5_order_ids - event_order_ids)
+        # ORDER_RESULT is the execution-attempt record. Pending-order and
+        # TELEGRAM_DEAL_LIFECYCLE events also carry broker order tickets and
+        # are authoritative observations of the actual broker-side order/deal
+        # linkage. Include all of them so a later lifecycle event is not
+        # incorrectly reported as an "MT5 order without event result".
+        observed_event_order_ids = set()
+        lifecycle_order_ids = set()
+        for e in events:
+            if e.get("symbol") != args.symbol:
+                continue
+            t = event_ts(e)
+            if t is None or t < session_start_dt or t > end_dt:
+                continue
+            event_name = e.get("event")
+            order_id = 0
+            if event_name == "ORDER_RESULT":
+                result = e.get("result") or {}
+                order_id = int(result.get("order", e.get("tracked_order", 0)) or 0)
+            elif event_name in ("PENDING_ORDER_LIFECYCLE", "TELEGRAM_DEAL_LIFECYCLE"):
+                order_id = int(e.get("order", 0) or 0)
+                if order_id:
+                    lifecycle_order_ids.add(order_id)
+            if order_id:
+                observed_event_order_ids.add(order_id)
 
-        print(f"EVENT_ORDER_IDS={len(event_order_ids)}")
+        order_result_ids = {o["order"] for o in order_results if o["order"]}
+        mt5_order_ids = {int(o.ticket) for o in orders}
+        missing_orders = sorted(observed_event_order_ids - mt5_order_ids)
+        unexpected_orders = sorted(mt5_order_ids - observed_event_order_ids)
+
+        print(f"EVENT_ORDER_RESULT_IDS={len(order_result_ids)}")
+        print(f"EVENT_OBSERVED_ORDER_IDS={len(observed_event_order_ids)}")
+        print(f"EVENT_LIFECYCLE_ORDER_IDS={len(lifecycle_order_ids)}")
         print(f"EVENT_ORDERS_MISSING_IN_MT5_HISTORY={len(missing_orders)}")
-        print(f"MT5_ORDERS_WITHOUT_EVENT_RESULT={len(unexpected_orders)}")
+        print(f"MT5_ORDERS_WITHOUT_EVENT_OBSERVATION={len(unexpected_orders)}")
         if missing_orders:
             print(f"MISSING_MT5_ORDER_IDS={missing_orders}")
         if unexpected_orders:
