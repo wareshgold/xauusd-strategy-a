@@ -99,3 +99,4 @@ from .research_comparison import (
 from .robustness import RobustnessMatrixError, RobustnessMember, RobustnessMatrix, build_robustness_matrix
 from .robustness_ledger import RobustnessMatrixLedger, RobustnessMatrixLedgerEntry, RobustnessMatrixLedgerError
 from .robustness_governance import RobustnessUsage, RobustnessUsageDisposition, RobustnessUsageError, RobustnessUsageLedger
+from .multiple_comparison import MultipleComparisonError, MultipleComparisonResult, adjust_p_values
