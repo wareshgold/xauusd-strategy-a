@@ -67,3 +67,4 @@ from .snapshot import ReadinessSnapshot, build_readiness_snapshot, manifest_fing
 from .audit import AuditBindingError, ResearchAuditRecord, bind_research_audit
 
 from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus, evaluate_dataset_provenance
+from .research_provenance import ResearchProvenanceResult, ResearchProvenanceStatus, evaluate_research_provenance
