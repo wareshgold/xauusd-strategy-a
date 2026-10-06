@@ -29,6 +29,8 @@ from .runner import ResearchJobRunResult, ResearchJobRunner, ResearchJobRunnerEr
 from .synthetic import SyntheticExecutionAdapter, SyntheticExecutionError, SyntheticExecutionFixture
 from .data import DatasetIngestionError, HistoricalDatasetAdapter, LoadedDataset
 
+from .test_contract import DatasetRole, ExecutionSemantics, HistoricalTestSpec, TestDataset, validate_test_spec
+
 from .execution_kernel import (
     AmbiguityPolicy,
     EntryInstruction,
