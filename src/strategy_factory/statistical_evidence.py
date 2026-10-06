@@ -94,7 +94,6 @@ def validate_statistical_evidence_binding(
     record: ResearchRecord,
 ) -> None:
     evidence.validate()
-    record.validate()
     if evidence.run_id != record.run_id:
         raise StatisticalEvidenceError("statistical evidence run_id does not match research record")
     if evidence.run_fingerprint != record.run_fingerprint:
@@ -105,3 +104,4 @@ def validate_statistical_evidence_binding(
         raise StatisticalEvidenceError("statistical evidence dataset identity does not match research record")
     if evidence.strategy_id != record.strategy_id or evidence.strategy_revision != record.strategy_revision:
         raise StatisticalEvidenceError("statistical evidence strategy identity does not match research record")
+    record.validate()
