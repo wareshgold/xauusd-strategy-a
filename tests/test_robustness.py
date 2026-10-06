@@ -65,7 +65,7 @@ def _chain(run_id: str = "RUN-001", role: str = "DEVELOPMENT",
         record,
         evaluate_statistical_validation(
             evidence.metrics,
-            role=DatasetRole.DEVELOPMENT,
+            role=DatasetRole(role),
             trade_returns_r=(1.0, 1.0, 1.0, -1.0),
         ),
     )
