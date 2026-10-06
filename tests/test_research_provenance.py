@@ -214,7 +214,8 @@ def test_snapshot_mismatch_fails():
 
     result = evaluate_research_provenance(**chain)
 
-    assert result.status is ResearchProvenanceStatus.PASS
+    assert result.status is ResearchProvenanceStatus.FAIL
+    assert "AUDIT_SNAPSHOT_FINGERPRINT" in result.reasons
 
 
 def test_receipt_semantics_mismatch_fails():
