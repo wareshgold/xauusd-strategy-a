@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 from typing import Any
@@ -123,7 +123,7 @@ class ResearchRecord:
             fingerprint="",
         )
         fingerprint = hashlib.sha256(record._payload(record.as_dict(include_fingerprint=False))).hexdigest()
-        final = cls(**record.as_dict(include_fingerprint=False), fingerprint=fingerprint)
+        final = replace(record, fingerprint=fingerprint)
         final.validate()
         return final
 
