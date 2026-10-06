@@ -123,13 +123,33 @@ class DatasetRegistry:
         self._records: dict[str, DatasetIdentity] = {}
         self._fingerprints: dict[str, str] = {}
 
-    def register(\n        self,\n        dataset: TestDataset,\n        content_fingerprint: str,\n        *,\n        lock: bool = False,\n        artifact: DatasetArtifact | None = None,\n    ) -> DatasetIdentity:\n        dataset.validate()\n        if artifact is not None:\n            artifact.validate()\n            if artifact.content_sha256 != content_fingerprint.lower():\n                raise DatasetRegistryError("artifact SHA-256 does not match content_fingerprint")\n        fingerprint = fingerprint_dataset(dataset, content_fingerprint.lower())\n        existing = self._records.get(dataset.dataset_id)
+    def register(
+        self,
+        dataset: TestDataset,
+        content_fingerprint: str,
+        *,
+        lock: bool = False,
+        artifact: DatasetArtifact | None = None,
+    ) -> DatasetIdentity:
+        dataset.validate()
+        if artifact is not None:
+            artifact.validate()
+            if artifact.content_sha256 != content_fingerprint.lower():
+                raise DatasetRegistryError("artifact SHA-256 does not match content_fingerprint")
+        fingerprint = fingerprint_dataset(dataset, content_fingerprint.lower())
+        existing = self._records.get(dataset.dataset_id)
         if existing is not None:
             if existing.fingerprint != fingerprint or existing.data_revision != dataset.data_revision:
                 raise DatasetRegistryError(
                     f"dataset_id {dataset.dataset_id!r} already has a different identity"
                 )
-            if existing.role is not dataset.role:\n                raise DatasetRegistryError("dataset role cannot change after registration")\n            if artifact is not None and existing.artifact is not None and artifact != existing.artifact:\n                raise DatasetRegistryError("registered dataset artifact cannot change")\n            if artifact is not None and existing.artifact is None:\n                raise DatasetRegistryError("registered dataset cannot acquire a new artifact after identity is locked")\n            if existing.locked and not lock:
+            if existing.role is not dataset.role:
+                raise DatasetRegistryError("dataset role cannot change after registration")
+            if artifact is not None and existing.artifact is not None and artifact != existing.artifact:
+                raise DatasetRegistryError("registered dataset artifact cannot change")
+            if artifact is not None and existing.artifact is None:
+                raise DatasetRegistryError("registered dataset cannot acquire a new artifact after identity is locked")
+            if existing.locked and not lock:
                 return existing
             return existing
 
@@ -148,7 +168,9 @@ class DatasetRegistry:
             fingerprint=fingerprint,
             role=dataset.role,
             immutable=dataset.immutable,
-            locked=lock or dataset.role is not DatasetRole.DEVELOPMENT,\n            artifact=artifact,\n        )
+            locked=lock or dataset.role is not DatasetRole.DEVELOPMENT,
+            artifact=artifact,
+        )
         self._records[dataset.dataset_id] = identity
         self._fingerprints[fingerprint] = dataset.dataset_id
         return identity
