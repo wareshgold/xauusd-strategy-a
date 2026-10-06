@@ -57,3 +57,18 @@ def test_holdout_cannot_be_registered_as_development_with_same_fingerprint():
     registry.register(dataset(role=DatasetRole.FRESH_HOLDOUT, immutable=True), "CONTENT-ABC")
     with pytest.raises(DatasetRegistryError):
         registry.register(dataset(role=DatasetRole.DEVELOPMENT, dataset_id="DEV"), "CONTENT-ABC")
+
+
+def test_registered_identity_validates_historical_test_spec():
+    from strategy_factory.test_contract import ExecutionSemantics, HistoricalTestSpec
+
+    registry = DatasetRegistry()
+    d = dataset(role=DatasetRole.FRESH_HOLDOUT, immutable=True)
+    registry.register(d, "CONTENT-ABC")
+    spec = HistoricalTestSpec(
+        test_id="TEST-001", strategy_id="SP2L-A", strategy_revision="STRAT-001",
+        dataset=d, execution_semantics=ExecutionSemantics.TICK_FEASIBLE,
+    )
+    assert registry.validate_spec(spec, "CONTENT-ABC") is spec
+    with pytest.raises(DatasetRegistryError):
+        registry.validate_spec(spec, "CONTENT-CHANGED")
