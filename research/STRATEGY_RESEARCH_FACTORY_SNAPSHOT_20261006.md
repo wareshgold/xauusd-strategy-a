@@ -37,6 +37,24 @@ No live runner files, forward state, event logs, or production execution rules a
 - Deterministic synthetic fixtures with explicit BLOCKED outcomes.
 - No P-Gap formula, fill semantics, SL anchor, or pending lifetime invented.
 
+### Historical Data Adapter / Dataset Ingestion
+
+Added:
+- src/strategy_factory/data.py
+- tests/test_dataset_adapter.py
+
+The adapter establishes the historical-data boundary without parsing or transforming market data.
+
+Properties:
+- raw bytes are the content identity;
+- SHA-256 and byte-size are verified against the payload;
+- concrete DatasetArtifact identity is registered through DatasetRegistry;
+- registered dataset fingerprints can be re-verified deterministically;
+- validation/holdout immutability and locking remain enforced by the registry;
+- no resampling, timezone conversion, bar construction, or strategy interpretation occurs here.
+
+This layer is an ingestion/identity boundary, not a market-data parser or execution engine.
+
 ### Historical Test Engine Contract
 
 - Explicit DEVELOPMENT / UNTOUCHED_VALIDATION / FRESH_HOLDOUT dataset roles.
@@ -205,7 +223,7 @@ Next:
 - freeze Phase 1 only after all tests pass.
 
 ### Phase 2 — Synthetic end-to-end execution
-Status: IMPLEMENTED — VERIFICATION PENDING
+Status: VERIFIED — 110 TESTS PASS
 
 Build a small deterministic synthetic execution adapter whose inputs and expected outputs are completely controlled by fixtures.
 
@@ -226,9 +244,17 @@ Purpose:
 This phase is infrastructure validation, not Strategy A validation.
 
 ### Phase 3 — Historical data adapter / dataset ingestion
-Status: PLANNED
+Status: IMPLEMENTED — VERIFICATION PENDING
 
 Create a deployment-neutral historical-data boundary.
+
+Implemented:
+- deterministic raw-byte ingestion;
+- SHA-256 and byte-size identity;
+- DatasetArtifact registration;
+- exact registered-identity verification;
+- validation/holdout lock enforcement through DatasetRegistry;
+- no parsing, resampling, timezone conversion, or strategy interpretation.
 
 Requirements:
 - registered dataset identity;
@@ -392,8 +418,8 @@ Do not:
 
 ## Immediate next milestone
 
-Verify Phase 2 locally with the synthetic execution suite and the full Factory suite.
+Verify Phase 3 locally with the dataset-adapter suite and the full Factory suite.
 
-After Phase 2 is green, freeze the synthetic infrastructure and proceed to Phase 3: Historical Data Adapter / Dataset Ingestion.
+After Phase 3 is green, freeze the ingestion boundary and proceed to Phase 4: Generic Deterministic Historical Execution Kernel.
 
 The active forward-test workstream remains untouched.
