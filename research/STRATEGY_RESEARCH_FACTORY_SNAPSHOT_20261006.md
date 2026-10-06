@@ -209,3 +209,26 @@ Commits:
 - `7d43b06f` evidence bundle ledger.
 - `0e217fd1` provenance gate.
 - `6580d920` provenance tests.
+
+
+## Increment 2026-10-06 — Research Metrics + Statistical Evidence Contract
+
+Added:
+- `src/strategy_factory/metrics.py`: typed descriptive metrics contract.
+- Evidence bundles now require `ResearchMetrics`; arbitrary result payloads remain supplemental only.
+- `metrics_gate` validates metric completeness and internal arithmetic consistency.
+- `tests/test_research_metrics.py` plus updated provenance tests.
+
+Metrics policy:
+- The contract standardizes measurement vocabulary: trades, decisive/ambiguous counts, W/L, win rate, net R, profit factor, drawdown, gross profit/loss.
+- It does not define profitability thresholds, optimization targets, canonical rules, or production decisions.
+- Arithmetic consistency is enforced: totals, decisive counts, and win rate must agree.
+- Profit factor may be `None` when undefined; no artificial value is invented.
+- Execution semantics and full provenance remain properties of the parent Research Run.
+
+Commits:
+- `f6fe12f5` typed descriptive metrics contract.
+- `8de5ba56` metrics contract tests.
+- `9c4e3a60` bind EvidenceBundle to ResearchMetrics.
+- `67f0dcb6` update provenance tests.
+- `82a50a07` export metrics contract.
