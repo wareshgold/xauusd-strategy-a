@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 
-from .datasets import DatasetArtifact, DatasetRegistry, DatasetRegistryError
+from .datasets import DatasetArtifact, DatasetRegistry, DatasetRegistryError, fingerprint_dataset
 from .test_contract import TestDataset
 
 
@@ -41,7 +41,6 @@ class LoadedDataset:
     @property
     def fingerprint(self) -> str:
         self.validate()
-        from .datasets import fingerprint_dataset
         return fingerprint_dataset(self.dataset, self.content_sha256)
 
 
@@ -84,7 +83,9 @@ class HistoricalDatasetAdapter:
                 artifact=artifact,
             )
         except DatasetRegistryError as exc:
-            raise DatasetIngestionError("historical dataset failed registry validation") from exc
+            raise DatasetIngestionError(
+                "historical dataset failed registry validation"
+            ) from exc
 
         loaded = LoadedDataset(
             dataset=dataset,
@@ -96,19 +97,22 @@ class HistoricalDatasetAdapter:
         loaded.validate()
         return loaded
 
-    def verify(
-        self,
-        dataset: TestDataset,
-        payload: bytes,
-    ) -> LoadedDataset:
+    def verify(self, dataset: TestDataset, payload: bytes) -> LoadedDataset:
         """Verify bytes against the already-registered dataset identity."""
         dataset.validate()
         content_sha256, byte_size = self.content_identity(payload)
         try:
             identity = self.registry.get(dataset.dataset_id)
-            self.registry.validate_spec(dataset_spec := _dataset_spec_placeholder(dataset), content_sha256)
+            actual_fingerprint = fingerprint_dataset(dataset, content_sha256)
         except DatasetRegistryError as exc:
-            raise DatasetIngestionError("historical dataset failed identity verification") from exc
+            raise DatasetIngestionError(
+                "historical dataset failed identity verification"
+            ) from exc
+
+        if identity.fingerprint != actual_fingerprint:
+            raise DatasetIngestionError(
+                "payload does not match registered dataset fingerprint"
+            )
 
         if identity.artifact is None:
             artifact = DatasetArtifact(
@@ -126,14 +130,3 @@ class HistoricalDatasetAdapter:
         loaded = LoadedDataset(dataset, artifact, content_sha256, byte_size, payload)
         loaded.validate()
         return loaded
-
-
-def _dataset_spec_placeholder(dataset: TestDataset):
-    from .test_contract import HistoricalTestSpec, ExecutionSemantics
-    return HistoricalTestSpec(
-        test_id=f"DATASET-VERIFY-{dataset.dataset_id}",
-        strategy_id="DATASET_ADAPTER",
-        strategy_revision=dataset.data_revision,
-        dataset=dataset,
-        execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH,
-    )
