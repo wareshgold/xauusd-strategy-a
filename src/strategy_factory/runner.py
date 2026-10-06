@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
-from .acceptance import evidence_acceptance_gate, validate_evidence_acceptance
-from .adapter import ExecutionAdapter, ExecutionAdapterError, validate_adapter_output
+from .acceptance import evidence_acceptance_gate
+from .adapter import ExecutionAdapter, validate_adapter_output
 from .evidence import EvidenceBundle, EvidenceLedger
 from .execution import ExecutionReceipt, execution_gate
 from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
@@ -85,13 +84,21 @@ class ResearchJobRunner:
                 f"research job {job.job_id!r} has already completed in this runner"
             )
 
-        run = self.runs.create(
-            spec,
-            manifest_revision=job.manifest_revision,
-            run_id=job.job_id,
-            observed_fingerprint=job.dataset_fingerprint,
-            purpose=purpose,
-        )
+        try:
+            run = self.runs.create(
+                spec,
+                manifest_revision=job.manifest_revision,
+                run_id=job.job_id,
+                observed_fingerprint=job.dataset_fingerprint,
+                purpose=purpose,
+            )
+        except Exception as exc:
+            # DatasetRegistry / DatasetUsage / ResearchRun errors are deliberately
+            # normalized at this orchestration boundary. Callers must not need to
+            # know which lower-level registry rejected the job.
+            raise ResearchJobRunnerError(
+                "research job could not create a validated research run"
+            ) from exc
 
         try:
             receipt = adapter.execute(spec)
