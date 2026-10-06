@@ -20,6 +20,7 @@ class ReadinessSnapshot:
     strategy_id: str
     manifest_revision: str
     manifest_fingerprint: str
+    passport_fingerprint: str
     source_ledger: dict[str, Any]
     source_readiness: dict[str, Any]
     passport_eligibility: dict[str, Any]
@@ -32,6 +33,7 @@ class ReadinessSnapshot:
         strategy_id: str,
         manifest_revision: str,
         manifest_fingerprint: str,
+        passport_fingerprint: str,
         source_ledger: dict[str, Any],
         source_readiness: dict[str, Any],
         passport_eligibility: dict[str, Any],
@@ -41,6 +43,7 @@ class ReadinessSnapshot:
             "strategy_id": strategy_id,
             "manifest_revision": manifest_revision,
             "manifest_fingerprint": manifest_fingerprint,
+            "passport_fingerprint": passport_fingerprint,
             "source_ledger": source_ledger,
             "source_readiness": source_readiness,
             "passport_eligibility": passport_eligibility,
@@ -71,6 +74,7 @@ class ReadinessSnapshot:
             "strategy_id": self.strategy_id,
             "manifest_revision": self.manifest_revision,
             "manifest_fingerprint": self.manifest_fingerprint,
+            "passport_fingerprint": self.passport_fingerprint,
             "source_ledger": self.source_ledger,
             "source_readiness": self.source_readiness,
             "passport_eligibility": self.passport_eligibility,
@@ -107,6 +111,7 @@ def build_readiness_snapshot(
         passport, manifest, ledger
     )
     mf = manifest_fingerprint(manifest)
+    pf = passport_fingerprint(passport)
     ledger_dict = ledger.as_dict()
     readiness_dict = readiness.as_dict()
     eligibility_dict = eligibility.as_dict()
