@@ -1,7 +1,6 @@
 import hashlib
-import pytest
 
-from strategy_factory.snapshot import ReadinessSnapshot
+import pytest
 
 from strategy_factory.adapter import build_execution_receipt
 from strategy_factory.datasets import DatasetRegistry
@@ -10,6 +9,7 @@ from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner, ResearchJobRunnerError
+from strategy_factory.snapshot import ReadinessSnapshot
 from strategy_factory.test_contract import (
     DatasetRole,
     ExecutionSemantics,
@@ -85,6 +85,16 @@ def make_snapshot(spec):
     )
 
 
+def run_job(runner, job, spec, adapter):
+    return runner.run(
+        job=job,
+        spec=spec,
+        adapter=adapter,
+        snapshot=make_snapshot(spec),
+        observed_content_sha256="a" * 64,
+    )
+
+
 class FakeAdapter:
     engine_revision = "ENGINE-1"
 
@@ -109,7 +119,7 @@ def test_runner_completes_end_to_end():
     runner = make_runner()
     adapter = FakeAdapter()
 
-    result = runner.run(job=job, spec=spec, adapter=adapter), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+    result = run_job(runner, job, spec, adapter)
 
     assert result.accepted
     assert result.run.run_id == "JOB-1"
@@ -130,10 +140,10 @@ def test_runner_does_not_execute_completed_job_twice():
     spec, job = make_spec_and_job()
     runner = make_runner()
     adapter = FakeAdapter()
-    runner.run(job=job, spec=spec, adapter=adapter), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+    run_job(runner, job, spec, adapter)
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=job, spec=spec, adapter=adapter), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+        run_job(runner, job, spec, adapter)
 
     assert adapter.calls == 1
 
@@ -152,7 +162,7 @@ def test_runner_rejects_job_test_mismatch():
     runner = make_runner()
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=job, spec=changed, adapter=FakeAdapter())
+        run_job(runner, job, changed, FakeAdapter())
 
 
 def test_runner_rejects_dataset_fingerprint_mismatch():
@@ -167,7 +177,7 @@ def test_runner_rejects_dataset_fingerprint_mismatch():
     runner = make_runner()
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=bad_job, spec=spec, adapter=FakeAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+        run_job(runner, bad_job, spec, FakeAdapter())
 
 
 def test_runner_rejects_adapter_identity_mismatch():
@@ -189,7 +199,7 @@ def test_runner_rejects_adapter_identity_mismatch():
             )
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=job, spec=spec, adapter=BadAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+        run_job(runner, job, spec, BadAdapter())
 
 
 def test_runner_rejects_incomplete_adapter_execution():
@@ -208,13 +218,13 @@ def test_runner_rejects_incomplete_adapter_execution():
             )
 
     with pytest.raises(ResearchJobRunnerError):
-        runner.run(job=job, spec=spec, adapter=IncompleteAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+        run_job(runner, job, spec, IncompleteAdapter())
 
 
 def test_runner_evidence_is_derived_from_receipt():
     spec, job = make_spec_and_job()
     runner = make_runner()
-    result = runner.run(job=job, spec=spec, adapter=FakeAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+    result = run_job(runner, job, spec, FakeAdapter())
 
     assert result.evidence.metrics == result.receipt.metrics
     assert result.evidence.result["execution_id"] == result.receipt.execution_id
@@ -224,7 +234,7 @@ def test_runner_evidence_is_derived_from_receipt():
 def test_runner_preserves_declared_execution_semantics():
     spec, job = make_spec_and_job()
     runner = make_runner()
-    result = runner.run(job=job, spec=spec, adapter=FakeAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+    result = run_job(runner, job, spec, FakeAdapter())
 
     assert result.run.execution_semantics is ExecutionSemantics.TICK_FEASIBLE
     assert result.receipt.execution_semantics is ExecutionSemantics.TICK_FEASIBLE
@@ -233,17 +243,19 @@ def test_runner_preserves_declared_execution_semantics():
 
 def test_runner_creates_reproducible_run_identity():
     spec, job = make_spec_and_job()
-    first = make_runner().run(job=job, spec=spec, adapter=FakeAdapter())
-    second = make_runner().run(job=job, spec=spec, adapter=FakeAdapter())
+    first = run_job(make_runner(), job, spec, FakeAdapter())
+    second = run_job(make_runner(), job, spec, FakeAdapter())
 
     assert first.run.fingerprint == second.run.fingerprint
     assert first.evidence.fingerprint == second.evidence.fingerprint
+    assert first.audit.fingerprint == second.audit.fingerprint
+    assert first.provenance == second.provenance
 
 
 def test_runner_never_requires_strategy_geometry():
     spec, job = make_spec_and_job()
     runner = make_runner()
-    result = runner.run(job=job, spec=spec, adapter=FakeAdapter()), snapshot=make_snapshot(spec), observed_content_sha256="a" * 64
+    result = run_job(runner, job, spec, FakeAdapter())
 
     assert result.accepted
     assert result.run.strategy_id == "SP2L-A"
