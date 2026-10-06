@@ -3,6 +3,7 @@ import pytest
 from strategy_factory.datasets import DatasetArtifact, DatasetRegistry
 from strategy_factory.evidence import EvidenceBundle, EvidenceLedger
 from strategy_factory.models import GateStatus
+from strategy_factory.metrics import ResearchMetrics
 from strategy_factory.provenance import provenance_gate
 from strategy_factory.runs import ResearchRunError, ResearchRunLedger
 from strategy_factory.test_contract import DatasetRole, ExecutionSemantics, HistoricalTestSpec, TestDataset
@@ -122,7 +123,12 @@ def test_evidence_requires_matching_run_provenance():
         run_id=run.run_id,
         run_fingerprint=run.fingerprint,
         result_revision="RESULT-001",
-        result={"trades": 10, "net_R": 2.5},
+        metrics=ResearchMetrics(
+            trades=10, decisive_trades=10, wins=6, losses=4, ambiguous=0,
+            win_rate=0.6, net_r=2.5, profit_factor=1.4, max_drawdown_r=1.2,
+            gross_profit_r=6.0, gross_loss_r=-3.5,
+        ),
+        result={"source": "test"},
     )
     ledger.record(evidence)
     assert ledger.get("EVID-001") == evidence
@@ -136,7 +142,12 @@ def test_evidence_with_wrong_run_fingerprint_is_rejected():
         run_id=run.run_id,
         run_fingerprint="0" * 64,
         result_revision="RESULT-001",
-        result={"trades": 10},
+        metrics=ResearchMetrics(
+            trades=10, decisive_trades=10, wins=6, losses=4, ambiguous=0,
+            win_rate=0.6, net_r=2.5, profit_factor=1.4, max_drawdown_r=1.2,
+            gross_profit_r=6.0, gross_loss_r=-3.5,
+        ),
+        result={"source": "test"},
     )
     with pytest.raises(ResearchRunError):
         ledger.record(evidence)
