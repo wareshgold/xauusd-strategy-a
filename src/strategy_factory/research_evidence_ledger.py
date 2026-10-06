@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 
-from .research_evidence_bundle import ResearchEvidenceBundle
+from .research_evidence_bundle import ResearchEvidenceBundle, ResearchEvidenceBundleError
 
 
 class ResearchEvidenceLedgerError(ValueError):
@@ -58,7 +58,7 @@ class ResearchEvidenceLedger:
     def record(self, bundle: ResearchEvidenceBundle) -> ResearchEvidenceLedgerEntry:
         try:
             bundle.validate()
-        except Exception as exc:
+        except ResearchEvidenceBundleError as exc:
             raise ResearchEvidenceLedgerError("invalid research evidence bundle") from exc
         candidate = ResearchEvidenceLedgerEntry(
             bundle_fingerprint=bundle.fingerprint,
