@@ -2,8 +2,6 @@
 
 ## Purpose
 
-This snapshot freezes the first architectural foundation of the Strategy Research Factory.
-
 The Factory is a research and validation orchestrator. It is not a production signal generator, broker executor, or autonomous strategy selector.
 
 ## Workflow
@@ -21,23 +19,8 @@ A failed validation gate returns the candidate to research rather than silently 
 5. Python ↔ MT5 reconciliation is a forward-validation gate.
 6. The Factory does not generate production BUY/SELL decisions.
 7. A candidate cannot become production-eligible without all required gates.
-8. Live forward-test runner/config are outside this change.
-
-## Current status
-
-- Factory foundation: IMPLEMENTED.
-- Strategy compiler: NOT IMPLEMENTED.
-- Canonical SP2L geometry compiler: NOT IMPLEMENTED.
-- Historical test engine: NOT IMPLEMENTED.
-- Optimizer: EXISTING RESEARCH TOOL, NOT YET INTEGRATED.
-- Robustness engine: NOT IMPLEMENTED.
-- Fresh holdout gate: NOT IMPLEMENTED.
-- Forward-validation adapter: NOT IMPLEMENTED.
-- Production promotion: BLOCKED BY DESIGN.
-
-## Branch
-
-research/sp2l-strategy-research-factory-20261006
+8. Live runner/config are outside this change.
+9. Execution adapters must be portable across local, VPS, CI, or cloud workers without changing declared strategy/test semantics.
 
 ## Safety
 
@@ -110,6 +93,20 @@ Acceptance behavior:
 
 The acceptance layer does not compare performance against thresholds, define statistical significance, optimize parameters, create canonical rules, or authorize production decisions.
 
+### Portable Historical Execution Adapter
+Added:
+- src/strategy_factory/adapter.py
+- tests/test_execution_adapter.py
+
+The adapter contract provides:
+- a portable ExecutionAdapter protocol
+- deterministic conversion of engine output into ExecutionReceipt
+- exact preservation of test ID, strategy revision, and execution semantics
+- explicit engine revision and input fingerprint
+- rejection of incomplete execution results
+
+The adapter is deployment-neutral: the same contract can be implemented locally, on a VPS, in CI, or on a cloud worker. It does not implement the execution engine itself.
+
 ## Commits
 
 Execution:
@@ -123,3 +120,8 @@ Evidence acceptance:
 - 7aeb6a4b
 - 41327f23
 - 4592ba0b
+
+Portable adapter:
+- 863c0563
+- 9b722813
+- 2d257901
