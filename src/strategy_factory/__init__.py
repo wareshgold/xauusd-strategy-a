@@ -109,3 +109,5 @@ from .unified_research_quality import UnifiedResearchQuality, UnifiedResearchQua
 from .research_certification import ResearchCertification, ResearchCertificationError, certify_research_result
 
 from .research_certification_ledger import ResearchCertificationLedger, ResearchCertificationLedgerEntry, ResearchCertificationLedgerError
+
+from .research_audit_package import ResearchAuditPackage, ResearchAuditPackageError, build_research_audit_package
