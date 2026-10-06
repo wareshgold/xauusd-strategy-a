@@ -6,6 +6,7 @@ from typing import Any
 
 from .audit import ResearchAuditRecord
 from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus
+from .datasets import fingerprint_dataset
 from .evidence import EvidenceBundle
 from .execution import ExecutionReceipt, validate_execution_binding
 from .jobs import ResearchJobSpec, validate_job_matches_test_spec
@@ -83,7 +84,15 @@ def evaluate_research_provenance(
             ("RUN_MANIFEST_REVISION", run.manifest_revision == job.manifest_revision),
             ("RUN_DATASET_ID", run.dataset_id == job.dataset_id),
             ("RUN_DATA_REVISION", run.data_revision == job.data_revision),
-            ("RUN_DATASET_FINGERPRINT", run.dataset_fingerprint == job.dataset_fingerprint),
+            (
+                "RUN_DATASET_FINGERPRINT",
+                run.dataset_fingerprint == dataset_provenance.registered_fingerprint,
+            ),
+            (
+                "JOB_DATASET_FINGERPRINT",
+                dataset_provenance.observed_fingerprint
+                == fingerprint_dataset(spec.dataset, job.dataset_fingerprint),
+            ),
             ("RUN_EXECUTION_SEMANTICS", run.execution_semantics is job.execution_semantics),
         )
         reasons.extend(name for name, ok in checks if not ok)
