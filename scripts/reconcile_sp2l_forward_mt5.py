@@ -183,6 +183,49 @@ def fmt(x: float) -> str:
     return f"{x:+.2f}"
 
 
+def mt5_position_forensics(deals: list[dict], position_ids: list[int]) -> dict[int, dict]:
+    """Return JSON-safe deal-level evidence for selected MT5 positions."""
+    selected = set(position_ids)
+    out: dict[int, dict] = {}
+    for d in deals:
+        pid = int(d.get("position_id") or 0)
+        if pid not in selected:
+            continue
+        ts = d.get("time")
+        if isinstance(ts, (int, float)):
+            deal_time_utc = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+            deal_time_tehran = datetime.fromtimestamp(ts, tz=timezone.utc).astimezone(IRAN_TZ).isoformat()
+        else:
+            deal_time_utc = str(ts)
+            deal_time_tehran = str(ts)
+        row = {
+            "ticket": int(d.get("ticket") or 0),
+            "order": int(d.get("order") or 0),
+            "position_id": pid,
+            "time_utc": deal_time_utc,
+            "time_tehran": deal_time_tehran,
+            "type": int(d.get("type") or 0),
+            "entry": int(d.get("entry") or 0),
+            "reason": int(d.get("reason") or 0),
+            "volume": float(d.get("volume") or 0.0),
+            "price": float(d.get("price") or 0.0),
+            "profit": float(d.get("profit") or 0.0),
+            "commission": float(d.get("commission") or 0.0),
+            "swap": float(d.get("swap") or 0.0),
+            "fee": float(d.get("fee") or 0.0),
+            "net": float(d.get("net") or 0.0),
+            "magic": int(d.get("magic") or 0),
+            "comment": str(d.get("comment") or ""),
+            "external_id": str(d.get("external_id") or ""),
+        }
+        out.setdefault(pid, {"position_id": pid, "deals": []})["deals"].append(row)
+    for item in out.values():
+        item["deals"].sort(key=lambda x: (x["time_utc"], x["ticket"]))
+        item["deal_count"] = len(item["deals"])
+        item["net"] = sum(float(x["net"]) for x in item["deals"])
+    return out
+
+
 def build_report(args: argparse.Namespace) -> dict:
     start, end, day = tehran_day_bounds(args.date)
 
@@ -214,6 +257,7 @@ def build_report(args: argparse.Namespace) -> dict:
     common = sorted(set(event_by_pos) & set(mt5_positions))
     event_only = sorted(set(event_by_pos) - set(mt5_positions))
     mt5_only = sorted(set(mt5_positions) - set(event_by_pos))
+    mt5_only_forensics = mt5_position_forensics(deals, mt5_only)
 
     mismatches = []
     for pid in common:
@@ -246,6 +290,7 @@ def build_report(args: argparse.Namespace) -> dict:
         "common_positions": len(common),
         "event_only_positions": event_only,
         "mt5_only_positions": mt5_only,
+        "mt5_only_position_forensics": mt5_only_forensics,
         "position_mismatches": mismatches,
         "account": {
             "login": int(account.login) if account else None,
@@ -279,6 +324,18 @@ def print_report(r: dict) -> None:
     print(f"Common positions  : {r['common_positions']}")
     print(f"Event-only        : {r['event_only_positions']}")
     print(f"MT5-only          : {r['mt5_only_positions']}")
+    for pid in r["mt5_only_positions"]:
+        f = r["mt5_only_position_forensics"].get(pid, {})
+        print(f"  MT5-only position {pid}: net={fmt(float(f.get('net', 0.0)))} deals={f.get('deal_count', 0)}")
+        for d in f.get("deals", []):
+            print(
+                f"    deal={d['ticket']} order={d['order']} "
+                f"time={d['time_tehran']} entry={d['entry']} type={d['type']} "
+                f"vol={d['volume']:.2f} price={d['price']:.2f} "
+                f"profit={fmt(d['profit'])} comm={fmt(d['commission'])} "
+                f"swap={fmt(d['swap'])} fee={fmt(d['fee'])} net={fmt(d['net'])} "
+                f"reason={d['reason']} comment={d['comment']!r}"
+            )
     print(f"P&L mismatches    : {len(r['position_mismatches'])}")
     for m in r["position_mismatches"]:
         print(
