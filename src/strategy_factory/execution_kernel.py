@@ -117,9 +117,9 @@ def _hit_levels(
     position is closed by selling. For a SELL position, exits are evaluated
     against ASK because the short position is closed by buying.
 
-    OHLC high/low are used only when quote-side observations are unavailable,
-    which is appropriate for BAR_CLOSE_RESEARCH but does not manufacture tick
-    ordering for TICK_FEASIBLE.
+    OHLC high/low are used only for BAR_CLOSE_RESEARCH. TICK_FEASIBLE
+    requires explicit bid/ask observations and therefore never falls back to
+    an OHLC range or manufactures tick ordering.
     """
     if instruction.side is Side.BUY:
         exit_price = event.bid
@@ -181,6 +181,13 @@ class HistoricalExecutionKernel:
         ordered = list(events)
         for event in ordered:
             event.validate()
+            if semantics is ExecutionSemantics.TICK_FEASIBLE and (
+                event.bid is None or event.ask is None
+            ):
+                raise ExecutionKernelError(
+                    "TICK_FEASIBLE requires bid and ask observations; "
+                    "OHLC-only events are BAR_CLOSE_RESEARCH data"
+                )
         if any(
             (ordered[i].timestamp, ordered[i].sequence)
             >= (ordered[i + 1].timestamp, ordered[i + 1].sequence)
