@@ -92,7 +92,7 @@ class ResearchRecord:
         snapshot.validate()
         audit.validate()
         if provenance.status.value != ResearchProvenanceStatus.PASS.value:
-            raise ResearchRecordError("cannot record non-PASS research provenance")
+            raise ResearchRecordError("cannot record non-PASS provenance")
         if evidence.run_id != run.run_id or evidence.run_fingerprint != run.fingerprint:
             raise ResearchRecordError("evidence is not bound to research run")
         if audit.run_fingerprint != run.fingerprint:
@@ -135,10 +135,10 @@ class ResearchRecordLedger:
         self._records: dict[str, ResearchRecord] = {}
 
     def record(self, record: ResearchRecord) -> ResearchRecord:
-        record.validate()
         existing = self._records.get(record.run_id)
         if existing is not None and existing != record:
             raise ResearchRecordError("run_id already exists with a different immutable research record")
+        record.validate()
         if existing is not None:
             return existing
         self._records[record.run_id] = record
