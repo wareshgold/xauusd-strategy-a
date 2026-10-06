@@ -113,3 +113,5 @@ from .research_certification_ledger import ResearchCertificationLedger, Research
 from .research_audit_package import ResearchAuditPackage, ResearchAuditPackageError, build_research_audit_package
 
 from .dashboard_config import DashboardConfig, DashboardConfigError, ForwardConfig, ResearchConfig, apply_settings, build_config, default_config, load_config, save_config
+from .dashboard_config_provenance import DashboardConfigProvenance, DashboardConfigProvenanceError, bind_dashboard_config
+from .dashboard_config_provenance_ledger import DashboardConfigProvenanceLedger, DashboardConfigProvenanceLedgerEntry, DashboardConfigProvenanceLedgerError
