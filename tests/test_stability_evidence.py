@@ -22,8 +22,8 @@ def profile():
 
 def test_stability_evidence_is_bound_to_exact_research_record():
     run, evidence, snapshot, audit, provenance = chain(DatasetRole.DEVELOPMENT.value)
-    record = evidence and __import__("strategy_factory.research_record", fromlist=["ResearchRecord"]).ResearchRecord.from_components(
-        run=run, audit=audit, provenance=provenance
+    record = __import__("strategy_factory.research_record", fromlist=["ResearchRecord"]).ResearchRecord.from_components(
+        run, evidence, snapshot, audit, provenance
     )
     bound = bind_stability_evidence(record, profile())
     bound.validate()
@@ -35,7 +35,7 @@ def test_stability_evidence_is_bound_to_exact_research_record():
 def test_tampering_is_detected():
     run, evidence, snapshot, audit, provenance = chain(DatasetRole.DEVELOPMENT.value)
     from strategy_factory.research_record import ResearchRecord
-    record = ResearchRecord.from_components(run=run, audit=audit, provenance=provenance)
+    record = ResearchRecord.from_components(run, evidence, snapshot, audit, provenance)
     bound = bind_stability_evidence(record, profile())
     with pytest.raises(StabilityEvidenceError, match="fingerprint"):
         replace(bound, fingerprint="bad").validate()
