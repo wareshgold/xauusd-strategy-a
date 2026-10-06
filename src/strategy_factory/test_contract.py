@@ -22,6 +22,8 @@ class ContractViolation(ValueError):
 
 @dataclass(frozen=True)
 class TestDataset:
+    __test__ = False
+
     dataset_id: str
     role: DatasetRole
     data_revision: str
