@@ -95,3 +95,5 @@ from .research_comparison import (
     ResearchComparisonError,
     build_research_comparison,
 )
+
+from .robustness import RobustnessMatrixError, RobustnessMember, RobustnessMatrix, build_robustness_matrix
