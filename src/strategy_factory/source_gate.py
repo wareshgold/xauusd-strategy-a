@@ -48,6 +48,7 @@ def evaluate_source_gate(
         except Exception:
             if question.blocking:
                 missing.append(question.question_id)
+                blocking.append(question.question_id)
             continue
 
         if record.status is not ResolutionStatus.CONFIRMED:
