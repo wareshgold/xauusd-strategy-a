@@ -111,3 +111,5 @@ from .research_certification import ResearchCertification, ResearchCertification
 from .research_certification_ledger import ResearchCertificationLedger, ResearchCertificationLedgerEntry, ResearchCertificationLedgerError
 
 from .research_audit_package import ResearchAuditPackage, ResearchAuditPackageError, build_research_audit_package
+
+from .dashboard_config import DashboardConfig, DashboardConfigError, ForwardConfig, ResearchConfig, apply_settings, build_config, default_config, load_config, save_config
