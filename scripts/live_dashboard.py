@@ -215,20 +215,46 @@ def runner_health() -> str:
         return '<h2>Runner Health</h2><p class="bad">🔴 NO HEALTH TELEMETRY — runner health file not available</p>'
 
 
+def _health_heartbeat_age() -> float | None:
+    """Heartbeat age from the runner's own health telemetry.
+
+    V3 runs report their heartbeat in HEALTH_FILE; the legacy STATE_FILE
+    belongs to the retired multi-symbol session. Fall back to active state
+    only when health telemetry is unavailable.
+    """
+    try:
+        raw = json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
+        ts = str(raw.get("ts_utc") or "")
+        if not ts:
+            return None
+        beat_dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        return time.time() - beat_dt.timestamp()
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return None
+
+
 def session_status() -> str:
     runner_pid = _read_pid(RUNNER_LOCK)
     watchdog_pid = _read_pid(WATCHDOG_PID)
-    try:
-        _, active_state = _active_forward_paths()
-        mtime = active_state.stat().st_mtime
-        age = time.time() - mtime
+
+    hb_age = _health_heartbeat_age()
+    if hb_age is not None:
+        age = hb_age
+    else:
+        try:
+            _, active_state = _active_forward_paths()
+            age = time.time() - active_state.stat().st_mtime
+        except OSError:
+            age = None
+
+    if age is None:
+        beat = '<span class="bad">NO STATE FILE</span>'
+    else:
         beat = (
             f'<span class="ok">ALIVE ({age:.0f}s ago)</span>'
             if age < 15
             else f'<span class="bad">STALE ({age:.0f}s ago)</span>'
         )
-    except OSError:
-        beat = '<span class="bad">NO STATE FILE</span>'
     runner = (
         f'<span class="ok">alive (pid {runner_pid})</span>'
         if _proc_alive(runner_pid)
