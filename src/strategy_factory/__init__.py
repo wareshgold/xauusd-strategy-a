@@ -17,3 +17,10 @@ from .metrics import MetricsContractError, ResearchMetrics
 
 from .execution import ExecutionContractError, ExecutionReceipt, execution_gate, validate_execution_binding
 from .acceptance import evidence_acceptance_gate, validate_evidence_acceptance
+from .adapter import (
+    ExecutionAdapter,
+    ExecutionAdapterError,
+    adapter_semantics,
+    build_execution_receipt,
+    validate_adapter_output,
+)
