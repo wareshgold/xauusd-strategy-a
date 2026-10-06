@@ -17,6 +17,7 @@ from strategy_factory.stability import evaluate_stability, StabilitySegment
 from strategy_factory.stability_evidence import bind_stability_evidence
 from strategy_factory.unified_research_quality import UnifiedResearchQualityError, evaluate_unified_research_quality
 from strategy_factory.statistics import evaluate_statistical_validation
+from strategy_factory.test_contract import DatasetRole
 from tests.test_research_record import chain
 
 
@@ -31,7 +32,7 @@ def comparison():
 def full_chain():
     run, raw, snapshot, audit, provenance = chain("DEVELOPMENT")
     record = ResearchRecord.from_components(run, raw, snapshot, audit, provenance)
-    stat = bind_statistical_evidence(record, evaluate_statistical_validation(raw.metrics, role="DEVELOPMENT", trade_returns_r=(1.0,)))
+    stat = bind_statistical_evidence(record, evaluate_statistical_validation(raw.metrics, role=DatasetRole.DEVELOPMENT, trade_returns_r=(1.0,)))
     stability = bind_stability_evidence(record, evaluate_stability((StabilitySegment("S1","seg",1,1.0,1.0),)))
     bundle = bind_research_evidence_bundle(record, stat, stability)
     rledger = ResearchEvidenceLedger(); rledger.record(bundle)
