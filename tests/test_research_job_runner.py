@@ -128,6 +128,8 @@ def test_runner_completes_end_to_end():
     assert result.dataset_provenance.status.value == "PASS"
     assert result.audit.run_fingerprint == result.run.fingerprint
     assert result.provenance.status.value == "PASS"
+    assert result.record.run_fingerprint == result.run.fingerprint
+    assert result.record.fingerprint == result.record.fingerprint
     assert [gate.name for gate in result.gates] == [
         "EXECUTION_CONTRACT",
         "EVIDENCE_ACCEPTANCE",
@@ -250,6 +252,7 @@ def test_runner_creates_reproducible_run_identity():
     assert first.evidence.fingerprint == second.evidence.fingerprint
     assert first.audit.fingerprint == second.audit.fingerprint
     assert first.provenance == second.provenance
+    assert first.record == second.record
 
 
 def test_runner_never_requires_strategy_geometry():
