@@ -140,7 +140,8 @@ def _hit_levels(
 def _decisive_outcome(
     instruction: EntryInstruction,
     reason: str,
-    sequence: int,
+    entry_sequence: int,
+    exit_sequence: int,
     exit_price: float,
 ) -> TradeOutcome:
     if instruction.side is Side.BUY:
@@ -155,8 +156,8 @@ def _decisive_outcome(
         exit_reason=reason,
         net_r=r,
         ambiguous=False,
-        entry_sequence=sequence - 1,
-        exit_sequence=sequence,
+        entry_sequence=entry_sequence,
+        exit_sequence=exit_sequence,
     )
 
 
@@ -196,10 +197,19 @@ class HistoricalExecutionKernel:
             if entry_event is None:
                 continue
             for event in ordered:
-                if (event.timestamp, event.sequence) <= (
-                    entry_event.timestamp,
-                    entry_event.sequence,
-                ):
+                # BAR_CLOSE_RESEARCH permits the same bar to represent the
+                # inferred entry and subsequent intrabar range. This is an
+                # explicitly non-causal bar-range research abstraction.
+                # TICK_FEASIBLE must wait for a later ordered observation.
+                if semantics is ExecutionSemantics.TICK_FEASIBLE and (
+                    event.timestamp,
+                    event.sequence,
+                ) <= (entry_event.timestamp, entry_event.sequence):
+                    continue
+                if semantics is ExecutionSemantics.BAR_CLOSE_RESEARCH and (
+                    event.timestamp,
+                    event.sequence,
+                ) < (entry_event.timestamp, entry_event.sequence):
                     continue
                 stop_hit, target_hit = _hit_levels(instruction, event)
                 if not stop_hit and not target_hit:
@@ -223,21 +233,21 @@ class HistoricalExecutionKernel:
                         break
                     if ambiguity_policy is AmbiguityPolicy.STOP_FIRST:
                         outcomes.append(_decisive_outcome(
-                            instruction, "STOP", event.sequence, instruction.stop_loss
+                            instruction, "STOP", entry_event.sequence, event.sequence, instruction.stop_loss
                         ))
                         break
                     outcomes.append(_decisive_outcome(
-                        instruction, "TARGET", event.sequence, instruction.take_profit
+                        instruction, "TARGET", entry_event.sequence, event.sequence, instruction.take_profit
                     ))
                     break
 
                 if stop_hit:
                     outcomes.append(_decisive_outcome(
-                        instruction, "STOP", event.sequence, instruction.stop_loss
+                        instruction, "STOP", entry_event.sequence, event.sequence, instruction.stop_loss
                     ))
                     break
                 outcomes.append(_decisive_outcome(
-                    instruction, "TARGET", event.sequence, instruction.take_profit
+                    instruction, "TARGET", entry_event.sequence, event.sequence, instruction.take_profit
                 ))
                 break
 
