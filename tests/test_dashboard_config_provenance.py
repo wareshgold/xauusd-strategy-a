@@ -54,7 +54,7 @@ def test_tampered_provenance_is_rejected():
 def test_unsupported_apply_mode_is_rejected():
     provenance = bind_dashboard_config(config())
     bad = replace(provenance, apply_mode="LIVE_EXECUTION")
-    with pytest.raises(DashboardConfigProvenanceError, match="fingerprint mismatch"):
+    with pytest.raises(DashboardConfigProvenanceError, match="unsupported dashboard apply mode"):
         bad.validate()
 
 
