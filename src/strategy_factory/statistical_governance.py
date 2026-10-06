@@ -84,7 +84,7 @@ class StatisticalUsageLedger:
             disposition=StatisticalUsageDisposition.ALLOWED,
             fingerprint="",
         )
-        fingerprint = hashlib.sha256(self._payload(entry._fingerprint_payload())).hexdigest()
+        fingerprint = hashlib.sha256(StatisticalUsage._payload(entry._fingerprint_payload())).hexdigest()
         entry = StatisticalUsage(**{**entry.__dict__, "fingerprint": fingerprint})
         self._entries.append(entry)
         return entry
