@@ -19,6 +19,7 @@ class StatisticalComparisonEvidence:
     evidence_revision: str
     comparison_fingerprint: str
     adjustment_fingerprint: str
+    dataset_role: str
     method: str
     family_size: int
     raw_p_values: tuple[float, ...]
@@ -30,6 +31,7 @@ class StatisticalComparisonEvidence:
             "evidence_revision": self.evidence_revision,
             "comparison_fingerprint": self.comparison_fingerprint,
             "adjustment_fingerprint": self.adjustment_fingerprint,
+            "dataset_role": self.dataset_role,
             "method": self.method,
             "family_size": self.family_size,
             "raw_p_values": list(self.raw_p_values),
@@ -66,6 +68,7 @@ def bind_statistical_comparison_evidence(
         evidence_revision=evidence_revision,
         comparison_fingerprint=comparison.fingerprint,
         adjustment_fingerprint=adjustment.fingerprint,
+        dataset_role=comparison.dataset_role,
         method=adjustment.method,
         family_size=adjustment.family_size,
         raw_p_values=adjustment.raw_p_values,
@@ -88,6 +91,8 @@ def validate_statistical_comparison_evidence(
         raise StatisticalComparisonEvidenceError("comparison fingerprint does not match evidence")
     if evidence.adjustment_fingerprint != adjustment.fingerprint:
         raise StatisticalComparisonEvidenceError("adjustment fingerprint does not match evidence")
+    if evidence.dataset_role != comparison.dataset_role:
+        raise StatisticalComparisonEvidenceError("dataset role does not match evidence")
     if evidence.method != adjustment.method or evidence.family_size != adjustment.family_size:
         raise StatisticalComparisonEvidenceError("adjustment identity does not match evidence")
     if evidence.raw_p_values != adjustment.raw_p_values or evidence.adjusted_p_values != adjustment.adjusted_p_values:
