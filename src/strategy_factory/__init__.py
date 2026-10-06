@@ -14,3 +14,5 @@ from .evidence import EvidenceBundle, EvidenceLedger
 from .provenance import provenance_gate
 
 from .metrics import MetricsContractError, ResearchMetrics
+
+from .execution import ExecutionContractError, ExecutionReceipt, execution_gate, validate_execution_binding
