@@ -51,7 +51,7 @@ def test_incomplete_execution_is_rejected():
 
 def test_strategy_revision_mismatch_is_rejected():
     spec,run,receipt=setup()
-    bad=ExecutionReceipt("EX1","T1","OTHER","ENGINE1","a"*64,True,metric())
+    bad=ExecutionReceipt("EX1","T1","OTHER",ExecutionSemantics.TICK_FEASIBLE,"ENGINE1","a"*64,True,metric())
     with pytest.raises(Exception):
         validate_execution_binding(spec=spec,run=run,receipt=bad)
 
