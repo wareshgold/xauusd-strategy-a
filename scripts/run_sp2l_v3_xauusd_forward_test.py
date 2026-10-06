@@ -122,6 +122,9 @@ def trail_positions(cfg_runtime,state):
     # V3 trailing is evaluated once per completed M1 bar per tracked position.
     # A broker-invalid candidate must never be retried every poll cycle.
     trail_seen = state.setdefault("trail_seen", {})
+    # Invalid stop geometry is transient: Bid/Ask can move back across the
+    # completed-bar extreme later. Do not consume the bar on an invalid skip.
+    trail_invalid_logged = state.setdefault("trail_invalid_logged", {})
 
     # Bar 0 is forming; bar 1 is the latest completed M1 candle.
     bars=mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, 1, 1)
@@ -172,8 +175,9 @@ def trail_positions(cfg_runtime,state):
             # BUY SL must remain below the current Bid and broker stop level.
             max_valid_sl=bid-min_stop_distance
             if new_sl >= max_valid_sl:
-                trail_seen[seen_key]={"status":"SKIPPED_INVALID_STOPS","new_sl":float(new_sl)}
-                runner.log_event({
+                if seen_key not in trail_invalid_logged:
+                    trail_invalid_logged[seen_key] = {"new_sl": float(new_sl)}
+                    runner.log_event({
                     "event":"TRAIL_SKIP","version":cfg.VERSION,"symbol":symbol,
                     "position":ticket,"direction":"BUY",
                     "completed_bar_time":completed_bar_time,
@@ -192,8 +196,9 @@ def trail_positions(cfg_runtime,state):
             # SELL SL must remain above the current Ask and broker stop level.
             min_valid_sl=ask+min_stop_distance
             if new_sl <= min_valid_sl:
-                trail_seen[seen_key]={"status":"SKIPPED_INVALID_STOPS","new_sl":float(new_sl)}
-                runner.log_event({
+                if seen_key not in trail_invalid_logged:
+                    trail_invalid_logged[seen_key] = {"new_sl": float(new_sl)}
+                    runner.log_event({
                     "event":"TRAIL_SKIP","version":cfg.VERSION,"symbol":symbol,
                     "position":ticket,"direction":"SELL",
                     "completed_bar_time":completed_bar_time,
