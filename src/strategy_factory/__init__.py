@@ -39,3 +39,17 @@ from .execution_kernel import (
     Side,
     TradeOutcome,
 )
+
+from .sp2l_discrimination import (
+    DiscriminationFixture,
+    FixtureDisposition,
+    build_sp2l_discrimination_fixtures,
+)
+from .source_resolution import (
+    SourceEvidence,
+    SourceResolutionError,
+    SourceResolutionResult,
+    SourceVerdict,
+    evaluate_source_resolution,
+    resolve_fixture_set,
+)
