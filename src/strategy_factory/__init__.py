@@ -24,3 +24,4 @@ from .adapter import (
     build_execution_receipt,
     validate_adapter_output,
 )
+from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
