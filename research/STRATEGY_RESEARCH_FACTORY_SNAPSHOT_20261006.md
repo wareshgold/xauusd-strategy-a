@@ -132,6 +132,23 @@ The job contract provides:
 
 A ResearchJobSpec is an input identity, not an execution command. It contains no strategy geometry, optimizer policy, or production decision logic.
 
+### Synthetic End-to-End Execution
+
+Added:
+- src/strategy_factory/synthetic.py
+- tests/test_synthetic_execution.py
+
+The synthetic layer provides a controlled, deployment-neutral execution adapter for infrastructure validation only.
+
+Properties:
+- fixture-defined metrics and explicit execution semantics;
+- deterministic execution IDs and input fingerprints derived from canonical inputs;
+- separate BAR_CLOSE_RESEARCH and TICK_FEASIBLE fixtures;
+- deliberate semantics mismatch rejection;
+- no SP2L geometry, signal generation, optimization, or production logic.
+
+The synthetic adapter is intentionally not a market simulator. It exists to prove the Factory orchestration and provenance contracts before real historical data or strategy execution are introduced.
+
 ### Research Job Runner
 
 Added:
@@ -155,19 +172,20 @@ Properties:
 
 ## Current verification status
 
-Before the runner:
-- 89 tests passed
-- ResearchJobSpec tests: 10 passed
+Phase 1 verification:
+- ResearchJobRunner tests: 10 passed
+- Full Factory contract suite: 99 passed
 
-Runner tests:
-- 10 tests added.
+Phase 1 is frozen as verified.
 
-The full suite must be rerun after pulling the runner changes. Expected total: 99 tests.
+Phase 2 implementation:
+- Synthetic execution tests added.
+- Local verification is pending.
 
 ## Roadmap — path forward
 
 ### Phase 1 — Complete the orchestration boundary
-Status: IMPLEMENTED — VERIFICATION PENDING
+Status: VERIFIED — 99 TESTS PASS
 
 Completed:
 1. Research Job Runner contract.
@@ -187,9 +205,16 @@ Next:
 - freeze Phase 1 only after all tests pass.
 
 ### Phase 2 — Synthetic end-to-end execution
-Status: NEXT AFTER PHASE 1 VERIFICATION
+Status: IMPLEMENTED — VERIFICATION PENDING
 
-Build a small deterministic synthetic execution adapter/engine whose inputs and expected outputs are completely controlled by fixtures.
+Build a small deterministic synthetic execution adapter whose inputs and expected outputs are completely controlled by fixtures.
+
+Implemented:
+- controlled synthetic fixtures;
+- deterministic execution IDs and input fingerprints;
+- BAR_CLOSE_RESEARCH and TICK_FEASIBLE separation;
+- semantics mismatch failure path;
+- end-to-end runner coverage.
 
 Purpose:
 - prove Job → Run → Adapter → Receipt → Evidence end-to-end;
@@ -367,8 +392,8 @@ Do not:
 
 ## Immediate next milestone
 
-Verify Phase 1 locally.
+Verify Phase 2 locally with the synthetic execution suite and the full Factory suite.
 
-After verification, build Phase 2: Synthetic End-to-End Execution.
+After Phase 2 is green, freeze the synthetic infrastructure and proceed to Phase 3: Historical Data Adapter / Dataset Ingestion.
 
 The active forward-test workstream remains untouched.
