@@ -132,39 +132,62 @@ The job contract provides:
 
 A ResearchJobSpec is an input identity, not an execution command. It contains no strategy geometry, optimizer policy, or production decision logic.
 
+### Research Job Runner
+
+Added:
+- src/strategy_factory/runner.py
+- tests/test_research_job_runner.py
+
+The runner provides the orchestration boundary:
+
+ResearchJobSpec → validated test/dataset identity → ResearchRunIdentity → ExecutionAdapter → ExecutionReceipt → EvidenceBundle → acceptance gates
+
+Properties:
+- orchestration only;
+- no SP2L geometry;
+- no BUY/SELL generation;
+- no optimization;
+- preserves declared execution semantics;
+- rejects adapter identity mismatches and incomplete execution;
+- derives evidence metrics from the accepted receipt;
+- prevents duplicate completion within one runner instance;
+- produces reproducible run/evidence fingerprints for identical inputs.
+
 ## Current verification status
 
-Factory contract suite:
+Before the runner:
 - 89 tests passed
 - ResearchJobSpec tests: 10 passed
-- Full Factory suite: 89 passed
 
-The following layer is considered stable enough to build on, but remains research-only. Existing contracts should not be weakened merely to accommodate future engine behavior.
+Runner tests:
+- 10 tests added.
+
+The full suite must be rerun after pulling the runner changes. Expected total: 99 tests.
 
 ## Roadmap — path forward
 
 ### Phase 1 — Complete the orchestration boundary
-Status: NEXT
+Status: IMPLEMENTED — VERIFICATION PENDING
 
+Completed:
 1. Research Job Runner contract.
 2. Validate job against registered dataset/test identity.
 3. Create or bind ResearchRunIdentity.
-4. Resolve an ExecutionAdapter.
-5. Execute exactly once under the declared semantics.
-6. Produce ExecutionReceipt.
-7. Produce EvidenceBundle only from the receipt.
-8. Run provenance/execution/metrics/evidence-acceptance gates.
-9. Return a deterministic run result.
-10. Add tests for missing, mismatched, duplicate, incomplete, and successful jobs.
+4. Delegate to ExecutionAdapter.
+5. Produce ExecutionReceipt.
+6. Produce EvidenceBundle only from the receipt.
+7. Run execution and evidence-acceptance gates.
+8. Return a deterministic run result.
+9. Tests for successful, duplicate, identity-mismatch, dataset-mismatch, incomplete, reproducible, and semantics-preserving execution.
 
-Important:
-- Runner is orchestration only.
-- It must not know SP2L geometry.
-- It must not generate BUY/SELL decisions.
-- It must not optimize parameters.
+Next:
+- pull the Factory branch;
+- run runner tests;
+- run the full Factory suite;
+- freeze Phase 1 only after all tests pass.
 
 ### Phase 2 — Synthetic end-to-end execution
-Status: AFTER PHASE 1
+Status: NEXT AFTER PHASE 1 VERIFICATION
 
 Build a small deterministic synthetic execution adapter/engine whose inputs and expected outputs are completely controlled by fixtures.
 
@@ -344,10 +367,8 @@ Do not:
 
 ## Immediate next milestone
 
-Build Phase 1: Research Job Runner Contract.
+Verify Phase 1 locally.
 
-Acceptance target:
+After verification, build Phase 2: Synthetic End-to-End Execution.
 
-ResearchJobSpec → validated dataset/test → ResearchRun → ExecutionAdapter → ExecutionReceipt → EvidenceBundle → acceptance gates
-
-with deterministic behavior and a complete test suite, while leaving the live forward-test workstream untouched.
+The active forward-test workstream remains untouched.
