@@ -80,3 +80,9 @@ from .statistical_governance import StatisticalUsage, StatisticalUsageDispositio
 from .stability import StabilityContractError, StabilitySegment, StabilityProfile, evaluate_stability
 
 from .stability_evidence import StabilityEvidenceError, StabilityEvidence, bind_stability_evidence, validate_stability_evidence_binding
+from .research_evidence_bundle import (
+    ResearchEvidenceBundle,
+    ResearchEvidenceBundleError,
+    bind_research_evidence_bundle,
+    validate_research_evidence_bundle,
+)
