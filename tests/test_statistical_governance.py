@@ -14,7 +14,7 @@ from strategy_factory.research_record import ResearchRecord
 
 
 def evidence_for(role):
-    run, evidence, snapshot, audit, provenance = chain()
+    run, evidence, snapshot, audit, provenance = chain(role.value)
     record = ResearchRecord.from_components(run, evidence, snapshot, audit, provenance)
     result = evaluate_statistical_validation(evidence.metrics, role=role, trade_returns_r=(1.0,))
     return bind_statistical_evidence(record, result)
