@@ -59,3 +59,5 @@ from .source_ledger import ResolutionRecord, ResolutionStatus, SourceLedgerError
 from .source_gate import SourceGateResult, SourceGateStatus, evaluate_source_gate
 
 from .passport_gate import PassportEligibility, evaluate_passport_eligibility
+
+from .snapshot import ReadinessSnapshot, build_readiness_snapshot, manifest_fingerprint
