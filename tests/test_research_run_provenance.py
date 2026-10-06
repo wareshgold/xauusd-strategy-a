@@ -179,6 +179,7 @@ def test_provenance_gate_passes_exact_match():
         run_id=run.run_id,
         run_fingerprint=run.fingerprint,
         result_revision="RESULT-001",
+        metrics=VALID_METRICS,
         result={"trades": 10},
     )
     assert provenance_gate(run=run, evidence=evidence).status is GateStatus.PASS
@@ -191,6 +192,7 @@ def test_provenance_gate_fails_mismatch():
         run_id=run.run_id,
         run_fingerprint="f" * 64,
         result_revision="RESULT-001",
+        metrics=VALID_METRICS,
         result={"trades": 10},
     )
     assert provenance_gate(run=run, evidence=evidence).status is GateStatus.FAIL
