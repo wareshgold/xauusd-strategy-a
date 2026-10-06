@@ -44,7 +44,7 @@ def test_tampering_is_detected():
 def test_wrong_record_is_rejected():
     run, evidence, snapshot, audit, provenance = chain(DatasetRole.DEVELOPMENT.value)
     from strategy_factory.research_record import ResearchRecord
-    record = ResearchRecord.from_components(run=run, audit=audit, provenance=provenance)
+    record = ResearchRecord.from_components(run, evidence, snapshot, audit, provenance)
     bound = bind_stability_evidence(record, profile())
     other = replace(record, run_id="OTHER", fingerprint=record.fingerprint)
     with pytest.raises(StabilityEvidenceError, match="run_id"):
