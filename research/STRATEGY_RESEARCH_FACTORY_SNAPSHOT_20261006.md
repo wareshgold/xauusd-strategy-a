@@ -270,7 +270,7 @@ Requirements:
 The data layer must not define strategy geometry.
 
 ### Phase 4 — Generic deterministic historical execution kernel
-Status: IMPLEMENTED — VERIFICATION PENDING
+Status: VERIFIED — 130 TESTS PASS
 
 Added:
 - src/strategy_factory/execution_kernel.py
@@ -293,6 +293,15 @@ Critical boundary:
 
 Build the execution kernel independently from SP2L-specific signal geometry.
 
+Verification completed 2026-10-06:
+- execution-kernel suite: 10 passed;
+- full Factory suite including the kernel: 130 passed;
+- TICK_FEASIBLE now requires explicit bid/ask observations;
+- OHLC-only observations are rejected under TICK_FEASIBLE;
+- same-bar ambiguity remains explicit under BAR_CLOSE_RESEARCH;
+- entry/exit sequence provenance is deterministic;
+- no SP2L geometry or production execution logic was introduced.
+
 The kernel will eventually handle explicitly declared mechanics such as:
 - chronological event processing;
 - entry/exit event ordering;
@@ -305,7 +314,7 @@ The kernel will eventually handle explicitly declared mechanics such as:
 
 BAR_CLOSE_RESEARCH and TICK_FEASIBLE must remain distinct. A model cannot claim tick feasibility merely because it was run on M1 bars.
 
-### Phase 5 — SP2L Strategy Engine
+### Phase 5 — SP2L Strategy Engine / Source Resolution
 Status: BLOCKED BY SOURCE RESOLUTION / FROZEN GEOMETRY
 
 Only after canonical source resolution and frozen geometry.
