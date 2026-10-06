@@ -772,7 +772,7 @@ def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = Non
         f"━━━━━━━━━━━━━━━━━━\n"
         f"📌 <b>Entry</b>   {candidate['theoretical_entry']:.{digits}f}\n"
         f"🛑 <b>SL</b>      {candidate['sl']:.{digits}f}\n"
-        f"🎯 <b>TP (1R)</b>  {candidate['tp']:.{digits}f}\n"
+        f"🎯 <b>TP ({TP_R:g}R)</b>  {candidate['tp']:.{digits}f}\n"
         f"📏 <b>Risk</b>    {candidate['risk']:.{digits}f}  ({risk_pips:.0f} pip)\n"
         f"➕ <b>2X Entry</b> {candidate['secondary_entry_2x']:.{digits}f}  <i>(research)</i>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
