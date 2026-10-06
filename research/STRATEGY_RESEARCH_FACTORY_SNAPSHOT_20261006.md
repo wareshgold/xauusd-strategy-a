@@ -20,7 +20,7 @@ A failed validation gate returns the candidate to research rather than silently 
 6. The Factory does not generate production BUY/SELL decisions.
 7. A candidate cannot become production-eligible without all required gates.
 8. Live runner/config are outside this change.
-9. Execution adapters must be portable across local, VPS, CI, or cloud workers without changing declared strategy/test semantics.
+9. Execution adapters and research jobs must be portable across local, VPS, CI, or cloud workers without changing declared strategy/test semantics.
 
 ## Safety
 
@@ -107,6 +107,21 @@ The adapter contract provides:
 
 The adapter is deployment-neutral: the same contract can be implemented locally, on a VPS, in CI, or on a cloud worker. It does not implement the execution engine itself.
 
+### Portable Research Job
+Added:
+- src/strategy_factory/jobs.py
+- tests/test_research_jobs.py
+
+The job contract provides:
+- deployment-neutral ResearchJobSpec
+- deterministic SHA-256 job fingerprint
+- exact strategy/test/dataset/manifest identity
+- explicit execution semantics
+- JSON-serializable parameters
+- exact job-to-test-spec validation
+
+A ResearchJobSpec is an input identity, not an execution command. It contains no strategy geometry, optimizer policy, or production decision logic.
+
 ## Commits
 
 Execution:
@@ -125,3 +140,8 @@ Portable adapter:
 - 863c0563
 - 9b722813
 - 2d257901
+
+Portable research job:
+- 47770bbd
+- 93517d47
+- 01950b22
