@@ -59,3 +59,14 @@ def test_snapshot_changes_when_manifest_changes():
 
     assert snap_a.manifest_fingerprint != snap_b.manifest_fingerprint
     assert snap_a.fingerprint != snap_b.fingerprint
+
+
+def test_snapshot_changes_when_passport_changes():
+    manifest = build_sp2l_research_manifest()
+    p = passport(manifest)
+    snap_a = build_readiness_snapshot(manifest, p, SourceResolutionLedger())
+    p2 = replace(p, code_revision="CODE-CHANGED")
+    snap_b = build_readiness_snapshot(manifest, p2, SourceResolutionLedger())
+
+    assert snap_a.passport_fingerprint != snap_b.passport_fingerprint
+    assert snap_a.fingerprint != snap_b.fingerprint
