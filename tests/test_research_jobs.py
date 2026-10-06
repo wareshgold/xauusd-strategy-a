@@ -57,9 +57,10 @@ def test_job_fingerprint_is_deterministic():
 
 def test_job_fingerprint_changes_when_inputs_change():
     first = make_job()
-    second = ResearchJobSpec(
-        **{**first.as_dict(), "parameters": {"tp_r": 3, "trail": 2}}
-    )
+    fields = first.as_dict()
+    fields["execution_semantics"] = ExecutionSemantics(fields["execution_semantics"])
+    fields["parameters"] = {"tp_r": 3, "trail": 2}
+    second = ResearchJobSpec(**fields)
     assert first.fingerprint != second.fingerprint
 
 
