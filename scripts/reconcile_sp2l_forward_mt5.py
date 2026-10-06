@@ -32,6 +32,7 @@ DEFAULT_EVENT = ARTIFACTS / "SP2L_V3_XAUUSD_RR2_ACT10_TRAIL2_FORWARD_EVENTS.json
 IRAN_TZ = ZoneInfo("Asia/Tehran")
 DEFAULT_SYMBOL = "XAUUSD.ecn"
 DEFAULT_MAGIC = 26092201
+DEFAULT_MT5_PATH = Path(r"C:\Program Files\Otet Group MT5 Terminal\terminal64.exe")
 EPSILON = 0.01
 
 
@@ -41,6 +42,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--event-file", type=Path, default=DEFAULT_EVENT)
     p.add_argument("--symbol", default=DEFAULT_SYMBOL)
     p.add_argument("--magic", type=int, default=DEFAULT_MAGIC)
+    p.add_argument("--mt5-path", type=Path, default=DEFAULT_MT5_PATH,
+                   help="MT5 terminal64.exe path; default: Otet Group MT5 path")
     p.add_argument("--json", action="store_true", dest="as_json")
     return p.parse_args()
 
@@ -185,9 +188,11 @@ def build_report(args: argparse.Namespace) -> dict:
 
     event_data = load_event_ledger(args.event_file, day, args.symbol)
 
-    terminal_path = None
-    if not mt5.initialize():
-        raise RuntimeError(f"mt5.initialize() failed: {mt5.last_error()}")
+    terminal_path = args.mt5_path
+    if not terminal_path.exists():
+        raise FileNotFoundError(f"MT5 terminal not found: {terminal_path}")
+    if not mt5.initialize(path=str(terminal_path)):
+        raise RuntimeError(f"mt5.initialize(path=...) failed: {mt5.last_error()}")
 
     try:
         account = mt5.account_info()
@@ -229,6 +234,7 @@ def build_report(args: argparse.Namespace) -> dict:
         "date_tehran": day,
         "symbol": args.symbol,
         "magic": args.magic,
+        "mt5_path": str(args.mt5_path),
         "event_file": str(args.event_file),
         "event_signals": event_data["signals"],
         "event_closed_count": len(event_data["closed"]),
