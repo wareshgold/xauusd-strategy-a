@@ -61,3 +61,5 @@ from .source_gate import SourceGateResult, SourceGateStatus, evaluate_source_gat
 from .passport_gate import PassportEligibility, evaluate_passport_eligibility
 
 from .snapshot import ReadinessSnapshot, build_readiness_snapshot, manifest_fingerprint, passport_fingerprint
+
+from .audit import AuditBindingError, ResearchAuditRecord, bind_research_audit
