@@ -45,8 +45,6 @@ def full_chain():
 
 def test_unified_quality_passes():
     record, stat, stability, bundle, ledger, acceptance, gate = full_chain()
-    stat = bind_statistical_evidence(record, evaluate_statistical_validation(raw.metrics, role=DatasetRole.DEVELOPMENT, trade_returns_r=(1.0,)))
-    stability = bind_stability_evidence(record, evaluate_stability((StabilitySegment("S1","seg",1,1.0,1.0),)))
     result = evaluate_unified_research_quality(
         record, stat, stability, bundle, ledger, acceptance, gate
     )
@@ -65,13 +63,13 @@ def test_unified_quality_rejects_evidence_mismatch():
         ),
         role=DatasetRole.DEVELOPMENT, trade_returns_r=(2.0,)
     ))
-    stability = bind_stability_evidence(record, evaluate_stability((StabilitySegment("S1","seg",1,2.0,2.0),)))
+    stability = bind_stability_evidence(record, evaluate_stability((StabilitySegment("S1","seg",1,2.0,1.0),)))
     with pytest.raises(UnifiedResearchQualityError):
         evaluate_unified_research_quality(record, stat, stability, bundle, ledger, acceptance, gate)
 
 
 def test_unified_quality_rejects_non_pass_comparison():
-    record, _, _, bundle, ledger, acceptance, _ = full_chain()
+    record, _, _, bundle, ledger, acceptance, gate = full_chain()
     bad = replace(
         gate,
         status="BLOCKED",
