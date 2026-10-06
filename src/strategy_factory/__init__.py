@@ -107,3 +107,5 @@ from .comparison_validation_gate import ComparisonValidationGateError, Compariso
 from .unified_research_quality import UnifiedResearchQuality, UnifiedResearchQualityError, evaluate_unified_research_quality
 
 from .research_certification import ResearchCertification, ResearchCertificationError, certify_research_result
+
+from .research_certification_ledger import ResearchCertificationLedger, ResearchCertificationLedgerEntry, ResearchCertificationLedgerError
