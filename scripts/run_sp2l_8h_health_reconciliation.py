@@ -415,17 +415,79 @@ def main():
         order_result_ids = {o["order"] for o in order_results if o["order"]}
         mt5_order_ids = {int(o.ticket) for o in orders}
         missing_orders = sorted(observed_event_order_ids - mt5_order_ids)
+
+        # A broker-generated SL/TP exit gets its own MT5 order ticket even
+        # though the runner never submitted that exit order and therefore
+        # cannot have an ORDER_RESULT/PENDING_ORDER_LIFECYCLE event for it.
+        # Reconcile such tickets through the authoritative MT5 deal chain:
+        # known position -> exit deal -> exit order. Do not whitelist tickets.
+        observed_position_ids = set()
+        for e in events:
+            if e.get("symbol") != args.symbol:
+                continue
+            t = event_ts(e)
+            if t is None or t < session_start_dt or t > end_dt:
+                continue
+            if e.get("event") == "POSITION_LIFECYCLE":
+                position_id = int(e.get("position", 0) or 0)
+                if position_id:
+                    observed_position_ids.add(position_id)
+            elif e.get("event") == "TELEGRAM_DEAL_LIFECYCLE":
+                position_id = int(e.get("position", 0) or 0)
+                if position_id:
+                    observed_position_ids.add(position_id)
+
+        exit_reasons = {
+            getattr(mt5, "DEAL_REASON_SL", 4),
+            getattr(mt5, "DEAL_REASON_TP", 5),
+        }
+        exit_entries = {
+            getattr(mt5, "DEAL_ENTRY_OUT", 1),
+            getattr(mt5, "DEAL_ENTRY_OUT_BY", 3),
+        }
+
+        broker_generated_exit_orders = set()
+        for o in orders:
+            order_id = int(getattr(o, "ticket", 0) or 0)
+            if order_id in observed_event_order_ids:
+                continue
+            if order_id <= 0:
+                continue
+            position_id = int(getattr(o, "position_id", 0) or 0)
+            if position_id <= 0 or position_id not in observed_position_ids:
+                continue
+
+            matching_exit_deals = [
+                d for d in deals
+                if int(getattr(d, "order", 0) or 0) == order_id
+                and int(getattr(d, "position_id", 0) or 0) == position_id
+                and int(getattr(d, "entry", -1)) in exit_entries
+                and int(getattr(d, "reason", -1)) in exit_reasons
+            ]
+            if matching_exit_deals:
+                broker_generated_exit_orders.add(order_id)
+
         unexpected_orders = sorted(mt5_order_ids - observed_event_order_ids)
+        unexplained_orders = sorted(
+            set(unexpected_orders) - broker_generated_exit_orders
+        )
 
         print(f"EVENT_ORDER_RESULT_IDS={len(order_result_ids)}")
         print(f"EVENT_OBSERVED_ORDER_IDS={len(observed_event_order_ids)}")
         print(f"EVENT_LIFECYCLE_ORDER_IDS={len(lifecycle_order_ids)}")
+        print(f"EVENT_OBSERVED_POSITION_IDS={len(observed_position_ids)}")
         print(f"EVENT_ORDERS_MISSING_IN_MT5_HISTORY={len(missing_orders)}")
         print(f"MT5_ORDERS_WITHOUT_EVENT_OBSERVATION={len(unexpected_orders)}")
+        print(f"BROKER_GENERATED_EXIT_ORDERS_RECONCILED={len(broker_generated_exit_orders)}")
+        print(f"UNEXPLAINED_MT5_ORDERS={len(unexplained_orders)}")
         if missing_orders:
             print(f"MISSING_MT5_ORDER_IDS={missing_orders}")
         if unexpected_orders:
             print(f"UNEXPECTED_MT5_ORDER_IDS={unexpected_orders}")
+        if broker_generated_exit_orders:
+            print(f"RECONCILED_BROKER_EXIT_ORDER_IDS={sorted(broker_generated_exit_orders)}")
+        if unexplained_orders:
+            print(f"UNEXPLAINED_MT5_ORDER_IDS={unexplained_orders}")
         print()
 
         # Actual P&L is reported exactly from MT5 deals. For open positions,
@@ -460,7 +522,11 @@ def main():
         print(f"MT5_FLOATING_PROFIT_USD={floating:.2f}")
         print()
 
-        status = "PASS" if not missing and not missing_orders else "RECONCILIATION_GAP"
+        status = (
+            "PASS"
+            if not missing and not missing_orders and not unexplained_orders
+            else "RECONCILIATION_GAP"
+        )
         print("=== HEALTH STATUS ===")
         print(f"STATUS={status}")
         print("CANONICAL=false")
@@ -496,6 +562,9 @@ def main():
             "mt5_deal_count": len(deals),
             "missing_mt5_orders": missing_orders,
             "unexpected_mt5_orders": unexpected_orders,
+            "observed_position_ids": sorted(observed_position_ids),
+            "broker_generated_exit_orders_reconciled": sorted(broker_generated_exit_orders),
+            "unexplained_mt5_orders": unexplained_orders,
             "realized_profit_usd": realized_profit,
             "realized_commission_usd": commissions,
             "realized_swap_usd": swaps,
