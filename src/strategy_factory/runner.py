@@ -33,6 +33,7 @@ class ResearchJobRunResult:
     snapshot: ReadinessSnapshot
     audit: ResearchAuditRecord
     provenance: ResearchProvenanceResult
+    record: ResearchRecord
     gates: tuple[GateResult, ...]
 
     @property
