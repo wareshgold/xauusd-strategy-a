@@ -111,6 +111,28 @@ PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8790"))
 REFRESH_SECONDS = 5
 IRAN_TZ = ZoneInfo("Asia/Tehran")
 
+def _active_forward_paths() -> tuple[Path, Path]:
+    """Resolve the event/state files belonging to the currently running profile."""
+    event_candidates = sorted((ARTIFACTS / "forward-test").glob("*_FORWARD_EVENTS.jsonl"), key=lambda p: p.stat().st_mtime if p.exists() else 0.0, reverse=True)
+    event = event_candidates[0] if event_candidates else EVENTS
+    stem = event.stem[:-len("_FORWARD_EVENTS")]
+    state = RUNTIME / (stem.lower() + "_forward_state.json")
+    if not state.exists():
+        state_candidates = sorted(RUNTIME.glob("*_forward_state.json"), key=lambda p: p.stat().st_mtime if p.exists() else 0.0, reverse=True)
+        state = state_candidates[0] if state_candidates else STATE_FILE
+    return event, state
+
+def _mt5_server_offset_seconds(symbol: str = "XAUUSD.ecn") -> int:
+    """Infer broker-server clock offset for display only."""
+    try:
+        tick = mt5.symbol_info_tick(symbol)
+        if not tick:
+            return 0
+        offset = int(round(float(tick.time) - time.time()))
+        return offset if abs(offset) <= 18 * 3600 else 0
+    except Exception:
+        return 0
+
 app = Flask(__name__)
 
 _PG_UP = """<!doctype html><html><head><meta charset="utf-8">
@@ -161,7 +183,8 @@ def runner_health() -> str:
         m1_ts = raw.get("m1_bar_time")
         m1_text = "—"
         if m1_ts:
-            m1_text = datetime.fromtimestamp(int(m1_ts), timezone.utc).astimezone(IRAN_TZ).strftime("%H:%M:%S")
+            offset = _mt5_server_offset_seconds(str(raw.get("symbol") or "XAUUSD.ecn"))
+            m1_text = datetime.fromtimestamp(int(m1_ts) - offset, timezone.utc).astimezone(IRAN_TZ).strftime("%H:%M:%S")
         if age <= 45 and alive:
             health = '<span class="ok">🟢 HEALTHY</span>'
         elif age <= 120 and alive:
@@ -189,7 +212,8 @@ def session_status() -> str:
     runner_pid = _read_pid(RUNNER_LOCK)
     watchdog_pid = _read_pid(WATCHDOG_PID)
     try:
-        mtime = STATE_FILE.stat().st_mtime
+        _, active_state = _active_forward_paths()
+        mtime = active_state.stat().st_mtime
         age = time.time() - mtime
         beat = (
             f'<span class="ok">ALIVE ({age:.0f}s ago)</span>'
@@ -206,7 +230,7 @@ def session_status() -> str:
     watchdog = (
         f'<span class="ok">alive (pid {watchdog_pid})</span>'
         if _proc_alive(watchdog_pid)
-        else '<span class="bad">DEAD</span>'
+        else '<span class="dim">not running</span>'
     )
     flags = _runner_mode_from_process()
     if flags is None:
@@ -258,6 +282,7 @@ def mt5_status() -> str:
 
 
 def today_stats() -> tuple[str, str, str]:
+    event_file, _ = _active_forward_paths()
     today = datetime.now(IRAN_TZ).strftime("%Y-%m-%d")
     signals = fills = closes = 0
     wins = losses = 0
@@ -266,7 +291,7 @@ def today_stats() -> tuple[str, str, str]:
     orders: list[dict] = []
     events: list[dict] = []
     try:
-        with EVENTS.open("r", encoding="utf-8") as f:
+        with event_file.open("r", encoding="utf-8") as f:
             for line in f:
                 try:
                     ev = json.loads(line)
