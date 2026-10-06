@@ -4,12 +4,11 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-from .audit import AuditBindingError, ResearchAuditRecord
+from .audit import ResearchAuditRecord
 from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus
 from .evidence import EvidenceBundle
 from .execution import ExecutionReceipt, validate_execution_binding
 from .jobs import ResearchJobSpec, validate_job_matches_test_spec
-from .models import GateStatus
 from .runs import ResearchRunIdentity
 from .snapshot import ReadinessSnapshot
 from .test_contract import HistoricalTestSpec
@@ -53,14 +52,18 @@ def evaluate_research_provenance(
 ) -> ResearchProvenanceResult:
     """Require one exact provenance chain from TestSpec through Audit.
 
-    The function is deliberately descriptive: PASS means the supplied
-    identities bind together; it does not mean the strategy is profitable,
-    canonical, or production-ready.
+    PASS means the supplied identities bind together. It does not mean the
+    strategy is profitable, canonical, or production-ready.
+
+    BLOCKED is reserved for unavailable/unregistered dataset provenance.
+    Contradictions or tampering in an otherwise present chain are FAIL.
     """
     reasons: list[str] = []
 
-    if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
-        reasons.append(f"DATASET_PROVENANCE_{dataset_provenance.status.value}")
+    if dataset_provenance.status is DatasetProvenanceStatus.BLOCKED:
+        reasons.append("DATASET_PROVENANCE_BLOCKED")
+    elif dataset_provenance.status is DatasetProvenanceStatus.FAIL:
+        reasons.append("DATASET_PROVENANCE_FAIL")
 
     try:
         spec.validate()
@@ -138,18 +141,9 @@ def evaluate_research_provenance(
         reasons.append(f"AUDIT_INVALID:{exc}")
 
     if reasons:
-        blocked_prefixes = (
-            "DATASET_PROVENANCE_BLOCKED",
-            "JOB_SPEC_MISMATCH:",
-            "RUN_INVALID:",
-            "EXECUTION_BINDING:",
-            "EVIDENCE_INVALID:",
-            "SNAPSHOT_INVALID:",
-            "AUDIT_INVALID:",
-        )
         status = (
             ResearchProvenanceStatus.BLOCKED
-            if any(reason.startswith(blocked_prefixes) for reason in reasons)
+            if "DATASET_PROVENANCE_BLOCKED" in reasons
             else ResearchProvenanceStatus.FAIL
         )
         return ResearchProvenanceResult(status, tuple(reasons))
