@@ -68,6 +68,8 @@ def evaluate_unified_research_quality(
 ) -> UnifiedResearchQuality:
     try:
         record.validate()
+        statistical.validate()
+        stability.validate()
         acceptance.validate()
         if acceptance.run_id != record.run_id:
             raise UnifiedResearchQualityError("research acceptance run_id does not match record")
@@ -75,6 +77,14 @@ def evaluate_unified_research_quality(
             raise UnifiedResearchQualityError("research acceptance record fingerprint does not match record")
         if acceptance.bundle_fingerprint != bundle.fingerprint:
             raise UnifiedResearchQualityError("research acceptance bundle fingerprint does not match bundle")
+        if acceptance.statistical_evidence_fingerprint != statistical.fingerprint:
+            raise UnifiedResearchQualityError("research acceptance statistical evidence does not match")
+        if acceptance.stability_evidence_fingerprint != stability.fingerprint:
+            raise UnifiedResearchQualityError("research acceptance stability evidence does not match")
+        if bundle.statistical_evidence_fingerprint != statistical.fingerprint:
+            raise UnifiedResearchQualityError("bundle statistical evidence does not match")
+        if bundle.stability_evidence_fingerprint != stability.fingerprint:
+            raise UnifiedResearchQualityError("bundle stability evidence does not match")
         if not any(
             entry.bundle_fingerprint == bundle.fingerprint and entry.run_id == record.run_id
             for entry in research_ledger.entries()
