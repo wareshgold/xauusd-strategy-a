@@ -3,12 +3,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .acceptance import evidence_acceptance_gate
+from .audit import AuditBindingError, ResearchAuditRecord, bind_research_audit
 from .adapter import ExecutionAdapter, validate_adapter_output
+from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus, evaluate_dataset_provenance
 from .evidence import EvidenceBundle, EvidenceLedger
 from .execution import ExecutionReceipt, execution_gate
 from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
 from .models import GateResult, GateStatus
+from .research_provenance import ResearchProvenanceResult, evaluate_research_provenance
 from .runs import ResearchRunError, ResearchRunIdentity, ResearchRunLedger
+from .snapshot import ReadinessSnapshot
 from .test_contract import HistoricalTestSpec
 
 
@@ -24,6 +28,10 @@ class ResearchJobRunResult:
     run: ResearchRunIdentity
     receipt: ExecutionReceipt
     evidence: EvidenceBundle
+    dataset_provenance: DatasetProvenanceResult
+    snapshot: ReadinessSnapshot
+    audit: ResearchAuditRecord
+    provenance: ResearchProvenanceResult
     gates: tuple[GateResult, ...]
 
     @property
@@ -56,6 +64,8 @@ class ResearchJobRunner:
         job: ResearchJobSpec,
         spec: HistoricalTestSpec,
         adapter: ExecutionAdapter,
+        snapshot: ReadinessSnapshot,
+        observed_content_sha256: str,
         evidence_id: str | None = None,
         result_revision: str = "RECEIPT_METRICS_V1",
         purpose: str = "HISTORICAL_TEST",
@@ -82,6 +92,21 @@ class ResearchJobRunner:
         if job.job_id in self._completed_jobs:
             raise ResearchJobRunnerError(
                 f"research job {job.job_id!r} has already completed in this runner"
+            )
+
+        try:
+            snapshot.validate()
+        except Exception as exc:
+            raise ResearchJobRunnerError("readiness snapshot is invalid") from exc
+
+        dataset_provenance = evaluate_dataset_provenance(
+            spec,
+            self.runs.registry,
+            observed_content_sha256,
+        )
+        if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
+            raise ResearchJobRunnerError(
+                "dataset provenance gate rejected the research job"
             )
 
         try:
@@ -145,6 +170,34 @@ class ResearchJobRunner:
                 "evidence acceptance gate rejected the research result"
             )
 
+        try:
+            audit = bind_research_audit(run, snapshot, evidence)
+        except AuditBindingError as exc:
+            raise ResearchJobRunnerError(
+                "research audit binding rejected the result"
+            ) from exc
+
+        provenance = evaluate_research_provenance(
+            spec=spec,
+            job=job,
+            run=run,
+            receipt=receipt,
+            evidence=evidence,
+            audit=audit,
+            snapshot=snapshot,
+            dataset_provenance=dataset_provenance,
+        )
+        provenance_gate = GateResult(
+            name="RESEARCH_PROVENANCE",
+            status=GateStatus(provenance.status.value),
+            evidence="END_TO_END_PROVENANCE",
+            details=provenance.as_dict(),
+        )
+        if provenance_gate.status is not GateStatus.PASS:
+            raise ResearchJobRunnerError(
+                "end-to-end research provenance gate rejected the result"
+            )
+
         self._completed_jobs.add(job.job_id)
 
         return ResearchJobRunResult(
@@ -152,5 +205,9 @@ class ResearchJobRunner:
             run=run,
             receipt=receipt,
             evidence=evidence,
-            gates=(execution_result, acceptance),
+            dataset_provenance=dataset_provenance,
+            snapshot=snapshot,
+            audit=audit,
+            provenance=provenance,
+            gates=(execution_result, acceptance, provenance_gate),
         )
