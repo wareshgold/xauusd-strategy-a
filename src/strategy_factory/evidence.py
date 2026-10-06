@@ -5,6 +5,7 @@ import hashlib
 import json
 from typing import Any, Mapping
 
+from .metrics import ResearchMetrics
 from .runs import ResearchRunError, ResearchRunIdentity
 
 
@@ -23,6 +24,7 @@ class EvidenceBundle:
     run_id: str
     run_fingerprint: str
     result_revision: str
+    metrics: ResearchMetrics
     result: Mapping[str, Any]
 
     def validate(self) -> None:
@@ -30,6 +32,7 @@ class EvidenceBundle:
             raise ResearchRunError("evidence provenance is incomplete")
         if len(self.run_fingerprint) != 64:
             raise ResearchRunError("run_fingerprint must be a SHA-256 hex digest")
+        self.metrics.validate()
         _canonical(self.result)
 
     @property
@@ -44,6 +47,7 @@ class EvidenceBundle:
             "run_id": self.run_id,
             "run_fingerprint": self.run_fingerprint,
             "result_revision": self.result_revision,
+            "metrics": self.metrics.as_dict(),
             "result": dict(self.result),
         }
 
