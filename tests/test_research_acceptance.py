@@ -15,11 +15,9 @@ from strategy_factory.stability_evidence import bind_stability_evidence
 
 
 def evidence_chain():
-    from test_research_job_runner import build_chain
+    from test_research_evidence_bundle import evidence_chain as build_evidence_chain
 
-    record, _ = build_chain()
-    statistical = bind_statistical_evidence(record, record.run.metrics)
-    stability = bind_stability_evidence(record, record.run.metrics)
+    record, statistical, stability = build_evidence_chain()
     bundle = bind_research_evidence_bundle(record, statistical, stability)
     return record, statistical, stability, bundle
 
@@ -50,8 +48,6 @@ def test_acceptance_validates_full_chain():
 
 
 def test_tampered_bundle_is_rejected():
-    from strategy_factory.research_evidence_bundle import ResearchEvidenceBundleError
-
     record, statistical, stability, bundle, ledger = registered_chain()
     tampered = replace(bundle, fingerprint="bad")
     with pytest.raises(ResearchAcceptanceError, match="fingerprint"):
