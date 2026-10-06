@@ -22,12 +22,7 @@ class ResearchProvenanceStatus(str, Enum):
 
 @dataclass(frozen=True)
 class ResearchProvenanceResult:
-    """Immutable end-to-end provenance decision for one research result.
-
-    This gate verifies identity and provenance only. It does not evaluate
-    strategy geometry, performance thresholds, optimization, canonical status,
-    or production eligibility.
-    """
+    """Immutable end-to-end provenance decision for one research result."""
 
     status: ResearchProvenanceStatus
     reasons: tuple[str, ...]
@@ -52,8 +47,8 @@ def evaluate_research_provenance(
 ) -> ResearchProvenanceResult:
     """Require one exact provenance chain from TestSpec through Audit.
 
-    PASS means the supplied identities bind together. It does not mean the
-    strategy is profitable, canonical, or production-ready.
+    PASS means identities bind together. It does not mean the strategy is
+    profitable, canonical, or production-ready.
 
     BLOCKED is reserved for unavailable/unregistered dataset provenance.
     Contradictions or tampering in an otherwise present chain are FAIL.
@@ -119,26 +114,31 @@ def evaluate_research_provenance(
     except Exception as exc:
         reasons.append(f"SNAPSHOT_INVALID:{exc}")
 
+    # Compare the audit's bound fields before validating its own fingerprint.
+    # This preserves the most useful provenance diagnosis when a single audit
+    # field is tampered with: identity mismatch is FAIL, while an internally
+    # corrupted audit record remains AUDIT_INVALID.
+    audit_checks = (
+        ("AUDIT_RUN_ID", audit.run_id == run.run_id),
+        ("AUDIT_RUN_FINGERPRINT", audit.run_fingerprint == run.fingerprint),
+        ("AUDIT_SNAPSHOT_FINGERPRINT", audit.snapshot_fingerprint == snapshot.fingerprint),
+        ("AUDIT_STRATEGY_ID", audit.strategy_id == run.strategy_id),
+        ("AUDIT_STRATEGY_REVISION", audit.strategy_revision == run.strategy_revision),
+        ("AUDIT_MANIFEST_REVISION", audit.manifest_revision == run.manifest_revision),
+        ("AUDIT_DATASET_ID", audit.dataset_id == run.dataset_id),
+        ("AUDIT_DATASET_ROLE", audit.dataset_role == run.dataset_role),
+        ("AUDIT_DATA_REVISION", audit.data_revision == run.data_revision),
+        ("AUDIT_DATASET_FINGERPRINT", audit.dataset_fingerprint == run.dataset_fingerprint),
+        ("AUDIT_EXECUTION_SEMANTICS", audit.execution_semantics == run.execution_semantics.value),
+        ("AUDIT_EVIDENCE_ID", audit.evidence_id == evidence.evidence_id),
+        ("AUDIT_EVIDENCE_FINGERPRINT", audit.evidence_fingerprint == evidence.fingerprint),
+    )
+    reasons.extend(name for name, ok in audit_checks if not ok)
     try:
         audit.validate()
-        audit_checks = (
-            ("AUDIT_RUN_ID", audit.run_id == run.run_id),
-            ("AUDIT_RUN_FINGERPRINT", audit.run_fingerprint == run.fingerprint),
-            ("AUDIT_SNAPSHOT_FINGERPRINT", audit.snapshot_fingerprint == snapshot.fingerprint),
-            ("AUDIT_STRATEGY_ID", audit.strategy_id == run.strategy_id),
-            ("AUDIT_STRATEGY_REVISION", audit.strategy_revision == run.strategy_revision),
-            ("AUDIT_MANIFEST_REVISION", audit.manifest_revision == run.manifest_revision),
-            ("AUDIT_DATASET_ID", audit.dataset_id == run.dataset_id),
-            ("AUDIT_DATASET_ROLE", audit.dataset_role == run.dataset_role),
-            ("AUDIT_DATA_REVISION", audit.data_revision == run.data_revision),
-            ("AUDIT_DATASET_FINGERPRINT", audit.dataset_fingerprint == run.dataset_fingerprint),
-            ("AUDIT_EXECUTION_SEMANTICS", audit.execution_semantics == run.execution_semantics.value),
-            ("AUDIT_EVIDENCE_ID", audit.evidence_id == evidence.evidence_id),
-            ("AUDIT_EVIDENCE_FINGERPRINT", audit.evidence_fingerprint == evidence.fingerprint),
-        )
-        reasons.extend(name for name, ok in audit_checks if not ok)
     except Exception as exc:
-        reasons.append(f"AUDIT_INVALID:{exc}")
+        if not any(reason.startswith("AUDIT_") for reason in reasons):
+            reasons.append(f"AUDIT_INVALID:{exc}")
 
     if reasons:
         status = (
