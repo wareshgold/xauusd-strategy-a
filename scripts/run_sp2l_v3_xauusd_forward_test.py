@@ -244,6 +244,28 @@ runner.monitor_position_lifecycle=trail_positions
 # are eligible for lifecycle reporting/cancellation.
 from datetime import datetime, timezone
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
+
+# MT5 broker history timestamps on this terminal are server-clock values.
+# Keep the runner event journal in UTC, but convert UTC query bounds into
+# the observed MT5 server-clock domain before history_orders_get/history_deals_get.
+def _mt5_server_offset_seconds(symbol: str) -> int:
+    tick = mt5.symbol_info_tick(symbol)
+    tick_ts = int(getattr(tick, "time", 0) or 0) if tick else 0
+    if tick_ts <= 0:
+        raise RuntimeError("MT5 server clock unavailable: no symbol tick")
+    delta = tick_ts - int(datetime.now(timezone.utc).timestamp())
+    hours = round(delta / 3600)
+    if abs(delta - hours * 3600) > 900 or not (-12 <= hours <= 14):
+        raise RuntimeError(f"Unreasonable MT5 server clock offset: {delta}s")
+    return int(hours * 3600)
+
+
+def _mt5_history_bounds_utc(start_utc: datetime, end_utc: datetime, symbol: str):
+    offset = _mt5_server_offset_seconds(symbol)
+    return (
+        datetime.fromtimestamp(int(start_utc.timestamp()) + offset, tz=timezone.utc),
+        datetime.fromtimestamp(int(end_utc.timestamp()) + offset, tz=timezone.utc),
+    )
 _original_main = runner.main
 _original_enforce_pending_order_expiry = runner.enforce_pending_order_expiry
 
@@ -263,7 +285,8 @@ def _run_scoped_pending(cfg_runtime, state):
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol = cfg_runtime["symbol"]
     tracked = set(state["orders"])
-    orders = list(mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
+    start_api, end_api = _mt5_history_bounds_utc(_RUN_STARTED_UTC, datetime.now(timezone.utc), symbol)
+    orders = list(mt5.history_orders_get(start_api, end_api, group=symbol) or [])
     orders += list(mt5.orders_get(symbol=symbol) or [])
     for order in orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
@@ -318,7 +341,8 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
     if not tracked_orders and not tracked_positions:
         return
-    deals = mt5.history_deals_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or []
+    start_api, end_api = _mt5_history_bounds_utc(_RUN_STARTED_UTC, datetime.now(timezone.utc), symbol)
+    deals = mt5.history_deals_get(start_api, end_api, group=symbol) or []
     for deal in sorted(deals, key=lambda x:(int(x.time), int(x.ticket))):
         ticket=int(deal.ticket)
         if ticket in state["deals"]:
