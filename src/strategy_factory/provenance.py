@@ -43,3 +43,28 @@ def provenance_gate(
         evidence="Research result has complete and matching provenance.",
         details={"run_id": run.run_id, "evidence_id": evidence.evidence_id},
     )
+
+
+def metrics_gate(*, evidence: EvidenceBundle | None) -> GateResult:
+    if evidence is None:
+        return GateResult(
+            name="METRICS_COMPLETENESS",
+            status=GateStatus.BLOCKED,
+            evidence="Typed research metrics are required.",
+            details={"evidence_present": False},
+        )
+    try:
+        evidence.validate()
+    except Exception as exc:
+        return GateResult(
+            name="METRICS_COMPLETENESS",
+            status=GateStatus.BLOCKED,
+            evidence="Research metrics are incomplete or invalid.",
+            details={"error": str(exc)},
+        )
+    return GateResult(
+        name="METRICS_COMPLETENESS",
+        status=GateStatus.PASS,
+        evidence="Typed descriptive metrics are complete and internally consistent.",
+        details={"evidence_id": evidence.evidence_id},
+    )
