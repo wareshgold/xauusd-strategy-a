@@ -68,3 +68,5 @@ from .audit import AuditBindingError, ResearchAuditRecord, bind_research_audit
 
 from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus, evaluate_dataset_provenance
 from .research_provenance import ResearchProvenanceResult, ResearchProvenanceStatus, evaluate_research_provenance
+
+from .research_record import ResearchRecord, ResearchRecordError, ResearchRecordLedger
