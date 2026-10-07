@@ -74,6 +74,29 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
 <script>
 (()=> {
  const canvas=document.getElementById("world");
+ let telemetryWorkers = new Map();
+ let activeRunIds = new Map();
+ function factoryBus(){return (typeof U!=="undefined" && U.bus && typeof U.bus.emit==="function") ? U.bus : null;}
+ function syncTelemetryToWorld(workers){
+   const bus=factoryBus();
+   if(!bus) return;
+   for(const w of workers){
+     if(!w || !w.id) continue;
+     const prev=telemetryWorkers.get(w.id);
+     const live=(w.state==="RUNNING"||w.state==="HEARTBEAT");
+     const wasLive=prev==="RUNNING"||prev==="HEARTBEAT";
+     if(live && !wasLive){
+       const runId="factory:"+w.id+":"+String(w.job||"unknown");
+       activeRunIds.set(w.id,runId);
+       bus.emit("agent.run.start",{agentId:w.id,runId,trigger:"event",factory:true,jobId:w.job||null});
+     }else if(!live && wasLive && (w.state==="COMPLETED"||w.state==="FAILED"||w.state==="IDLE")){
+       bus.emit("agent.run.end",{agentId:w.id,runId:activeRunIds.get(w.id)||null,reason:w.state==="FAILED"?"error":"done",factory:true});
+       activeRunIds.delete(w.id);
+     }
+     telemetryWorkers.set(w.id,w.state);
+   }
+ }
+
  function resize(){const dpr=Math.min(2,devicePixelRatio||1);canvas.width=Math.floor(innerWidth*dpr);canvas.height=Math.floor(innerHeight*dpr);canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";}
  function stage(){
    const station=WorldModel.create(WorldModel.starterDoc());
@@ -84,7 +107,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
    add("vault",{x1:9,y1:14,x2:25,y2:23}); add("lab",{x1:28,y1:14,x2:44,y2:23}); add("hab",{x1:47,y1:14,x2:56,y2:23});
    station.placeHallway({rects:[{x1:17,y1:4,x2:21,y2:6},{x1:37,y1:4,x2:40,y2:6},{x1:18,y1:10,x2:31,y2:14},{x1:44,y1:17,x2:47,y2:19}]});
    World.loadStation(station);
-   const overseer={id:"sp2l-factory-overseer",name:"FACTORY OVERSEER",color:"#d7b66c",skin:"default"};
+   const roster=telemetryWorkers.size?[...telemetryWorkers.keys()].sort():[];
+   const heroId=roster[0]||"sp2l-factory-overseer";
+   const overseer={id:heroId,name:heroId==="sp2l-factory-overseer"?"FACTORY OVERSEER":heroId,color:"#d7b66c",skin:"default"};
    if(typeof World.spawn!=="function") throw new Error("World.spawn is not a function");
    World.spawn.call(World,overseer);
    World.start();
@@ -93,6 +118,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
  try{World.init(canvas);stage(); }catch(e){document.getElementById("link").textContent="ENGINE ERROR · "+e.message; const box=document.createElement("div"); box.className="card"; box.style.cssText="position:absolute;left:18px;bottom:70px;z-index:20;max-width:900px;color:#ff8b8b;white-space:pre-wrap"; box.textContent="STAR-NET BOOT ERROR\n"+(e&&e.stack||e); document.body.appendChild(box); console.error(e);}
  async function poll(){
    try{const r=await fetch("/api/world",{cache:"no-store"});const s=await r.json();
+    syncTelemetryToWorld(s.workers);
     document.getElementById("link").textContent=s.workers.length?"FACTORY TELEMETRY · LIVE":"FACTORY TELEMETRY · WAITING FOR JOB";
     document.getElementById("workers").innerHTML=s.workers.map(w=>"<span class='worker "+(w.state==="FAILED"?"fail":(w.state==="RUNNING"||w.state==="HEARTBEAT"?"live":""))+"'>"+esc(w.id)+" · "+esc(w.station)+" · "+esc(w.state)+" · "+Math.round(w.progress)+"%</span>").join("");
    }catch(_){document.getElementById("link").textContent="FACTORY TELEMETRY · OFFLINE"}
