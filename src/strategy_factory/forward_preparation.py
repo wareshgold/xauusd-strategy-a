@@ -43,6 +43,8 @@ def prepare_holdout_to_forward(
     forward_dataset_id: str,
     forward_dataset_artifact_id: str,
     forward_dataset_content_sha256: str,
+    holdout_dataset_content_sha256: str,
+    holdout_dataset_artifact_id: str,
     strategy_revision_frozen: bool = True,
     post_holdout_tuning: bool = False,
     handoff_id: str | None = None,
@@ -68,6 +70,8 @@ def prepare_holdout_to_forward(
         raise ForwardPreparationError(
             "forward dataset content SHA must be a 64-character SHA-256"
         )
+    if len(holdout_dataset_content_sha256) != 64 or not holdout_dataset_artifact_id:
+        raise ForwardPreparationError("Holdout dataset identity is required")
 
     result = holdout_result.result
     record = result.record
@@ -87,10 +91,10 @@ def prepare_holdout_to_forward(
         raise ForwardPreparationError(
             "completed Holdout strategy revision does not match its job"
         )
-    if record.strategy_revision != result.snapshot.strategy_id and False:
-        # Kept intentionally unreachable: strategy_id and strategy_revision are
-        # different identities. No geometry or revision is inferred here.
-        raise ForwardPreparationError("invalid strategy identity binding")
+    if holdout_dataset_artifact_id != result.run.artifact_id:
+        raise ForwardPreparationError(
+            "Holdout artifact id does not match the completed Holdout run"
+        )
 
     holdout_event = events.append(
         event_type="COMPLETED",
@@ -112,8 +116,8 @@ def prepare_holdout_to_forward(
         handoff_id=handoff_id,
         detail="Evidence-bound Fresh Holdout -> Forward handoff",
         record=record,
-        dataset_content_sha256=record.dataset_fingerprint,
-        dataset_artifact_id=record.dataset_id,
+        dataset_content_sha256=holdout_dataset_content_sha256,
+        dataset_artifact_id=holdout_dataset_artifact_id,
     )
 
     gate = ForwardGateFactory().prepare(
