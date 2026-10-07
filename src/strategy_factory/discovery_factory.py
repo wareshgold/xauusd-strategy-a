@@ -61,6 +61,11 @@ class DiscoveryFactory:
             raise DiscoveryFactoryError(
                 "Discovery Factory requires the declared dataset source MT5:XAUUSD.ecn:M1"
             )
+        declared_variant = context.spec.parameters.get("discovery_variant")
+        if declared_variant != context.variant_name:
+            raise DiscoveryFactoryError(
+                "declared Discovery variant must match the HistoricalTestSpec parameters"
+            )
 
         exporter = MT5M1ArtifactExporter(
             script_path=context.exporter_script,
