@@ -154,3 +154,11 @@ from .forward_runtime_adapter import (
     run_existing_forward_runner,
     runner_process_reconciliation,
 )
+
+from .mt5_reconciliation_adapter import (
+    MT5ReconciliationAdapterError,
+    MT5ReconciliationObservation,
+    as_factory_reconciliation_dict,
+    build_existing_mt5_reconciliation,
+    normalize_existing_reconciliation_report,
+)
