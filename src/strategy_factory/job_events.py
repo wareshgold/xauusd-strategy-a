@@ -14,6 +14,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_JOB_EVENTS_FILE = ROOT / "runtime" / "factory_job_events.jsonl"
+
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -69,7 +72,7 @@ class FactoryJobEvent:
 class FactoryJobEventLedger:
     """Append-only in-memory lifecycle ledger with optional JSONL persistence."""
 
-    def __init__(self, path: Path | None = None) -> None:
+    def __init__(self, path: Path | None = DEFAULT_JOB_EVENTS_FILE) -> None:
         self.path = path
         self._events: list[FactoryJobEvent] = []
 
