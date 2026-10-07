@@ -3,7 +3,6 @@ import hashlib
 import pytest
 
 from strategy_factory.adapter import build_execution_receipt
-from strategy_factory.data import HistoricalDatasetAdapter
 from strategy_factory.datasets import DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.job_events import FactoryJobEventLedger
@@ -122,13 +121,7 @@ def make_snapshot(spec: HistoricalTestSpec) -> ReadinessSnapshot:
 
 def build_runner(spec, content_sha256):
     registry = DatasetRegistry()
-    HistoricalDatasetAdapter(registry).ingest(
-        spec.dataset,
-        b"SP2L-FACTORY-SYNTHETIC-FIXTURE-V1\\n",
-        artifact_id="SYNTHETIC-ARTIFACT-001",
-        location="synthetic://sp2l/factory-e2e-v1",
-        format="text/plain",
-    )
+    registry.register(spec.dataset, content_sha256)
     usage = DatasetUsageLedger(registry)
     runs = ResearchRunLedger(registry, usage)
     evidence = EvidenceLedger(runs)
