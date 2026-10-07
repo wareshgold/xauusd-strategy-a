@@ -19,6 +19,7 @@ from .research_record import ResearchRecord
 
 HANDOFF_ROUTES = {
     ("discovery", "stability"),
+    ("stability", "validation"),
     ("stability", "robustness"),
     ("robustness", "holdout"),
     ("holdout", "forward"),
