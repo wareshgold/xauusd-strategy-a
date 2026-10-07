@@ -82,8 +82,8 @@ def validate_evidence_bound_handoff(*, handoff: ResearchHandoff, record: Researc
     source_event.validate()
     if handoff.job_id != record.run_id:
         raise ResearchHandoffError("handoff job_id does not match research record run_id")
-    if handoff.job_fingerprint != record.run_fingerprint:
-        raise ResearchHandoffError("handoff job_fingerprint does not match research record")
+    if handoff.job_fingerprint != source_event.job_fingerprint:
+        raise ResearchHandoffError("handoff job_fingerprint does not match source job event")
     if source_event.research_run_fingerprint != record.run_fingerprint:
         raise ResearchHandoffError("source event is not bound to research run")
     if handoff.output_artifact != record.evidence_id:
@@ -92,8 +92,8 @@ def validate_evidence_bound_handoff(*, handoff: ResearchHandoff, record: Researc
         raise ResearchHandoffError("handoff source event does not match declared source event")
     if source_event.event_type != "COMPLETED":
         raise ResearchHandoffError("handoff source event must be COMPLETED")
-    if source_event.job_id != record.run_id or source_event.job_fingerprint != record.run_fingerprint:
-        raise ResearchHandoffError("source event is not bound to research record")
+    if source_event.job_id != record.run_id:
+        raise ResearchHandoffError("source event job_id does not match research record run_id")
     if source_event.station != handoff.source_station:
         raise ResearchHandoffError("source event station does not match handoff source station")
     if source_event.output_artifact != record.evidence_id:
@@ -130,7 +130,7 @@ def build_research_handoff(
         handoff_revision="RESEARCH-HANDOFF-1",
         handoff_id=handoff_id or f"HANDOFF-{job_id}-{destination_station.upper()}",
         job_id=event.job_id,
-        job_fingerprint=(record.run_fingerprint if record is not None else event.job_fingerprint),
+        job_fingerprint=event.job_fingerprint,
         source_station=source_station,
         destination_station=destination_station,
         output_artifact=str(event.output_artifact),
