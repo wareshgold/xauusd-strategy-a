@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import hashlib
+from pathlib import Path
 
 from strategy_factory.forward_gate_factory import ForwardGateResult
 from strategy_factory.forward_orchestration import run_factory_bound_forward
 from strategy_factory.forward_runtime_adapter import (
     require_runner_process_success,
     run_existing_forward_runner_dry_run,
+    run_existing_forward_runner_production_dry_run,
     runner_process_reconciliation,
 )
 from strategy_factory.forward_session_factory import DemoForwardSessionFactory
@@ -94,3 +96,28 @@ def test_end_to_end_factory_dry_run_uses_process_adapter_without_mt5():
         "RUNNING",
         "COMPLETED",
     ]
+
+
+def test_production_like_dry_run_forces_execution_off(tmp_path: Path):
+    runner = tmp_path / "runner.py"
+    runner.write_text(
+        "import os\\n"
+        "print(os.getenv('SP2L_FACTORY_DRY_RUN'))\\n"
+        "print(os.getenv('LIVE_TRADING_ENABLE'))\\n"
+        "print(os.getenv('ALLOW_REAL_EXECUTION'))\\n",
+        encoding="utf-8",
+    )
+
+    result = run_existing_forward_runner_production_dry_run(
+        repo_root=tmp_path,
+        duration_seconds=1,
+        runner_relative_path="runner.py",
+        env_overrides={
+            "SP2L_FACTORY_DRY_RUN": "0",
+            "LIVE_TRADING_ENABLE": "true",
+            "ALLOW_REAL_EXECUTION": "true",
+        },
+    )
+
+    require_runner_process_success(result)
+    assert result.stdout.splitlines() == ["1", "false", "false"]
