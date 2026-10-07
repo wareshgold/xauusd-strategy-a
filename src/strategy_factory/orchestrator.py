@@ -57,6 +57,7 @@ class FactoryOrchestrator:
         *,
         worker_id: str,
         execute: Callable[[ResearchJobSpec, FactoryWorker], Any],
+        heartbeat_every: Callable[[FactoryWorker], None] | None = None,
     ) -> Any:
         """Dispatch exactly one queued job to an idle worker.
 
@@ -83,7 +84,13 @@ class FactoryOrchestrator:
         self.fleet.publish()
 
         try:
+            if heartbeat_every is not None:
+                heartbeat_every(worker)
+                self.fleet.publish()
             result = execute(queued.job, worker)
+            if heartbeat_every is not None:
+                heartbeat_every(worker)
+                self.fleet.publish()
         except Exception as exc:
             worker.fail(str(exc))
             self.fleet.publish()
@@ -100,3 +107,49 @@ class FactoryOrchestrator:
         worker.complete(output_artifact=artifact, detail=detail)
         self.fleet.publish()
         return result
+
+
+@dataclass(frozen=True)
+class RunnerExecutionContext:
+    """Immutable dependency bundle for one already-declared research job.
+
+    The caller supplies the test specification, adapter, readiness snapshot,
+    and observed dataset hash. The Factory never constructs strategy geometry,
+    datasets, optimization ranges, or production decisions.
+    """
+
+    spec: Any
+    adapter: Any
+    snapshot: Any
+    observed_content_sha256: str
+    evidence_id: str | None = None
+    result_revision: str = "RECEIPT_METRICS_V1"
+    purpose: str = "HISTORICAL_TEST"
+
+
+def build_runner_executor(runner: Any, context: RunnerExecutionContext):
+    """Build an executor that delegates one queued job to ResearchJobRunner."""
+
+    def execute(job: ResearchJobSpec, worker: FactoryWorker) -> dict[str, Any]:
+        result = runner.run(
+            job=job,
+            spec=context.spec,
+            adapter=context.adapter,
+            snapshot=context.snapshot,
+            observed_content_sha256=context.observed_content_sha256,
+            evidence_id=context.evidence_id,
+            result_revision=context.result_revision,
+            purpose=context.purpose,
+        )
+        return {
+            "output_artifact": result.evidence.evidence_id,
+            "detail": (
+                "Research run accepted"
+                if result.accepted
+                else "Research run completed with non-pass gate"
+            ),
+            "accepted": result.accepted,
+            "run_id": result.run.run_id,
+            "evidence_id": result.evidence.evidence_id,
+        }
+    return execute
