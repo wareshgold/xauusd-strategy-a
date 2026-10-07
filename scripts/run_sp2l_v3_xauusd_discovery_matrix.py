@@ -65,6 +65,71 @@ def fetch_m1_rates(symbol, start, end):
     return bars[np.sort(idx)]
 
 
+BAR_FIELDS = ("time", "open", "high", "low", "close", "tick_volume", "spread", "real_volume")
+
+
+def load_m1_artifact(path):
+    artifact = Path(path)
+    if not artifact.is_file():
+        raise RuntimeError(f"M1 dataset artifact not found: {artifact}")
+    raw = artifact.read_bytes()
+    expected = hashlib.sha256(raw).hexdigest()
+    payload = json.loads(raw.decode("utf-8"))
+    if payload.get("schema_version") != 1:
+        raise RuntimeError("unsupported M1 dataset artifact schema")
+    rows = payload.get("bars")
+    if not isinstance(rows, list) or not rows:
+        raise RuntimeError("M1 dataset artifact contains no bars")
+    dtype = [
+        ("time", "i8"),
+        ("open", "f8"),
+        ("high", "f8"),
+        ("low", "f8"),
+        ("close", "f8"),
+        ("tick_volume", "i8"),
+        ("spread", "i8"),
+        ("real_volume", "i8"),
+    ]
+    values = [
+        (
+            int(row["time"]), float(row["open"]), float(row["high"]),
+            float(row["low"]), float(row["close"]), int(row["tick_volume"]),
+            int(row["spread"]), int(row["real_volume"]),
+        )
+        for row in rows
+    ]
+    bars = np.array(values, dtype=dtype)
+    bars.sort(order="time")
+    _, idx = np.unique(bars["time"], return_index=True)
+    return bars[np.sort(idx)], expected
+
+
+def write_m1_artifact(path, bars, *, symbol, start, end):
+    rows = []
+    for bar in bars:
+        rows.append({
+            "time": int(bar["time"]),
+            "open": float(bar["open"]),
+            "high": float(bar["high"]),
+            "low": float(bar["low"]),
+            "close": float(bar["close"]),
+            "tick_volume": int(bar["tick_volume"]),
+            "spread": int(bar["spread"]),
+            "real_volume": int(bar["real_volume"]),
+        })
+    payload = {
+        "schema_version": 1,
+        "research_only": True,
+        "symbol": symbol,
+        "timeframe": "M1",
+        "window_utc": {"start": start.isoformat(), "end": end.isoformat()},
+        "bars": rows,
+    }
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    path.write_bytes(raw)
+    return hashlib.sha256(raw).hexdigest(), len(raw)
+
+
 def build_population(bars, symbol):
     population = []
     seen = set()
@@ -372,6 +437,16 @@ def main():
     ap.add_argument("--symbol", default="XAUUSD.ecn")
     ap.add_argument("--start", default="2026-10-05T00:00:00+00:00")
     ap.add_argument("--end", default="2026-10-07T05:30:00+00:00")
+    ap.add_argument(
+        "--bars-artifact",
+        default=None,
+        help="Immutable JSON M1 snapshot. If supplied, MT5 is not queried for bars.",
+    )
+    ap.add_argument(
+        "--write-bars-artifact",
+        default=None,
+        help="Write the exact MT5 M1 snapshot used by this run to this path.",
+    )
     args = ap.parse_args()
 
     start = datetime.fromisoformat(args.start)
@@ -389,9 +464,29 @@ def main():
         if not mt5.symbol_select(args.symbol, True):
             raise RuntimeError(f"symbol_select failed: {mt5.last_error()}")
 
-        bars = fetch_m1_rates(args.symbol, start, end)
+        if args.bars_artifact:
+            bars, bars_sha256 = load_m1_artifact(args.bars_artifact)
+            dataset_source = "M1_ARTIFACT"
+            dataset_artifact = str(Path(args.bars_artifact).resolve())
+        else:
+            bars = fetch_m1_rates(args.symbol, start, end)
+            bars_sha256 = None
+            dataset_source = "MT5_LIVE_HISTORY"
+            dataset_artifact = None
+
         if len(bars) < 10:
             raise RuntimeError(f"Insufficient M1 data: {mt5.last_error()}")
+
+        if args.write_bars_artifact:
+            written_sha256, written_bytes = write_m1_artifact(
+                Path(args.write_bars_artifact), bars,
+                symbol=args.symbol, start=start, end=end,
+            )
+            bars_sha256 = written_sha256
+            dataset_source = "MT5_SNAPSHOT"
+            dataset_artifact = str(Path(args.write_bars_artifact).resolve())
+        else:
+            written_bytes = None
 
         mt5_point = float(getattr(info, "point", 0.01) or 0.01)
         contract_size = float(getattr(info, "trade_contract_size", 100.0) or 100.0)
@@ -429,6 +524,13 @@ def main():
             "timeframe": "M1",
             "window_utc": {"start": start.isoformat(), "end": end.isoformat()},
             "bars": len(bars),
+            "dataset_provenance": {
+                "source": dataset_source,
+                "artifact": dataset_artifact,
+                "content_sha256": bars_sha256,
+                "byte_size": written_bytes,
+                "schema_version": 1 if bars_sha256 is not None else None,
+            },
             "frozen_population": {
                 "signals": len(population),
                 "policy": "ONE_SHARED_SIGNAL_ENTRY_POPULATION_FOR_ALL_EXIT_VARIANTS",
@@ -504,6 +606,9 @@ def main():
             f"Window UTC: {start.isoformat()} -> {end.isoformat()}",
             f"Symbol: {args.symbol}",
             f"M1 bars: {len(bars)}",
+            f"Dataset source: {dataset_source}",
+            f"Dataset artifact: {dataset_artifact}",
+            f"Dataset SHA256: {bars_sha256}",
             f"Frozen signal/entry population: {len(population)}",
             f"Variants: {len(variants)}",
             f"MT5 point: {mt5_point}",
@@ -550,6 +655,8 @@ def main():
             "tradesCsv": str(trades_csv),
             "snapshot": str(snapshot),
             "sha256": sha,
+            "datasetContentSha256": bars_sha256,
+            "datasetArtifact": dataset_artifact,
             "top10": top,
         }, indent=2))
 
