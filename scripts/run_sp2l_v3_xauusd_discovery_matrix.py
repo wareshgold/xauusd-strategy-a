@@ -119,6 +119,9 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
     current_sl = initial_sl
     activated = False
     activation_time = None
+    activation_bar_index = None
+    trailing_updates = 0
+    deferred_trailing_updates = 0
     max_fav = 0.0
     max_adverse = 0.0
     exit_price = None
@@ -164,10 +167,24 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
             if trailing_enabled and not activated and favorable >= activation_price:
                 activated = True
                 activation_time = int(b["time"])
+                activation_bar_index = k
 
             if activated:
                 candidate_sl = high - distance_price
-                current_sl = max(current_sl, candidate_sl)
+                # A completed-bar OHLC replay must not assume a BUY stop can be
+                # installed above the bar's closing market price. MT5 requires
+                # a BUY SL below the current Bid; with M1 OHLC we use close as
+                # the conservative bar-end proxy. If the proposed stop is above
+                # close, defer the update instead of manufacturing an immediate
+                # next-bar stop-out. This is deliberately stricter than the
+                # previous implementation.
+                if candidate_sl < float(b["close"]):
+                    new_sl = max(current_sl, candidate_sl)
+                    if new_sl > current_sl:
+                        trailing_updates += 1
+                    current_sl = new_sl
+                else:
+                    deferred_trailing_updates += 1
 
         else:
             favorable = entry - low
@@ -197,10 +214,20 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
             if trailing_enabled and not activated and favorable >= activation_price:
                 activated = True
                 activation_time = int(b["time"])
+                activation_bar_index = k
 
             if activated:
                 candidate_sl = low + distance_price
-                current_sl = min(current_sl, candidate_sl)
+                # Symmetric SELL rule: a SELL SL must remain above the current
+                # Ask. With M1 OHLC, completed-bar close is the conservative
+                # bar-end proxy. Defer any stop that would be below close.
+                if candidate_sl > float(b["close"]):
+                    new_sl = min(current_sl, candidate_sl)
+                    if new_sl < current_sl:
+                        trailing_updates += 1
+                    current_sl = new_sl
+                else:
+                    deferred_trailing_updates += 1
 
     realized_price = None
     realized_r = None
@@ -230,6 +257,15 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
         "trailing_enabled": trailing_enabled,
         "trailing_activated": activated,
         "activation_time_utc": iso(activation_time),
+        "activation_bar_index": activation_bar_index,
+        "entry_bar_excluded_from_exit_replay": True,
+        "trailing_updates": trailing_updates,
+        "deferred_trailing_updates": deferred_trailing_updates,
+        "exit_after_activation_bars": (
+            (int(exit_time) - int(activation_time)) // 60
+            if exit_time is not None and activation_time is not None
+            else None
+        ),
         "final_sl": current_sl,
         "max_favorable_price": max_fav,
         "max_adverse_price": max_adverse,
