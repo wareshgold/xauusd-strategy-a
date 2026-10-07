@@ -2,7 +2,10 @@ from strategy_factory.handoff import (
     HANDOFF_ROUTES,
     ResearchHandoffError,
     build_research_handoff,
+    validate_evidence_bound_handoff,
 )
+from strategy_factory.research_record import ResearchRecord
+from strategy_factory.research_provenance import ResearchProvenanceStatus
 from strategy_factory.job_events import FactoryJobEventLedger
 
 
@@ -71,3 +74,54 @@ def test_undeclared_route_is_blocked():
         assert "route is not declared" in str(exc)
     else:
         raise AssertionError("expected undeclared route to block handoff")
+
+
+
+def test_handoff_must_bind_to_pass_research_record():
+    events = FactoryJobEventLedger(path=None)
+    events.append(
+        event_type="COMPLETED",
+        job_id="RUN-1",
+        job_fingerprint="b" * 64,
+        station="discovery",
+        phase="DISCOVERY",
+        output_artifact="EVIDENCE-1",
+    )
+    event = events.entries()[0]
+    record0 = ResearchRecord(
+        record_revision="RESEARCH-RECORD-1",
+        run_id="RUN-1",
+        run_fingerprint="b" * 64,
+        evidence_id="EVIDENCE-1",
+        evidence_fingerprint="c" * 64,
+        snapshot_fingerprint="d" * 64,
+        audit_fingerprint="e" * 64,
+        strategy_id="SP2L",
+        strategy_revision="REV-1",
+        manifest_revision="MANIFEST-1",
+        dataset_id="DATA-1",
+        dataset_role="RESEARCH",
+        data_revision="DATA-REV-1",
+        dataset_fingerprint="f" * 64,
+        execution_semantics="HISTORICAL",
+        provenance_status=ResearchProvenanceStatus.PASS,
+        provenance_reasons=(),
+        fingerprint="",
+    )
+    import hashlib, json
+    payload = json.dumps(
+        record0.as_dict(include_fingerprint=False),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    record = ResearchRecord(**record0.as_dict(include_fingerprint=False),
+                            fingerprint=hashlib.sha256(payload).hexdigest())
+    handoff = build_research_handoff(
+        events=events,
+        job_id="RUN-1",
+        source_station="discovery",
+        destination_station="stability",
+        record=record,
+    )
+    validate_evidence_bound_handoff(handoff=handoff, record=record, source_event=event)
