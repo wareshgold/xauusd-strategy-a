@@ -75,6 +75,15 @@ class FactoryJobEventLedger:
     def __init__(self, path: Path | None = DEFAULT_JOB_EVENTS_FILE) -> None:
         self.path = path
         self._events: list[FactoryJobEvent] = []
+        if self.path is not None and self.path.exists():
+            for line in self.path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                event = FactoryJobEvent(**json.loads(line))
+                event.validate()
+                if event.sequence != len(self._events) + 1:
+                    raise ValueError("factory job event sequence is not contiguous")
+                self._events.append(event)
 
     def append(
         self,
