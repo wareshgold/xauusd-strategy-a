@@ -80,3 +80,21 @@ def test_world_state_rejects_invalid_progress():
         assert "progress" in str(exc)
     else:
         raise AssertionError("invalid progress must be rejected")
+
+
+def test_world_handoffs_follow_authoritative_journal():
+    from strategy_factory.job_events import FactoryJobEventLedger
+    from strategy_factory.starnet_adapter import build_world_handoffs
+
+    events = FactoryJobEventLedger(path=None)
+    events.append(event_type="COMPLETED", job_id="JOB-1", job_fingerprint="a" * 64,
+                   station="discovery", phase="DISCOVERY", output_artifact="EVIDENCE-1")
+    accepted = events.append(event_type="HANDOFF_ACCEPTED", job_id="JOB-1", job_fingerprint="a" * 64,
+                             station="stability", phase="STABILITY", output_artifact="EVIDENCE-1")
+
+    handoffs = build_world_handoffs(events.entries())
+    assert len(handoffs) == 1
+    assert handoffs[0].source_station == "discovery"
+    assert handoffs[0].destination_station == "stability"
+    assert handoffs[0].output_artifact == "EVIDENCE-1"
+    assert handoffs[0].event_fingerprint == accepted.event_fingerprint
