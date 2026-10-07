@@ -34,11 +34,17 @@ def test_discovery_adapter_consumes_declared_variant_without_defining_geometry(t
     script = tmp_path / "run_sp2l_v3_xauusd_discovery_matrix.py"
     script.write_text("# existing Discovery Matrix placeholder\n", encoding="utf-8")
 
+    bars_artifact = tmp_path / "m1.json"
+    bars_artifact.write_bytes(b'{"schema_version":1,"bars":[{"time":1,"open":1,"high":1,"low":1,"close":1,"tick_volume":1,"spread":0,"real_volume":1}],"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","window_utc":{"start":"2026-10-05T00:00:00Z","end":"2026-10-07T00:00:00Z"}}')
+    import hashlib
+    dataset_sha = hashlib.sha256(bars_artifact.read_bytes()).hexdigest()
+
     matrix_path = tmp_path / "discovery.json"
     matrix_path.write_text(
         json.dumps(
             {
                 "research_only": True,
+                "dataset_provenance": {"content_sha256": dataset_sha},
                 "matrix": [
                     {
                         "name": "RR2_ACT10_D2",
@@ -82,6 +88,7 @@ def test_discovery_adapter_consumes_declared_variant_without_defining_geometry(t
         script_path=script,
         mt5_path=r"C:\Program Files\Otet Group MT5 Terminal\terminal64.exe",
         variant_name="RR2_ACT10_D2",
+        bars_artifact_path=bars_artifact,
     ).execute(make_spec())
 
     assert receipt.test_id == "DISCOVERY_ADAPTER_TEST"
@@ -121,4 +128,4 @@ def test_discovery_adapter_rejects_non_research_output(tmp_path, monkeypatch):
     except Exception as exc:
         assert "output JSON not found" in str(exc)
     else:
-        raise AssertionError("expected missing Discovery output to be rejected")
+        raise AssertionError("expected missing M1 dataset artifact to be rejected")
