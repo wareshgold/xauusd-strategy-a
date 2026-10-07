@@ -128,61 +128,45 @@ def station_for(worker: dict) -> str:
 
 def worker_card(worker: dict, index: int) -> str:
     station = station_for(worker)
-    title, icon, subtitle = STATIONS.get(station, STATIONS["idle"])
-    progress = worker.get("progress")
+    title, code, subtitle = STATIONS.get(station, STATIONS["idle"])
     try:
-        progress = max(0.0, min(100.0, float(progress)))
-        progress_text = f"{progress:.0f}%"
+        progress = max(0.0, min(100.0, float(worker.get("progress") or 0)))
     except (TypeError, ValueError):
         progress = 0.0
-        progress_text = "—"
-
     state = str(worker.get("state") or "UNKNOWN").upper()
     health = str(worker.get("telemetry_health") or "UNKNOWN")
-    heartbeat = worker.get("heartbeat_age_s")
-    beat = "—" if heartbeat is None else f"{heartbeat:.0f}s"
-
-    motion = "walking" if state in {"RUNNING", "HEARTBEAT"} and health == "LIVE" else "idle"
+    age = worker.get("heartbeat_age_s")
+    beat = "—" if age is None else f"{age:.0f}s"
     return f"""
-    <article class="worker-card {motion}" data-worker="{escape(str(worker.get("worker_id") or index))}">
-      <div class="worker-head">
-        <span class="worker-id">👷 {escape(str(worker.get("worker_id") or f"W-{index:02d}"))}</span>
-        <span class="badge {status_class(health)}">{escape(health)}</span>
-      </div>
-      <div class="worker-avatar" aria-hidden="true">🧑‍🔬</div>
-      <div class="worker-info">
-        <b>{escape(title)}</b>
-        <span>{escape(subtitle)}</span>
-        <span class="{status_class(state)}">{escape(state)}</span>
+    <article class="worker-card">
+      <div class="worker-head"><span class="worker-id">{escape(str(worker.get("worker_id") or f"W-{index:02d}"))}</span><span class="status-dot {status_class(health)}"></span></div>
+      <div class="agent-row">
+        <div class="agent-glyph"><span></span></div>
+        <div class="worker-info"><b>{escape(title)}</b><span>{escape(subtitle)}</span><strong class="{status_class(state)}">{escape(state)}</strong></div>
       </div>
       <div class="meter"><i style="width:{progress:.0f}%"></i></div>
-      <div class="worker-foot"><span>{progress_text}</span><span>♥ {beat}</span></div>
-      <div class="worker-job">{escape(str(worker.get("job_id") or "No job"))}</div>
+      <div class="worker-foot"><span>{progress:.0f}%</span><span>HB {beat}</span></div>
+      <div class="worker-job">{escape(str(worker.get("job_id") or "NO ACTIVE JOB"))}</div>
     </article>
     """
 
 
 def station_card(key: str, workers: list[dict]) -> str:
-    title, icon, subtitle = STATIONS[key]
+    title, code, subtitle = STATIONS[key]
     active = [w for w in workers if station_for(w) == key]
-    bodies = ""
-    if active:
-        for i, worker in enumerate(active[:4]):
-            state = str(worker.get("state") or "UNKNOWN").upper()
-            health = str(worker.get("telemetry_health") or "UNKNOWN")
-            moving = state in {"RUNNING", "HEARTBEAT"} and health == "LIVE"
-            bodies += (
-                f'<span class="mini-worker {"move" if moving else ""}" '
-                f'title="{escape(str(worker.get("job_id") or "worker"))}">👷</span>'
-            )
-    else:
-        bodies = '<span class="empty-worker">·</span>'
-
+    units = ""
+    for worker in active[:5]:
+        state = str(worker.get("state") or "UNKNOWN").upper()
+        health = str(worker.get("telemetry_health") or "UNKNOWN")
+        active_class = " active" if state in {"RUNNING", "HEARTBEAT"} and health == "LIVE" else ""
+        units += f'<span class="station-unit{active_class}" title="{escape(str(worker.get("job_id") or "worker"))}"></span>'
+    if not units:
+        units = '<span class="empty-unit">—</span>'
     return f"""
     <section class="station">
-      <div class="station-sign"><span>{icon}</span><div><b>{title}</b><small>{subtitle}</small></div></div>
-      <div class="station-floor">{bodies}</div>
-      <div class="station-status">{len(active)} worker{"s" if len(active) != 1 else ""}</div>
+      <div class="station-sign"><span class="station-code">{code}</span><div><b>{title}</b><small>{subtitle}</small></div></div>
+      <div class="station-floor">{units}</div>
+      <div class="station-status">{len(active)} assigned</div>
     </section>
     """
 
