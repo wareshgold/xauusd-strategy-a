@@ -101,11 +101,26 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
  function stage(){
    const station=WorldModel.create(WorldModel.starterDoc());
    const rooms=station.doc().order.slice();
-   if(rooms.length) station.setFloor(rooms[0],"oak");
-   const add=(kind,rect)=>station.addRoom({kind,rect});
-   add("lab",{x1:21,y1:0,x2:37,y2:10}); add("lab",{x1:40,y1:0,x2:56,y2:10});
-   add("vault",{x1:9,y1:14,x2:25,y2:23}); add("lab",{x1:28,y1:14,x2:44,y2:23}); add("hab",{x1:47,y1:14,x2:56,y2:23});
-   station.placeHallway({rects:[{x1:17,y1:4,x2:21,y2:6},{x1:37,y1:4,x2:40,y2:6},{x1:18,y1:10,x2:31,y2:14},{x1:44,y1:17,x2:47,y2:19}]});
+   if(rooms.length){
+     const hub=station.doc().rooms[rooms[0]];
+     hub.name="DISCOVERY LAB";
+     hub.kind="lab";
+     hub.rects=[{x1:2,y1:2,x2:17,y2:11}];
+     station.setFloor(rooms[0],"oak");
+   }
+   const add=(kind,rect,name)=>station.addRoom({kind,rect,name});
+   add("lab",{x1:25,y1:2,x2:40,y2:11},"STABILITY LAB");
+   add("lab",{x1:48,y1:2,x2:63,y2:11},"ROBUSTNESS LAB");
+   add("vault",{x1:11,y1:18,x2:26,y2:28},"HOLDOUT VAULT");
+   add("lab",{x1:42,y1:18,x2:57,y2:28},"FORWARD OPS");
+   station.placeHallway({rects:[
+     {x1:18,y1:5,x2:24,y2:7},
+     {x1:41,y1:5,x2:47,y2:7},
+     {x1:9,y1:12,x2:12,y2:17},
+     {x1:27,y1:12,x2:49,y2:14},
+     {x1:40,y1:14,x2:43,y2:18},
+     {x1:58,y1:20,x2:63,y2:22}
+   ]});
    World.loadStation(station);
    const roster=telemetryWorkers.size?[...telemetryWorkers.keys()].sort():[];
    const heroId=roster[0]||"sp2l-factory-overseer";
