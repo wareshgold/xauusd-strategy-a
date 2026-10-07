@@ -73,7 +73,7 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
         strategy_revision="REV-TEST",
         dataset=dataset,
         execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH,
-        parameters={"research_only": True},
+        parameters={"research_only": True, "discovery_variant": "RR2_ACT10_D2"},
     )
 
     class FakeExporter:
