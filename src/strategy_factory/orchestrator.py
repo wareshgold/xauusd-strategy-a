@@ -71,6 +71,8 @@ class FactoryOrchestrator:
         source_station: str,
         destination_station: str,
         detail: str = "Validated research artifact handoff",
+        dataset_content_sha256: str = "",
+        dataset_artifact_id: str = "",
     ) -> ResearchHandoff:
         """Explicitly hand one PASS research record to the next declared station.
 
@@ -85,6 +87,8 @@ class FactoryOrchestrator:
             destination_station=destination_station,
             detail=detail,
             record=record,
+            dataset_content_sha256=dataset_content_sha256,
+            dataset_artifact_id=dataset_artifact_id,
         )
         self.events.append(
             event_type="HANDOFF_ACCEPTED",
