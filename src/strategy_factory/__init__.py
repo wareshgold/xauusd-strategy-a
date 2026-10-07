@@ -145,3 +145,12 @@ from .forward_session_lifecycle import (
 )
 
 from .forward_runtime_bridge import ForwardRuntimeBridgeError, ForwardRuntimeResult, run_bound_forward
+
+from .forward_runtime_adapter import (
+    ExistingRunnerProcessResult,
+    ForwardRuntimeAdapterError,
+    build_existing_runner_command,
+    require_runner_process_success,
+    run_existing_forward_runner,
+    runner_process_reconciliation,
+)
