@@ -171,6 +171,53 @@ def station_card(key: str, workers: list[dict]) -> str:
     """
 
 
+
+def telemetry_panels(workers: list[dict]) -> str:
+    queued = [w for w in workers if str(w.get("state") or "").upper() == "QUEUED"]
+    active = [w for w in workers if str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"}]
+    artifacts = [w for w in workers if w.get("output_artifact")]
+    feed = sorted(workers, key=lambda w: str(w.get("heartbeat_utc") or ""), reverse=True)
+
+    queue_rows = "".join(
+        f'<div class="queue-row"><span class="mono">{escape(str(w.get("worker_id") or "—"))}</span>'
+        f'<b>{escape(str(w.get("job_id") or "NO JOB"))}</b>'
+        f'<span>{escape(str(w.get("detail") or "QUEUED"))}</span></div>'
+        for w in queued[:8]
+    ) or '<div class="empty-row">QUEUE EMPTY — no queued worker telemetry</div>'
+
+    active_rows = "".join(
+        f'<div class="job-row"><span class="mono">{escape(str(w.get("worker_id") or "—"))}</span>'
+        f'<span>{escape(str(w.get("job_id") or "NO JOB"))}</span>'
+        f'<span class="job-state {status_class(str(w.get("state") or ""))}">{escape(str(w.get("state") or "UNKNOWN").upper())}</span>'
+        f'<b>{float(w.get("progress") or 0):.0f}%</b></div>'
+        for w in active[:8]
+    ) or '<div class="empty-row">NO ACTIVE JOB TELEMETRY</div>'
+
+    feed_rows = "".join(
+        f'<div class="feed-row"><span class="feed-time">{escape(str(w.get("heartbeat_utc") or "—").replace("T"," ")[:19])}</span>'
+        f'<span class="feed-id">{escape(str(w.get("worker_id") or "—"))}</span>'
+        f'<span>{escape(str(w.get("state") or "UNKNOWN").upper())}</span>'
+        f'<span>{escape(str(w.get("detail") or "No detail"))}</span></div>'
+        for w in feed[:10]
+    ) or '<div class="empty-row">NO TELEMETRY FEED</div>'
+
+    artifact_rows = "".join(
+        f'<div class="artifact-row"><span class="mono">{escape(str(w.get("worker_id") or "—"))}</span>'
+        f'<span>{escape(str(w.get("job_id") or "—"))}</span>'
+        f'<span class="artifact">{escape(str(w.get("output_artifact")))}</span></div>'
+        for w in artifacts[:8]
+    ) or '<div class="empty-row">NO OUTPUT ARTIFACT REPORTED</div>'
+
+    return f"""
+    <section class="ops-grid">
+      <div class="panel ops-panel"><h2>ACTIVE JOBS</h2>{active_rows}</div>
+      <div class="panel ops-panel"><h2>JOB QUEUE</h2>{queue_rows}</div>
+      <div class="panel ops-panel wide"><h2>TELEMETRY FEED · LATEST HEARTBEATS</h2>{feed_rows}</div>
+      <div class="panel ops-panel wide"><h2>OUTPUT ARTIFACTS</h2>{artifact_rows}</div>
+    </section>
+    """
+
+
 def html_page() -> str:
     git = git_state()
     workers, factory_health = worker_state()
@@ -234,6 +281,13 @@ h1{margin:0;font-size:24px;letter-spacing:1.4px;font-weight:700}h1 span{color:#f
 .pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.phase{background:#0d141b;border:1px solid var(--line);border-radius:3px;padding:9px;min-height:50px;display:flex;flex-direction:column;justify-content:space-between;gap:5px}.phase b{font-size:9px;letter-spacing:.7px}.phase span{font-size:10px;color:#c1cbd2}
 .meta{color:var(--muted);font-size:10px;margin-top:12px;display:flex;gap:14px;flex-wrap:wrap}.lock{color:var(--accent)!important}.empty-crew{border:1px dashed #33414d;border-radius:4px;padding:25px;text-align:center;display:grid;gap:7px;color:var(--muted)}.empty-mark{font:700 11px Consolas,monospace;color:#56636d}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.stations{grid-template-columns:1fr 1fr}.pipeline{grid-template-columns:1fr 1fr}}@media(max-width:560px){main{padding:12px}.stations{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+.ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.ops-panel{margin-top:0}.ops-panel.wide{grid-column:span 2}
+.job-row,.queue-row,.feed-row,.artifact-row{display:grid;gap:10px;align-items:center;border-top:1px solid #202b35;padding:8px 2px;font-size:10px}
+.job-row{grid-template-columns:70px 1fr 80px 45px}.queue-row{grid-template-columns:70px 180px 1fr}.feed-row{grid-template-columns:145px 80px 90px 1fr}.artifact-row{grid-template-columns:70px 180px 1fr}
+.job-row:first-of-type,.queue-row:first-of-type,.feed-row:first-of-type,.artifact-row:first-of-type{border-top:0}
+.job-state{font-weight:700;letter-spacing:.5px}.mono,.feed-time{font:10px Consolas,monospace;color:#9aa7b2}.artifact{color:var(--blue);font-family:Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.empty-row{padding:13px 2px;color:#596773;font-size:10px}
+@media(max-width:900px){.ops-grid{grid-template-columns:1fr}.ops-panel.wide{grid-column:span 1}.feed-row{grid-template-columns:125px 70px 70px 1fr}}
+@media(max-width:560px){.job-row{grid-template-columns:55px 1fr 60px}.job-row b{display:none}.queue-row{grid-template-columns:55px 120px 1fr}.feed-row{grid-template-columns:1fr 55px 60px}.feed-row span:last-child{grid-column:1/-1}.artifact-row{grid-template-columns:55px 110px 1fr}}
 </style></head>
 <body><main>
   <div class="top">
@@ -265,6 +319,8 @@ h1{margin:0;font-size:24px;letter-spacing:1.4px;font-weight:700}h1 span{color:#f
     <h2>WORKERS & CURRENT JOBS</h2>
     <div class="crew">{crew_html}</div>
   </section>
+
+  {telemetry_panels(workers)}
 
   <section class="panel">
     <h2>RESEARCH PIPELINE</h2>
