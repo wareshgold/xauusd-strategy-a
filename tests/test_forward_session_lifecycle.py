@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from src.strategy_factory.forward_gate_factory import ForwardGateResult
 from src.strategy_factory.forward_session_factory import DemoForwardSessionFactory
 from src.strategy_factory.forward_session_lifecycle import (
     DemoForwardSessionLifecycle,
@@ -13,6 +14,7 @@ from src.strategy_factory.forward_session_lifecycle import (
     ForwardSessionState,
     bind_mt5_reconciliation,
 )
+from src.strategy_factory.models import GateResult, GateStatus
 
 
 def _sha(value: str) -> str:
@@ -20,9 +22,10 @@ def _sha(value: str) -> str:
 
 
 def _session():
-    gate = SimpleNamespace(
-        gate=SimpleNamespace(
-            status="PASS",
+    gate = ForwardGateResult(
+        gate=GateResult(
+            name="FRESH_HOLDOUT_TO_FORWARD",
+            status=GateStatus.PASS,
             evidence="holdout-pass",
             details={
                 "production_decision": False,
@@ -34,7 +37,6 @@ def _session():
             },
         )
     )
-    gate.gate.status = __import__("src.strategy_factory.models", fromlist=["GateStatus"]).GateStatus.PASS
     record = SimpleNamespace(
         strategy_id="SP2L",
         strategy_revision="STRAT-1",
