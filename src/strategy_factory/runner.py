@@ -70,6 +70,7 @@ class ResearchJobRunner:
         adapter: ExecutionAdapter,
         snapshot: ReadinessSnapshot,
         observed_content_sha256: str,
+        observed_artifact=None,
         evidence_id: str | None = None,
         result_revision: str = "RECEIPT_METRICS_V1",
         purpose: str = "HISTORICAL_TEST",
@@ -107,6 +108,7 @@ class ResearchJobRunner:
             spec,
             self.runs.registry,
             observed_content_sha256,
+            observed_artifact=observed_artifact,
         )
         if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
             raise ResearchJobRunnerError(
