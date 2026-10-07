@@ -216,6 +216,17 @@ def trail_positions(cfg_runtime,state):
                 continue
             direction="SELL"
 
+        if _FACTORY_DRY_RUN:
+            trail_seen[seen_key] = {"status": "DRY_RUN_BLOCKED", "new_sl": float(new_sl)}
+            runner.log_event({
+                "event": "TRAIL_UPDATE_BLOCKED_DRY_RUN",
+                "version": cfg.VERSION, "symbol": symbol, "position": ticket,
+                "direction": direction, "completed_bar_time": completed_bar_time,
+                "proposed_sl": float(new_sl), "trail_unit": "MT5_POINT",
+                "canonical": False, "dry_run": True,
+            })
+            continue
+
         request={"action":mt5.TRADE_ACTION_SLTP,"symbol":symbol,
                  "position":ticket,"sl":float(new_sl),"tp":tp}
         send=mt5.order_send(request)
