@@ -17,7 +17,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-STATUS_FILE = ROOT / "runtime" / "factory_worker_status.json"
+LIVE_STATUS_FILE = ROOT / "runtime" / "factory_worker_status.json"
+DEMO_STATUS_FILE = ROOT / "runtime" / "factory_demo_status.json"
+DEMO_MODE = os.getenv("SP2L_FACTORY_DEMO", "0") == "1"
+STATUS_FILE = DEMO_STATUS_FILE if DEMO_MODE else LIVE_STATUS_FILE
 PORT = int(os.getenv("SP2L_FACTORY_DASHBOARD_PORT", "8788"))
 
 PHASES = [
@@ -187,6 +190,7 @@ def station_card(key: str, workers: list[dict]) -> str:
 def html_page() -> str:
     git = git_state()
     workers, factory_health = worker_state()
+    mode_label = "DEMO TELEMETRY" if DEMO_MODE else "LIVE TELEMETRY"
     live = sum(w["telemetry_health"] == "LIVE" for w in workers)
     running = sum(str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"} for w in workers)
     failed = sum(str(w.get("state") or "").upper() == "FAILED" for w in workers)
