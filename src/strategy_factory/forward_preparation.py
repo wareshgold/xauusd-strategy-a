@@ -95,6 +95,10 @@ def prepare_holdout_to_forward(
         raise ForwardPreparationError(
             "Holdout artifact id does not match the completed Holdout run"
         )
+    if holdout_dataset_content_sha256 != result.run.dataset_fingerprint:
+        raise ForwardPreparationError(
+            "Holdout dataset SHA does not match the completed Holdout run"
+        )
 
     holdout_event = events.append(
         event_type="COMPLETED",
