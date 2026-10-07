@@ -52,29 +52,6 @@ class DiscoveryMatrixAdapter:
             self.end,
         ]
 
-    @staticmethod
-    def _metrics(row: dict[str, Any]) -> ResearchMetrics:
-        decisive = int(row["decisive"])
-        wins = int(row["wins"])
-        losses = int(row["losses"])
-        ambiguous = int(row["ambiguous"])
-        return ResearchMetrics(
-            trades=int(row["signals"]),
-            decisive_trades=decisive,
-            wins=wins,
-            losses=losses,
-            ambiguous=ambiguous,
-            win_rate=(wins / decisive if decisive else 0.0),
-            net_r=float(row["net_R"]),
-            profit_factor=float(row["profit_factor"] or 0.0),
-            max_drawdown_r=float(row["max_drawdown_R"]),
-            gross_profit_r=float(row["gross_profit_usd"]) / float(row["gross_profit_usd"] / row["gross_profit_usd"])
-            if False else sum(
-                float(x) for x in []
-            ),
-            gross_loss_r=0.0,
-        )
-    
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
         spec.validate()
         if not self.script_path.is_file():
