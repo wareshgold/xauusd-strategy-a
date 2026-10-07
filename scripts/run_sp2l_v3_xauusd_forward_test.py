@@ -248,20 +248,53 @@ _RUN_STARTED_UTC = datetime.now(timezone.utc)
 # MT5 broker history timestamps on this terminal are server-clock values.
 # Keep the runner event journal in UTC, but convert UTC query bounds into
 # the observed MT5 server-clock domain before history_orders_get/history_deals_get.
-def _mt5_server_offset_seconds(symbol: str) -> int:
+def _mt5_server_offset_seconds(symbol: str):
+    """Return the observed MT5 server offset, or None when the tick is stale/invalid.
+
+    History lifecycle must fail closed when the terminal does not currently
+    provide a trustworthy clock sample. This is an operational guard only:
+    it must never terminate the forward runner or alter strategy semantics.
+    """
     tick = mt5.symbol_info_tick(symbol)
     tick_ts = int(getattr(tick, "time", 0) or 0) if tick else 0
     if tick_ts <= 0:
-        raise RuntimeError("MT5 server clock unavailable: no symbol tick")
-    delta = tick_ts - int(datetime.now(timezone.utc).timestamp())
+        runner.log_event({
+            "event": "MT5_SERVER_CLOCK_UNAVAILABLE",
+            "symbol": symbol,
+            "reason": "NO_VALID_TICK",
+            "executed": False,
+            "canonical": False,
+        })
+        return None
+
+    now_ts = int(datetime.now(timezone.utc).timestamp())
+    delta = tick_ts - now_ts
     hours = round(delta / 3600)
+
+    # A stale quote can survive market inactivity and make the apparent
+    # server offset many hours wrong. Do not turn that transient condition
+    # into a fatal process exception.
     if abs(delta - hours * 3600) > 900 or not (-12 <= hours <= 14):
-        raise RuntimeError(f"Unreasonable MT5 server clock offset: {delta}s")
+        runner.log_event({
+            "event": "MT5_SERVER_CLOCK_ANOMALY",
+            "symbol": symbol,
+            "tick_ts": tick_ts,
+            "local_utc_ts": now_ts,
+            "offset_seconds": delta,
+            "reason": "UNREASONABLE_SERVER_CLOCK_OFFSET",
+            "history_skipped": True,
+            "executed": False,
+            "canonical": False,
+        })
+        return None
+
     return int(hours * 3600)
 
 
 def _mt5_history_bounds_utc(start_utc: datetime, end_utc: datetime, symbol: str):
     offset = _mt5_server_offset_seconds(symbol)
+    if offset is None:
+        return None
     return (
         datetime.fromtimestamp(int(start_utc.timestamp()) + offset, tz=timezone.utc),
         datetime.fromtimestamp(int(end_utc.timestamp()) + offset, tz=timezone.utc),
@@ -295,7 +328,10 @@ def _run_scoped_pending(cfg_runtime, state):
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol = cfg_runtime["symbol"]
     tracked = set(state["orders"])
-    start_api, end_api = _mt5_history_bounds_utc(_RUN_STARTED_UTC, datetime.now(timezone.utc), symbol)
+    bounds = _mt5_history_bounds_utc(_RUN_STARTED_UTC, datetime.now(timezone.utc), symbol)
+    if bounds is None:
+        return
+    start_api, end_api = bounds
     orders = list(mt5.history_orders_get(start_api, end_api, group=symbol) or [])
     orders += list(mt5.orders_get(symbol=symbol) or [])
     for order in orders:
@@ -357,9 +393,12 @@ def _run_scoped_position_lifecycle(cfg_runtime, state):
 def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     symbol, magic, pip = cfg_runtime["symbol"], cfg_runtime["magic"], cfg_runtime["pip_size"]
     tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
-    start_api, end_api = _mt5_history_bounds_utc(
+    bounds = _mt5_history_bounds_utc(
         _RUN_STARTED_UTC, datetime.now(timezone.utc), symbol
     )
+    if bounds is None:
+        return
+    start_api, end_api = bounds
     deals = mt5.history_deals_get(start_api, end_api, group=symbol) or []
 
     for deal in sorted(deals, key=lambda x: (int(x.time), int(x.ticket))):
