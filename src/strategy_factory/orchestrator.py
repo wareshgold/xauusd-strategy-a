@@ -13,7 +13,9 @@ from typing import Callable, Any
 
 from .jobs import ResearchJobSpec
 from .job_events import FactoryJobEventLedger
+from .handoff import ResearchHandoff, build_research_handoff
 from .worker import FactoryWorker, FactoryWorkerFleet
+from .research_record import ResearchRecord
 
 
 @dataclass(frozen=True)
@@ -61,6 +63,40 @@ class FactoryOrchestrator:
 
     def pending(self) -> tuple[QueuedResearchJob, ...]:
         return tuple(self.queue)
+
+    def handoff(
+        self,
+        *,
+        record: ResearchRecord,
+        source_station: str,
+        destination_station: str,
+        detail: str = "Validated research artifact handoff",
+    ) -> ResearchHandoff:
+        """Explicitly hand one PASS research record to the next declared station.
+
+        Completion alone never implies promotion. The caller must supply an
+        immutable PASS ResearchRecord, and the handoff is journaled separately.
+        """
+        record.validate()
+        handoff = build_research_handoff(
+            events=self.events,
+            job_id=record.run_id,
+            source_station=source_station,
+            destination_station=destination_station,
+            detail=detail,
+            record=record,
+        )
+        self.events.append(
+            event_type="HANDOFF_ACCEPTED",
+            job_id=record.run_id,
+            job_fingerprint=record.run_fingerprint,
+            station=destination_station,
+            phase=destination_station.upper(),
+            detail=detail,
+            output_artifact=record.evidence_id,
+        )
+        self.fleet.publish()
+        return handoff
 
     def run_next(
         self,
