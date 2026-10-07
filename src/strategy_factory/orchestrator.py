@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Any
 
 from .jobs import ResearchJobSpec
+from .job_events import FactoryJobEventLedger
 from .worker import FactoryWorker, FactoryWorkerFleet
 
 
@@ -29,6 +30,7 @@ class FactoryOrchestrator:
 
     fleet: FactoryWorkerFleet
     queue: list[QueuedResearchJob] = field(default_factory=list)
+    events: FactoryJobEventLedger = field(default_factory=FactoryJobEventLedger)
 
     def submit(
         self,
@@ -46,6 +48,14 @@ class FactoryOrchestrator:
                 phase=phase,
                 detail=detail,
             )
+        )
+        self.events.append(
+            event_type="QUEUED",
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            station=station,
+            phase=phase,
+            detail=detail,
         )
         self.fleet.publish()
 
@@ -81,6 +91,15 @@ class FactoryOrchestrator:
             phase=queued.phase,
             detail=queued.detail,
         )
+        self.events.append(
+            event_type="DISPATCHED",
+            job_id=queued.job.job_id,
+            job_fingerprint=queued.job.fingerprint,
+            worker_id=worker.worker_id,
+            station=queued.station,
+            phase=queued.phase,
+            detail=queued.detail,
+        )
         self.fleet.publish()
 
         try:
@@ -93,6 +112,15 @@ class FactoryOrchestrator:
                 self.fleet.publish()
         except Exception as exc:
             worker.fail(str(exc))
+            self.events.append(
+                event_type="FAILED",
+                job_id=queued.job.job_id,
+                job_fingerprint=queued.job.fingerprint,
+                worker_id=worker.worker_id,
+                station=queued.station,
+                phase=queued.phase,
+                detail=str(exc),
+            )
             self.fleet.publish()
             raise
 
@@ -105,6 +133,16 @@ class FactoryOrchestrator:
             artifact = result
 
         worker.complete(output_artifact=artifact, detail=detail)
+        self.events.append(
+            event_type="COMPLETED",
+            job_id=queued.job.job_id,
+            job_fingerprint=queued.job.fingerprint,
+            worker_id=worker.worker_id,
+            station=queued.station,
+            phase=queued.phase,
+            detail=detail,
+            output_artifact=artifact,
+        )
         self.fleet.publish()
         return result
 
