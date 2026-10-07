@@ -208,7 +208,7 @@ def html_page() -> str:
     if not workers:
         crew_html = """
         <div class="empty-crew">
-          <div class="big-worker">👷</div>
+          <div class="empty-mark">NO SIGNAL</div>
           <b>No worker telemetry yet</b>
           <span>The floor is real; workers appear when a Factory worker publishes heartbeat data.</span>
         </div>
@@ -274,8 +274,8 @@ h1{{margin:0;font-size:28px;letter-spacing:.5px}} h1 span{{color:var(--gold)}}
 </style></head>
 <body><main>
   <div class="top">
-    <div><h1>🏭 <span>SP2L Research Factory</span></h1><div class="sub">Tycoon Floor • telemetry-backed • research only</div></div>
-    <div class="state {headline_class}">● {headline}</div>
+    <div><h1><span>SP2L RESEARCH FACTORY</span></h1><div class="sub">Research orchestration control room • telemetry-backed • research only</div></div>
+    <div class="state {headline_class}">{mode_label} · {headline}</div>
   </div>
 
   <section class="stats">
@@ -283,11 +283,11 @@ h1{{margin:0;font-size:28px;letter-spacing:.5px}} h1 span{{color:var(--gold)}}
     <div class="stat"><b>{live}</b><small>Live heartbeat</small></div>
     <div class="stat"><b>{running}</b><small>Jobs running</small></div>
     <div class="stat"><b>{failed}</b><small>Failed workers</small></div>
-    <div class="stat"><b>—</b><small>Production decisions</small></div>
+    <div class="stat"><b>LOCKED</b><small>Production authority</small></div>
   </section>
 
   <section class="floor">
-    <div class="sign"><div><b>FACTORY FLOOR</b><span> • workers move only when telemetry says they are active</span></div><span>🔄 5s refresh</span></div>
+    <div class="sign"><div><b>FACTORY FLOOR</b><span> • workers move only when telemetry says they are active</span></div><span>AUTO REFRESH · 5s</span></div>
     <div class="stations">
       {station_card("discovery", workers)}
       {station_card("stability", workers)}
@@ -299,19 +299,19 @@ h1{{margin:0;font-size:28px;letter-spacing:.5px}} h1 span{{color:var(--gold)}}
   </section>
 
   <section class="panel">
-    <h2>👷 CREW & CURRENT JOBS</h2>
+    <h2>WORKERS & CURRENT JOBS</h2>
     <div class="crew">{crew_html}</div>
   </section>
 
   <section class="panel">
-    <h2>🗺️ RESEARCH PIPELINE</h2>
+    <h2>RESEARCH PIPELINE</h2>
     <div class="pipeline">{phase_html}</div>
     <div class="meta">
-      <span>📁 {escape(git["root"])}</span>
-      <span>🌿 {escape(git["branch"])}</span>
+      <span>ROOT {escape(git["root"])}</span>
+      <span>BRANCH {escape(git["branch"])}</span>
       <span>HEAD {escape(git["head"])}</span>
       <span>origin {escape(git["origin"])}</span>
-      <span>🔒 No canonical promotion • no BUY/SELL generation</span>
+      <span class="lock">PRODUCTION LOCKED · NO BUY/SELL GENERATION</span>
     </div>
   </section>
 </main></body></html>"""
