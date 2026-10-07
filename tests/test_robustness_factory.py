@@ -132,11 +132,7 @@ def _context(tmp_path, *, wrong_sha=False):
         dataset_content_sha256=handoff_sha, dataset_artifact_id=artifact_id,
     )
 
-    runner = ResearchJobRunner(
-        runs=ResearchRunLedger(DatasetRegistry(), DatasetUsageLedger(DatasetRegistry())),
-        evidence=None,
-    )
-    # Use a correctly wired fresh runner; the temporary object above is not used.
+    # Use a correctly wired fresh runner for the downstream Robustness job.
     registry2 = DatasetRegistry()
     usage2 = DatasetUsageLedger(registry2)
     runs2 = ResearchRunLedger(registry2, usage2)
