@@ -27,8 +27,13 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
 <div class="card"><div class="lock">RESEARCH ONLY · PRODUCTION LOCKED</div><div class="dim">BUY/SELL GENERATION: 0</div></div></div>
 <div id="telemetry" class="card"><div class="dim" id="link">FACTORY WAITING FOR TELEMETRY</div><div id="workers"></div></div>
 
+<script src="/starnet/app/bootguard.js"></script>
+<script src="/starnet/app/legacymigrate.js"></script>
+<script src="/starnet/app/glass-boot.js"></script>
 <script src="/starnet/js/util.js"></script>
+<script src="/starnet/app/asciifx.js"></script>
 <script src="/starnet/js/audio.js"></script>
+<script src="/starnet/js/arcade.js"></script>
 <script src="/starnet/app/backdrop-bake.js"></script>
 <script src="/starnet/app/spacebg.js"></script>
 <script src="/starnet/app/terrain.js"></script>
@@ -50,15 +55,24 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
 <script src="/starnet/app/propanchor.js"></script>
 <script src="/starnet/app/waitanchor.js"></script>
 <script src="/starnet/app/data-shim.js"></script>
-<script src="/starnet/js/assets.js"></script>
 <script src="/starnet/js/sprite-load-plan.js"></script>
 <script src="/starnet/app/skinstage.js"></script>
 <script src="/starnet/app/skin-study-tone.js"></script>
+<script src="/starnet/app/skin-study-preview.js"></script>
+<script src="/starnet/js/assets.js"></script>
+<script src="/starnet/app/zones.js"></script>
+<script src="/starnet/app/toolprops.js"></script>
 <script src="/starnet/app/worldsurface.js"></script>
 <script src="/starnet/app/worldlight.js"></script>
 <script src="/starnet/app/worldrenderer.js"></script>
+<script src="/starnet/app/arrival.js"></script>
 <script src="/starnet/app/world.js"></script>
 <script src="/starnet/app/worldmodel.js"></script>
+<script src="/starnet/app/roomstyles.js"></script>
+<script src="/starnet/app/stationbuilder.js"></script>
+<script src="/starnet/app/planpreview.js"></script>
+<script src="/starnet/app/linelayout.js"></script>
+<script src="/starnet/app/lineedit.js"></script>
 <script src="/starnet/app/stationbake.js"></script>
 <script>
 (()=> {
