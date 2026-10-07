@@ -13,7 +13,8 @@ import hashlib
 import json
 from typing import Any
 
-from .job_events import FactoryJobEventLedger
+from .job_events import FactoryJobEvent, FactoryJobEventLedger
+from .research_record import ResearchRecord
 
 
 HANDOFF_ROUTES = {
@@ -75,6 +76,28 @@ class ResearchHandoff:
             raise ResearchHandoffError("handoff fingerprint mismatch")
 
 
+def validate_evidence_bound_handoff(*, handoff: ResearchHandoff, record: ResearchRecord, source_event: FactoryJobEvent) -> None:
+    handoff.validate()
+    record.validate()
+    source_event.validate()
+    if handoff.job_id != record.run_id:
+        raise ResearchHandoffError("handoff job_id does not match research record run_id")
+    if handoff.job_fingerprint != record.run_fingerprint:
+        raise ResearchHandoffError("handoff job_fingerprint does not match research record")
+    if handoff.output_artifact != record.evidence_id:
+        raise ResearchHandoffError("handoff artifact does not match research evidence_id")
+    if handoff.source_event_fingerprint != source_event.event_fingerprint:
+        raise ResearchHandoffError("handoff source event does not match declared source event")
+    if source_event.event_type != "COMPLETED":
+        raise ResearchHandoffError("handoff source event must be COMPLETED")
+    if source_event.job_id != record.run_id or source_event.job_fingerprint != record.run_fingerprint:
+        raise ResearchHandoffError("source event is not bound to research record")
+    if source_event.station != handoff.source_station:
+        raise ResearchHandoffError("source event station does not match handoff source station")
+    if source_event.output_artifact != record.evidence_id:
+        raise ResearchHandoffError("source event artifact does not match research evidence_id")
+
+
 def build_research_handoff(
     *,
     events: FactoryJobEventLedger,
@@ -83,6 +106,7 @@ def build_research_handoff(
     destination_station: str,
     handoff_id: str | None = None,
     detail: str = "Validated research artifact handoff",
+    record: ResearchRecord | None = None,
 ) -> ResearchHandoff:
     if (source_station, destination_station) not in HANDOFF_ROUTES:
         raise ResearchHandoffError("research handoff route is not declared")
@@ -117,4 +141,6 @@ def build_research_handoff(
     ).hexdigest()
     final = ResearchHandoff(**handoff.as_dict(include_fingerprint=False), fingerprint=fingerprint)
     final.validate()
+    if record is not None:
+        validate_evidence_bound_handoff(handoff=final, record=record, source_event=event)
     return final
