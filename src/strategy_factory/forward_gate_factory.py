@@ -73,11 +73,6 @@ class ForwardGateFactory:
                 "Forward gate rejects any post-holdout tuning"
             )
 
-        if context.source_record.strategy_revision != context.readiness_snapshot.manifest_revision:
-            # This is deliberately not used as a semantic strategy comparison;
-            # it catches accidental wiring of a manifest revision where a
-            # strategy revision was expected only if they are literally equal.
-            pass
 
         if context.source_record.manifest_revision != context.manifest_revision:
             raise ForwardGateError(
