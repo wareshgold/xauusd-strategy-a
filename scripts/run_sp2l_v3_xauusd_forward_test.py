@@ -184,7 +184,7 @@ def trail_positions(cfg_runtime,state):
                     "bar_high":high,"bar_low":low,"entry":entry,
                     "old_sl":old_sl,"proposed_sl":float(new_sl),
                     "bid":bid,"ask":ask,"min_stop_distance":min_stop_distance,
-                    "reason":"BROKER_STOP_CONSTRAINT","canonical":False})
+                    "reason":"CURRENT_QUOTE_CONSTRAINT","canonical":False})
                 continue
             direction="BUY"
         else:
@@ -205,7 +205,7 @@ def trail_positions(cfg_runtime,state):
                     "bar_high":high,"bar_low":low,"entry":entry,
                     "old_sl":old_sl,"proposed_sl":float(new_sl),
                     "bid":bid,"ask":ask,"min_stop_distance":min_stop_distance,
-                    "reason":"BROKER_STOP_CONSTRAINT","canonical":False})
+                    "reason":"CURRENT_QUOTE_CONSTRAINT","canonical":False})
                 continue
             direction="SELL"
 
