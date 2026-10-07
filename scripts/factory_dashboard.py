@@ -208,8 +208,86 @@ def station_card(key: str, workers: list[dict]) -> str:
 
 def station_world(workers: list[dict]) -> str:
     """Render a StarNet-inspired industrial pixel world from real telemetry."""
-    payload = json.dumps([{"id":str(w.get("worker_id") or ""),"job":str(w.get("job_id") or ""),"state":str(w.get("state") or "IDLE").upper(),"station":station_for(w),"progress":float(w.get("progress") or 0)} for w in workers], ensure_ascii=False).replace("</","<\\/")
-    return f'''\n    <section class="station-world panel">\n      <div class="world-head"><div><h2>STATION WORLD · LIVE TELEMETRY</h2><span>Industrial world view • agents follow worker state</span></div><b>PIXEL DECK / 12px GRID</b></div>\n      <div class="world-viewport"><canvas id="stationWorld" width="1180" height="590"></canvas></div>\n      <div class="world-legend"><span><i class="legend-agent"></i>AGENT</span><span><i class="legend-live"></i>LIVE</span><span><i class="legend-queue"></i>QUEUED</span><span><i class="legend-fail"></i>FAILED</span><span class="world-lock">RESEARCH ONLY · PRODUCTION LOCKED</span></div>\n      <script>\n      (() => {{\n        const workers = {payload}; const canvas=document.getElementById("stationWorld"); if(!canvas)return; const ctx=canvas.getContext("2d"); ctx.imageSmoothingEnabled=false; const W=1180,H=590;\n        const rooms={{discovery:{{x:70,y:95,w:300,h:175,label:"DISCOVERY LAB",code:"D01"}},stability:{{x:440,y:95,w:300,h:175,label:"STABILITY LAB",code:"S01"}},robustness:{{x:810,y:95,w:300,h:175,label:"ROBUSTNESS LAB",code:"R01"}},holdout:{{x:250,y:340,w:300,h:175,label:"HOLDOUT VAULT",code:"H01"}},forward:{{x:620,y:340,w:300,h:175,label:"FORWARD OPS",code:"F01"}},idle:{{x:950,y:340,w:180,h:175,label:"WORKER BAY",code:"W01"}}}};\n        const C={{wall:"#27343b",wall2:"#1a242b",floor:"#10191f",floor2:"#16232a",cyan:"#5bd5e6",green:"#63d39a",red:"#df6e75",amber:"#c79b4d"}};\n        function room(r){{ctx.fillStyle=C.floor;ctx.fillRect(r.x,r.y,r.w,r.h);ctx.fillStyle=C.floor2;for(let x=r.x+8;x<r.x+r.w-8;x+=24)for(let y=r.y+45;y<r.y+r.h-8;y+=24)ctx.fillRect(x,y,1,1);ctx.fillStyle=C.wall2;ctx.fillRect(r.x,r.y,r.w,11);ctx.fillRect(r.x,r.y,11,r.h);ctx.fillStyle=C.wall;ctx.fillRect(r.x,r.y,r.w,3);ctx.fillRect(r.x,r.y,3,r.h);ctx.fillStyle="#080e13";ctx.fillRect(r.x+11,r.y+11,r.w-22,30);ctx.strokeStyle="#34454e";ctx.strokeRect(r.x+10.5,r.y+10.5,r.w-21,r.h-21);ctx.fillStyle="#c2cbd0";ctx.font="bold 11px monospace";ctx.fillText(r.label,r.x+18,r.y+28);ctx.fillStyle=C.cyan;ctx.font="9px monospace";ctx.fillText(r.code,r.x+r.w-34,r.y+28);ctx.fillStyle="#2e3d45";ctx.fillRect(r.x+52,r.y+84,38,25);ctx.fillRect(r.x+126,r.y+84,38,25);ctx.fillStyle="#52636c";ctx.fillRect(r.x+57,r.y+88,28,11);ctx.fillRect(r.x+131,r.y+88,28,11)}}\n        function corridors(){{ctx.fillStyle="#1b282f";ctx.fillRect(370,210,70,22);ctx.fillRect(740,210,70,22);ctx.fillRect(500,315,120,28);ctx.fillRect(745,340,20,28);ctx.fillStyle="#455760";ctx.fillRect(370,219,70,2);ctx.fillRect(740,219,70,2);ctx.fillRect(532,328,55,2)}}\n        function agent(w,i,t){{const r=rooms[w.station]||rooms.idle,a=w.state==="RUNNING"||w.state==="HEARTBEAT",q=w.state==="QUEUED",d=w.state==="COMPLETED",bad=w.state==="FAILED",p=t/420+i*1.7;let x=r.x+45+(i*63)%(Math.max(90,r.w-95)),y=r.y+120+Math.sin(p)*2;if(q){{x=r.x+24;y=r.y+61}}if(d){{x=r.x+r.w-50;y=r.y+61}}ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(-9,18,19,4);ctx.fillStyle=bad?C.red:(a?C.cyan:"#9ba8ae");ctx.fillRect(-6,-11,12,10);ctx.fillStyle="#18232a";ctx.fillRect(-3,-8,2,3);ctx.fillRect(3,-8,2,3);ctx.fillStyle=a?"#657780":"#4b5a62";ctx.fillRect(-9,0,18,13);ctx.fillStyle=a?C.cyan:"#73828a";ctx.fillRect(-11,2,3,8);ctx.fillRect(9,2,3,8);ctx.fillStyle="#202c33";ctx.fillRect(-7,13,5,6);ctx.fillRect(2,13,5,6);if(a){{ctx.fillStyle=C.green;ctx.fillRect(10,-12,3,3)}}ctx.restore();ctx.fillStyle="#9ba9b0";ctx.font="8px monospace";ctx.textAlign="center";ctx.fillText(w.id,x,y+31);if(w.job){{ctx.fillStyle="#667681";ctx.font="7px monospace";ctx.fillText(w.job.slice(0,18),x,y+42)}}}}\n        function draw(t){{ctx.clearRect(0,0,W,H);ctx.fillStyle="#080e12";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#132027";for(let x=0;x<W;x+=24){{ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}}for(let y=0;y<H;y+=24){{ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}}Object.values(rooms).forEach(room);corridors();workers.forEach((w,i)=>agent(w,i,t));ctx.fillStyle="#070b0e";ctx.fillRect(18,18,300,45);ctx.strokeStyle="#33454f";ctx.strokeRect(18.5,18.5,299,44);ctx.fillStyle=C.cyan;ctx.font="bold 11px monospace";ctx.textAlign="left";ctx.fillText("SP2L RESEARCH STATION",31,37);ctx.fillStyle="#687984";ctx.font="8px monospace";ctx.fillText("WORLD STATE ← WORKER TELEMETRY",31,52);ctx.fillStyle="#070b0e";ctx.fillRect(900,540,250,30);ctx.strokeStyle="#33454f";ctx.strokeRect(900.5,540.5,249,29);ctx.fillStyle=C.amber;ctx.font="8px monospace";ctx.fillText("PRODUCTION LOCKED",915,559);requestAnimationFrame(draw)}}\n        function resize(){{const w=Math.min(canvas.parentElement.clientWidth,W);canvas.style.width=w+"px";canvas.style.height=(w/W*H)+"px"}}resize();window.addEventListener("resize",resize);requestAnimationFrame(draw);\n      }})();\n      </script>\n    </section>\n    '''\n\n
+    payload = json.dumps(
+        [{"id": str(w.get("worker_id") or ""), "job": str(w.get("job_id") or ""),
+          "state": str(w.get("state") or "IDLE").upper(), "station": station_for(w),
+          "progress": float(w.get("progress") or 0)} for w in workers],
+        ensure_ascii=False,
+    ).replace("</", "<\\/")
+    world = """
+    <section class="station-world panel">
+      <div class="world-head"><div><h2>STATION WORLD · LIVE TELEMETRY</h2><span>Industrial world view • agents follow worker state</span></div><b>PIXEL DECK / 12px GRID</b></div>
+      <div class="world-viewport"><canvas id="stationWorld" width="1180" height="590"></canvas></div>
+      <div class="world-legend"><span><i class="legend-agent"></i>AGENT</span><span><i class="legend-live"></i>LIVE</span><span><i class="legend-queue"></i>QUEUED</span><span><i class="legend-fail"></i>FAILED</span><span class="world-lock">RESEARCH ONLY · PRODUCTION LOCKED</span></div>
+      <script>
+      (() => {
+        const workers = __WORKERS__;
+        const canvas = document.getElementById("stationWorld");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d"); ctx.imageSmoothingEnabled = false;
+        const W = 1180, H = 590;
+        const rooms = {
+          discovery:{x:70,y:95,w:300,h:175,label:"DISCOVERY LAB",code:"D01"},
+          stability:{x:440,y:95,w:300,h:175,label:"STABILITY LAB",code:"S01"},
+          robustness:{x:810,y:95,w:300,h:175,label:"ROBUSTNESS LAB",code:"R01"},
+          holdout:{x:250,y:340,w:300,h:175,label:"HOLDOUT VAULT",code:"H01"},
+          forward:{x:620,y:340,w:300,h:175,label:"FORWARD OPS",code:"F01"},
+          idle:{x:950,y:340,w:180,h:175,label:"WORKER BAY",code:"W01"}
+        };
+        const C={wall:"#27343b",wall2:"#1a242b",floor:"#10191f",floor2:"#16232a",cyan:"#5bd5e6",green:"#63d39a",red:"#df6e75",amber:"#c79b4d"};
+        function room(r){
+          ctx.fillStyle=C.floor;ctx.fillRect(r.x,r.y,r.w,r.h);
+          ctx.fillStyle=C.floor2;
+          for(let x=r.x+8;x<r.x+r.w-8;x+=24)for(let y=r.y+45;y<r.y+r.h-8;y+=24)ctx.fillRect(x,y,1,1);
+          ctx.fillStyle=C.wall2;ctx.fillRect(r.x,r.y,r.w,11);ctx.fillRect(r.x,r.y,11,r.h);
+          ctx.fillStyle=C.wall;ctx.fillRect(r.x,r.y,r.w,3);ctx.fillRect(r.x,r.y,3,r.h);
+          ctx.fillStyle="#080e13";ctx.fillRect(r.x+11,r.y+11,r.w-22,30);
+          ctx.strokeStyle="#34454e";ctx.strokeRect(r.x+10.5,r.y+10.5,r.w-21,r.h-21);
+          ctx.fillStyle="#c2cbd0";ctx.font="bold 11px monospace";ctx.fillText(r.label,r.x+18,r.y+28);
+          ctx.fillStyle=C.cyan;ctx.font="9px monospace";ctx.fillText(r.code,r.x+r.w-34,r.y+28);
+          ctx.fillStyle="#2e3d45";ctx.fillRect(r.x+52,r.y+84,38,25);ctx.fillRect(r.x+126,r.y+84,38,25);
+          ctx.fillStyle="#52636c";ctx.fillRect(r.x+57,r.y+88,28,11);ctx.fillRect(r.x+131,r.y+88,28,11);
+        }
+        function corridors(){
+          ctx.fillStyle="#1b282f";ctx.fillRect(370,210,70,22);ctx.fillRect(740,210,70,22);ctx.fillRect(500,315,120,28);ctx.fillRect(745,340,20,28);
+          ctx.fillStyle="#455760";ctx.fillRect(370,219,70,2);ctx.fillRect(740,219,70,2);ctx.fillRect(532,328,55,2);
+        }
+        function agent(w,i,t){
+          const r=rooms[w.station]||rooms.idle,a=w.state==="RUNNING"||w.state==="HEARTBEAT",q=w.state==="QUEUED",d=w.state==="COMPLETED",bad=w.state==="FAILED",p=t/420+i*1.7;
+          let x=r.x+45+(i*63)%(Math.max(90,r.w-95)),y=r.y+120+Math.sin(p)*2;
+          if(q){x=r.x+24;y=r.y+61} if(d){x=r.x+r.w-50;y=r.y+61}
+          ctx.save();ctx.translate(Math.round(x),Math.round(y));
+          ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(-9,18,19,4);
+          ctx.fillStyle=bad?C.red:(a?C.cyan:"#9ba8ae");ctx.fillRect(-6,-11,12,10);
+          ctx.fillStyle="#18232a";ctx.fillRect(-3,-8,2,3);ctx.fillRect(3,-8,2,3);
+          ctx.fillStyle=a?"#657780":"#4b5a62";ctx.fillRect(-9,0,18,13);
+          ctx.fillStyle=a?C.cyan:"#73828a";ctx.fillRect(-11,2,3,8);ctx.fillRect(9,2,3,8);
+          ctx.fillStyle="#202c33";ctx.fillRect(-7,13,5,6);ctx.fillRect(2,13,5,6);
+          if(a){ctx.fillStyle=C.green;ctx.fillRect(10,-12,3,3)} ctx.restore();
+          ctx.fillStyle="#9ba9b0";ctx.font="8px monospace";ctx.textAlign="center";ctx.fillText(w.id,x,y+31);
+          if(w.job){ctx.fillStyle="#667681";ctx.font="7px monospace";ctx.fillText(w.job.slice(0,18),x,y+42)}
+        }
+        function draw(t){
+          ctx.clearRect(0,0,W,H);ctx.fillStyle="#080e12";ctx.fillRect(0,0,W,H);
+          ctx.strokeStyle="#132027";
+          for(let x=0;x<W;x+=24){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+          for(let y=0;y<H;y+=24){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+          Object.values(rooms).forEach(room);corridors();workers.forEach((w,i)=>agent(w,i,t));
+          ctx.fillStyle="#070b0e";ctx.fillRect(18,18,300,45);ctx.strokeStyle="#33454f";ctx.strokeRect(18.5,18.5,299,44);
+          ctx.fillStyle=C.cyan;ctx.font="bold 11px monospace";ctx.textAlign="left";ctx.fillText("SP2L RESEARCH STATION",31,37);
+          ctx.fillStyle="#687984";ctx.font="8px monospace";ctx.fillText("WORLD STATE ← WORKER TELEMETRY",31,52);
+          ctx.fillStyle="#070b0e";ctx.fillRect(900,540,250,30);ctx.strokeStyle="#33454f";ctx.strokeRect(900.5,540.5,249,29);
+          ctx.fillStyle=C.amber;ctx.font="8px monospace";ctx.fillText("PRODUCTION LOCKED",915,559);
+          requestAnimationFrame(draw);
+        }
+        function resize(){const w=Math.min(canvas.parentElement.clientWidth,W);canvas.style.width=w+"px";canvas.style.height=(w/W*H)+"px"}
+        resize();window.addEventListener("resize",resize);requestAnimationFrame(draw);
+      })();
+      </script>
+    </section>
+    """
+    return world.replace("__WORKERS__", payload)
+
 def telemetry_panels(workers: list[dict]) -> str:
     queued = [w for w in workers if str(w.get("state") or "").upper() == "QUEUED"]
     active = [w for w in workers if str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"}]
