@@ -148,3 +148,49 @@ def require_runner_process_success(
         raise ForwardRuntimeAdapterError(
             f"existing forward runner failed with returncode={result.returncode}"
         )
+
+
+def run_existing_forward_runner_dry_run(
+    *,
+    duration_seconds: int,
+    env_overrides: Mapping[str, str] | None = None,
+) -> ExistingRunnerProcessResult:
+    """Exercise the adapter process boundary without touching MT5.
+
+    This is a Factory integration-test primitive only. It deliberately runs a
+    tiny local Python child process instead of the real SP2L runner, so a
+    dry-run can prove subprocess wiring without creating/modifying/cancelling
+    orders.
+    """
+    if duration_seconds <= 0:
+        raise ForwardRuntimeAdapterError("duration_seconds must be positive")
+
+    command = (
+        sys.executable,
+        "-c",
+        (
+            "import os; "
+            "print('SP2L_FACTORY_DRY_RUN=1'); "
+            "print('FORWARD_TEST_SECONDS=' + os.environ['FORWARD_TEST_SECONDS'])"
+        ),
+    )
+    env = os.environ.copy()
+    env["FORWARD_TEST_SECONDS"] = str(int(duration_seconds))
+    if env_overrides:
+        env.update({str(k): str(v) for k, v in env_overrides.items()})
+
+    completed = subprocess.run(
+        command,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=int(duration_seconds) + 5,
+        check=False,
+    )
+    return ExistingRunnerProcessResult(
+        command=command,
+        returncode=int(completed.returncode),
+        stdout=completed.stdout,
+        stderr=completed.stderr,
+        timed_out=False,
+    )
