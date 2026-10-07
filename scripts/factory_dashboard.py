@@ -207,80 +207,199 @@ def station_card(key: str, workers: list[dict]) -> str:
 
 
 def station_world(workers: list[dict]) -> str:
-    """Render a StarNet-inspired industrial pixel world from real telemetry."""
+    """Render an authored, telemetry-backed SP2L research station world."""
     payload = json.dumps(
-        [{"id": str(w.get("worker_id") or ""), "job": str(w.get("job_id") or ""),
-          "state": str(w.get("state") or "IDLE").upper(), "station": station_for(w),
-          "progress": float(w.get("progress") or 0)} for w in workers],
+        [
+            {
+                "id": str(w.get("worker_id") or ""),
+                "job": str(w.get("job_id") or ""),
+                "state": str(w.get("state") or "IDLE").upper(),
+                "station": station_for(w),
+                "progress": float(w.get("progress") or 0),
+            }
+            for w in workers
+        ],
         ensure_ascii=False,
     ).replace("</", "<\\/")
+
     world = """
     <section class="station-world panel">
-      <div class="world-head"><div><h2>STATION WORLD · LIVE TELEMETRY</h2><span>Industrial world view • agents follow worker state</span></div><b>PIXEL DECK / 12px GRID</b></div>
-      <div class="world-viewport"><canvas id="stationWorld" width="1180" height="590"></canvas></div>
-      <div class="world-legend"><span><i class="legend-agent"></i>AGENT</span><span><i class="legend-live"></i>LIVE</span><span><i class="legend-queue"></i>QUEUED</span><span><i class="legend-fail"></i>FAILED</span><span class="world-lock">RESEARCH ONLY · PRODUCTION LOCKED</span></div>
+      <div class="world-head">
+        <div><h2>STATION WORLD · TELEMETRY IS THE GAME STATE</h2><span>Rooms are capabilities • corridors are handoff lanes • agents are real workers</span></div>
+        <b>SP2L / RESEARCH DECK 01</b>
+      </div>
+      <div class="world-viewport"><canvas id="stationWorld" width="1280" height="650"></canvas></div>
+      <div class="world-legend">
+        <span><i class="legend-agent"></i>AGENT</span><span><i class="legend-live"></i>LIVE</span>
+        <span><i class="legend-queue"></i>QUEUED</span><span><i class="legend-fail"></i>FAILED</span>
+        <span class="world-lock">RESEARCH ONLY · PRODUCTION LOCKED · BUY/SELL: 0</span>
+      </div>
       <script>
       (() => {
         const workers = __WORKERS__;
         const canvas = document.getElementById("stationWorld");
         if (!canvas) return;
-        const ctx = canvas.getContext("2d"); ctx.imageSmoothingEnabled = false;
-        const W = 1180, H = 590;
-        const rooms = {
-          discovery:{x:70,y:95,w:300,h:175,label:"DISCOVERY LAB",code:"D01"},
-          stability:{x:440,y:95,w:300,h:175,label:"STABILITY LAB",code:"S01"},
-          robustness:{x:810,y:95,w:300,h:175,label:"ROBUSTNESS LAB",code:"R01"},
-          holdout:{x:250,y:340,w:300,h:175,label:"HOLDOUT VAULT",code:"H01"},
-          forward:{x:620,y:340,w:300,h:175,label:"FORWARD OPS",code:"F01"},
-          idle:{x:950,y:340,w:180,h:175,label:"WORKER BAY",code:"W01"}
+        const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
+        const W = 1280, H = 650;
+        const C = {
+          bg:"#070b10", floor:"#111a20", floor2:"#17242b", wall:"#33434d",
+          edge:"#52636e", text:"#dce5ea", muted:"#657681", cyan:"#5bd5e6",
+          green:"#63d39a", amber:"#d6aa4d", red:"#df6e75", blue:"#72b8d9",
+          dark:"#0a1015", glass:"#12202a"
         };
-        const C={wall:"#27343b",wall2:"#1a242b",floor:"#10191f",floor2:"#16232a",cyan:"#5bd5e6",green:"#63d39a",red:"#df6e75",amber:"#c79b4d"};
-        function room(r){
-          ctx.fillStyle=C.floor;ctx.fillRect(r.x,r.y,r.w,r.h);
-          ctx.fillStyle=C.floor2;
-          for(let x=r.x+8;x<r.x+r.w-8;x+=24)for(let y=r.y+45;y<r.y+r.h-8;y+=24)ctx.fillRect(x,y,1,1);
-          ctx.fillStyle=C.wall2;ctx.fillRect(r.x,r.y,r.w,11);ctx.fillRect(r.x,r.y,11,r.h);
-          ctx.fillStyle=C.wall;ctx.fillRect(r.x,r.y,r.w,3);ctx.fillRect(r.x,r.y,3,r.h);
-          ctx.fillStyle="#080e13";ctx.fillRect(r.x+11,r.y+11,r.w-22,30);
-          ctx.strokeStyle="#34454e";ctx.strokeRect(r.x+10.5,r.y+10.5,r.w-21,r.h-21);
-          ctx.fillStyle="#c2cbd0";ctx.font="bold 11px monospace";ctx.fillText(r.label,r.x+18,r.y+28);
-          ctx.fillStyle=C.cyan;ctx.font="9px monospace";ctx.fillText(r.code,r.x+r.w-34,r.y+28);
-          ctx.fillStyle="#2e3d45";ctx.fillRect(r.x+52,r.y+84,38,25);ctx.fillRect(r.x+126,r.y+84,38,25);
-          ctx.fillStyle="#52636c";ctx.fillRect(r.x+57,r.y+88,28,11);ctx.fillRect(r.x+131,r.y+88,28,11);
+        const rooms = {
+          discovery:{x:70,y:105,w:330,h:190,label:"DISCOVERY LAB",code:"D01",sub:"CANDIDATE DISCOVERY"},
+          stability:{x:475,y:105,w:330,h:190,label:"STABILITY LAB",code:"S01",sub:"CHRONOLOGICAL STABILITY"},
+          robustness:{x:880,y:105,w:330,h:190,label:"ROBUSTNESS LAB",code:"R01",sub:"ROBUSTNESS CHECKS"},
+          holdout:{x:275,y:390,w:330,h:190,label:"HOLDOUT VAULT",code:"H01",sub:"UNTOUCHED / FRESH"},
+          forward:{x:680,y:390,w:330,h:190,label:"FORWARD OPS",code:"F01",sub:"MT5 VALIDATION"},
+          idle:{x:1050,y:390,w:160,h:190,label:"WORKER BAY",code:"W01",sub:"NO ACTIVE JOB"}
+        };
+
+        function rect(x,y,w,h,fill,stroke) {
+          ctx.fillStyle=fill; ctx.fillRect(x,y,w,h);
+          if(stroke){ctx.strokeStyle=stroke;ctx.strokeRect(x+.5,y+.5,w-1,h-1);}
         }
-        function corridors(){
-          ctx.fillStyle="#1b282f";ctx.fillRect(370,210,70,22);ctx.fillRect(740,210,70,22);ctx.fillRect(500,315,120,28);ctx.fillRect(745,340,20,28);
-          ctx.fillStyle="#455760";ctx.fillRect(370,219,70,2);ctx.fillRect(740,219,70,2);ctx.fillRect(532,328,55,2);
+        function text(s,x,y,size,color,align="left",weight="400") {
+          ctx.fillStyle=color;ctx.font=weight+" "+size+"px monospace";ctx.textAlign=align;ctx.fillText(s,x,y);
         }
-        function agent(w,i,t){
-          const r=rooms[w.station]||rooms.idle,a=w.state==="RUNNING"||w.state==="HEARTBEAT",q=w.state==="QUEUED",d=w.state==="COMPLETED",bad=w.state==="FAILED",p=t/420+i*1.7;
-          let x=r.x+45+(i*63)%(Math.max(90,r.w-95)),y=r.y+120+Math.sin(p)*2;
-          if(q){x=r.x+24;y=r.y+61} if(d){x=r.x+r.w-50;y=r.y+61}
+        function panelBox(x,y,w,h) {
+          rect(x,y,w,h,C.floor,C.edge);
+          rect(x+6,y+6,w-12,h-12,"#0d151b","#26353f");
+        }
+        function room(r,key) {
+          panelBox(r.x,r.y,r.w,r.h);
+          rect(r.x+1,r.y+1,r.w-2,8,C.wall);
+          rect(r.x+14,r.y+22,r.w-28,38,"#0a1116","#263943");
+          text(r.label,r.x+24,r.y+38,12,C.text,"left","700");
+          text(r.code,r.x+r.w-24,r.y+38,10,C.cyan,"right","700");
+          text(r.sub,r.x+24,r.y+52,7,C.muted);
+          // windows / status lights
+          for(let i=0;i<6;i++){rect(r.x+18+i*18,r.y+72,11,4,i<3?C.cyan:"#263943");}
+          // desks and terminals
+          for(let i=0;i<3;i++){
+            const dx=r.x+28+i*92, dy=r.y+112;
+            rect(dx,dy,68,25,"#18252d","#3b4c57");
+            rect(dx+12,dy-17,31,16,C.dark,"#465863");
+            rect(dx+16,dy-13,23,8,key==="holdout"?C.amber:(key==="forward"?C.blue:"#31525b"));
+            rect(dx+48,dy+6,8,8,"#283740");
+            rect(dx+18,dy+28,8,5,"#4b5b65"); rect(dx+43,dy+28,8,5,"#4b5b65");
+          }
+          // floor strips
+          for(let i=0;i<7;i++) rect(r.x+20+i*43,r.y+r.h-28,28,3,"#25333b");
+          // door
+          rect(r.x+r.w/2-22,r.y+r.h-10,44,10,"#0a1116",C.edge);
+          rect(r.x+r.w/2-8,r.y+r.h-10,16,3,key==="holdout"?C.amber:C.cyan);
+        }
+        function vault() {
+          const r=rooms.holdout;
+          rect(r.x+104,r.y+84,122,72,"#0a1015","#697985");
+          rect(r.x+114,r.y+94,102,52,"#121c23","#354954");
+          rect(r.x+157,r.y+110,18,18,C.amber,"#e2bf6b");
+          for(let i=0;i<4;i++) rect(r.x+123+i*21,r.y+103,12,3,"#263943");
+          text("SEALED",r.x+165,r.y+141,7,C.amber,"center","700");
+          rect(r.x+26,r.y+84,55,42,"#101a20","#3d4e59");
+          text("LOCK",r.x+53,r.y+109,8,C.amber,"center","700");
+        }
+        function forwardConsole() {
+          const r=rooms.forward;
+          rect(r.x+35,r.y+78,260,48,"#0a1116","#3f5661");
+          for(let i=0;i<8;i++) rect(r.x+48+i*28,r.y+91,17,19,i%2? "#18313a":"#15232b","#36515d");
+          rect(r.x+40,r.y+145,250,12,"#0c1419","#34464f");
+          text("MT5 VALIDATION BRIDGE",r.x+165,r.y+101,9,C.blue,"center","700");
+          text("SEPARATE FROM RESEARCH PROMOTION",r.x+165,r.y+117,7,C.muted,"center");
+        }
+        function corridors() {
+          // Authorized-looking handoff lanes are visualized, but no job is invented.
+          const lanes=[
+            [400,205,75,20],[805,205,75,20],[440,295,35,95],[605,475,75,20],
+            [1008,475,42,20],[605,285,75,105]
+          ];
+          lanes.forEach(([x,y,w,h])=>{
+            rect(x,y,w,h,"#0c151b","#2b3d47");
+            if(w>h){for(let xx=x+8;xx<x+w-4;xx+=18)rect(xx,y+h/2-1,10,2,"#3c5662");}
+            else{for(let yy=y+8;yy<y+h-4;yy+=18)rect(x+w/2-1,yy,2,10,"#3c5662");}
+          });
+        }
+        function props() {
+          // authored environmental props: server rack, plant, warning markers, cargo crates
+          rect(28,30,180,48,"#0a1116","#2e424d");
+          text("SP2L RESEARCH STATION",40,50,12,C.cyan,"left","700");
+          text("LIVE WORLD / TELEMETRY LINK",40,66,7,C.muted);
+          rect(1080,30,172,48,"#0a1116","#2e424d");
+          text("PRODUCTION LOCKED",1166,51,9,C.amber,"center","700");
+          text("BUY/SELL GENERATION: 0",1166,66,7,C.muted,"center");
+
+          // server rack
+          rect(16,415,70,126,"#0d171e","#465762");
+          for(let i=0;i<5;i++){rect(24,428+i*20,54,12,"#16252e","#31464f");rect(30,433+i*20,8,3,i===0?C.green:"#38505b");}
+          text("EVID.",51,557,7,C.muted,"center");
+
+          // crates
+          [[1020,570],[1080,570],[1140,570]].forEach((p,i)=>{
+            rect(p[0],p[1],42,28,"#202a30","#5a6265");
+            ctx.strokeStyle="#59666b";ctx.beginPath();ctx.moveTo(p[0]+4,p[1]+4);ctx.lineTo(p[0]+38,p[1]+24);ctx.moveTo(p[0]+38,p[1]+4);ctx.lineTo(p[0]+4,p[1]+24);ctx.stroke();
+          });
+          // caution stripes
+          for(let x=110;x<250;x+=18) rect(x,360,12,5,x%36===0?C.amber:"#26313a");
+          text("HANDOFF DECK",180,350,7,C.muted,"center");
+        }
+        function agent(w,i,t) {
+          const r=rooms[w.station]||rooms.idle;
+          const live=w.state==="RUNNING"||w.state==="HEARTBEAT";
+          const queued=w.state==="QUEUED", done=w.state==="COMPLETED", fail=w.state==="FAILED";
+          const phase=(t/500+i*1.37)%1;
+          const laneX=r.x+32+(i*71)%(Math.max(70,r.w-64));
+          let x=laneX, y=r.y+158+Math.sin(t/350+i)*3;
+          if(queued){x=r.x+22;y=r.y+67;}
+          if(done){x=r.x+r.w-27;y=r.y+67;}
+          if(fail){x=r.x+r.w/2;y=r.y+r.h-48;}
+          // active workers patrol a short, deterministic route inside their assigned room
+          if(live){x=r.x+34+((phase*(r.w-68)));y=r.y+158+Math.sin(t/210+i)*3;}
           ctx.save();ctx.translate(Math.round(x),Math.round(y));
-          ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(-9,18,19,4);
-          ctx.fillStyle=bad?C.red:(a?C.cyan:"#9ba8ae");ctx.fillRect(-6,-11,12,10);
-          ctx.fillStyle="#18232a";ctx.fillRect(-3,-8,2,3);ctx.fillRect(3,-8,2,3);
-          ctx.fillStyle=a?"#657780":"#4b5a62";ctx.fillRect(-9,0,18,13);
-          ctx.fillStyle=a?C.cyan:"#73828a";ctx.fillRect(-11,2,3,8);ctx.fillRect(9,2,3,8);
-          ctx.fillStyle="#202c33";ctx.fillRect(-7,13,5,6);ctx.fillRect(2,13,5,6);
-          if(a){ctx.fillStyle=C.green;ctx.fillRect(10,-12,3,3)} ctx.restore();
-          ctx.fillStyle="#9ba9b0";ctx.font="8px monospace";ctx.textAlign="center";ctx.fillText(w.id,x,y+31);
-          if(w.job){ctx.fillStyle="#667681";ctx.font="7px monospace";ctx.fillText(w.job.slice(0,18),x,y+42)}
+          // shadow
+          rect(-10,18,21,4,"#05090c");
+          // antenna / status
+          rect(-1,-17,2,5,live?C.cyan:"#52616a");
+          rect(-3,-20,6,3,fail?C.red:(live?C.green:C.amber));
+          // head
+          rect(-7,-13,14,11,fail?C.red:(live?C.cyan:"#7d8b93"),"#10181d");
+          rect(-4,-10,2,3,"#071016");rect(3,-10,2,3,"#071016");
+          // body + backpack
+          rect(-10,-1,20,15,live?"#284650":"#202c33","#61727c");
+          rect(7,2,5,9,"#16232a","#465762");
+          // arms
+          rect(-14,1,4,10,live?C.cyan:"#566771");rect(10,1,4,10,live?C.cyan:"#566771");
+          // legs, with a tiny walk-cycle offset
+          const step=live&&Math.floor(t/140+i)%2?2:-2;
+          rect(-7,14,5,7,"#354650");rect(2+step,14,5,7,"#354650");
+          // progress chip
+          if(live){rect(14,-13,4,4,C.green);rect(-18,-4,5,18,"#18262e");rect(-18,13,5,Math.max(1,17*(w.progress/100)),C.green);}
+          ctx.restore();
+          text(w.id,x,y+31,8,C.text,"center","700");
+          if(w.job) text(w.job.slice(0,16),x,y+42,6,C.muted,"center");
         }
-        function draw(t){
-          ctx.clearRect(0,0,W,H);ctx.fillStyle="#080e12";ctx.fillRect(0,0,W,H);
-          ctx.strokeStyle="#132027";
-          for(let x=0;x<W;x+=24){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
-          for(let y=0;y<H;y+=24){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
-          Object.values(rooms).forEach(room);corridors();workers.forEach((w,i)=>agent(w,i,t));
-          ctx.fillStyle="#070b0e";ctx.fillRect(18,18,300,45);ctx.strokeStyle="#33454f";ctx.strokeRect(18.5,18.5,299,44);
-          ctx.fillStyle=C.cyan;ctx.font="bold 11px monospace";ctx.textAlign="left";ctx.fillText("SP2L RESEARCH STATION",31,37);
-          ctx.fillStyle="#687984";ctx.font="8px monospace";ctx.fillText("WORLD STATE ← WORKER TELEMETRY",31,52);
-          ctx.fillStyle="#070b0e";ctx.fillRect(900,540,250,30);ctx.strokeStyle="#33454f";ctx.strokeRect(900.5,540.5,249,29);
-          ctx.fillStyle=C.amber;ctx.font="8px monospace";ctx.fillText("PRODUCTION LOCKED",915,559);
+        function draw(t) {
+          rect(0,0,W,H,C.bg);
+          // floor grid
+          ctx.strokeStyle="#142129";
+          for(let x=0;x<W;x+=24){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+          for(let y=0;y<H;y+=24){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+          corridors();
+          Object.entries(rooms).forEach(([k,r])=>room(r,k));
+          vault();forwardConsole();props();
+          workers.forEach((w,i)=>agent(w,i,t));
+          // status footer
+          rect(260,600,760,28,"#080e12","#2e414c");
+          text("QUEUE → LAB → EVIDENCE → COMPLETE",640,618,9,C.cyan,"center","700");
+          text("STATE SOURCE: runtime/factory_worker_status.json",640,625,6,C.muted,"center");
           requestAnimationFrame(draw);
         }
-        function resize(){const w=Math.min(canvas.parentElement.clientWidth,W);canvas.style.width=w+"px";canvas.style.height=(w/W*H)+"px"}
+        function resize(){
+          const w=Math.min(canvas.parentElement.clientWidth,W);
+          canvas.style.width=w+"px";canvas.style.height=(w/W*H)+"px";
+        }
         resize();window.addEventListener("resize",resize);requestAnimationFrame(draw);
       })();
       </script>
