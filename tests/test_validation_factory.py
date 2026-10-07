@@ -192,7 +192,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         receipt=receipt,
         evidence=evidence_bundle,
         audit=audit,
-        snapshot=audit.snapshot,
+        snapshot=snapshot,
         dataset_provenance=__import__(
             "strategy_factory.dataset_provenance",
             fromlist=["evaluate_dataset_provenance"],
@@ -258,7 +258,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         spec=spec,
         manifest_revision="M-1",
         job_id="VALIDATION-1",
-        readiness_snapshot=audit.snapshot,
+        readiness_snapshot=snapshot,
         handoff=handoff,
         source_record=source_record,
         source_event=source_event,
