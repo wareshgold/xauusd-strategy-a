@@ -53,6 +53,7 @@ class FactoryJobEvent:
             "detail": self.detail,
             "output_artifact": self.output_artifact,
             "occurred_utc": self.occurred_utc,
+            "research_run_fingerprint": self.research_run_fingerprint,
         }
         if include_fingerprint:
             value["event_fingerprint"] = self.event_fingerprint
