@@ -8,6 +8,7 @@ telemetry and never executes Strategy A or produces trading decisions.
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +24,7 @@ WORKERS = [
 
 
 def build_payload() -> dict:
+    now = datetime.now(timezone.utc).isoformat()
     return {
         "schema_version": 1,
         "mode": "DEMO",
@@ -36,8 +38,8 @@ def build_payload() -> dict:
                 "station": station,
                 "phase": job_type,
                 "state": state,
-                "started_utc": None,
-                "heartbeat_utc": None,
+                "started_utc": now if state in {"RUNNING", "HEARTBEAT"} else None,
+                "heartbeat_utc": now,
                 "progress": progress,
                 "detail": detail,
                 "output_artifact": None,
