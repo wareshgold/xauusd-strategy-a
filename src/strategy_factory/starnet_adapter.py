@@ -120,13 +120,21 @@ def build_world_state(workers: Iterable[Mapping[str, Any]], events: Iterable[Fac
 
 
 def build_world_handoffs(events: Iterable[FactoryJobEvent]) -> tuple[WorldHandoff, ...]:
-    """Expose only explicitly accepted Factory handoffs to the renderer."""
+    """Expose accepted handoffs with source reconstructed from the same journal."""
+    ordered = tuple(sorted(events, key=lambda event: event.sequence))
     result = []
-    for event in events:
+    for event in ordered:
         if event.event_type != "HANDOFF_ACCEPTED":
             continue
         event.validate()
         if not event.station or not event.output_artifact:
             continue
-        result.append(WorldHandoff(sequence=event.sequence, job_id=event.job_id, source_station="", destination_station=event.station, output_artifact=event.output_artifact, event_fingerprint=event.event_fingerprint))
+        source = ""
+        for prior in reversed(ordered):
+            if prior.sequence >= event.sequence or prior.job_id != event.job_id:
+                continue
+            if prior.event_type == "COMPLETED" and prior.station and prior.output_artifact == event.output_artifact:
+                source = prior.station
+                break
+        result.append(WorldHandoff(sequence=event.sequence, job_id=event.job_id, source_station=source, destination_station=event.station, output_artifact=event.output_artifact, event_fingerprint=event.event_fingerprint))
     return tuple(sorted(result, key=lambda item: item.sequence))
