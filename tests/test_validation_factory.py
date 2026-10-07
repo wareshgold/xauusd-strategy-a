@@ -77,7 +77,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
 
     dataset_registry = DatasetRegistry()
     runs = ResearchRunLedger(dataset_registry, DatasetUsageLedger(dataset_registry))
-    evidence = EvidenceLedger()
+    evidence = EvidenceLedger(runs)
     runner = ResearchJobRunner(runs=runs, evidence=evidence)
 
     source_dataset = TestDataset(
