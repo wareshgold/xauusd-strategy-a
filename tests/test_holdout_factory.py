@@ -14,6 +14,7 @@ from strategy_factory.holdout_factory import (
 from strategy_factory.job_events import FactoryJobEventLedger
 from strategy_factory.metrics import ResearchMetrics
 from strategy_factory.research_record import ResearchRecordLedger
+from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner
 from strategy_factory.snapshot import ReadinessSnapshot
@@ -71,6 +72,7 @@ class FakeAdapter:
 
 
 def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="REV-TEST"):
+    tmp_path.mkdir(parents=True, exist_ok=True)
     raw_source = b'{"schema_version":1,"research_only":true,"bars":[1]}'
     raw_holdout = b'{"schema_version":1,"research_only":true,"bars":[2]}'
     source_path = tmp_path / "robustness.json"
@@ -134,9 +136,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
             format="json",
         ),
     )
-    upstream_job = __import__(
-        "strategy_factory.jobs", fromlist=["ResearchJobSpec"]
-    ).ResearchJobSpec.from_test_spec(
+    upstream_job = ResearchJobSpec.from_test_spec(
         source_spec,
         manifest_revision="MANIFEST",
         dataset_fingerprint=registry.get(source_dataset.dataset_id).fingerprint,
