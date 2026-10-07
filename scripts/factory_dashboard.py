@@ -349,14 +349,18 @@ def station_world(workers: list[dict]) -> str:
           const r=rooms[w.station]||rooms.idle;
           const live=w.state==="RUNNING"||w.state==="HEARTBEAT";
           const queued=w.state==="QUEUED", done=w.state==="COMPLETED", fail=w.state==="FAILED";
-          const phase=(t/500+i*1.37)%1;
-          const laneX=r.x+32+(i*71)%(Math.max(70,r.w-64));
-          let x=laneX, y=r.y+158+Math.sin(t/350+i)*3;
+          const phase=(t/9000+i*0.19)%1;
+          const laneX=r.x+42+(i*71)%(Math.max(76,r.w-84));
+          const laneY=r.y+126+(i%2)*34;
+          let x=laneX, y=laneY+Math.sin(t/1500+i)*2;
           if(queued){x=r.x+22;y=r.y+67;}
           if(done){x=r.x+r.w-27;y=r.y+67;}
           if(fail){x=r.x+r.w/2;y=r.y+r.h-48;}
           // active workers patrol a short, deterministic route inside their assigned room
-          if(live){x=r.x+34+((phase*(r.w-68)));y=r.y+158+Math.sin(t/210+i)*3;}
+          if(live){
+            const span=Math.max(48,r.w-92), eased=phase<0.5?phase*2:2-phase*2;
+            x=r.x+46+eased*span; y=laneY+Math.sin(t/1500+i)*2;
+          }
           ctx.save();ctx.translate(Math.round(x),Math.round(y));
           // shadow
           rect(-10,18,21,4,"#05090c");
@@ -372,7 +376,7 @@ def station_world(workers: list[dict]) -> str:
           // arms
           rect(-14,1,4,10,live?C.cyan:"#566771");rect(10,1,4,10,live?C.cyan:"#566771");
           // legs, with a tiny walk-cycle offset
-          const step=live&&Math.floor(t/140+i)%2?2:-2;
+          const step=live&&Math.floor(t/420+i)%2?2:-2;
           rect(-7,14,5,7,"#354650");rect(2+step,14,5,7,"#354650");
           // progress chip
           if(live){rect(14,-13,4,4,C.green);rect(-18,-4,5,18,"#18262e");rect(-18,13,5,Math.max(1,17*(w.progress/100)),C.green);}
