@@ -204,7 +204,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         "strategy_factory.research_record",
         fromlist=["ResearchRecord"],
     ).ResearchRecord.from_components(
-        source_run, evidence_bundle, audit.snapshot, audit, provenance
+        source_run, evidence_bundle, snapshot, audit, provenance
     )
     source_record = __import__(
         "strategy_factory.research_record",
