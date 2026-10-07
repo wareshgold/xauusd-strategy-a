@@ -103,6 +103,13 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         job_id="DISCOVERY-1",
     )
 
+    dataset_registry.register(
+        source_dataset,
+        discovery_sha,
+        lock=True,
+        artifact=source_artifact,
+    )
+
     source_event = FactoryJobEvent(
         sequence=1,
         event_type="COMPLETED",
