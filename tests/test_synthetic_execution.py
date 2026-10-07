@@ -1,3 +1,5 @@
+import hashlib
+
 import pytest
 
 from strategy_factory.datasets import DatasetRegistry
