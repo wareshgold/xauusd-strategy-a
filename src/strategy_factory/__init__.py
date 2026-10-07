@@ -26,7 +26,7 @@ from .adapter import (
 )
 from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
 from .runner import ResearchJobRunResult, ResearchJobRunner, ResearchJobRunnerError
-from .orchestrator import FactoryOrchestrator, QueuedResearchJob
+from .orchestrator import FactoryOrchestrator, QueuedResearchJob, RunnerExecutionContext, build_runner_executor
 from .synthetic import SyntheticExecutionAdapter, SyntheticExecutionError, SyntheticExecutionFixture
 from .data import DatasetIngestionError, HistoricalDatasetAdapter, LoadedDataset
 
