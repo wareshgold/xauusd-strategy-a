@@ -28,21 +28,38 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
 <div id="telemetry" class="card"><div class="dim" id="link">FACTORY WAITING FOR TELEMETRY</div><div id="workers"></div></div>
 
 <script src="/starnet/js/util.js"></script>
+<script src="/starnet/js/audio.js"></script>
+<script src="/starnet/app/backdrop-bake.js"></script>
+<script src="/starnet/app/spacebg.js"></script>
 <script src="/starnet/app/terrain.js"></script>
+<script src="/starnet/app/industrialtextures.js"></script>
 <script src="/starnet/app/authored-prop-content.js"></script>
+<script src="/starnet/app/authored-service-content.js"></script>
 <script src="/starnet/app/authored-prop-motion.js"></script>
+<script src="/starnet/app/authored-machine-config.js"></script>
 <script src="/starnet/app/approved-sheet-effects.js"></script>
 <script src="/starnet/app/projection-prop-effects.js"></script>
 <script src="/starnet/app/propremaster.js"></script>
 <script src="/starnet/app/authored-surface-mounts.js"></script>
 <script src="/starnet/app/propsprites.js"></script>
+<script src="/starnet/app/propsearch.js"></script>
+<script src="/starnet/app/conveyor.js"></script>
+<script src="/starnet/app/pipeline.js"></script>
+<script src="/starnet/app/workflowline.js"></script>
+<script src="/starnet/app/ghostline.js"></script>
+<script src="/starnet/app/propanchor.js"></script>
+<script src="/starnet/app/waitanchor.js"></script>
+<script src="/starnet/app/data-shim.js"></script>
 <script src="/starnet/js/assets.js"></script>
+<script src="/starnet/js/sprite-load-plan.js"></script>
+<script src="/starnet/app/skinstage.js"></script>
+<script src="/starnet/app/skin-study-tone.js"></script>
 <script src="/starnet/app/worldsurface.js"></script>
 <script src="/starnet/app/worldlight.js"></script>
 <script src="/starnet/app/worldrenderer.js"></script>
+<script src="/starnet/app/world.js"></script>
 <script src="/starnet/app/worldmodel.js"></script>
 <script src="/starnet/app/stationbake.js"></script>
-<script src="/starnet/app/world.js"></script>
 <script>
 (()=> {
  const canvas=document.getElementById("world");
