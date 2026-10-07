@@ -8,6 +8,7 @@ from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner, ResearchJobRunnerError
+from strategy_factory.snapshot import ReadinessSnapshot
 from strategy_factory.synthetic import (
     SyntheticExecutionAdapter,
     SyntheticExecutionError,
@@ -41,6 +42,31 @@ def make_spec_and_job(semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH):
         job_id=f"JOB-{semantics.value}",
     )
     return spec, job
+
+
+def make_snapshot(spec):
+    payload = ReadinessSnapshot._fingerprint_payload(
+        snapshot_revision="READINESS-SNAPSHOT-SYNTHETIC",
+        strategy_id=spec.strategy_id,
+        manifest_revision="SYNTH-M1",
+        manifest_fingerprint="m" * 64,
+        passport_fingerprint="p" * 64,
+        source_ledger={},
+        source_readiness={},
+        passport_eligibility={},
+    )
+    fingerprint = hashlib.sha256(payload).hexdigest()
+    return ReadinessSnapshot(
+        snapshot_revision="READINESS-SNAPSHOT-SYNTHETIC",
+        strategy_id=spec.strategy_id,
+        manifest_revision="SYNTH-M1",
+        manifest_fingerprint="m" * 64,
+        passport_fingerprint="p" * 64,
+        source_ledger={},
+        source_readiness={},
+        passport_eligibility={},
+        fingerprint=fingerprint,
+    )
 
 
 def make_runner(spec):
@@ -131,6 +157,8 @@ def test_synthetic_runner_completes_end_to_end_for_bar_close():
     spec, job = make_spec_and_job(ExecutionSemantics.BAR_CLOSE_RESEARCH)
     result = make_runner(spec).run(
         job=job, spec=spec,
+        snapshot=make_snapshot(spec),
+        observed_content_sha256="a" * 64,
         adapter=SyntheticExecutionAdapter(
             SyntheticExecutionFixture("FIXTURE-BAR", ExecutionSemantics.BAR_CLOSE_RESEARCH, BAR_METRICS)
         ),
@@ -160,13 +188,25 @@ def test_synthetic_runner_failure_is_isolated_at_adapter_boundary():
         SyntheticExecutionFixture("FIXTURE-TICK", ExecutionSemantics.TICK_FEASIBLE, TICK_METRICS)
     )
     with pytest.raises(ResearchJobRunnerError):
-        make_runner(spec).run(job=job, spec=spec, adapter=adapter)
+        make_runner(spec).run(
+            job=job,
+            spec=spec,
+            adapter=adapter,
+            snapshot=make_snapshot(spec),
+            observed_content_sha256="a" * 64,
+        )
 
 
 def test_synthetic_runner_repeat_is_reproducible():
     spec, job = make_spec_and_job()
     fixture = SyntheticExecutionFixture("FIXTURE-BAR", ExecutionSemantics.BAR_CLOSE_RESEARCH, BAR_METRICS)
-    first = make_runner(spec).run(job=job, spec=spec, adapter=SyntheticExecutionAdapter(fixture))
+    first = make_runner(spec).run(
+        job=job,
+        spec=spec,
+        adapter=SyntheticExecutionAdapter(fixture),
+        snapshot=make_snapshot(spec),
+        observed_content_sha256="a" * 64,
+    )
     second = make_runner(spec).run(job=job, spec=spec, adapter=SyntheticExecutionAdapter(fixture))
     assert first.run.fingerprint == second.run.fingerprint
     assert first.receipt.input_fingerprint == second.receipt.input_fingerprint
