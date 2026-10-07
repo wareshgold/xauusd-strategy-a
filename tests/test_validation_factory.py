@@ -13,6 +13,7 @@ from strategy_factory.handoff import ResearchHandoff, build_research_handoff
 from strategy_factory.job_events import FactoryJobEvent, FactoryJobEventLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
+from strategy_factory.usage import DatasetUsageLedger
 from strategy_factory.research_record import ResearchRecord
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner
@@ -75,7 +76,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
     dataset_path.write_bytes(validation_bytes)
 
     dataset_registry = DatasetRegistry()
-    runs = ResearchRunLedger(dataset_registry)
+    runs = ResearchRunLedger(dataset_registry, DatasetUsageLedger(dataset_registry))
     evidence = EvidenceLedger()
     runner = ResearchJobRunner(runs=runs, evidence=evidence)
 
