@@ -132,3 +132,5 @@ from .starnet_adapter import FactoryWorldState, WorldHandoff, WorldWorker, build
 
 
 from .forward_gate_factory import ForwardGateContext, ForwardGateError, ForwardGateFactory, ForwardGateResult
+
+from .forward_session_factory import DemoForwardSession, DemoForwardSessionFactory, DemoForwardSessionResult, ForwardSessionError
