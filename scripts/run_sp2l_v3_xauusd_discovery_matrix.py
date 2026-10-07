@@ -116,7 +116,7 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
     activation_price = activation_points * mt5_point if trailing_enabled else 0.0
     distance_price = distance_points * mt5_point if trailing_enabled else 0.0
 
-    final_sl = initial_sl
+    current_sl = initial_sl
     activated = False
     activation_time = None
     max_fav = 0.0
@@ -126,6 +126,9 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
     reason = "OPEN_OR_UNRESOLVED"
     ambiguous = False
 
+    # IMPORTANT: trailing is evaluated only from the just-completed bar and
+    # therefore becomes effective on the NEXT M1 bar. The current bar cannot
+    # use its own final high/low to move its own stop; doing that is lookahead.
     for k in range(entry_idx + 1, len(bars)):
         b = bars[k]
         high = float(b["high"])
@@ -137,15 +140,7 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
             max_fav = max(max_fav, favorable)
             max_adverse = max(max_adverse, adverse)
 
-            if trailing_enabled and not activated and favorable >= activation_price:
-                activated = True
-                activation_time = int(b["time"])
-
-            if activated:
-                candidate_sl = high - distance_price
-                final_sl = max(final_sl, candidate_sl)
-
-            hit_sl = low <= final_sl
+            hit_sl = low <= current_sl
             hit_tp = high >= initial_tp
 
             if hit_sl and hit_tp:
@@ -154,8 +149,8 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
                 exit_time = int(b["time"])
                 break
             if hit_sl:
-                exit_price = final_sl
-                reason = "TRAIL_SL" if activated and final_sl > initial_sl else "SL"
+                exit_price = current_sl
+                reason = "TRAIL_SL" if activated and current_sl > initial_sl else "SL"
                 exit_time = int(b["time"])
                 break
             if hit_tp:
@@ -164,21 +159,23 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
                 exit_time = int(b["time"])
                 break
 
+            # Only after the bar has completed may it activate/update the
+            # trailing stop for the next bar.
+            if trailing_enabled and not activated and favorable >= activation_price:
+                activated = True
+                activation_time = int(b["time"])
+
+            if activated:
+                candidate_sl = high - distance_price
+                current_sl = max(current_sl, candidate_sl)
+
         else:
             favorable = entry - low
             adverse = high - entry
             max_fav = max(max_fav, favorable)
             max_adverse = max(max_adverse, adverse)
 
-            if trailing_enabled and not activated and favorable >= activation_price:
-                activated = True
-                activation_time = int(b["time"])
-
-            if activated:
-                candidate_sl = low + distance_price
-                final_sl = min(final_sl, candidate_sl)
-
-            hit_sl = high >= final_sl
+            hit_sl = high >= current_sl
             hit_tp = low <= initial_tp
 
             if hit_sl and hit_tp:
@@ -187,8 +184,8 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
                 exit_time = int(b["time"])
                 break
             if hit_sl:
-                exit_price = final_sl
-                reason = "TRAIL_SL" if activated and final_sl < initial_sl else "SL"
+                exit_price = current_sl
+                reason = "TRAIL_SL" if activated and current_sl < initial_sl else "SL"
                 exit_time = int(b["time"])
                 break
             if hit_tp:
@@ -196,6 +193,14 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
                 reason = "TP"
                 exit_time = int(b["time"])
                 break
+
+            if trailing_enabled and not activated and favorable >= activation_price:
+                activated = True
+                activation_time = int(b["time"])
+
+            if activated:
+                candidate_sl = low + distance_price
+                current_sl = min(current_sl, candidate_sl)
 
     realized_price = None
     realized_r = None
@@ -225,7 +230,7 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
         "trailing_enabled": trailing_enabled,
         "trailing_activated": activated,
         "activation_time_utc": iso(activation_time),
-        "final_sl": final_sl,
+        "final_sl": current_sl,
         "max_favorable_price": max_fav,
         "max_adverse_price": max_adverse,
         "exit_time_utc": iso(exit_time),
@@ -237,7 +242,6 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
         "risk_usd": risk_usd,
         "realized_usd": realized_usd,
     }
-
 
 def summarize(rows):
     decisive = [r for r in rows if not r["ambiguous"] and r["realized_R"] is not None]
