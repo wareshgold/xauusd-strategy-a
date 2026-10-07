@@ -115,7 +115,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
    World.start();
  }
  addEventListener("resize",resize);resize();
- try{World.init(canvas);stage(); }catch(e){document.getElementById("link").textContent="ENGINE ERROR · "+e.message; const box=document.createElement("div"); box.className="card"; box.style.cssText="position:absolute;left:18px;bottom:70px;z-index:20;max-width:900px;color:#ff8b8b;white-space:pre-wrap"; box.textContent="STAR-NET BOOT ERROR\n"+(e&&e.stack||e); document.body.appendChild(box); console.error(e);}
+ async function boot(){
+   try{const r=await fetch("/api/world",{cache:"no-store"});const s=await r.json();for(const w of (s.workers||[])) if(w&&w.id) telemetryWorkers.set(w.id,w.state);}
+   catch(_){/* telemetry may be unavailable; the world still boots as a neutral overseer */}
+   stage();
+ }
+ try{World.init(canvas);boot(); }catch(e){document.getElementById("link").textContent="ENGINE ERROR · "+e.message; const box=document.createElement("div"); box.className="card"; box.style.cssText="position:absolute;left:18px;bottom:70px;z-index:20;max-width:900px;color:#ff8b8b;white-space:pre-wrap"; box.textContent="STAR-NET BOOT ERROR\n"+(e&&e.stack||e); document.body.appendChild(box); console.error(e);}
  async function poll(){
    try{const r=await fetch("/api/world",{cache:"no-store"});const s=await r.json();
     syncTelemetryToWorld(s.workers);
