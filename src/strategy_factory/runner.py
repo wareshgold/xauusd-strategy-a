@@ -118,7 +118,7 @@ class ResearchJobRunner:
                 spec,
                 manifest_revision=job.manifest_revision,
                 run_id=job.job_id,
-                observed_fingerprint=job.dataset_fingerprint,
+                observed_fingerprint=observed_content_sha256,
                 purpose=purpose,
             )
         except Exception as exc:
