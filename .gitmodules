@@ -1,0 +1,4 @@
+[submodule "vendor/starnet-engine"]
+	path = vendor/starnet-engine
+	url = https://github.com/androoAGI/starnet.git
+	branch = feat/harness-backend
