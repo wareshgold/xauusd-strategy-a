@@ -16,6 +16,8 @@ from html import escape
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from strategy_factory.starnet_adapter import build_world_state
+
 ROOT = Path(__file__).resolve().parents[1]
 LIVE_STATUS_FILE = ROOT / "runtime" / "factory_worker_status.json"
 DEMO_STATUS_FILE = ROOT / "runtime" / "factory_demo_status.json"
@@ -207,17 +209,18 @@ def station_card(key: str, workers: list[dict]) -> str:
 
 
 def station_world(workers: list[dict]) -> str:
-    """Render an authored, telemetry-backed SP2L research station world."""
+    """Render a telemetry-backed SP2L station world from the validated adapter."""
+    world_state = build_world_state(workers)
     payload = json.dumps(
         [
             {
-                "id": str(w.get("worker_id") or ""),
-                "job": str(w.get("job_id") or ""),
-                "state": str(w.get("state") or "IDLE").upper(),
-                "station": station_for(w),
-                "progress": float(w.get("progress") or 0),
+                "id": worker.worker_id,
+                "job": str(worker.job_id or ""),
+                "state": worker.state,
+                "station": worker.station,
+                "progress": worker.progress,
             }
-            for w in workers
+            for worker in world_state.workers
         ],
         ensure_ascii=False,
     ).replace("</", "<\\/")
@@ -531,8 +534,8 @@ h1{{margin:0;font-size:25px;letter-spacing:2.2px;font-weight:800;text-shadow:0 0
 </style></head>
 <body><main>
   <div class="top">
-    <div><h1><span>SP2L RESEARCH STATION</span></h1><div class="sub">AI research agent deck • telemetry-backed • research only</div></div>
-    <div class="state {headline_class}">{mode_label} · {headline}</div>
+    <div><h1><span>SP2L RESEARCH STATION</span></h1><div class="sub">CEO: ALI • AI research agent deck • telemetry-backed • research only</div></div>
+    <div class="state {headline_class}">{mode_label} · {headline}<br><span style="font-size:9px;color:#71808c">COMMAND: CEO ALI</span></div>
   </div>
 
   <section class="stats">
