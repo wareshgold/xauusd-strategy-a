@@ -136,5 +136,9 @@ def build_world_handoffs(events: Iterable[FactoryJobEvent]) -> tuple[WorldHandof
             if prior.event_type == "COMPLETED" and prior.station and prior.output_artifact == event.output_artifact:
                 source = prior.station
                 break
+        # An isolated HANDOFF_ACCEPTED event is not enough for World movement.
+        # The artifact must bind to a real completed source event in the same journal.
+        if not source:
+            continue
         result.append(WorldHandoff(sequence=event.sequence, job_id=event.job_id, source_station=source, destination_station=event.station, output_artifact=event.output_artifact, event_fingerprint=event.event_fingerprint))
     return tuple(sorted(result, key=lambda item: item.sequence))
