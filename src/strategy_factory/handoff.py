@@ -144,6 +144,8 @@ def build_research_handoff(
         source_station=source_station,
         destination_station=destination_station,
         output_artifact=str(event.output_artifact),
+        dataset_content_sha256=dataset_content_sha256,
+        dataset_artifact_id=dataset_artifact_id,
         source_event_fingerprint=event.event_fingerprint,
         detail=detail,
         fingerprint="",
