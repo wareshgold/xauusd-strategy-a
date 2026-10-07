@@ -24,8 +24,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
 </style></head><body>
 <canvas id="world"></canvas>
 <div id="hud"><div class="card"><div class="title">SP2L / RESEARCH STATION</div><div class="dim">STAR-NET WORLD ENGINE · SP2L TELEMETRY ADAPTER · CEO: ALI</div></div>
-<div class="card"><div class="lock">RESEARCH ONLY · PRODUCTION LOCKED</div><div class="dim">BUY/SELL GENERATION: 0</div></div></div>
-<div id="telemetry" class="card"><div class="dim" id="link">FACTORY WAITING FOR TELEMETRY</div><div id="workers"></div></div>
+<div class="card"><div class="lock">RESEARCH ONLY · PRODUCTION LOCKED</div><div class="dim">BUY/SELL GENERATION: 0 · HANDOFF NETWORK: READY</div></div></div>
+<div id="telemetry" class="card"><div class="dim" id="link">FACTORY WAITING FOR TELEMETRY</div><div class="dim">HANDOFF ROUTE · DISCOVERY → STABILITY → ROBUSTNESS → HOLDOUT → FORWARD</div><div id="workers"></div></div>
 
 <script src="/starnet/js/util.js"></script>
 <script src="/starnet/app/asciifx.js"></script>
@@ -113,14 +113,33 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
    add("lab",{x1:48,y1:2,x2:63,y2:11},"ROBUSTNESS LAB");
    add("vault",{x1:11,y1:18,x2:26,y2:28},"HOLDOUT VAULT");
    add("lab",{x1:42,y1:18,x2:57,y2:28},"FORWARD OPS");
+   // Authored workflow spine: real StarNet corridor decks + real belt topology.
+   // The belts are a visual handoff map only; they do not fabricate jobs or runtime activity.
    station.placeHallway({rects:[
-     {x1:18,y1:5,x2:24,y2:7},
-     {x1:41,y1:5,x2:47,y2:7},
-     {x1:9,y1:12,x2:12,y2:17},
-     {x1:27,y1:12,x2:49,y2:14},
-     {x1:40,y1:14,x2:43,y2:18},
-     {x1:58,y1:20,x2:63,y2:22}
+     {x1:17,y1:5,x2:25,y2:7},
+     {x1:40,y1:5,x2:48,y2:7},
+     {x1:54,y1:10,x2:56,y2:16},
+     {x1:25,y1:15,x2:56,y2:17},
+     {x1:24,y1:16,x2:26,y2:23},
+     {x1:25,y1:22,x2:43,y2:24}
    ]});
+
+   const handoffRun=(a,b)=>station.placeBeltRun({tx:a[0],ty:a[1]},{tx:b[0],ty:b[1]});
+   const handoffs=[
+     // DISCOVERY → STABILITY
+     [[17,6],[25,6]],
+     // STABILITY → ROBUSTNESS
+     [[40,6],[48,6]],
+     // ROBUSTNESS → central workflow spine
+     [[55,10],[55,16]],
+     [[55,16],[25,16]],
+     // spine → HOLDOUT
+     [[25,16],[25,22]],
+     // HOLDOUT → FORWARD OPS
+     [[25,23],[43,23]]
+   ];
+   for(const [a,b] of handoffs) handoffRun(a,b);
+
    World.loadStation(station);
    const roster=telemetryWorkers.size?[...telemetryWorkers.keys()].sort():[];
    const heroId=roster[0]||"sp2l-factory-overseer";
