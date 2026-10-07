@@ -69,7 +69,7 @@ def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     kwargs = _kwargs(holdout, context, events)
     kwargs["forward_dataset_id"] = holdout.result.record.dataset_id
 
-    with pytest.raises(ForwardGateError, match="Forward dataset identity"):
+    with pytest.raises(ForwardGateError, match="Forward dataset id must differ"):
         prepare_holdout_to_forward(**kwargs)
 
 
