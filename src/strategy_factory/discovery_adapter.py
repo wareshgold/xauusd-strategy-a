@@ -35,11 +35,24 @@ class DiscoveryMatrixAdapter:
     start: str = "2026-10-05T00:00:00+00:00"
     end: str = "2026-10-07T05:30:00+00:00"
     variant_name: str = "RR2_ACT10_D2"
+    bars_artifact_path: Path | None = None
     python_executable: str = sys.executable
     engine_revision: str = "SP2L-V3-CONTROLLED-DISCOVERY-20261007"
 
+    @property
+    def observed_dataset_content_sha256(self) -> str:
+        """Return the exact SHA-256 of the immutable M1 artifact used by Discovery."""
+        if self.bars_artifact_path is None:
+            raise DiscoveryAdapterError(
+                "bars_artifact_path is required for Factory dataset provenance"
+            )
+        path = Path(self.bars_artifact_path)
+        if not path.is_file():
+            raise DiscoveryAdapterError(f"M1 dataset artifact not found: {path}")
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+
     def _command(self) -> list[str]:
-        return [
+        command = [
             self.python_executable,
             str(self.script_path),
             "--mt5-path",
@@ -51,6 +64,9 @@ class DiscoveryMatrixAdapter:
             "--end",
             self.end,
         ]
+        if self.bars_artifact_path is not None:
+            command.extend(["--bars-artifact", str(self.bars_artifact_path)])
+        return command
 
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
         spec.validate()
@@ -60,6 +76,7 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError("mt5_path is required")
         if not self.variant_name:
             raise DiscoveryAdapterError("variant_name is required")
+        expected_dataset_sha256 = self.observed_dataset_content_sha256
 
         completed = subprocess.run(
             self._command(),
@@ -91,6 +108,12 @@ class DiscoveryMatrixAdapter:
         result = json.loads(json_path.read_text(encoding="utf-8"))
         if result.get("research_only") is not True:
             raise DiscoveryAdapterError("Discovery output is not marked research_only")
+
+        dataset = result.get("dataset_provenance") or {}
+        if dataset.get("content_sha256") != expected_dataset_sha256:
+            raise DiscoveryAdapterError(
+                "Discovery did not consume the declared M1 dataset artifact"
+            )
 
         matches = [
             row for row in result.get("matrix", [])
@@ -139,6 +162,7 @@ class DiscoveryMatrixAdapter:
                 "variant_name": self.variant_name,
                 "matrix_json": str(json_path),
                 "matrix_sha256": payload.get("sha256"),
+                "dataset_content_sha256": expected_dataset_sha256,
             },
             sort_keys=True,
             separators=(",", ":"),
