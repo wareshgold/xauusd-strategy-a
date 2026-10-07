@@ -167,21 +167,23 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         )
     )
     from strategy_factory.audit import bind_research_audit
-    audit = bind_research_audit(
-        source_run,
-        ReadinessSnapshot(
-            snapshot_revision="R-1",
-            snapshot_id="SNAP-1",
-            strategy_id="SP2L-A",
-            strategy_revision="FROZEN-1",
-            source_ledger_revision="SOURCE-1",
-            source_meaning_status="BLOCKED",
-            frozen_geometry_status="BLOCKED",
-            production_status="NOT_ELIGIBLE",
-            missing_questions=("Q1",),
-        ),
-        evidence_bundle,
+    snapshot_payload = {
+        "snapshot_revision": "R-1",
+        "strategy_id": "SP2L-A",
+        "manifest_revision": "M-1",
+        "manifest_fingerprint": "a" * 64,
+        "passport_fingerprint": "b" * 64,
+        "source_ledger": {"status": "BLOCKED"},
+        "source_readiness": {"status": "BLOCKED"},
+        "passport_eligibility": {"status": "BLOCKED"},
+    }
+    snapshot = ReadinessSnapshot(
+        **snapshot_payload,
+        fingerprint=hashlib.sha256(
+            ReadinessSnapshot._fingerprint_payload(**snapshot_payload)
+        ).hexdigest(),
     )
+    audit = bind_research_audit(source_run, snapshot, evidence_bundle)
     from strategy_factory.research_provenance import evaluate_research_provenance
     provenance = evaluate_research_provenance(
         spec=source_spec,
