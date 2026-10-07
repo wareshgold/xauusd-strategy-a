@@ -178,6 +178,7 @@ class FactoryOrchestrator:
             phase=queued.phase,
             detail=detail,
             output_artifact=artifact,
+            research_run_fingerprint=(result.get("run_fingerprint") if isinstance(result, dict) else None),
         )
         self.fleet.publish()
         return result
@@ -225,5 +226,6 @@ def build_runner_executor(runner: Any, context: RunnerExecutionContext):
             "accepted": result.accepted,
             "run_id": result.run.run_id,
             "evidence_id": result.evidence.evidence_id,
+            "run_fingerprint": result.run.fingerprint,
         }
     return execute
