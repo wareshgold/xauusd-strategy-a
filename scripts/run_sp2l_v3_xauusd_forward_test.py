@@ -21,6 +21,13 @@ os.environ["MT5_FORWARD_ORDER_MODE"]=cfg.ORDER_MODE
 os.environ["SP2L_PENDING_TTL_MINUTES"]=str(cfg.PENDING_TTL_MINUTES)
 os.environ.setdefault("LIVE_TRADING_ENABLE","true")
 os.environ.setdefault("ALLOW_REAL_EXECUTION","true")
+# Factory production-like dry-run: force execution off even if the caller's
+# environment contains stale live/demo flags. Infrastructure-only; geometry
+# and candidate generation remain unchanged.
+_FACTORY_DRY_RUN = os.getenv("SP2L_FACTORY_DRY_RUN", "0") == "1"
+if _FACTORY_DRY_RUN:
+    os.environ["LIVE_TRADING_ENABLE"] = "false"
+    os.environ["ALLOW_REAL_EXECUTION"] = "false"
 
 import run_sp2l_author_replica_multi_symbol_forward_test as runner
 
