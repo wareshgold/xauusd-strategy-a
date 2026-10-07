@@ -122,6 +122,7 @@ class ResearchJobRunner:
                 run_id=job.job_id,
                 observed_fingerprint=observed_content_sha256,
                 purpose=purpose,
+                artifact=observed_artifact,
             )
         except Exception as exc:
             # DatasetRegistry / DatasetUsage / ResearchRun errors are deliberately
