@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from strategy_factory.forward_gate_factory import ForwardGateError
 from strategy_factory.forward_preparation import (
     ForwardPreparationError,
     prepare_holdout_to_forward,
@@ -66,9 +67,9 @@ def test_holdout_to_forward_rejects_invalid_holdout_identity(tmp_path, mutation,
 def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     holdout, context, events = _prepared(tmp_path)
     kwargs = _kwargs(holdout, context, events)
-    kwargs["forward_dataset_id"] = context.holdout_dataset_artifact_id
+    kwargs["forward_dataset_id"] = holdout.result.record.dataset_id
 
-    with pytest.raises(Exception, match="Forward dataset"):
+    with pytest.raises(ForwardGateError, match="Forward dataset identity"):
         prepare_holdout_to_forward(**kwargs)
 
 
