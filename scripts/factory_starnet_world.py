@@ -28,54 +28,50 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
 <div id="telemetry" class="card"><div class="dim" id="link">FACTORY WAITING FOR TELEMETRY</div><div id="workers"></div></div>
 
 <script src="/starnet/js/util.js"></script>
+<script src="/starnet/app/terrain.js"></script>
+<script src="/starnet/app/authored-prop-content.js"></script>
+<script src="/starnet/app/authored-prop-motion.js"></script>
+<script src="/starnet/app/approved-sheet-effects.js"></script>
+<script src="/starnet/app/projection-prop-effects.js"></script>
+<script src="/starnet/app/propremaster.js"></script>
+<script src="/starnet/app/authored-surface-mounts.js"></script>
+<script src="/starnet/app/propsprites.js"></script>
+<script src="/starnet/js/assets.js"></script>
 <script src="/starnet/app/worldsurface.js"></script>
+<script src="/starnet/app/worldlight.js"></script>
 <script src="/starnet/app/worldrenderer.js"></script>
 <script src="/starnet/app/worldmodel.js"></script>
 <script src="/starnet/app/stationbake.js"></script>
+<script src="/starnet/app/world.js"></script>
 <script>
 (()=> {
- const canvas=document.getElementById("world"),ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=false;
- let state={workers:[]},station=null,baked=null;
- function buildStation(){
-   station=WorldModel.create(WorldModel.defaultDoc());
-   for(const id of station.doc().order.slice()) station.removeRoom(id);
-   const rooms=[
-    ["hab",{x1:4,y1:3,x2:20,y2:11}],["lab",{x1:23,y1:3,x2:39,y2:11}],["lab",{x1:42,y1:3,x2:58,y2:11}],
-    ["vault",{x1:13,y1:17,x2:29,y2:25}],["lab",{x1:32,y1:17,x2:48,y2:25}],["hab",{x1:51,y1:17,x2:58,y2:25}],
-    ["corridor",{x1:20,y1:6,x2:23,y2:8}],["corridor",{x1:39,y1:6,x2:42,y2:8}],
-    ["corridor",{x1:28,y1:11,x2:34,y2:17}],["corridor",{x1:48,y1:20,x2:51,y2:22}]
-   ];
-   for(const [kind,rect] of rooms) station.addRoom({kind,rect});
-   baked=StationBake.bake(station.projectGeometry());
+ const canvas=document.getElementById("world");
+ function resize(){const dpr=Math.min(2,devicePixelRatio||1);canvas.width=Math.floor(innerWidth*dpr);canvas.height=Math.floor(innerHeight*dpr);canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";}
+ function stage(){
+   const station=WorldModel.create(WorldModel.defaultDoc());
+   const rooms=station.doc().order.slice();
+   if(rooms.length) station.setFloor(rooms[0],"oak");
+   const add=(kind,rect)=>station.addRoom({kind,rect});
+   add("lab",{x1:21,y1:0,x2:37,y2:10}); add("lab",{x1:40,y1:0,x2:56,y2:10});
+   add("vault",{x1:9,y1:14,x2:25,y2:23}); add("lab",{x1:28,y1:14,x2:44,y2:23}); add("hab",{x1:47,y1:14,x2:56,y2:23});
+   station.placeHallway({rects:[{x1:17,y1:4,x2:21,y2:6},{x1:37,y1:4,x2:40,y2:6},{x1:18,y1:10,x2:31,y2:14},{x1:44,y1:17,x2:47,y2:19}]});
+   World.loadStation(station);
+   World.spawn({id:"sp2l-factory-overseer",name:"FACTORY OVERSEER",color:"#d7b66c"});
+   World.start();
  }
- function fit(){const dpr=Math.min(2,devicePixelRatio||1);canvas.width=Math.floor(innerWidth*dpr);canvas.height=Math.floor(innerHeight*dpr);canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";}
- function labels(geo,s,ox,oy){
-   const names=["DISCOVERY LAB","STABILITY LAB","ROBUSTNESS LAB","HOLDOUT VAULT","FORWARD OPS","WORKER BAY"],codes=["D01","S01","R01","H01","F01","W01"];
-   (geo.rooms||[]).filter(r=>r.kind!=="corridor").slice(0,6).forEach((r,i)=>{
-     const x=ox+r.x1*12*s,y=oy+r.y1*12*s,w=(r.x2-r.x1+1)*12*s;
-     ctx.fillStyle="rgba(8,12,14,.76)";ctx.fillRect(x+5*s,y+5*s,Math.min(190*s,w-10*s),25*s);
-     ctx.fillStyle="#d7b66c";ctx.font=Math.max(9,10*s)+"px monospace";ctx.fillText(names[i],x+10*s,y+16*s);
-     ctx.fillStyle="#718078";ctx.font=Math.max(7,8*s)+"px monospace";ctx.fillText(codes[i],x+10*s,y+26*s);
-   });
- }
- function render(){
-   if(!baked)return;
-   const pad=20,s=Math.min((canvas.width-pad*2)/baked.W,(canvas.height-pad*2)/baked.H),ox=(canvas.width-baked.W*s)/2,oy=(canvas.height-baked.H*s)/2;
-   ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();ctx.translate(ox,oy);ctx.scale(s,s);
-   StationBake.drawBase(ctx,baked,0,0);StationBake.drawLight(ctx,baked,0,0);ctx.restore();
-   labels(station.projectGeometry(),s,ox,oy);requestAnimationFrame(render);
- }
+ addEventListener("resize",resize);resize();
+ try{World.init(canvas);stage();}catch(e){document.getElementById("link").textContent="ENGINE ERROR · "+e.message;console.error(e);}
  async function poll(){
-   try{const r=await fetch("/api/world",{cache:"no-store"});state=await r.json();
-    document.getElementById("link").textContent=state.workers.length?"FACTORY TELEMETRY · LIVE":"FACTORY WAITING FOR TELEMETRY";
-    document.getElementById("workers").innerHTML=state.workers.map(w=>"<span class='worker "+(w.state==="FAILED"?"fail":(w.state==="RUNNING"||w.state==="HEARTBEAT"?"live":""))+"'>"+esc(w.id)+" · "+esc(w.station)+" · "+esc(w.state)+" · "+Math.round(w.progress)+"%</span>").join("");
+   try{const r=await fetch("/api/world",{cache:"no-store"});const s=await r.json();
+    document.getElementById("link").textContent=s.workers.length?"FACTORY TELEMETRY · LIVE":"FACTORY TELEMETRY · WAITING FOR JOB";
+    document.getElementById("workers").innerHTML=s.workers.map(w=>"<span class='worker "+(w.state==="FAILED"?"fail":(w.state==="RUNNING"||w.state==="HEARTBEAT"?"live":""))+"'>"+esc(w.id)+" · "+esc(w.station)+" · "+esc(w.state)+" · "+Math.round(w.progress)+"%</span>").join("");
    }catch(_){document.getElementById("link").textContent="FACTORY TELEMETRY · OFFLINE"}
    setTimeout(poll,1000);
  }
  function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
- addEventListener("resize",fit);fit();buildStation();poll();render();
+ poll();
 })();
-</script></body></html>"""
+</script></script></body></html>"""
 
 def world_payload():
     try: raw=json.loads(STATUS.read_text(encoding="utf-8"))
