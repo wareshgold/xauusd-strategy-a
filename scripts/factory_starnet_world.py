@@ -27,9 +27,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
 <div class="card"><div class="lock">RESEARCH ONLY · PRODUCTION LOCKED</div><div class="dim">BUY/SELL GENERATION: 0</div></div></div>
 <div id="telemetry" class="card"><div class="dim" id="link">FACTORY WAITING FOR TELEMETRY</div><div id="workers"></div></div>
 
-<script src="/starnet/app/bootguard.js"></script>
-<script src="/starnet/app/legacymigrate.js"></script>
-<script src="/starnet/app/glass-boot.js"></script>
 <script src="/starnet/js/util.js"></script>
 <script src="/starnet/app/asciifx.js"></script>
 <script src="/starnet/js/audio.js"></script>
@@ -87,7 +84,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
    add("vault",{x1:9,y1:14,x2:25,y2:23}); add("lab",{x1:28,y1:14,x2:44,y2:23}); add("hab",{x1:47,y1:14,x2:56,y2:23});
    station.placeHallway({rects:[{x1:17,y1:4,x2:21,y2:6},{x1:37,y1:4,x2:40,y2:6},{x1:18,y1:10,x2:31,y2:14},{x1:44,y1:17,x2:47,y2:19}]});
    World.loadStation(station);
-   const overseer={id:"sp2l-factory-overseer",name:"FACTORY OVERSEER",color:"#d7b66c",skin:"default"};\n   if(typeof World.spawn!=="function") throw new Error("World.spawn is not a function");\n   World.spawn.call(World,overseer);
+   const overseer={id:"sp2l-factory-overseer",name:"FACTORY OVERSEER",color:"#d7b66c",skin:"default"};
+   if(typeof World.spawn!=="function") throw new Error("World.spawn is not a function");
+   World.spawn.call(World,overseer);
    World.start();
  }
  addEventListener("resize",resize);resize();
