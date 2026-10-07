@@ -42,6 +42,8 @@ class ResearchHandoff:
     source_station: str
     destination_station: str
     output_artifact: str
+    dataset_content_sha256: str
+    dataset_artifact_id: str
     source_event_fingerprint: str
     detail: str
     fingerprint: str
@@ -55,6 +57,8 @@ class ResearchHandoff:
             "source_station": self.source_station,
             "destination_station": self.destination_station,
             "output_artifact": self.output_artifact,
+            "dataset_content_sha256": self.dataset_content_sha256,
+            "dataset_artifact_id": self.dataset_artifact_id,
             "source_event_fingerprint": self.source_event_fingerprint,
             "detail": self.detail,
         }
@@ -76,7 +80,7 @@ class ResearchHandoff:
             raise ResearchHandoffError("handoff fingerprint mismatch")
 
 
-def validate_evidence_bound_handoff(*, handoff: ResearchHandoff, record: ResearchRecord, source_event: FactoryJobEvent) -> None:
+def validate_evidence_bound_handoff(*, handoff: ResearchHandoff, record: ResearchRecord, source_event: FactoryJobEvent, dataset_content_sha256: str | None = None, dataset_artifact_id: str | None = None) -> None:
     handoff.validate()
     record.validate()
     source_event.validate()
@@ -98,6 +102,10 @@ def validate_evidence_bound_handoff(*, handoff: ResearchHandoff, record: Researc
         raise ResearchHandoffError("source event station does not match handoff source station")
     if source_event.output_artifact != record.evidence_id:
         raise ResearchHandoffError("source event artifact does not match research evidence_id")
+    if dataset_content_sha256 is not None and handoff.dataset_content_sha256 != dataset_content_sha256:
+        raise ResearchHandoffError("handoff dataset SHA does not match declared dataset SHA")
+    if dataset_artifact_id is not None and handoff.dataset_artifact_id != dataset_artifact_id:
+        raise ResearchHandoffError("handoff artifact id does not match declared dataset artifact")
 
 
 def build_research_handoff(
@@ -109,6 +117,8 @@ def build_research_handoff(
     handoff_id: str | None = None,
     detail: str = "Validated research artifact handoff",
     record: ResearchRecord | None = None,
+    dataset_content_sha256: str = "",
+    dataset_artifact_id: str = "",
 ) -> ResearchHandoff:
     if (source_station, destination_station) not in HANDOFF_ROUTES:
         raise ResearchHandoffError("research handoff route is not declared")
@@ -144,5 +154,5 @@ def build_research_handoff(
     final = ResearchHandoff(**handoff.as_dict(include_fingerprint=False), fingerprint=fingerprint)
     final.validate()
     if record is not None:
-        validate_evidence_bound_handoff(handoff=final, record=record, source_event=event)
+        validate_evidence_bound_handoff(handoff=final, record=record, source_event=event, dataset_content_sha256=dataset_content_sha256, dataset_artifact_id=dataset_artifact_id)
     return final
