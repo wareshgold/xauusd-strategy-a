@@ -134,3 +134,16 @@ Output:
 A deterministic, renderer-neutral station state describing real workers, their station, lifecycle state, progress, and optional artifact identity.
 
 The adapter is intentionally independent of StarNet's frontend code so the research contract can be tested before any renderer is connected.
+
+
+## Integration Spike v0.2 — 2026-10-07
+
+- Dashboard world now consumes `src/strategy_factory/starnet_adapter.py`.
+- Worker ordering is deterministic by `worker_id`.
+- World station assignment comes from validated Factory telemetry rather than inferred decorative state.
+- Dashboard identity now displays **CEO: Ali** / **COMMAND: CEO ALI**.
+- No worker/job activity is fabricated by the identity layer.
+- Production remains locked and BUY/SELL generation remains zero.
+- The existing live forward runner and Strategy A geometry remain untouched.
+
+This is still a renderer integration spike, not a Strategy A execution engine. The pinned StarNet source remains isolated under `vendor/starnet-engine`; the next renderer step must consume the same validated world contract rather than bypassing Factory telemetry.
