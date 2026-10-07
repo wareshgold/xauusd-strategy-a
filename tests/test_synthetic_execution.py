@@ -176,6 +176,8 @@ def test_synthetic_runner_completes_end_to_end_for_tick_feasible():
         adapter=SyntheticExecutionAdapter(
             SyntheticExecutionFixture("FIXTURE-TICK", ExecutionSemantics.TICK_FEASIBLE, TICK_METRICS)
         ),
+        snapshot=make_snapshot(spec),
+        observed_content_sha256="a" * 64,
     )
     assert result.accepted
     assert result.receipt.execution_semantics is ExecutionSemantics.TICK_FEASIBLE
@@ -207,7 +209,13 @@ def test_synthetic_runner_repeat_is_reproducible():
         snapshot=make_snapshot(spec),
         observed_content_sha256="a" * 64,
     )
-    second = make_runner(spec).run(job=job, spec=spec, adapter=SyntheticExecutionAdapter(fixture))
+    second = make_runner(spec).run(
+        job=job,
+        spec=spec,
+        adapter=SyntheticExecutionAdapter(fixture),
+        snapshot=make_snapshot(spec),
+        observed_content_sha256="a" * 64,
+    )
     assert first.run.fingerprint == second.run.fingerprint
     assert first.receipt.input_fingerprint == second.receipt.input_fingerprint
     assert first.evidence.fingerprint == second.evidence.fingerprint
