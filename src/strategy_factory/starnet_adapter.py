@@ -10,6 +10,8 @@ research, define strategy geometry, create signals, or authorize production.
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
+from .job_events import FactoryJobEvent
+
 
 VALID_STATIONS = {
     "discovery",
@@ -45,8 +47,19 @@ class WorldWorker:
 
 
 @dataclass(frozen=True)
+class WorldHandoff:
+    sequence: int
+    job_id: str
+    source_station: str
+    destination_station: str
+    output_artifact: str
+    event_fingerprint: str
+
+
+@dataclass(frozen=True)
 class FactoryWorldState:
     workers: tuple[WorldWorker, ...]
+    handoffs: tuple[WorldHandoff, ...] = ()
     production_locked: bool = True
     buy_sell_generation: int = 0
 
@@ -94,11 +107,26 @@ def _worker(item: Mapping[str, Any]) -> WorldWorker:
     )
 
 
-def build_world_state(workers: Iterable[Mapping[str, Any]]) -> FactoryWorldState:
+def build_world_state(workers: Iterable[Mapping[str, Any]], events: Iterable[FactoryJobEvent] = ()) -> FactoryWorldState:
     """Translate normalized Factory telemetry into deterministic world state.
 
     Ordering is stable by worker_id so the renderer cannot introduce
     nondeterministic presentation ordering from dictionary/list insertion.
     """
     state = tuple(sorted((_worker(item) for item in workers), key=lambda w: w.worker_id))
-    return FactoryWorldState(workers=state)
+    handoffs = build_world_handoffs(events)
+    return FactoryWorldState(workers=state, handoffs=handoffs)
+
+
+
+def build_world_handoffs(events: Iterable[FactoryJobEvent]) -> tuple[WorldHandoff, ...]:
+    """Expose only explicitly accepted Factory handoffs to the renderer."""
+    result = []
+    for event in events:
+        if event.event_type != "HANDOFF_ACCEPTED":
+            continue
+        event.validate()
+        if not event.station or not event.output_artifact:
+            continue
+        result.append(WorldHandoff(sequence=event.sequence, job_id=event.job_id, source_station="", destination_station=event.station, output_artifact=event.output_artifact, event_fingerprint=event.event_fingerprint))
+    return tuple(sorted(result, key=lambda item: item.sequence))
