@@ -126,6 +126,35 @@ def station_for(worker: dict) -> str:
     return "idle"
 
 
+def lifecycle_html(worker: dict) -> str:
+    """Render a telemetry-derived Queue → Lab → Evidence → Complete track."""
+    state = str(worker.get("state") or "IDLE").upper()
+    artifact = bool(worker.get("output_artifact"))
+    if state == "QUEUED":
+        active = "queue"
+    elif state in {"RUNNING", "HEARTBEAT"}:
+        active = "lab"
+    elif state == "COMPLETED" and artifact:
+        active = "complete"
+    elif state == "COMPLETED":
+        active = "evidence"
+    elif state == "FAILED":
+        active = "failed"
+    else:
+        active = "idle"
+
+    labels = (("queue", "QUEUE"), ("lab", "LAB"), ("evidence", "EVIDENCE"), ("complete", "COMPLETE"))
+    steps = []
+    for key, label in labels:
+        cls = " lifecycle-step-active" if key == active else ""
+        steps.append(f'<span class="lifecycle-step{cls}"><i></i>{label}</span>')
+    if active == "failed":
+        steps.append('<span class="lifecycle-step lifecycle-step-failed"><i></i>FAILED</span>')
+    elif active == "idle":
+        steps.append('<span class="lifecycle-step lifecycle-step-idle"><i></i>IDLE</span>')
+    return '<div class="lifecycle" aria-label="Telemetry-backed job lifecycle">' + '<span class="lifecycle-track"></span>' + ''.join(steps) + '</div>'
+
+
 def worker_card(worker: dict, index: int) -> str:
     station = station_for(worker)
     title, code, subtitle = STATIONS.get(station, STATIONS["idle"])
@@ -283,7 +312,7 @@ h1{{margin:0;font-size:25px;letter-spacing:2.2px;font-weight:800;text-shadow:0 0
 .worker-card{{background:#0d141b;border:1px solid #2b3843;border-radius:4px;padding:11px}}.worker-head,.worker-foot{{display:flex;justify-content:space-between;gap:8px;align-items:center}}.worker-id{{font:700 11px Consolas,monospace;color:#dce4ea}}
 .status-dot{{width:7px;height:7px;border-radius:50%;background:#53606a}}.status-dot.ok{{background:var(--green);box-shadow:0 0 7px rgba(105,195,154,.45)}}.status-dot.warn{{background:var(--yellow)}}.status-dot.bad{{background:var(--red)}}
 .agent-row{{display:flex;align-items:center;gap:12px;padding:12px 0 8px}}.agent-glyph{{width:42px;height:42px;position:relative;border:1px solid #33444f;border-radius:4px;background:linear-gradient(145deg,#101b23,#0b1218);image-rendering:pixelated;box-shadow:inset 0 0 12px rgba(91,213,230,.05)}}.agent-glyph:before{{content:"";position:absolute;left:12px;top:7px;width:15px;height:15px;border:2px solid #6c7b86;border-radius:2px;box-shadow:0 0 0 2px #111920}}.agent-glyph:after{{content:"";position:absolute;left:7px;bottom:6px;width:25px;height:12px;border:2px solid #566773;border-bottom:0;border-radius:4px 4px 0 0}}.agent-glyph span:before{{content:"";position:absolute;left:16px;top:13px;width:3px;height:3px;background:var(--cyan);box-shadow:8px 0 var(--cyan)}}.agent-glyph span{{position:absolute;right:5px;top:5px;width:4px;height:4px;border-radius:50%;background:var(--green)}}
-.worker-info{{display:grid;gap:3px}}.worker-info b{{font-size:11px}}.worker-info span{{color:var(--muted);font-size:10px}}.worker-info strong{{font-size:9px;letter-spacing:.8px}}.meter{{height:4px;background:#25303a;border-radius:2px;overflow:hidden}}.meter i{{display:block;height:100%;background:var(--green);border-radius:2px}}.worker-foot{{color:var(--muted);font:10px Consolas,monospace;margin-top:6px}}.worker-job{{font:10px Consolas,monospace;color:var(--blue);margin-top:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+.worker-info{{display:grid;gap:3px}}.worker-info b{{font-size:11px}}.worker-info span{{color:var(--muted);font-size:10px}}.worker-info strong{{font-size:9px;letter-spacing:.8px}}.meter{{height:4px;background:#25303a;border-radius:2px;overflow:hidden}}.meter i{{display:block;height:100%;background:var(--green);border-radius:2px}}.worker-foot{{color:var(--muted);font:10px Consolas,monospace;margin-top:6px}}.worker-job{{font:10px Consolas,monospace;color:var(--blue);margin-top:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}.lifecycle{{position:relative;display:flex;justify-content:space-between;gap:4px;margin-top:10px;padding-top:9px;border-top:1px solid #202b35}}.lifecycle-track{{position:absolute;left:7%;right:7%;top:12px;height:1px;background:#34424d}}.lifecycle-step{{position:relative;z-index:1;display:grid;justify-items:center;gap:4px;min-width:48px;color:#53616c;font:8px Consolas,monospace;letter-spacing:.4px}}.lifecycle-step i{{width:7px;height:7px;border-radius:50%;border:1px solid #4a5863;background:#111820}}.lifecycle-step-active{{color:var(--cyan);font-weight:700}}.lifecycle-step-active i{{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 9px rgba(91,213,230,.65)}}.lifecycle-step-failed{{color:var(--red)}}.lifecycle-step-failed i{{background:var(--red);border-color:var(--red);box-shadow:0 0 9px rgba(223,110,117,.45)}}.lifecycle-step-idle{{color:#66737d}}
 .pipeline{{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}}.phase{{background:#0d141b;border:1px solid var(--line);border-radius:3px;padding:9px;min-height:50px;display:flex;flex-direction:column;justify-content:space-between;gap:5px}}.phase b{{font-size:9px;letter-spacing:.7px}}.phase span{{font-size:10px;color:#c1cbd2}}
 .meta{{color:var(--muted);font-size:10px;margin-top:12px;display:flex;gap:14px;flex-wrap:wrap}}.lock{{color:var(--accent)!important}}.empty-crew{{border:1px dashed #33414d;border-radius:4px;padding:25px;text-align:center;display:grid;gap:7px;color:var(--muted)}}.empty-mark{{font:700 11px Consolas,monospace;color:#56636d}}
 @media(max-width:900px){{.stats{{grid-template-columns:repeat(2,1fr)}}.stations{{grid-template-columns:1fr 1fr}}.pipeline{{grid-template-columns:1fr 1fr}}@media(max-width:560px){{main{{padding:12px}}.stations{{grid-template-columns:1fr}}.stats{{grid-template-columns:1fr 1fr}}
