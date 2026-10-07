@@ -39,6 +39,7 @@ class FactoryJobEvent:
     output_artifact: str | None
     occurred_utc: str
     event_fingerprint: str
+    research_run_fingerprint: str | None = None
 
     def as_dict(self, *, include_fingerprint: bool = True) -> dict[str, Any]:
         value = {
@@ -96,6 +97,7 @@ class FactoryJobEventLedger:
         phase: str | None = None,
         detail: str | None = None,
         output_artifact: str | None = None,
+        research_run_fingerprint: str | None = None,
     ) -> FactoryJobEvent:
         event = FactoryJobEvent(
             sequence=len(self._events) + 1,
@@ -109,6 +111,7 @@ class FactoryJobEventLedger:
             output_artifact=output_artifact,
             occurred_utc=_utc_now(),
             event_fingerprint="",
+            research_run_fingerprint=research_run_fingerprint,
         )
         fingerprint = hashlib.sha256(
             _canonical(event.as_dict(include_fingerprint=False)).encode("utf-8")
