@@ -2,14 +2,14 @@ from __future__ import annotations
 
 """Read-only SP2L Research Factory floor dashboard.
 
-This dashboard is deliberately separate from scripts/live_dashboard.py.
-It observes Factory research state; it does not launch jobs, select a
-candidate, modify the forward runner, or place orders.
+Separate from scripts/live_dashboard.py. It observes Factory research state;
+it does not launch jobs, select candidates, modify the forward runner, or
+place orders.
 
 Live worker telemetry is optional and must be written by the worker to:
     runtime/factory_worker_status.json
 
-No telemetry is fabricated: missing/stale telemetry is shown explicitly.
+Missing/stale telemetry is shown explicitly; activity is never fabricated.
 """
 
 import json
@@ -17,26 +17,26 @@ import os
 import subprocess
 import time
 from datetime import datetime, timezone
-from pathlib import Path
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from html import escape
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 STATUS_FILE = ROOT / "runtime" / "factory_worker_status.json"
 PORT = int(os.getenv("SP2L_FACTORY_DASHBOARD_PORT", "8788"))
 
 PHASES = [
-    ("P1", "Orchestration boundary", "VERIFIED", 100),
-    ("P2", "Synthetic execution", "VERIFIED", 100),
-    ("P3", "Historical data adapter", "VERIFIED", 100),
-    ("P4", "Deterministic execution kernel", "VERIFIED", 100),
-    ("P5", "Source resolution / frozen geometry", "BLOCKED", 45),
-    ("P6", "Test Factory", "IN PROGRESS", 25),
-    ("P7", "Stability / robustness", "NEXT", 10),
-    ("P8", "Untouched validation", "PLANNED", 0),
-    ("P9", "Fresh holdout", "PLANNED", 0),
-    ("P10", "Forward validation / reconciliation", "SEPARATE", 60),
-    ("P11", "Production eligibility", "NOT ELIGIBLE", 0),
+    ("P1", "Orchestration boundary", "VERIFIED"),
+    ("P2", "Synthetic execution", "VERIFIED"),
+    ("P3", "Historical data adapter", "VERIFIED"),
+    ("P4", "Deterministic execution kernel", "VERIFIED"),
+    ("P5", "Source resolution / frozen geometry", "BLOCKED"),
+    ("P6", "Test Factory", "PLANNED"),
+    ("P7", "Stability / robustness", "NEXT"),
+    ("P8", "Untouched validation", "PLANNED"),
+    ("P9", "Fresh holdout", "PLANNED"),
+    ("P10", "Forward validation / reconciliation", "SEPARATE"),
+    ("P11", "Production eligibility", "NOT ELIGIBLE"),
 ]
 
 
@@ -70,7 +70,7 @@ def worker_state() -> dict:
             "started_utc": None,
             "heartbeat_utc": None,
             "progress": None,
-            "detail": "Factory worker has not published runtime telemetry.",
+            "detail": "No Factory worker telemetry has been published yet.",
         }
 
     heartbeat = str(raw.get("heartbeat_utc") or "")
@@ -82,7 +82,6 @@ def worker_state() -> dict:
         except ValueError:
             pass
 
-    declared = str(raw.get("state") or "UNKNOWN").upper()
     if age is None:
         health = "UNKNOWN"
     elif age <= 90:
@@ -92,31 +91,38 @@ def worker_state() -> dict:
     else:
         health = "OFFLINE"
 
-    return {
-        **raw,
-        "state": declared,
-        "telemetry_health": health,
-        "heartbeat_age_s": age,
-    }
+    return {**raw, "telemetry_health": health, "heartbeat_age_s": age}
+
+
+def status_class(value: str) -> str:
+    v = value.upper()
+    if v in {"VERIFIED", "LIVE", "RUNNING", "COMPLETED", "SEPARATE"}:
+        return "ok"
+    if v in {"BLOCKED", "OFFLINE", "FAILED", "NOT ELIGIBLE"}:
+        return "bad"
+    return "warn"
+
+
+def roadmap_summary() -> dict[str, int]:
+    counts = {"VERIFIED": 0, "ACTIVE": 0, "PLANNED": 0, "OTHER": 0}
+    for _, _, status in PHASES:
+        if status == "VERIFIED":
+            counts["VERIFIED"] += 1
+        elif status in {"NEXT", "BLOCKED"}:
+            counts["ACTIVE"] += 1
+        elif status == "PLANNED":
+            counts["PLANNED"] += 1
+        else:
+            counts["OTHER"] += 1
+    return counts
 
 
 def phase_rows() -> str:
     return "".join(
         f"<tr><td>{pid}</td><td>{escape(name)}</td>"
-        f"<td class='{status_class(status)}'>{escape(status)}</td>"
-        f"<td><div class='bar'><span style='width:{pct}%'></span></div>"
-        f"<span class='pct'>{pct}%</span></td></tr>"
-        for pid, name, status, pct in PHASES
+        f"<td class='{status_class(status)}'>{escape(status)}</td></tr>"
+        for pid, name, status in PHASES
     )
-
-
-def status_class(value: str) -> str:
-    v = value.upper()
-    if v in {"VERIFIED", "LIVE", "RUNNING", "COMPLETED"}:
-        return "ok"
-    if v in {"BLOCKED", "OFFLINE", "FAILED", "NOT ELIGIBLE"}:
-        return "bad"
-    return "warn"
 
 
 def worker_html(w: dict) -> str:
@@ -143,11 +149,14 @@ def worker_html(w: dict) -> str:
 def html_page() -> str:
     g = git_state()
     w = worker_state()
-    overall = "FACTORY OBSERVING"
+    s = roadmap_summary()
+
     if w.get("telemetry_health") == "LIVE":
         overall = "FACTORY WORKER ACTIVE"
     elif w.get("telemetry_health") in {"STALE", "OFFLINE"}:
         overall = "FACTORY WORKER NOT HEALTHY"
+    else:
+        overall = "FACTORY OBSERVING"
 
     return f"""<!doctype html>
 <html><head><meta charset="utf-8">
@@ -161,11 +170,10 @@ th,td{{border:1px solid #2b3850;padding:9px;text-align:left}}
 th{{color:#9ca3af;width:220px}}
 .ok{{color:#6ee7b7}} .warn{{color:#fbbf24}} .bad{{color:#f87171}}
 .dim{{color:#94a3b8}} .big{{font-size:18px;font-weight:700}}
-.bar{{display:inline-block;width:220px;height:10px;background:#263247;border-radius:6px;vertical-align:middle;margin-right:8px}}
-.bar span{{display:block;height:100%;background:#60a5fa;border-radius:6px}}
-.pct{{color:#94a3b8}}
 .grid{{display:grid;grid-template-columns:1fr 1fr;gap:18px}}
 code{{color:#93c5fd}}
+.card{{background:#172033;border:1px solid #2b3850;padding:16px;border-radius:8px}}
+.num{{font-size:28px;font-weight:700}}
 @media(max-width:900px){{.grid{{grid-template-columns:1fr}}}}
 </style></head><body>
 <h1>🏭 SP2L Strategy Research Factory</h1>
@@ -188,21 +196,37 @@ code{{color:#93c5fd}}
 </section>
 </div>
 
+<h2>How much is built?</h2>
+<div class="grid">
+<div class="card"><div class="num">{s["VERIFIED"]}/11</div><div>roadmap phases verified</div></div>
+<div class="card"><div class="num">{s["ACTIVE"]}</div><div>source/stability work active or next</div></div>
+<div class="card"><div class="num">{s["PLANNED"]}</div><div>later validation phases planned</div></div>
+<div class="card"><div class="num">{s["OTHER"]}</div><div>separate / governance phases</div></div>
+</div>
+<p class="dim">
+This is phase coverage, not a profitability score or statistical confidence.
+It intentionally does not convert research performance into a production
+decision.
+</p>
+
 <h2>Factory roadmap</h2>
 <table>
-<tr><th>Phase</th><th>Work</th><th>Status</th><th>Progress estimate</th></tr>
+<tr><th>Phase</th><th>Work</th><th>Status</th></tr>
 {phase_rows()}
 </table>
 
-<h2>Current gate interpretation</h2>
+<h2>Current research path</h2>
 <p>
-The percentages above are <b>implementation-roadmap estimates</b>, not
-statistical confidence, strategy quality, or probability of profitability.
-P5 remains source-blocked; P7 is the next research-engineering target.
-A candidate is never promoted because a dashboard score is high.
+<b>SOURCE RESOLUTION → FROZEN GEOMETRY → RESEARCH → STABILITY →
+FRESH HOLDOUT → FORWARD</b>
+</p>
+<p>
+P5 is still source-blocked. P7 is the next engineering target: independent
+sub-window stability for RR1–RR5 and trailing candidates. The active MT5
+forward runner remains outside this dashboard and is not modified by it.
 </p>
 
-<p class="dim">Dashboard time: {datetime.now(timezone.utc).isoformat()}</p>
+<p class="dim">Dashboard UTC: {datetime.now(timezone.utc).isoformat()}</p>
 </body></html>"""
 
 
@@ -215,7 +239,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, fmt: str, *args) -> None:
+    def log_message(self, fmt, *args) -> None:
         return
 
 
