@@ -120,4 +120,10 @@ from .dashboard_config_provenance_ledger import DashboardConfigProvenanceLedger,
 from .research_run_config_binding import ResearchRunConfigBinding, ResearchRunConfigBindingError, bind_research_run_config
 from .research_run_config_binding_ledger import ResearchRunConfigBindingLedger, ResearchRunConfigBindingLedgerEntry, ResearchRunConfigBindingLedgerError
 
-from .handoff import HANDOFF_ROUTES, ResearchHandoff, ResearchHandoffError, build_research_handoff
+from .handoff import (
+    HANDOFF_ROUTES,
+    ResearchHandoff,
+    ResearchHandoffError,
+    build_research_handoff,
+    validate_evidence_bound_handoff,
+)
