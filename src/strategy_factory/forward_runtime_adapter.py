@@ -110,6 +110,39 @@ def run_existing_forward_runner(
         )
 
 
+def run_existing_forward_runner_production_dry_run(
+    *,
+    repo_root: Path,
+    duration_seconds: int,
+    env_overrides: Mapping[str, str] | None = None,
+    runner_relative_path: str = "scripts/run_sp2l_v3_xauusd_forward_test.py",
+) -> ExistingRunnerProcessResult:
+    """Run the actual V3 runner with a fail-closed no-execution gate.
+
+    Unlike the synthetic adapter dry-run, this launches the real runner and
+    exercises MT5 initialization, freshness scanning, lifecycle plumbing and
+    bounded shutdown. Execution is forced off by infrastructure flags, and the
+    V3 trailing SL modification path is also explicitly blocked.
+    """
+    forced = {
+        "SP2L_FACTORY_DRY_RUN": "1",
+        "LIVE_TRADING_ENABLE": "false",
+        "ALLOW_REAL_EXECUTION": "false",
+    }
+    if env_overrides:
+        forced.update({str(k): str(v) for k, v in env_overrides.items()})
+    # This helper is intrinsically non-trading: callers cannot re-enable it.
+    forced["SP2L_FACTORY_DRY_RUN"] = "1"
+    forced["LIVE_TRADING_ENABLE"] = "false"
+    forced["ALLOW_REAL_EXECUTION"] = "false"
+    return run_existing_forward_runner(
+        repo_root=repo_root,
+        duration_seconds=duration_seconds,
+        env_overrides=forced,
+        runner_relative_path=runner_relative_path,
+    )
+
+
 def runner_process_reconciliation(
     result: ExistingRunnerProcessResult,
 ) -> dict[str, object]:
