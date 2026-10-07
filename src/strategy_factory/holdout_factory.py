@@ -52,6 +52,7 @@ class HoldoutFactoryContext:
 class HoldoutFactoryResult:
     job: ResearchJobSpec
     result: ResearchJobRunResult
+    holdout_dataset_content_sha256: str
 
 
 class HoldoutFactory:
@@ -165,4 +166,8 @@ class HoldoutFactory:
             evidence_id=context.evidence_id,
             purpose=context.purpose,
         )
-        return HoldoutFactoryResult(job=job, result=result)
+        return HoldoutFactoryResult(
+            job=job,
+            result=result,
+            holdout_dataset_content_sha256=context.holdout_dataset_content_sha256,
+        )
