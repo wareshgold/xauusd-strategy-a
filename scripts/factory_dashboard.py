@@ -211,50 +211,29 @@ def html_page() -> str:
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SP2L Research Factory</title>
 <style>
-:root{{--bg:#0b1020;--panel:#151d31;--panel2:#1c2740;--line:#33415f;--text:#eef3ff;--muted:#91a0bd;--gold:#f4c95d;--green:#6ee7b7;--red:#fb7185;--yellow:#fbbf24;--blue:#7dd3fc}}
-*{{box-sizing:border-box}}
-body{{margin:0;background:radial-gradient(circle at 50% -10%,#263655 0,#0b1020 42%);color:var(--text);font:14px Segoe UI,Arial,sans-serif}}
-main{{max-width:1500px;margin:auto;padding:22px}}
-.top{{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap}}
-h1{{margin:0;font-size:28px;letter-spacing:.5px}} h1 span{{color:var(--gold)}}
-.sub{{color:var(--muted);margin-top:5px}}
-.state{{padding:9px 13px;border:1px solid var(--line);border-radius:12px;background:#11192b;font-weight:800}}
-.ok{{color:var(--green)}} .warn{{color:var(--yellow)}} .bad{{color:var(--red)}}
-.stats{{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0}}
-.stat,.panel{{background:linear-gradient(180deg,#19233a,#11192b);border:1px solid var(--line);border-radius:14px}}
-.stat{{padding:13px}} .stat b{{font-size:25px;display:block}} .stat small{{color:var(--muted)}}
-.floor{{position:relative;background:#10182a;border:1px solid #3a4968;border-radius:18px;padding:18px;overflow:hidden}}
-.floor:before{{content:"";position:absolute;inset:0;background-image:linear-gradient(#263452 1px,transparent 1px),linear-gradient(90deg,#263452 1px,transparent 1px);background-size:44px 44px;opacity:.25}}
-.sign{{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}}
-.sign b{{font-size:18px}} .sign span{{color:var(--muted)}}
-.stations{{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}}
-.station{{min-height:145px;background:rgba(21,29,49,.93);border:1px solid #405071;border-radius:14px;padding:12px;box-shadow:inset 0 -12px 0 rgba(255,255,255,.02)}}
-.station-sign{{display:flex;gap:9px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:8px}}
-.station-sign>span{{font-size:25px}} .station-sign b{{display:block}} .station-sign small{{color:var(--muted)}}
-.station-floor{{height:70px;display:flex;align-items:center;justify-content:center;gap:18px;font-size:32px}}
-.station-status{{color:var(--muted);font-size:12px}}
-.mini-worker{{display:inline-block}} .mini-worker.move{{animation:walk .9s infinite alternate ease-in-out}}
-@keyframes walk{{from{{transform:translateY(3px) rotate(-5deg)}}to{{transform:translateY(-4px) rotate(5deg)}}}}
-.empty-worker{{font-size:26px;color:#46536d}}
-.panel{{padding:14px;margin-top:16px}}
-.panel h2{{font-size:16px;margin:0 0 12px}}
-.crew{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}}
-.worker-card{{position:relative;background:#10182a;border:1px solid var(--line);border-radius:13px;padding:11px;overflow:hidden}}
-.worker-head,.worker-foot{{display:flex;justify-content:space-between;gap:8px;align-items:center}}
-.worker-id{{font-weight:800}} .badge{{font-size:10px;font-weight:800}}
-.worker-avatar{{font-size:48px;line-height:1;text-align:center;margin:10px 0 2px}}
-.worker-info{{display:grid;gap:2px;text-align:center}} .worker-info span{{color:var(--muted);font-size:12px}}
-.meter{{height:7px;background:#28344d;border-radius:8px;overflow:hidden;margin-top:10px}} .meter i{{display:block;height:100%;background:var(--green);border-radius:8px}}
-.worker-foot{{color:var(--muted);font-size:11px;margin-top:5px}} .worker-job{{font-family:Consolas,monospace;font-size:11px;color:var(--blue);margin-top:7px;text-align:center;overflow:hidden;text-overflow:ellipsis}}
-.walking .worker-avatar{{animation:walk .9s infinite alternate ease-in-out}}
-.pipeline{{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}}
-.phase{{background:#10182a;border:1px solid var(--line);border-radius:10px;padding:9px;min-height:55px;display:flex;flex-direction:column;justify-content:space-between;gap:6px}}
-.phase b{{font-size:10px}} .phase span{{font-size:12px}}
-.meta{{color:var(--muted);font-size:11px;margin-top:14px;display:flex;gap:14px;flex-wrap:wrap}}
-.empty-crew{{border:1px dashed #46536d;border-radius:12px;padding:25px;text-align:center;display:grid;gap:5px;color:var(--muted)}}
-.big-worker{{font-size:50px}}
-@media(max-width:900px){{.stats{{grid-template-columns:repeat(2,1fr)}}.stations{{grid-template-columns:1fr 1fr}}.pipeline{{grid-template-columns:1fr 1fr}}}}
-@media(max-width:560px){{main{{padding:12px}}.stations{{grid-template-columns:1fr}}.stats{{grid-template-columns:1fr 1fr}}}}
+:root{--bg:#090d12;--panel:#111820;--line:#293642;--text:#e6edf3;--muted:#82909d;--accent:#d5a84b;--green:#69c39a;--red:#d86b72;--yellow:#d6b45a;--blue:#79aeca}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#0a0f14,#080b0f);color:var(--text);font:13px "Segoe UI",Arial,sans-serif}
+main{max-width:1540px;margin:auto;padding:24px}
+.top{display:flex;justify-content:space-between;gap:18px;align-items:end;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px}
+h1{margin:0;font-size:24px;letter-spacing:1.4px;font-weight:700}h1 span{color:#f0f3f5}.sub{color:var(--muted);margin-top:6px;font-size:12px;letter-spacing:.35px}
+.state{padding:8px 12px;border:1px solid var(--line);background:#0d1319;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.7px}
+.ok{color:var(--green)}.warn{color:var(--yellow)}.bad{color:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:5px}.stat{padding:12px 14px}.stat b{font-size:22px;display:block;letter-spacing:.6px}.stat small{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px}
+.floor{position:relative;background:#0c1218;border:1px solid #303d49;border-radius:5px;padding:16px;overflow:hidden}.floor:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#1c2730 1px,transparent 1px),linear-gradient(90deg,#1c2730 1px,transparent 1px);background-size:36px 36px;opacity:.35}
+.sign{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;color:var(--muted);font-size:10px;letter-spacing:.7px;text-transform:uppercase}.sign b{color:var(--text);font-size:12px}
+.stations{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.station{min-height:130px;background:rgba(16,23,30,.96);border:1px solid #33414d;border-radius:4px;padding:11px}
+.station-sign{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:9px}.station-code{font:700 10px Consolas,monospace;color:var(--accent);border:1px solid #65512b;padding:4px 5px;border-radius:3px}.station-sign b{display:block;font-size:11px;letter-spacing:.5px}.station-sign small{color:var(--muted);font-size:10px}
+.station-floor{height:62px;display:flex;align-items:center;justify-content:center;gap:12px}.station-unit{width:30px;height:18px;border:1px solid #4a5864;border-radius:3px;background:#18212a;position:relative}.station-unit:before{content:"";position:absolute;left:6px;top:5px;width:9px;height:6px;background:#56636e}.station-unit:after{content:"";position:absolute;right:5px;top:5px;width:4px;height:6px;background:#2d3943}.station-unit.active{border-color:#527d68;box-shadow:0 0 10px rgba(105,195,154,.18)}.station-unit.active:after{background:var(--green)}.empty-unit{color:#3e4b56}
+.station-status{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px}
+.panel{padding:14px;margin-top:12px}.panel h2{font-size:11px;letter-spacing:1px;margin:0 0 11px;color:#c5cdd4}.crew{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:9px}
+.worker-card{background:#0d141b;border:1px solid #2b3843;border-radius:4px;padding:11px}.worker-head,.worker-foot{display:flex;justify-content:space-between;gap:8px;align-items:center}.worker-id{font:700 11px Consolas,monospace;color:#dce4ea}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#53606a}.status-dot.ok{background:var(--green);box-shadow:0 0 7px rgba(105,195,154,.45)}.status-dot.warn{background:var(--yellow)}.status-dot.bad{background:var(--red)}
+.agent-row{display:flex;align-items:center;gap:12px;padding:12px 0 8px}.agent-glyph{width:42px;height:42px;position:relative;border:1px solid #3a4752;border-radius:4px;background:#141d25}.agent-glyph:before{content:"";position:absolute;left:13px;top:8px;width:14px;height:14px;border:2px solid #75838e;border-radius:50%}.agent-glyph:after{content:"";position:absolute;left:8px;bottom:6px;width:24px;height:11px;border:2px solid #75838e;border-bottom:0;border-radius:12px 12px 0 0}.agent-glyph span{position:absolute;right:5px;top:5px;width:4px;height:4px;border-radius:50%;background:var(--green)}
+.worker-info{display:grid;gap:3px}.worker-info b{font-size:11px}.worker-info span{color:var(--muted);font-size:10px}.worker-info strong{font-size:9px;letter-spacing:.8px}.meter{height:4px;background:#25303a;border-radius:2px;overflow:hidden}.meter i{display:block;height:100%;background:var(--green);border-radius:2px}.worker-foot{color:var(--muted);font:10px Consolas,monospace;margin-top:6px}.worker-job{font:10px Consolas,monospace;color:var(--blue);margin-top:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.phase{background:#0d141b;border:1px solid var(--line);border-radius:3px;padding:9px;min-height:50px;display:flex;flex-direction:column;justify-content:space-between;gap:5px}.phase b{font-size:9px;letter-spacing:.7px}.phase span{font-size:10px;color:#c1cbd2}
+.meta{color:var(--muted);font-size:10px;margin-top:12px;display:flex;gap:14px;flex-wrap:wrap}.lock{color:var(--accent)!important}.empty-crew{border:1px dashed #33414d;border-radius:4px;padding:25px;text-align:center;display:grid;gap:7px;color:var(--muted)}.empty-mark{font:700 11px Consolas,monospace;color:#56636d}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.stations{grid-template-columns:1fr 1fr}.pipeline{grid-template-columns:1fr 1fr}}@media(max-width:560px){main{padding:12px}.stations{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
 </style></head>
 <body><main>
   <div class="top">
