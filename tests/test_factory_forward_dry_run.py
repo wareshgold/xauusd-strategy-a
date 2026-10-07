@@ -101,10 +101,10 @@ def test_end_to_end_factory_dry_run_uses_process_adapter_without_mt5():
 def test_production_like_dry_run_forces_execution_off(tmp_path: Path):
     runner = tmp_path / "runner.py"
     runner.write_text(
-        "import os\\n"
-        "print(os.getenv('SP2L_FACTORY_DRY_RUN'))\\n"
-        "print(os.getenv('LIVE_TRADING_ENABLE'))\\n"
-        "print(os.getenv('ALLOW_REAL_EXECUTION'))\\n",
+        "import os\n"
+        "print(os.getenv('SP2L_FACTORY_DRY_RUN'))\n"
+        "print(os.getenv('LIVE_TRADING_ENABLE'))\n"
+        "print(os.getenv('ALLOW_REAL_EXECUTION'))\n",
         encoding="utf-8",
     )
 
