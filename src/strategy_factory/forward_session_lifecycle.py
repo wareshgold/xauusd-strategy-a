@@ -125,7 +125,20 @@ class DemoForwardSessionLifecycle:
         fingerprint = hashlib.sha256(
             json.dumps(event._payload(), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
         ).hexdigest()
-        event = DemoForwardSessionEvent(**event._payload(), event_fingerprint=fingerprint)
+        event = DemoForwardSessionEvent(
+            sequence=event.sequence,
+            session_id=event.session_id,
+            session_fingerprint=event.session_fingerprint,
+            strategy_id=event.strategy_id,
+            strategy_revision=event.strategy_revision,
+            manifest_revision=event.manifest_revision,
+            execution_semantics=event.execution_semantics,
+            state=event.state,
+            occurred_utc=event.occurred_utc,
+            post_holdout_tuning=event.post_holdout_tuning,
+            production_decision=event.production_decision,
+            event_fingerprint=fingerprint,
+        )
         event.validate()
         self._events.append(event)
         return event
