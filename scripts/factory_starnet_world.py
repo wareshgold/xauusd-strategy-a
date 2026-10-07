@@ -3,10 +3,12 @@ import json, mimetypes, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from strategy_factory.starnet_adapter import build_world_state
+from strategy_factory.job_events import FactoryJobEventLedger
 
 ROOT=Path(__file__).resolve().parents[1]
 VENDOR=ROOT/"vendor"/"starnet-engine"/"frontend"
 STATUS=ROOT/"runtime"/"factory_worker_status.json"
+JOB_EVENTS=ROOT/"runtime"/"factory_job_events.jsonl"
 PORT=8789
 
 PAGE=r"""<!doctype html><html lang="en"><head>
@@ -158,7 +160,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050709;col
  async function poll(){
    try{const r=await fetch("/api/world",{cache:"no-store"});const s=await r.json();
     syncTelemetryToWorld(s.workers);
-    document.getElementById("link").textContent=s.workers.length?"FACTORY TELEMETRY · LIVE":"FACTORY TELEMETRY · WAITING FOR JOB";
+    const latest=s.handoffs&&s.handoffs.length?s.handoffs[s.handoffs.length-1]:null;
+    document.getElementById("link").textContent=latest ? "FACTORY TELEMETRY · HANDOFF ACCEPTED · "+latest.source.toUpperCase()+" → "+latest.destination.toUpperCase() : (s.workers.length?"FACTORY TELEMETRY · LIVE":"FACTORY TELEMETRY · WAITING FOR JOB");
     document.getElementById("workers").innerHTML=s.workers.map(w=>"<span class='worker "+(w.state==="FAILED"?"fail":(w.state==="RUNNING"||w.state==="HEARTBEAT"?"live":""))+"'>"+esc(w.id)+" · "+esc(w.station)+" · "+esc(w.state)+" · "+Math.round(w.progress)+"%</span>").join("");
    }catch(_){document.getElementById("link").textContent="FACTORY TELEMETRY · OFFLINE"}
    setTimeout(poll,1000);
@@ -172,8 +175,10 @@ def world_payload():
     try: raw=json.loads(STATUS.read_text(encoding="utf-8"))
     except Exception: raw={"workers":[]}
     workers=raw.get("workers",[]) if isinstance(raw,dict) else []
-    ws=build_world_state([w for w in workers if isinstance(w,dict)])
+    events=FactoryJobEventLedger(path=JOB_EVENTS).entries()
+    ws=build_world_state([w for w in workers if isinstance(w,dict)], events=events)
     return {"workers":[{"id":w.worker_id,"station":w.station,"state":w.state,"progress":w.progress,"job":w.job_id or ""} for w in ws.workers],
+            "handoffs":[{"sequence":h.sequence,"job":h.job_id,"source":h.source_station,"destination":h.destination_station,"artifact":h.output_artifact,"event_fingerprint":h.event_fingerprint} for h in ws.handoffs],
             "production_locked":ws.production_locked,"buy_sell_generation":ws.buy_sell_generation,"ts":time.time()}
 
 class Handler(BaseHTTPRequestHandler):
