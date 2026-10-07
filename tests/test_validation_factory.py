@@ -213,21 +213,17 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
 
     events = FactoryJobEventLedger()
     # The event is deliberately bound to the actual source run fingerprint.
-    source_event_payload = source_event.as_dict(include_fingerprint=False)
-    bound_event_payload = {
-        **source_event_payload,
-        "research_run_fingerprint": source_record.run_fingerprint,
-    }
-    source_event = FactoryJobEvent(
-        **bound_event_payload,
-        event_fingerprint=hashlib.sha256(
-            __import__("json").dumps(
-                bound_event_payload,
-                sort_keys=True, separators=(",", ":"), ensure_ascii=True
-            ).encode()
-        ).hexdigest(),
+    source_event = events.append(
+        event_type="COMPLETED",
+        job_id="DISCOVERY-1",
+        job_fingerprint=source_job.fingerprint,
+        worker_id="worker-1",
+        station="stability",
+        phase="STABILITY",
+        detail="Stability completed",
+        output_artifact="EVIDENCE-DISCOVERY-1",
+        research_run_fingerprint=source_record.run_fingerprint,
     )
-    events.append(source_event)
     handoff = build_research_handoff(
         events=events,
         job_id="DISCOVERY-1",
