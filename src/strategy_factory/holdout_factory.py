@@ -94,6 +94,10 @@ class HoldoutFactory:
             raise HoldoutFactoryError(
                 "holdout manifest_revision does not match the upstream research record"
             )
+        if context.source_record.execution_semantics != context.spec.execution_semantics.value:
+            raise HoldoutFactoryError(
+                "holdout execution_semantics does not match the upstream research record"
+            )
 
         source_sha = context.handoff.dataset_content_sha256
         source_artifact_id = context.handoff.dataset_artifact_id
