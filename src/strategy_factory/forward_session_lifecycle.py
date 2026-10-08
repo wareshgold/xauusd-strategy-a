@@ -39,6 +39,7 @@ class DemoForwardSessionEvent:
     sequence: int
     session_id: str
     session_fingerprint: str
+    handoff_fingerprint: str
     strategy_id: str
     strategy_revision: str
     manifest_revision: str
@@ -54,6 +55,7 @@ class DemoForwardSessionEvent:
             "sequence": self.sequence,
             "session_id": self.session_id,
             "session_fingerprint": self.session_fingerprint,
+            "handoff_fingerprint": self.handoff_fingerprint,
             "strategy_id": self.strategy_id,
             "strategy_revision": self.strategy_revision,
             "manifest_revision": self.manifest_revision,
@@ -69,6 +71,10 @@ class DemoForwardSessionEvent:
             raise ForwardSessionLifecycleError("session event identity is incomplete")
         if len(self.session_fingerprint) != 64:
             raise ForwardSessionLifecycleError("session_fingerprint must be SHA-256")
+        if len(self.handoff_fingerprint) != 64:
+            raise ForwardSessionLifecycleError("handoff_fingerprint must be SHA-256")
+        if len(self.handoff_fingerprint) != 64:
+            raise ForwardSessionLifecycleError("handoff_fingerprint must be SHA-256")
         if not self.strategy_id or not self.strategy_revision:
             raise ForwardSessionLifecycleError("session event strategy identity is incomplete")
         if not self.manifest_revision or not self.execution_semantics:
@@ -112,6 +118,7 @@ class DemoForwardSessionLifecycle:
             sequence=len(self._events) + 1,
             session_id=self.session.session_id,
             session_fingerprint=self.session.fingerprint,
+            handoff_fingerprint=self.session.handoff_fingerprint,
             strategy_id=self.session.strategy_id,
             strategy_revision=self.session.strategy_revision,
             manifest_revision=self.session.manifest_revision,
@@ -129,6 +136,7 @@ class DemoForwardSessionLifecycle:
             sequence=event.sequence,
             session_id=event.session_id,
             session_fingerprint=event.session_fingerprint,
+            handoff_fingerprint=event.handoff_fingerprint,
             strategy_id=event.strategy_id,
             strategy_revision=event.strategy_revision,
             manifest_revision=event.manifest_revision,
@@ -181,6 +189,7 @@ class MT5ReconciliationReceipt:
     reconciliation_id: str
     session_id: str
     session_fingerprint: str
+    handoff_fingerprint: str
     broker_server: str
     symbol: str
     reconciled: bool
@@ -196,6 +205,7 @@ class MT5ReconciliationReceipt:
             "reconciliation_id": self.reconciliation_id,
             "session_id": self.session_id,
             "session_fingerprint": self.session_fingerprint,
+            "handoff_fingerprint": self.handoff_fingerprint,
             "broker_server": self.broker_server,
             "symbol": self.symbol,
             "reconciled": self.reconciled,
@@ -258,6 +268,7 @@ def bind_mt5_reconciliation(
         reconciliation_id=reconciliation_id,
         session_id=session.session_id,
         session_fingerprint=session.fingerprint,
+        handoff_fingerprint=session.handoff_fingerprint,
         broker_server=broker_server,
         symbol=symbol,
         reconciled=mismatched_positions == 0,
