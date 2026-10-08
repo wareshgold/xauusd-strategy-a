@@ -148,8 +148,8 @@ def _run_scoped_pending(cfg_runtime, state):
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol = cfg_runtime["symbol"]
     tracked = set(state["orders"])
-    orders = (mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
-    orders += list(mt5.orders_get(symbol=symbol) or [])
+    orders = list(mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
+    orders.extend(list(mt5.orders_get(symbol=symbol) or []))
     for order in orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
         if ticket not in tracked:
