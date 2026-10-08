@@ -26,6 +26,7 @@ class DemoForwardSession:
     session_id: str
     gate_evidence: str
     gate_fingerprint: str
+    handoff_fingerprint: str
     strategy_id: str
     strategy_revision: str
     manifest_revision: str
@@ -46,6 +47,7 @@ class DemoForwardSession:
             "session_id": self.session_id,
             "gate_evidence": self.gate_evidence,
             "gate_fingerprint": self.gate_fingerprint,
+            "handoff_fingerprint": self.handoff_fingerprint,
             "strategy_id": self.strategy_id,
             "strategy_revision": self.strategy_revision,
             "manifest_revision": self.manifest_revision,
@@ -67,6 +69,8 @@ class DemoForwardSession:
             raise ForwardSessionError("forward session contract is incomplete")
         if len(self.gate_fingerprint) != 64:
             raise ForwardSessionError("gate_fingerprint must be SHA-256")
+        if len(self.handoff_fingerprint) != 64:
+            raise ForwardSessionError("handoff_fingerprint must be SHA-256")
         if len(self.holdout_dataset_content_sha256) != 64:
             raise ForwardSessionError("holdout dataset SHA must be SHA-256")
         if len(self.forward_dataset_content_sha256) != 64:
@@ -131,6 +135,9 @@ class DemoForwardSessionFactory:
         details = gate.gate.details
         if details.get("production_decision") is not False:
             raise ForwardSessionError("Forward Gate does not prove a non-production boundary")
+        handoff_fingerprint = str(details.get("handoff_fingerprint", ""))
+        if len(handoff_fingerprint) != 64:
+            raise ForwardSessionError("Forward Gate lacks Holdout handoff fingerprint")
         if details.get("strategy_revision") != source_record.strategy_revision:
             raise ForwardSessionError("Forward Gate strategy revision does not match Holdout record")
         if details.get("manifest_revision") != source_record.manifest_revision:
@@ -157,6 +164,7 @@ class DemoForwardSessionFactory:
             session_id=session_id,
             gate_evidence=gate.gate.evidence,
             gate_fingerprint=_fingerprint_gate(gate),
+            handoff_fingerprint=handoff_fingerprint,
             strategy_id=source_record.strategy_id,
             strategy_revision=source_record.strategy_revision,
             manifest_revision=source_record.manifest_revision,
