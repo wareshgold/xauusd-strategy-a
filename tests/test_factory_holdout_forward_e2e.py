@@ -24,6 +24,7 @@ def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path):
     assert result.ready is True
     assert result.gate.passed is True
     assert result.session.production_decision is False
+    assert result.session.handoff_fingerprint == result.handoff.fingerprint
     assert result.session.lifecycle_state == "PREPARED"
 
     assert result.handoff.source_station == "holdout"
