@@ -47,11 +47,16 @@ def run_one(mt5_path: str, symbol: str, start: datetime, end: datetime) -> dict:
             f"Backtest failed for {start.date()}:\n{proc.stdout}\n{proc.stderr}"
         )
 
-    lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    # The underlying backtest prints pretty-printed JSON across many lines.
+    # Parse the complete JSON object instead of assuming one-line output.
+    decoder = json.JSONDecoder()
     payload = None
-    for line in reversed(lines):
+    text_out = proc.stdout
+    for pos, ch in enumerate(text_out):
+        if ch != "{":
+            continue
         try:
-            obj = json.loads(line)
+            obj, _ = decoder.raw_decode(text_out[pos:])
         except json.JSONDecodeError:
             continue
         if isinstance(obj, dict) and obj.get("status") == "COMPLETE":
@@ -59,7 +64,7 @@ def run_one(mt5_path: str, symbol: str, start: datetime, end: datetime) -> dict:
             break
     if payload is None:
         raise RuntimeError(
-            f"Backtest completed without a COMPLETE payload for {start.date()}:\n"
+            f"Backtest completed without a COMPLETE payload for {start.date()}:\\n"
             f"{proc.stdout}"
         )
 
