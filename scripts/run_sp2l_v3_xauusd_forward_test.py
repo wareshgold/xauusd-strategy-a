@@ -232,6 +232,90 @@ def _run_scoped_position_lifecycle(cfg_runtime, state):
             "profit":float(getattr(position,"profit",0.0) or 0.0),
             "canonical":False})
 
+def _run_scoped_symbol_lifecycle(cfg_runtime, state):
+    symbol, magic, pip = cfg_runtime["symbol"], cfg_runtime["magic"], cfg_runtime["pip_size"]
+    tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
+    bounds = _mt5_history_bounds_utc(_RUN_STARTED_UTC, datetime.now(timezone.utc), symbol)
+    if bounds is None:
+        return
+    start_api, end_api = bounds
+    deals = mt5.history_deals_get(start_api, end_api, group=symbol) or []
+    for deal in sorted(deals, key=lambda x: (int(x.time), int(x.ticket))):
+        ticket = int(deal.ticket)
+        order = int(getattr(deal, "order", 0) or 0)
+        position = int(getattr(deal, "position_id", 0) or 0)
+        deal_magic = int(getattr(deal, "magic", 0) or 0)
+
+        owned = (
+            deal_magic == magic
+            or order in tracked_orders
+            or position in tracked_positions
+            or bool(state.get("position_orders", {}).get(str(position), set()))
+        )
+        if not owned:
+            continue
+
+        runner._remember_position_links(state, deal)
+
+        is_entry = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
+        entry_price = float(deal.price) if is_entry else runner.position_entry_price(deal, magic)
+        if not is_entry and entry_price is None:
+            continue
+
+        execution_meta = {}
+        for linked_order in state.get("position_orders", {}).get(str(position), set()):
+            execution_meta = state.get("signal_orders", {}).get(str(linked_order), {})
+            if execution_meta:
+                break
+
+        profit = float(getattr(deal, "profit", 0.0) or 0.0)
+        commission = float(getattr(deal, "commission", 0.0) or 0.0)
+        swap = float(getattr(deal, "swap", 0.0) or 0.0)
+        net = profit + commission + swap
+
+        if ticket not in state["deals"]:
+            runner.log_event({
+                "event": "TELEGRAM_DEAL_LIFECYCLE", "version": cfg.VERSION,
+                "symbol": symbol, "deal": ticket, "order": order, "position": position,
+                "signal_id": execution_meta.get("signal_id"),
+                "entry": int(getattr(deal, "entry", -1)),
+                "reason": int(getattr(deal, "reason", -1)),
+                "entry_price": entry_price,
+                "theoretical_entry": execution_meta.get("theoretical_entry"),
+                "theoretical_sl": execution_meta.get("sl"),
+                "theoretical_tp": execution_meta.get("tp"),
+                "exit_price": float(deal.price), "profit": profit,
+                "commission": commission, "swap": swap, "net": net,
+                "telegram": {"success": False, "detail": "NOT_SENT_YET"},
+                "canonical": False})
+            state["deals"].add(ticket)
+
+        if ticket in state.setdefault("deal_notifications", set()):
+            continue
+
+        tg = runner.gateway.send_telegram_message(
+            runner.lifecycle_message(deal, symbol, pip, magic),
+            parse_mode="HTML",
+        )
+        telegram_success = bool(getattr(tg, "success", False))
+        if telegram_success:
+            state["deal_notifications"].add(ticket)
+
+        runner.log_event({
+            "event": "TELEGRAM_DEAL_NOTIFICATION", "version": cfg.VERSION,
+            "symbol": symbol, "deal": ticket, "order": order, "position": position,
+            "success": telegram_success,
+            "detail": getattr(tg, "detail", None),
+            "canonical": False,
+        })
+
+    runner.save_state(state)
+
+runner.enforce_pending_order_expiry=_run_scoped_pending
+runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
+runner.monitor_position_lifecycle=trail_positions
+runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
+
     if bounds is None:
         return
     start_api, end_api = bounds
