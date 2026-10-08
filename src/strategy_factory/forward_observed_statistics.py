@@ -6,7 +6,7 @@ from statistics import fmean, stdev
 from typing import Sequence
 
 from .forward_observed_evidence import ForwardObservedEvidence
-from .statistics import ConfidenceInterval
+from .statistics import ConfidenceInterval, _wilson_interval
 
 
 class ForwardObservedStatisticsError(ValueError):
@@ -119,7 +119,7 @@ def build_forward_observed_statistics(
         negative_pips_count=negative,
         zero_pips_count=zero,
         pips_coverage=len(pips) / len(evidence.trades) if evidence.trades else 0.0,
-        positive_pips_rate=_wilson(positive, len(pips), confidence_level),
+        positive_pips_rate=_wilson_interval(positive, len(pips), confidence_level),
         mean_pips=None if not pips else _mean_interval(pips, confidence_level),
         mean_net=None if not net else _mean_interval(net, confidence_level),
     )
