@@ -43,19 +43,20 @@ from mt5_terminal_resolver import find_mt5_terminal  # noqa: E402
 from live_mt5_gateway import effective_mode  # noqa: E402  (gateway env truth)
 
 
-def _runner_mode_from_process() -> tuple[str, str] | None:
+def _runner_mode_from_process(lock_path: Path | None = None) -> tuple[str, str] | None:
     """True session mode: read the live runner's own env from process memory.
 
     Windows-only best effort (the whole live setup is Windows); returns the
     raw flag values so the dashboard reports what the session actually runs
     with, not what the dashboard process happens to have.
     """
-    if os.name != "nt" or not RUNNER_LOCK.exists():
+    lock_path = lock_path or RUNNER_LOCK
+    if os.name != "nt" or not lock_path.exists():
         return None
     try:
         import ctypes
 
-        pid = int(RUNNER_LOCK.read_text(encoding="utf-8").strip() or 0)
+        pid = int(lock_path.read_text(encoding="utf-8").strip() or 0)
         k32 = ctypes.windll.kernel32
         ntdll = ctypes.windll.ntdll
         h = k32.OpenProcess(0x1000 | 0x0010, False, pid)
@@ -111,15 +112,67 @@ PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8790"))
 REFRESH_SECONDS = 5
 IRAN_TZ = ZoneInfo("Asia/Tehran")
 
+def _profile_roots() -> list[Path]:
+    """Return this checkout plus sibling SP2L worktrees used for research profiles."""
+    roots = [ROOT]
+    try:
+        for p in ROOT.parent.glob("xauusd-strategy-a-*"):
+            if p.is_dir() and (p / "artifacts" / "forward-test").is_dir():
+                roots.append(p)
+    except OSError:
+        pass
+    return list(dict.fromkeys(roots))
+
+def _proc_alive(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        out = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV"],
+            capture_output=True, text=True, timeout=5,
+        ).stdout
+        return "python" in out.lower()
+    except Exception:
+        return False
+
+def _active_profile_root() -> Path:
+    """Select the worktree whose runner lock currently belongs to a live process."""
+    live = []
+    for root in _profile_roots():
+        lock = root / "runtime" / "sp2l_multi_symbol_forward_runner.lock"
+        try:
+            pid = int(lock.read_text(encoding="utf-8").strip() or 0)
+        except (OSError, ValueError):
+            pid = 0
+        if _proc_alive(pid):
+            live.append(root)
+    if len(live) == 1:
+        return live[0]
+    if live:
+        return max(live, key=lambda p: (p / "runtime" / "sp2l_multi_symbol_forward_runner.lock").stat().st_mtime)
+    return ROOT
+
 def _active_forward_paths() -> tuple[Path, Path]:
-    """Resolve the event/state files belonging to the currently running profile."""
-    event_candidates = sorted(ARTIFACTS.glob("*_FORWARD_EVENTS.jsonl"), key=lambda p: p.stat().st_mtime if p.exists() else 0.0, reverse=True)
-    event = event_candidates[0] if event_candidates else EVENTS
+    """Resolve event/state files belonging to the currently running profile."""
+    profile_root = _active_profile_root()
+    artifacts = profile_root / "artifacts" / "forward-test"
+    runtime = profile_root / "runtime"
+    events = artifacts / "SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl"
+    event_candidates = sorted(
+        artifacts.glob("*_FORWARD_EVENTS.jsonl"),
+        key=lambda p: p.stat().st_mtime if p.exists() else 0.0,
+        reverse=True,
+    )
+    event = event_candidates[0] if event_candidates else events
     stem = event.stem[:-len("_FORWARD_EVENTS")]
-    state = RUNTIME / (stem.lower() + "_forward_state.json")
+    state = runtime / (stem.lower() + "_forward_state.json")
     if not state.exists():
-        state_candidates = sorted(RUNTIME.glob("*_forward_state.json"), key=lambda p: p.stat().st_mtime if p.exists() else 0.0, reverse=True)
-        state = state_candidates[0] if state_candidates else STATE_FILE
+        state_candidates = sorted(
+            runtime.glob("*_forward_state.json"),
+            key=lambda p: p.stat().st_mtime if p.exists() else 0.0,
+            reverse=True,
+        )
+        state = state_candidates[0] if state_candidates else runtime / "sp2l_multi_symbol_forward_state.json"
     return event, state
 
 def _mt5_server_offset_seconds(symbol: str = "XAUUSD.ecn") -> int:
@@ -176,9 +229,11 @@ def _read_pid(path: Path) -> int:
 
 
 def runner_health() -> str:
-    """Read-only operational health written by the live runner."""
+    """Read-only operational health for the currently active forward profile."""
+    profile_root = _active_profile_root()
+    health_file = profile_root / "runtime" / "sp2l_multi_symbol_forward_health.json"
     try:
-        raw = json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
+        raw = json.loads(health_file.read_text(encoding="utf-8"))
         ts = str(raw.get("ts_utc") or "")
         beat_dt = datetime.fromisoformat(ts.replace("Z", "+00:00")) if ts else None
         age = time.time() - beat_dt.timestamp() if beat_dt else 999999.0
@@ -212,7 +267,25 @@ def runner_health() -> str:
             '</table>'
         )
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
-        return '<h2>Runner Health</h2><p class="bad">🔴 NO HEALTH TELEMETRY — runner health file not available</p>'
+        try:
+            _, active_state = _active_forward_paths()
+            lock = profile_root / "runtime" / "sp2l_multi_symbol_forward_runner.lock"
+            pid = _read_pid(lock)
+            age = time.time() - active_state.stat().st_mtime
+            alive = _proc_alive(pid)
+            health = '<span class="ok">🟢 ACTIVE (fallback)</span>' if alive and age < 120 else (
+                '<span class="warn">🟡 STALE STATE</span>' if alive else '<span class="bad">🔴 OFFLINE</span>'
+            )
+            return (
+                '<h2>Runner Health</h2><table>'
+                f"<tr><th>Overall</th><td class='big'>{health}</td></tr>"
+                f"<tr><th>Process</th><td>{'alive' if alive else 'dead'} (PID {pid})</td></tr>"
+                f"<tr><th>State</th><td>{age:.0f}s since last write</td></tr>"
+                f"<tr><th>Profile</th><td>{html.escape(profile_root.name)}</td></tr>"
+                '</table>'
+            )
+        except (OSError, ValueError, TypeError):
+            return '<h2>Runner Health</h2><p class="bad">🔴 NO RUNNER TELEMETRY</p>'
 
 
 def _health_heartbeat_age() -> float | None:
@@ -223,7 +296,9 @@ def _health_heartbeat_age() -> float | None:
     only when health telemetry is unavailable.
     """
     try:
-        raw = json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
+        profile_root = _active_profile_root()
+        health_file = profile_root / "runtime" / "sp2l_multi_symbol_forward_health.json"
+        raw = json.loads(health_file.read_text(encoding="utf-8"))
         ts = str(raw.get("ts_utc") or "")
         if not ts:
             return None
@@ -234,8 +309,11 @@ def _health_heartbeat_age() -> float | None:
 
 
 def session_status() -> str:
-    runner_pid = _read_pid(RUNNER_LOCK)
-    watchdog_pid = _read_pid(WATCHDOG_PID)
+    profile_root = _active_profile_root()
+    runner_lock = profile_root / "runtime" / "sp2l_multi_symbol_forward_runner.lock"
+    watchdog_pid_file = profile_root / "runtime" / "forward_watchdog.pid"
+    runner_pid = _read_pid(runner_lock)
+    watchdog_pid = _read_pid(watchdog_pid_file)
 
     hb_age = _health_heartbeat_age()
     if hb_age is not None:
@@ -265,7 +343,7 @@ def session_status() -> str:
         if _proc_alive(watchdog_pid)
         else '<span class="dim">not running</span>'
     )
-    flags = _runner_mode_from_process()
+    flags = _runner_mode_from_process(runner_lock)
     if flags is None:
         flags = (
             os.getenv("LIVE_TRADING_ENABLE", "false").lower(),
