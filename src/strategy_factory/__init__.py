@@ -170,3 +170,17 @@ from .forward_orchestration import ForwardOrchestrationError, FactoryBoundForwar
 from .forward_preparation import ForwardPreparationError, ForwardPreparationResult, prepare_holdout_to_forward
 
 from .forward_observed_report import ForwardObservedReport, ForwardObservedReportError, build_forward_observed_report
+
+from .external_strategy import ExternalStrategyError, ExternalStrategyReference
+from .strategy_comparison import (
+    ComparisonMetrics,
+    OneVsOneStrategyComparison,
+    StrategyComparisonError,
+    StrategyComparisonParticipant,
+    build_one_vs_one_comparison,
+)
+from .strategy_comparison_runner import (
+    OneVsOneRunInputs,
+    StrategyComparisonRunnerError,
+    build_one_vs_one_from_runs,
+)
