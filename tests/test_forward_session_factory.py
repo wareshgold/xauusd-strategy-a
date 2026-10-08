@@ -52,6 +52,7 @@ def test_demo_forward_session_freezes_contract():
     session = result.session
     assert result.ready
     assert session.strategy_revision == "REV-1"
+    assert session.lifecycle_state == "PREPARED"
     assert session.manifest_revision == "MANIFEST-1"
     assert session.production_decision is False
     assert session.handoff_fingerprint == "c" * 64

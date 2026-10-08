@@ -24,6 +24,7 @@ class ForwardSessionError(ValueError):
 class DemoForwardSession:
     session_revision: str
     session_id: str
+    lifecycle_state: str
     gate_evidence: str
     gate_fingerprint: str
     handoff_fingerprint: str
@@ -45,6 +46,7 @@ class DemoForwardSession:
         return {
             "session_revision": self.session_revision,
             "session_id": self.session_id,
+            "lifecycle_state": self.lifecycle_state,
             "gate_evidence": self.gate_evidence,
             "gate_fingerprint": self.gate_fingerprint,
             "handoff_fingerprint": self.handoff_fingerprint,
@@ -64,6 +66,10 @@ class DemoForwardSession:
 
     def validate(self) -> None:
         if not self.session_id or not self.strategy_id or not self.strategy_revision:
+            raise ForwardSessionError("forward session identity is incomplete")
+        if self.lifecycle_state != "PREPARED":
+            raise ForwardSessionError("forward session lifecycle must be PREPARED")
+        if not self.strategy_id or not self.strategy_revision:
             raise ForwardSessionError("forward session identity is incomplete")
         if not self.manifest_revision or not self.execution_semantics:
             raise ForwardSessionError("forward session contract is incomplete")
@@ -162,6 +168,7 @@ class DemoForwardSessionFactory:
         draft = DemoForwardSession(
             session_revision=session_revision,
             session_id=session_id,
+            lifecycle_state="PREPARED",
             gate_evidence=gate.gate.evidence,
             gate_fingerprint=_fingerprint_gate(gate),
             handoff_fingerprint=handoff_fingerprint,

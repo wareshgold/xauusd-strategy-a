@@ -150,6 +150,18 @@ def prepare_holdout_to_forward(
         post_holdout_tuning=post_holdout_tuning,
     )
 
+    forward_event = events.append(
+        event_type="HANDOFF_ACCEPTED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        worker_id=worker_id,
+        station="forward",
+        phase="FORWARD",
+        detail=f"Holdout-to-Forward handoff accepted; session={session_result.session.session_id}; session_fingerprint={session_result.session.fingerprint}",
+        output_artifact=session_result.session.fingerprint,
+        research_run_fingerprint=record.run_fingerprint,
+    )
+
     return ForwardPreparationResult(
         holdout_event=holdout_event,
         handoff=handoff,
