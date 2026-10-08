@@ -65,6 +65,14 @@ class ForwardObservedStatistics:
         if self.mean_net is not None:
             self.mean_net.validate()
 
+    @property
+    def canonical_eligible(self) -> bool:
+        return False
+
+    @property
+    def production_eligible(self) -> bool:
+        return False
+
     def as_dict(self) -> dict[str, object]:
         return {
             "evidence_fingerprint": self.evidence_fingerprint,
