@@ -156,3 +156,18 @@ The existing fail-closed `ForwardStatisticalBoundary` remains the enforcement po
 2. Source audit of the worked numerical trade examples for any explicit risk/return calculation.
 3. Separate audit of 2X risk aggregation semantics.
 4. Keep Forward observed pips/net reporting running without converting it to canonical R.
+
+
+## Official author-page cross-check — 2026-10-08
+
+The current official SP2L page independently states:
+
+- the secondary entry may be placed at 50% of the Entry-to-SL distance;
+- SL is behind the candle from which the spike started;
+- TP is presented with a default 1:1 risk/reward relationship.
+
+This strengthens the source evidence for the concepts already recorded in the repository. It still does not supply a complete realized-R accounting contract: exact Entry activation/fill semantics, exact SL price boundary, exact TP price construction, partial/2X aggregation, and ambiguous intrabar outcome handling remain unspecified.
+
+Therefore the official page does **not** justify converting Forward `net` or `pips_result` into canonical R.
+
+Source: official author SP2L page. 
