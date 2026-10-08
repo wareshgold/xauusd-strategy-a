@@ -29,6 +29,7 @@ def _session():
             evidence="holdout-pass",
             details={
                 "production_decision": False,
+                "handoff_fingerprint": _sha("handoff"),
                 "strategy_revision": "STRAT-1",
                 "manifest_revision": "MAN-1",
                 "holdout_dataset_id": "HOLDOUT-1",
@@ -64,6 +65,7 @@ def test_lifecycle_is_monotonic_and_frozen():
     lifecycle.complete(occurred_utc="2026-10-07T10:02:00+00:00")
     assert lifecycle.state is ForwardSessionState.COMPLETED
     assert [e.sequence for e in lifecycle.entries()] == [1, 2, 3]
+    assert all(e.handoff_fingerprint == _sha("handoff") for e in lifecycle.entries())
     lifecycle.assert_frozen_identity(
         strategy_revision="STRAT-1",
         manifest_revision="MAN-1",
@@ -134,6 +136,7 @@ def test_reconciliation_binds_to_completed_session():
         mismatched_positions=0,
     )
     assert receipt.reconciled is True
+    assert receipt.handoff_fingerprint == lifecycle.session.handoff_fingerprint
     receipt.validate()
 
 
