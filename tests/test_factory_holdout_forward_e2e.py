@@ -106,3 +106,73 @@ def test_factory_full_provenance_chain_reaches_reconciliation(tmp_path):
     assert receipt.reconciled is True
 
     assert runtime.runner_result is observed_runner_result
+
+
+def test_factory_forward_runtime_stops_before_reconciliation_when_runner_fails(tmp_path):
+    import pytest
+    from strategy_factory.forward_runtime_bridge import ForwardRuntimeBridgeError
+
+    runner, context = _context(tmp_path / "runner-failure")
+    holdout = HoldoutFactory(runner).prepare_and_run(context)
+    events = FactoryJobEventLedger(path=None)
+    prepared = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+
+    reconciled = False
+
+    def run_forward():
+        raise RuntimeError("synthetic runner failure")
+
+    def reconcile(_result):
+        nonlocal reconciled
+        reconciled = True
+        return {}
+
+    with pytest.raises(ForwardRuntimeBridgeError, match="bound forward runner failed"):
+        run_bound_forward(
+            session=prepared.session,
+            run_forward=run_forward,
+            reconcile=reconcile,
+            started_utc="2026-10-08T02:00:00Z",
+            running_utc="2026-10-08T02:01:00Z",
+            completed_utc="2026-10-08T02:02:00Z",
+        )
+
+    assert reconciled is False
+
+
+def test_factory_forward_runtime_rejects_incomplete_reconciliation_without_fabrication(
+    tmp_path,
+):
+    import pytest
+    from strategy_factory.forward_runtime_bridge import ForwardRuntimeBridgeError
+
+    runner, context = _context(tmp_path / "reconciliation-failure")
+    holdout = HoldoutFactory(runner).prepare_and_run(context)
+    events = FactoryJobEventLedger(path=None)
+    prepared = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+
+    observed_runner_result = {"observed_positions": 2}
+
+    def run_forward():
+        return observed_runner_result
+
+    def reconcile(_result):
+        return {
+            "reconciliation_id": "RECON-INCOMPLETE-1",
+            "broker_server": "SYNTHETIC-MT5",
+            "symbol": "XAUUSD.ecn",
+            "observed_positions": 2,
+        }
+
+    with pytest.raises(
+        ForwardRuntimeBridgeError,
+        match="omitted required observed fields",
+    ):
+        run_bound_forward(
+            session=prepared.session,
+            run_forward=run_forward,
+            reconcile=reconcile,
+            started_utc="2026-10-08T03:00:00Z",
+            running_utc="2026-10-08T03:01:00Z",
+            completed_utc="2026-10-08T03:02:00Z",
+        )
