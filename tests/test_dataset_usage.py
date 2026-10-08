@@ -103,3 +103,19 @@ def test_ledger_is_deterministic_and_serializable():
     assert len(ledger.entries()) == 1
     assert ledger.as_dict()[0]["purpose"] == "DEVELOPMENT"
     ledger.assert_clean()
+
+
+
+def test_untouched_validation_is_allowed_as_validation_input_but_not_fitting_input():
+    registry = DatasetRegistry()
+    d = dataset(role=DatasetRole.UNTOUCHED_VALIDATION, immutable=True)
+    identity = registry.register(d, "CONTENT-ABC")
+    ledger = DatasetUsageLedger(registry)
+
+    entry = ledger.record(spec(d), "CONTENT-ABC", purpose="VALIDATION")
+
+    assert entry.disposition is UsageDisposition.ALLOWED
+    assert entry.dataset_role is DatasetRole.UNTOUCHED_VALIDATION
+    assert entry.registered_fingerprint == identity.fingerprint
+    assert entry.observed_fingerprint == identity.fingerprint
+    assert ledger.entries() == (entry,)
