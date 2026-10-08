@@ -27,7 +27,7 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from pathlib import Path
 
@@ -477,6 +477,123 @@ def today_stats() -> tuple[str, str, str]:
     return stats, orders_html, events
 
 
+def trade_ledger() -> str:
+    """Read-only MT5 trade ledger: current open positions and recently closed trades."""
+    initialized_here = False
+    open_rows = []
+    closed_rows = []
+    try:
+        if not mt5.terminal_info():
+            path = find_mt5_terminal()
+            initialized_here = bool(mt5.initialize(path=str(path)) if path else mt5.initialize())
+        if not mt5.terminal_info():
+            return "<h2>Trades</h2><p class='bad'>MT5 unavailable</p>"
+
+        magic = 26092201
+
+        for pos in sorted(
+            mt5.positions_get() or [],
+            key=lambda p: int(getattr(p, "time", 0) or 0),
+            reverse=True,
+        ):
+            if int(getattr(pos, "magic", 0) or 0) != magic:
+                continue
+            direction = "BUY" if int(pos.type) == 0 else "SELL"
+            open_time = datetime.fromtimestamp(
+                int(pos.time), timezone.utc
+            ).astimezone(IRAN_TZ).strftime("%H:%M:%S")
+            floating = float(pos.profit)
+            open_rows.append(
+                f"<tr><td>{open_time}</td><td>{html.escape(str(pos.symbol))}</td>"
+                f"<td>{direction}</td><td>{int(pos.ticket)}</td><td>{pos.volume:g}</td>"
+                f"<td>{pos.price_open:.2f}</td><td>{pos.sl:.2f}</td><td>{pos.tp:.2f}</td>"
+                f"<td class='{'ok' if floating >= 0 else 'bad'}'>{floating:+.2f}</td></tr>"
+            )
+
+        # MT5 history_deals_get() in this broker environment expects the
+        # broker/server-clock wall time, not runner UTC. Reuse the observed
+        # server offset exactly as the lifecycle reconciliation does.
+        offset = _mt5_server_offset_seconds("XAUUSD.ecn")
+        end_server = datetime.now(timezone.utc) + timedelta(seconds=offset)
+        start_server = end_server - timedelta(days=1)
+        deals = mt5.history_deals_get(start_server, end_server) or []
+
+        by_position = {}
+        for deal in deals:
+            if int(getattr(deal, "magic", 0) or 0) != magic:
+                continue
+            by_position.setdefault(int(deal.position_id), []).append(deal)
+
+        for position_id, position_deals in by_position.items():
+            exits = [
+                d for d in position_deals
+                if int(getattr(d, "entry", -1)) == getattr(mt5, "DEAL_ENTRY_OUT", 1)
+            ]
+            if not exits:
+                continue
+            entries = [
+                d for d in position_deals
+                if int(getattr(d, "entry", -1)) == getattr(mt5, "DEAL_ENTRY_IN", 0)
+            ]
+            if not entries:
+                continue
+            entry = min(
+                entries,
+                key=lambda d: (int(getattr(d, "time", 0) or 0), int(getattr(d, "ticket", 0) or 0)),
+            )
+            exit_deal = max(
+                exits,
+                key=lambda d: (int(getattr(d, "time", 0) or 0), int(getattr(d, "ticket", 0) or 0)),
+            )
+            direction = "BUY" if int(entry.type) == 0 else "SELL"
+            net = sum(
+                float(getattr(d, "profit", 0.0) or 0.0)
+                + float(getattr(d, "commission", 0.0) or 0.0)
+                + float(getattr(d, "swap", 0.0) or 0.0)
+                + float(getattr(d, "fee", 0.0) or 0.0)
+                for d in position_deals
+            )
+            close_time = datetime.fromtimestamp(
+                int(exit_deal.time), timezone.utc
+            ).astimezone(IRAN_TZ).strftime("%H:%M:%S")
+            reason = str(getattr(exit_deal, "comment", "") or "").strip()
+            closed_rows.append(
+                (
+                    int(exit_deal.time),
+                    f"<tr><td>{close_time}</td><td>{html.escape(str(entry.symbol))}</td>"
+                    f"<td>{direction}</td><td>{position_id}</td><td>{entry.volume:g}</td>"
+                    f"<td>{entry.price:.2f}</td><td>{exit_deal.price:.2f}</td>"
+                    f"<td class='{'ok' if net >= 0 else 'bad'}'>{net:+.2f}</td>"
+                    f"<td>{html.escape(reason or '—')}</td></tr>",
+                )
+            )
+
+        closed_html_rows = [
+            row for _, row in sorted(closed_rows, reverse=True)[:20]
+        ]
+        open_html = "".join(open_rows) or (
+            "<tr><td colspan='9' class='dim'>No open Strategy A trades</td></tr>"
+        )
+        closed_html = "".join(closed_html_rows) or (
+            "<tr><td colspan='9' class='dim'>No closed Strategy A trades in the last 24h</td></tr>"
+        )
+        return (
+            "<h2>Open trades</h2><table>"
+            "<tr><th>Open Tehran</th><th>Symbol</th><th>Dir</th><th>Position</th><th>Vol</th>"
+            "<th>Entry</th><th>SL</th><th>TP</th><th>Floating P/L</th></tr>"
+            + open_html + "</table>"
+            "<h2>Closed trades — last 24h</h2><table>"
+            "<tr><th>Close Tehran</th><th>Symbol</th><th>Dir</th><th>Position</th><th>Vol</th>"
+            "<th>Entry</th><th>Exit</th><th>Net USD</th><th>Broker comment</th></tr>"
+            + closed_html + "</table>"
+            "<p class='dim'>Source: MT5 positions/history · Strategy A magic 26092201 · read-only.</p>"
+        )
+    except Exception as exc:
+        return f"<h2>Trades</h2><p class='bad'>MT5 trade ledger error: {html.escape(str(exc))}</p>"
+    finally:
+        if initialized_here:
+            mt5.shutdown()
+
 def render() -> str:
     stats, orders_html, events = today_stats()
     ev_rows = []
@@ -499,7 +616,7 @@ def render() -> str:
         + "".join(ev_rows) + "</table>"
     )
     return (
-        _PG_UP + session_status() + runner_health() + mt5_status() + stats + orders_html + events_html
+        _PG_UP + session_status() + runner_health() + mt5_status() + trade_ledger() + stats + orders_html + events_html
         + f"<p class='dim'>{datetime.now(IRAN_TZ).strftime('%H:%M:%S')} Iran time · "
         + "read-only page · dashboard never places orders</p></body></html>"
     )
