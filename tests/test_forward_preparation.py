@@ -98,3 +98,86 @@ def test_holdout_to_forward_rejects_manifest_drift(tmp_path):
 
     with pytest.raises(ForwardPreparationError, match="manifest_revision"):
         prepare_holdout_to_forward(**kwargs)
+
+
+def test_holdout_to_forward_preserves_handoff_identity_into_session(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+
+    assert result.session.handoff_fingerprint == result.handoff.fingerprint
+    assert result.session.strategy_id == holdout.result.record.strategy_id
+    assert result.session.strategy_revision == holdout.result.record.strategy_revision
+    assert result.session.manifest_revision == holdout.result.record.manifest_revision
+    assert result.session.execution_semantics == holdout.result.record.execution_semantics
+    assert result.session.holdout_dataset_id == holdout.result.record.dataset_id
+    assert (
+        result.session.holdout_dataset_artifact_id
+        == result.handoff.dataset_artifact_id
+    )
+    assert (
+        result.session.holdout_dataset_content_sha256
+        == result.handoff.dataset_content_sha256
+    )
+    result.session.validate()
+
+
+@pytest.mark.parametrize(
+    "field, value, message",
+    [
+        (
+            "forward_dataset_content_sha256",
+            "a" * 64,
+            "Forward dataset identity must differ",
+        ),
+        (
+            "forward_dataset_artifact_id",
+            "HOLDOUT-ARTIFACT",
+            "Forward dataset artifact id must differ",
+        ),
+    ],
+)
+def test_holdout_to_forward_rejects_forward_dataset_reuse(
+    tmp_path, field, value, message
+):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events)
+    if field == "forward_dataset_content_sha256":
+        kwargs[field] = context.holdout_dataset_content_sha256
+    else:
+        kwargs[field] = context.holdout_dataset_artifact_id
+
+    with pytest.raises(ForwardGateError, match=message):
+        prepare_holdout_to_forward(**kwargs)
+
+
+def test_holdout_to_forward_rejects_strategy_revision_drift_in_source_record(
+    tmp_path,
+):
+    from dataclasses import replace
+
+    holdout, context, events = _prepared(tmp_path)
+    tampered_record = replace(
+        holdout.result.record,
+        strategy_revision="REV-DRIFT",
+    )
+    tampered_result = replace(
+        holdout,
+        result=replace(holdout.result, record=tampered_record),
+    )
+
+    with pytest.raises(ValueError, match="record fingerprint mismatch"):
+        prepare_holdout_to_forward(
+            **_kwargs(tampered_result, context, events)
+        )
+
+
+def test_holdout_to_forward_never_authorizes_production(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+
+    assert result.session.production_decision is False
+    assert result.gate.gate.details["production_decision"] is False
+    assert all(
+        event.station != "production"
+        for event in events.entries()
+    )
