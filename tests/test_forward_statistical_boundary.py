@@ -51,13 +51,15 @@ def statistical():
     metrics = ResearchMetrics(
         trades=1,
         decisive_trades=1,
-        ambiguous_trades=0,
         wins=1,
         losses=0,
+        ambiguous=0,
         win_rate=1.0,
         net_r=1.0,
         profit_factor=2.0,
         max_drawdown_r=0.0,
+        gross_profit_r=1.0,
+        gross_loss_r=0.0,
     )
     return evaluate_statistical_validation(
         metrics,
@@ -77,7 +79,7 @@ def test_forward_statistical_boundary_binds_explicit_mapping():
         statistical_result=statistical(),
         trade_returns_r=(1.0,),
         mapping_revision="EXPLICIT-R-MAPPING-1",
-        mapping_source="source-confirmed-contract-placeholder",
+        mapping_source="test-fixture-explicit-mapping",
     )
     result.validate(observed())
     assert result.evidence_fingerprint == observed().fingerprint
