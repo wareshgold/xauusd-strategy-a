@@ -236,6 +236,67 @@ def test_holdout_factory_rejects_revision_mismatch(tmp_path):
         raise AssertionError("holdout must use the frozen upstream revision")
 
 
+def test_holdout_factory_rejects_execution_semantics_drift(tmp_path):
+    runner, context = _context(tmp_path)
+    drifted_spec = HistoricalTestSpec(
+        test_id=context.spec.test_id,
+        strategy_id=context.spec.strategy_id,
+        strategy_revision=context.spec.strategy_revision,
+        dataset=context.spec.dataset,
+        execution_semantics=ExecutionSemantics.TICK_FEASIBLE,
+        parameters=context.spec.parameters,
+        objective=context.spec.objective,
+    )
+    context = HoldoutFactoryContext(
+        spec=drifted_spec,
+        manifest_revision=context.manifest_revision,
+        job_id=context.job_id,
+        readiness_snapshot=context.readiness_snapshot,
+        handoff=context.handoff,
+        source_record=context.source_record,
+        source_event=context.source_event,
+        holdout_dataset_artifact_path=context.holdout_dataset_artifact_path,
+        holdout_dataset_artifact_id=context.holdout_dataset_artifact_id,
+        holdout_dataset_content_sha256=context.holdout_dataset_content_sha256,
+        adapter=context.adapter,
+        strategy_revision_frozen=context.strategy_revision_frozen,
+        evidence_id=context.evidence_id,
+        purpose=context.purpose,
+    )
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "execution_semantics" in str(exc)
+    else:
+        raise AssertionError("holdout must preserve upstream execution semantics")
+
+
+def test_holdout_factory_rejects_manifest_drift(tmp_path):
+    runner, context = _context(tmp_path)
+    context = HoldoutFactoryContext(
+        spec=context.spec,
+        manifest_revision="DRIFTED-MANIFEST",
+        job_id=context.job_id,
+        readiness_snapshot=context.readiness_snapshot,
+        handoff=context.handoff,
+        source_record=context.source_record,
+        source_event=context.source_event,
+        holdout_dataset_artifact_path=context.holdout_dataset_artifact_path,
+        holdout_dataset_artifact_id=context.holdout_dataset_artifact_id,
+        holdout_dataset_content_sha256=context.holdout_dataset_content_sha256,
+        adapter=context.adapter,
+        strategy_revision_frozen=context.strategy_revision_frozen,
+        evidence_id=context.evidence_id,
+        purpose=context.purpose,
+    )
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "manifest_revision" in str(exc)
+    else:
+        raise AssertionError("holdout must use the upstream manifest revision")
+
+
 def test_holdout_factory_is_deterministic(tmp_path):
     runner1, context1 = _context(tmp_path / "one")
     result1 = HoldoutFactory(runner1).prepare_and_run(context1)
