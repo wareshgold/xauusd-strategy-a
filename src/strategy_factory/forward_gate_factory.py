@@ -137,6 +137,7 @@ class ForwardGateFactory:
             details={
                 "source_station": "holdout",
                 "destination_station": "forward",
+                "handoff_fingerprint": context.handoff.fingerprint,
                 "strategy_revision": context.source_record.strategy_revision,
                 "manifest_revision": context.manifest_revision,
                 "holdout_dataset_id": context.source_record.dataset_id,
