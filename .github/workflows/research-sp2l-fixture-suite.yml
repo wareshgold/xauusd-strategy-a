@@ -37,4 +37,4 @@ jobs:
       - name: Build
         run: npm run build
       - name: Run deterministic tests
-        run: npm test -- --runInBand
+        run: npm test
