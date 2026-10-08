@@ -5,7 +5,7 @@ import hashlib
 import json
 from typing import Any
 
-from .external_strategy import ExternalStrategyReference
+from .external_strategy import ExternalStrategyError, ExternalStrategyReference
 from .metrics import ResearchMetrics
 from .test_contract import ExecutionSemantics, TestDataset
 
@@ -120,7 +120,7 @@ class OneVsOneStrategyComparison:
     def _fingerprint_payload(self) -> dict[str, Any]:
         return {
             "comparison_revision": self.comparison_revision,
-            "dataset": self.dataset.as_dict(),
+            "dataset": {\n                "dataset_id": self.dataset.dataset_id,\n                "role": self.dataset.role.value,\n                "data_revision": self.dataset.data_revision,\n                "start": self.dataset.start,\n                "end": self.dataset.end,\n                "source": self.dataset.source,\n                "immutable": self.dataset.immutable,\n            },
             "execution_semantics": self.execution_semantics.value,
             "baseline": self.baseline.as_dict(),
             "challenger": self.challenger.as_dict(),
