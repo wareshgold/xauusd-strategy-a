@@ -315,7 +315,7 @@ def _run_scoped_pending_lifecycle(cfg_runtime, state):
     tracked = set(state["orders"])
     start_api, end_api = _mt5_history_bounds_utc(_RUN_STARTED_UTC, datetime.now(timezone.utc), symbol)
     orders = list(mt5.history_orders_get(start_api, end_api, group=symbol) or [])
-    orders += list(mt5.orders_get(symbol=symbol) or [])
+    orders.extend(list(mt5.orders_get(symbol=symbol) or []))
     for order in orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
         order_magic = int(getattr(order, "magic", 0) or 0)
