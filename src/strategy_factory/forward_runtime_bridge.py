@@ -21,6 +21,7 @@ class ForwardRuntimeBridgeError(RuntimeError):
 class ForwardRuntimeResult:
     session_id: str
     session_fingerprint: str
+    handoff_fingerprint: str
     lifecycle_events: tuple[Any, ...]
     reconciliation: MT5ReconciliationReceipt
     runner_result: Any
@@ -106,6 +107,7 @@ def run_bound_forward(
     return ForwardRuntimeResult(
         session_id=session.session_id,
         session_fingerprint=session.fingerprint,
+        handoff_fingerprint=session.handoff_fingerprint,
         lifecycle_events=lifecycle.entries(),
         reconciliation=receipt,
         runner_result=runner_result,
