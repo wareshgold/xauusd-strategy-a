@@ -73,8 +73,6 @@ class DemoForwardSessionEvent:
             raise ForwardSessionLifecycleError("session_fingerprint must be SHA-256")
         if len(self.handoff_fingerprint) != 64:
             raise ForwardSessionLifecycleError("handoff_fingerprint must be SHA-256")
-        if len(self.handoff_fingerprint) != 64:
-            raise ForwardSessionLifecycleError("handoff_fingerprint must be SHA-256")
         if not self.strategy_id or not self.strategy_revision:
             raise ForwardSessionLifecycleError("session event strategy identity is incomplete")
         if not self.manifest_revision or not self.execution_semantics:
@@ -220,6 +218,8 @@ class MT5ReconciliationReceipt:
             raise ForwardSessionLifecycleError("reconciliation identity is incomplete")
         if len(self.session_fingerprint) != 64:
             raise ForwardSessionLifecycleError("session_fingerprint must be SHA-256")
+        if len(self.handoff_fingerprint) != 64:
+            raise ForwardSessionLifecycleError("handoff_fingerprint must be SHA-256")
         if not self.broker_server or not self.symbol:
             raise ForwardSessionLifecycleError("MT5 reconciliation endpoint identity is incomplete")
         if min(self.observed_positions, self.matched_positions, self.mismatched_positions) < 0:
@@ -256,6 +256,7 @@ def bind_mt5_reconciliation(
         raise ForwardSessionLifecycleError("MT5 reconciliation requires COMPLETED forward session")
     if any(
         event.session_fingerprint != session.fingerprint
+        or event.handoff_fingerprint != session.handoff_fingerprint
         or event.strategy_revision != session.strategy_revision
         or event.manifest_revision != session.manifest_revision
         or event.execution_semantics != session.execution_semantics
