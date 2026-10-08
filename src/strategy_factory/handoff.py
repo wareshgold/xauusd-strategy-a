@@ -21,6 +21,7 @@ HANDOFF_ROUTES = {
     ("discovery", "stability"),
     ("stability", "validation"),
     ("stability", "robustness"),
+    ("validation", "robustness"),
     ("robustness", "holdout"),
     ("holdout", "forward"),
 }
