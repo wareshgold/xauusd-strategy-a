@@ -156,3 +156,122 @@ def test_reconciliation_count_mismatch_is_rejected():
             matched_positions=1,
             mismatched_positions=0,
         )
+
+
+def test_event_validation_rejects_handoff_fingerprint_drift():
+    from dataclasses import replace
+
+    lifecycle = DemoForwardSessionLifecycle(_session())
+    event = lifecycle.start(occurred_utc="2026-10-07T10:00:00+00:00")
+    forged = replace(event, handoff_fingerprint=_sha("different-handoff"))
+    with pytest.raises(ForwardSessionLifecycleError):
+        forged.validate()
+
+
+def test_reconciliation_binding_rejects_handoff_drift_in_lifecycle():
+    from dataclasses import replace
+
+    lifecycle = DemoForwardSessionLifecycle(_session())
+    lifecycle.start(occurred_utc="2026-10-07T10:00:00+00:00")
+    lifecycle.run(occurred_utc="2026-10-07T10:01:00+00:00")
+    lifecycle.complete(occurred_utc="2026-10-07T10:02:00+00:00")
+
+    forged = replace(
+        lifecycle.entries()[1],
+        handoff_fingerprint=_sha("different-handoff"),
+    )
+    lifecycle._events[1] = forged
+
+    with pytest.raises(ForwardSessionLifecycleError):
+        bind_mt5_reconciliation(
+            session=lifecycle.session,
+            lifecycle=lifecycle,
+            reconciliation_id="REC-DRIFT-HANDOFF",
+            broker_server="OtetGroup-MT5",
+            symbol="XAUUSD.ecn",
+            observed_positions=1,
+            matched_positions=1,
+            mismatched_positions=0,
+        )
+
+
+def test_reconciliation_binding_rejects_session_fingerprint_drift_in_lifecycle():
+    from dataclasses import replace
+
+    lifecycle = DemoForwardSessionLifecycle(_session())
+    lifecycle.start(occurred_utc="2026-10-07T10:00:00+00:00")
+    lifecycle.run(occurred_utc="2026-10-07T10:01:00+00:00")
+    lifecycle.complete(occurred_utc="2026-10-07T10:02:00+00:00")
+
+    forged = replace(
+        lifecycle.entries()[0],
+        session_fingerprint=_sha("different-session"),
+    )
+    lifecycle._events[0] = forged
+
+    with pytest.raises(ForwardSessionLifecycleError):
+        bind_mt5_reconciliation(
+            session=lifecycle.session,
+            lifecycle=lifecycle,
+            reconciliation_id="REC-DRIFT-SESSION",
+            broker_server="OtetGroup-MT5",
+            symbol="XAUUSD.ecn",
+            observed_positions=1,
+            matched_positions=1,
+            mismatched_positions=0,
+        )
+
+
+def test_reconciliation_binding_rejects_strategy_manifest_or_execution_drift():
+    from dataclasses import replace
+
+    lifecycle = DemoForwardSessionLifecycle(_session())
+    lifecycle.start(occurred_utc="2026-10-07T10:00:00+00:00")
+    lifecycle.run(occurred_utc="2026-10-07T10:01:00+00:00")
+    lifecycle.complete(occurred_utc="2026-10-07T10:02:00+00:00")
+
+    for field, value in (
+        ("strategy_revision", "STRAT-DRIFT"),
+        ("manifest_revision", "MAN-DRIFT"),
+        ("execution_semantics", "DRIFTED_SEMANTICS"),
+    ):
+        forged = replace(lifecycle.entries()[0], **{field: value})
+        lifecycle._events[0] = forged
+        with pytest.raises(ForwardSessionLifecycleError):
+            bind_mt5_reconciliation(
+                session=lifecycle.session,
+                lifecycle=lifecycle,
+                reconciliation_id=f"REC-DRIFT-{field}",
+                broker_server="OtetGroup-MT5",
+                symbol="XAUUSD.ecn",
+                observed_positions=1,
+                matched_positions=1,
+                mismatched_positions=0,
+            )
+        lifecycle._events[0] = replace(
+            lifecycle.entries()[0],
+            **{field: getattr(lifecycle.session, field)},
+        )
+
+
+def test_reconciliation_receipt_validation_rejects_fingerprint_tampering():
+    from dataclasses import replace
+
+    lifecycle = DemoForwardSessionLifecycle(_session())
+    lifecycle.start(occurred_utc="2026-10-07T10:00:00+00:00")
+    lifecycle.run(occurred_utc="2026-10-07T10:01:00+00:00")
+    lifecycle.complete(occurred_utc="2026-10-07T10:02:00+00:00")
+    receipt = bind_mt5_reconciliation(
+        session=lifecycle.session,
+        lifecycle=lifecycle,
+        reconciliation_id="REC-TAMPER",
+        broker_server="OtetGroup-MT5",
+        symbol="XAUUSD.ecn",
+        observed_positions=1,
+        matched_positions=1,
+        mismatched_positions=0,
+    )
+
+    forged = replace(receipt, handoff_fingerprint=_sha("different-handoff"))
+    with pytest.raises(ForwardSessionLifecycleError):
+        forged.validate()
