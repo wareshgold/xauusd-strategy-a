@@ -25,4 +25,8 @@ jobs:
 
       - name: Run Factory focused suite
         run: |
-          python -m pytest             tests/test_factory_e2e_smoke.py             tests/test_discovery_adapter.py             tests/test_mt5_dataset.py             tests/test_discovery_factory.py             tests/test_handoff_dataset_binding.py             tests/test_stability_factory.py             tests/test_validation_factory.py -q
+          python -m pytest             tests/test_factory_e2e_smoke.py             tests/test_discovery_adapter.py             tests/test_mt5_dataset.py             tests/test_discovery_factory.py             tests/test_handoff_dataset_binding.py             tests/test_stability_factory.py             tests/test_validation_factory.py \
+          tests/test_forward_observed_evidence.py \
+          tests/test_forward_observed_statistics.py \
+          tests/test_forward_statistical_boundary.py \
+          tests/test_forward_observed_report.py -q

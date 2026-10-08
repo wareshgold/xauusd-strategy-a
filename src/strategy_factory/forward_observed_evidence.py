@@ -222,7 +222,7 @@ def observations_from_lifecycle_events(
             raise ForwardObservedEvidenceError("lifecycle entry is not an integer") from exc
         if entry == 0:
             continue
-        required = ("deal", "order", "position", "profit", "commission", "swap", "net")
+        required = ("deal", "order", "position", "entry_price", "exit_price", "profit", "commission", "swap", "net")
         missing = [name for name in required if event.get(name) is None]
         if missing:
             raise ForwardObservedEvidenceError(

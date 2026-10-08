@@ -168,3 +168,5 @@ from .mt5_reconciliation_adapter import (
 from .forward_orchestration import ForwardOrchestrationError, FactoryBoundForwardResult, run_factory_bound_forward
 
 from .forward_preparation import ForwardPreparationError, ForwardPreparationResult, prepare_holdout_to_forward
+
+from .forward_observed_report import ForwardObservedReport, ForwardObservedReportError, build_forward_observed_report
