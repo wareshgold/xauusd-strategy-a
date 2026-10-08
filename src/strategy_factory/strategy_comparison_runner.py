@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from .external_strategy import ExternalStrategyReference
 from .runner import ResearchJobRunResult
 from .strategy_comparison import (
+    ComparisonMetrics,
     OneVsOneStrategyComparison,
     StrategyComparisonParticipant,
     build_one_vs_one_comparison,
@@ -74,18 +75,12 @@ def build_one_vs_one_from_runs(
     baseline = StrategyComparisonParticipant(
         strategy_id=b_spec.strategy_id,
         strategy_revision=b_spec.strategy_revision,
-        metrics=__import__(
-            "strategy_factory.strategy_comparison",
-            fromlist=["ComparisonMetrics"],
-        ).ComparisonMetrics.from_research_metrics(b_result.receipt.metrics),
+        metrics=ComparisonMetrics.from_research_metrics(b_result.receipt.metrics),
     )
     challenger = StrategyComparisonParticipant(
         strategy_id=c_spec.strategy_id,
         strategy_revision=c_spec.strategy_revision,
-        metrics=__import__(
-            "strategy_factory.strategy_comparison",
-            fromlist=["ComparisonMetrics"],
-        ).ComparisonMetrics.from_research_metrics(c_result.receipt.metrics),
+        metrics=ComparisonMetrics.from_research_metrics(c_result.receipt.metrics),
         external_reference=inputs.challenger_external_reference,
     )
 
