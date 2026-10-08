@@ -22,6 +22,7 @@ def _gate():
             "holdout_dataset_id": "HOLDOUT-DATA-1",
             "holdout_dataset_sha256": "a" * 64,
             "holdout_artifact_id": "HOLDOUT-ART-1",
+            "handoff_fingerprint": "c" * 64,
             "production_decision": False,
         },
     )
@@ -53,6 +54,7 @@ def test_demo_forward_session_freezes_contract():
     assert session.strategy_revision == "REV-1"
     assert session.manifest_revision == "MANIFEST-1"
     assert session.production_decision is False
+    assert session.handoff_fingerprint == "c" * 64
     assert session.post_holdout_tuning is False
     session.validate()
 
@@ -112,3 +114,17 @@ def test_demo_forward_session_is_deterministic():
     a = DemoForwardSessionFactory().prepare(**kwargs).session
     b = DemoForwardSessionFactory().prepare(**kwargs).session
     assert a == b
+
+
+def test_demo_forward_session_rejects_missing_handoff_fingerprint(tmp_path):
+    gate = _gate()
+    gate.details.pop("handoff_fingerprint")
+    with pytest.raises(ForwardSessionError, match="handoff fingerprint"):
+        DemoForwardSessionFactory().prepare(
+            gate=type("R", (), {"gate": gate})(),
+            source_record=_record(),
+            session_id="FWD-SESSION-1",
+            forward_dataset_id="FWD-DATA-1",
+            forward_dataset_artifact_id="FWD-ART-1",
+            forward_dataset_content_sha256="b" * 64,
+        )
