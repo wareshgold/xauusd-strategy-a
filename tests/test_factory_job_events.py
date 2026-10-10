@@ -532,3 +532,17 @@ def test_recovery_summary_ignores_non_lifecycle_handoff_fingerprint():
     assert summary[0]["job_fingerprint"] == job.fingerprint
     assert summary[0]["status"] == "TERMINAL_COMPLETED"
     assert summary[0]["action"] == "NO_RETRY"
+
+
+def test_job_event_ledger_rejects_non_hex_job_fingerprint():
+    ledger = FactoryJobEventLedger(path=None)
+    with pytest.raises(ValueError, match="lowercase hexadecimal SHA-256"):
+        ledger.append(
+            event_type="QUEUED",
+            job_id="JOB-BAD-FINGERPRINT",
+            job_fingerprint="g" * 64,
+            station="discovery",
+            phase="DISCOVERY",
+        )
+
+    assert ledger.entries() == ()
