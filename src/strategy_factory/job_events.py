@@ -145,6 +145,11 @@ class FactoryJobEventLedger:
         grouped: dict[str, list[FactoryJobEvent]] = {}
         fingerprints: dict[str, str] = {}
         for event in self._events:
+            # Plan-level reconstruction markers are audit controls, not jobs.
+            # They are kept in the append-only journal/report identity but must
+            # not appear as synthetic UNKNOWN jobs in the recovery summary.
+            if event.event_type == "QUEUE_RECONSTRUCTION_APPLIED":
+                continue
             prior_fingerprint = fingerprints.setdefault(
                 event.job_id, event.job_fingerprint
             )
