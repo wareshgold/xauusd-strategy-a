@@ -131,7 +131,35 @@ Two commits add regression coverage only; no production implementation was chang
 3. If green, add a narrowly scoped, read-only reporting adapter or dashboard section with explicit journal status/hash/findings; test missing, unreadable, invalid, and valid journal states. Do not let rendering trigger job execution or repair.
 4. Update this snapshot only after the next user-confirmed test result; do not duplicate prior work.
 
-## 6. Resume command
+## 6. Latest dashboard integration — pending local validation
+
+### User-confirmed validation before dashboard changes
+The user reported the following results after pulling the Journal edge-case test commits:
+- Focused tests: **53 passed in 1.25s**
+- Full suite: **735 passed in 5.20s**
+- Working tree remained aligned with origin; the same five untracked runtime/cache paths remained untouched.
+
+These results validate the Journal/Audit edge-case test additions at that point, not the dashboard changes listed below.
+
+### Dashboard changes committed after that validation
+- `24fe39d5` — `feat(factory): expose read-only journal audit in dashboard`
+  - Adds a read-only dashboard panel for worker/journal audit status, integrity status, event count, finding count, journal path, SHA-256 and findings.
+  - Uses the existing `inspect_worker_journal_file_consistency` API. No dispatch/recovery/retry/write path is invoked by the panel.
+- `a73576fc` — `test(factory): cover read-only dashboard journal audit`
+  - Tests display of a valid/consistent audit and a review-required invalid journal, including HTML escaping of diagnostic text.
+- `5e7f2536` — `fix(factory): distinguish journal audit status severity`
+  - Styles `VALID`/`CONSISTENT` as healthy and `REVIEW_REQUIRED` / `*_REVIEW_REQUIRED` as an error state.
+
+**Current validation status: PENDING.** These dashboard changes have been pushed to the working branch but have not yet been run in the user's local environment. Do not call the current branch green until focused and full tests are rerun after pulling.
+
+### Immediate resume sequence
+1. `git pull --ff-only`, inspect `git log -5 --oneline` and `git status --short --branch`.
+2. Run `tests/test_factory_dashboard.py` plus the Journal/Audit focused suite.
+3. Run the full `tests/` suite.
+4. Preserve all untracked runtime/cache files; no cleanup or staging.
+5. If tests pass, test the panel against missing, unreadable, invalid and valid journal states and then record the verified commit/results here.
+
+## 7. Resume command
 
 ```powershell
 git pull --ff-only
