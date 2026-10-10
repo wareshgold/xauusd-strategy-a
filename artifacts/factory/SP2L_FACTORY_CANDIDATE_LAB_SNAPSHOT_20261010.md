@@ -77,7 +77,7 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 ## 6. Immediate next action
 
-The recovery lifecycle matrix is now locally verified. Next, extend test-only coverage for the Orchestrator process-interruption boundary: if interruption occurs after durable DISPATCHED but before a terminal event, verify the system leaves an explicit reconciliation case and does not silently retry/requeue the job. Inspect existing fault tests first and keep the change isolated to synthetic tests. Preserve the five untracked paths above.
+The recovery lifecycle matrix is locally verified (42 focused / 746 full). A new test-only process-interruption case has now been committed as `c66326e5` in `tests/test_factory_orchestrator_process_interruption.py`. It simulates a process-level interruption after durable DISPATCHED, reloads the journal, and checks `INTERRUPTED_REVIEW_REQUIRED`, no fabricated terminal event, no automatic requeue, and unchanged journal bytes. **This new test is pending local validation**. Pull and run the focused test, then the related Orchestrator/recovery suites and full suite. Preserve the five untracked paths above.
 
 ```powershell
 git pull --ff-only
