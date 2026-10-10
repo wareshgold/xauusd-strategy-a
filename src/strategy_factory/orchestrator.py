@@ -101,7 +101,9 @@ class FactoryOrchestrator:
         self.events.append(
             event_type="HANDOFF_ACCEPTED",
             job_id=record.run_id,
-            job_fingerprint=record.run_fingerprint,
+            # HANDOFF_ACCEPTED remains attached to the source job identity;
+            # the run fingerprint is separately recorded on its COMPLETED event.
+            job_fingerprint=handoff.job_fingerprint,
             station=destination_station,
             phase=destination_station.upper(),
             detail=detail,
