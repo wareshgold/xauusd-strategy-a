@@ -8,12 +8,13 @@
 
 ## 1. Latest user-verified baseline
 
-- User confirmed the branch is pulled and synced at `78c13ffb` (`research/factory-candidate-lab-20261010`).
-- Latest user-verified run after commits `a414a12c`, `6cd27e2b`, and `78c13ffb`:
+- Latest user-verified baseline is commit `78c13ffb` on `research/factory-candidate-lab-20261010`.
+- User-verified run after commits `a414a12c`, `6cd27e2b`, and `78c13ffb`:
   - Focused dispatch/recovery/lifecycle suite: **49 passed in 1.67s**
   - Full suite: **748 passed in 5.38s**
 - The focused run includes `tests/test_factory_orchestrator_dispatch_boundary.py` and `tests/test_factory_orchestrator_process_interruption.py`.
-- Git status was clean relative to origin; preserve the five untracked runtime/cache paths listed below.
+- Subsequent commits `c430f7b9`, `458e6a39`, and `6d3599bc` record the verified baseline and add a submit-telemetry fault isolation fix/test. **These subsequent code/test changes are pending local validation.**
+- Preserve the five untracked runtime/cache paths listed below.
 - Preserve the five pre-existing untracked runtime/cache paths listed below.
 
 Focused command just confirmed by the user:
@@ -80,14 +81,13 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 The process-interruption and worker-start dispatch boundary are now user-verified locally (**49 focused / 748 full**). Commit `a414a12c` removes the in-memory queue entry immediately after durable `DISPATCHED`, before worker startup; commit `6cd27e2b` verifies that a startup fault does not execute or redispatch the job and recovery reports `INTERRUPTED_REVIEW_REQUIRED`. These changes are validated by the reported test runs; they do not establish a trading edge or production readiness.
 
-**Next engineering investigation:** audit telemetry publication failure during `submit()`. The current method durably appends `QUEUED`, mutates the in-memory queue, and then calls `fleet.publish()` without the safe-publication wrapper used in other lifecycle paths. Determine and test the intended contract before changing behavior: a telemetry-only fault should not mislead callers into retrying a successfully queued job. Keep the change limited to orchestration telemetry and preserve all source/holdout/production guardrails. Preserve the five untracked paths above.
+**Latest pending change — submit telemetry fault isolation:** after `QUEUED` is durably journaled and the in-memory queue updated, a failing `fleet.publish()` previously propagated out of `submit()`. That could make a caller believe submission failed and retry an already accepted job. Commit `458e6a39` routes this telemetry attempt through the safe publication recorder, and commit `6d3599bc` adds a synthetic regression test. The job remains queued; the publication error is recorded as `publish_after_submit`. **Pending user validation; do not call it verified until tests pass locally.**
 
+Pull the latest branch, inspect the log/status, run the focused journal-fault and dispatch/recovery tests, then the full suite. Preserve all five untracked paths:
 ```powershell
 git pull --ff-only
-git log -5 --oneline
+git log -6 --oneline
 git status --short --branch
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_recovery_lifecycle_matrix_integration.py tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py -q
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_orchestrator_journal_faults.py tests/test_factory_orchestrator_dispatch_boundary.py tests/test_factory_orchestrator_process_interruption.py tests/test_factory_orchestrator_journal_faults.py tests/test_factory_recovery_lifecycle_matrix_integration.py tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py -q
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 ```
-
-The latest user-confirmed counts are **48 focused / 747 full** at `b9cbb3a9`.
