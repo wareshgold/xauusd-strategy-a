@@ -332,6 +332,59 @@ def test_failed_persistence_does_not_advance_in_memory_sequence(tmp_path: Path, 
     assert not path.exists()
 
 
+def test_partial_journal_append_is_rolled_back_before_retry(tmp_path: Path, monkeypatch):
+    path = tmp_path / "partial-write-events.jsonl"
+    original_job = make_job("JOB-PARTIAL-WRITE-ORIGINAL")
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id=original_job.job_id,
+        job_fingerprint=original_job.fingerprint,
+    )
+    original_bytes = path.read_bytes()
+    original_entries = ledger.entries()
+    failing_job = make_job("JOB-PARTIAL-WRITE-FAILED")
+    original_open = Path.open
+
+    class PartialWriteThenFail:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback):
+            self.handle.close()
+            return False
+
+        def write(self, value):
+            self.handle.write(value[:12])
+            self.handle.flush()
+            raise OSError("synthetic partial journal write failure")
+
+        def flush(self):
+            return self.handle.flush()
+
+    def partial_append(self, *args, **kwargs):
+        mode = args[0] if args else kwargs.get("mode", "r")
+        handle = original_open(self, *args, **kwargs)
+        if self == path and "a" in mode:
+            return PartialWriteThenFail(handle)
+        return handle
+
+    monkeypatch.setattr(Path, "open", partial_append)
+
+    with pytest.raises(OSError, match="synthetic partial journal write failure"):
+        ledger.append(
+            event_type="QUEUED",
+            job_id=failing_job.job_id,
+            job_fingerprint=failing_job.fingerprint,
+        )
+
+    assert path.read_bytes() == original_bytes
+    assert ledger.entries() == original_entries
+
+
 def test_restart_reports_persisted_jobs_without_automatic_queue_replay(tmp_path: Path):
     path = tmp_path / "restart-recovery.jsonl"
     queued_job = make_job("JOB-RESTART-QUEUED")
