@@ -232,6 +232,50 @@ def test_persisted_ledger_restores_sequence_and_rejects_replayed_job(tmp_path: P
         orchestrator.submit(job, station="stability", phase="STABILITY")
 
 
+def test_submit_journal_failure_does_not_create_phantom_pending_job(monkeypatch):
+    job = make_job("JOB-SUBMIT-PERSISTENCE-FAILURE")
+    events = FactoryJobEventLedger(path=None)
+    fleet = FactoryWorkerFleet([FactoryWorker("W01")])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=events)
+
+    def fail_append(**_kwargs):
+        raise OSError("synthetic journal failure")
+
+    monkeypatch.setattr(events, "append", fail_append)
+    with pytest.raises(OSError, match="synthetic journal failure"):
+        orchestrator.submit(job, station="discovery", phase="DISCOVERY")
+
+    assert orchestrator.pending() == ()
+    assert events.entries() == ()
+    assert fleet.get("W01").state == "IDLE"
+
+
+def test_dispatch_journal_failure_preserves_queue_and_idle_worker(monkeypatch):
+    job = make_job("JOB-DISPATCH-PERSISTENCE-FAILURE")
+    events = FactoryJobEventLedger(path=None)
+    fleet = FactoryWorkerFleet([FactoryWorker("W01")])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=events)
+    orchestrator.submit(job, station="discovery", phase="DISCOVERY")
+
+    original_append = events.append
+
+    def fail_dispatch(**kwargs):
+        if kwargs.get("event_type") == "DISPATCHED":
+            raise OSError("synthetic dispatch journal failure")
+        return original_append(**kwargs)
+
+    monkeypatch.setattr(events, "append", fail_dispatch)
+    with pytest.raises(OSError, match="synthetic dispatch journal failure"):
+        orchestrator.run_next(
+            worker_id="W01",
+            execute=lambda _job, _worker: {"output_artifact": "MUST-NOT-RUN"},
+        )
+
+    assert [item.job.job_id for item in orchestrator.pending()] == [job.job_id]
+    assert fleet.get("W01").state == "IDLE"
+    assert [event.event_type for event in events.entries()] == ["QUEUED"]
+
+
 def test_failed_persistence_does_not_advance_in_memory_sequence(tmp_path: Path, monkeypatch):
     path = tmp_path / "blocked-events.jsonl"
     ledger = FactoryJobEventLedger(path)
