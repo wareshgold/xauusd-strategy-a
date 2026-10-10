@@ -855,7 +855,7 @@ def test_journal_inspector_reports_event_validation_line_and_preserves_bytes(tmp
     )
     payload = json.loads(path.read_text(encoding="utf-8"))
     payload["job_fingerprint"] = "g" * 64
-    path.write_text(json.dumps(payload) + "\\n", encoding="utf-8")
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     before = path.read_bytes()
 
     report = inspect_job_journal_file(path)
