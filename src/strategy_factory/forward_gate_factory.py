@@ -21,6 +21,13 @@ from .test_contract import DatasetRole
 class ForwardGateError(RuntimeError):
     """Raised when a Forward readiness gate cannot be proven."""
 
+def _is_sha256_digest(value: str) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(char in "0123456789abcdef" for char in value)
+    )
+
 
 @dataclass(frozen=True)
 class ForwardGateContext:
@@ -78,16 +85,24 @@ class ForwardGateFactory:
             raise ForwardGateError(
                 "Forward manifest_revision does not match the Holdout research record"
             )
+        if context.readiness_snapshot.manifest_revision != context.manifest_revision:
+            raise ForwardGateError(
+                "Forward manifest_revision does not match the frozen readiness snapshot"
+            )
         if context.source_record.strategy_id != context.readiness_snapshot.strategy_id:
             raise ForwardGateError(
                 "Forward strategy_id does not match the frozen readiness snapshot"
             )
+        if context.source_record.snapshot_fingerprint != context.readiness_snapshot.fingerprint:
+            raise ForwardGateError(
+                "readiness snapshot fingerprint does not match the Holdout research record"
+            )
 
         holdout_sha = context.handoff.dataset_content_sha256
         holdout_artifact_id = context.handoff.dataset_artifact_id
-        if len(holdout_sha) != 64 or not holdout_artifact_id:
+        if not _is_sha256_digest(holdout_sha) or not holdout_artifact_id:
             raise ForwardGateError(
-                "Holdout handoff must carry complete dataset identity"
+                "Holdout handoff must carry a valid SHA-256 and complete dataset identity"
             )
 
         validate_evidence_bound_handoff(
@@ -104,9 +119,9 @@ class ForwardGateFactory:
             raise ForwardGateError("forward_dataset_id is required")
         if not context.forward_dataset_artifact_id:
             raise ForwardGateError("forward dataset artifact id is required")
-        if len(context.forward_dataset_content_sha256) != 64:
+        if not _is_sha256_digest(context.forward_dataset_content_sha256):
             raise ForwardGateError(
-                "forward dataset content SHA must be a 64-character SHA-256"
+                "forward dataset content SHA must be a lowercase hexadecimal SHA-256"
             )
         if context.forward_dataset_content_sha256 == holdout_sha:
             raise ForwardGateError(
