@@ -251,3 +251,65 @@ def test_persisted_ledger_fails_closed_on_truncated_jsonl_record(tmp_path: Path)
     with pytest.raises(json.JSONDecodeError):
         FactoryJobEventLedger(path)
 
+def test_recovery_summary_requires_review_and_never_requests_auto_retry(tmp_path: Path):
+    ledger = FactoryJobEventLedger(tmp_path / "recovery-events.jsonl")
+    queued_job = make_job("JOB-RECOVERY-QUEUED")
+    interrupted_job = make_job("JOB-RECOVERY-DISPATCHED")
+    completed_job = make_job("JOB-RECOVERY-COMPLETED")
+    failed_job = make_job("JOB-RECOVERY-FAILED")
+
+    for job in (queued_job, interrupted_job, completed_job, failed_job):
+        ledger.append(
+            event_type="QUEUED",
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+        )
+    for job in (interrupted_job, completed_job, failed_job):
+        ledger.append(
+            event_type="DISPATCHED",
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01",
+        )
+    ledger.append(
+        event_type="COMPLETED",
+        job_id=completed_job.job_id,
+        job_fingerprint=completed_job.fingerprint,
+        worker_id="W01",
+    )
+    ledger.append(
+        event_type="FAILED",
+        job_id=failed_job.job_id,
+        job_fingerprint=failed_job.fingerprint,
+        worker_id="W01",
+    )
+
+    summary = {item["job_id"]: item for item in ledger.recovery_summary()}
+    assert summary[queued_job.job_id]["status"] == "QUEUED_REVIEW_REQUIRED"
+    assert summary[queued_job.job_id]["action"] == "JOB_SPEC_AND_QUEUE_RECONSTRUCTION_REQUIRED"
+    assert summary[interrupted_job.job_id]["status"] == "INTERRUPTED_REVIEW_REQUIRED"
+    assert summary[interrupted_job.job_id]["action"] == "MANUAL_RECONCILIATION_REQUIRED"
+    assert summary[completed_job.job_id]["status"] == "TERMINAL_COMPLETED"
+    assert summary[completed_job.job_id]["action"] == "NO_RETRY"
+    assert summary[failed_job.job_id]["status"] == "TERMINAL_FAILED"
+    assert summary[failed_job.job_id]["action"] == "NO_RETRY"
+
+
+def test_recovery_summary_rejects_job_fingerprint_drift():
+    ledger = FactoryJobEventLedger(path=None)
+    job = make_job("JOB-RECOVERY-FINGERPRINT")
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+    )
+    ledger.append(
+        event_type="DISPATCHED",
+        job_id=job.job_id,
+        job_fingerprint="b" * 64,
+        worker_id="W01",
+    )
+
+    with pytest.raises(ValueError, match="fingerprint changed within ledger"):
+        ledger.recovery_summary()
+
