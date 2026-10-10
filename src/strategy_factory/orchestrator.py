@@ -137,7 +137,13 @@ class FactoryOrchestrator:
             detail=detail,
             output_artifact=record.evidence_id,
         )
-        self.fleet.publish()
+        # HANDOFF_ACCEPTED is already durable. Telemetry failure must not
+        # make an accepted handoff appear unsuccessful to the caller.
+        self._publish_telemetry_safely(
+            job_id=record.run_id,
+            worker_id="",
+            operation="publish_after_handoff",
+        )
         return handoff
 
     def submit_replay(
