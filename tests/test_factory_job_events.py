@@ -816,7 +816,18 @@ def test_journal_inspector_reports_valid_snapshot_hash_without_mutation(tmp_path
 
 def test_journal_inspector_reports_truncated_tail_and_preserves_bytes(tmp_path: Path):
     path = tmp_path / "invalid-inspection.jsonl"
-    path.write_bytes(b'{"sequence":1}\n{"sequence":')
+    ledger = FactoryJobEventLedger(path)
+    job = make_job("JOB-INSPECT-TRUNCATED-TAIL")
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    with path.open("ab") as handle:
+        handle.write(b'{"sequence":')
+
     before = path.read_bytes()
 
     report = inspect_job_journal_file(path)
