@@ -60,7 +60,7 @@ class ReadinessSnapshot:
             ("passport_fingerprint", self.passport_fingerprint),
             ("fingerprint", self.fingerprint),
         ):
-            if len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
+            if not isinstance(value, str) or len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
                 raise ValueError(f"readiness snapshot {name} must be a lowercase SHA-256 digest")
         expected = hashlib.sha256(
             self._fingerprint_payload(
