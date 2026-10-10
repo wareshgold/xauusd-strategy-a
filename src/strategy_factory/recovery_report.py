@@ -24,8 +24,8 @@ class FactoryRecoveryReport:
     journal_event_count: int
     jobs: tuple[dict[str, Any], ...]
     status_counts: dict[str, int]
-    journal_event_fingerprints: tuple[str, ...] = ()
     automatic_requeue_performed: bool = False
+    journal_event_fingerprints: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
