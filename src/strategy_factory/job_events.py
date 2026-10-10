@@ -144,7 +144,12 @@ def _parse_journal_text(text: str) -> list[FactoryJobEvent]:
                 "factory job journal record has an invalid schema at line "
                 f"{line_number}; journal preserved"
             ) from exc
-        event.validate()
+        try:
+            event.validate()
+        except ValueError as exc:
+            raise ValueError(
+                f"{exc} at line {line_number}; journal preserved"
+            ) from exc
         if event.sequence != len(events) + 1:
             raise ValueError(
                 "factory job event sequence is not contiguous "
