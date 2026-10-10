@@ -51,7 +51,8 @@ def test_job_event_ledger_fingerprints_and_filters(tmp_path: Path):
 
 def test_orchestrator_records_real_queue_lifecycle():
     job = make_job()
-    events = FactoryJobEventLedger()
+    # These tests assert one invocation's lifecycle, not the persistent runtime journal.
+    events = FactoryJobEventLedger(path=None)
     fleet = FactoryWorkerFleet([FactoryWorker("W01")])
     orchestrator = FactoryOrchestrator(fleet=fleet, events=events)
 
@@ -76,7 +77,8 @@ def test_orchestrator_records_real_queue_lifecycle():
 
 def test_orchestrator_records_failed_execution():
     job = make_job()
-    events = FactoryJobEventLedger()
+    # Keep this assertion independent of previously persisted runtime events.
+    events = FactoryJobEventLedger(path=None)
     fleet = FactoryWorkerFleet([FactoryWorker("W01")])
     orchestrator = FactoryOrchestrator(fleet=fleet, events=events)
     orchestrator.submit(job, station="stability", phase="STABILITY")
