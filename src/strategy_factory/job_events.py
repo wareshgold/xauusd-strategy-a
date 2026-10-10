@@ -132,5 +132,55 @@ class FactoryJobEventLedger:
     def for_job(self, job_id: str) -> tuple[FactoryJobEvent, ...]:
         return tuple(event for event in self._events if event.job_id == job_id)
 
+    def recovery_summary(self) -> list[dict[str, Any]]:
+        """Classify journaled jobs after restart without requeueing anything.
+
+        A QUEUED-only job is reviewable but its full job spec is not persisted
+        here. A DISPATCHED job without a terminal event may have executed
+        partially, so it must be reviewed rather than retried automatically.
+        COMPLETED/FAILED remain terminal even if later handoff events exist.
+        """
+        grouped: dict[str, list[FactoryJobEvent]] = {}
+        fingerprints: dict[str, str] = {}
+        for event in self._events:
+            prior_fingerprint = fingerprints.setdefault(
+                event.job_id, event.job_fingerprint
+            )
+            if prior_fingerprint != event.job_fingerprint:
+                raise ValueError(
+                    f"factory job fingerprint changed within ledger: {event.job_id}"
+                )
+            grouped.setdefault(event.job_id, []).append(event)
+
+        summary: list[dict[str, Any]] = []
+        for job_id, job_events in grouped.items():
+            event_types = {event.event_type for event in job_events}
+            if "COMPLETED" in event_types:
+                status = "TERMINAL_COMPLETED"
+                action = "NO_RETRY"
+            elif "FAILED" in event_types:
+                status = "TERMINAL_FAILED"
+                action = "NO_RETRY"
+            elif "DISPATCHED" in event_types:
+                status = "INTERRUPTED_REVIEW_REQUIRED"
+                action = "MANUAL_RECONCILIATION_REQUIRED"
+            elif "QUEUED" in event_types:
+                status = "QUEUED_REVIEW_REQUIRED"
+                action = "JOB_SPEC_AND_QUEUE_RECONSTRUCTION_REQUIRED"
+            else:
+                status = "UNKNOWN_REVIEW_REQUIRED"
+                action = "MANUAL_RECONCILIATION_REQUIRED"
+
+            summary.append(
+                {
+                    "job_id": job_id,
+                    "job_fingerprint": fingerprints[job_id],
+                    "status": status,
+                    "action": action,
+                    "last_sequence": job_events[-1].sequence,
+                }
+            )
+        return summary
+
     def as_dict(self) -> list[dict[str, Any]]:
         return [event.as_dict() for event in self._events]
