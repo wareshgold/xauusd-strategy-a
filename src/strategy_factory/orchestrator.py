@@ -226,7 +226,16 @@ class FactoryOrchestrator:
                     f"worker state is FAILED but journal reconciliation is required "
                     f"({type(journal_exc).__name__}: {journal_exc})"
                 )
-            self.fleet.publish()
+            try:
+                self.fleet.publish()
+            except Exception as publish_exc:
+                # Telemetry publication is secondary to the execution failure.
+                # Preserve the original exception and expose the publish fault
+                # for diagnosis without attempting an automatic state repair.
+                exc.add_note(
+                    "Factory failed to publish worker telemetry while handling "
+                    f"the execution failure ({type(publish_exc).__name__}: {publish_exc})"
+                )
             raise
 
         artifact = None
