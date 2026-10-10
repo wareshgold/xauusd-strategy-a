@@ -37,6 +37,12 @@ def _session():
             status=GateStatus.PASS,
             evidence="synthetic-orchestration-evidence",
             details={
+                "source_station": "holdout",
+                "destination_station": "forward",
+                "forward_session_id": "FORWARD-ORCH-SESSION-1",
+                "forward_dataset_id": "FORWARD-ORCH-DATA-1",
+                "forward_artifact_id": "FORWARD-ORCH-ART-1",
+                "forward_dataset_sha256": _sha(b"forward-orchestration"),
                 "strategy_revision": record.strategy_revision,
                 "manifest_revision": record.manifest_revision,
                 "holdout_dataset_id": record.dataset_id,
