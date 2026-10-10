@@ -653,7 +653,7 @@ def test_persisted_journal_rejects_invalid_utc_timestamp_without_mutation(
             ensure_ascii=True,
         ).encode("utf-8")
     ).hexdigest()
-    path.write_text(json.dumps(payload) + "\\n", encoding="utf-8")
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     original_bytes = path.read_bytes()
 
     with pytest.raises(
