@@ -12,7 +12,7 @@ from itertools import product
 import hashlib
 import json
 import math
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 from .test_contract import DatasetRole, ExecutionSemantics, TestDataset
 
@@ -266,6 +266,37 @@ _ALLOWED_OBJECTIVES = {
     "WIN_RATE",
     "LOWEST_DRAWDOWN_AFTER_COSTS",
 }
+
+def run_candidate_matrix(
+    plan: CandidatePlan,
+    execute_candidate: Callable[[ResearchCandidate], CandidateObservation],
+) -> tuple[CandidateObservation, ...]:
+    """Execute each predeclared candidate in deterministic order.
+
+    The injected adapter owns strategy execution and market semantics. This
+    runner only enforces plan identity and complete, one-result-per-candidate
+    accounting; it does not fabricate fills or metrics.
+    """
+    candidates = plan.candidates()
+    observations = []
+    for candidate in candidates:
+        observation = execute_candidate(candidate)
+        if not isinstance(observation, CandidateObservation):
+            raise CandidateLabError("candidate adapter must return CandidateObservation")
+        observation.validate()
+        if observation.candidate.candidate_fingerprint != candidate.candidate_fingerprint:
+            raise CandidateLabError("candidate adapter returned a result for a different candidate")
+        if observation.candidate.plan_fingerprint != plan.fingerprint:
+            raise CandidateLabError("candidate adapter returned a result from a different plan")
+        if observation.candidate.dataset_fingerprint != plan.dataset_content_sha256:
+            raise CandidateLabError("candidate adapter changed the declared dataset identity")
+        if observation.candidate.execution_fingerprint != plan.execution_fingerprint:
+            raise CandidateLabError("candidate adapter changed the declared execution profile")
+        observations.append(observation)
+    if len(observations) != len(candidates):
+        raise CandidateLabError("candidate matrix did not produce one result per candidate")
+    return tuple(observations)
+
 
 
 def assess_candidates(
