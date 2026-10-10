@@ -83,6 +83,35 @@ def apply_queue_reconstruction(
 
     payload = _marker_payload(plan, station=station, phase=phase)
     markers = _read_markers(orchestrator)
+
+    # Validate the in-memory queue before writing any durable apply marker.
+    existing: dict[str, QueuedResearchJob] = {}
+    for queued in orchestrator.queue:
+        prior = existing.get(queued.job.job_id)
+        if prior is not None:
+            raise ValueError(f"duplicate job already exists in queue: {queued.job.job_id}")
+        existing[queued.job.job_id] = queued
+
+    additions: list[QueuedResearchJob] = []
+    for item in plan.items:
+        current = existing.get(item.job_id)
+        if current is not None:
+            if (
+                current.job.fingerprint != item.job_fingerprint
+                or current.station != station
+                or current.phase != phase
+            ):
+                raise ValueError(f"queued job conflicts with reconstruction plan: {item.job_id}")
+            continue
+        additions.append(
+            QueuedResearchJob(
+                job=item.job,
+                station=station,
+                phase=phase,
+                detail=detail,
+            )
+        )
+
     same_plan = [item for item in markers if item.get("plan_id") == plan.plan_id]
     if same_plan:
         if len(same_plan) != 1 or same_plan[0] != payload:
@@ -127,35 +156,8 @@ def apply_queue_reconstruction(
             detail=_canonical(payload),
         )
 
-    existing: dict[str, QueuedResearchJob] = {}
-    for queued in orchestrator.queue:
-        prior = existing.get(queued.job.job_id)
-        if prior is not None:
-            raise ValueError(f"duplicate job already exists in queue: {queued.job.job_id}")
-        existing[queued.job.job_id] = queued
-
-    additions: list[QueuedResearchJob] = []
-    for item in plan.items:
-        current = existing.get(item.job_id)
-        if current is not None:
-            if (
-                current.job.fingerprint != item.job_fingerprint
-                or current.station != station
-                or current.phase != phase
-            ):
-                raise ValueError(f"queued job conflicts with reconstruction plan: {item.job_id}")
-            continue
-        additions.append(
-            QueuedResearchJob(
-                job=item.job,
-                station=station,
-                phase=phase,
-                detail=detail,
-            )
-        )
-
-    # Prepare a replacement list before assigning it, avoiding partial mutation
-    # if validation above fails. No executor is called here.
+    # The durable marker precedes this single list replacement. If the process
+    # stops after journaling, retrying the same plan restores missing entries.
     orchestrator.queue = [*orchestrator.queue, *additions]
     orchestrator.fleet.publish()
     return bool(additions)
