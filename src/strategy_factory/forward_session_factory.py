@@ -148,11 +148,16 @@ class DemoForwardSessionFactory:
             raise ForwardSessionError("post-holdout tuning is forbidden")
 
         details = gate.gate.details
+        if details.get("source_station") != "holdout" or details.get("destination_station") != "forward":
+            raise ForwardSessionError("Forward Gate route is not Fresh Holdout-to-Forward")
         if details.get("production_decision") is not False:
             raise ForwardSessionError("Forward Gate does not prove a non-production boundary")
         handoff_fingerprint = str(details.get("handoff_fingerprint", ""))
-        if len(handoff_fingerprint) != 64:
-            raise ForwardSessionError("Forward Gate lacks Holdout handoff fingerprint")
+        if (
+            len(handoff_fingerprint) != 64
+            or any(char not in "0123456789abcdef" for char in handoff_fingerprint)
+        ):
+            raise ForwardSessionError("Forward Gate lacks a valid Holdout handoff fingerprint")
         if details.get("strategy_revision") != source_record.strategy_revision:
             raise ForwardSessionError("Forward Gate strategy revision does not match Holdout record")
         if details.get("manifest_revision") != source_record.manifest_revision:
@@ -171,7 +176,11 @@ class DemoForwardSessionFactory:
 
         holdout_sha = str(details.get("holdout_dataset_sha256", ""))
         holdout_artifact_id = str(details.get("holdout_artifact_id", ""))
-        if len(holdout_sha) != 64 or not holdout_artifact_id:
+        if (
+            len(holdout_sha) != 64
+            or any(char not in "0123456789abcdef" for char in holdout_sha)
+            or not holdout_artifact_id
+        ):
             raise ForwardSessionError("Forward Gate lacks complete Holdout dataset identity")
 
         if forward_dataset_id == source_record.dataset_id:
