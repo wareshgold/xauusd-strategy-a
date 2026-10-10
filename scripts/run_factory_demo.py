@@ -20,7 +20,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from strategy_factory.telemetry import DEFAULT_STATUS_FILE, publish_workers  # noqa: E402
+from strategy_factory.telemetry import publish_workers  # noqa: E402
 
 
 STAGES = (
@@ -95,15 +95,15 @@ def main(argv: list[str] | None = None) -> int:
         "--publish",
         action="store_true",
         help=(
-            "write DEMO_ONLY workers to runtime/factory_worker_status.json for "
-            "dashboard inspection; this replaces the current worker snapshot"
+            "write DEMO_ONLY workers to the isolated runtime/factory_demo_status.json "
+            "for dashboard inspection; does not replace live worker telemetry"
         ),
     )
     parser.add_argument(
         "--status-file",
         type=Path,
-        default=DEFAULT_STATUS_FILE,
-        help="optional telemetry destination (used only with --publish)",
+        default=ROOT / "runtime" / "factory_demo_status.json",
+        help="telemetry destination (used only with --publish; defaults to isolated demo status)",
     )
     args = parser.parse_args(argv)
 
