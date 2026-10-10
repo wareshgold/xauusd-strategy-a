@@ -88,6 +88,6 @@ Pull the latest branch, inspect the log/status, run the focused journal-fault an
 git pull --ff-only
 git log -6 --oneline
 git status --short --branch
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_orchestrator_journal_faults.py tests/test_factory_orchestrator_dispatch_boundary.py tests/test_factory_orchestrator_process_interruption.py tests/test_factory_orchestrator_journal_faults.py tests/test_factory_recovery_lifecycle_matrix_integration.py tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py -q
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_orchestrator_journal_faults.py tests/test_factory_orchestrator_dispatch_boundary.py tests/test_factory_orchestrator_process_interruption.py tests/test_factory_recovery_lifecycle_matrix_integration.py tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py -q
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 ```
