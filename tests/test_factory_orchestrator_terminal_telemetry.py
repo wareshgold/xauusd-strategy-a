@@ -34,7 +34,9 @@ def _orchestrator_with_second_publish_failure(monkeypatch):
     def publish():
         nonlocal publish_calls
         publish_calls += 1
-        if publish_calls == 2:
+        # submit publishes once, and dispatch publishes once before the
+        # terminal completion/failure path publishes for the third time.
+        if publish_calls == 3:
             raise OSError("injected terminal telemetry failure")
 
     monkeypatch.setattr(fleet, "publish", publish)
@@ -55,7 +57,7 @@ def test_completion_telemetry_failure_does_not_hide_completed_job(monkeypatch):
     )
 
     assert result == {"output_artifact": "ARTIFACT-1"}
-    assert publish_calls() == 2
+    assert publish_calls() == 3
     assert worker.state == "COMPLETED"
     assert [event.event_type for event in ledger.entries()] == [
         "QUEUED",
@@ -87,7 +89,7 @@ def test_failure_telemetry_fault_is_recorded_without_replacing_execution_error(
     with pytest.raises(ValueError, match="original research execution failure") as caught:
         orchestrator.run_next(worker_id="W01", execute=fail_execution)
 
-    assert publish_calls() == 2
+    assert publish_calls() == 3
     assert worker.state == "FAILED"
     assert [event.event_type for event in ledger.entries()] == [
         "QUEUED",
