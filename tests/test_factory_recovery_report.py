@@ -108,3 +108,39 @@ def test_recovery_report_rejects_claim_of_automatic_requeue():
 
     with pytest.raises(ValueError, match="automatic requeue"):
         validate_recovery_report(report)
+
+
+
+def test_recovery_report_rejects_content_tampering_even_with_valid_shape(tmp_path):
+    ledger = FactoryJobEventLedger(tmp_path / "tamper-events.jsonl")
+    job = make_job("JOB-TAMPER")
+    append(ledger, job, "QUEUED")
+    report = inspect_factory_recovery(ledger)
+
+    tampered_jobs = (dict(report.jobs[0], audit_note="tampered"),)
+    tampered = replace(report, jobs=tampered_jobs)
+
+    with pytest.raises(ValueError, match="report id does not match"):
+        validate_recovery_report(tampered)
+
+
+def test_recovery_report_recomputes_identity_from_serialized_provenance(tmp_path):
+    ledger = FactoryJobEventLedger(tmp_path / "tamper-id-events.jsonl")
+    job = make_job("JOB-TAMPER-ID")
+    append(ledger, job, "QUEUED")
+    report = inspect_factory_recovery(ledger)
+
+    tampered = replace(report, report_id="f" * 64)
+    with pytest.raises(ValueError, match="does not match report provenance"):
+        validate_recovery_report(tampered)
+
+
+def test_recovery_report_rejects_event_fingerprint_count_drift(tmp_path):
+    ledger = FactoryJobEventLedger(tmp_path / "fingerprint-count-events.jsonl")
+    job = make_job("JOB-FINGERPRINT-COUNT")
+    append(ledger, job, "QUEUED")
+    report = inspect_factory_recovery(ledger)
+
+    tampered = replace(report, journal_event_fingerprints=())
+    with pytest.raises(ValueError, match="event count"):
+        validate_recovery_report(tampered)
