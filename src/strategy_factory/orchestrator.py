@@ -49,14 +49,8 @@ class FactoryOrchestrator:
         if already_seen:
             raise ValueError(f"factory job id has already been submitted: {job.job_id}")
 
-        self.queue.append(
-            QueuedResearchJob(
-                job=job,
-                station=station,
-                phase=phase,
-                detail=detail,
-            )
-        )
+        # Persist the queue event before mutating the in-memory queue. If
+        # the journal write fails, submit leaves no phantom pending job.
         self.events.append(
             event_type="QUEUED",
             job_id=job.job_id,
@@ -64,6 +58,14 @@ class FactoryOrchestrator:
             station=station,
             phase=phase,
             detail=detail,
+        )
+        self.queue.append(
+            QueuedResearchJob(
+                job=job,
+                station=station,
+                phase=phase,
+                detail=detail,
+            )
         )
         self.fleet.publish()
 
@@ -129,14 +131,10 @@ class FactoryOrchestrator:
                 f"worker {worker_id!r} is not available: {worker.state}"
             )
 
-        queued = self.queue.pop(0)
-        worker.start(
-            job_id=queued.job.job_id,
-            job_type=queued.job.test_id,
-            station=queued.station,
-            phase=queued.phase,
-            detail=queued.detail,
-        )
+        queued = self.queue[0]
+        # Journal dispatch before removing the job from the in-memory queue.
+        # A persistence error therefore leaves the job queued and the worker
+        # untouched; no implicit retry or queue reconstruction is attempted.
         self.events.append(
             event_type="DISPATCHED",
             job_id=queued.job.job_id,
@@ -146,6 +144,14 @@ class FactoryOrchestrator:
             phase=queued.phase,
             detail=queued.detail,
         )
+        worker.start(
+            job_id=queued.job.job_id,
+            job_type=queued.job.test_id,
+            station=queued.station,
+            phase=queued.phase,
+            detail=queued.detail,
+        )
+        self.queue.pop(0)
         self.fleet.publish()
 
         try:
