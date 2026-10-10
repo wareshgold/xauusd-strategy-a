@@ -313,3 +313,23 @@ def test_recovery_summary_rejects_job_fingerprint_drift():
     with pytest.raises(ValueError, match="fingerprint changed within ledger"):
         ledger.recovery_summary()
 
+
+
+def test_recovery_summary_fails_closed_on_conflicting_terminal_events():
+    ledger = FactoryJobEventLedger(path=None)
+    job = make_job("JOB-RECOVERY-CONFLICTING-TERMINALS")
+
+    for event_type in ("QUEUED", "DISPATCHED", "COMPLETED", "FAILED"):
+        ledger.append(
+            event_type=event_type,
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01" if event_type != "QUEUED" else None,
+        )
+
+    summary = ledger.recovery_summary()
+    assert len(summary) == 1
+    assert summary[0]["job_id"] == job.job_id
+    assert summary[0]["status"] == "TERMINAL_CONFLICT_REVIEW_REQUIRED"
+    assert summary[0]["action"] == "MANUAL_RECONCILIATION_REQUIRED"
+    assert summary[0]["action"] != "NO_RETRY"
