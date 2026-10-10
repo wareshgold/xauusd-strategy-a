@@ -77,7 +77,7 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 ## 6. Immediate next action
 
-The process-interruption case is verified locally (48 focused / 747 full). Next inspect the dispatch-to-worker-start boundary: if `DISPATCHED` is durable but `worker.start()` raises, the in-memory queue must not retain a job that a later `run_next()` could dispatch again without reconciliation. Prefer a minimal fail-closed change plus a synthetic regression test; do not change the forward runner, research semantics, or production authority. Preserve the five untracked paths above.
+The process-interruption case is verified locally (48 focused / 747 full). Inspection identified a dispatch boundary risk: `DISPATCHED` was persisted before `worker.start()`, while the in-memory queue entry was removed only after `worker.start()` returned. A start failure could therefore leave a dispatched job queued in the current process. Commit `a414a12c` moves queue removal immediately after durable `DISPATCHED`, before worker startup, so the same in-memory queue cannot redispatch it after a startup fault. Commit `6cd27e2b` adds `tests/test_factory_orchestrator_dispatch_boundary.py` to verify no execution, no second dispatch, and `INTERRUPTED_REVIEW_REQUIRED`. **Both changes are pending local validation**. Pull and run the focused boundary/recovery suites and then the full suite. Preserve the five untracked paths above.
 
 ```powershell
 git pull --ff-only
