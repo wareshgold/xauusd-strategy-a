@@ -500,6 +500,19 @@ def test_recovery_summary_requires_review_and_never_requests_auto_retry(tmp_path
     assert summary[failed_job.job_id]["status"] == "TERMINAL_FAILED"
     assert summary[failed_job.job_id]["action"] == "NO_RETRY"
 
+    # Recovery output must contain enough durable provenance for an operator
+    # to inspect interrupted work without inferring a retry decision.
+    interrupted = summary[interrupted_job.job_id]
+    assert interrupted["last_event_type"] == "DISPATCHED"
+    assert interrupted["last_worker_id"] == "W01"
+    assert interrupted["lifecycle_history"] == ["QUEUED", "DISPATCHED"]
+    assert interrupted["last_sequence"] == 6
+    assert interrupted["last_occurred_utc"]
+    completed = summary[completed_job.job_id]
+    assert completed["last_event_type"] == "COMPLETED"
+    assert completed["last_worker_id"] == "W01"
+    assert completed["lifecycle_history"] == ["QUEUED", "DISPATCHED", "COMPLETED"]
+
 
 def test_recovery_summary_rejects_job_fingerprint_drift():
     ledger = FactoryJobEventLedger(path=None)
