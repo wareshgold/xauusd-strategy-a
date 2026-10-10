@@ -63,6 +63,35 @@ class RobustnessFactory:
         context.source_record.validate()
         context.source_event.validate()
 
+        if context.readiness_snapshot.strategy_id != context.spec.strategy_id:
+            raise RobustnessFactoryError(
+                "robustness strategy_id does not match the frozen readiness snapshot"
+            )
+        if context.readiness_snapshot.manifest_revision != context.manifest_revision:
+            raise RobustnessFactoryError(
+                "robustness manifest_revision does not match the frozen readiness snapshot"
+            )
+        if context.source_record.snapshot_fingerprint != context.readiness_snapshot.fingerprint:
+            raise RobustnessFactoryError(
+                "robustness readiness snapshot fingerprint does not match the upstream research record"
+            )
+        if context.source_record.strategy_id != context.spec.strategy_id:
+            raise RobustnessFactoryError(
+                "robustness strategy_id does not match the upstream research record"
+            )
+        if context.source_record.strategy_revision != context.spec.strategy_revision:
+            raise RobustnessFactoryError(
+                "robustness strategy_revision does not match the upstream research record"
+            )
+        if context.source_record.manifest_revision != context.manifest_revision:
+            raise RobustnessFactoryError(
+                "robustness manifest_revision does not match the upstream research record"
+            )
+        if context.source_record.execution_semantics != context.spec.execution_semantics.value:
+            raise RobustnessFactoryError(
+                "robustness execution_semantics does not match the upstream research record"
+            )
+
         if context.handoff.destination_station != "robustness":
             raise RobustnessFactoryError("handoff destination must be robustness")
         if context.handoff.source_station != "stability":

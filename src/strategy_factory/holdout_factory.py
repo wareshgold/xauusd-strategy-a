@@ -82,6 +82,19 @@ class HoldoutFactory:
         if context.handoff.source_station != "robustness":
             raise HoldoutFactoryError("Holdout must consume a Robustness handoff")
 
+        if context.readiness_snapshot.strategy_id != context.spec.strategy_id:
+            raise HoldoutFactoryError(
+                "holdout strategy_id does not match the frozen readiness snapshot"
+            )
+        if context.readiness_snapshot.manifest_revision != context.manifest_revision:
+            raise HoldoutFactoryError(
+                "holdout manifest_revision does not match the frozen readiness snapshot"
+            )
+        if context.source_record.snapshot_fingerprint != context.readiness_snapshot.fingerprint:
+            raise HoldoutFactoryError(
+                "holdout readiness snapshot fingerprint does not match the upstream research record"
+            )
+
         if context.source_record.strategy_id != context.spec.strategy_id:
             raise HoldoutFactoryError(
                 "holdout strategy_id does not match the upstream research record"

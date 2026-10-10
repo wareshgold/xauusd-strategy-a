@@ -125,9 +125,19 @@ def build_research_handoff(
     if (source_station, destination_station) not in HANDOFF_ROUTES:
         raise ResearchHandoffError("research handoff route is not declared")
 
+    job_events = events.for_job(job_id)
+    # A contradictory terminal history must never be promoted through a
+    # handoff, even if one of its events looks like a successful completion.
+    if any(event.event_type == "FAILED" for event in job_events) and any(
+        event.event_type == "COMPLETED" for event in job_events
+    ):
+        raise ResearchHandoffError(
+            "source job has conflicting terminal events; manual reconciliation required"
+        )
+
     candidates = [
         event
-        for event in events.for_job(job_id)
+        for event in job_events
         if event.event_type == "COMPLETED"
         and event.station == source_station
         and event.output_artifact

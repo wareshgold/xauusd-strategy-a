@@ -17,6 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from strategy_factory.starnet_adapter import build_world_state
+from strategy_factory.worker_journal_audit import inspect_worker_journal_file_consistency
 
 ROOT = Path(__file__).resolve().parents[1]
 LIVE_STATUS_FILE = ROOT / "runtime" / "factory_worker_status.json"
@@ -110,17 +111,23 @@ def worker_state() -> tuple[list[dict], str]:
 
 def status_class(value: str) -> str:
     v = value.upper()
-    if v in {"LIVE", "RUNNING", "COMPLETED", "VERIFIED", "SEPARATE"}:
+    if v in {"LIVE", "RUNNING", "COMPLETED", "VERIFIED", "VALID", "CONSISTENT", "SEPARATE"}:
         return "ok"
-    if v in {"BLOCKED", "OFFLINE", "FAILED", "NOT ELIGIBLE"}:
+    if v in {"BLOCKED", "OFFLINE", "FAILED", "NOT ELIGIBLE", "REVIEW_REQUIRED"} or v.endswith("_REVIEW_REQUIRED"):
         return "bad"
     return "warn"
 
 
 def station_for(worker: dict) -> str:
+    # The normalized station field is authoritative. Text inference is only a
+    # compatibility fallback for older telemetry that did not publish it.
+    declared = str(worker.get("station") or "").strip().lower()
+    if declared in STATIONS:
+        return declared
+
     text = " ".join(
         str(worker.get(k) or "").lower()
-        for k in ("job_type", "detail", "station", "phase")
+        for k in ("job_type", "detail", "phase")
     )
     for key in ("holdout", "forward", "robust", "stability", "discovery"):
         if key in text:
@@ -400,7 +407,7 @@ def station_world(workers: list[dict]) -> str:
           // status footer
           rect(260,600,760,28,"#080e12","#2e414c");
           text("QUEUE → LAB → EVIDENCE → COMPLETE",640,618,9,C.cyan,"center","700");
-          text("STATE SOURCE: runtime/factory_worker_status.json",640,625,6,C.muted,"center");
+          text("STATE SOURCE: __STATUS_SOURCE__",640,625,6,C.muted,"center");
           requestAnimationFrame(draw);
         }
         function resize(){
@@ -412,7 +419,10 @@ def station_world(workers: list[dict]) -> str:
       </script>
     </section>
     """
-    return world.replace("__WORKERS__", payload)
+    return world.replace("__WORKERS__", payload).replace(
+        "__STATUS_SOURCE__",
+        "runtime/factory_demo_status.json" if DEMO_MODE else "runtime/factory_worker_status.json",
+    )
 
 def telemetry_panels(workers: list[dict]) -> str:
     queued = [w for w in workers if str(w.get("state") or "").upper() == "QUEUED"]
@@ -460,6 +470,48 @@ def telemetry_panels(workers: list[dict]) -> str:
     """
 
 
+
+def journal_audit_panel(workers: list[dict]) -> str:
+    """Render read-only journal integrity and worker consistency findings."""
+    report = inspect_worker_journal_file_consistency(workers)
+    integrity = report.get("journal_integrity") or {}
+    status = str(report.get("status") or "REVIEW_REQUIRED").upper()
+    integrity_status = str(integrity.get("status") or "UNKNOWN").upper()
+    digest = integrity.get("sha256")
+    digest_html = escape(str(digest)) if digest else "NOT AVAILABLE"
+    path_html = escape(str(integrity.get("path") or "UNKNOWN"))
+    findings = report.get("findings") or []
+    finding_rows = "".join(
+        '<li><b>' + escape(str(item.get("code") or "UNKNOWN")) + '</b> — '
+        + escape(str(item.get("detail") or "")) + '</li>'
+        for item in findings[:8]
+    ) or '<li class="audit-none">No discrepancies reported by this snapshot</li>'
+    automatic = bool(report.get("automatic_action_performed")) or bool(
+        integrity.get("automatic_repair_performed")
+    )
+    action_label = "UNEXPECTED ACTION FLAG" if automatic else "READ ONLY · NO REPAIR / RETRY"
+    event_count = report.get("journal_event_count")
+    event_label = "UNKNOWN" if event_count is None else str(event_count)
+    return f"""
+    <section class="panel journal-audit">
+      <div class="audit-head">
+        <div><h2>JOB JOURNAL INTEGRITY · READ-ONLY AUDIT</h2>
+        <span>Worker snapshot compared with one validated journal byte snapshot</span></div>
+        <b class="{status_class(status)}">{escape(status)}</b>
+      </div>
+      <div class="audit-stats">
+        <div><small>Journal integrity</small><b class="{status_class(integrity_status)}">{escape(integrity_status)}</b></div>
+        <div><small>Journal events</small><b>{escape(event_label)}</b></div>
+        <div><small>Findings</small><b>{int(report.get("finding_count") or 0)}</b></div>
+        <div><small>Automatic action</small><b class="{'bad' if automatic else 'ok'}">{escape(action_label)}</b></div>
+      </div>
+      <div class="audit-path">PATH · {path_html}</div>
+      <div class="audit-hash">SHA-256 · <code>{digest_html}</code></div>
+      <ul class="audit-findings">{finding_rows}</ul>
+    </section>
+    """
+
+
 def html_page() -> str:
     git = git_state()
     workers, factory_health = worker_state()
@@ -468,7 +520,21 @@ def html_page() -> str:
     running = sum(str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"} for w in workers)
     failed = sum(str(w.get("state") or "").upper() == "FAILED" for w in workers)
 
-    if factory_health == "LIVE":
+    demo_snapshot_complete = (
+        DEMO_MODE
+        and bool(workers)
+        and all(
+            str(w.get("job_type") or "") == "TELEMETRY_DEMO_ONLY"
+            and str(w.get("state") or "").upper() == "COMPLETED"
+            for w in workers
+        )
+    )
+    if demo_snapshot_complete:
+        # A completed demo is a historical snapshot, not a live worker service.
+        # Its old heartbeat must not be reported as a live outage.
+        headline = "DEMO SNAPSHOT · RUN COMPLETE"
+        headline_class = "warn"
+    elif factory_health == "LIVE":
         headline = "FACTORY IS WORKING"
         headline_class = "ok"
     elif factory_health in {"STALE", "OFFLINE"}:
@@ -564,6 +630,8 @@ h1{{margin:0;font-size:25px;letter-spacing:2.2px;font-weight:800;text-shadow:0 0
   </section>
 
   {telemetry_panels(workers)}
+
+  {journal_audit_panel(workers)}
 
   <section class="panel">
     <h2>RESEARCH PIPELINE</h2>

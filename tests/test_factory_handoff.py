@@ -76,7 +76,6 @@ def test_undeclared_route_is_blocked():
         raise AssertionError("expected undeclared route to block handoff")
 
 
-
 def test_handoff_must_bind_to_pass_research_record():
     events = FactoryJobEventLedger(path=None)
     events.append(
@@ -86,6 +85,7 @@ def test_handoff_must_bind_to_pass_research_record():
         station="discovery",
         phase="DISCOVERY",
         output_artifact="EVIDENCE-1",
+        research_run_fingerprint="b" * 64,
     )
     event = events.entries()[0]
     record0 = ResearchRecord(
@@ -115,8 +115,10 @@ def test_handoff_must_bind_to_pass_research_record():
         separators=(",", ":"),
         ensure_ascii=True,
     ).encode("utf-8")
-    record = ResearchRecord(**record0.as_dict(include_fingerprint=False),
-                            fingerprint=hashlib.sha256(payload).hexdigest())
+    record = ResearchRecord.from_dict({
+        **record0.as_dict(include_fingerprint=False),
+        "fingerprint": hashlib.sha256(payload).hexdigest(),
+    })
     handoff = build_research_handoff(
         events=events,
         job_id="RUN-1",
@@ -125,3 +127,30 @@ def test_handoff_must_bind_to_pass_research_record():
         record=record,
     )
     validate_evidence_bound_handoff(handoff=handoff, record=record, source_event=event)
+
+def test_handoff_blocks_conflicting_terminal_history():
+    events = FactoryJobEventLedger(path=None)
+    for event_type in ("QUEUED", "DISPATCHED", "COMPLETED", "FAILED"):
+        events.append(
+            event_type=event_type,
+            job_id="JOB-TERMINAL-CONFLICT",
+            job_fingerprint="a" * 64,
+            station="discovery",
+            phase="DISCOVERY",
+            worker_id="W01" if event_type != "QUEUED" else None,
+            output_artifact="EVIDENCE-CONFLICT" if event_type == "COMPLETED" else None,
+        )
+
+    try:
+        build_research_handoff(
+            events=events,
+            job_id="JOB-TERMINAL-CONFLICT",
+            source_station="discovery",
+            destination_station="stability",
+        )
+    except ResearchHandoffError as exc:
+        assert "conflicting terminal events" in str(exc)
+        assert "manual reconciliation" in str(exc)
+    else:
+        raise AssertionError("conflicting terminal history must block handoff")
+

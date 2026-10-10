@@ -8,6 +8,7 @@ geometry, choose candidates, or authorize production decisions.
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Callable, Any
 
 from .telemetry import publish_workers, utc_now
@@ -104,9 +105,13 @@ class FactoryWorker:
 @dataclass
 class FactoryWorkerFleet:
     workers: list[FactoryWorker] = field(default_factory=list)
+    # Fail closed: publishing to shared/live telemetry must be explicitly opted into.
+    status_path: Path | None = None
 
     def publish(self) -> None:
-        publish_workers([worker.as_dict() for worker in self.workers])
+        if self.status_path is None:
+            return
+        publish_workers([worker.as_dict() for worker in self.workers], path=self.status_path)
 
     def get(self, worker_id: str) -> FactoryWorker:
         for worker in self.workers:
