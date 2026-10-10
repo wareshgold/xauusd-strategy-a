@@ -8,12 +8,12 @@
 
 ## 1. Latest user-verified baseline
 
-- User confirmed local HEAD and origin synced at `06d1138d`.
-- After pulling that state, user ran:
-  - Recovery/audit focused suite: **36 passed in 1.17s**
-  - Full suite: **740 passed in 5.91s**
-- The local working tree was clean except for the five pre-existing untracked runtime/cache paths listed below.
-- After these passing results, a new lifecycle-matrix integration test was added in commit `ed5a9e75`. **That latest test commit has not yet been run locally**; do not claim it is green until verified.
+- User pulled the lifecycle-matrix test commit and confirmed the local working tree's test results.
+- Latest verified run:
+  - Recovery/lifecycle focused suite: **42 passed in 1.29s**
+  - Full suite: **746 passed in 5.83s**
+- The user previously reported local/origin synced; re-check branch sync after the next pull.
+- Preserve the five pre-existing untracked runtime/cache paths listed below.
 
 Focused command just confirmed by the user:
 ```powershell
@@ -56,14 +56,13 @@ Commit `bf5bee4f`: `test(factory): integrate recovery report and journal audit`
 
 File: `tests/test_factory_recovery_audit_integration.py`
 
-The queued-only synthetic fixture checks report determinism, journal hash integrity, no automatic action, and unchanged journal/worker state. Its focused containing suite passed as part of the user-confirmed 36-test run.
+The queued-only synthetic fixture checks report determinism, journal hash integrity, no automatic action, and unchanged journal/worker state.
 
-### New test — pending local validation
 Commit `ed5a9e75`: `test(factory): cover recovery lifecycle matrix integration`
 
 File: `tests/test_factory_recovery_lifecycle_matrix_integration.py`
 
-The parameterized matrix checks QUEUED-only, interrupted DISPATCHED, terminal COMPLETED, terminal FAILED, and conflicting terminal histories. It asserts deterministic recovery summaries, correct lifecycle classification, no automatic requeue/action, and unchanged journal bytes and worker state. The new test file has not yet been run locally.
+The parameterized matrix checks QUEUED-only, interrupted DISPATCHED, terminal COMPLETED, terminal FAILED, and conflicting terminal histories. It asserts deterministic recovery summaries, correct lifecycle classification, no automatic requeue/action, and unchanged journal bytes and worker state. User confirmed the containing recovery/lifecycle suite passed as part of **42 focused tests**, with **746 tests passing** in the full suite.
 
 ## 5. Mandatory guardrails
 
@@ -78,7 +77,7 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 ## 6. Immediate next action
 
-Pull the latest commit and run the lifecycle-matrix integration test, then the recovery focused suite and the full suite. Preserve the five untracked paths above. If any test fails, share the complete output before making further changes.
+The recovery lifecycle matrix is now locally verified. Next, extend test-only coverage for the Orchestrator process-interruption boundary: if interruption occurs after durable DISPATCHED but before a terminal event, verify the system leaves an explicit reconciliation case and does not silently retry/requeue the job. Inspect existing fault tests first and keep the change isolated to synthetic tests. Preserve the five untracked paths above.
 
 ```powershell
 git pull --ff-only
