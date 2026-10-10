@@ -896,3 +896,64 @@ def test_journal_inspector_reports_non_utf8_bytes_without_mutation(tmp_path: Pat
     assert report["sha256"] == __import__("hashlib").sha256(before).hexdigest()
     assert report["automatic_repair_performed"] is False
     assert path.read_bytes() == before
+
+
+def test_journal_inspector_reports_unreadable_file_without_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    path = tmp_path / "unreadable-inspection.jsonl"
+    path.write_bytes(b"preserve these journal bytes")
+    before = path.read_bytes()
+    original_read_bytes = Path.read_bytes
+
+    def deny_read(self: Path) -> bytes:
+        if self == path:
+            raise PermissionError("synthetic access denied")
+        return original_read_bytes(self)
+
+    monkeypatch.setattr(Path, "read_bytes", deny_read)
+
+    report = inspect_job_journal_file(path)
+
+    assert report["status"] == "UNREADABLE_REVIEW_REQUIRED"
+    assert report["exists"] is True
+    assert report["error_type"] == "PermissionError"
+    assert report["sha256"] is None
+    assert report["automatic_repair_performed"] is False
+    # Check with the saved method because the simulated read denial is still active.
+    assert original_read_bytes(path) == before
+
+
+def test_journal_inspector_hash_and_events_use_same_byte_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import hashlib
+    import strategy_factory.job_events as job_events_module
+
+    path = tmp_path / "changing-inspection.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    job = make_job("JOB-INSPECT-SNAPSHOT-ISOLATION")
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    snapshot_bytes = path.read_bytes()
+    original_parse = job_events_module._parse_journal_text
+
+    def mutate_after_snapshot(text: str):
+        parsed = original_parse(text)
+        with path.open("ab") as handle:
+            handle.write(b'{"new":"later mutation"}' + bytes([10]))
+        return parsed
+
+    monkeypatch.setattr(job_events_module, "_parse_journal_text", mutate_after_snapshot)
+
+    report = job_events_module.inspect_job_journal_snapshot(path)[0]
+
+    assert report["status"] == "VALID"
+    assert report["event_count"] == 1
+    assert report["sha256"] == hashlib.sha256(snapshot_bytes).hexdigest()
+    assert path.read_bytes() != snapshot_bytes
