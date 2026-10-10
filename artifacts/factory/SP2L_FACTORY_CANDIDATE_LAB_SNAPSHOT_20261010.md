@@ -8,11 +8,11 @@
 
 ## 1. Latest user-verified baseline
 
-- User pulled the lifecycle-matrix test commit and confirmed the local working tree's test results.
+- User confirmed the latest process-interruption test commit is pulled and the local/origin branch is synced at `b9cbb3a9`.
 - Latest verified run:
-  - Recovery/lifecycle focused suite: **42 passed in 1.29s**
-  - Full suite: **746 passed in 5.83s**
-- The user previously reported local/origin synced; re-check branch sync after the next pull.
+  - Orchestrator/recovery/lifecycle focused suite: **48 passed in 1.42s**
+  - Full suite: **747 passed in 5.34s**
+- These results include `tests/test_factory_orchestrator_process_interruption.py`.
 - Preserve the five pre-existing untracked runtime/cache paths listed below.
 
 Focused command just confirmed by the user:
@@ -77,7 +77,7 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 ## 6. Immediate next action
 
-The recovery lifecycle matrix is locally verified (42 focused / 746 full). A new test-only process-interruption case has now been committed as `c66326e5` in `tests/test_factory_orchestrator_process_interruption.py`. It simulates a process-level interruption after durable DISPATCHED, reloads the journal, and checks `INTERRUPTED_REVIEW_REQUIRED`, no fabricated terminal event, no automatic requeue, and unchanged journal bytes. **This new test is pending local validation**. Pull and run the focused test, then the related Orchestrator/recovery suites and full suite. Preserve the five untracked paths above.
+The process-interruption case is verified locally (48 focused / 747 full). Next inspect the dispatch-to-worker-start boundary: if `DISPATCHED` is durable but `worker.start()` raises, the in-memory queue must not retain a job that a later `run_next()` could dispatch again without reconciliation. Prefer a minimal fail-closed change plus a synthetic regression test; do not change the forward runner, research semantics, or production authority. Preserve the five untracked paths above.
 
 ```powershell
 git pull --ff-only
@@ -87,4 +87,4 @@ git status --short --branch
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 ```
 
-The **36 focused / 740 full** results are confirmed for `06d1138d`, not for the new lifecycle-matrix commit `ed5a9e75`. Record new counts only after local execution.
+The latest user-confirmed counts are **48 focused / 747 full** at `b9cbb3a9`.
