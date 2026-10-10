@@ -106,14 +106,30 @@ Canonical workflow:
 
 Only source-confirmed rules can become canonical. Diagnostic/backtest outcomes do not decide source meaning. No formal Demo Forward should be started merely because these audit tests pass.
 
-## 5. Next step — do not duplicate completed work
+## 5. Next step — current work in progress
 
-1. Pull latest branch only if remote has advanced; preserve all untracked runtime/cache artifacts.
-2. Review the file-level audit implementation for edge cases (especially missing/unreadable paths and stable snapshot semantics); add focused regression tests where needed.
-3. Run focused tests and the full suite with the known-good interpreter. Report only observed results.
-4. If all tests pass, consider a separate, explicit integration point for exposing the file-level audit report to the Factory operator/dashboard. First trace the existing reporting path; do not wire it into orchestration in a way that can trigger retries, recovery actions, or job execution.
-5. Keep this work on `research/factory-candidate-lab-20261010`; ask user to `git pull --ff-only` and test after GitHub commits.
-6. Update this snapshot with the next verified state rather than creating duplicate plans.
+### Added after the last user-confirmed test run
+Two commits add regression coverage only; no production implementation was changed:
+- `bcd04c75` — `test(factory): cover unreadable and changing journal snapshots`
+  - Simulates a permission/read failure and asserts `UNREADABLE_REVIEW_REQUIRED`, no SHA claim, no repair, and byte preservation.
+  - Mutates the file after the parser has received the captured text and asserts the reported digest/event count still describe the original byte snapshot.
+- `6b9e59fa` — `test(factory): fail closed when worker journal is unreadable`
+  - Asserts file-level worker audit returns `REVIEW_REQUIRED` and `JOURNAL_INTEGRITY_REVIEW_REQUIRED` without reading partial events or changing the file.
+
+**Validation state:** these new tests have been committed to GitHub but have not yet been run in the user's local environment. Do not mark the branch green until the user runs them.
+
+### Reporting-path trace
+- The operator UI entry point is `scripts/factory_dashboard.py`.
+- It reads the selected worker telemetry JSON (`runtime/factory_worker_status.json`, or separate demo telemetry) and renders a read-only dashboard.
+- `src/strategy_factory/telemetry.py` publishes worker status atomically.
+- `src/strategy_factory/worker_journal_audit.py` currently exposes a standalone read-only audit API; it is not yet wired into the dashboard.
+- Keep audit reporting read-only and separate from job dispatch, recovery, retry, Holdout/Forward gating, and any Strategy A decision authority.
+
+### Immediate sequence
+1. Pull latest branch and preserve all untracked runtime/cache artifacts.
+2. Run the focused regression tests and full suite with the known-good interpreter.
+3. If green, add a narrowly scoped, read-only reporting adapter or dashboard section with explicit journal status/hash/findings; test missing, unreadable, invalid, and valid journal states. Do not let rendering trigger job execution or repair.
+4. Update this snapshot only after the next user-confirmed test result; do not duplicate prior work.
 
 ## 6. Resume command
 
