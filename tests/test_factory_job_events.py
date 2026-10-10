@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from strategy_factory.job_events import FactoryJobEventLedger
+from strategy_factory.job_events import FactoryJobEventLedger, inspect_job_journal_file
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.orchestrator import FactoryOrchestrator
 from strategy_factory.test_contract import ExecutionSemantics
@@ -786,3 +786,76 @@ def test_persisted_journal_rejects_truncated_tail_without_repair(tmp_path: Path)
 
     # A suspicious tail is preserved for explicit/manual reconciliation.
     assert path.read_bytes() == original_bytes
+
+
+
+def test_journal_inspector_reports_valid_snapshot_hash_without_mutation(tmp_path: Path):
+    path = tmp_path / "valid-inspection.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    job = make_job("JOB-INSPECT-VALID")
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    before = path.read_bytes()
+
+    report = inspect_job_journal_file(path)
+
+    assert report["status"] == "VALID"
+    assert report["exists"] is True
+    assert report["byte_size"] == len(before)
+    assert report["line_count"] == 1
+    assert report["event_count"] == 1
+    assert report["sha256"] == __import__("hashlib").sha256(before).hexdigest()
+    assert report["automatic_repair_performed"] is False
+    assert path.read_bytes() == before
+
+
+def test_journal_inspector_reports_truncated_tail_and_preserves_bytes(tmp_path: Path):
+    path = tmp_path / "invalid-inspection.jsonl"
+    path.write_bytes(b'{"sequence":1}\n{"sequence":')
+    before = path.read_bytes()
+
+    report = inspect_job_journal_file(path)
+
+    assert report["status"] == "INVALID_REVIEW_REQUIRED"
+    assert report["error_type"] == "ValueError"
+    assert "invalid JSON at line 2" in report["error"]
+    assert report["byte_size"] == len(before)
+    assert report["line_count"] == 2
+    assert report["sha256"] == __import__("hashlib").sha256(before).hexdigest()
+    assert report["automatic_repair_performed"] is False
+    assert path.read_bytes() == before
+
+
+def test_journal_inspector_distinguishes_missing_from_valid_empty_file(tmp_path: Path):
+    missing = inspect_job_journal_file(tmp_path / "missing.jsonl")
+    empty_path = tmp_path / "empty.jsonl"
+    empty_path.write_bytes(b"")
+    empty = inspect_job_journal_file(empty_path)
+
+    assert missing["status"] == "MISSING_REVIEW_REQUIRED"
+    assert missing["exists"] is False
+    assert missing["sha256"] is None
+    assert missing["automatic_repair_performed"] is False
+    assert empty["status"] == "VALID"
+    assert empty["exists"] is True
+    assert empty["event_count"] == 0
+    assert empty["sha256"] == __import__("hashlib").sha256(b"").hexdigest()
+
+
+def test_journal_inspector_reports_non_utf8_bytes_without_mutation(tmp_path: Path):
+    path = tmp_path / "non-utf8.jsonl"
+    path.write_bytes(b"\\xff\\xfe")
+    before = path.read_bytes()
+
+    report = inspect_job_journal_file(path)
+
+    assert report["status"] == "INVALID_REVIEW_REQUIRED"
+    assert report["error_type"] == "UnicodeDecodeError"
+    assert report["sha256"] == __import__("hashlib").sha256(before).hexdigest()
+    assert report["automatic_repair_performed"] is False
+    assert path.read_bytes() == before
