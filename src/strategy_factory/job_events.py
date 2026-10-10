@@ -119,6 +119,108 @@ class FactoryJobEvent:
             raise ValueError("factory job event fingerprint mismatch")
 
 
+def _parse_journal_text(text: str) -> list[FactoryJobEvent]:
+    """Validate one immutable text snapshot of the append-only JSONL journal."""
+    events: list[FactoryJobEvent] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        if not line.strip():
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise ValueError(
+                "factory job journal contains invalid JSON at line "
+                f"{line_number}; journal preserved and automatic repair refused"
+            ) from exc
+        if not isinstance(payload, dict):
+            raise ValueError(
+                "factory job journal record at line "
+                f"{line_number} is not an object; journal preserved"
+            )
+        try:
+            event = FactoryJobEvent(**payload)
+        except TypeError as exc:
+            raise ValueError(
+                "factory job journal record has an invalid schema at line "
+                f"{line_number}; journal preserved"
+            ) from exc
+        event.validate()
+        if event.sequence != len(events) + 1:
+            raise ValueError(
+                "factory job event sequence is not contiguous "
+                f"at line {line_number}; journal preserved"
+            )
+        events.append(event)
+    return events
+
+
+def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, Any]:
+    """Inspect a journal snapshot without repairing or rewriting the source file.
+
+    The report records identity and validation outcome only. A missing file is
+    distinct from a valid empty journal, and invalid bytes are never discarded.
+    """
+    path = Path(path)
+    if not path.exists():
+        return {
+            "status": "MISSING_REVIEW_REQUIRED",
+            "path": str(path),
+            "exists": False,
+            "byte_size": 0,
+            "line_count": 0,
+            "sha256": None,
+            "error_type": None,
+            "error": "journal file does not exist",
+            "automatic_repair_performed": False,
+        }
+
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        return {
+            "status": "UNREADABLE_REVIEW_REQUIRED",
+            "path": str(path),
+            "exists": True,
+            "byte_size": None,
+            "line_count": None,
+            "sha256": None,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "automatic_repair_performed": False,
+        }
+
+    digest = hashlib.sha256(raw).hexdigest()
+    line_count = len(raw.splitlines())
+    try:
+        text = raw.decode("utf-8")
+        events = _parse_journal_text(text)
+    except (UnicodeDecodeError, ValueError) as exc:
+        return {
+            "status": "INVALID_REVIEW_REQUIRED",
+            "path": str(path),
+            "exists": True,
+            "byte_size": len(raw),
+            "line_count": line_count,
+            "sha256": digest,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "automatic_repair_performed": False,
+        }
+
+    return {
+        "status": "VALID",
+        "path": str(path),
+        "exists": True,
+        "byte_size": len(raw),
+        "line_count": line_count,
+        "event_count": len(events),
+        "sha256": digest,
+        "error_type": None,
+        "error": None,
+        "automatic_repair_performed": False,
+    }
+
+
 class FactoryJobEventLedger:
     """Append-only in-memory lifecycle ledger with optional JSONL persistence."""
 
@@ -126,37 +228,9 @@ class FactoryJobEventLedger:
         self.path = path
         self._events: list[FactoryJobEvent] = []
         if self.path is not None and self.path.exists():
-            for line_number, line in enumerate(
-                self.path.read_text(encoding="utf-8").splitlines(), start=1
-            ):
-                if not line.strip():
-                    continue
-                try:
-                    payload = json.loads(line)
-                except json.JSONDecodeError as exc:
-                    raise ValueError(
-                        "factory job journal contains invalid JSON at line "
-                        f"{line_number}; journal preserved and automatic repair refused"
-                    ) from exc
-                if not isinstance(payload, dict):
-                    raise ValueError(
-                        "factory job journal record at line "
-                        f"{line_number} is not an object; journal preserved"
-                    )
-                try:
-                    event = FactoryJobEvent(**payload)
-                except TypeError as exc:
-                    raise ValueError(
-                        "factory job journal record has an invalid schema at line "
-                        f"{line_number}; journal preserved"
-                    ) from exc
-                event.validate()
-                if event.sequence != len(self._events) + 1:
-                    raise ValueError(
-                        "factory job event sequence is not contiguous "
-                        f"at line {line_number}; journal preserved"
-                    )
-                self._events.append(event)
+            self._events = _parse_journal_text(
+                self.path.read_text(encoding="utf-8")
+            )
 
     def append(
         self,
