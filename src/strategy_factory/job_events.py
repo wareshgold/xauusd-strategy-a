@@ -82,13 +82,36 @@ class FactoryJobEventLedger:
         self.path = path
         self._events: list[FactoryJobEvent] = []
         if self.path is not None and self.path.exists():
-            for line in self.path.read_text(encoding="utf-8").splitlines():
+            for line_number, line in enumerate(
+                self.path.read_text(encoding="utf-8").splitlines(), start=1
+            ):
                 if not line.strip():
                     continue
-                event = FactoryJobEvent(**json.loads(line))
+                try:
+                    payload = json.loads(line)
+                except json.JSONDecodeError as exc:
+                    raise ValueError(
+                        "factory job journal contains invalid JSON at line "
+                        f"{line_number}; journal preserved and automatic repair refused"
+                    ) from exc
+                if not isinstance(payload, dict):
+                    raise ValueError(
+                        "factory job journal record at line "
+                        f"{line_number} is not an object; journal preserved"
+                    )
+                try:
+                    event = FactoryJobEvent(**payload)
+                except TypeError as exc:
+                    raise ValueError(
+                        "factory job journal record has an invalid schema at line "
+                        f"{line_number}; journal preserved"
+                    ) from exc
                 event.validate()
                 if event.sequence != len(self._events) + 1:
-                    raise ValueError("factory job event sequence is not contiguous")
+                    raise ValueError(
+                        "factory job event sequence is not contiguous "
+                        f"at line {line_number}; journal preserved"
+                    )
                 self._events.append(event)
 
     def append(
