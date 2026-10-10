@@ -158,6 +158,13 @@ def apply_queue_reconstruction(
 
     # The durable marker precedes this single list replacement. If the process
     # stops after journaling, retrying the same plan restores missing entries.
-    orchestrator.queue = [*orchestrator.queue, *additions]
-    orchestrator.fleet.publish()
+    prior_queue = list(orchestrator.queue)
+    orchestrator.queue = [*prior_queue, *additions]
+    try:
+        orchestrator.fleet.publish()
+    except Exception:
+        # The marker intentionally remains durable. A retry can safely rebuild
+        # the queue from it; do not leave an in-memory partial apply on error.
+        orchestrator.queue = prior_queue
+        raise
     return bool(additions)
