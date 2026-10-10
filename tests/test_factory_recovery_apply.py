@@ -254,3 +254,51 @@ def test_applied_job_runs_only_after_explicit_run_next(tmp_path):
     assert [event.event_type for event in ledger.for_job(job.job_id)] == [
         "QUEUED", "DISPATCHED", "COMPLETED"
     ]
+
+
+
+def test_restart_after_durable_marker_restores_queue_without_dispatch(tmp_path, monkeypatch):
+    path = tmp_path / "events.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    job = make_job()
+    journal_queued(ledger, job)
+    plan = make_plan(ledger, job)
+    first_process = make_orchestrator(ledger)
+
+    def crash_after_marker():
+        raise OSError("simulated crash after durable marker")
+
+    monkeypatch.setattr(first_process.fleet, "publish", crash_after_marker)
+    with pytest.raises(OSError, match="after durable marker"):
+        apply_queue_reconstruction(
+            first_process, plan, station="DEV", phase="RECOVERY"
+        )
+
+    # The marker is durable, but the failed process has no in-memory queue entry.
+    assert first_process.pending() == ()
+    assert sum(
+        event.event_type == "QUEUE_RECONSTRUCTION_APPLIED"
+        for event in ledger.entries()
+    ) == 1
+
+    # A fresh process loads only the journal; replaying the same approved plan
+    # restores the missing queue entry without creating another marker or dispatch.
+    restarted_ledger = FactoryJobEventLedger(path)
+    restarted = make_orchestrator(restarted_ledger)
+    assert restarted.pending() == ()
+    assert apply_queue_reconstruction(
+        restarted, plan, station="DEV", phase="RECOVERY"
+    ) is True
+
+    assert [item.job.job_id for item in restarted.pending()] == [job.job_id]
+    assert sum(
+        event.event_type == "QUEUE_RECONSTRUCTION_APPLIED"
+        for event in restarted_ledger.entries()
+    ) == 1
+    assert not any(
+        event.event_type == "DISPATCHED"
+        for event in restarted_ledger.for_job(job.job_id)
+    )
+    report = inspect_factory_recovery(restarted_ledger)
+    assert report.status_counts == {"QUEUED_REVIEW_REQUIRED": 1}
+    assert report.automatic_requeue_performed is False
