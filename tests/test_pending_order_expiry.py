@@ -142,7 +142,6 @@ def test_never_touches_foreign_orders_or_non_limit_types(monkeypatch, tmp_path):
     ]
     mod, sent = load_runner(monkeypatch, tmp_path, fake)
     state = fresh_state()
-    state["order_created_monotonic"]["119"] = time.monotonic() - 45 * 60
     mod.enforce_pending_order_expiry({"symbol": SYMBOL, "magic": MAGIC}, state)
     assert not sent
     assert state["order_states"] == set()
@@ -182,6 +181,7 @@ def test_expiry_event_logged(monkeypatch, tmp_path):
     fake.orders_get = lambda symbol=None: [pending_limit(119, age_minutes=45)]
     mod, sent = load_runner(monkeypatch, tmp_path, fake)
     state = fresh_state()
+    state["order_created_monotonic"]["119"] = time.monotonic() - 45 * 60
     mod.enforce_pending_order_expiry({"symbol": SYMBOL, "magic": MAGIC}, state)
     lines = (tmp_path / "events.jsonl").read_text(encoding="utf-8").strip().splitlines()
     events = [json.loads(l) for l in lines]
