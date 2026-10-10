@@ -70,6 +70,7 @@ def fresh_state():
         "seen": {}, "notified": set(), "deals": set(),
         "orders": set(), "positions": set(),
         "position_orders": {}, "order_states": set(),
+        "order_created_monotonic": {},
     }
 
 
@@ -98,6 +99,7 @@ def test_dry_run_never_sends_cancel_but_notifies(monkeypatch, tmp_path):
     fake.orders_get = lambda symbol=None: [pending_limit(111, age_minutes=60)]
     mod, sent = load_runner(monkeypatch, tmp_path, fake)
     state = fresh_state()
+    state["order_created_monotonic"]["111"] = time.monotonic() - 60 * 60
     mod.enforce_pending_order_expiry({"symbol": SYMBOL, "magic": MAGIC}, state)
     assert sent, "expiry notice must be sent to Telegram"
     assert "EXPIRED" in sent[0]
@@ -115,6 +117,7 @@ def test_real_cancel_requires_demo_and_both_flags(monkeypatch, tmp_path):
     fake.orders_get = lambda symbol=None: [pending_limit(112, age_minutes=60)]
     mod, sent = load_runner(monkeypatch, tmp_path, fake)
     state = fresh_state()
+    state["order_created_monotonic"]["112"] = time.monotonic() - 60 * 60
     mod.enforce_pending_order_expiry({"symbol": SYMBOL, "magic": MAGIC}, state)
     assert len(calls) == 1 and calls[0]["action"] == 4 and calls[0]["order"] == 112
     assert f"112:EXPIRY_NOTIFIED:CANCELLED" in state["order_states"]
@@ -125,6 +128,7 @@ def test_real_cancel_blocked_on_non_demo_account(monkeypatch, tmp_path):
     fake.orders_get = lambda symbol=None: [pending_limit(113, age_minutes=60)]
     mod, sent = load_runner(monkeypatch, tmp_path, fake)
     state = fresh_state()
+    state["order_created_monotonic"]["113"] = time.monotonic() - 60 * 60
     mod.enforce_pending_order_expiry({"symbol": SYMBOL, "magic": MAGIC}, state)
     assert any("113:EXPIRY_NOTIFIED:CANCEL_FAILED" in s for s in state["order_states"])
     assert sent and "CANCEL_FAILED" in sent[0]
@@ -138,6 +142,7 @@ def test_never_touches_foreign_orders_or_non_limit_types(monkeypatch, tmp_path):
     ]
     mod, sent = load_runner(monkeypatch, tmp_path, fake)
     state = fresh_state()
+    state["order_created_monotonic"]["119"] = time.monotonic() - 45 * 60
     mod.enforce_pending_order_expiry({"symbol": SYMBOL, "magic": MAGIC}, state)
     assert not sent
     assert state["order_states"] == set()
