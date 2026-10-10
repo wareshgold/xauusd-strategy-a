@@ -119,11 +119,13 @@ class FactoryJobEventLedger:
         ).hexdigest()
         event = FactoryJobEvent(**event.as_dict(include_fingerprint=False), event_fingerprint=fingerprint)
         event.validate()
-        self._events.append(event)
         if self.path is not None:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with self.path.open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n")
+        # Commit to in-memory state only after persistence succeeds. If disk
+        # writing fails, callers may safely retry without a phantom sequence.
+        self._events.append(event)
         return event
 
     def entries(self) -> tuple[FactoryJobEvent, ...]:
@@ -173,9 +175,6 @@ class FactoryJobEventLedger:
                 action = "MANUAL_RECONCILIATION_REQUIRED"
             elif lifecycle_history and lifecycle_history not in valid_lifecycle_prefixes:
                 status = "LIFECYCLE_CONFLICT_REVIEW_REQUIRED"
-                action = "MANUAL_RECONCILIATION_REQUIRED"
-            elif has_completed and has_failed:
-                status = "TERMINAL_CONFLICT_REVIEW_REQUIRED"
                 action = "MANUAL_RECONCILIATION_REQUIRED"
             elif has_completed:
                 status = "TERMINAL_COMPLETED"
