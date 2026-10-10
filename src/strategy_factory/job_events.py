@@ -159,15 +159,18 @@ def _parse_journal_text(text: str) -> list[FactoryJobEvent]:
     return events
 
 
-def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, Any]:
-    """Inspect a journal snapshot without repairing or rewriting the source file.
+def inspect_job_journal_snapshot(
+    path: Path = DEFAULT_JOB_EVENTS_FILE,
+) -> tuple[dict[str, Any], tuple[FactoryJobEvent, ...] | None]:
+    """Read and validate one immutable journal snapshot without modifying it.
 
-    The report records identity and validation outcome only. A missing file is
-    distinct from a valid empty journal, and invalid bytes are never discarded.
+    Returns the public integrity report plus parsed events from the exact same
+    byte snapshot, preventing file-level audits from inspecting one version and
+    then loading a potentially different version.
     """
     path = Path(path)
     if not path.exists():
-        return {
+        return ({
             "status": "MISSING_REVIEW_REQUIRED",
             "path": str(path),
             "exists": False,
@@ -177,12 +180,12 @@ def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, 
             "error_type": None,
             "error": "journal file does not exist",
             "automatic_repair_performed": False,
-        }
+        }, None)
 
     try:
         raw = path.read_bytes()
     except OSError as exc:
-        return {
+        return ({
             "status": "UNREADABLE_REVIEW_REQUIRED",
             "path": str(path),
             "exists": True,
@@ -192,15 +195,15 @@ def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, 
             "error_type": type(exc).__name__,
             "error": str(exc),
             "automatic_repair_performed": False,
-        }
+        }, None)
 
     digest = hashlib.sha256(raw).hexdigest()
     line_count = len(raw.splitlines())
     try:
         text = raw.decode("utf-8")
-        events = _parse_journal_text(text)
+        events = tuple(_parse_journal_text(text))
     except (UnicodeDecodeError, ValueError) as exc:
-        return {
+        return ({
             "status": "INVALID_REVIEW_REQUIRED",
             "path": str(path),
             "exists": True,
@@ -210,9 +213,9 @@ def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, 
             "error_type": type(exc).__name__,
             "error": str(exc),
             "automatic_repair_performed": False,
-        }
+        }, None)
 
-    return {
+    return ({
         "status": "VALID",
         "path": str(path),
         "exists": True,
@@ -223,7 +226,13 @@ def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, 
         "error_type": None,
         "error": None,
         "automatic_repair_performed": False,
-    }
+    }, events)
+
+
+def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, Any]:
+    """Inspect a journal snapshot without repairing or rewriting the source file."""
+    report, _events = inspect_job_journal_snapshot(path)
+    return report
 
 
 class FactoryJobEventLedger:
@@ -236,6 +245,15 @@ class FactoryJobEventLedger:
             self._events = _parse_journal_text(
                 self.path.read_text(encoding="utf-8")
             )
+
+    @classmethod
+    def from_snapshot(
+        cls, events: tuple[FactoryJobEvent, ...]
+    ) -> "FactoryJobEventLedger":
+        """Build an in-memory ledger from already validated snapshot events."""
+        ledger = cls(path=None)
+        ledger._events = list(events)
+        return ledger
 
     def append(
         self,
