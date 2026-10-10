@@ -8,13 +8,12 @@
 
 ## 1. Latest user-verified baseline
 
-- Latest user-verified baseline is commit `78c13ffb` on `research/factory-candidate-lab-20261010`.
-- User-verified run after commits `a414a12c`, `6cd27e2b`, and `78c13ffb`:
-  - Focused dispatch/recovery/lifecycle suite: **49 passed in 1.67s**
-  - Full suite: **748 passed in 5.38s**
-- The focused run includes `tests/test_factory_orchestrator_dispatch_boundary.py` and `tests/test_factory_orchestrator_process_interruption.py`.
-- Subsequent commits `c430f7b9`, `458e6a39`, and `6d3599bc` record the verified baseline and add a submit-telemetry fault isolation fix/test. **These subsequent code/test changes are pending local validation.**
-- Preserve the five untracked runtime/cache paths listed below.
+- Latest user-verified baseline is commit `cd6e3199` on `research/factory-candidate-lab-20261010`.
+- User-verified run at that baseline:
+  - Focused dispatch/recovery/journal-fault suite: **50 passed in 1.59s**
+  - Full suite: **749 passed in 5.21s**
+- The focused run includes the submit-telemetry fault regression test.
+- Subsequent commits `fa35b20c` and `b5a4e54f` isolate handoff telemetry publication faults and add a synthetic regression test. **These latest code/test changes are pending local validation.**
 - Preserve the five pre-existing untracked runtime/cache paths listed below.
 
 Focused command just confirmed by the user:
@@ -79,15 +78,15 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 ## 6. Immediate next action
 
-The process-interruption and worker-start dispatch boundary are now user-verified locally (**49 focused / 748 full**). Commit `a414a12c` removes the in-memory queue entry immediately after durable `DISPATCHED`, before worker startup; commit `6cd27e2b` verifies that a startup fault does not execute or redispatch the job and recovery reports `INTERRUPTED_REVIEW_REQUIRED`. These changes are validated by the reported test runs; they do not establish a trading edge or production readiness.
+The user has verified submit telemetry fault isolation (**50 focused / 749 full**) at `cd6e3199`. Commits `458e6a39` and `6d3599bc` ensure that once `QUEUED` is durable and the in-memory queue is updated, a telemetry publication fault is recorded as `publish_after_submit` rather than escaping and encouraging a duplicate submission.
 
-**Latest pending change — submit telemetry fault isolation:** after `QUEUED` is durably journaled and the in-memory queue updated, a failing `fleet.publish()` previously propagated out of `submit()`. That could make a caller believe submission failed and retry an already accepted job. Commit `458e6a39` routes this telemetry attempt through the safe publication recorder, and commit `6d3599bc` adds a synthetic regression test. The job remains queued; the publication error is recorded as `publish_after_submit`. **Pending user validation; do not call it verified until tests pass locally.**
+**Latest pending change — handoff telemetry fault isolation:** `HANDOFF_ACCEPTED` is journaled before telemetry publication. If `fleet.publish()` fails, propagating the error could make the caller treat an already accepted handoff as unsuccessful. Commit `fa35b20c` routes the publication through the safe telemetry recorder, and `b5a4e54f` adds a synthetic regression test asserting the durable handoff remains returned and the telemetry fault is recorded. **Pending local validation; do not call it verified until tests pass locally.**
 
-Pull the latest branch, inspect the log/status, run the focused journal-fault and dispatch/recovery tests, then the full suite. Preserve all five untracked paths:
+Pull and run the focused suites, then the full suite. Preserve the five untracked paths:
 ```powershell
 git pull --ff-only
 git log -6 --oneline
 git status --short --branch
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_orchestrator_journal_faults.py tests/test_factory_orchestrator_dispatch_boundary.py tests/test_factory_orchestrator_process_interruption.py tests/test_factory_recovery_lifecycle_matrix_integration.py tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py -q
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_orchestrator_handoff_telemetry.py tests/test_factory_orchestrator_journal_faults.py tests/test_factory_orchestrator_dispatch_boundary.py tests/test_factory_orchestrator_process_interruption.py tests/test_factory_recovery_lifecycle_matrix_integration.py tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py tests/test_factory_handoff.py -q
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 ```
