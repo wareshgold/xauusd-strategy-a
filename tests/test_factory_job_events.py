@@ -561,7 +561,7 @@ def test_persisted_journal_rejects_non_string_fingerprint_without_mutation(tmp_p
     )
     payload = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
     payload["job_fingerprint"] = None
-    path.write_text(json.dumps(payload) + "\\n", encoding="utf-8")
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     original_bytes = path.read_bytes()
 
     with pytest.raises(ValueError, match="job_fingerprint must be lowercase hexadecimal SHA-256"):
@@ -583,7 +583,7 @@ def test_persisted_journal_rejects_non_integer_sequence_without_mutation(tmp_pat
     )
     payload = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
     payload["sequence"] = "1"
-    path.write_text(json.dumps(payload) + "\\n", encoding="utf-8")
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     original_bytes = path.read_bytes()
 
     with pytest.raises(ValueError, match="factory job event identity is incomplete"):
