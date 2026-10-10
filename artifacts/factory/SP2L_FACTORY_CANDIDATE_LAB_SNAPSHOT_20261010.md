@@ -6,21 +6,21 @@
 **Local checkout:** `D:\\Mirzaei\\Private\\1\\xauusd-strategy-a-factory-candidate-lab`  
 **Preferred test interpreter:** `D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe`
 
-## 1. Exact resume point
+## 1. Latest user-verified baseline
 
-- Latest branch head after the new integration regression: `bf5bee4f4d973e3540623ddd28ff2ef019c42f20`.
-- The user-confirmed baseline immediately before this new test was `df7e3176ec7d6fe9f6db742be60ce91bde7cf4ed`.
-- User-confirmed results at that baseline:
-  - Focused dashboard/journal/orchestrator tests: **59 passed in 1.44s**
-  - Full suite: **739 passed in 5.76s**
-- A new integration regression was then added in `tests/test_factory_recovery_audit_integration.py`; **it has not yet been run locally**. The branch must not be described as green at `bf5bee4f` until the user runs it.
+- User confirmed local HEAD and origin synced at `06d1138d`.
+- After pulling that state, user ran:
+  - Recovery/audit focused suite: **36 passed in 1.17s**
+  - Full suite: **740 passed in 5.91s**
+- The local working tree was clean except for the five pre-existing untracked runtime/cache paths listed below.
+- After these passing results, a new lifecycle-matrix integration test was added in commit `ed5a9e75`. **That latest test commit has not yet been run locally**; do not claim it is green until verified.
 
-Focused baseline command:
+Focused command just confirmed by the user:
 ```powershell
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_dashboard.py tests/test_factory_job_events.py tests/test_factory_worker_journal_audit.py tests/test_factory_orchestrator_journal_faults.py -q
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py -q
 ```
 
-Full suite:
+Full suite just confirmed by the user:
 ```powershell
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 ```
@@ -49,21 +49,21 @@ Preserve these untracked runtime/cache artifacts. Do not clean, reset, stage, or
 - Dashboard exposes a read-only Job Journal Integrity panel with status, counts, path, SHA-256 and findings; valid, missing, unreadable and invalid states have coverage.
 - Demo telemetry remains separate from live worker telemetry. Forward Runner behavior is out of scope.
 
-## 4. New integration regression — pending local validation
+## 4. Integration test commits
 
-Commit: `bf5bee4f` — `test(factory): integrate recovery report and journal audit`
+### Confirmed by user
+Commit `bf5bee4f`: `test(factory): integrate recovery report and journal audit`
 
 File: `tests/test_factory_recovery_audit_integration.py`
 
-The test joins the existing worker/journal integrity audit with deterministic recovery reporting for a synthetic queued-only journal. It checks that:
-- both views agree on the journal event count;
-- the integrity SHA-256 matches the original bytes;
-- repeated recovery reports have identical content and identity;
-- a queued-only job remains `QUEUED_REVIEW_REQUIRED`;
-- no automatic requeue/action occurs;
-- journal bytes and worker state remain unchanged.
+The queued-only synthetic fixture checks report determinism, journal hash integrity, no automatic action, and unchanged journal/worker state. Its focused containing suite passed as part of the user-confirmed 36-test run.
 
-This is a test-only change. No Strategy A rules or runtime execution paths were changed.
+### New test — pending local validation
+Commit `ed5a9e75`: `test(factory): cover recovery lifecycle matrix integration`
+
+File: `tests/test_factory_recovery_lifecycle_matrix_integration.py`
+
+The parameterized matrix checks QUEUED-only, interrupted DISPATCHED, terminal COMPLETED, terminal FAILED, and conflicting terminal histories. It asserts deterministic recovery summaries, correct lifecycle classification, no automatic requeue/action, and unchanged journal bytes and worker state. The new test file has not yet been run locally.
 
 ## 5. Mandatory guardrails
 
@@ -78,14 +78,14 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 ## 6. Immediate next action
 
-Pull the latest commit and run the new test, the focused regression set, and the full suite. Preserve the five untracked paths above. If any test fails, share the complete output before making further changes.
+Pull the latest commit and run the lifecycle-matrix integration test, then the recovery focused suite and the full suite. Preserve the five untracked paths above. If any test fails, share the complete output before making further changes.
 
 ```powershell
 git pull --ff-only
 git log -5 --oneline
 git status --short --branch
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py -q
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_recovery_lifecycle_matrix_integration.py tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py -q
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 ```
 
-The **59 focused / 739 full** results are confirmed for `df7e3176`, not for the new integration-test commit. Record fresh counts only after local execution.
+The **36 focused / 740 full** results are confirmed for `06d1138d`, not for the new lifecycle-matrix commit `ed5a9e75`. Record new counts only after local execution.
