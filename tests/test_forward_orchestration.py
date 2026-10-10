@@ -42,6 +42,7 @@ def _session():
                 "holdout_dataset_id": record.dataset_id,
                 "holdout_dataset_sha256": _sha(b"holdout-orchestration"),
                 "holdout_artifact_id": "HOLDOUT-ORCH-ART-1",
+                "handoff_fingerprint": _sha(b"synthetic-orchestration-handoff"),
                 "production_decision": False,
             },
         )
