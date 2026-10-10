@@ -384,6 +384,19 @@ def test_partial_journal_append_is_rolled_back_before_retry(tmp_path: Path, monk
     assert path.read_bytes() == original_bytes
     assert ledger.entries() == original_entries
 
+    # A retry after rollback must reuse the next contiguous sequence and leave
+    # a journal that can be reopened without repair.
+    monkeypatch.undo()
+    retried = ledger.append(
+        event_type="QUEUED",
+        job_id=failing_job.job_id,
+        job_fingerprint=failing_job.fingerprint,
+    )
+    assert retried.sequence == 2
+    reopened = FactoryJobEventLedger(path)
+    assert [event.sequence for event in reopened.entries()] == [1, 2]
+    assert reopened.entries()[-1].job_id == failing_job.job_id
+
 
 def test_restart_reports_persisted_jobs_without_automatic_queue_replay(tmp_path: Path):
     path = tmp_path / "restart-recovery.jsonl"
