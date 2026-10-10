@@ -118,9 +118,15 @@ def status_class(value: str) -> str:
 
 
 def station_for(worker: dict) -> str:
+    # The normalized station field is authoritative. Text inference is only a
+    # compatibility fallback for older telemetry that did not publish it.
+    declared = str(worker.get("station") or "").strip().lower()
+    if declared in STATIONS:
+        return declared
+
     text = " ".join(
         str(worker.get(k) or "").lower()
-        for k in ("job_type", "detail", "station", "phase")
+        for k in ("job_type", "detail", "phase")
     )
     for key in ("holdout", "forward", "robust", "stability", "discovery"):
         if key in text:
@@ -471,7 +477,21 @@ def html_page() -> str:
     running = sum(str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"} for w in workers)
     failed = sum(str(w.get("state") or "").upper() == "FAILED" for w in workers)
 
-    if factory_health == "LIVE":
+    demo_snapshot_complete = (
+        DEMO_MODE
+        and bool(workers)
+        and all(
+            str(w.get("job_type") or "") == "TELEMETRY_DEMO_ONLY"
+            and str(w.get("state") or "").upper() == "COMPLETED"
+            for w in workers
+        )
+    )
+    if demo_snapshot_complete:
+        # A completed demo is a historical snapshot, not a live worker service.
+        # Its old heartbeat must not be reported as a live outage.
+        headline = "DEMO SNAPSHOT · RUN COMPLETE"
+        headline_class = "warn"
+    elif factory_health == "LIVE":
         headline = "FACTORY IS WORKING"
         headline_class = "ok"
     elif factory_health in {"STALE", "OFFLINE"}:
