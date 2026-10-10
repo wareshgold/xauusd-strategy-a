@@ -69,3 +69,59 @@ def test_completed_event_append_failure_is_detectable_without_auto_repair(monkey
     assert report["automatic_action_performed"] is False
     assert ledger.entries() == before_events
     assert worker.__dict__.copy() == before_worker
+
+
+def test_failed_event_append_failure_preserves_original_execution_error(monkeypatch):
+    ledger = FactoryJobEventLedger(path=None)
+    worker = FactoryWorker(worker_id="W01")
+    orchestrator = FactoryOrchestrator(
+        fleet=FactoryWorkerFleet(workers=[worker]),
+        events=ledger,
+    )
+    orchestrator.submit(
+        _job(),
+        station="DEV",
+        phase="DEV",
+        detail="failure-journal-fault",
+    )
+    original_append = ledger.append
+
+    def fail_only_failure_append(**kwargs):
+        if kwargs.get("event_type") == "FAILED":
+            raise OSError("injected FAILED journal failure")
+        return original_append(**kwargs)
+
+    def fail_execution(job, current_worker):
+        raise ValueError("original research executor failure")
+
+    monkeypatch.setattr(ledger, "append", fail_only_failure_append)
+
+    with pytest.raises(ValueError, match="original research executor failure") as caught:
+        orchestrator.run_next(
+            worker_id="W01",
+            execute=fail_execution,
+        )
+
+    assert any(
+        "injected FAILED journal failure" in note
+        for note in getattr(caught.value, "__notes__", [])
+    )
+    assert worker.state == "FAILED"
+    assert worker.error == "original research executor failure"
+    assert orchestrator.pending() == ()
+    assert [event.event_type for event in ledger.entries()] == [
+        "QUEUED",
+        "DISPATCHED",
+    ]
+
+    before_events = ledger.entries()
+    before_worker = worker.__dict__.copy()
+    report = inspect_worker_journal_consistency(ledger, [worker])
+    codes = {finding["code"] for finding in report["findings"]}
+
+    assert report["status"] == "REVIEW_REQUIRED"
+    assert "TERMINAL_WORKER_JOURNAL_MISMATCH" in codes
+    assert "DISPATCHED_JOB_NOT_ACTIVE_ON_WORKER" in codes
+    assert report["automatic_action_performed"] is False
+    assert ledger.entries() == before_events
+    assert worker.__dict__.copy() == before_worker
