@@ -195,3 +195,59 @@ def test_failed_job_is_terminal_and_does_not_block_next_queued_job():
         "DISPATCHED",
         "COMPLETED",
     ]
+
+
+def test_persisted_ledger_restores_sequence_and_rejects_replayed_job(tmp_path: Path):
+    path = tmp_path / "persistent-events.jsonl"
+    job = make_job()
+
+    first_process = FactoryJobEventLedger(path)
+    first_process.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+
+    # Simulate a process restart: the next ledger must recover the journal.
+    restarted_ledger = FactoryJobEventLedger(path)
+    assert len(restarted_ledger.entries()) == 1
+    assert restarted_ledger.entries()[0].sequence == 1
+    second_event = restarted_ledger.append(
+        event_type="DISPATCHED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        worker_id="W01",
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    assert second_event.sequence == 2
+
+    orchestrator = FactoryOrchestrator(
+        fleet=FactoryWorkerFleet([FactoryWorker("W01")]),
+        events=FactoryJobEventLedger(path),
+    )
+    with pytest.raises(ValueError, match="already been submitted"):
+        orchestrator.submit(job, station="stability", phase="STABILITY")
+
+
+def test_persisted_ledger_fails_closed_on_truncated_jsonl_record(tmp_path: Path):
+    path = tmp_path / "corrupt-events.jsonl"
+    job = make_job()
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write('{"sequence":')
+
+    # Do not silently discard a partial tail or continue with incomplete history.
+    with pytest.raises(json.JSONDecodeError):
+        FactoryJobEventLedger(path)
+
