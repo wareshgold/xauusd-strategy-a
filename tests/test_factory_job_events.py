@@ -232,6 +232,31 @@ def test_persisted_ledger_restores_sequence_and_rejects_replayed_job(tmp_path: P
         orchestrator.submit(job, station="stability", phase="STABILITY")
 
 
+def test_failed_persistence_does_not_advance_in_memory_sequence(tmp_path: Path, monkeypatch):
+    path = tmp_path / "blocked-events.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    job = make_job("JOB-PERSISTENCE-FAILURE")
+    original_open = Path.open
+
+    def fail_append(self, *args, **kwargs):
+        mode = args[0] if args else kwargs.get("mode", "r")
+        if self == path and "a" in mode:
+            raise OSError("synthetic disk write failure")
+        return original_open(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", fail_append)
+
+    with pytest.raises(OSError, match="synthetic disk write failure"):
+        ledger.append(
+            event_type="QUEUED",
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+        )
+
+    assert ledger.entries() == ()
+    assert not path.exists()
+
+
 def test_persisted_ledger_fails_closed_on_truncated_jsonl_record(tmp_path: Path):
     path = tmp_path / "corrupt-events.jsonl"
     job = make_job()
