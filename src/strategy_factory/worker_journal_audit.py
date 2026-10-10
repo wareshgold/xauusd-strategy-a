@@ -6,9 +6,14 @@ state, the queue, the journal, or research/strategy decisions.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
-from .job_events import FactoryJobEventLedger
+from .job_events import (
+    DEFAULT_JOB_EVENTS_FILE,
+    FactoryJobEventLedger,
+    inspect_job_journal_snapshot,
+)
 
 
 _ACTIVE_STATES = {"RUNNING", "HEARTBEAT"}
@@ -145,3 +150,46 @@ def inspect_worker_journal_consistency(
         "findings": findings,
         "automatic_action_performed": False,
     }
+
+
+
+def inspect_worker_journal_file_consistency(
+    workers: Sequence[Any],
+    path: Path = DEFAULT_JOB_EVENTS_FILE,
+) -> dict[str, Any]:
+    """Audit worker state against one validated on-disk journal snapshot.
+
+    Invalid, missing, or unreadable journals produce REVIEW_REQUIRED without
+    constructing a partial ledger. The parsed ledger and integrity digest come
+    from the same byte snapshot; no repair, replay, retry, or write is performed.
+    """
+    integrity, events = inspect_job_journal_snapshot(path)
+    if integrity["status"] != "VALID" or events is None:
+        finding = {
+            "code": "JOURNAL_INTEGRITY_REVIEW_REQUIRED",
+            "worker_id": "",
+            "job_id": "",
+            "detail": str(integrity.get("error") or integrity["status"]),
+        }
+        return {
+            "status": "REVIEW_REQUIRED",
+            "worker_count": len(workers),
+            "journal_event_count": None,
+            "recovery_job_count": None,
+            "recovery_status_counts": {},
+            "finding_count": 1,
+            "findings": [finding],
+            "journal_integrity": integrity,
+            "automatic_action_performed": False,
+        }
+
+    ledger = FactoryJobEventLedger.from_snapshot(events)
+    report = inspect_worker_journal_consistency(ledger, workers)
+    report["journal_integrity"] = integrity
+    report["status"] = (
+        "CONSISTENT"
+        if report["status"] == "CONSISTENT" and integrity["status"] == "VALID"
+        else "REVIEW_REQUIRED"
+    )
+    report["automatic_action_performed"] = False
+    return report
