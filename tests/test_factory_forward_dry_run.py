@@ -43,6 +43,7 @@ def _session():
                 "holdout_dataset_id": record.dataset_id,
                 "holdout_dataset_sha256": _sha(b"dry-run-holdout"),
                 "holdout_artifact_id": "HOLDOUT-DRY-RUN-ART-1",
+                "handoff_fingerprint": _sha(b"dry-run-handoff"),
                 "production_decision": False,
             },
         )
