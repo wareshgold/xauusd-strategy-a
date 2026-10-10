@@ -142,13 +142,16 @@ class FactoryJobEventLedger:
         partially, so it must be reviewed rather than retried automatically.
         COMPLETED/FAILED remain terminal even if later handoff events exist.
         """
+        summary: list[dict[str, Any]] = []
+        lifecycle_types = {"QUEUED", "DISPATCHED", "COMPLETED", "FAILED"}
         grouped: dict[str, list[FactoryJobEvent]] = {}
         fingerprints: dict[str, str] = {}
         for event in self._events:
-            # Plan-level reconstruction markers are audit controls, not jobs.
-            # They are kept in the append-only journal/report identity but must
-            # not appear as synthetic UNKNOWN jobs in the recovery summary.
-            if event.event_type == "QUEUE_RECONSTRUCTION_APPLIED":
+            # Recovery reconstructs jobs from lifecycle events only. Plan-level
+            # markers and post-completion handoff events remain in the durable
+            # journal, but are not job-state transitions and may carry a
+            # different provenance fingerprint.
+            if event.event_type not in lifecycle_types:
                 continue
             prior_fingerprint = fingerprints.setdefault(
                 event.job_id, event.job_fingerprint
@@ -158,9 +161,6 @@ class FactoryJobEventLedger:
                     f"factory job fingerprint changed within ledger: {event.job_id}"
                 )
             grouped.setdefault(event.job_id, []).append(event)
-
-        summary: list[dict[str, Any]] = []
-        lifecycle_types = {"QUEUED", "DISPATCHED", "COMPLETED", "FAILED"}
         valid_lifecycle_prefixes = {
             ("QUEUED",),
             ("QUEUED", "DISPATCHED"),
