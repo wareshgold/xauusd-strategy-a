@@ -77,7 +77,12 @@ class StrategyComparisonParticipant:
             raise StrategyComparisonError("strategy identity is required")
         self.metrics.validate()
         if self.external_reference is not None:
-            self.external_reference.validate()
+            try:
+                self.external_reference.validate()
+            except ExternalStrategyError as exc:
+                raise StrategyComparisonError(
+                    "external reference is invalid for strategy comparison"
+                ) from exc
             if self.external_reference.strategy_id != self.strategy_id:
                 raise StrategyComparisonError(
                     "external reference strategy_id does not match participant"
