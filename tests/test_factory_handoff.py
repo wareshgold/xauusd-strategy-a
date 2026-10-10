@@ -127,3 +127,30 @@ def test_handoff_must_bind_to_pass_research_record():
         record=record,
     )
     validate_evidence_bound_handoff(handoff=handoff, record=record, source_event=event)
+
+def test_handoff_blocks_conflicting_terminal_history():
+    events = FactoryJobEventLedger(path=None)
+    for event_type in ("QUEUED", "DISPATCHED", "COMPLETED", "FAILED"):
+        events.append(
+            event_type=event_type,
+            job_id="JOB-TERMINAL-CONFLICT",
+            job_fingerprint="a" * 64,
+            station="discovery",
+            phase="DISCOVERY",
+            worker_id="W01" if event_type != "QUEUED" else None,
+            output_artifact="EVIDENCE-CONFLICT" if event_type == "COMPLETED" else None,
+        )
+
+    try:
+        build_research_handoff(
+            events=events,
+            job_id="JOB-TERMINAL-CONFLICT",
+            source_station="discovery",
+            destination_station="stability",
+        )
+    except ResearchHandoffError as exc:
+        assert "conflicting terminal events" in str(exc)
+        assert "manual reconciliation" in str(exc)
+    else:
+        raise AssertionError("conflicting terminal history must block handoff")
+
