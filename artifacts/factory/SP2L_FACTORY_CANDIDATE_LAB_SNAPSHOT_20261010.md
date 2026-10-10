@@ -8,11 +8,12 @@
 
 ## 1. Latest user-verified baseline
 
-- User confirmed the latest process-interruption test commit is pulled and the local/origin branch is synced at `b9cbb3a9`.
-- Latest verified run:
-  - Orchestrator/recovery/lifecycle focused suite: **48 passed in 1.42s**
-  - Full suite: **747 passed in 5.34s**
-- These results include `tests/test_factory_orchestrator_process_interruption.py`.
+- User confirmed the branch is pulled and synced at `78c13ffb` (`research/factory-candidate-lab-20261010`).
+- Latest user-verified run after commits `a414a12c`, `6cd27e2b`, and `78c13ffb`:
+  - Focused dispatch/recovery/lifecycle suite: **49 passed in 1.67s**
+  - Full suite: **748 passed in 5.38s**
+- The focused run includes `tests/test_factory_orchestrator_dispatch_boundary.py` and `tests/test_factory_orchestrator_process_interruption.py`.
+- Git status was clean relative to origin; preserve the five untracked runtime/cache paths listed below.
 - Preserve the five pre-existing untracked runtime/cache paths listed below.
 
 Focused command just confirmed by the user:
@@ -77,7 +78,9 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 ## 6. Immediate next action
 
-The process-interruption case is verified locally (48 focused / 747 full). Inspection identified a dispatch boundary risk: `DISPATCHED` was persisted before `worker.start()`, while the in-memory queue entry was removed only after `worker.start()` returned. A start failure could therefore leave a dispatched job queued in the current process. Commit `a414a12c` moves queue removal immediately after durable `DISPATCHED`, before worker startup, so the same in-memory queue cannot redispatch it after a startup fault. Commit `6cd27e2b` adds `tests/test_factory_orchestrator_dispatch_boundary.py` to verify no execution, no second dispatch, and `INTERRUPTED_REVIEW_REQUIRED`. **Both changes are pending local validation**. Pull and run the focused boundary/recovery suites and then the full suite. Preserve the five untracked paths above.
+The process-interruption and worker-start dispatch boundary are now user-verified locally (**49 focused / 748 full**). Commit `a414a12c` removes the in-memory queue entry immediately after durable `DISPATCHED`, before worker startup; commit `6cd27e2b` verifies that a startup fault does not execute or redispatch the job and recovery reports `INTERRUPTED_REVIEW_REQUIRED`. These changes are validated by the reported test runs; they do not establish a trading edge or production readiness.
+
+**Next engineering investigation:** audit telemetry publication failure during `submit()`. The current method durably appends `QUEUED`, mutates the in-memory queue, and then calls `fleet.publish()` without the safe-publication wrapper used in other lifecycle paths. Determine and test the intended contract before changing behavior: a telemetry-only fault should not mislead callers into retrying a successfully queued job. Keep the change limited to orchestration telemetry and preserve all source/holdout/production guardrails. Preserve the five untracked paths above.
 
 ```powershell
 git pull --ff-only
