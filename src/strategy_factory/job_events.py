@@ -192,7 +192,8 @@ class FactoryJobEventLedger:
         event.validate()
         if self.path is not None:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            original_size = self.path.stat().st_size if self.path.exists() else 0
+            originally_exists = self.path.exists()
+            original_size = self.path.stat().st_size if originally_exists else 0
             serialized = (
                 json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":"))
                 + "\n"
@@ -209,10 +210,19 @@ class FactoryJobEventLedger:
                         rollback.truncate(original_size)
                         rollback.flush()
                 except OSError as rollback_error:
-                    raise OSError(
-                        "factory job journal append failed and rollback failed; "
-                        "manual reconciliation required"
-                    ) from rollback_error
+                    if not originally_exists:
+                        try:
+                            self.path.unlink(missing_ok=True)
+                        except OSError as unlink_error:
+                            raise OSError(
+                                "factory job journal append failed and rollback failed; "
+                                "manual reconciliation required"
+                            ) from unlink_error
+                    else:
+                        raise OSError(
+                            "factory job journal append failed and rollback failed; "
+                            "manual reconciliation required"
+                        ) from rollback_error
                 raise write_error
         # Commit to in-memory state only after persistence succeeds.
         self._events.append(event)
