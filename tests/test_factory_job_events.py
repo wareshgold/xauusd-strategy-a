@@ -197,6 +197,37 @@ def test_failed_job_is_terminal_and_does_not_block_next_queued_job():
     ]
 
 
+def test_completion_journal_failure_requires_manual_reconciliation(monkeypatch):
+    job = make_job("JOB-COMPLETION-PERSISTENCE-FAILURE")
+    events = FactoryJobEventLedger(path=None)
+    fleet = FactoryWorkerFleet([FactoryWorker("W01")])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=events)
+    orchestrator.submit(job, station="discovery", phase="DISCOVERY")
+
+    original_append = events.append
+
+    def fail_completion(**kwargs):
+        if kwargs.get("event_type") == "COMPLETED":
+            raise OSError("synthetic completion journal failure")
+        return original_append(**kwargs)
+
+    monkeypatch.setattr(events, "append", fail_completion)
+    with pytest.raises(OSError, match="synthetic completion journal failure"):
+        orchestrator.run_next(
+            worker_id="W01",
+            execute=lambda _job, _worker: {"output_artifact": "EVIDENCE-EXECUTED"},
+        )
+
+    # Execution happened, but its terminal event was not durable. The remaining
+    # DISPATCHED journal history must require human reconciliation, never retry.
+    assert orchestrator.pending() == ()
+    assert fleet.get("W01").state == "COMPLETED"
+    assert [event.event_type for event in events.entries()] == ["QUEUED", "DISPATCHED"]
+    summary = events.recovery_summary()
+    assert summary[0]["status"] == "INTERRUPTED_REVIEW_REQUIRED"
+    assert summary[0]["action"] == "MANUAL_RECONCILIATION_REQUIRED"
+
+
 def test_persisted_ledger_restores_sequence_and_rejects_replayed_job(tmp_path: Path):
     path = tmp_path / "persistent-events.jsonl"
     job = make_job()
