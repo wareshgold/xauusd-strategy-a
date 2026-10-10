@@ -125,3 +125,43 @@ def test_failed_event_append_failure_preserves_original_execution_error(monkeypa
     assert report["automatic_action_performed"] is False
     assert ledger.entries() == before_events
     assert worker.__dict__.copy() == before_worker
+
+
+def test_failure_telemetry_publish_failure_preserves_original_execution_error(monkeypatch):
+    ledger = FactoryJobEventLedger(path=None)
+    worker = FactoryWorker(worker_id="W01")
+    fleet = FactoryWorkerFleet(workers=[worker])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=ledger)
+    orchestrator.submit(
+        _job(),
+        station="DEV",
+        phase="DEV",
+        detail="failure-telemetry-fault",
+    )
+
+    def fail_publish():
+        raise OSError("injected worker telemetry publish failure")
+
+    def fail_execution(job, current_worker):
+        raise ValueError("original research executor failure")
+
+    monkeypatch.setattr(fleet, "publish", fail_publish)
+
+    with pytest.raises(ValueError, match="original research executor failure") as caught:
+        orchestrator.run_next(worker_id="W01", execute=fail_execution)
+
+    assert any(
+        "injected worker telemetry publish failure" in note
+        for note in getattr(caught.value, "__notes__", [])
+    )
+    assert worker.state == "FAILED"
+    assert worker.error == "original research executor failure"
+    assert orchestrator.pending() == ()
+    assert [event.event_type for event in ledger.entries()] == [
+        "QUEUED",
+        "DISPATCHED",
+        "FAILED",
+    ]
+    report = inspect_worker_journal_consistency(ledger, [worker])
+    assert report["status"] == "CONSISTENT"
+    assert report["automatic_action_performed"] is False
