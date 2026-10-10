@@ -17,7 +17,7 @@ def make_job() -> ResearchJobSpec:
         dataset_id="DATA-1",
         data_revision="DATA-REV-1",
         dataset_fingerprint="a" * 64,
-        execution_semantics=ExecutionSemantics.NEXT_BAR,
+        execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH,
         parameters={"canonical": False},
     )
 
