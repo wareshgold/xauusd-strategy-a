@@ -548,6 +548,50 @@ def test_job_event_ledger_rejects_non_hex_job_fingerprint():
     assert ledger.entries() == ()
 
 
+def test_persisted_journal_rejects_non_string_fingerprint_without_mutation(tmp_path: Path):
+    path = tmp_path / "invalid-fingerprint-events.jsonl"
+    job = make_job("JOB-INVALID-FINGERPRINT-TYPE")
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    payload = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+    payload["job_fingerprint"] = None
+    path.write_text(json.dumps(payload) + "\\n", encoding="utf-8")
+    original_bytes = path.read_bytes()
+
+    with pytest.raises(ValueError, match="job_fingerprint must be lowercase hexadecimal SHA-256"):
+        FactoryJobEventLedger(path)
+
+    assert path.read_bytes() == original_bytes
+
+
+def test_persisted_journal_rejects_non_integer_sequence_without_mutation(tmp_path: Path):
+    path = tmp_path / "invalid-sequence-events.jsonl"
+    job = make_job("JOB-INVALID-SEQUENCE-TYPE")
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    payload = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+    payload["sequence"] = "1"
+    path.write_text(json.dumps(payload) + "\\n", encoding="utf-8")
+    original_bytes = path.read_bytes()
+
+    with pytest.raises(ValueError, match="factory job event identity is incomplete"):
+        FactoryJobEventLedger(path)
+
+    assert path.read_bytes() == original_bytes
+
+
 def test_persisted_journal_rejects_truncated_tail_without_repair(tmp_path: Path):
     path = tmp_path / "truncated-events.jsonl"
     job = make_job("JOB-TRUNCATED-TAIL")
