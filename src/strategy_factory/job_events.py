@@ -153,11 +153,25 @@ class FactoryJobEventLedger:
             grouped.setdefault(event.job_id, []).append(event)
 
         summary: list[dict[str, Any]] = []
+        lifecycle_types = {"QUEUED", "DISPATCHED", "COMPLETED", "FAILED"}
+        valid_lifecycle_prefixes = {
+            ("QUEUED",),
+            ("QUEUED", "DISPATCHED"),
+            ("QUEUED", "DISPATCHED", "COMPLETED"),
+            ("QUEUED", "DISPATCHED", "FAILED"),
+        }
         for job_id, job_events in grouped.items():
             event_types = {event.event_type for event in job_events}
+            lifecycle_history = tuple(
+                event.event_type for event in job_events
+                if event.event_type in lifecycle_types
+            )
             has_completed = "COMPLETED" in event_types
             has_failed = "FAILED" in event_types
-            if has_completed and has_failed:
+            if lifecycle_history and lifecycle_history not in valid_lifecycle_prefixes:
+                status = "LIFECYCLE_CONFLICT_REVIEW_REQUIRED"
+                action = "MANUAL_RECONCILIATION_REQUIRED"
+            elif has_completed and has_failed:
                 status = "TERMINAL_CONFLICT_REVIEW_REQUIRED"
                 action = "MANUAL_RECONCILIATION_REQUIRED"
             elif has_completed:
