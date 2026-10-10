@@ -168,7 +168,17 @@ class FactoryJobEventLedger:
             )
             has_completed = "COMPLETED" in event_types
             has_failed = "FAILED" in event_types
-            if lifecycle_history and lifecycle_history not in valid_lifecycle_prefixes:
+            terminal_conflict_after_dispatch = (
+                has_completed
+                and has_failed
+                and len(lifecycle_history) == 4
+                and lifecycle_history[:2] == ("QUEUED", "DISPATCHED")
+                and set(lifecycle_history[2:]) == {"COMPLETED", "FAILED"}
+            )
+            if terminal_conflict_after_dispatch:
+                status = "TERMINAL_CONFLICT_REVIEW_REQUIRED"
+                action = "MANUAL_RECONCILIATION_REQUIRED"
+            elif lifecycle_history and lifecycle_history not in valid_lifecycle_prefixes:
                 status = "LIFECYCLE_CONFLICT_REVIEW_REQUIRED"
                 action = "MANUAL_RECONCILIATION_REQUIRED"
             elif has_completed and has_failed:
