@@ -126,8 +126,10 @@ def find_first_entry(candles, start_index: int, setup: dict):
             "entry_index": int(entry_index),
             "entry_time": int(current["time"]),
             "entry": entry,
-            "risk": float(risk),
-            "tp": float(entry + TP_R * risk if direction == "BUY" else entry - TP_R * risk),
+            # Normalize binary floating-point noise for price-unit arithmetic.
+            # This is numeric representation only; it does not change detector geometry.
+            "risk": round(float(risk), 10),
+            "tp": round(float(entry + TP_R * risk if direction == "BUY" else entry - TP_R * risk), 10),
         }
 
     return None
