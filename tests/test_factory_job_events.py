@@ -388,7 +388,7 @@ def test_persisted_ledger_fails_closed_on_truncated_jsonl_record(tmp_path: Path)
         handle.write('{"sequence":')
 
     # Do not silently discard a partial tail or continue with incomplete history.
-    with pytest.raises(json.JSONDecodeError):
+    with pytest.raises(ValueError, match=r"invalid JSON at line 2.*automatic repair refused"):
         FactoryJobEventLedger(path)
 
 def test_recovery_summary_requires_review_and_never_requests_auto_retry(tmp_path: Path):
