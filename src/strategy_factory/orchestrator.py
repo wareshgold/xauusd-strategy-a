@@ -43,6 +43,12 @@ class FactoryOrchestrator:
         detail: str = "Queued for research execution",
     ) -> None:
         job.validate()
+        already_seen = any(item.job.job_id == job.job_id for item in self.queue) or any(
+            event.job_id == job.job_id for event in self.events.entries()
+        )
+        if already_seen:
+            raise ValueError(f"factory job id has already been submitted: {job.job_id}")
+
         self.queue.append(
             QueuedResearchJob(
                 job=job,

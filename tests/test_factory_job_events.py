@@ -1,4 +1,7 @@
+import json
 from pathlib import Path
+
+import pytest
 
 from strategy_factory.job_events import FactoryJobEventLedger
 from strategy_factory.jobs import ResearchJobSpec
@@ -95,3 +98,54 @@ def test_orchestrator_records_failed_execution():
 
     assert [e.event_type for e in events.entries()] == ["QUEUED", "DISPATCHED", "FAILED"]
     assert fleet.get("W01").state == "FAILED"
+
+
+
+def test_orchestrator_rejects_duplicate_job_ids_before_and_after_execution():
+    job = make_job()
+    events = FactoryJobEventLedger(path=None)
+    fleet = FactoryWorkerFleet([FactoryWorker("W01")])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=events)
+
+    orchestrator.submit(job, station="discovery", phase="DISCOVERY")
+    with pytest.raises(ValueError, match="already been submitted"):
+        orchestrator.submit(job, station="stability", phase="STABILITY")
+
+    assert len(orchestrator.pending()) == 1
+    assert [event.event_type for event in events.entries()] == ["QUEUED"]
+
+    orchestrator.run_next(
+        worker_id="W01",
+        execute=lambda _job, _worker: {"output_artifact": "EVIDENCE-1"},
+    )
+    prior_events = events.entries()
+
+    with pytest.raises(ValueError, match="already been submitted"):
+        orchestrator.submit(job, station="stability", phase="STABILITY")
+
+    assert orchestrator.pending() == ()
+    assert events.entries() == prior_events
+
+
+def test_worker_fleet_does_not_publish_to_shared_status_by_default(monkeypatch):
+    def unexpected_publish(*_args, **_kwargs):
+        raise AssertionError("default worker fleet must not publish shared telemetry")
+
+    monkeypatch.setattr("strategy_factory.worker.publish_workers", unexpected_publish)
+    fleet = FactoryWorkerFleet([FactoryWorker("W01")])
+
+    assert fleet.status_path is None
+    fleet.publish()
+
+
+def test_worker_fleet_publishes_only_to_explicit_status_path(tmp_path: Path):
+    status_path = tmp_path / "isolated-worker-status.json"
+    fleet = FactoryWorkerFleet(
+        [FactoryWorker("W01")],
+        status_path=status_path,
+    )
+
+    fleet.publish()
+
+    payload = json.loads(status_path.read_text(encoding="utf-8"))
+    assert [worker["worker_id"] for worker in payload["workers"]] == ["W01"]
