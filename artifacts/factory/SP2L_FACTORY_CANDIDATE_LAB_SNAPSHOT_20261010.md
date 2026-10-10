@@ -8,12 +8,12 @@
 
 ## 1. Latest user-verified baseline
 
-- Latest user-verified baseline is commit `cd6e3199` on `research/factory-candidate-lab-20261010`.
-- User-verified run at that baseline:
-  - Focused dispatch/recovery/journal-fault suite: **50 passed in 1.59s**
-  - Full suite: **749 passed in 5.21s**
-- The focused run includes the submit-telemetry fault regression test.
-- Subsequent commits `fa35b20c` and `b5a4e54f` isolate handoff telemetry publication faults and add a synthetic regression test. **These latest code/test changes are pending local validation.**
+- User has now pulled and verified the handoff telemetry fault fix/test in the working branch (the exact `git log` output was not included in the latest confirmation).
+- Latest user-reported validation:
+  - Focused handoff/dispatch/recovery/journal-fault suite: **56 passed in 1.82s**
+  - Full suite: **750 passed in 6.18s**
+- The focused run includes the handoff telemetry publication fault regression test.
+- Newer commits `d06a4101` and `b28ec00c` standardize terminal-state telemetry fault recording and add synthetic completion/failure regression tests. **These newest code/test changes are pending local validation.**
 - Preserve the five pre-existing untracked runtime/cache paths listed below.
 
 Focused command just confirmed by the user:
@@ -78,11 +78,13 @@ Passing engineering tests does not prove a statistical edge or authorize product
 
 ## 6. Immediate next action
 
-The user has verified submit telemetry fault isolation (**50 focused / 749 full**) at `cd6e3199`. Commits `458e6a39` and `6d3599bc` ensure that once `QUEUED` is durable and the in-memory queue is updated, a telemetry publication fault is recorded as `publish_after_submit` rather than escaping and encouraging a duplicate submission.
+The user has verified the handoff telemetry fault isolation: **56 focused / 750 full**. The accepted handoff remains returned when telemetry publication fails, and the fault is recorded without changing the durable `HANDOFF_ACCEPTED` outcome.
 
-**Latest pending change — handoff telemetry fault isolation:** `HANDOFF_ACCEPTED` is journaled before telemetry publication. If `fleet.publish()` fails, propagating the error could make the caller treat an already accepted handoff as unsuccessful. Commit `fa35b20c` routes the publication through the safe telemetry recorder, and `b5a4e54f` adds a synthetic regression test asserting the durable handoff remains returned and the telemetry fault is recorded. **Pending local validation; do not call it verified until tests pass locally.**
+**Latest pending change — terminal telemetry fault consistency:** the failure path previously added a note to the original execution exception but did not add a structured entry to `telemetry_errors`; the completion path had separate duplicated handling. Commit `d06a4101` makes the safe helper return the structured telemetry fault and uses it consistently for `FAILED` and `COMPLETED` states. Commit `b28ec00c` adds synthetic regression tests asserting:
+- completion telemetry failure does not hide a durable `COMPLETED` outcome or invite a retry;
+- failure telemetry fault is recorded while preserving the original execution exception and its diagnostic note.
 
-Pull and run the focused suites, then the full suite. Preserve the five untracked paths:
+**These latest changes have not yet been validated locally.** Pull and run the focused suites, then the full suite. Preserve the five untracked paths:
 ```powershell
 git pull --ff-only
 git log -6 --oneline
