@@ -333,3 +333,30 @@ def test_recovery_summary_fails_closed_on_conflicting_terminal_events():
     assert summary[0]["status"] == "TERMINAL_CONFLICT_REVIEW_REQUIRED"
     assert summary[0]["action"] == "MANUAL_RECONCILIATION_REQUIRED"
     assert summary[0]["action"] != "NO_RETRY"
+
+
+@pytest.mark.parametrize(
+    "history",
+    [
+        ("COMPLETED", "DISPATCHED", "QUEUED"),
+        ("QUEUED", "QUEUED"),
+        ("QUEUED", "DISPATCHED", "DISPATCHED"),
+        ("QUEUED", "DISPATCHED", "FAILED", "COMPLETED"),
+    ],
+)
+def test_recovery_summary_requires_manual_review_for_invalid_lifecycle_order(history):
+    ledger = FactoryJobEventLedger(path=None)
+    job = make_job("JOB-RECOVERY-INVALID-ORDER")
+
+    for event_type in history:
+        ledger.append(
+            event_type=event_type,
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01" if event_type == "DISPATCHED" else None,
+        )
+
+    summary = ledger.recovery_summary()
+    assert len(summary) == 1
+    assert summary[0]["status"] == "LIFECYCLE_CONFLICT_REVIEW_REQUIRED"
+    assert summary[0]["action"] == "MANUAL_RECONCILIATION_REQUIRED"
