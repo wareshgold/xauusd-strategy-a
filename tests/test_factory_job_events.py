@@ -592,6 +592,58 @@ def test_persisted_journal_rejects_non_integer_sequence_without_mutation(tmp_pat
     assert path.read_bytes() == original_bytes
 
 
+def test_persisted_journal_rejects_non_text_optional_field_without_mutation(tmp_path: Path):
+    path = tmp_path / "invalid-optional-field-events.jsonl"
+    job = make_job("JOB-INVALID-OPTIONAL-TYPE")
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    payload = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+    payload["worker_id"] = ["not", "a", "worker-id"]
+    payload["event_fingerprint"] = __import__("hashlib").sha256(
+        json.dumps(
+            {key: value for key, value in payload.items() if key != "event_fingerprint"},
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+        ).encode("utf-8")
+    ).hexdigest()
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    original_bytes = path.read_bytes()
+
+    with pytest.raises(ValueError, match="worker_id must be a string or null"):
+        FactoryJobEventLedger(path)
+
+    assert path.read_bytes() == original_bytes
+
+
+def test_persisted_journal_rejects_malformed_event_fingerprint_without_mutation(tmp_path: Path):
+    path = tmp_path / "invalid-event-fingerprint-events.jsonl"
+    job = make_job("JOB-INVALID-EVENT-FINGERPRINT")
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    payload = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+    payload["event_fingerprint"] = None
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    original_bytes = path.read_bytes()
+
+    with pytest.raises(ValueError, match="event_fingerprint must be lowercase hexadecimal SHA-256"):
+        FactoryJobEventLedger(path)
+
+    assert path.read_bytes() == original_bytes
+
+
 def test_persisted_journal_rejects_truncated_tail_without_repair(tmp_path: Path):
     path = tmp_path / "truncated-events.jsonl"
     job = make_job("JOB-TRUNCATED-TAIL")
