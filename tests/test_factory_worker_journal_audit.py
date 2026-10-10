@@ -82,3 +82,33 @@ def test_active_worker_with_wrong_worker_id_is_reported_deterministically():
         "ACTIVE_WORKER_JOURNAL_MISMATCH",
         "DISPATCHED_JOB_NOT_ACTIVE_ON_WORKER",
     }
+
+
+def test_duplicate_worker_ids_are_reported_deterministically_without_mutation():
+    ledger = FactoryJobEventLedger(path=None)
+    append(ledger, "QUEUED")
+    append(ledger, "DISPATCHED", worker_id="W01")
+    workers = [
+        FactoryWorker(
+            worker_id="W01", job_id="JOB-1", state="RUNNING", station="DEV", phase="DEV"
+        ),
+        FactoryWorker(worker_id="W01", state="IDLE"),
+    ]
+    before_events = ledger.entries()
+    before_workers = [worker.as_dict() for worker in workers]
+
+    first = inspect_worker_journal_consistency(ledger, workers)
+    second = inspect_worker_journal_consistency(ledger, workers)
+
+    assert first == second
+    assert first["status"] == "REVIEW_REQUIRED"
+    assert first["finding_count"] == 1
+    assert first["findings"] == [{
+        "code": "DUPLICATE_WORKER_ID",
+        "worker_id": "W01",
+        "job_id": "",
+        "detail": "Worker snapshot contains a duplicate worker_id",
+    }]
+    assert first["automatic_action_performed"] is False
+    assert ledger.entries() == before_events
+    assert [worker.as_dict() for worker in workers] == before_workers
