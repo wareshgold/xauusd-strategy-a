@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from strategy_factory.job_events import FactoryJobEventLedger
 from strategy_factory.worker import FactoryWorker
-from strategy_factory.worker_journal_audit import inspect_worker_journal_consistency
+from strategy_factory.worker_journal_audit import (
+    inspect_worker_journal_consistency,
+    inspect_worker_journal_file_consistency,
+)
 
 
 def append(ledger, event_type, job_id="JOB-1", worker_id=None):
@@ -165,3 +170,51 @@ def test_recovery_summary_and_worker_snapshot_conflicts_are_reported_without_rep
         assert report["automatic_action_performed"] is False
         assert ledger.entries() == before_events
         assert worker.__dict__ == before_worker
+
+
+
+def test_file_audit_includes_integrity_from_same_validated_snapshot(tmp_path: Path):
+    path = tmp_path / "valid-factory-journal.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    append(ledger, "QUEUED")
+    before = path.read_bytes()
+    worker = FactoryWorker(worker_id="W01", state="IDLE")
+
+    report = inspect_worker_journal_file_consistency([worker], path)
+
+    assert report["journal_integrity"]["status"] == "VALID"
+    assert report["journal_integrity"]["sha256"]
+    assert report["journal_event_count"] == 1
+    assert report["status"] == "CONSISTENT"
+    assert report["automatic_action_performed"] is False
+    assert path.read_bytes() == before
+
+
+def test_file_audit_fails_closed_on_corrupt_journal_without_repair_or_replay(
+    tmp_path: Path,
+):
+    path = tmp_path / "corrupt-factory-journal.jsonl"
+    path.write_bytes(b'{"sequence":')
+    before = path.read_bytes()
+    workers = [FactoryWorker(worker_id="W01", state="IDLE")]
+
+    report = inspect_worker_journal_file_consistency(workers, path)
+
+    assert report["status"] == "REVIEW_REQUIRED"
+    assert report["journal_integrity"]["status"] == "INVALID_REVIEW_REQUIRED"
+    assert report["journal_event_count"] is None
+    assert report["finding_count"] == 1
+    assert report["findings"][0]["code"] == "JOURNAL_INTEGRITY_REVIEW_REQUIRED"
+    assert report["automatic_action_performed"] is False
+    assert path.read_bytes() == before
+
+
+def test_file_audit_requires_review_for_missing_journal(tmp_path: Path):
+    path = tmp_path / "missing-factory-journal.jsonl"
+
+    report = inspect_worker_journal_file_consistency([], path)
+
+    assert report["status"] == "REVIEW_REQUIRED"
+    assert report["journal_integrity"]["status"] == "MISSING_REVIEW_REQUIRED"
+    assert report["journal_integrity"]["exists"] is False
+    assert report["automatic_action_performed"] is False
