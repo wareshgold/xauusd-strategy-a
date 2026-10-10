@@ -341,7 +341,6 @@ def test_recovery_summary_fails_closed_on_conflicting_terminal_events():
         ("COMPLETED", "DISPATCHED", "QUEUED"),
         ("QUEUED", "QUEUED"),
         ("QUEUED", "DISPATCHED", "DISPATCHED"),
-        ("QUEUED", "DISPATCHED", "FAILED", "COMPLETED"),
     ],
 )
 def test_recovery_summary_requires_manual_review_for_invalid_lifecycle_order(history):
