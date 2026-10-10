@@ -274,3 +274,32 @@ def test_dispatch_and_heartbeat_telemetry_faults_do_not_fail_successful_job(monk
     assert report["status"] == "CONSISTENT"
     assert report["automatic_action_performed"] is False
 
+def test_submit_telemetry_publish_failure_does_not_report_queued_job_as_failed(monkeypatch):
+    ledger = FactoryJobEventLedger(path=None)
+    worker = FactoryWorker(worker_id="W01")
+    fleet = FactoryWorkerFleet(workers=[worker])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=ledger)
+
+    def fail_publish():
+        raise OSError("injected submit telemetry publish failure")
+
+    monkeypatch.setattr(fleet, "publish", fail_publish)
+
+    # QUEUED is durable and the in-memory queue has been updated before the
+    # telemetry attempt. submit should return normally rather than encourage a
+    # retry of a job that has already been accepted.
+    orchestrator.submit(_job(), station="DEV", phase="DEV")
+
+    assert [item.job.job_id for item in orchestrator.pending()] == [
+        "JOB-COMPLETION-JOURNAL-FAULT"
+    ]
+    assert [event.event_type for event in ledger.entries()] == ["QUEUED"]
+    assert orchestrator.telemetry_errors == [
+        {
+            "job_id": "JOB-COMPLETION-JOURNAL-FAULT",
+            "worker_id": "",
+            "operation": "publish_after_submit",
+            "error_type": "OSError",
+            "error": "injected submit telemetry publish failure",
+        }
+    ]
