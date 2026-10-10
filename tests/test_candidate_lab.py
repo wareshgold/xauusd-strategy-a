@@ -98,10 +98,10 @@ def test_assessment_ranks_by_declared_objective_but_only_shortlists():
     )
     payload = assessment.as_dict()
     assert payload["candidate_rows"][0]["candidate_id"] == candidates[1].candidate_id
-    assert payload["recommended_for_validation"] == (
+    assert payload["recommended_for_validation"] == [
         candidates[2].candidate_id,
         candidates[0].candidate_id,
-    )
+    ]
     assert payload["winner"] is None
     assert payload["production_eligible"] is False
     assert payload["multiple_candidates_tested"] == 3
