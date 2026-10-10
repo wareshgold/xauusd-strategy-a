@@ -39,6 +39,7 @@ def _gate() -> ForwardGateResult:
                 "holdout_dataset_id": "HOLDOUT-SYNTH-1",
                 "holdout_dataset_sha256": _sha(b"holdout"),
                 "holdout_artifact_id": "HOLDOUT-ART-SYNTH-1",
+                "handoff_fingerprint": _sha(b"synthetic-handoff"),
                 "production_decision": False,
             },
         )
