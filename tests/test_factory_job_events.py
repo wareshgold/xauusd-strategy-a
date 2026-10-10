@@ -332,6 +332,46 @@ def test_failed_persistence_does_not_advance_in_memory_sequence(tmp_path: Path, 
     assert not path.exists()
 
 
+def test_restart_reports_persisted_jobs_without_automatic_queue_replay(tmp_path: Path):
+    path = tmp_path / "restart-recovery.jsonl"
+    queued_job = make_job("JOB-RESTART-QUEUED")
+    interrupted_job = make_job("JOB-RESTART-DISPATCHED")
+
+    original = FactoryJobEventLedger(path)
+    for job in (queued_job, interrupted_job):
+        original.append(
+            event_type="QUEUED",
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            station="discovery",
+            phase="DISCOVERY",
+        )
+    original.append(
+        event_type="DISPATCHED",
+        job_id=interrupted_job.job_id,
+        job_fingerprint=interrupted_job.fingerprint,
+        worker_id="W01",
+        station="discovery",
+        phase="DISCOVERY",
+    )
+
+    # Restart loads evidence only. It must not reconstruct or dispatch jobs
+    # without an explicit, reviewed queue-reconstruction step.
+    recovered_events = FactoryJobEventLedger(path)
+    orchestrator = FactoryOrchestrator(
+        fleet=FactoryWorkerFleet([FactoryWorker("W01")]),
+        events=recovered_events,
+    )
+
+    assert orchestrator.pending() == ()
+    summary = {item["job_id"]: item for item in recovered_events.recovery_summary()}
+    assert summary[queued_job.job_id]["status"] == "QUEUED_REVIEW_REQUIRED"
+    assert summary[queued_job.job_id]["action"] == "JOB_SPEC_AND_QUEUE_RECONSTRUCTION_REQUIRED"
+    assert summary[interrupted_job.job_id]["status"] == "INTERRUPTED_REVIEW_REQUIRED"
+    assert summary[interrupted_job.job_id]["action"] == "MANUAL_RECONCILIATION_REQUIRED"
+    assert orchestrator.pending() == ()
+
+
 def test_persisted_ledger_fails_closed_on_truncated_jsonl_record(tmp_path: Path):
     path = tmp_path / "corrupt-events.jsonl"
     job = make_job()
