@@ -123,3 +123,64 @@ def test_dashboard_surfaces_invalid_journal_as_review_required(monkeypatch):
     assert "invalid journal &lt;payload&gt;" in page
     assert "NO REPAIR / RETRY" in page
     assert "invalid journal <payload>" not in page
+
+def test_dashboard_surfaces_missing_journal_as_review_required(monkeypatch):
+    _dashboard_test_base(monkeypatch)
+    monkeypatch.setattr(
+        dashboard,
+        "inspect_worker_journal_file_consistency",
+        lambda workers: {
+            "status": "REVIEW_REQUIRED",
+            "journal_event_count": None,
+            "finding_count": 1,
+            "findings": [{
+                "code": "JOURNAL_INTEGRITY_REVIEW_REQUIRED",
+                "detail": "journal file is missing",
+            }],
+            "automatic_action_performed": False,
+            "journal_integrity": {
+                "status": "MISSING_REVIEW_REQUIRED",
+                "path": "runtime/factory_job_events.jsonl",
+                "sha256": None,
+                "automatic_repair_performed": False,
+            },
+        },
+    )
+
+    page = dashboard.html_page()
+
+    assert "REVIEW_REQUIRED" in page
+    assert "MISSING_REVIEW_REQUIRED" in page
+    assert "JOURNAL_INTEGRITY_REVIEW_REQUIRED" in page
+    assert "NO REPAIR / RETRY" in page
+
+
+def test_dashboard_surfaces_unreadable_journal_as_review_required(monkeypatch):
+    _dashboard_test_base(monkeypatch)
+    monkeypatch.setattr(
+        dashboard,
+        "inspect_worker_journal_file_consistency",
+        lambda workers: {
+            "status": "REVIEW_REQUIRED",
+            "journal_event_count": None,
+            "finding_count": 1,
+            "findings": [{
+                "code": "JOURNAL_INTEGRITY_REVIEW_REQUIRED",
+                "detail": "journal cannot be read",
+            }],
+            "automatic_action_performed": False,
+            "journal_integrity": {
+                "status": "UNREADABLE_REVIEW_REQUIRED",
+                "path": "runtime/factory_job_events.jsonl",
+                "sha256": None,
+                "automatic_repair_performed": False,
+            },
+        },
+    )
+
+    page = dashboard.html_page()
+
+    assert "REVIEW_REQUIRED" in page
+    assert "UNREADABLE_REVIEW_REQUIRED" in page
+    assert "JOURNAL_INTEGRITY_REVIEW_REQUIRED" in page
+    assert "NO REPAIR / RETRY" in page
