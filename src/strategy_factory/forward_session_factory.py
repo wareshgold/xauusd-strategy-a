@@ -129,12 +129,21 @@ class DemoForwardSessionFactory:
         if gate.gate.status is not GateStatus.PASS:
             raise ForwardSessionError("Demo forward session requires Forward Gate PASS")
 
+        if gate.gate.name != "FRESH_HOLDOUT_TO_FORWARD":
+            raise ForwardSessionError("Demo forward session requires the Fresh Holdout-to-Forward gate")
+
         if not session_id:
             raise ForwardSessionError("session_id is required")
         if not forward_dataset_id or not forward_dataset_artifact_id:
             raise ForwardSessionError("forward dataset identity is required")
-        if len(forward_dataset_content_sha256) != 64:
-            raise ForwardSessionError("forward dataset SHA must be SHA-256")
+        if (
+            not isinstance(forward_dataset_content_sha256, str)
+            or len(forward_dataset_content_sha256) != 64
+            or any(char not in "0123456789abcdef" for char in forward_dataset_content_sha256)
+        ):
+            raise ForwardSessionError(
+                "forward dataset SHA must be a lowercase hexadecimal SHA-256"
+            )
         if post_holdout_tuning:
             raise ForwardSessionError("post-holdout tuning is forbidden")
 
@@ -150,8 +159,15 @@ class DemoForwardSessionFactory:
             raise ForwardSessionError("Forward Gate manifest revision does not match Holdout record")
         if details.get("holdout_dataset_id") != source_record.dataset_id:
             raise ForwardSessionError("Forward Gate Holdout dataset does not match source record")
-        if details.get("holdout_artifact_id") != gate.gate.details.get("holdout_artifact_id"):
-            raise ForwardSessionError("Forward Gate Holdout artifact identity is inconsistent")
+
+        if details.get("forward_session_id") != session_id:
+            raise ForwardSessionError("Forward Gate session id does not match requested session")
+        if details.get("forward_dataset_id") != forward_dataset_id:
+            raise ForwardSessionError("Forward Gate dataset id does not match requested Forward dataset")
+        if details.get("forward_artifact_id") != forward_dataset_artifact_id:
+            raise ForwardSessionError("Forward Gate artifact id does not match requested Forward artifact")
+        if details.get("forward_dataset_sha256") != forward_dataset_content_sha256:
+            raise ForwardSessionError("Forward Gate dataset SHA does not match requested Forward dataset")
 
         holdout_sha = str(details.get("holdout_dataset_sha256", ""))
         holdout_artifact_id = str(details.get("holdout_artifact_id", ""))
