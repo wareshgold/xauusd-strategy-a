@@ -37,6 +37,16 @@ def inspect_worker_journal_consistency(
         if event.event_type in _LIFECYCLE_TYPES:
             by_job.setdefault(event.job_id, []).append(event)
 
+    # Recovery status is derived from the same durable lifecycle journal. Join
+    # it with the worker snapshot to surface contradictions across all three
+    # operator-facing views; this is diagnostic only and never repairs state.
+    recovery_rows = ledger.recovery_summary()
+    recovery_by_job = {row["job_id"]: row for row in recovery_rows}
+    recovery_status_counts: dict[str, int] = {}
+    for recovery_row in recovery_rows:
+        status = recovery_row["status"]
+        recovery_status_counts[status] = recovery_status_counts.get(status, 0) + 1
+
     worker_rows: list[dict[str, Any]] = []
     seen_worker_ids: set[str] = set()
     findings: list[dict[str, str]] = []
@@ -59,6 +69,26 @@ def inspect_worker_journal_consistency(
         seen_worker_ids.add(worker_id)
         if job_id:
             workers_by_job.setdefault(job_id, []).append(row)
+            recovery = recovery_by_job.get(job_id)
+            recovery_status = recovery["status"] if recovery else None
+            contradictory = (
+                (recovery_status == "QUEUED_REVIEW_REQUIRED"
+                 and state in _ACTIVE_STATES | _TERMINAL_STATES)
+                or (recovery_status == "INTERRUPTED_REVIEW_REQUIRED"
+                    and state in _TERMINAL_STATES)
+                or (recovery_status == "TERMINAL_COMPLETED" and state == "FAILED")
+                or (recovery_status == "TERMINAL_FAILED" and state == "COMPLETED")
+            )
+            if contradictory:
+                findings.append({
+                    "code": "RECOVERY_WORKER_STATE_CONFLICT",
+                    "worker_id": worker_id,
+                    "job_id": job_id,
+                    "detail": (
+                        f"Recovery summary status {recovery_status} conflicts "
+                        f"with worker state {state}"
+                    ),
+                })
 
         if state in _ACTIVE_STATES:
             history = by_job.get(job_id or "", [])
@@ -109,6 +139,8 @@ def inspect_worker_journal_consistency(
         "status": "CONSISTENT" if not findings else "REVIEW_REQUIRED",
         "worker_count": len(worker_rows),
         "journal_event_count": len(events),
+        "recovery_job_count": len(recovery_rows),
+        "recovery_status_counts": dict(sorted(recovery_status_counts.items())),
         "finding_count": len(findings),
         "findings": findings,
         "automatic_action_performed": False,
