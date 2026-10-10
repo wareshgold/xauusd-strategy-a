@@ -80,6 +80,23 @@ class FactoryJobEvent:
             raise ValueError("factory job event identity is incomplete")
         if not _is_sha256(self.job_fingerprint):
             raise ValueError("job_fingerprint must be lowercase hexadecimal SHA-256")
+        optional_text_fields = (
+            ("worker_id", self.worker_id),
+            ("station", self.station),
+            ("phase", self.phase),
+            ("detail", self.detail),
+            ("output_artifact", self.output_artifact),
+            ("research_run_fingerprint", self.research_run_fingerprint),
+        )
+        for field_name, value in optional_text_fields:
+            if value is not None and not isinstance(value, str):
+                raise ValueError(
+                    f"{field_name} must be a string or null"
+                )
+        if not isinstance(self.occurred_utc, str) or not self.occurred_utc:
+            raise ValueError("occurred_utc must be a non-empty string")
+        if not _is_sha256(self.event_fingerprint):
+            raise ValueError("event_fingerprint must be lowercase hexadecimal SHA-256")
         expected = hashlib.sha256(
             _canonical(self.as_dict(include_fingerprint=False)).encode("utf-8")
         ).hexdigest()
