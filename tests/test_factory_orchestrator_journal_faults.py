@@ -224,3 +224,53 @@ def test_failure_telemetry_publish_failure_preserves_original_execution_error(mo
     report = inspect_worker_journal_consistency(ledger, [worker])
     assert report["status"] == "CONSISTENT"
     assert report["automatic_action_performed"] is False
+
+def test_dispatch_and_heartbeat_telemetry_faults_do_not_fail_successful_job(monkeypatch):
+    ledger = FactoryJobEventLedger(path=None)
+    worker = FactoryWorker(worker_id="W01")
+    fleet = FactoryWorkerFleet(workers=[worker])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=ledger)
+    orchestrator.submit(
+        _job(),
+        station="DEV",
+        phase="DEV",
+        detail="dispatch-telemetry-fault",
+    )
+
+    def fail_publish():
+        raise OSError("injected telemetry publication fault")
+
+    monkeypatch.setattr(fleet, "publish", fail_publish)
+    execution_calls = []
+    heartbeat_calls = []
+    expected_result = {"output_artifact": "synthetic-result"}
+
+    result = orchestrator.run_next(
+        worker_id="W01",
+        execute=lambda job, current_worker: execution_calls.append(job.job_id)
+        or expected_result,
+        heartbeat_every=lambda current_worker: heartbeat_calls.append(
+            current_worker.worker_id
+        ),
+    )
+
+    assert result is expected_result
+    assert execution_calls == ["JOB-COMPLETION-JOURNAL-FAULT"]
+    assert heartbeat_calls == ["W01", "W01"]
+    assert worker.state == "COMPLETED"
+    assert orchestrator.pending() == ()
+    assert [event.event_type for event in ledger.entries()] == [
+        "QUEUED",
+        "DISPATCHED",
+        "COMPLETED",
+    ]
+    assert [error["operation"] for error in orchestrator.telemetry_errors] == [
+        "publish_after_dispatch",
+        "publish_after_heartbeat",
+        "publish_after_heartbeat",
+        "publish_after_completion",
+    ]
+    report = inspect_worker_journal_consistency(ledger, [worker])
+    assert report["status"] == "CONSISTENT"
+    assert report["automatic_action_performed"] is False
+
