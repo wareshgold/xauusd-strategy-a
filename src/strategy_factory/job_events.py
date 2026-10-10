@@ -192,10 +192,29 @@ class FactoryJobEventLedger:
         event.validate()
         if self.path is not None:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            with self.path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n")
-        # Commit to in-memory state only after persistence succeeds. If disk
-        # writing fails, callers may safely retry without a phantom sequence.
+            original_size = self.path.stat().st_size if self.path.exists() else 0
+            serialized = (
+                json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":"))
+                + "\n"
+            )
+            try:
+                with self.path.open("a", encoding="utf-8") as handle:
+                    handle.write(serialized)
+                    handle.flush()
+            except Exception as write_error:
+                # A failed write can leave a partial JSONL tail. Roll back to
+                # the pre-append byte boundary before allowing a retry.
+                try:
+                    with self.path.open("r+b") as rollback:
+                        rollback.truncate(original_size)
+                        rollback.flush()
+                except OSError as rollback_error:
+                    raise OSError(
+                        "factory job journal append failed and rollback failed; "
+                        "manual reconciliation required"
+                    ) from rollback_error
+                raise write_error
+        # Commit to in-memory state only after persistence succeeds.
         self._events.append(event)
         return event
 
