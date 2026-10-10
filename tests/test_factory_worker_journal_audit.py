@@ -95,7 +95,7 @@ def test_duplicate_worker_ids_are_reported_deterministically_without_mutation():
         FactoryWorker(worker_id="W01", state="IDLE"),
     ]
     before_events = ledger.entries()
-    before_workers = [worker.as_dict() for worker in workers]
+    before_workers = [worker.__dict__.copy() for worker in workers]
 
     first = inspect_worker_journal_consistency(ledger, workers)
     second = inspect_worker_journal_consistency(ledger, workers)
@@ -111,4 +111,4 @@ def test_duplicate_worker_ids_are_reported_deterministically_without_mutation():
     }]
     assert first["automatic_action_performed"] is False
     assert ledger.entries() == before_events
-    assert [worker.as_dict() for worker in workers] == before_workers
+    assert [worker.__dict__.copy() for worker in workers] == before_workers
