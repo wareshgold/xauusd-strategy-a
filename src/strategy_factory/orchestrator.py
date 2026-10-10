@@ -207,15 +207,25 @@ class FactoryOrchestrator:
                 self.fleet.publish()
         except Exception as exc:
             worker.fail(str(exc))
-            self.events.append(
-                event_type="FAILED",
-                job_id=queued.job.job_id,
-                job_fingerprint=queued.job.fingerprint,
-                worker_id=worker.worker_id,
-                station=queued.station,
-                phase=queued.phase,
-                detail=str(exc),
-            )
+            try:
+                self.events.append(
+                    event_type="FAILED",
+                    job_id=queued.job.job_id,
+                    job_fingerprint=queued.job.fingerprint,
+                    worker_id=worker.worker_id,
+                    station=queued.station,
+                    phase=queued.phase,
+                    detail=str(exc),
+                )
+            except Exception as journal_exc:
+                # Preserve the executor/heartbeat failure as the primary
+                # exception. The read-only consistency audit can report the
+                # resulting worker/journal mismatch; never auto-repair it.
+                exc.add_note(
+                    "Factory failed to persist the FAILED journal event; "
+                    f"worker state is FAILED but journal reconciliation is required "
+                    f"({type(journal_exc).__name__}: {journal_exc})"
+                )
             self.fleet.publish()
             raise
 
