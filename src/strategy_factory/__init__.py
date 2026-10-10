@@ -179,6 +179,7 @@ from .candidate_lab import (
     CandidatePlan,
     ResearchCandidate,
     assess_candidates,
+    run_candidate_matrix,
 )
 from .strategy_comparison import (
     ComparisonMetrics,
