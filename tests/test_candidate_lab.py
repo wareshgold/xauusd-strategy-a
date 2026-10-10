@@ -5,6 +5,7 @@ from strategy_factory.candidate_lab import (
     CandidateObservation,
     CandidatePlan,
     assess_candidates,
+    run_candidate_matrix,
 )
 from strategy_factory.test_contract import DatasetRole, ExecutionSemantics, TestDataset
 
@@ -128,3 +129,28 @@ def test_assessment_fails_closed_on_mismatched_data_or_costs():
     )
     with pytest.raises(CandidateLabError, match="net of"):
         assess_candidates([first, no_costs], objective="NET_PNL_AFTER_COSTS")
+
+
+
+def test_matrix_runner_executes_every_candidate_in_stable_order():
+    plan = make_plan()
+    seen = []
+
+    def execute(candidate):
+        seen.append(candidate.candidate_id)
+        return make_observation(candidate, pnl=1.0)
+
+    results = run_candidate_matrix(plan, execute)
+    assert seen == [candidate.candidate_id for candidate in plan.candidates()]
+    assert [row.candidate.candidate_id for row in results] == seen
+
+
+def test_matrix_runner_rejects_adapter_result_for_another_candidate():
+    plan = make_plan()
+    candidates = plan.candidates()
+
+    def execute(candidate):
+        return make_observation(candidates[-1], pnl=1.0)
+
+    with pytest.raises(CandidateLabError, match="different candidate"):
+        run_candidate_matrix(plan, execute)
