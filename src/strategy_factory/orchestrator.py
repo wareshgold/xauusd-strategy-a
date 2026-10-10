@@ -209,6 +209,11 @@ class FactoryOrchestrator:
             phase=queued.phase,
             detail=queued.detail,
         )
+        # Once DISPATCHED is durable, remove the in-memory queue entry before
+        # touching worker state. If worker.start raises or the process stops
+        # here, this process must not later dispatch the same job again from a
+        # stale queue; the journal remains the source for manual reconciliation.
+        self.queue.pop(0)
         worker.start(
             job_id=queued.job.job_id,
             job_type=queued.job.test_id,
@@ -216,7 +221,6 @@ class FactoryOrchestrator:
             phase=queued.phase,
             detail=queued.detail,
         )
-        self.queue.pop(0)
         self._publish_telemetry_safely(
             job_id=queued.job.job_id,
             worker_id=worker.worker_id,
