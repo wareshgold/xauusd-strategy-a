@@ -304,6 +304,10 @@ class FactoryJobEventLedger:
                     "status": status,
                     "action": action,
                     "last_sequence": job_events[-1].sequence,
+                    "last_event_type": job_events[-1].event_type,
+                    "last_worker_id": job_events[-1].worker_id,
+                    "last_occurred_utc": job_events[-1].occurred_utc,
+                    "lifecycle_history": list(lifecycle_history),
                 }
             )
         return summary
