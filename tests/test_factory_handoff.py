@@ -76,7 +76,6 @@ def test_undeclared_route_is_blocked():
         raise AssertionError("expected undeclared route to block handoff")
 
 
-
 def test_handoff_must_bind_to_pass_research_record():
     events = FactoryJobEventLedger(path=None)
     events.append(
@@ -86,6 +85,7 @@ def test_handoff_must_bind_to_pass_research_record():
         station="discovery",
         phase="DISCOVERY",
         output_artifact="EVIDENCE-1",
+        research_run_fingerprint="b" * 64,
     )
     event = events.entries()[0]
     record0 = ResearchRecord(
