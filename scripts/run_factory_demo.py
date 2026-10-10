@@ -105,6 +105,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    # Even an explicit CLI override must not let a telemetry-only demo replace
+    # the live Factory worker roster.
+    live_status = ROOT / "runtime" / "factory_worker_status.json"
+    if args.publish and args.status_file.resolve() == live_status.resolve():
+        parser.error(
+            "refusing to publish demo telemetry to the live worker status file; "
+            "use runtime/factory_demo_status.json or another isolated path"
+        )
+
     now = datetime.now(timezone.utc)
     run_id = _run_id(now)
     workers = build_demo_workers(run_id, now)
