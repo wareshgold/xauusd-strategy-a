@@ -1,4 +1,5 @@
 # SP2L Factory Candidate Lab — Handoff Snapshot
+
 **Snapshot date:** 2026-10-10  
 **Repository:** `wareshgold/xauusd-strategy-a`  
 **Working branch:** `research/factory-candidate-lab-20261010`  
@@ -7,29 +8,26 @@
 
 ## 1. Exact resume point
 
-Latest user-confirmed local state:
-- `HEAD` and `origin/research/factory-candidate-lab-20261010` are aligned at `a6a2d701`.
-- Last five commits:
-  1. `a6a2d701` — `test(factory): cover file integrity in worker journal audit`
-  2. `746ac12e` — `feat(factory): include journal integrity in worker audit`
-  3. `199c748e` — `feat(factory): expose immutable journal snapshot for audits`
-  4. `f89b76bb` — `test(factory): make journal fixture newline unambiguous`
-  5. `e20114bc` — `test(factory): write real newline in invalid event fixture`
+- Latest branch head verified on GitHub: `df7e3176ec7d6fe9f6db742be60ce91bde7cf4ed`.
+- The user has confirmed local HEAD/origin sync at this branch state.
+- Most recent user-confirmed tests, after pulling the latest dashboard Journal edge-case tests:
+  - Focused: **59 passed in 1.44s**
+  - Full suite: **739 passed in 5.76s**
+- These are engineering/regression results only. They do **not** establish a profitable trading edge or authorize Strategy A production.
 
-### User-confirmed test results
-- Focused regression:
-  ```powershell
-  & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_job_events.py tests/test_factory_worker_journal_audit.py tests/test_factory_orchestrator_journal_faults.py -q
-  ```
-  **50 passed in 1.08s**
-- Full suite:
-  ```powershell
-  & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
-  ```
-  **732 passed in 5.44s**
-- These are the user's reported local results at commit `a6a2d701`. Do not imply any newer code has been tested until the user runs it.
+Focused command used:
+```powershell
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_dashboard.py tests/test_factory_job_events.py tests/test_factory_worker_journal_audit.py tests/test_factory_orchestrator_journal_faults.py -q
+```
 
-### User-confirmed working-tree status
+Full suite:
+```powershell
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
+```
+
+## 2. Preserve the user's working tree
+
+The last user-reported `git status --short --branch` was:
 ```
 ## research/factory-candidate-lab-20261010...origin/research/factory-candidate-lab-20261010
 ?? runtime/factory_demo_status.json
@@ -38,135 +36,67 @@ Latest user-confirmed local state:
 ?? src/strategy_factory/__pycache__/
 ?? tests/fixtures/__pycache__/
 ```
-These untracked runtime files and cache directories are intentionally preserved. Do not clean, delete, mass-add, or commit them.
 
-## 2. Completed in the current Journal/Audit hardening sequence
+These untracked runtime/cache artifacts must be preserved. Do not clean, reset, stage, or commit them.
 
-### Journal integrity inspection
-- `78f30cae` — `feat(factory): add read-only journal integrity inspection`
-  - Adds `inspect_job_journal_file(path)`.
-  - Reports statuses including `VALID`, `MISSING_REVIEW_REQUIRED`, `UNREADABLE_REVIEW_REQUIRED`, and `INVALID_REVIEW_REQUIRED`.
-  - Reports file metadata and SHA-256; explicitly states `automatic_repair_performed=False`.
-  - No repair, truncation, or write.
-- `3808a851` — tests valid journal, truncated tail preservation, missing vs valid-empty file, invalid UTF-8 preservation.
-- `0cd7270c` — makes invalid UTF-8 test bytes explicit.
-- `75f8e7cd` — fixes truncated-tail fixture to start with a valid event before the malformed second line.
-- `c3e27d55` — preserves validation error detail and adds line number.
-- `a29fe099` — tests event validation line diagnostics and byte preservation.
-- `e20114bc` and `f89b76bb` — repair the test fixture newline encoding issue. The final fixture uses `chr(10)`, ensuring an actual newline; user confirmed tests passed afterward.
+## 3. Completed Factory engineering
 
-### Orchestrator telemetry fault isolation and recovery evidence (earlier in this branch)
-- `4e4cfeb3` — telemetry publication failures are isolated from job execution.
-- `fecfc1da` — tests dispatch/heartbeat telemetry failures.
-- `919b5841` — preserves completed job result if final telemetry publication fails after durable completion.
-- `08fc6a54` — completion/telemetry fault tests.
-- `fa1d7ce2` — recovery summary exposes lifecycle provenance fields.
-- `39b777cb` — recovery provenance tests.
-- `67eb01e4` — corrects interrupted event sequence assertion.
-- `69912516` — joins recovery summary with worker snapshot and reports `RECOVERY_WORKER_STATE_CONFLICT`.
-- `6e584e96` — tests recovery/worker conflicts and no mutation/action.
+### Job lifecycle and recovery evidence
+- Append-only lifecycle journal records declared Factory job transitions.
+- Telemetry publication failures are isolated from the actual job outcome.
+- Completion/failure journal faults remain visible as reconciliation findings; no automatic repair is attempted.
+- Recovery summaries expose lifecycle provenance and identify conflicts between the journal and worker snapshot.
+- Replay submission is explicit and validates the original journaled failure; recovery inspection must not implicitly replay jobs.
 
-## 3. Latest implementation at `a6a2d701`
+### Journal integrity and audit
+- Journal inspection reads one immutable byte snapshot, computes SHA-256, validates that same snapshot, and can construct an in-memory ledger from the validated events without a second read.
+- Valid, missing, unreadable, invalid, truncated, invalid-UTF-8, and changing-snapshot edge cases have regression coverage.
+- Missing/unreadable/invalid journals fail closed as `REVIEW_REQUIRED`; there is no partial ledger, repair, truncation, replay, retry, or write.
+- Audit findings are diagnostic only and do not authorize a job or strategy decision.
 
-### `src/strategy_factory/job_events.py`
-- Adds `inspect_job_journal_snapshot(path)`, which reads raw bytes once, calculates SHA-256, decodes/validates that exact snapshot, and returns:
-  - an integrity report; and
-  - parsed immutable event tuple if valid, otherwise `None`.
-- `inspect_job_journal_file(path)` delegates to this snapshot inspector and returns the public report.
-- Adds `FactoryJobEventLedger.from_snapshot(events)` to construct an in-memory ledger from already validated events, avoiding a second file read (TOCTOU mismatch) during file audit.
-- Validation errors retain line-number detail. Invalid source bytes remain unchanged.
+### Read-only dashboard
+- Factory dashboard includes a Job Journal Integrity panel with audit status, integrity status, event/finding counts, path, SHA-256, and findings.
+- Valid/consistent states and review-required states have distinct severity.
+- Missing, unreadable, invalid, and valid journal states have dashboard tests.
+- Rendering the panel does not dispatch jobs, recover/retry work, or mutate the journal.
+- Demo telemetry remains separate from live worker telemetry. Do not alter Forward Runner behavior as part of this work.
 
-### `src/strategy_factory/worker_journal_audit.py`
-- Adds `inspect_worker_journal_file_consistency(workers, path)`.
-- It inspects integrity and audit events from the same validated byte snapshot.
-- If the journal is missing, unreadable, or invalid, it fails closed:
-  - overall status `REVIEW_REQUIRED`;
-  - finding `JOURNAL_INTEGRITY_REVIEW_REQUIRED`;
-  - no partial ledger is used;
-  - no repair/replay/retry/write is performed.
-- If valid, it runs the existing read-only worker/journal consistency audit against an in-memory ledger built from the validated snapshot and includes `journal_integrity` in the report.
+## 4. Guardrails that remain mandatory
 
-### New tests in `tests/test_factory_worker_journal_audit.py`
-- Valid on-disk journal includes integrity report and uses a stable snapshot.
-- Corrupt journal requires review and preserves original bytes; no replay/repair.
-- Missing journal requires review.
-- Existing consistency/recovery conflict tests remain present.
-
-## 4. Current scope and non-negotiable guardrails
-
-This is Factory engineering and audit hardening only. Do not change:
-- Forward Runner, live/demo runner, or dashboard behavior outside explicit scoped work.
-- Holdout → Forward boundary, certified Holdout SHA semantics, distinct Forward dataset identity, frozen strategy revision, or post-Holdout tuning prohibition.
-- Strategy A geometry or execution rules.
-- Production BUY/SELL authority; AI must not generate production trade decisions.
-- Any unresolved P-Gap formula, AB=CD anchors/tolerance, fill semantics, or execution rules.
+This branch is Factory engineering and research governance only. Do not change:
+- Forward Runner or live/demo trading behavior without a specifically scoped request.
+- Holdout → Forward boundary, certified Holdout SHA, separate Forward dataset identity, frozen strategy revision, or post-Holdout tuning prohibition.
+- Strategy A geometry, entry/exit/fill semantics, or execution rules.
+- Production BUY/SELL authority. AI must not autonomously generate production trade decisions.
+- Unresolved P-Gap formula, AB=CD anchors/tolerance, F12 touch/penetration/close semantics, or other unresolved source meaning.
 
 Canonical workflow:
 **SOURCE RESOLUTION → SYNTHETIC FIXTURES → FROZEN GEOMETRY → DEV → UNTOUCHED VALIDATION → ROBUSTNESS/STABILITY → FRESH HOLDOUT → PRODUCTION.**
 
-Only source-confirmed rules can become canonical. Diagnostic/backtest outcomes do not decide source meaning. No formal Demo Forward should be started merely because these audit tests pass.
+Source meaning outranks backtest performance. Passing engineering tests is not proof of a statistical edge and is not permission to start formal Demo Forward from the Factory.
 
-## 5. Next step — current work in progress
+## 5. Next engineering step
 
-### Added after the last user-confirmed test run
-Two commits add regression coverage only; no production implementation was changed:
-- `bcd04c75` — `test(factory): cover unreadable and changing journal snapshots`
-  - Simulates a permission/read failure and asserts `UNREADABLE_REVIEW_REQUIRED`, no SHA claim, no repair, and byte preservation.
-  - Mutates the file after the parser has received the captured text and asserts the reported digest/event count still describe the original byte snapshot.
-- `6b9e59fa` — `test(factory): fail closed when worker journal is unreadable`
-  - Asserts file-level worker audit returns `REVIEW_REQUIRED` and `JOURNAL_INTEGRITY_REVIEW_REQUIRED` without reading partial events or changing the file.
+### Controlled post-restart Recovery Inspection — read-only first
 
-**Validation state:** these new tests have been committed to GitHub but have not yet been run in the user's local environment. Do not mark the branch green until the user runs them.
+The next task is to make the restart/recovery state explicit and auditable, without changing runtime behavior:
 
-### Reporting-path trace
-- The operator UI entry point is `scripts/factory_dashboard.py`.
-- It reads the selected worker telemetry JSON (`runtime/factory_worker_status.json`, or separate demo telemetry) and renders a read-only dashboard.
-- `src/strategy_factory/telemetry.py` publishes worker status atomically.
-- `src/strategy_factory/worker_journal_audit.py` currently exposes a standalone read-only audit API; it is not yet wired into the dashboard.
-- Keep audit reporting read-only and separate from job dispatch, recovery, retry, Holdout/Forward gating, and any Strategy A decision authority.
+1. Define a deterministic, read-only recovery inspection report from existing journal lifecycle evidence and worker snapshot.
+2. Explicitly classify queued-but-not-dispatched, dispatched/interrupted, terminal, conflicting, and incomplete-journal cases only where the current recorded evidence supports those distinctions.
+3. Add synthetic contract tests for restart-like states and assert no queue mutation, no worker mutation, no journal writes, no executor calls, and no automatic retry/replay/requeue.
+4. Keep inspection separate from any future operator-approved recovery action. If evidence is incomplete or contradictory, return review-required rather than guessing.
+5. Run focused tests and the full suite locally; only then update this snapshot with the new verified SHA/results.
 
-### Immediate sequence
-1. Pull latest branch and preserve all untracked runtime/cache artifacts.
-2. Run the focused regression tests and full suite with the known-good interpreter.
-3. If green, add a narrowly scoped, read-only reporting adapter or dashboard section with explicit journal status/hash/findings; test missing, unreadable, invalid, and valid journal states. Do not let rendering trigger job execution or repair.
-4. Update this snapshot only after the next user-confirmed test result; do not duplicate prior work.
+Do not infer missing lifecycle events, reconstruct a queue from assumptions, or silently rerun interrupted work. This step must not introduce new Strategy A rules or affect Holdout/Forward gating.
 
-## 6. Latest dashboard integration — pending local validation
-
-### User-confirmed validation before dashboard changes
-The user reported the following results after pulling the Journal edge-case test commits:
-- Focused tests: **53 passed in 1.25s**
-- Full suite: **735 passed in 5.20s**
-- Working tree remained aligned with origin; the same five untracked runtime/cache paths remained untouched.
-
-These results validate the Journal/Audit edge-case test additions at that point, not the dashboard changes listed below.
-
-### Dashboard changes committed after that validation
-- `24fe39d5` — `feat(factory): expose read-only journal audit in dashboard`
-  - Adds a read-only dashboard panel for worker/journal audit status, integrity status, event count, finding count, journal path, SHA-256 and findings.
-  - Uses the existing `inspect_worker_journal_file_consistency` API. No dispatch/recovery/retry/write path is invoked by the panel.
-- `a73576fc` — `test(factory): cover read-only dashboard journal audit`
-  - Tests display of a valid/consistent audit and a review-required invalid journal, including HTML escaping of diagnostic text.
-- `5e7f2536` — `fix(factory): distinguish journal audit status severity`
-  - Styles `VALID`/`CONSISTENT` as healthy and `REVIEW_REQUIRED` / `*_REVIEW_REQUIRED` as an error state.
-
-**Current validation status: PENDING.** These dashboard changes have been pushed to the working branch but have not yet been run in the user's local environment. Do not call the current branch green until focused and full tests are rerun after pulling.
-
-### Immediate resume sequence
-1. `git pull --ff-only`, inspect `git log -5 --oneline` and `git status --short --branch`.
-2. Run `tests/test_factory_dashboard.py` plus the Journal/Audit focused suite.
-3. Run the full `tests/` suite.
-4. Preserve all untracked runtime/cache files; no cleanup or staging.
-5. If tests pass, test the panel against missing, unreadable, invalid and valid journal states and then record the verified commit/results here.
-
-## 7. Resume command
+## 6. Resume / verification commands
 
 ```powershell
 git pull --ff-only
 git log -5 --oneline
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_job_events.py tests/test_factory_worker_journal_audit.py tests/test_factory_orchestrator_journal_faults.py -q
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 git status --short --branch
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_dashboard.py tests/test_factory_job_events.py tests/test_factory_worker_journal_audit.py tests/test_factory_orchestrator_journal_faults.py -q
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 ```
 
-**Snapshot truth rule:** this document records user-confirmed test results through `a6a2d701`. Any subsequent commit requires fresh local validation before it can be marked green.
+Preserve all five untracked runtime/cache paths listed above. The **739 passed** result is confirmed for `df7e3176`; any new code must be tested again before calling the branch green.
