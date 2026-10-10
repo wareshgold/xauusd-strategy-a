@@ -176,3 +176,28 @@ def test_plan_validator_rejects_mutated_job_spec():
 
     with pytest.raises(ValueError, match="mismatched Job Spec"):
         validate_queue_reconstruction_plan(plan)
+
+
+
+def test_restart_keeps_dispatched_without_terminal_event_manual_only(tmp_path):
+    path = tmp_path / "events.jsonl"
+    original = FactoryJobEventLedger(path)
+    interrupted = make_job("JOB-EXECUTION-OUTCOME-UNKNOWN")
+    append(original, interrupted, "QUEUED")
+    append(original, interrupted, "DISPATCHED", "W01")
+
+    # Model the critical uncertainty window: the executor may have run, but
+    # its terminal COMPLETED/FAILED event was not persisted before process loss.
+    restarted = FactoryJobEventLedger(path)
+    report = inspect_factory_recovery(restarted)
+    item = next(entry for entry in report.jobs if entry["job_id"] == interrupted.job_id)
+    assert item["status"] == "INTERRUPTED_REVIEW_REQUIRED"
+    assert item["action"] == "MANUAL_RECONCILIATION_REQUIRED"
+
+    with pytest.raises(ValueError, match="not safe for queue reconstruction"):
+        plan_queue_reconstruction(
+            ledger=restarted,
+            report=report,
+            job_specs={interrupted.job_id: interrupted},
+            approved_job_ids=[interrupted.job_id],
+        )
