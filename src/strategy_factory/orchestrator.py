@@ -33,6 +33,7 @@ class FactoryOrchestrator:
     fleet: FactoryWorkerFleet
     queue: list[QueuedResearchJob] = field(default_factory=list)
     events: FactoryJobEventLedger = field(default_factory=FactoryJobEventLedger)
+    telemetry_errors: list[dict[str, str]] = field(default_factory=list)
 
     def submit(
         self,
@@ -258,7 +259,22 @@ class FactoryOrchestrator:
             output_artifact=artifact,
             research_run_fingerprint=(result.get("run_fingerprint") if isinstance(result, dict) else None),
         )
-        self.fleet.publish()
+        try:
+            self.fleet.publish()
+        except Exception as publish_exc:
+            # The COMPLETED event is already durable and the worker is terminal.
+            # Never turn a successful research execution into an apparent job
+            # failure that a caller might retry. Retain the telemetry fault for
+            # inspection without mutating the completed worker or journal state.
+            self.telemetry_errors.append(
+                {
+                    "job_id": queued.job.job_id,
+                    "worker_id": worker.worker_id,
+                    "operation": "publish_after_completion",
+                    "error_type": type(publish_exc).__name__,
+                    "error": str(publish_exc),
+                }
+            )
         return result
 
 
