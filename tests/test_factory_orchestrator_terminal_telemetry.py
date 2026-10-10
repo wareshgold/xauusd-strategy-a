@@ -46,10 +46,13 @@ def test_completion_telemetry_failure_does_not_hide_completed_job(monkeypatch):
         _orchestrator_with_second_publish_failure(monkeypatch)
     )
 
+    orchestrator.submit(
+        _job("JOB-COMPLETION-TELEMETRY"), station="DEV", phase="DEV"
+    )
     result = orchestrator.run_next(
         worker_id="W01",
         execute=lambda job, current_worker: {"output_artifact": "ARTIFACT-1"},
-    ) if orchestrator.submit(_job("JOB-COMPLETION-TELEMETRY"), station="DEV", phase="DEV") is None else None
+    )
 
     assert result == {"output_artifact": "ARTIFACT-1"}
     assert publish_calls() == 2
