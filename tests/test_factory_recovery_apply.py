@@ -185,3 +185,72 @@ def test_reconstruction_marker_does_not_appear_as_a_recoverable_job(tmp_path):
 
     assert [item["job_id"] for item in report.jobs] == [job.job_id]
     assert report.status_counts == {"QUEUED_REVIEW_REQUIRED": 1}
+
+
+
+def test_publish_failure_rolls_back_memory_and_retry_restores_queue(tmp_path, monkeypatch):
+    path = tmp_path / "events.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    job = make_job()
+    journal_queued(ledger, job)
+    plan = make_plan(ledger, job)
+    orchestrator = make_orchestrator(ledger)
+
+    original_publish = orchestrator.fleet.publish
+    calls = {"count": 0}
+
+    def fail_once():
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise OSError("simulated telemetry publish failure")
+        return original_publish()
+
+    monkeypatch.setattr(orchestrator.fleet, "publish", fail_once)
+    with pytest.raises(OSError, match="simulated telemetry"):
+        apply_queue_reconstruction(
+            orchestrator, plan, station="DEV", phase="RECOVERY"
+        )
+
+    assert orchestrator.pending() == ()
+    assert sum(
+        event.event_type == "QUEUE_RECONSTRUCTION_APPLIED"
+        for event in ledger.entries()
+    ) == 1
+
+    assert apply_queue_reconstruction(
+        orchestrator, plan, station="DEV", phase="RECOVERY"
+    ) is True
+    assert [item.job.job_id for item in orchestrator.pending()] == [job.job_id]
+    assert sum(
+        event.event_type == "QUEUE_RECONSTRUCTION_APPLIED"
+        for event in ledger.entries()
+    ) == 1
+
+
+def test_applied_job_runs_only_after_explicit_run_next(tmp_path):
+    ledger = FactoryJobEventLedger(tmp_path / "events.jsonl")
+    job = make_job()
+    journal_queued(ledger, job)
+    plan = make_plan(ledger, job)
+    orchestrator = make_orchestrator(ledger)
+    executions = []
+
+    apply_queue_reconstruction(
+        orchestrator, plan, station="DEV", phase="RECOVERY"
+    )
+    assert executions == []
+    assert not any(
+        event.event_type == "DISPATCHED"
+        for event in ledger.for_job(job.job_id)
+    )
+
+    result = orchestrator.run_next(
+        worker_id="W01",
+        execute=lambda spec, worker: executions.append(spec.job_id) or {"detail": "fixture"},
+    )
+
+    assert result == {"detail": "fixture"}
+    assert executions == [job.job_id]
+    assert [event.event_type for event in ledger.for_job(job.job_id)] == [
+        "QUEUED", "DISPATCHED", "COMPLETED"
+    ]
