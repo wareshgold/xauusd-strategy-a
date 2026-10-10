@@ -11,7 +11,6 @@ not represented as a research PASS.
 import argparse
 from datetime import datetime, timezone
 import hashlib
-import json
 from pathlib import Path
 import sys
 from typing import Any
