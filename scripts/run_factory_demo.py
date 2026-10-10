@@ -24,15 +24,15 @@ from strategy_factory.telemetry import publish_workers  # noqa: E402
 
 
 STAGES = (
-    ("source", "Source resolution"),
-    ("discovery", "Discovery"),
-    ("candidate_lab", "Candidate Lab"),
-    ("validation", "Validation"),
-    ("robustness", "Robustness"),
-    ("holdout", "Holdout"),
-    ("forward_gate", "Forward Gate"),
-    ("forward_session", "Forward Session"),
-    ("runtime_observer", "Runtime / MT5 Observer"),
+    ("source", "Source resolution", "discovery"),
+    ("discovery", "Discovery", "discovery"),
+    ("candidate_lab", "Candidate Lab", "discovery"),
+    ("validation", "Validation", "stability"),
+    ("robustness", "Robustness", "robustness"),
+    ("holdout", "Holdout", "holdout"),
+    ("forward_gate", "Forward Gate", "forward"),
+    ("forward_session", "Forward Session", "forward"),
+    ("runtime_observer", "Runtime / MT5 Observer", "forward"),
 )
 
 
@@ -43,16 +43,14 @@ def _run_id(now: datetime) -> str:
 def build_demo_workers(run_id: str, now: datetime) -> list[dict[str, Any]]:
     """Return deterministic stage identities with explicitly non-research status."""
     workers = []
-    for index, (stage_id, label) in enumerate(STAGES, start=1):
+    for index, (stage_id, label, station) in enumerate(STAGES, start=1):
         fingerprint = hashlib.sha256(f"{run_id}:{stage_id}".encode("utf-8")).hexdigest()
         workers.append(
             {
                 "worker_id": f"demo-{stage_id}",
                 "job_id": f"{run_id}-{index:02d}",
                 "job_type": "TELEMETRY_DEMO_ONLY",
-                "station": stage_id if stage_id in {
-                    "discovery", "robustness", "holdout", "forward_gate"
-                } else "idle",
+                "station": station,
                 "phase": stage_id.upper(),
                 "state": "COMPLETED",
                 "started_utc": now.isoformat(),
