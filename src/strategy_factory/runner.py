@@ -6,6 +6,7 @@ from .acceptance import evidence_acceptance_gate
 from .audit import AuditBindingError, ResearchAuditRecord, bind_research_audit
 from .adapter import ExecutionAdapter, validate_adapter_output
 from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus, evaluate_dataset_provenance
+from .datasets import fingerprint_dataset
 from .evidence import EvidenceBundle, EvidenceLedger
 from .execution import ExecutionReceipt, execution_gate
 from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
@@ -84,14 +85,17 @@ class ResearchJobRunner:
         """
         try:
             job.validate()
-            if job.dataset_fingerprint != observed_content_sha256:
+            expected_dataset_fingerprint = fingerprint_dataset(
+                spec.dataset, observed_content_sha256
+            )
+            if job.dataset_fingerprint != expected_dataset_fingerprint:
                 raise ResearchJobRunnerError(
-                    "research job dataset fingerprint does not match observed dataset content"
+                    "research job dataset fingerprint does not match observed dataset identity"
                 )
             validate_job_matches_test_spec(
                 job,
                 spec,
-                dataset_fingerprint=observed_content_sha256,
+                dataset_fingerprint=expected_dataset_fingerprint,
             )
         except (ResearchJobError, ValueError) as exc:
             raise ResearchJobRunnerError(
