@@ -26,6 +26,10 @@ def _canonical(value: dict[str, Any]) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
+def _is_sha256(value: str) -> bool:
+    return len(value) == 64 and all(char in "0123456789abcdef" for char in value)
+
+
 @dataclass(frozen=True)
 class FactoryJobEvent:
     sequence: int
@@ -62,8 +66,8 @@ class FactoryJobEvent:
     def validate(self) -> None:
         if self.sequence < 1 or not self.event_type or not self.job_id:
             raise ValueError("factory job event identity is incomplete")
-        if len(self.job_fingerprint) != 64:
-            raise ValueError("job_fingerprint must be SHA-256")
+        if not _is_sha256(self.job_fingerprint):
+            raise ValueError("job_fingerprint must be lowercase hexadecimal SHA-256")
         expected = hashlib.sha256(
             _canonical(self.as_dict(include_fingerprint=False)).encode("utf-8")
         ).hexdigest()
