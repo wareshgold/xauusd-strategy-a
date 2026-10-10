@@ -92,3 +92,10 @@ git status --short --branch
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_orchestrator_handoff_telemetry.py tests/test_factory_orchestrator_journal_faults.py tests/test_factory_orchestrator_dispatch_boundary.py tests/test_factory_orchestrator_process_interruption.py tests/test_factory_recovery_lifecycle_matrix_integration.py tests/test_factory_recovery_audit_integration.py tests/test_factory_recovery_report.py tests/test_factory_recovery_planner.py tests/test_factory_recovery_apply.py tests/test_factory_worker_journal_audit.py tests/test_factory_handoff.py -q
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
 ```
+
+
+## 7. Follow-up after terminal telemetry test feedback
+
+The user ran the first terminal telemetry regression tests. The suite reported **2 failures and 750 passes** because the new fixture injected the publish fault on call 2, which is the dispatch telemetry publication, not the terminal publication. The observed call sequence is: submit (1), dispatch (2), then completion/failure handling (3).
+
+Commit `0fc50d15` adjusts the synthetic fixture to inject the fault on call 3 and asserts the three-call sequence. **This correction is pending local validation.** It changes only test fault injection/expectations; production code is unchanged by this correction. Next: pull fast-forward, run the focused terminal/handoff/dispatch/recovery suite, then the full suite. Do not call the new tests passing until local output confirms it.
