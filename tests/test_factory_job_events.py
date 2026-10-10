@@ -10,9 +10,9 @@ from strategy_factory.test_contract import ExecutionSemantics
 from strategy_factory.worker import FactoryWorker, FactoryWorkerFleet
 
 
-def make_job() -> ResearchJobSpec:
+def make_job(job_id: str = "JOB-EVENT-001") -> ResearchJobSpec:
     return ResearchJobSpec(
-        job_id="JOB-EVENT-001",
+        job_id=job_id,
         strategy_id="SP2L-A",
         strategy_revision="REV-1",
         manifest_revision="MANIFEST-1",
@@ -149,3 +149,49 @@ def test_worker_fleet_publishes_only_to_explicit_status_path(tmp_path: Path):
 
     payload = json.loads(status_path.read_text(encoding="utf-8"))
     assert [worker["worker_id"] for worker in payload["workers"]] == ["W01"]
+
+
+def test_failed_job_is_terminal_and_does_not_block_next_queued_job():
+    failed_job = make_job("JOB-FAIL-001")
+    next_job = make_job("JOB-NEXT-002")
+    events = FactoryJobEventLedger(path=None)
+    fleet = FactoryWorkerFleet([FactoryWorker("W01")])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=events)
+
+    orchestrator.submit(failed_job, station="discovery", phase="DISCOVERY")
+    orchestrator.submit(next_job, station="discovery", phase="DISCOVERY")
+
+    with pytest.raises(RuntimeError, match="synthetic adapter failure"):
+        orchestrator.run_next(
+            worker_id="W01",
+            execute=lambda _job, _worker: (_ for _ in ()).throw(
+                RuntimeError("synthetic adapter failure")
+            ),
+        )
+
+    assert [item.job.job_id for item in orchestrator.pending()] == [next_job.job_id]
+    assert fleet.get("W01").state == "FAILED"
+    assert [event.event_type for event in events.entries()] == [
+        "QUEUED",
+        "QUEUED",
+        "DISPATCHED",
+        "FAILED",
+    ]
+
+    with pytest.raises(ValueError, match="already been submitted"):
+        orchestrator.submit(failed_job, station="discovery", phase="DISCOVERY")
+
+    result = orchestrator.run_next(
+        worker_id="W01",
+        execute=lambda job, _worker: {"output_artifact": f"EVIDENCE-{job.job_id}"},
+    )
+    assert result["output_artifact"] == "EVIDENCE-JOB-NEXT-002"
+    assert orchestrator.pending() == ()
+    assert [event.event_type for event in events.entries()] == [
+        "QUEUED",
+        "QUEUED",
+        "DISPATCHED",
+        "FAILED",
+        "DISPATCHED",
+        "COMPLETED",
+    ]
