@@ -842,6 +842,32 @@ def test_journal_inspector_reports_truncated_tail_and_preserves_bytes(tmp_path: 
     assert path.read_bytes() == before
 
 
+def test_journal_inspector_reports_event_validation_line_and_preserves_bytes(tmp_path: Path):
+    path = tmp_path / "invalid-event-inspection.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    job = make_job("JOB-INSPECT-INVALID-EVENT")
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["job_fingerprint"] = "g" * 64
+    path.write_text(json.dumps(payload) + "\\n", encoding="utf-8")
+    before = path.read_bytes()
+
+    report = inspect_job_journal_file(path)
+
+    assert report["status"] == "INVALID_REVIEW_REQUIRED"
+    assert report["error_type"] == "ValueError"
+    assert "job_fingerprint must be lowercase hexadecimal SHA-256 at line 1" in report["error"]
+    assert report["sha256"] == __import__("hashlib").sha256(before).hexdigest()
+    assert report["automatic_repair_performed"] is False
+    assert path.read_bytes() == before
+
+
 def test_journal_inspector_distinguishes_missing_from_valid_empty_file(tmp_path: Path):
     missing = inspect_job_journal_file(tmp_path / "missing.jsonl")
     empty_path = tmp_path / "empty.jsonl"
