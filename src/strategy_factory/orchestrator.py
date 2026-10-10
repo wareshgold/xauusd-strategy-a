@@ -73,6 +73,27 @@ class FactoryOrchestrator:
     def pending(self) -> tuple[QueuedResearchJob, ...]:
         return tuple(self.queue)
 
+    def _publish_telemetry_safely(
+        self,
+        *,
+        job_id: str,
+        worker_id: str,
+        operation: str,
+    ) -> None:
+        """Record telemetry publication faults without changing job outcome."""
+        try:
+            self.fleet.publish()
+        except Exception as exc:
+            self.telemetry_errors.append(
+                {
+                    "job_id": job_id,
+                    "worker_id": worker_id,
+                    "operation": operation,
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                }
+            )
+
     def handoff(
         self,
         *,
@@ -196,16 +217,28 @@ class FactoryOrchestrator:
             detail=queued.detail,
         )
         self.queue.pop(0)
-        self.fleet.publish()
+        self._publish_telemetry_safely(
+            job_id=queued.job.job_id,
+            worker_id=worker.worker_id,
+            operation="publish_after_dispatch",
+        )
 
         try:
             if heartbeat_every is not None:
                 heartbeat_every(worker)
-                self.fleet.publish()
+                self._publish_telemetry_safely(
+                    job_id=queued.job.job_id,
+                    worker_id=worker.worker_id,
+                    operation="publish_after_heartbeat",
+                )
             result = execute(queued.job, worker)
             if heartbeat_every is not None:
                 heartbeat_every(worker)
-                self.fleet.publish()
+                self._publish_telemetry_safely(
+                    job_id=queued.job.job_id,
+                    worker_id=worker.worker_id,
+                    operation="publish_after_heartbeat",
+                )
         except Exception as exc:
             worker.fail(str(exc))
             try:
