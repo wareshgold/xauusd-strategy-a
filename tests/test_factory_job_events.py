@@ -622,6 +622,49 @@ def test_persisted_journal_rejects_non_text_optional_field_without_mutation(tmp_
     assert path.read_bytes() == original_bytes
 
 
+@pytest.mark.parametrize(
+    "occurred_utc",
+    [
+        "not-a-timestamp",
+        "2026-10-10T11:00:00",
+        "2026-10-10T11:00:00+01:00",
+    ],
+)
+def test_persisted_journal_rejects_invalid_utc_timestamp_without_mutation(
+    tmp_path: Path, occurred_utc: str
+):
+    path = tmp_path / "invalid-utc-timestamp-events.jsonl"
+    job = make_job("JOB-INVALID-UTC-TIMESTAMP")
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    payload = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+    payload["occurred_utc"] = occurred_utc
+    payload["event_fingerprint"] = __import__("hashlib").sha256(
+        json.dumps(
+            {key: value for key, value in payload.items() if key != "event_fingerprint"},
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+        ).encode("utf-8")
+    ).hexdigest()
+    path.write_text(json.dumps(payload) + "\\n", encoding="utf-8")
+    original_bytes = path.read_bytes()
+
+    with pytest.raises(
+        ValueError,
+        match="occurred_utc must be an ISO-8601 timestamp with UTC timezone",
+    ):
+        FactoryJobEventLedger(path)
+
+    assert path.read_bytes() == original_bytes
+
+
 def test_persisted_journal_rejects_malformed_event_fingerprint_without_mutation(tmp_path: Path):
     path = tmp_path / "invalid-event-fingerprint-events.jsonl"
     job = make_job("JOB-INVALID-EVENT-FINGERPRINT")
