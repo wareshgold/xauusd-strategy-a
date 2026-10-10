@@ -499,3 +499,36 @@ def test_recovery_summary_requires_manual_review_for_invalid_lifecycle_order(his
     assert len(summary) == 1
     assert summary[0]["status"] == "LIFECYCLE_CONFLICT_REVIEW_REQUIRED"
     assert summary[0]["action"] == "MANUAL_RECONCILIATION_REQUIRED"
+
+
+def test_recovery_summary_ignores_non_lifecycle_handoff_fingerprint():
+    ledger = FactoryJobEventLedger(path=None)
+    job = make_job("JOB-HANDOFF-001")
+    for event_type in ("QUEUED", "DISPATCHED", "COMPLETED"):
+        ledger.append(
+            event_type=event_type,
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01" if event_type != "QUEUED" else None,
+            station="discovery",
+            phase="DISCOVERY",
+            output_artifact="EVIDENCE-1" if event_type == "COMPLETED" else None,
+        )
+
+    # Handoff metadata is a separate provenance event, not a job lifecycle
+    # transition; it must not corrupt the source job's recovery identity.
+    ledger.append(
+        event_type="HANDOFF_ACCEPTED",
+        job_id=job.job_id,
+        job_fingerprint="b" * 64,
+        station="stability",
+        phase="STABILITY",
+        output_artifact="EVIDENCE-1",
+    )
+
+    summary = ledger.recovery_summary()
+    assert len(summary) == 1
+    assert summary[0]["job_id"] == job.job_id
+    assert summary[0]["job_fingerprint"] == job.fingerprint
+    assert summary[0]["status"] == "TERMINAL_COMPLETED"
+    assert summary[0]["action"] == "NO_RETRY"
