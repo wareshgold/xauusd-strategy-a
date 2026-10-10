@@ -115,8 +115,10 @@ def test_handoff_must_bind_to_pass_research_record():
         separators=(",", ":"),
         ensure_ascii=True,
     ).encode("utf-8")
-    record = ResearchRecord(**record0.as_dict(include_fingerprint=False),
-                            fingerprint=hashlib.sha256(payload).hexdigest())
+    record = ResearchRecord.from_dict({
+        **record0.as_dict(include_fingerprint=False),
+        "fingerprint": hashlib.sha256(payload).hexdigest(),
+    })
     handoff = build_research_handoff(
         events=events,
         job_id="RUN-1",
