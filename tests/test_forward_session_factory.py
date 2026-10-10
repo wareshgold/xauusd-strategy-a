@@ -129,3 +129,27 @@ def test_demo_forward_session_rejects_missing_handoff_fingerprint(tmp_path):
             forward_dataset_artifact_id="FWD-ART-1",
             forward_dataset_content_sha256="b" * 64,
         )
+
+def test_demo_forward_session_rejects_gate_dataset_identity_mismatch():
+    with pytest.raises(ForwardSessionError, match="dataset id does not match"):
+        DemoForwardSessionFactory().prepare(
+            gate=type("R", (), {"gate": _gate()})(),
+            source_record=_record(),
+            session_id="FWD-SESSION-1",
+            forward_dataset_id="OTHER-FWD-DATA",
+            forward_dataset_artifact_id="FWD-ART-1",
+            forward_dataset_content_sha256="b" * 64,
+        )
+
+
+@pytest.mark.parametrize("bad_sha", ["g" * 64, "f" * 63])
+def test_demo_forward_session_rejects_malformed_sha256(bad_sha):
+    with pytest.raises(ForwardSessionError, match="lowercase hexadecimal SHA-256"):
+        DemoForwardSessionFactory().prepare(
+            gate=type("R", (), {"gate": _gate()})(),
+            source_record=_record(),
+            session_id="FWD-SESSION-1",
+            forward_dataset_id="FWD-DATA-1",
+            forward_dataset_artifact_id="FWD-ART-1",
+            forward_dataset_content_sha256=bad_sha,
+        )
