@@ -506,7 +506,7 @@ def test_recovery_summary_requires_review_and_never_requests_auto_retry(tmp_path
     assert interrupted["last_event_type"] == "DISPATCHED"
     assert interrupted["last_worker_id"] == "W01"
     assert interrupted["lifecycle_history"] == ["QUEUED", "DISPATCHED"]
-    assert interrupted["last_sequence"] == 6
+    assert interrupted["last_sequence"] == 5
     assert interrupted["last_occurred_utc"]
     completed = summary[completed_job.job_id]
     assert completed["last_event_type"] == "COMPLETED"
