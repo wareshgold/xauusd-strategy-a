@@ -85,20 +85,21 @@ class FactoryOrchestrator:
         job_id: str,
         worker_id: str,
         operation: str,
-    ) -> None:
+    ) -> dict[str, str] | None:
         """Record telemetry publication faults without changing job outcome."""
         try:
             self.fleet.publish()
         except Exception as exc:
-            self.telemetry_errors.append(
-                {
-                    "job_id": job_id,
-                    "worker_id": worker_id,
-                    "operation": operation,
-                    "error_type": type(exc).__name__,
-                    "error": str(exc),
-                }
-            )
+            error = {
+                "job_id": job_id,
+                "worker_id": worker_id,
+                "operation": operation,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            self.telemetry_errors.append(error)
+            return error
+        return None
 
     def handoff(
         self,
@@ -276,15 +277,18 @@ class FactoryOrchestrator:
                     f"worker state is FAILED but journal reconciliation is required "
                     f"({type(journal_exc).__name__}: {journal_exc})"
                 )
-            try:
-                self.fleet.publish()
-            except Exception as publish_exc:
-                # Telemetry publication is secondary to the execution failure.
-                # Preserve the original exception and expose the publish fault
-                # for diagnosis without attempting an automatic state repair.
+            telemetry_error = self._publish_telemetry_safely(
+                job_id=queued.job.job_id,
+                worker_id=worker.worker_id,
+                operation="publish_after_failure",
+            )
+            if telemetry_error is not None:
+                # Keep the execution exception primary while also retaining a
+                # structured in-memory diagnostic for the telemetry failure.
                 exc.add_note(
                     "Factory failed to publish worker telemetry while handling "
-                    f"the execution failure ({type(publish_exc).__name__}: {publish_exc})"
+                    f"the execution failure ({telemetry_error['error_type']}: "
+                    f"{telemetry_error['error']})"
                 )
             raise
 
@@ -308,22 +312,13 @@ class FactoryOrchestrator:
             output_artifact=artifact,
             research_run_fingerprint=(result.get("run_fingerprint") if isinstance(result, dict) else None),
         )
-        try:
-            self.fleet.publish()
-        except Exception as publish_exc:
-            # The COMPLETED event is already durable and the worker is terminal.
-            # Never turn a successful research execution into an apparent job
-            # failure that a caller might retry. Retain the telemetry fault for
-            # inspection without mutating the completed worker or journal state.
-            self.telemetry_errors.append(
-                {
-                    "job_id": queued.job.job_id,
-                    "worker_id": worker.worker_id,
-                    "operation": "publish_after_completion",
-                    "error_type": type(publish_exc).__name__,
-                    "error": str(publish_exc),
-                }
-            )
+        # The COMPLETED event is already durable and the worker is terminal.
+        # Never turn successful research execution into an apparent job failure.
+        self._publish_telemetry_safely(
+            job_id=queued.job.job_id,
+            worker_id=worker.worker_id,
+            operation="publish_after_completion",
+        )
         return result
 
 
