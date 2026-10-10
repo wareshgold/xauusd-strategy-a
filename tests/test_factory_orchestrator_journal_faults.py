@@ -127,6 +127,63 @@ def test_failed_event_append_failure_preserves_original_execution_error(monkeypa
     assert worker.__dict__.copy() == before_worker
 
 
+def test_completed_result_survives_telemetry_publish_failure(monkeypatch):
+    ledger = FactoryJobEventLedger(path=None)
+    worker = FactoryWorker(worker_id="W01")
+    fleet = FactoryWorkerFleet(workers=[worker])
+    orchestrator = FactoryOrchestrator(fleet=fleet, events=ledger)
+    orchestrator.submit(
+        _job(),
+        station="DEV",
+        phase="DEV",
+        detail="completion-telemetry-fault",
+    )
+    execution_calls = []
+    expected_result = {
+        "output_artifact": "synthetic-result",
+        "detail": "Synthetic research completed",
+        "run_fingerprint": "b" * 64,
+    }
+
+    def fail_publish():
+        raise OSError("injected completion telemetry publish failure")
+
+    def successful_execution(job, current_worker):
+        execution_calls.append(job.job_id)
+        # Allow the initial publication before execution; fail only the final
+        # publication after COMPLETED has been persisted.
+        monkeypatch.setattr(fleet, "publish", fail_publish)
+        return expected_result
+
+    result = orchestrator.run_next(
+        worker_id="W01",
+        execute=successful_execution,
+    )
+
+    assert result is expected_result
+    assert execution_calls == ["JOB-COMPLETION-JOURNAL-FAULT"]
+    assert worker.state == "COMPLETED"
+    assert worker.error is None
+    assert orchestrator.pending() == ()
+    assert [event.event_type for event in ledger.entries()] == [
+        "QUEUED",
+        "DISPATCHED",
+        "COMPLETED",
+    ]
+    assert orchestrator.telemetry_errors == [
+        {
+            "job_id": "JOB-COMPLETION-JOURNAL-FAULT",
+            "worker_id": "W01",
+            "operation": "publish_after_completion",
+            "error_type": "OSError",
+            "error": "injected completion telemetry publish failure",
+        }
+    ]
+    report = inspect_worker_journal_consistency(ledger, [worker])
+    assert report["status"] == "CONSISTENT"
+    assert report["automatic_action_performed"] is False
+
+
 def test_failure_telemetry_publish_failure_preserves_original_execution_error(monkeypatch):
     ledger = FactoryJobEventLedger(path=None)
     worker = FactoryWorker(worker_id="W01")
