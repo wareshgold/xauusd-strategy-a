@@ -143,9 +143,11 @@ def test_failure_telemetry_publish_failure_preserves_original_execution_error(mo
         raise OSError("injected worker telemetry publish failure")
 
     def fail_execution(job, current_worker):
+        # Let run_next's initial worker-state publication succeed. Inject the
+        # telemetry fault only after execution has started, so the exception
+        # handler's secondary publish is the operation under test.
+        monkeypatch.setattr(fleet, "publish", fail_publish)
         raise ValueError("original research executor failure")
-
-    monkeypatch.setattr(fleet, "publish", fail_publish)
 
     with pytest.raises(ValueError, match="original research executor failure") as caught:
         orchestrator.run_next(worker_id="W01", execute=fail_execution)
