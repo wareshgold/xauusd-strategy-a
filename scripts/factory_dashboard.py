@@ -400,7 +400,7 @@ def station_world(workers: list[dict]) -> str:
           // status footer
           rect(260,600,760,28,"#080e12","#2e414c");
           text("QUEUE → LAB → EVIDENCE → COMPLETE",640,618,9,C.cyan,"center","700");
-          text("STATE SOURCE: runtime/factory_worker_status.json",640,625,6,C.muted,"center");
+          text("STATE SOURCE: __STATUS_SOURCE__",640,625,6,C.muted,"center");
           requestAnimationFrame(draw);
         }
         function resize(){
@@ -412,7 +412,10 @@ def station_world(workers: list[dict]) -> str:
       </script>
     </section>
     """
-    return world.replace("__WORKERS__", payload)
+    return world.replace("__WORKERS__", payload).replace(
+        "__STATUS_SOURCE__",
+        "runtime/factory_demo_status.json" if DEMO_MODE else "runtime/factory_worker_status.json",
+    )
 
 def telemetry_panels(workers: list[dict]) -> str:
     queued = [w for w in workers if str(w.get("state") or "").upper() == "QUEUED"]
