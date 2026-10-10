@@ -94,7 +94,22 @@ class FactoryJobEvent:
                     f"{field_name} must be a string or null"
                 )
         if not isinstance(self.occurred_utc, str) or not self.occurred_utc:
-            raise ValueError("occurred_utc must be a non-empty string")
+            raise ValueError("occurred_utc must be a non-empty ISO-8601 UTC timestamp")
+        timestamp_text = (
+            self.occurred_utc[:-1] + "+00:00"
+            if self.occurred_utc.endswith("Z")
+            else self.occurred_utc
+        )
+        try:
+            occurred = datetime.fromisoformat(timestamp_text)
+        except ValueError as exc:
+            raise ValueError(
+                "occurred_utc must be an ISO-8601 timestamp with UTC timezone"
+            ) from exc
+        if occurred.tzinfo is None or occurred.utcoffset() != timezone.utc.utcoffset(occurred):
+            raise ValueError(
+                "occurred_utc must be an ISO-8601 timestamp with UTC timezone"
+            )
         if not _is_sha256(self.event_fingerprint):
             raise ValueError("event_fingerprint must be lowercase hexadecimal SHA-256")
         expected = hashlib.sha256(
