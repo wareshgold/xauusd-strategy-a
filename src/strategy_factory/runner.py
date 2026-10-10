@@ -84,10 +84,14 @@ class ResearchJobRunner:
         """
         try:
             job.validate()
+            if job.dataset_fingerprint != observed_content_sha256:
+                raise ResearchJobRunnerError(
+                    "research job dataset fingerprint does not match observed dataset content"
+                )
             validate_job_matches_test_spec(
                 job,
                 spec,
-                dataset_fingerprint=job.dataset_fingerprint,
+                dataset_fingerprint=observed_content_sha256,
             )
         except (ResearchJobError, ValueError) as exc:
             raise ResearchJobRunnerError(
