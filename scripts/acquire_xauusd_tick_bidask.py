@@ -29,7 +29,7 @@ def parse_utc(value: str) -> datetime:
         normalized = normalized[:-1] + "+00:00"
     parsed = datetime.fromisoformat(normalized)
     if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise argparse.ArgumentTypeError("timestamp must include timezone, e.g. 2026-08-21T00:00:00Z")
+        raise ValueError("timestamp must include timezone, e.g. 2026-08-21T00:00:00Z")
     return parsed.astimezone(UTC)
 
 
