@@ -112,3 +112,56 @@ def test_duplicate_worker_ids_are_reported_deterministically_without_mutation():
     assert first["automatic_action_performed"] is False
     assert ledger.entries() == before_events
     assert [worker.__dict__.copy() for worker in workers] == before_workers
+
+
+
+def test_recovery_summary_and_worker_snapshot_conflicts_are_reported_without_repair():
+    cases = [
+        (
+            ("QUEUED",),
+            "RUNNING",
+            "RECOVERY_WORKER_STATE_CONFLICT",
+        ),
+        (
+            ("QUEUED", "DISPATCHED"),
+            "COMPLETED",
+            "RECOVERY_WORKER_STATE_CONFLICT",
+        ),
+        (
+            ("QUEUED", "DISPATCHED", "COMPLETED"),
+            "FAILED",
+            "RECOVERY_WORKER_STATE_CONFLICT",
+        ),
+    ]
+
+    for index, (history, worker_state, expected_code) in enumerate(cases):
+        ledger = FactoryJobEventLedger(path=None)
+        job_id = f"JOB-RECOVERY-JOIN-{index}"
+        for event_type in history:
+            append(
+                ledger,
+                event_type,
+                job_id=job_id,
+                worker_id="W01" if event_type != "QUEUED" else None,
+            )
+        worker = FactoryWorker(
+            worker_id="W01",
+            job_id=job_id,
+            state=worker_state,
+            station="DEV",
+            phase="DEV",
+        )
+        before_events = ledger.entries()
+        before_worker = worker.__dict__.copy()
+
+        report = inspect_worker_journal_consistency(ledger, [worker])
+        repeated = inspect_worker_journal_consistency(ledger, [worker])
+
+        assert report == repeated
+        assert report["status"] == "REVIEW_REQUIRED"
+        assert expected_code in {finding["code"] for finding in report["findings"]}
+        assert report["recovery_job_count"] == 1
+        assert report["recovery_status_counts"]
+        assert report["automatic_action_performed"] is False
+        assert ledger.entries() == before_events
+        assert worker.__dict__ == before_worker
