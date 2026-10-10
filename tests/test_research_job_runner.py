@@ -3,7 +3,7 @@ import hashlib
 import pytest
 
 from strategy_factory.adapter import build_execution_receipt
-from strategy_factory.datasets import DatasetRegistry
+from strategy_factory.datasets import DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
@@ -44,7 +44,7 @@ def make_spec_and_job():
     job = ResearchJobSpec.from_test_spec(
         spec,
         manifest_revision="M1",
-        dataset_fingerprint="a" * 64,
+        dataset_fingerprint=fingerprint_dataset(dataset, "a" * 64),
         job_id="JOB-1",
     )
     return spec, job
