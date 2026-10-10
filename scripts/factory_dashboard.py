@@ -17,6 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from strategy_factory.starnet_adapter import build_world_state
+from strategy_factory.worker_journal_audit import inspect_worker_journal_file_consistency
 
 ROOT = Path(__file__).resolve().parents[1]
 LIVE_STATUS_FILE = ROOT / "runtime" / "factory_worker_status.json"
@@ -469,6 +470,48 @@ def telemetry_panels(workers: list[dict]) -> str:
     """
 
 
+
+def journal_audit_panel(workers: list[dict]) -> str:
+    """Render read-only journal integrity and worker consistency findings."""
+    report = inspect_worker_journal_file_consistency(workers)
+    integrity = report.get("journal_integrity") or {}
+    status = str(report.get("status") or "REVIEW_REQUIRED").upper()
+    integrity_status = str(integrity.get("status") or "UNKNOWN").upper()
+    digest = integrity.get("sha256")
+    digest_html = escape(str(digest)) if digest else "NOT AVAILABLE"
+    path_html = escape(str(integrity.get("path") or "UNKNOWN"))
+    findings = report.get("findings") or []
+    finding_rows = "".join(
+        '<li><b>' + escape(str(item.get("code") or "UNKNOWN")) + '</b> — '
+        + escape(str(item.get("detail") or "")) + '</li>'
+        for item in findings[:8]
+    ) or '<li class="audit-none">No discrepancies reported by this snapshot</li>'
+    automatic = bool(report.get("automatic_action_performed")) or bool(
+        integrity.get("automatic_repair_performed")
+    )
+    action_label = "UNEXPECTED ACTION FLAG" if automatic else "READ ONLY · NO REPAIR / RETRY"
+    event_count = report.get("journal_event_count")
+    event_label = "UNKNOWN" if event_count is None else str(event_count)
+    return f"""
+    <section class="panel journal-audit">
+      <div class="audit-head">
+        <div><h2>JOB JOURNAL INTEGRITY · READ-ONLY AUDIT</h2>
+        <span>Worker snapshot compared with one validated journal byte snapshot</span></div>
+        <b class="{status_class(status)}">{escape(status)}</b>
+      </div>
+      <div class="audit-stats">
+        <div><small>Journal integrity</small><b class="{status_class(integrity_status)}">{escape(integrity_status)}</b></div>
+        <div><small>Journal events</small><b>{escape(event_label)}</b></div>
+        <div><small>Findings</small><b>{int(report.get("finding_count") or 0)}</b></div>
+        <div><small>Automatic action</small><b class="{'bad' if automatic else 'ok'}">{escape(action_label)}</b></div>
+      </div>
+      <div class="audit-path">PATH · {path_html}</div>
+      <div class="audit-hash">SHA-256 · <code>{digest_html}</code></div>
+      <ul class="audit-findings">{finding_rows}</ul>
+    </section>
+    """
+
+
 def html_page() -> str:
     git = git_state()
     workers, factory_health = worker_state()
@@ -587,6 +630,8 @@ h1{{margin:0;font-size:25px;letter-spacing:2.2px;font-weight:800;text-shadow:0 0
   </section>
 
   {telemetry_panels(workers)}
+
+  {journal_audit_panel(workers)}
 
   <section class="panel">
     <h2>RESEARCH PIPELINE</h2>
