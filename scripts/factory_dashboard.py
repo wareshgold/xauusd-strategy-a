@@ -111,9 +111,9 @@ def worker_state() -> tuple[list[dict], str]:
 
 def status_class(value: str) -> str:
     v = value.upper()
-    if v in {"LIVE", "RUNNING", "COMPLETED", "VERIFIED", "SEPARATE"}:
+    if v in {"LIVE", "RUNNING", "COMPLETED", "VERIFIED", "VALID", "CONSISTENT", "SEPARATE"}:
         return "ok"
-    if v in {"BLOCKED", "OFFLINE", "FAILED", "NOT ELIGIBLE"}:
+    if v in {"BLOCKED", "OFFLINE", "FAILED", "NOT ELIGIBLE", "REVIEW_REQUIRED"} or v.endswith("_REVIEW_REQUIRED"):
         return "bad"
     return "warn"
 
