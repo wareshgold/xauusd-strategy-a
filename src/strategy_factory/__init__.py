@@ -172,6 +172,14 @@ from .forward_preparation import ForwardPreparationError, ForwardPreparationResu
 from .forward_observed_report import ForwardObservedReport, ForwardObservedReportError, build_forward_observed_report
 
 from .external_strategy import ExternalStrategyError, ExternalStrategyReference
+from .candidate_lab import (
+    CandidateAssessment,
+    CandidateLabError,
+    CandidateObservation,
+    CandidatePlan,
+    ResearchCandidate,
+    assess_candidates,
+)
 from .strategy_comparison import (
     ComparisonMetrics,
     OneVsOneStrategyComparison,
