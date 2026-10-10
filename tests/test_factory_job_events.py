@@ -849,7 +849,7 @@ def test_journal_inspector_distinguishes_missing_from_valid_empty_file(tmp_path:
 
 def test_journal_inspector_reports_non_utf8_bytes_without_mutation(tmp_path: Path):
     path = tmp_path / "non-utf8.jsonl"
-    path.write_bytes(b"\\xff\\xfe")
+    path.write_bytes(bytes([255, 254]))
     before = path.read_bytes()
 
     report = inspect_job_journal_file(path)
