@@ -88,7 +88,7 @@ def test_assessment_ranks_by_declared_objective_but_only_shortlists():
     observations = [
         make_observation(candidates[0], pnl=12.0, trades=30),
         make_observation(candidates[1], pnl=20.0, wins=19, losses=10, trades=29),
-        make_observation(candidates[2], pnl=16.0, trades=35),
+        make_observation(candidates[2], pnl=16.0, wins=25, losses=10, trades=35),
     ]
     assessment = assess_candidates(
         observations,
