@@ -546,3 +546,25 @@ def test_job_event_ledger_rejects_non_hex_job_fingerprint():
         )
 
     assert ledger.entries() == ()
+
+
+def test_persisted_journal_rejects_truncated_tail_without_repair(tmp_path: Path):
+    path = tmp_path / "truncated-events.jsonl"
+    job = make_job("JOB-TRUNCATED-TAIL")
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id=job.job_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+    )
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write('{"sequence":2,"event_type":"DISPATCHED"')
+
+    original_bytes = path.read_bytes()
+    with pytest.raises(ValueError, match=r"invalid JSON at line 2.*automatic repair refused"):
+        FactoryJobEventLedger(path)
+
+    # A suspicious tail is preserved for explicit/manual reconciliation.
+    assert path.read_bytes() == original_bytes
