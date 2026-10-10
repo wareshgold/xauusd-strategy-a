@@ -68,7 +68,13 @@ class FactoryOrchestrator:
                 detail=detail,
             )
         )
-        self.fleet.publish()
+        # The job is already durably queued. Telemetry failure must not make
+        # submit appear unsuccessful and invite a caller to retry submission.
+        self._publish_telemetry_safely(
+            job_id=job.job_id,
+            worker_id="",
+            operation="publish_after_submit",
+        )
 
     def pending(self) -> tuple[QueuedResearchJob, ...]:
         return tuple(self.queue)
