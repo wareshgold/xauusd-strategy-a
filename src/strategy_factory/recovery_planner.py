@@ -154,3 +154,19 @@ def validate_queue_reconstruction_plan(plan: QueueReconstructionPlan) -> None:
             raise ValueError("reconstruction plan contains a mismatched Job Spec")
         if item.original_queue_sequence < 1:
             raise ValueError("original queue sequence must be positive")
+    identity = {
+        "recovery_report_id": plan.recovery_report_id,
+        "approved_job_ids": list(plan.approved_job_ids),
+        "items": [
+            {
+                "job_id": item.job_id,
+                "job_fingerprint": item.job_fingerprint,
+                "original_queue_sequence": item.original_queue_sequence,
+            }
+            for item in plan.items
+        ],
+        "automatic_requeue_performed": False,
+    }
+    expected_id = hashlib.sha256(_canonical(identity).encode("utf-8")).hexdigest()
+    if plan.plan_id != expected_id:
+        raise ValueError("queue reconstruction plan fingerprint mismatch")
