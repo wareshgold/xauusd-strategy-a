@@ -110,6 +110,47 @@ class FactoryOrchestrator:
         self.fleet.publish()
         return handoff
 
+    def submit_replay(
+        self,
+        plan: Any,
+        *,
+        station: str,
+        phase: str,
+        detail: str = "Explicitly approved failed-job replay queued for review",
+    ) -> None:
+        """Queue a reviewed replay plan only when its original failure is journaled.
+
+        This does not execute the replay. Callers must explicitly invoke
+        run_next later, using an executor that validates the replay inputs.
+        """
+        request = getattr(plan, "request", None)
+        replay_job = getattr(plan, "replay_job", None)
+        original_fingerprint = getattr(plan, "original_job_fingerprint", None)
+        if request is None or replay_job is None or not original_fingerprint:
+            raise ValueError("a complete FailedJobReplayPlan is required")
+        replay_job.validate()
+        if request.job_id == "" or replay_job.job_id == request.job_id:
+            raise ValueError("replay job must have a distinct job_id")
+        if not replay_job.job_id.startswith(f"{request.job_id}::replay::"):
+            raise ValueError("replay job_id does not match its replay request")
+
+        original_events = self.events.for_job(request.job_id)
+        failures = [event for event in original_events if event.event_type == "FAILED"]
+        completions = [event for event in original_events if event.event_type == "COMPLETED"]
+        if not failures or completions:
+            raise ValueError("original job must have a journaled FAILED event and no COMPLETED event")
+        if any(event.job_fingerprint != original_fingerprint for event in original_events):
+            raise ValueError("original job fingerprint does not match replay plan")
+        if failures[-1].worker_id != request.failed_worker_id:
+            raise ValueError("failed worker does not match the journaled failure")
+
+        self.submit(
+            replay_job,
+            station=station,
+            phase=phase,
+            detail=detail,
+        )
+
     def run_next(
         self,
         *,
