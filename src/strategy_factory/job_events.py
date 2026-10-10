@@ -155,10 +155,15 @@ class FactoryJobEventLedger:
         summary: list[dict[str, Any]] = []
         for job_id, job_events in grouped.items():
             event_types = {event.event_type for event in job_events}
-            if "COMPLETED" in event_types:
+            has_completed = "COMPLETED" in event_types
+            has_failed = "FAILED" in event_types
+            if has_completed and has_failed:
+                status = "TERMINAL_CONFLICT_REVIEW_REQUIRED"
+                action = "MANUAL_RECONCILIATION_REQUIRED"
+            elif has_completed:
                 status = "TERMINAL_COMPLETED"
                 action = "NO_RETRY"
-            elif "FAILED" in event_types:
+            elif has_failed:
                 status = "TERMINAL_FAILED"
                 action = "NO_RETRY"
             elif "DISPATCHED" in event_types:
