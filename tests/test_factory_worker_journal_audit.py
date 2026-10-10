@@ -218,3 +218,31 @@ def test_file_audit_requires_review_for_missing_journal(tmp_path: Path):
     assert report["journal_integrity"]["status"] == "MISSING_REVIEW_REQUIRED"
     assert report["journal_integrity"]["exists"] is False
     assert report["automatic_action_performed"] is False
+
+
+def test_file_audit_fails_closed_on_unreadable_journal(
+    tmp_path: Path, monkeypatch
+):
+    path = tmp_path / "unreadable-factory-journal.jsonl"
+    path.write_bytes(b"do not mutate")
+    before = path.read_bytes()
+    original_read_bytes = Path.read_bytes
+
+    def deny_read(self: Path) -> bytes:
+        if self == path:
+            raise PermissionError("synthetic access denied")
+        return original_read_bytes(self)
+
+    monkeypatch.setattr(Path, "read_bytes", deny_read)
+
+    report = inspect_worker_journal_file_consistency(
+        [FactoryWorker(worker_id="W01", state="IDLE")], path
+    )
+
+    assert report["status"] == "REVIEW_REQUIRED"
+    assert report["journal_integrity"]["status"] == "UNREADABLE_REVIEW_REQUIRED"
+    assert report["journal_event_count"] is None
+    assert report["finding_count"] == 1
+    assert report["findings"][0]["code"] == "JOURNAL_INTEGRITY_REVIEW_REQUIRED"
+    assert report["automatic_action_performed"] is False
+    assert original_read_bytes(path) == before
