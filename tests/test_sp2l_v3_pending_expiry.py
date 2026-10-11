@@ -28,6 +28,7 @@ def fake_mt5():
         TRADE_ACTION_REMOVE=4, TRADE_ACTION_SLTP=6,
         TRADE_RETCODE_DONE=10009, ORDER_STATE_PLACED=1,
         DEAL_ENTRY_IN=0, DEAL_ENTRY_OUT=1,
+        DEAL_TYPE_BUY=0, DEAL_TYPE_SELL=1,
         TRADE_ACTION_PENDING=5,
     )
     m.orders_get = lambda symbol=None: []
