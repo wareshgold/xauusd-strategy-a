@@ -3,8 +3,8 @@
 **Snapshot date:** 2026-10-11  
 **Repository:** `wareshgold/xauusd-strategy-a`  
 **Working branch:** `research/factory-candidate-lab-20261010`  
-**Local checkout:** `D:\\Mirzaei\\Private\\1\\xauusd-strategy-a-factory-candidate-lab`  
-**Preferred test interpreter:** `D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe`  
+**Local checkout:** `D:\Mirzaei\Private\1\xauusd-strategy-a-factory-candidate-lab`  
+**Preferred test interpreter:** `D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe`  
 **Purpose:** authoritative continuation handoff. Read this before coding. Do not repeat completed work or treat diagnostic/backtest results as canonical source rules.
 
 ## 1. Latest user-verified state — 2026-10-11
@@ -17,7 +17,7 @@ The user reports the latest local working tree on the target branch and confirms
 
 Focused command:
 ```powershell
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest `
+& "D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe" -m pytest `
   tests/test_factory_orchestrator_terminal_telemetry.py `
   tests/test_factory_orchestrator_handoff_telemetry.py `
   tests/test_factory_orchestrator_journal_faults.py `
@@ -27,7 +27,7 @@ Focused command:
 
 Full suite:
 ```powershell
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
+& "D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe" -m pytest tests/ -q
 ```
 
 Latest user-reported Git status:
@@ -185,21 +185,21 @@ git pull --ff-only
 git log -6 --oneline
 git status --short --branch
 
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_synthetic_e2e_run.py tests/test_factory_e2e_smoke.py tests/test_factory_dashboard.py -q
+& "D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe" -m pytest tests/test_factory_synthetic_e2e_run.py tests/test_factory_e2e_smoke.py tests/test_factory_dashboard.py -q
 
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
+& "D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe" -m pytest tests/ -q
 ```
 
 If tests pass, run the synthetic integration once:
 ```powershell
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" scripts/run_factory_synthetic_e2e.py
+& "D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe" scripts/run_factory_synthetic_e2e.py
 ```
 Then start the dashboard in an isolated demo-mode terminal:
 ```powershell
 $env:SP2L_FACTORY_DEMO = "1"
-$env:SP2L_FACTORY_DEMO_STATUS_FILE = "$PWD\\runtime\\factory_synthetic_e2e_status.json"
-$env:SP2L_FACTORY_DEMO_JOB_EVENTS_FILE = "$PWD\\runtime\\factory_synthetic_e2e_job_events.jsonl"
-& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" scripts/factory_dashboard.py
+$env:SP2L_FACTORY_DEMO_STATUS_FILE = "$PWD\runtime\factory_synthetic_e2e_status.json"
+$env:SP2L_FACTORY_DEMO_JOB_EVENTS_FILE = "$PWD\runtime\factory_synthetic_e2e_job_events.jsonl"
+& "D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe" scripts/factory_dashboard.py
 ```
 Open `http://127.0.0.1:8788/`. Verify the displayed worker/job/artifact matches the script's run ID and the Job Journal Integrity panel reports a valid, consistent demo journal. Do not treat a passing synthetic run as canonical research acceptance or a statistical edge.
 
