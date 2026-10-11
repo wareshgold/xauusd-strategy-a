@@ -1,3 +1,5 @@
+import hashlib
+
 import pytest
 
 from strategy_factory.candidate_lab import (
@@ -132,25 +134,67 @@ def test_assessment_fails_closed_on_mismatched_data_or_costs():
 
 
 
-def test_matrix_runner_executes_every_candidate_in_stable_order():
-    plan = make_plan()
+def _verified_dataset(tmp_path):
+    payload = b"synthetic fixture bytes for dataset identity verification\n"
+    artifact_path = tmp_path / "development-dataset.bin"
+    artifact_path.write_bytes(payload)
+    return artifact_path, hashlib.sha256(payload).hexdigest()
+
+
+def test_matrix_runner_executes_every_candidate_in_stable_order(tmp_path):
+    artifact_path, data_sha = _verified_dataset(tmp_path)
+    plan = make_plan(data_sha=data_sha)
     seen = []
 
     def execute(candidate):
         seen.append(candidate.candidate_id)
         return make_observation(candidate, pnl=1.0)
 
-    results = run_candidate_matrix(plan, execute)
+    results = run_candidate_matrix(
+        plan, execute, dataset_artifact_path=artifact_path
+    )
     assert seen == [candidate.candidate_id for candidate in plan.candidates()]
     assert [row.candidate.candidate_id for row in results] == seen
 
 
-def test_matrix_runner_rejects_adapter_result_for_another_candidate():
-    plan = make_plan()
+def test_matrix_runner_rejects_dataset_artifact_sha_mismatch(tmp_path):
+    artifact_path, _ = _verified_dataset(tmp_path)
+    plan = make_plan(data_sha="b" * 64)
+
+    with pytest.raises(CandidateLabError, match="bytes do not match"):
+        run_candidate_matrix(
+            plan, lambda candidate: make_observation(candidate, pnl=1.0),
+            dataset_artifact_path=artifact_path,
+        )
+
+
+def test_matrix_runner_rejects_dataset_mutation_during_execution(tmp_path):
+    artifact_path, data_sha = _verified_dataset(tmp_path)
+    plan = make_plan(data_sha=data_sha)
+    called = False
+
+    def execute(candidate):
+        nonlocal called
+        if not called:
+            artifact_path.write_bytes(b"mutated dataset bytes\n")
+            called = True
+        return make_observation(candidate, pnl=1.0)
+
+    with pytest.raises(CandidateLabError, match="changed during candidate execution"):
+        run_candidate_matrix(
+            plan, execute, dataset_artifact_path=artifact_path
+        )
+
+
+def test_matrix_runner_rejects_adapter_result_for_another_candidate(tmp_path):
+    artifact_path, data_sha = _verified_dataset(tmp_path)
+    plan = make_plan(data_sha=data_sha)
     candidates = plan.candidates()
 
     def execute(candidate):
         return make_observation(candidates[-1], pnl=1.0)
 
     with pytest.raises(CandidateLabError, match="different candidate"):
-        run_candidate_matrix(plan, execute)
+        run_candidate_matrix(
+            plan, execute, dataset_artifact_path=artifact_path
+        )
