@@ -229,6 +229,21 @@ class CandidateObservation:
             raise CandidateLabError("ranking requires results net of declared trading costs")
         if not self.result_fingerprint:
             raise CandidateLabError("result fingerprint is required")
+        expected_result_fingerprint = _sha256({
+            "candidate_fingerprint": self.candidate.candidate_fingerprint,
+            "trades": self.trades,
+            "wins": self.wins,
+            "losses": self.losses,
+            "ambiguous": self.ambiguous,
+            "net_pnl_cash": self.net_pnl_cash,
+            "profit_factor": self.profit_factor,
+            "max_drawdown_cash": self.max_drawdown_cash,
+            "costs_included": self.costs_included,
+        })
+        if self.result_fingerprint != expected_result_fingerprint:
+            raise CandidateLabError(
+                "result fingerprint does not match candidate metrics and cost declaration"
+            )
 
     @property
     def win_rate(self) -> float:
