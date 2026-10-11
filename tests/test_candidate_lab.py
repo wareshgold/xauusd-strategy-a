@@ -1,4 +1,5 @@
 import hashlib
+from dataclasses import replace
 
 import pytest
 
@@ -201,6 +202,34 @@ def test_matrix_runner_rejects_adapter_result_for_another_candidate(tmp_path):
         return make_observation(candidates[-1], pnl=1.0)
 
     with pytest.raises(CandidateLabError, match="different candidate"):
+        run_candidate_matrix(
+            plan, execute, dataset_artifact_path=artifact_path
+        )
+
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("geometry_fingerprint", "tampered-geometry", "geometry fingerprint"),
+        (
+            "source_resolution_fingerprint",
+            "tampered-source-resolution",
+            "source-resolution fingerprint",
+        ),
+    ],
+)
+def test_matrix_runner_rejects_altered_geometry_or_source_provenance(
+    tmp_path, field, value, message
+):
+    artifact_path, data_sha = _verified_dataset(tmp_path)
+    plan = make_plan(data_sha=data_sha)
+
+    def execute(candidate, dataset_bytes):
+        altered_candidate = replace(candidate, **{field: value})
+        return make_observation(altered_candidate, pnl=1.0)
+
+    with pytest.raises(CandidateLabError, match=message):
         run_candidate_matrix(
             plan, execute, dataset_artifact_path=artifact_path
         )
