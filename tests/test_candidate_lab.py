@@ -1,4 +1,5 @@
 import hashlib
+import json
 from dataclasses import replace
 
 import pytest
@@ -54,7 +55,7 @@ def make_observation(candidate, *, pnl, wins=20, losses=10, ambiguous=0, trades=
         "costs_included": True,
     }
     result_fingerprint = hashlib.sha256(
-        __import__("json").dumps(
+        json.dumps(
             metrics, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
             allow_nan=False,
         ).encode("utf-8")
