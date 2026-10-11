@@ -21,8 +21,15 @@ from strategy_factory.worker_journal_audit import inspect_worker_journal_file_co
 
 ROOT = Path(__file__).resolve().parents[1]
 LIVE_STATUS_FILE = ROOT / "runtime" / "factory_worker_status.json"
-DEMO_STATUS_FILE = ROOT / "runtime" / "factory_demo_status.json"
-DEMO_JOB_EVENTS_FILE = ROOT / "runtime" / "factory_demo_job_events.jsonl"
+DEMO_STATUS_FILE = Path(
+    os.getenv("SP2L_FACTORY_DEMO_STATUS_FILE", str(ROOT / "runtime" / "factory_demo_status.json"))
+).resolve()
+DEMO_JOB_EVENTS_FILE = Path(
+    os.getenv(
+        "SP2L_FACTORY_DEMO_JOB_EVENTS_FILE",
+        str(ROOT / "runtime" / "factory_demo_job_events.jsonl"),
+    )
+).resolve()
 DEMO_MODE = os.getenv("SP2L_FACTORY_DEMO", "0") == "1"
 STATUS_FILE = DEMO_STATUS_FILE if DEMO_MODE else LIVE_STATUS_FILE
 PORT = int(os.getenv("SP2L_FACTORY_DASHBOARD_PORT", "8788"))
