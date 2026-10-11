@@ -159,15 +159,18 @@ Commits:
 - `0aeb8e97` — `feat(factory): add isolated synthetic end-to-end runner`
 - `ac89af04` — `fix(factory): audit isolated demo job journal in dashboard`
 - `3ddddd83` — `test(factory): cover isolated synthetic end-to-end dashboard run`
+- `b59f4554` — `fix(factory): preserve existing runtime demo artifacts`
+- `e8759b62` — `feat(factory): allow isolated demo telemetry paths`
+- `12a4ccec` — `test(factory): protect pre-existing demo runtime artifact`
 
 New runner: `scripts/run_factory_synthetic_e2e.py`
 - Runs one deterministic synthetic fixture through the existing dataset registry, research runner, execution adapter, orchestrator, durable lifecycle ledger, research evidence/record, and explicit evidence-bound handoff.
-- Uses only isolated `runtime/factory_demo_status.json` and `runtime/factory_demo_job_events.jsonl` by default.
-- Refuses paths that would write into the live worker status or live Factory job journal.
+- Uses only new isolated `runtime/factory_synthetic_e2e_status.json` and `runtime/factory_synthetic_e2e_job_events.jsonl` by default.
+- Explicitly refuses to overwrite the live worker status, live Factory job journal, or the user-owned `runtime/factory_demo_status.json` artifact. Existing untracked runtime files are not to be overwritten.
 - Labels output `SYNTHETIC_ONLY`, reports `production_decisions: 0`, and makes no strategy-edge claim. Its synthetic metrics are a software fixture, not SP2L performance evidence.
 - Does not consume Holdout/Forward datasets, launch MT5, or create BUY/SELL decisions.
 
-Dashboard adjustment: in `SP2L_FACTORY_DEMO=1` mode, the read-only journal panel audits `factory_demo_job_events.jsonl` against the demo worker snapshot. In non-demo mode, it continues to audit the existing live journal. The new path does not overwrite or append to the user's live journal.
+Dashboard adjustment: in `SP2L_FACTORY_DEMO=1` mode, the read-only journal panel audits the configured demo journal against the demo worker snapshot. New environment overrides `SP2L_FACTORY_DEMO_STATUS_FILE` and `SP2L_FACTORY_DEMO_JOB_EVENTS_FILE` let the user point the dashboard at the dedicated synthetic E2E outputs. In non-demo mode, the dashboard continues to audit the existing live journal. The new path does not overwrite or append to the user's pre-existing demo or live files.
 
 New tests: `tests/test_factory_synthetic_e2e_run.py`
 - Checks persisted `QUEUED → DISPATCHED → COMPLETED → HANDOFF_ACCEPTED` events, evidence artifact, completed worker snapshot, and a consistent journal audit.
@@ -194,8 +197,10 @@ If tests pass, run the synthetic integration once:
 Then start the dashboard in an isolated demo-mode terminal:
 ```powershell
 $env:SP2L_FACTORY_DEMO = "1"
+$env:SP2L_FACTORY_DEMO_STATUS_FILE = "$PWD\\runtime\\factory_synthetic_e2e_status.json"
+$env:SP2L_FACTORY_DEMO_JOB_EVENTS_FILE = "$PWD\\runtime\\factory_synthetic_e2e_job_events.jsonl"
 & "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" scripts/factory_dashboard.py
 ```
 Open `http://127.0.0.1:8788/`. Verify the displayed worker/job/artifact matches the script's run ID and the Job Journal Integrity panel reports a valid, consistent demo journal. Do not treat a passing synthetic run as canonical research acceptance or a statistical edge.
 
-The previous five user-owned untracked paths remain protected. This new work must not modify `runtime/factory_worker_status.json` or `runtime/factory_job_events.jsonl`; demo files are intentionally separate.
+The previous five user-owned untracked paths remain protected, including `runtime/factory_demo_status.json`. The synthetic run writes only the new `factory_synthetic_e2e_*` files. Do not modify `runtime/factory_worker_status.json` or `runtime/factory_job_events.jsonl`; the dashboard must be explicitly pointed at the new synthetic paths using the environment variables above.
