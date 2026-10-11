@@ -1,6 +1,7 @@
 """Offline regression tests for the V3 RR2/TRAIL4 pending-order lifecycle.
 
-No MT5 connection or order_send call is allowed in these tests.
+Covers tick freshness and an operator-pinned broker offset; no MT5 connection
+or order_send call is allowed in these tests.
 """
 from __future__ import annotations
 
