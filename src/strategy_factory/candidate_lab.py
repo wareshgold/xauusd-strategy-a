@@ -323,6 +323,15 @@ def run_candidate_matrix(
             raise CandidateLabError("candidate adapter changed the verified dataset identity")
         if observation.candidate.execution_fingerprint != plan.execution_fingerprint:
             raise CandidateLabError("candidate adapter changed the declared execution profile")
+        if observation.candidate.geometry_fingerprint != plan.geometry_fingerprint:
+            raise CandidateLabError("candidate adapter changed the declared geometry fingerprint")
+        if (
+            observation.candidate.source_resolution_fingerprint
+            != plan.source_resolution_fingerprint
+        ):
+            raise CandidateLabError(
+                "candidate adapter changed the declared source-resolution fingerprint"
+            )
         observations.append(observation)
     if len(observations) != len(candidates):
         raise CandidateLabError("candidate matrix did not produce one result per candidate")
