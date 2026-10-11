@@ -102,6 +102,27 @@ def test_expired_owned_order_is_cancelled_once(monkeypatch, tmp_path):
     assert cancelled == [123]
 
 
+
+def test_failed_expiry_attempt_is_retried(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    pending = order(ticket=131, age_minutes=90)
+    m.orders_get = lambda symbol=None: [pending]
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    attempts = []
+
+    def failed_cancel(o, s):
+        attempts.append(o.ticket)
+        s["order_states"].add(f"{o.ticket}:EXPIRY_NOTIFIED:CANCEL_FAILED(10006)")
+
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", failed_cancel)
+    s = state()
+    config = {"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}
+    mod._run_scoped_pending(config, s)
+    mod._run_scoped_pending(config, s)
+
+    assert attempts == [131, 131], "failed cancellation must remain retryable"
+
+
 def test_recent_owned_order_is_not_cancelled(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     m.orders_get = lambda symbol=None: [order(ticket=124, age_minutes=5)]
