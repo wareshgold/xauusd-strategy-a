@@ -85,6 +85,11 @@ def test_matrix_cap_rejects_unbounded_search():
         too_small.candidates()
 
 
+def test_plan_rejects_non_hex_dataset_sha256():
+    with pytest.raises(CandidateLabError, match="lowercase hexadecimal"):
+        make_plan(data_sha="g" * 64).candidates()
+
+
 def test_assessment_ranks_by_declared_objective_but_only_shortlists():
     candidates = make_plan().candidates()
     observations = [
