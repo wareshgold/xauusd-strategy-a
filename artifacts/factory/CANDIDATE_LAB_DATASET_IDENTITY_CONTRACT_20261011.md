@@ -15,6 +15,7 @@ This change hardens the existing development-only Candidate Lab execution bounda
 - The runner re-hashes the artifact after each adapter call and at completion; mutation or read failure aborts the matrix.
 - The adapter must execute only against the supplied byte snapshot and return an observation bound to the same candidate, plan, dataset SHA, execution fingerprint, geometry fingerprint, and source-resolution fingerprint.
 - The runner explicitly rejects adapter results that alter either the declared geometry fingerprint or source-resolution fingerprint.
+- Each candidate result fingerprint is deterministically recomputed from the candidate fingerprint, trade counts, PnL, profit factor, drawdown, and costs-included declaration; a non-empty but mismatched fingerprint is rejected.
 - This is a contract boundary, not cryptographic proof that a custom adapter's internal logic actually consumed the supplied bytes. Adapter-specific ingestion must be reviewed and tested before any real historical run.
 
 ## Research and data boundaries
