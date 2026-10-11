@@ -537,7 +537,8 @@ def html_page() -> str:
         DEMO_MODE
         and bool(workers)
         and all(
-            str(w.get("job_type") or "") == "TELEMETRY_DEMO_ONLY"
+            str(w.get("job_type") or "")
+            in {"TELEMETRY_DEMO_ONLY", "SYNTHETIC_FACTORY_E2E_V1"}
             and str(w.get("state") or "").upper() == "COMPLETED"
             for w in workers
         )
