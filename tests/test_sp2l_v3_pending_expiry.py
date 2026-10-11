@@ -219,4 +219,3 @@ def test_lifecycle_does_not_adopt_active_stop_orders(monkeypatch, tmp_path):
     mod._run_scoped_pending_lifecycle({"symbol": SYMBOL, "magic": MAGIC}, s)
     assert 133 not in s["orders"]
     assert not [e for e in events if e["event"] == "PENDING_ORDER_LIFECYCLE"]
-
