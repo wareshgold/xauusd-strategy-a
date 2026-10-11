@@ -298,3 +298,52 @@ def test_missing_pinned_offset_fails_closed(monkeypatch, tmp_path):
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
     assert cancelled == []
+
+
+
+def test_advancing_but_stale_tick_fails_closed(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    # The timestamp advances between observations, but remains ten minutes
+    # behind the operator-pinned server-time expectation.
+    stale_time = int(time.time() + 3 * 3600 - 600)
+    tick_times = iter([stale_time, stale_time + 1])
+    m.symbol_info_tick = lambda symbol: SimpleNamespace(time=next(tick_times))
+    monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", stale_time - 1)
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    m.orders_get = lambda symbol=None: [order(ticket=145, age_minutes=120)]
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    config = {"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}
+    mod._run_scoped_pending(config, state())
+    assert cancelled == []
+
+
+def test_future_server_tick_timestamp_fails_closed(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    future_time = int(time.time() + 3 * 3600 + 600)
+    m.symbol_info_tick = lambda symbol: SimpleNamespace(time=future_time)
+    monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", future_time - 1)
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    m.orders_get = lambda symbol=None: [order(ticket=146, age_minutes=120)]
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending(
+        {"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state()
+    )
+    assert cancelled == []
+
+
+def test_invalid_pinned_offset_fails_closed(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    monkeypatch.setenv("SP2L_PENDING_SERVER_OFFSET_HOURS", "3.5")
+    broker_time = int(time.time() + 3 * 3600)
+    m.symbol_info_tick = lambda symbol: SimpleNamespace(time=broker_time)
+    monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", broker_time - 1)
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    m.orders_get = lambda symbol=None: [order(ticket=147, age_minutes=120)]
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending(
+        {"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state()
+    )
+    assert cancelled == []
