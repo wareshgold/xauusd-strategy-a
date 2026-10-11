@@ -132,9 +132,29 @@ def _pending_server_offset_strict(symbol: str):
         raise RuntimeError("pending expiry clock not yet proven fresh since process start")
     if tick_time <= previous:
         raise RuntimeError("pending expiry clock tick has not advanced since previous observation")
-    # Only ask the shared offset helper after a new tick is observed. That
-    # forces it to derive/update its cache from advancing market evidence.
-    return runner.mt5_server_offset_strict()
+    # A tick can advance while remaining exactly one hour stale, which is
+    # indistinguishable from a legitimate broker DST offset using tick.time
+    # alone. Require an operator-pinned offset and compare the observed value
+    # against it. Missing/mismatched configuration must never cancel orders.
+    configured = os.getenv("SP2L_PENDING_SERVER_OFFSET_HOURS", "").strip()
+    if not configured:
+        raise RuntimeError("SP2L_PENDING_SERVER_OFFSET_HOURS is required for pending expiry")
+    try:
+        configured_hours = float(configured)
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError("invalid SP2L_PENDING_SERVER_OFFSET_HOURS") from exc
+    if not configured_hours.is_integer() or not -12 <= configured_hours <= 14:
+        raise RuntimeError("SP2L_PENDING_SERVER_OFFSET_HOURS must be an integer from -12 to +14")
+    # Only ask the shared offset helper after a new tick is observed. Compare
+    # its result with the independently pinned expectation to catch stale ticks
+    # and unreviewed server-clock/DST changes.
+    observed = runner.mt5_server_offset_strict()
+    expected = __import__("datetime").timedelta(hours=int(configured_hours))
+    if observed != expected:
+        raise RuntimeError(
+            f"broker offset mismatch: configured={int(configured_hours)}h observed={observed}"
+        )
+    return observed
 
 
 def _run_scoped_pending(cfg_runtime, state):
