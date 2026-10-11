@@ -1,0 +1,4 @@
+# Raw acquisition artifacts are hashed byte-for-byte by Factory.
+# Disable Git text/EOL conversion so Windows checkouts retain the committed bytes.
+data/mt5-acquisition/*.csv -text
+data/mt5-acquisition/*.manifest.json -text
