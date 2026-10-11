@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -69,7 +70,12 @@ def test_lifecycle_matrix_is_deterministic_and_never_repairs(
     worker_state: str,
 ):
     path = tmp_path / "factory-job-events.jsonl"
-    ledger = FactoryJobEventLedger(path)
+
+    # Build synthetic/imported evidence in memory first. The conflicting
+    # terminal history is intentionally impossible to append through the
+    # production persisted-ledger guard, but recovery must still classify
+    # such pre-existing evidence deterministically without repairing it.
+    ledger = FactoryJobEventLedger(path=None)
     for event_type in history:
         ledger.append(
             event_type=event_type,
@@ -80,6 +86,13 @@ def test_lifecycle_matrix_is_deterministic_and_never_repairs(
             phase="DEV",
             detail="synthetic lifecycle matrix",
         )
+    path.write_text(
+        "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
+            for event in ledger.entries()
+        ),
+        encoding="utf-8",
+    )
 
     before_bytes = path.read_bytes()
     before_digest = hashlib.sha256(before_bytes).hexdigest()
