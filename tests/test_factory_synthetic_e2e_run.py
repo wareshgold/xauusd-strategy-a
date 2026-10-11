@@ -75,10 +75,11 @@ def test_demo_dashboard_audits_demo_journal_not_live_journal(tmp_path, monkeypat
     [
         (synthetic_run.LIVE_STATUS, synthetic_run.DEFAULT_JOURNAL),
         (synthetic_run.DEFAULT_STATUS, synthetic_run.LIVE_JOURNAL),
+        (synthetic_run.PRESERVED_DEMO_STATUS, synthetic_run.DEFAULT_JOURNAL),
     ],
 )
 def test_synthetic_e2e_refuses_live_factory_paths(status_path, journal_path):
-    with pytest.raises(ValueError, match="refuses to write to live Factory"):
+    with pytest.raises(ValueError, match="refuses to overwrite live or pre-existing Factory runtime paths"):
         synthetic_run.run_synthetic_e2e(
             status_path=status_path,
             journal_path=journal_path,
