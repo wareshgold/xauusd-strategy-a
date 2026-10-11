@@ -810,8 +810,8 @@ def _cancel_pending_order(order, state: dict) -> None:
     allow_flag = os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true"
     if not (live_flag and allow_flag):
         result = {
-            "ok": True, "dry_run": True, "retcode": None,
-            "reason": "LIVE_TRADING_ENABLE=false",
+            "ok": False, "dry_run": True, "retcode": None,
+            "reason": "DRY_RUN_NOT_SENT",
         }
     else:
         account = mt5.account_info()
@@ -829,7 +829,11 @@ def _cancel_pending_order(order, state: dict) -> None:
                     "comment": send.comment,
                 }
 
-    outcome = "CANCELLED" if result.get("ok") else f"CANCEL_FAILED({result.get('reason') or result.get('retcode')})"
+    outcome = (
+        "CANCEL_SKIPPED_DRY_RUN" if result.get("dry_run")
+        else "CANCELLED" if result.get("ok")
+        else f"CANCEL_FAILED({result.get('reason') or result.get('retcode')})"
+    )
     log_event({
         "event": "PENDING_ORDER_EXPIRED",
         "symbol": symbol, "order": ticket,
@@ -857,8 +861,11 @@ def _cancel_pending_order(order, state: dict) -> None:
         f"🆔 <code>{ticket}</code>\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
+    notification_marker = f"{ticket}:EXPIRY_NOTIFIED:{outcome}"
+    if notification_marker in state.setdefault("order_states", set()):
+        return
     tg = gateway.send_telegram_message(text, parse_mode="HTML")
-    state["order_states"].add(f"{ticket}:EXPIRY_NOTIFIED:{outcome}")
+    state["order_states"].add(notification_marker)
     log_event({
         "event": "TELEGRAM_PENDING_EXPIRED", "symbol": symbol,
         "order": ticket, "outcome": outcome,
@@ -889,9 +896,10 @@ def enforce_pending_order_expiry(cfg: dict, state: dict) -> None:
         age_minutes = (time.time() - setup_ts) / 60.0
         if age_minutes < PENDING_TTL_MINUTES:
             continue
-        marker = f"{ticket}:EXPIRY_NOTIFIED:"
-        if any(s.startswith(marker) for s in state["order_states"]):
-            continue  # expiry already handled for this ticket
+        # Only confirmed broker-side cancellation completes expiry. Failed or
+        # dry-run attempts must remain eligible for retry on the next poll.
+        if f"{ticket}:EXPIRY_NOTIFIED:CANCELLED" in state["order_states"]:
+            continue
         _cancel_pending_order(order, state)
 
 
