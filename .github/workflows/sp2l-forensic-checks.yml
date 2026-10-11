@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "research/sp2l-f13-forensic-repro-*"
+      - "fix/rr2-trail4-pending-lifecycle-safe-*"
   pull_request:
 
 jobs:
