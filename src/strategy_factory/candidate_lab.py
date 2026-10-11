@@ -9,6 +9,7 @@ production/forward execution. Optimization results are hypotheses only.
 
 from dataclasses import dataclass
 from itertools import product
+from pathlib import Path
 import hashlib
 import json
 import math
@@ -68,8 +69,13 @@ class CandidatePlan:
             )
         if not all((self.plan_id, self.strategy_family, self.base_revision)):
             raise CandidateLabError("plan and strategy identity are required")
-        if len(self.dataset_content_sha256) != 64:
-            raise CandidateLabError("dataset content SHA-256 is required")
+        if (
+            len(self.dataset_content_sha256) != 64
+            or any(char not in "0123456789abcdef" for char in self.dataset_content_sha256)
+        ):
+            raise CandidateLabError(
+                "dataset content SHA-256 must be 64 lowercase hexadecimal characters"
+            )
         if not self.execution_fingerprint:
             raise CandidateLabError("execution fingerprint is required")
         if not self.geometry_fingerprint or not self.source_resolution_fingerprint:
@@ -270,17 +276,36 @@ _ALLOWED_OBJECTIVES = {
 def run_candidate_matrix(
     plan: CandidatePlan,
     execute_candidate: Callable[[ResearchCandidate], CandidateObservation],
+    *,
+    dataset_artifact_path: str | Path,
 ) -> tuple[CandidateObservation, ...]:
-    """Execute each predeclared candidate in deterministic order.
+    """Execute a finite candidate matrix only against verified immutable bytes.
 
+    The artifact path is mandatory. Its raw bytes must match the plan's declared
+    SHA-256 before execution and remain identical after each candidate callback.
     The injected adapter owns strategy execution and market semantics. This
-    runner only enforces plan identity and complete, one-result-per-candidate
-    accounting; it does not fabricate fills or metrics.
+    runner enforces identity and accounting; it does not fabricate fills/metrics.
     """
     candidates = plan.candidates()
+    artifact_path = Path(dataset_artifact_path)
+    if not artifact_path.is_file():
+        raise CandidateLabError(f"dataset artifact does not exist: {artifact_path}")
+
+    def observed_sha256() -> str:
+        try:
+            return hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+        except OSError as exc:
+            raise CandidateLabError("dataset artifact could not be read during execution") from exc
+
+    expected_sha256 = plan.dataset_content_sha256
+    if observed_sha256() != expected_sha256:
+        raise CandidateLabError("dataset artifact bytes do not match the candidate plan SHA-256")
+
     observations = []
     for candidate in candidates:
         observation = execute_candidate(candidate)
+        if observed_sha256() != expected_sha256:
+            raise CandidateLabError("dataset artifact changed during candidate execution")
         if not isinstance(observation, CandidateObservation):
             raise CandidateLabError("candidate adapter must return CandidateObservation")
         observation.validate()
@@ -288,13 +313,15 @@ def run_candidate_matrix(
             raise CandidateLabError("candidate adapter returned a result for a different candidate")
         if observation.candidate.plan_fingerprint != plan.fingerprint:
             raise CandidateLabError("candidate adapter returned a result from a different plan")
-        if observation.candidate.dataset_fingerprint != plan.dataset_content_sha256:
-            raise CandidateLabError("candidate adapter changed the declared dataset identity")
+        if observation.candidate.dataset_fingerprint != expected_sha256:
+            raise CandidateLabError("candidate adapter changed the verified dataset identity")
         if observation.candidate.execution_fingerprint != plan.execution_fingerprint:
             raise CandidateLabError("candidate adapter changed the declared execution profile")
         observations.append(observation)
     if len(observations) != len(candidates):
         raise CandidateLabError("candidate matrix did not produce one result per candidate")
+    if observed_sha256() != expected_sha256:
+        raise CandidateLabError("dataset artifact changed before candidate matrix completion")
     return tuple(observations)
 
 
