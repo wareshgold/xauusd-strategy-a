@@ -45,10 +45,11 @@ from strategy_factory.telemetry import publish_workers  # noqa: E402
 from strategy_factory.usage import DatasetUsageLedger  # noqa: E402
 from strategy_factory.worker import FactoryWorker, FactoryWorkerFleet  # noqa: E402
 
-DEFAULT_STATUS = ROOT / "runtime" / "factory_demo_status.json"
-DEFAULT_JOURNAL = ROOT / "runtime" / "factory_demo_job_events.jsonl"
+DEFAULT_STATUS = ROOT / "runtime" / "factory_synthetic_e2e_status.json"
+DEFAULT_JOURNAL = ROOT / "runtime" / "factory_synthetic_e2e_job_events.jsonl"
 LIVE_STATUS = ROOT / "runtime" / "factory_worker_status.json"
 LIVE_JOURNAL = ROOT / "runtime" / "factory_job_events.jsonl"
+PRESERVED_DEMO_STATUS = ROOT / "runtime" / "factory_demo_status.json"
 
 
 class DeterministicSyntheticAdapter:
@@ -148,8 +149,16 @@ def run_synthetic_e2e(
     """Execute a single synthetic job and persist its demo-only observability."""
     status_path = Path(status_path).resolve()
     journal_path = Path(journal_path).resolve()
-    if status_path == LIVE_STATUS.resolve() or journal_path == LIVE_JOURNAL.resolve():
-        raise ValueError("synthetic E2E refuses to write to live Factory telemetry/journal")
+    protected_paths = {
+        LIVE_STATUS.resolve(),
+        LIVE_JOURNAL.resolve(),
+        PRESERVED_DEMO_STATUS.resolve(),
+    }
+    if status_path in protected_paths or journal_path in protected_paths:
+        raise ValueError(
+            "synthetic E2E refuses to overwrite live or pre-existing Factory runtime paths; "
+            "use the dedicated synthetic_e2e paths or another isolated location"
+        )
     if status_path == journal_path:
         raise ValueError("demo status and journal must use separate files")
 
