@@ -372,3 +372,41 @@ def test_invalid_pinned_offset_fails_closed(monkeypatch, tmp_path):
         {"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state()
     )
     assert cancelled == []
+
+
+
+def test_closed_market_session_clock_defers_candidate_and_retries(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    candidate = {
+        "trigger_time": int(mod._RUN_STARTED_UTC.timestamp() + 4 * 3600),
+        "direction": "BUY",
+    }
+    monkeypatch.setattr(mod.runner, "find_latest_candidate", lambda data, symbol: candidate)
+    clock_results = iter([
+        RuntimeError("MT5 server offset unavailable: stale weekend tick"),
+        timedelta(hours=3),
+    ])
+
+    def clock():
+        result = next(clock_results)
+        if isinstance(result, Exception):
+            raise result
+        return result
+
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", clock)
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    observed = []
+
+    def fake_original_main():
+        observed.append(mod.runner.find_latest_candidate([], SYMBOL))
+        observed.append(mod.runner.find_latest_candidate([], SYMBOL))
+
+    monkeypatch.setattr(mod, "_original_main", fake_original_main)
+    mod._v3_main()
+
+    assert observed[0] is None, "stale clock must defer candidate execution"
+    assert observed[1] == candidate, "runner must retry after clock becomes available"
+    deferred = [event for event in events if event["event"] == "SESSION_CUTOFF_DEFERRED"]
+    assert len(deferred) == 1
+    assert deferred[0]["canonical"] is False
