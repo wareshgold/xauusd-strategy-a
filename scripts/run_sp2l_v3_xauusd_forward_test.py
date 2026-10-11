@@ -366,8 +366,31 @@ def _v3_main():
             cutoff_cache["epoch"] = int(_RUN_STARTED_UTC.timestamp() + server_offset.total_seconds())
         return int(cutoff_cache["epoch"])
 
+    # A closed market can leave MT5 without a fresh tick, so the shared
+    # server-clock helper may temporarily fail at startup. Do not crash the
+    # forward runner or guess an offset: defer candidate detection until the
+    # clock helper succeeds on a later poll. Other read-only/lifecycle polling
+    # in the base loop continues; no new candidate can reach execution here.
+    session_clock_error_log_at = 0.0
+
     def _forward_session_find(data, symbol):
-        session_cutoff_epoch = _session_cutoff_epoch()
+        nonlocal session_clock_error_log_at
+        try:
+            session_cutoff_epoch = _session_cutoff_epoch()
+        except RuntimeError as exc:
+            now_mono = time.monotonic()
+            if now_mono - session_clock_error_log_at >= 300.0:
+                runner.log_event({
+                    "event": "SESSION_CUTOFF_DEFERRED",
+                    "symbol": symbol,
+                    "reason": "SERVER_OFFSET_UNAVAILABLE",
+                    "detail": str(exc),
+                    "retry_interval_seconds": 300,
+                    "canonical": False,
+                })
+                session_clock_error_log_at = now_mono
+            return None
+
         candidate = original_find(data, symbol)
         if candidate is None:
             return None
