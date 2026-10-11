@@ -25,7 +25,11 @@ This finding is emitted even when the current worker snapshot contains no row fo
 
 ## Follow-up prevention change
 
-The append API now validates new lifecycle transitions against the history loaded by the ledger. It accepts only `QUEUED`, `QUEUED → DISPATCHED`, and `QUEUED → DISPATCHED → COMPLETED|FAILED`; duplicate transitions and any lifecycle append after a terminal event are rejected before persistence. Non-lifecycle handoff markers remain separate. This prevents sequential process restarts from appending another terminal event to a job whose terminal state is already present. It does not retroactively alter or repair the observed runtime journal, and it is not a cross-process file-lock guarantee; concurrent writers would need separate coordination if the Factory is ever run concurrently against one journal.
+The append API validates lifecycle transitions for **persisted JSONL journals** against the history loaded by the ledger. It accepts only `QUEUED`, `QUEUED → DISPATCHED`, and `QUEUED → DISPATCHED → COMPLETED|FAILED`; duplicate transitions and any lifecycle append after a terminal event are rejected before persistence. Non-lifecycle handoff markers remain separate. This prevents sequential process restarts from appending another terminal event to a job whose terminal state is already present.
+
+`FactoryJobEventLedger(path=None)` is explicitly non-durable synthetic/imported-evidence mode used by unit tests and handoff/recovery fixtures. Transition rejection tests now use isolated temporary JSONL files, and the validation-factory fixture no longer opens the shared runtime journal by default. This is important because the runtime journal is evidence under review and must not be mutated by tests.
+
+The guard does not retroactively alter or repair the observed runtime journal, and it is not a cross-process file-lock guarantee; concurrent writers would need separate coordination if the Factory is ever run concurrently against one journal.
 
 ## Local validation requested
 
