@@ -151,7 +151,8 @@ def test_matrix_runner_executes_every_candidate_in_stable_order(tmp_path):
     plan = make_plan(data_sha=data_sha)
     seen = []
 
-    def execute(candidate):
+    def execute(candidate, dataset_bytes):
+        assert dataset_bytes == artifact_path.read_bytes()
         seen.append(candidate.candidate_id)
         return make_observation(candidate, pnl=1.0)
 
@@ -168,7 +169,7 @@ def test_matrix_runner_rejects_dataset_artifact_sha_mismatch(tmp_path):
 
     with pytest.raises(CandidateLabError, match="bytes do not match"):
         run_candidate_matrix(
-            plan, lambda candidate: make_observation(candidate, pnl=1.0),
+            plan, lambda candidate, dataset_bytes: make_observation(candidate, pnl=1.0),
             dataset_artifact_path=artifact_path,
         )
 
@@ -178,7 +179,7 @@ def test_matrix_runner_rejects_dataset_mutation_during_execution(tmp_path):
     plan = make_plan(data_sha=data_sha)
     called = False
 
-    def execute(candidate):
+    def execute(candidate, dataset_bytes):
         nonlocal called
         if not called:
             artifact_path.write_bytes(b"mutated dataset bytes\n")
@@ -196,7 +197,7 @@ def test_matrix_runner_rejects_adapter_result_for_another_candidate(tmp_path):
     plan = make_plan(data_sha=data_sha)
     candidates = plan.candidates()
 
-    def execute(candidate):
+    def execute(candidate, dataset_bytes):
         return make_observation(candidates[-1], pnl=1.0)
 
     with pytest.raises(CandidateLabError, match="different candidate"):
