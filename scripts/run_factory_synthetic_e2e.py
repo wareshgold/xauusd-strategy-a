@@ -161,6 +161,16 @@ def run_synthetic_e2e(
         )
     if status_path == journal_path:
         raise ValueError("demo status and journal must use separate files")
+    # The event ledger is append-only and the status publisher writes a snapshot.
+    # Reusing either existing path could mix separate runs or overwrite user-owned
+    # telemetry, so every run must start with two new, isolated output paths.
+    existing_paths = [path for path in (status_path, journal_path) if path.exists()]
+    if existing_paths:
+        rendered = ", ".join(str(path) for path in existing_paths)
+        raise FileExistsError(
+            "synthetic E2E refuses to reuse existing output files; "
+            f"choose new isolated paths: {rendered}"
+        )
 
     timestamp = now or datetime.now(timezone.utc)
     if timestamp.tzinfo is None or timestamp.utcoffset() != timezone.utc.utcoffset(timestamp):
