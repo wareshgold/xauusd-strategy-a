@@ -51,6 +51,39 @@ def test_completed_demo_snapshot_is_not_labeled_as_live_outage(monkeypatch):
     assert "ROBUSTNESS LAB" in page
 
 
+def test_completed_synthetic_e2e_snapshot_is_not_labeled_as_live_outage(monkeypatch):
+    workers = [
+        {
+            "worker_id": "SYNTH-W01",
+            "job_id": "SYNTH-E2E-TEST-01",
+            "job_type": "SYNTHETIC_FACTORY_E2E_V1",
+            "station": "discovery",
+            "phase": "SYNTHETIC_E2E",
+            "state": "COMPLETED",
+            "progress": 100,
+            "heartbeat_utc": "2026-10-11T05:06:49+00:00",
+            "telemetry_health": "OFFLINE",
+            "heartbeat_age_s": 3600,
+            "detail": "Research run accepted",
+            "output_artifact": "SYNTH-EVIDENCE-SYNTH-E2E-TEST-01",
+        }
+    ]
+    monkeypatch.setattr(dashboard, "DEMO_MODE", True)
+    monkeypatch.setattr(dashboard, "git_state", lambda: {
+        "branch": "research/factory-candidate-lab-20261010",
+        "head": "test",
+        "origin": "test",
+        "root": "test-root",
+    })
+    monkeypatch.setattr(dashboard, "worker_state", lambda: (workers, "OFFLINE"))
+
+    page = dashboard.html_page()
+
+    assert "DEMO SNAPSHOT · RUN COMPLETE" in page
+    assert "FACTORY TELEMETRY NEEDS ATTENTION" not in page
+    assert "DISCOVERY LAB" in page
+
+
 def _dashboard_test_base(monkeypatch):
     monkeypatch.setattr(dashboard, "DEMO_MODE", False)
     monkeypatch.setattr(dashboard, "git_state", lambda: {
