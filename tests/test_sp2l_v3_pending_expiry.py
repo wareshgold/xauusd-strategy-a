@@ -56,6 +56,7 @@ def load_v3(monkeypatch, tmp_path):
     mod = importlib.import_module(V3)
     monkeypatch.setattr(mod.runner, "EVENTS", tmp_path / "events.jsonl")
     monkeypatch.setattr(mod.runner, "STATE_FILE", tmp_path / "state.json")
+    monkeypatch.setenv("SP2L_PENDING_SERVER_OFFSET_HOURS", "3")
     # Normal-path tests start with a previously observed tick, then provide a
     # newer broker timestamp. Dedicated tests below cover cold/stale startup.
     broker_tick_time = int(time.time() + 3 * 3600)
@@ -268,3 +269,31 @@ def test_advancing_tick_allows_clock_revalidation_after_startup(monkeypatch, tmp
     assert cancelled == []
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, s)
     assert cancelled == [142]
+
+
+def test_offset_mismatch_fails_closed_after_advancing_tick(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    broker_time = int(time.time() + 3 * 3600)
+    m.symbol_info_tick = lambda symbol: SimpleNamespace(time=broker_time)
+    monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", broker_time - 1)
+    # Simulate a one-hour stale tick or unreviewed broker-clock shift.
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=2))
+    m.orders_get = lambda symbol=None: [order(ticket=143, age_minutes=120)]
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_missing_pinned_offset_fails_closed(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    monkeypatch.delenv("SP2L_PENDING_SERVER_OFFSET_HOURS", raising=False)
+    broker_time = int(time.time() + 3 * 3600)
+    m.symbol_info_tick = lambda symbol: SimpleNamespace(time=broker_time)
+    monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", broker_time - 1)
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    m.orders_get = lambda symbol=None: [order(ticket=144, age_minutes=120)]
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
