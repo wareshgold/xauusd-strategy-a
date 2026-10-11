@@ -22,6 +22,7 @@ from strategy_factory.worker_journal_audit import inspect_worker_journal_file_co
 ROOT = Path(__file__).resolve().parents[1]
 LIVE_STATUS_FILE = ROOT / "runtime" / "factory_worker_status.json"
 DEMO_STATUS_FILE = ROOT / "runtime" / "factory_demo_status.json"
+DEMO_JOB_EVENTS_FILE = ROOT / "runtime" / "factory_demo_job_events.jsonl"
 DEMO_MODE = os.getenv("SP2L_FACTORY_DEMO", "0") == "1"
 STATUS_FILE = DEMO_STATUS_FILE if DEMO_MODE else LIVE_STATUS_FILE
 PORT = int(os.getenv("SP2L_FACTORY_DASHBOARD_PORT", "8788"))
@@ -473,7 +474,12 @@ def telemetry_panels(workers: list[dict]) -> str:
 
 def journal_audit_panel(workers: list[dict]) -> str:
     """Render read-only journal integrity and worker consistency findings."""
-    report = inspect_worker_journal_file_consistency(workers)
+    # Demo runs must audit their own isolated journal, never the live Factory journal.
+    report = (
+        inspect_worker_journal_file_consistency(workers, path=DEMO_JOB_EVENTS_FILE)
+        if DEMO_MODE
+        else inspect_worker_journal_file_consistency(workers)
+    )
     integrity = report.get("journal_integrity") or {}
     status = str(report.get("status") or "REVIEW_REQUIRED").upper()
     integrity_status = str(integrity.get("status") or "UNKNOWN").upper()
