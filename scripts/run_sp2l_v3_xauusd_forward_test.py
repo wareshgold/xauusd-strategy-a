@@ -113,43 +113,85 @@ def _fresh_v3_state():
             "signal_orders": {}, "pending_signal_notifications": {}}
 
 def _run_scoped_pending(cfg_runtime, state):
-    """Expire this run's pending limits using local monotonic age.
+    """Expire only this runner's XAUUSD limit orders using broker-clock age.
 
-    MT5 order.time_setup is a broker/server timestamp and can be offset from
-    the Python host clock. Comparing it with time.time() can make a fresh
-    order appear hours old and cause immediate cancellation. This V3 runner
-    records time.monotonic() when the order is created and uses that same
-    clock for TTL. Orders without a creation marker are left untouched.
+    MT5 order.time_setup is expressed on the broker/server clock. Compare it
+    with the current time on that same clock, using the strict tick-derived
+    server offset. If the offset cannot be established, fail closed and do
+    not cancel anything. Matching symbol + this runner's magic scopes ownership
+    independently of the intentionally fresh signal state after startup.
     """
     ttl_minutes = float(cfg_runtime.get("pending_ttl_minutes", os.getenv("SP2L_PENDING_TTL_MINUTES", "30")))
     if ttl_minutes <= 0:
         return
-    symbol, magic = cfg_runtime["symbol"], cfg_runtime["magic"]
-    now = time.monotonic()
-    created = state.setdefault("order_created_monotonic", {})
-    for order in (mt5.orders_get(symbol=symbol) or []):
+    symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
+    active_orders = mt5.orders_get(symbol=symbol)
+    if active_orders is None:
+        return
+    eligible = []
+    for order in active_orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
-        if ticket not in state["orders"] or int(getattr(order, "magic", 0) or 0) != magic:
+        if ticket <= 0 or str(getattr(order, "symbol", "") or "") != symbol:
             continue
-        order_type = int(getattr(order, "type", -1))
-        if order_type not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
+        if int(getattr(order, "magic", 0) or 0) != magic:
             continue
-        created_at = created.get(str(ticket))
-        if created_at is None:
-            continue
-        age_minutes = max(0.0, (now - float(created_at)) / 60.0)
-        if age_minutes < ttl_minutes:
+        if int(getattr(order, "type", -1)) not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
             continue
         marker = f"{ticket}:EXPIRY_NOTIFIED:"
-        if any(s.startswith(marker) for s in state["order_states"]):
+        if any(str(s).startswith(marker) for s in state.get("order_states", set())):
+            continue
+        eligible.append(order)
+    if not eligible:
+        return
+    try:
+        server_offset = runner.mt5_server_offset_strict()
+        now_server_epoch = time.time() + server_offset.total_seconds()
+    except Exception as exc:
+        # One diagnostic per ticket per process; a later poll may retry when
+        # fresh broker ticks become available. Unknown age must never cancel.
+        states = state.setdefault("order_states", set())
+        for order in eligible:
+            ticket = int(getattr(order, "ticket", 0) or 0)
+            diagnostic = f"{ticket}:EXPIRY_CLOCK_UNAVAILABLE"
+            if diagnostic not in states:
+                states.add(diagnostic)
+                runner.log_event({
+                    "event": "PENDING_ORDER_TTL_SKIPPED",
+                    "version": cfg.VERSION, "symbol": symbol, "order": ticket,
+                    "reason": "SERVER_OFFSET_UNAVAILABLE",
+                    "detail": f"{type(exc).__name__}: {exc}",
+                    "canonical": False,
+                })
+        return
+    for order in eligible:
+        ticket = int(getattr(order, "ticket", 0) or 0)
+        setup_epoch = int(getattr(order, "time_setup", 0) or 0)
+        if setup_epoch <= 0:
+            continue
+        age_minutes = (now_server_epoch - setup_epoch) / 60.0
+        # A negative age indicates an invalid/unavailable clock basis; fail
+        # closed rather than treating a future timestamp as an expired order.
+        if age_minutes < ttl_minutes:
             continue
         runner._cancel_pending_order(order, state)
 
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
-    symbol = cfg_runtime["symbol"]
+    symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
     tracked = set(state["orders"])
+    active_orders = list(mt5.orders_get(symbol=symbol) or [])
+    # Reconcile only currently active limit orders carrying this runner's
+    # symbol + magic. This restores lifecycle ownership after a restart without
+    # replaying old signals, candidates, positions, or historical deals.
+    for active in active_orders:
+        ticket = int(getattr(active, "ticket", 0) or 0)
+        if (ticket > 0
+                and str(getattr(active, "symbol", "") or "") == symbol
+                and int(getattr(active, "magic", 0) or 0) == magic
+                and int(getattr(active, "type", -1)) in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT)):
+            state["orders"].add(ticket)
+            tracked.add(ticket)
     orders = list(mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
-    orders.extend(list(mt5.orders_get(symbol=symbol) or []))
+    orders.extend(active_orders)
     for order in orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
         if ticket not in tracked:
