@@ -211,7 +211,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         fromlist=["ResearchRecordLedger"],
     ).ResearchRecordLedger().record(source_record)
 
-    events = FactoryJobEventLedger()
+    events = FactoryJobEventLedger(path=None)
     # The event is deliberately bound to the actual source run fingerprint.
     source_event = events.append(
         event_type="COMPLETED",
