@@ -146,11 +146,22 @@ def _pending_server_offset_strict(symbol: str):
         raise RuntimeError("invalid SP2L_PENDING_SERVER_OFFSET_HOURS") from exc
     if not configured_hours.is_integer() or not -12 <= configured_hours <= 14:
         raise RuntimeError("SP2L_PENDING_SERVER_OFFSET_HOURS must be an integer from -12 to +14")
-    # Only ask the shared offset helper after a new tick is observed. Compare
-    # its result with the independently pinned expectation to catch stale ticks
-    # and unreviewed server-clock/DST changes.
-    observed = runner.mt5_server_offset_strict()
     expected = timedelta(hours=int(configured_hours))
+    # A monotonically advancing tick is not necessarily a fresh tick: a
+    # delayed feed can advance while remaining minutes/hours behind. Compare
+    # its broker timestamp to host UTC shifted by the operator-pinned offset.
+    # If the host clock or feed is outside this bounded tolerance, expiry is
+    # disabled; this is a safety gate, not a strategy or execution rule.
+    expected_tick_epoch = time.time() + expected.total_seconds()
+    tick_age_seconds = expected_tick_epoch - tick_time
+    if abs(tick_age_seconds) > 120:
+        raise RuntimeError(
+            "pending expiry tick timestamp outside freshness tolerance: "
+            f"age_seconds={tick_age_seconds:.1f} tolerance=120"
+        )
+    # Compare the shared helper's offset with the independently pinned
+    # expectation to catch unreviewed server-clock/DST changes.
+    observed = runner.mt5_server_offset_strict()
     if observed != expected:
         raise RuntimeError(
             f"broker offset mismatch: configured={int(configured_hours)}h observed={observed}"
