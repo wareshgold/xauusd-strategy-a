@@ -275,7 +275,7 @@ _ALLOWED_OBJECTIVES = {
 
 def run_candidate_matrix(
     plan: CandidatePlan,
-    execute_candidate: Callable[[ResearchCandidate], CandidateObservation],
+    execute_candidate: Callable[[ResearchCandidate, bytes], CandidateObservation],
     *,
     dataset_artifact_path: str | Path,
 ) -> tuple[CandidateObservation, ...]:
@@ -283,8 +283,10 @@ def run_candidate_matrix(
 
     The artifact path is mandatory. Its raw bytes must match the plan's declared
     SHA-256 before execution and remain identical after each candidate callback.
-    The injected adapter owns strategy execution and market semantics. This
-    runner enforces identity and accounting; it does not fabricate fills/metrics.
+    Each adapter receives the same verified byte snapshot, alongside the
+    candidate, so it need not reopen a mutable path. The injected adapter owns
+    strategy execution and market semantics. This runner enforces identity and
+    accounting; it does not fabricate fills/metrics.
     """
     candidates = plan.candidates()
     artifact_path = Path(dataset_artifact_path)
@@ -298,12 +300,16 @@ def run_candidate_matrix(
             raise CandidateLabError("dataset artifact could not be read during execution") from exc
 
     expected_sha256 = plan.dataset_content_sha256
-    if observed_sha256() != expected_sha256:
+    try:
+        dataset_bytes = artifact_path.read_bytes()
+    except OSError as exc:
+        raise CandidateLabError("dataset artifact could not be read before execution") from exc
+    if hashlib.sha256(dataset_bytes).hexdigest() != expected_sha256:
         raise CandidateLabError("dataset artifact bytes do not match the candidate plan SHA-256")
 
     observations = []
     for candidate in candidates:
-        observation = execute_candidate(candidate)
+        observation = execute_candidate(candidate, dataset_bytes)
         if observed_sha256() != expected_sha256:
             raise CandidateLabError("dataset artifact changed during candidate execution")
         if not isinstance(observation, CandidateObservation):
