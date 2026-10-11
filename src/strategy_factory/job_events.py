@@ -34,6 +34,50 @@ def _is_sha256(value: object) -> bool:
     )
 
 
+_LIFECYCLE_EVENT_TYPES = {"QUEUED", "DISPATCHED", "COMPLETED", "FAILED"}
+_VALID_LIFECYCLE_NEXT = {
+    (): {"QUEUED"},
+    ("QUEUED",): {"DISPATCHED"},
+    ("QUEUED", "DISPATCHED"): {"COMPLETED", "FAILED"},
+}
+
+
+def _validate_lifecycle_transition(
+    existing_events: list[FactoryJobEvent],
+    *,
+    event_type: str,
+    job_id: str,
+    job_fingerprint: str,
+) -> None:
+    """Reject invalid new lifecycle writes without rewriting historical records.
+
+    Non-lifecycle evidence such as HANDOFF_ACCEPTED is deliberately excluded.
+    A terminal job needs a distinct job_id for any explicitly reviewed replay.
+    """
+    if event_type not in _LIFECYCLE_EVENT_TYPES:
+        return
+
+    history = [
+        event for event in existing_events
+        if event.job_id == job_id and event.event_type in _LIFECYCLE_EVENT_TYPES
+    ]
+    if history:
+        historical_fingerprints = {event.job_fingerprint for event in history}
+        if historical_fingerprints != {job_fingerprint}:
+            raise ValueError(
+                f"factory job fingerprint changed within ledger: {job_id}"
+            )
+
+    lifecycle_history = tuple(event.event_type for event in history)
+    allowed_next = _VALID_LIFECYCLE_NEXT.get(lifecycle_history, set())
+    if event_type not in allowed_next:
+        raise ValueError(
+            "invalid factory job lifecycle transition for "
+            f"{job_id}: {list(lifecycle_history)} -> {event_type}; "
+            "existing journal preserved; manual reconciliation may be required"
+        )
+
+
 @dataclass(frozen=True)
 class FactoryJobEvent:
     sequence: int
@@ -268,6 +312,12 @@ class FactoryJobEventLedger:
         output_artifact: str | None = None,
         research_run_fingerprint: str | None = None,
     ) -> FactoryJobEvent:
+        _validate_lifecycle_transition(
+            self._events,
+            event_type=event_type,
+            job_id=job_id,
+            job_fingerprint=job_fingerprint,
+        )
         event = FactoryJobEvent(
             sequence=len(self._events) + 1,
             event_type=event_type,

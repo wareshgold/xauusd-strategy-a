@@ -1,13 +1,38 @@
+import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
-from strategy_factory.job_events import FactoryJobEventLedger, inspect_job_journal_file
+from strategy_factory.job_events import FactoryJobEvent, FactoryJobEventLedger, inspect_job_journal_file
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.orchestrator import FactoryOrchestrator
 from strategy_factory.test_contract import ExecutionSemantics
 from strategy_factory.worker import FactoryWorker, FactoryWorkerFleet
+
+
+def historical_ledger(job: "ResearchJobSpec", history: tuple[str, ...]) -> FactoryJobEventLedger:
+    """Build a structurally valid snapshot containing intentionally bad history."""
+    events = []
+    for sequence, event_type in enumerate(history, start=1):
+        payload = {
+            "sequence": sequence,
+            "event_type": event_type,
+            "job_id": job.job_id,
+            "job_fingerprint": job.fingerprint,
+            "worker_id": None if event_type == "QUEUED" else "W01",
+            "station": "discovery",
+            "phase": "DISCOVERY",
+            "detail": event_type,
+            "output_artifact": "EVIDENCE-1" if event_type == "COMPLETED" else None,
+            "occurred_utc": datetime(2026, 1, 1, 0, 0, sequence, tzinfo=timezone.utc).isoformat(),
+            "research_run_fingerprint": None,
+        }
+        canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+        payload["event_fingerprint"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        events.append(FactoryJobEvent(**payload))
+    return FactoryJobEventLedger.from_snapshot(tuple(events))
 
 
 def make_job(job_id: str = "JOB-EVENT-001") -> ResearchJobSpec:
@@ -514,7 +539,7 @@ def test_recovery_summary_requires_review_and_never_requests_auto_retry(tmp_path
     assert completed["lifecycle_history"] == ["QUEUED", "DISPATCHED", "COMPLETED"]
 
 
-def test_recovery_summary_rejects_job_fingerprint_drift():
+def test_ledger_rejects_job_fingerprint_drift_before_append():
     ledger = FactoryJobEventLedger(path=None)
     job = make_job("JOB-RECOVERY-FINGERPRINT")
     ledger.append(
@@ -522,29 +547,22 @@ def test_recovery_summary_rejects_job_fingerprint_drift():
         job_id=job.job_id,
         job_fingerprint=job.fingerprint,
     )
-    ledger.append(
-        event_type="DISPATCHED",
-        job_id=job.job_id,
-        job_fingerprint="b" * 64,
-        worker_id="W01",
-    )
 
     with pytest.raises(ValueError, match="fingerprint changed within ledger"):
-        ledger.recovery_summary()
+        ledger.append(
+            event_type="DISPATCHED",
+            job_id=job.job_id,
+            job_fingerprint="b" * 64,
+            worker_id="W01",
+        )
+
+    assert [event.event_type for event in ledger.entries()] == ["QUEUED"]
 
 
 
 def test_recovery_summary_fails_closed_on_conflicting_terminal_events():
-    ledger = FactoryJobEventLedger(path=None)
     job = make_job("JOB-RECOVERY-CONFLICTING-TERMINALS")
-
-    for event_type in ("QUEUED", "DISPATCHED", "COMPLETED", "FAILED"):
-        ledger.append(
-            event_type=event_type,
-            job_id=job.job_id,
-            job_fingerprint=job.fingerprint,
-            worker_id="W01" if event_type != "QUEUED" else None,
-        )
+    ledger = historical_ledger(job, ("QUEUED", "DISPATCHED", "COMPLETED", "FAILED"))
 
     summary = ledger.recovery_summary()
     assert len(summary) == 1
@@ -563,21 +581,77 @@ def test_recovery_summary_fails_closed_on_conflicting_terminal_events():
     ],
 )
 def test_recovery_summary_requires_manual_review_for_invalid_lifecycle_order(history):
-    ledger = FactoryJobEventLedger(path=None)
     job = make_job("JOB-RECOVERY-INVALID-ORDER")
-
-    for event_type in history:
-        ledger.append(
-            event_type=event_type,
-            job_id=job.job_id,
-            job_fingerprint=job.fingerprint,
-            worker_id="W01" if event_type == "DISPATCHED" else None,
-        )
+    ledger = historical_ledger(job, history)
 
     summary = ledger.recovery_summary()
     assert len(summary) == 1
     assert summary[0]["status"] == "LIFECYCLE_CONFLICT_REVIEW_REQUIRED"
     assert summary[0]["action"] == "MANUAL_RECONCILIATION_REQUIRED"
+
+
+
+
+def test_ledger_rejects_repeated_completion_before_persisting(tmp_path: Path):
+    path = tmp_path / "guarded-events.jsonl"
+    job = make_job("JOB-REPEATED-COMPLETION")
+    ledger = FactoryJobEventLedger(path)
+    ledger.append(event_type="QUEUED", job_id=job.job_id, job_fingerprint=job.fingerprint)
+    ledger.append(event_type="DISPATCHED", job_id=job.job_id, job_fingerprint=job.fingerprint, worker_id="W01")
+    ledger.append(event_type="COMPLETED", job_id=job.job_id, job_fingerprint=job.fingerprint, worker_id="W01")
+    before = path.read_bytes()
+
+    # A restarted process reloads the terminal history and must reject a second completion.
+    restarted_ledger = FactoryJobEventLedger(path)
+    with pytest.raises(ValueError, match="invalid factory job lifecycle transition"):
+        restarted_ledger.append(event_type="COMPLETED", job_id=job.job_id, job_fingerprint=job.fingerprint, worker_id="W01")
+
+    assert path.read_bytes() == before
+    assert [event.event_type for event in restarted_ledger.entries()] == ["QUEUED", "DISPATCHED", "COMPLETED"]
+
+
+@pytest.mark.parametrize(
+    ("prefix", "next_event"),
+    [
+        (("QUEUED",), "QUEUED"),
+        (("QUEUED",), "COMPLETED"),
+        (("QUEUED", "DISPATCHED"), "DISPATCHED"),
+        (("QUEUED", "DISPATCHED", "COMPLETED"), "FAILED"),
+    ],
+)
+def test_ledger_rejects_invalid_lifecycle_transitions(prefix, next_event):
+    job = make_job("JOB-INVALID-TRANSITION")
+    ledger = FactoryJobEventLedger(path=None)
+    for event_type in prefix:
+        ledger.append(
+            event_type=event_type,
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01" if event_type != "QUEUED" else None,
+        )
+    before = ledger.entries()
+
+    with pytest.raises(ValueError, match="invalid factory job lifecycle transition"):
+        ledger.append(
+            event_type=next_event,
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01" if next_event != "QUEUED" else None,
+        )
+
+    assert ledger.entries() == before
+
+
+def test_ledger_rejects_requeue_after_terminal_job():
+    job = make_job("JOB-REQUEUE-AFTER-COMPLETION")
+    ledger = FactoryJobEventLedger(path=None)
+    for event_type in ("QUEUED", "DISPATCHED", "COMPLETED"):
+        ledger.append(event_type=event_type, job_id=job.job_id, job_fingerprint=job.fingerprint, worker_id="W01" if event_type != "QUEUED" else None)
+
+    with pytest.raises(ValueError, match="invalid factory job lifecycle transition"):
+        ledger.append(event_type="QUEUED", job_id=job.job_id, job_fingerprint=job.fingerprint)
+
+    assert [event.event_type for event in ledger.entries()] == ["QUEUED", "DISPATCHED", "COMPLETED"]
 
 
 def test_recovery_summary_ignores_non_lifecycle_handoff_fingerprint():

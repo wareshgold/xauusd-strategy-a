@@ -55,6 +55,25 @@ def inspect_worker_journal_consistency(
     worker_rows: list[dict[str, Any]] = []
     seen_worker_ids: set[str] = set()
     findings: list[dict[str, str]] = []
+
+    # Lifecycle conflicts must be visible even when no current worker snapshot
+    # references the job. A valid file hash proves byte integrity, not a valid
+    # state machine history; repeated terminal events are therefore reviewable.
+    for recovery_row in recovery_rows:
+        status = recovery_row["status"]
+        if status in {
+            "LIFECYCLE_CONFLICT_REVIEW_REQUIRED",
+            "TERMINAL_CONFLICT_REVIEW_REQUIRED",
+        }:
+            findings.append({
+                "code": status,
+                "worker_id": str(recovery_row.get("last_worker_id") or ""),
+                "job_id": str(recovery_row["job_id"]),
+                "detail": (
+                    "Journal lifecycle history is not a valid single-job "
+                    f"transition sequence: {recovery_row.get('lifecycle_history', [])}"
+                ),
+            })
     workers_by_job: dict[str, list[dict[str, Any]]] = {}
 
     for worker in workers:
