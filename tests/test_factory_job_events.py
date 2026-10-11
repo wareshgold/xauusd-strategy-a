@@ -619,9 +619,9 @@ def test_ledger_rejects_repeated_completion_before_persisting(tmp_path: Path):
         (("QUEUED", "DISPATCHED", "COMPLETED"), "FAILED"),
     ],
 )
-def test_ledger_rejects_invalid_lifecycle_transitions(prefix, next_event):
+def test_ledger_rejects_invalid_lifecycle_transitions(tmp_path: Path, prefix, next_event):
     job = make_job("JOB-INVALID-TRANSITION")
-    ledger = FactoryJobEventLedger(path=None)
+    ledger = FactoryJobEventLedger(tmp_path / "invalid-transition-events.jsonl")
     for event_type in prefix:
         ledger.append(
             event_type=event_type,
@@ -642,9 +642,9 @@ def test_ledger_rejects_invalid_lifecycle_transitions(prefix, next_event):
     assert ledger.entries() == before
 
 
-def test_ledger_rejects_requeue_after_terminal_job():
+def test_ledger_rejects_requeue_after_terminal_job(tmp_path: Path):
     job = make_job("JOB-REQUEUE-AFTER-COMPLETION")
-    ledger = FactoryJobEventLedger(path=None)
+    ledger = FactoryJobEventLedger(tmp_path / "requeue-after-terminal-events.jsonl")
     for event_type in ("QUEUED", "DISPATCHED", "COMPLETED"):
         ledger.append(event_type=event_type, job_id=job.job_id, job_fingerprint=job.fingerprint, worker_id="W01" if event_type != "QUEUED" else None)
 
