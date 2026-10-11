@@ -42,6 +42,23 @@ def make_plan(*, role=DatasetRole.DEVELOPMENT, immutable=True, data_sha="a" * 64
 
 
 def make_observation(candidate, *, pnl, wins=20, losses=10, ambiguous=0, trades=30, dd=5.0):
+    metrics = {
+        "candidate_fingerprint": candidate.candidate_fingerprint,
+        "trades": trades,
+        "wins": wins,
+        "losses": losses,
+        "ambiguous": ambiguous,
+        "net_pnl_cash": pnl,
+        "profit_factor": 1.5,
+        "max_drawdown_cash": dd,
+        "costs_included": True,
+    }
+    result_fingerprint = hashlib.sha256(
+        __import__("json").dumps(
+            metrics, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
     return CandidateObservation(
         candidate=candidate,
         trades=trades,
@@ -52,7 +69,7 @@ def make_observation(candidate, *, pnl, wins=20, losses=10, ambiguous=0, trades=
         profit_factor=1.5,
         max_drawdown_cash=dd,
         costs_included=True,
-        result_fingerprint=f"result-{candidate.candidate_id}",
+        result_fingerprint=result_fingerprint,
     )
 
 
@@ -233,3 +250,17 @@ def test_matrix_runner_rejects_altered_geometry_or_source_provenance(
         run_candidate_matrix(
             plan, execute, dataset_artifact_path=artifact_path
         )
+
+
+
+def test_candidate_observation_rejects_result_fingerprint_not_bound_to_metrics():
+    candidate = make_plan().candidates()[0]
+    observation = make_observation(candidate, pnl=12.5)
+    tampered = CandidateObservation(
+        **{
+            **observation.__dict__,
+            "net_pnl_cash": 999.0,
+        }
+    )
+    with pytest.raises(CandidateLabError, match="result fingerprint"):
+        tampered.validate()
