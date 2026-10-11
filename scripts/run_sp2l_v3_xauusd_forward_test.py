@@ -112,6 +112,31 @@ def _fresh_v3_state():
             "positions": set(), "order_states": set(), "position_orders": {},
             "signal_orders": {}, "pending_signal_notifications": {}}
 
+# Pending-expiry clock freshness is deliberately stricter than the shared
+# session clock helper: after process start, require the broker tick timestamp
+# to advance before using a server offset for cancellation. This prevents a
+# cached offset (or an unchanged stale tick) from being treated as fresh after
+# a restart. If the market supplies no advancing tick, expiry fails closed.
+_PENDING_CLOCK_LAST_TICK_TIME: int | None = None
+
+
+def _pending_server_offset_strict(symbol: str):
+    global _PENDING_CLOCK_LAST_TICK_TIME
+    tick = mt5.symbol_info_tick(symbol)
+    tick_time = int(getattr(tick, "time", 0) or 0) if tick else 0
+    if tick_time <= 0:
+        raise RuntimeError("pending expiry clock unavailable: missing tick timestamp")
+    previous = _PENDING_CLOCK_LAST_TICK_TIME
+    _PENDING_CLOCK_LAST_TICK_TIME = tick_time
+    if previous is None:
+        raise RuntimeError("pending expiry clock not yet proven fresh since process start")
+    if tick_time <= previous:
+        raise RuntimeError("pending expiry clock tick has not advanced since previous observation")
+    # Only ask the shared offset helper after a new tick is observed. That
+    # forces it to derive/update its cache from advancing market evidence.
+    return runner.mt5_server_offset_strict()
+
+
 def _run_scoped_pending(cfg_runtime, state):
     """Expire only this runner's XAUUSD limit orders using broker-clock age.
 
@@ -144,7 +169,7 @@ def _run_scoped_pending(cfg_runtime, state):
     if not eligible:
         return
     try:
-        server_offset = runner.mt5_server_offset_strict()
+        server_offset = _pending_server_offset_strict(symbol)
         now_server_epoch = time.time() + server_offset.total_seconds()
     except Exception as exc:
         # One diagnostic per ticket per process; a later poll may retry when
