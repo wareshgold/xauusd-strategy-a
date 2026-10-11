@@ -150,3 +150,52 @@ After any code change, run the smallest affected tests first and then the full s
 ## 8. Next-session opening instruction
 
 Read this entire snapshot first. Treat the completed-work list as done; do not repeat it. Inspect Git state before edits, protect untracked artifacts, and continue with the smallest path to a genuine end-to-end Factory run visible in the existing dashboard. Keep the source-first SP2L guardrails and the canonical workflow above in force.
+
+## 9. New synthetic end-to-end wiring work — pending local validation
+
+After the user fast-forwarded to snapshot commit `cd3dd265`, a narrowly scoped Factory integration path was added on the same branch. **Do not describe these latest changes as tested until the user runs the commands below.**
+
+Commits:
+- `0aeb8e97` — `feat(factory): add isolated synthetic end-to-end runner`
+- `ac89af04` — `fix(factory): audit isolated demo job journal in dashboard`
+- `3ddddd83` — `test(factory): cover isolated synthetic end-to-end dashboard run`
+
+New runner: `scripts/run_factory_synthetic_e2e.py`
+- Runs one deterministic synthetic fixture through the existing dataset registry, research runner, execution adapter, orchestrator, durable lifecycle ledger, research evidence/record, and explicit evidence-bound handoff.
+- Uses only isolated `runtime/factory_demo_status.json` and `runtime/factory_demo_job_events.jsonl` by default.
+- Refuses paths that would write into the live worker status or live Factory job journal.
+- Labels output `SYNTHETIC_ONLY`, reports `production_decisions: 0`, and makes no strategy-edge claim. Its synthetic metrics are a software fixture, not SP2L performance evidence.
+- Does not consume Holdout/Forward datasets, launch MT5, or create BUY/SELL decisions.
+
+Dashboard adjustment: in `SP2L_FACTORY_DEMO=1` mode, the read-only journal panel audits `factory_demo_job_events.jsonl` against the demo worker snapshot. In non-demo mode, it continues to audit the existing live journal. The new path does not overwrite or append to the user's live journal.
+
+New tests: `tests/test_factory_synthetic_e2e_run.py`
+- Checks persisted `QUEUED → DISPATCHED → COMPLETED → HANDOFF_ACCEPTED` events, evidence artifact, completed worker snapshot, and a consistent journal audit.
+- Checks demo dashboard journal isolation.
+- Checks refusal to write to live Factory status/journal paths.
+
+### Local validation requested
+
+After confirming the current branch and preserving all pre-existing untracked files, run:
+```powershell
+git pull --ff-only
+git log -6 --oneline
+git status --short --branch
+
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/test_factory_synthetic_e2e_run.py tests/test_factory_e2e_smoke.py tests/test_factory_dashboard.py -q
+
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" -m pytest tests/ -q
+```
+
+If tests pass, run the synthetic integration once:
+```powershell
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" scripts/run_factory_synthetic_e2e.py
+```
+Then start the dashboard in an isolated demo-mode terminal:
+```powershell
+$env:SP2L_FACTORY_DEMO = "1"
+& "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe" scripts/factory_dashboard.py
+```
+Open `http://127.0.0.1:8788/`. Verify the displayed worker/job/artifact matches the script's run ID and the Job Journal Integrity panel reports a valid, consistent demo journal. Do not treat a passing synthetic run as canonical research acceptance or a statistical edge.
+
+The previous five user-owned untracked paths remain protected. This new work must not modify `runtime/factory_worker_status.json` or `runtime/factory_job_events.jsonl`; demo files are intentionally separate.
