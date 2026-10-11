@@ -158,3 +158,65 @@ def test_foreign_active_order_is_not_adopted_by_lifecycle(monkeypatch, tmp_path)
     mod._run_scoped_pending_lifecycle({"symbol": SYMBOL, "magic": MAGIC}, s)
     assert 128 not in s["orders"]
     assert not [e for e in events if e["event"] == "PENDING_ORDER_LIFECYCLE"]
+
+def test_zero_setup_timestamp_is_never_cancelled(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    pending = order(ticket=129, age_minutes=120)
+    pending.time_setup = 0
+    m.orders_get = lambda symbol=None: [pending]
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_future_setup_timestamp_is_never_cancelled(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    pending = order(ticket=130, age_minutes=0)
+    pending.time_setup = int(time.time() + 3 * 3600 + 60)
+    m.orders_get = lambda symbol=None: [pending]
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_mt5_order_query_failure_fails_closed(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    m.orders_get = lambda symbol=None: None
+    clock_calls = []
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: clock_calls.append(True))
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+    assert clock_calls == []
+
+
+def test_wrong_symbol_and_non_limit_orders_are_never_cancelled(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    wrong_symbol = order(ticket=131, age_minutes=120)
+    wrong_symbol.symbol = "EURUSD"
+    stop_order = order(ticket=132, age_minutes=120, order_type=m.ORDER_TYPE_BUY_STOP)
+    m.orders_get = lambda symbol=None: [wrong_symbol, stop_order]
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_lifecycle_does_not_adopt_active_stop_orders(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    stop_order = order(ticket=133, age_minutes=5, order_type=m.ORDER_TYPE_BUY_STOP)
+    m.orders_get = lambda symbol=None: [stop_order]
+    m.history_orders_get = lambda *args, **kwargs: []
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    s = state()
+    mod._run_scoped_pending_lifecycle({"symbol": SYMBOL, "magic": MAGIC}, s)
+    assert 133 not in s["orders"]
+    assert not [e for e in events if e["event"] == "PENDING_ORDER_LIFECYCLE"]
+
