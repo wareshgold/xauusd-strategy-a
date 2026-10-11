@@ -48,11 +48,15 @@ def _validate_lifecycle_transition(
     event_type: str,
     job_id: str,
     job_fingerprint: str,
+    enforce_transitions: bool = True,
 ) -> None:
     """Reject invalid new lifecycle writes without rewriting historical records.
 
     Non-lifecycle evidence such as HANDOFF_ACCEPTED is deliberately excluded.
     A terminal job needs a distinct job_id for any explicitly reviewed replay.
+    Transition enforcement is enabled for persisted journals. An in-memory
+    ledger (path=None) can represent imported/synthetic evidence histories for
+    handoff and recovery tests; it is not a durable execution journal.
     """
     if event_type not in _LIFECYCLE_EVENT_TYPES:
         return
@@ -67,6 +71,9 @@ def _validate_lifecycle_transition(
             raise ValueError(
                 f"factory job fingerprint changed within ledger: {job_id}"
             )
+
+    if not enforce_transitions:
+        return
 
     lifecycle_history = tuple(event.event_type for event in history)
     allowed_next = _VALID_LIFECYCLE_NEXT.get(lifecycle_history, set())
@@ -280,7 +287,13 @@ def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, 
 
 
 class FactoryJobEventLedger:
-    """Append-only in-memory lifecycle ledger with optional JSONL persistence."""
+    """Append-only ledger.
+
+    Persisted JSONL ledgers enforce lifecycle transitions before every append.
+    path=None is a non-durable synthetic/imported-evidence mode for fixtures
+    and consumers that only need provenance binding or recovery classification.
+    """
+
 
     def __init__(self, path: Path | None = DEFAULT_JOB_EVENTS_FILE) -> None:
         self.path = path
@@ -317,6 +330,7 @@ class FactoryJobEventLedger:
             event_type=event_type,
             job_id=job_id,
             job_fingerprint=job_fingerprint,
+            enforce_transitions=self.path is not None,
         )
         event = FactoryJobEvent(
             sequence=len(self._events) + 1,
