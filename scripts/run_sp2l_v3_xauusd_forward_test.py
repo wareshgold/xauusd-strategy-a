@@ -194,8 +194,9 @@ def _run_scoped_pending(cfg_runtime, state):
             continue
         if int(getattr(order, "type", -1)) not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
             continue
-        marker = f"{ticket}:EXPIRY_NOTIFIED:"
-        if any(str(s).startswith(marker) for s in state.get("order_states", set())):
+        # Only a confirmed cancellation completes expiry. A failure or
+        # dry-run notification must not suppress subsequent cancellation tries.
+        if f"{ticket}:EXPIRY_NOTIFIED:CANCELLED" in state.get("order_states", set()):
             continue
         eligible.append(order)
     if not eligible:
