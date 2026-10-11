@@ -7,6 +7,7 @@ as observed facts; no canonical production decision is made here.
 from __future__ import annotations
 import os
 import time
+from datetime import timedelta
 import MetaTrader5 as mt5
 import sp2l_v3_rr2_trail4_config as cfg
 
@@ -149,7 +150,7 @@ def _pending_server_offset_strict(symbol: str):
     # its result with the independently pinned expectation to catch stale ticks
     # and unreviewed server-clock/DST changes.
     observed = runner.mt5_server_offset_strict()
-    expected = __import__("datetime").timedelta(hours=int(configured_hours))
+    expected = timedelta(hours=int(configured_hours))
     if observed != expected:
         raise RuntimeError(
             f"broker offset mismatch: configured={int(configured_hours)}h observed={observed}"
