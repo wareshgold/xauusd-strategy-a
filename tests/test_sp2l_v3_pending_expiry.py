@@ -410,3 +410,104 @@ def test_closed_market_session_clock_defers_candidate_and_retries(monkeypatch, t
     deferred = [event for event in events if event["event"] == "SESSION_CUTOFF_DEFERRED"]
     assert len(deferred) == 1
     assert deferred[0]["canonical"] is False
+
+
+def test_deal_lifecycle_timestamp_uses_utc_then_iran_time(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    from datetime import datetime, timezone
+
+    deal_time = int(datetime(2026, 10, 13, 4, 2, 8, tzinfo=timezone.utc).timestamp())
+    deal = SimpleNamespace(
+        ticket=62474707, position_id=63282226, entry=m.DEAL_ENTRY_IN,
+        type=m.DEAL_TYPE_BUY, time=deal_time, price=4159.75, volume=0.01,
+        profit=0.0, commission=0.0, swap=0.0, reason=0,
+    )
+    # A broker offset must not be subtracted from an already-UTC deal epoch.
+    monkeypatch.setattr(mod.runner, "mt5_server_offset", lambda: timedelta(hours=3))
+    message = mod.runner.lifecycle_message(deal, SYMBOL, 0.01, MAGIC)
+    assert "07:32:08 (UTC+3:30) · 2026-10-13" in message
+
+
+def test_lifecycle_retries_failed_open_before_sending_close(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    entry = SimpleNamespace(
+        ticket=100, order=500, position_id=900, entry=m.DEAL_ENTRY_IN,
+        reason=0, time=100, price=2300.0, volume=0.01, profit=0.0,
+        commission=0.0, swap=0.0, magic=MAGIC, type=m.DEAL_TYPE_BUY,
+    )
+    close = SimpleNamespace(
+        ticket=101, order=501, position_id=900, entry=m.DEAL_ENTRY_OUT,
+        reason=1, time=101, price=2301.0, volume=0.01, profit=1.0,
+        commission=-0.05, swap=0.0, magic=MAGIC, type=m.DEAL_TYPE_SELL,
+    )
+    m.history_deals_get = lambda *args, **kwargs: [close, entry]
+    monkeypatch.setattr(mod.runner, "_remember_position_links", lambda s, d: None)
+    monkeypatch.setattr(mod.runner, "position_entry_price", lambda d, magic=None: 2300.0)
+    monkeypatch.setattr(
+        mod.runner, "lifecycle_message",
+        lambda d, symbol, pip, magic=None: f"{'OPENED' if d.entry == m.DEAL_ENTRY_IN else 'CLOSED'}:{d.ticket}",
+    )
+    attempts = iter([
+        SimpleNamespace(success=False, detail="HTTP timeout"),
+        SimpleNamespace(success=True, detail="HTTP_200"),
+        SimpleNamespace(success=True, detail="HTTP_200"),
+    ])
+    sent = []
+
+    def send(message, **kwargs):
+        sent.append(message)
+        return next(attempts)
+
+    monkeypatch.setattr(mod.runner.gateway, "send_telegram_message", send)
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: None)
+    saved = []
+    monkeypatch.setattr(mod.runner, "save_state", lambda s: saved.append(set(s["deals"])))
+    s = state()
+    s["orders"].add(500)
+    s["positions"].add(900)
+    config = {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}
+
+    mod._run_scoped_symbol_lifecycle(config, s)
+    assert sent == ["OPENED:100"], "failed OPENED must prevent CLOSED overtaking it"
+    assert s["deals"] == set()
+
+    mod._run_scoped_symbol_lifecycle(config, s)
+    assert sent == ["OPENED:100", "OPENED:100", "CLOSED:101"]
+    assert s["deals"] == {100, 101}
+    assert saved[-2:] == [{100}, {100, 101}], "persist each acknowledged lifecycle post"
+
+def test_pending_signal_message_explicitly_says_not_filled(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda message, **kwargs: sent.append(message) or SimpleNamespace(success=True, detail="ok"),
+    )
+    candidate = {
+        "symbol": SYMBOL, "direction": "BUY", "trigger_time": int(time.time()),
+        "risk": 2.0, "theoretical_entry": 2300.0, "sl": 2298.0,
+        "tp": 2304.0, "secondary_entry_2x": 2299.0, "volume": 0.01,
+        "signal_id": "test-signal",
+    }
+    result = mod.runner.send_signal(candidate, 0.01, order_ticket=456)
+    assert result.success is True
+    assert "PENDING ORDER ACCEPTED (NOT FILLED)" in sent[0]
+    assert "Pending Limit ACCEPTED" in sent[0]
+
+
+def test_execution_blocked_message_reports_no_order(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda message, **kwargs: sent.append(message) or SimpleNamespace(success=True, detail="ok"),
+    )
+    candidate = {"symbol": SYMBOL, "direction": "SELL", "signal_id": "blocked-signal"}
+    result = mod.runner.send_execution_blocked(
+        candidate, {"reason": "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET"}
+    )
+    assert result.success is True
+    assert "ORDER NOT PLACED" in sent[0]
+    assert "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET" in sent[0]
+    assert "No pending order accepted" in sent[0]
+

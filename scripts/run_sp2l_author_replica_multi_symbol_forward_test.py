@@ -666,7 +666,7 @@ def lifecycle_message(deal, symbol: str, pip_size: float, magic: int | None = No
     else:
         icon = "🔵" if pips is not None and pips > 0 else "🟠"
 
-    dt = display_time_from_mt5(int(deal.time))
+    dt = datetime.fromtimestamp(int(deal.time), timezone.utc).astimezone(IRAN_TZ)
     digits = max(2, int(mt5.symbol_info(symbol).digits))
     entry_str = f"{entry:.{digits}f}" if entry is not None else "n/a (unlinked)"
     reason = lifecycle_reason(deal)
@@ -734,9 +734,9 @@ def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = Non
     t = display_time_from_mt5(candidate["trigger_time"])
     risk_pips = candidate["risk"] / pip_size if pip_size else 0.0
     icon = "🟢" if candidate["direction"] == "BUY" else "🔴"
-    order_line = f"📦 <b>Order</b>   Pending Limit PLACED · #{order_ticket}" if order_ticket else "📦 <b>Order</b>   Pending Limit"
+    order_line = f"📦 <b>Order</b>   Pending Limit ACCEPTED · #{order_ticket} · NOT FILLED" if order_ticket else "📦 <b>Order</b>   Pending Limit · NOT FILLED"
     text = (
-        f"{icon} <b>SP2L — {symbol} {candidate['direction']} — PENDING PLACED</b>\n"
+        f"{icon} <b>SP2L — {symbol} {candidate['direction']} — PENDING ORDER ACCEPTED (NOT FILLED)</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"📌 <b>Entry</b>   {candidate['theoretical_entry']:.{digits}f}\n"
         f"🛑 <b>SL</b>      {candidate['sl']:.{digits}f}\n"
@@ -748,6 +748,24 @@ def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = Non
         f"⚖️ <b>Volume</b>  {candidate.get('volume', VOLUME):.2f}\n"
         f"🕒 <b>Signal</b>  {t:%H:%M:%S} (UTC+3:30)\n\n"
         f"🆔 <code>AUTHOR_REPLICA_MULTI_{candidate['trigger_time']}_{symbol}_{candidate['direction']}</code>\n"
+        f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
+    )
+    return gateway.send_telegram_message(text, parse_mode="HTML")
+
+
+def send_execution_blocked(candidate: dict, result: dict):
+    """Notify that the broker order was not accepted; this is not an OPENED trade."""
+    symbol = str(candidate.get("symbol", "XAUUSD"))
+    direction = str(candidate.get("direction", "UNKNOWN"))
+    reason = str(result.get("reason") or result.get("error") or "ORDER_REJECTED")
+    details = result.get("comment")
+    text = (
+        f"⚠️ <b>SP2L — {symbol} {direction} — ORDER NOT PLACED</b>\\n"
+        f"━━━━━━━━━━━━━━━━━━\\n"
+        f"🧾 <b>Reason</b>  <code>{reason}</code>\\n"
+        f"{f'🔎 <b>Broker</b>  {details}\\n' if details else ''}"
+        f"🚫 <b>Trade status</b> No pending order accepted; no OPENED trade confirmed\\n"
+        f"🆔 <code>{candidate.get('signal_id', candidate.get('trigger_time', 'unknown'))}</code>\\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
     return gateway.send_telegram_message(text, parse_mode="HTML")
@@ -1258,6 +1276,16 @@ def main() -> None:
                     if retry_ok:
                         state["notified"].add(pending_id)
                         pending_signals.pop(pending_id, None)
+                pending_execution = state.setdefault("pending_execution_notifications", {})
+                for pending_id, payload in list(pending_execution.items()):
+                    pending_candidate = payload.get("candidate", {})
+                    if str(pending_candidate.get("symbol")) != symbol:
+                        continue
+                    retry_result = send_execution_blocked(pending_candidate, payload.get("result", {}))
+                    retry_ok = bool(getattr(retry_result, "success", False))
+                    log_event({"event":"TELEGRAM_EXECUTION_BLOCKED_RETRY","symbol":symbol,"signal_id":pending_id,"success":retry_ok,"detail":getattr(retry_result,"detail",None),"canonical":False})
+                    if retry_ok:
+                        pending_execution.pop(pending_id, None)
                 save_state(state)
                 enforce_pending_order_expiry(cfg, state)
                 monitor_pending_order_lifecycle(cfg, state)
@@ -1322,6 +1350,13 @@ def main() -> None:
                         "reason": result.get("reason") or result.get("error") or "ORDER_REJECTED",
                         "result": result, "canonical": False,
                     })
+                    notice = send_execution_blocked(candidate, result)
+                    notice_ok = bool(getattr(notice, "success", False))
+                    log_event({"event":"TELEGRAM_EXECUTION_BLOCKED","symbol":symbol,"signal_id":trigger_key,"success":notice_ok,"detail":getattr(notice,"detail",None),"canonical":False})
+                    if not notice_ok:
+                        state.setdefault("pending_execution_notifications", {})[trigger_key] = {
+                            "candidate": dict(candidate), "result": dict(result)
+                        }
                 save_state(state)
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
