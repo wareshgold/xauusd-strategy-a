@@ -26,9 +26,14 @@ For each candidate, the script records:
 - previous candle Low (BUY) or High (SELL);
 - signed and absolute price difference between the variant entry and previous level;
 - whether the previous level falls within the entry bar's OHLC range;
+- previous and current bar timestamps plus full available OHLC values;
+- seconds between adjacent rows and whether the timestamps are exactly 60 seconds apart;
+- whether candidate `trigger_time` exactly matches the current bar timestamp;
 - whether the bar extends beyond that previous level, and whether the level is outside the bar's range.
 
-The range tests are OHLC diagnostics only. They do not establish the order in which the price levels were visited or prove that a pending order would have filled. Gap-through cases are explicitly surfaced rather than assumed filled.
+The timestamp flags are diagnostics, not automatic declarations that a market data feed is corrupt. M1 bars may have legitimate session gaps; inspect the actual timestamps and market session before classifying a non-60-second interval. The audit uses the immediately preceding row in the fetched series as the adjacent bar.
+
+The range tests are OHLC diagnostics only. They do not establish the order in which price levels were visited or prove that a pending order would have filled. Gap-through cases are explicitly surfaced rather than assumed filled.
 
 ## Run locally
 
