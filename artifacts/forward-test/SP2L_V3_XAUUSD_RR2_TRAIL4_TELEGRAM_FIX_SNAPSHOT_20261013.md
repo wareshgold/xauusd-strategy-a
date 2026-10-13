@@ -8,6 +8,7 @@ Research/demo forward-notification reliability only. No Strategy A geometry, ent
   - Formats broker deal timestamps as UTC epoch -> Iran UTC+03:30 directly. It no longer subtracts the inferred MT5 server offset from `deal.time`.
 - `scripts/run_sp2l_v3_xauusd_forward_test.py`
   - Persists each successfully acknowledged lifecycle deal immediately.
+  - Ensures the first unavailable session-clock observation is logged deterministically, independent of host monotonic uptime; this was exposed by the existing focused CI suite.
   - If a lifecycle Telegram send fails, stops processing later deals in that poll. This prevents a CLOSED notification from overtaking an OPENED notification that is waiting for retry.
   - Failed lifecycle messages remain unmarked and eligible for retry on the next poll.
 - `tests/test_sp2l_v3_pending_expiry.py`
