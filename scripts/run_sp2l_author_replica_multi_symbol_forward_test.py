@@ -666,7 +666,7 @@ def lifecycle_message(deal, symbol: str, pip_size: float, magic: int | None = No
     else:
         icon = "🔵" if pips is not None and pips > 0 else "🟠"
 
-    dt = display_time_from_mt5(int(deal.time))
+    dt = datetime.fromtimestamp(int(deal.time), timezone.utc).astimezone(IRAN_TZ)
     digits = max(2, int(mt5.symbol_info(symbol).digits))
     entry_str = f"{entry:.{digits}f}" if entry is not None else "n/a (unlinked)"
     reason = lifecycle_reason(deal)
@@ -734,9 +734,9 @@ def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = Non
     t = display_time_from_mt5(candidate["trigger_time"])
     risk_pips = candidate["risk"] / pip_size if pip_size else 0.0
     icon = "🟢" if candidate["direction"] == "BUY" else "🔴"
-    order_line = f"📦 <b>Order</b>   Pending Limit PLACED · #{order_ticket}" if order_ticket else "📦 <b>Order</b>   Pending Limit"
+    order_line = f"📦 <b>Order</b>   Pending Limit ACCEPTED · #{order_ticket} · NOT FILLED" if order_ticket else "📦 <b>Order</b>   Pending Limit · NOT FILLED"
     text = (
-        f"{icon} <b>SP2L — {symbol} {candidate['direction']} — PENDING PLACED</b>\n"
+        f"{icon} <b>SP2L — {symbol} {candidate['direction']} — PENDING ORDER ACCEPTED (NOT FILLED)</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"📌 <b>Entry</b>   {candidate['theoretical_entry']:.{digits}f}\n"
         f"🛑 <b>SL</b>      {candidate['sl']:.{digits}f}\n"
@@ -751,6 +751,41 @@ def send_signal(candidate: dict, pip_size: float, order_ticket: int | None = Non
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
     return gateway.send_telegram_message(text, parse_mode="HTML")
+
+
+def send_execution_blocked(candidate: dict, result: dict):
+    """Notify that the broker order was not accepted; this is not an OPENED trade."""
+    symbol = str(candidate.get("symbol", "XAUUSD"))
+    direction = str(candidate.get("direction", "UNKNOWN"))
+    reason = str(result.get("reason") or result.get("error") or "ORDER_REJECTED")
+    details = result.get("comment")
+    text = (
+        f"⚠️ <b>SP2L — {symbol} {direction} — ORDER NOT PLACED</b>\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"🧾 <b>Reason</b>  <code>{reason}</code>\n"
+        f"{f'🔎 <b>Broker</b>  {details}\n' if details else ''}"
+        f"🚫 <b>Trade status</b> No pending order accepted; no OPENED trade confirmed\n"
+        f"🆔 <code>{candidate.get('signal_id', candidate.get('trigger_time', 'unknown'))}</code>\n"
+        f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
+    )
+    return gateway.send_telegram_message(text, parse_mode="HTML")
+
+
+def notify_execution_blocked(candidate: dict, result: dict, signal_id: str, state: dict) -> bool:
+    """Notify an unplaced order and persist failed Telegram delivery for retry."""
+    notice = send_execution_blocked(candidate, result)
+    notice_ok = bool(getattr(notice, "success", False))
+    log_event({
+        "event": "TELEGRAM_EXECUTION_BLOCKED", "symbol": candidate.get("symbol"),
+        "signal_id": signal_id, "success": notice_ok,
+        "detail": getattr(notice, "detail", None), "canonical": False,
+    })
+    pending = state.setdefault("pending_execution_notifications", {})
+    if notice_ok:
+        pending.pop(signal_id, None)
+    else:
+        pending[signal_id] = {"candidate": dict(candidate), "result": dict(result)}
+    return notice_ok
 
 
 def execute_candidate(candidate: dict, magic: int) -> dict:
@@ -810,8 +845,8 @@ def _cancel_pending_order(order, state: dict) -> None:
     allow_flag = os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true"
     if not (live_flag and allow_flag):
         result = {
-            "ok": True, "dry_run": True, "retcode": None,
-            "reason": "LIVE_TRADING_ENABLE=false",
+            "ok": False, "dry_run": True, "retcode": None,
+            "reason": "DRY_RUN_NOT_SENT",
         }
     else:
         account = mt5.account_info()
@@ -829,7 +864,11 @@ def _cancel_pending_order(order, state: dict) -> None:
                     "comment": send.comment,
                 }
 
-    outcome = "CANCELLED" if result.get("ok") else f"CANCEL_FAILED({result.get('reason') or result.get('retcode')})"
+    outcome = (
+        "CANCEL_SKIPPED_DRY_RUN" if result.get("dry_run")
+        else "CANCELLED" if result.get("ok")
+        else f"CANCEL_FAILED({result.get('reason') or result.get('retcode')})"
+    )
     log_event({
         "event": "PENDING_ORDER_EXPIRED",
         "symbol": symbol, "order": ticket,
@@ -857,8 +896,11 @@ def _cancel_pending_order(order, state: dict) -> None:
         f"🆔 <code>{ticket}</code>\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
+    notification_marker = f"{ticket}:EXPIRY_NOTIFIED:{outcome}"
+    if notification_marker in state.setdefault("order_states", set()):
+        return
     tg = gateway.send_telegram_message(text, parse_mode="HTML")
-    state["order_states"].add(f"{ticket}:EXPIRY_NOTIFIED:{outcome}")
+    state["order_states"].add(notification_marker)
     log_event({
         "event": "TELEGRAM_PENDING_EXPIRED", "symbol": symbol,
         "order": ticket, "outcome": outcome,
@@ -889,9 +931,10 @@ def enforce_pending_order_expiry(cfg: dict, state: dict) -> None:
         age_minutes = (time.time() - setup_ts) / 60.0
         if age_minutes < PENDING_TTL_MINUTES:
             continue
-        marker = f"{ticket}:EXPIRY_NOTIFIED:"
-        if any(s.startswith(marker) for s in state["order_states"]):
-            continue  # expiry already handled for this ticket
+        # Only confirmed broker-side cancellation completes expiry. Failed or
+        # dry-run attempts must remain eligible for retry on the next poll.
+        if f"{ticket}:EXPIRY_NOTIFIED:CANCELLED" in state["order_states"]:
+            continue
         _cancel_pending_order(order, state)
 
 
@@ -1250,6 +1293,16 @@ def main() -> None:
                     if retry_ok:
                         state["notified"].add(pending_id)
                         pending_signals.pop(pending_id, None)
+                pending_execution = state.setdefault("pending_execution_notifications", {})
+                for pending_id, payload in list(pending_execution.items()):
+                    pending_candidate = payload.get("candidate", {})
+                    if str(pending_candidate.get("symbol")) != symbol:
+                        continue
+                    retry_result = send_execution_blocked(pending_candidate, payload.get("result", {}))
+                    retry_ok = bool(getattr(retry_result, "success", False))
+                    log_event({"event":"TELEGRAM_EXECUTION_BLOCKED_RETRY","symbol":symbol,"signal_id":pending_id,"success":retry_ok,"detail":getattr(retry_result,"detail",None),"canonical":False})
+                    if retry_ok:
+                        pending_execution.pop(pending_id, None)
                 save_state(state)
                 enforce_pending_order_expiry(cfg, state)
                 monitor_pending_order_lifecycle(cfg, state)
@@ -1275,6 +1328,12 @@ def main() -> None:
                 volume_ok, volume_reason = volume_guard(cfg)
                 if not volume_ok:
                     log_event({"event":"EXECUTION_BLOCKED_VOLUME","symbol":symbol,"signal_id":trigger_key,"requested_volume":float(cfg.get("volume",VOLUME)),"volume_min":cfg.get("volume_min"),"volume_max":cfg.get("volume_max"),"volume_step":cfg.get("volume_step"),"reason":volume_reason,"canonical":False})
+                    blocked_candidate = dict(candidate)
+                    blocked_candidate["signal_id"] = trigger_key
+                    notify_execution_blocked(blocked_candidate, {
+                        "reason": volume_reason,
+                        "comment": f"requested_volume={cfg.get('volume', VOLUME)}; min={cfg.get('volume_min')}; max={cfg.get('volume_max')}; step={cfg.get('volume_step')}",
+                    }, trigger_key, state)
                     seen_trigger[symbol] = trigger_key
                     save_state(state)
                     continue
@@ -1314,6 +1373,7 @@ def main() -> None:
                         "reason": result.get("reason") or result.get("error") or "ORDER_REJECTED",
                         "result": result, "canonical": False,
                     })
+                    notify_execution_blocked(candidate, result, trigger_key, state)
                 save_state(state)
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
