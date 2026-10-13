@@ -760,12 +760,12 @@ def send_execution_blocked(candidate: dict, result: dict):
     reason = str(result.get("reason") or result.get("error") or "ORDER_REJECTED")
     details = result.get("comment")
     text = (
-        f"⚠️ <b>SP2L — {symbol} {direction} — ORDER NOT PLACED</b>\\n"
-        f"━━━━━━━━━━━━━━━━━━\\n"
-        f"🧾 <b>Reason</b>  <code>{reason}</code>\\n"
-        f"{f'🔎 <b>Broker</b>  {details}\\n' if details else ''}"
-        f"🚫 <b>Trade status</b> No pending order accepted; no OPENED trade confirmed\\n"
-        f"🆔 <code>{candidate.get('signal_id', candidate.get('trigger_time', 'unknown'))}</code>\\n"
+        f"⚠️ <b>SP2L — {symbol} {direction} — ORDER NOT PLACED</b>\n"
+        f"━━━━━━━━━━━━━━━━━━\n"
+        f"🧾 <b>Reason</b>  <code>{reason}</code>\n"
+        f"{f'🔎 <b>Broker</b>  {details}\n' if details else ''}"
+        f"🚫 <b>Trade status</b> No pending order accepted; no OPENED trade confirmed\n"
+        f"🆔 <code>{candidate.get('signal_id', candidate.get('trigger_time', 'unknown'))}</code>\n"
         f"⚠️ <i>RESEARCH / DEMO ONLY — NOT CANONICAL</i>"
     )
     return gateway.send_telegram_message(text, parse_mode="HTML")
