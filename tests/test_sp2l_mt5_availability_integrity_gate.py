@@ -3,7 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from sp2l_mt5_availability_integrity_gate import evaluate_availability_manifest
+from sp2l_mt5_availability_integrity_gate import evaluate_availability_manifest, main
 
 
 def _sha(path: Path) -> str:
@@ -181,3 +181,36 @@ def test_gitattributes_preserves_hashed_availability_artifact_bytes():
     assert "data/mt5-session-availability/*.gaps.json -text" in lines
     assert "data/mt5-session-availability/*.manifest.json -text" in lines
 
+
+
+
+def test_cli_pass_exit_code_does_not_approve_market_sessions(
+    tmp_path, monkeypatch, capsys
+):
+    manifest, _, _, _ = _write_fixture(tmp_path)
+    monkeypatch.setattr("sys.argv", ["sp2l_mt5_availability_integrity_gate", str(manifest)])
+
+    assert main() == 0
+    report = json.loads(capsys.readouterr().out)
+
+    assert report["status"] == "STRUCTURAL_INTEGRITY_PASS"
+    assert report["canonical"] is False
+    assert report["market_session_approval"] == "NOT_ESTABLISHED"
+    assert report["research_interpretation"] == "RAW_AVAILABILITY_ONLY_NOT_SESSION_APPROVED"
+    assert report["source_artifacts_modified"] is False
+
+
+def test_cli_fail_exit_code_and_machine_readable_report(
+    tmp_path, monkeypatch, capsys
+):
+    manifest, _, daily, _ = _write_fixture(tmp_path)
+    daily.write_bytes(daily.read_bytes() + b"\n")
+    monkeypatch.setattr("sys.argv", ["sp2l_mt5_availability_integrity_gate", str(manifest)])
+
+    assert main() == 1
+    report = json.loads(capsys.readouterr().out)
+
+    assert report["status"] == "STRUCTURAL_INTEGRITY_FAIL"
+    assert report["canonical"] is False
+    assert report["market_session_approval"] == "NOT_ESTABLISHED"
+    assert any("SHA-256 mismatch" in error for error in report["errors"])
