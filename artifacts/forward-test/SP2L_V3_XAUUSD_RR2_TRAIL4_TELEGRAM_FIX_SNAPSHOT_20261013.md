@@ -22,7 +22,7 @@ Research/demo forward-notification reliability only. No Strategy A geometry, ent
 4. Failed lifecycle sends are retried on subsequent polls. Later lifecycle deals do not leapfrog a failed earlier deal.
 
 ## Guarantees and limitations
-- Timestamp conversion and sequential retry behavior have regression tests added, but they have **not yet been executed in this GitHub-only edit session**. CI/test status must be checked before using the patch.
+- GitHub Actions `SP2L forensic deterministic checks` passed on code commit `e07b0c702402e20743f6a2499aeae6bb9c62df05`: detector consistency PASS, reconciliation tests 2 passed, and pending/lifecycle suite 32 passed. Run: https://github.com/wareshgold/xauusd-strategy-a/actions/runs/38356182938.
 - Telegram Bot API does not provide a general idempotency key for `sendMessage`; if Telegram accepts a message but the response is lost, duplicate delivery remains possible. The changes reduce local replay windows but cannot promise exactly-once delivery.
 - Delivery latency depends on network/API responsiveness. This change does not claim a hard real-time guarantee.
 - No live MT5 order was placed or modified by these changes.
