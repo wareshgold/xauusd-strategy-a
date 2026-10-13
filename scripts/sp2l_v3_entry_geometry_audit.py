@@ -20,6 +20,14 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "artifacts" / "v3"
 
 
+def _bar_value(bar, name: str, default=None):
+    """Read a field from either an MT5 structured row or a synthetic dict."""
+    if isinstance(bar, dict):
+        return bar.get(name, default)
+    names = getattr(getattr(bar, "dtype", None), "names", None) or ()
+    return bar[name] if name in names else default
+
+
 def audit_candidates(bars, candidates, eps: float = 1e-7) -> list[dict]:
     """Return one transparent geometry row per (candidate, entry_index)."""
     rows = []
@@ -62,14 +70,14 @@ def audit_candidates(bars, candidates, eps: float = 1e-7) -> list[dict]:
             "current_bar_time": current_time,
             "previous_to_current_seconds": seconds_between_bars,
             "bars_are_consecutive_m1": seconds_between_bars == 60,
-            "previous_bar_open": float(previous["open"]) if "open" in previous.dtype.names if hasattr(previous, "dtype") and previous.dtype.names else float(previous.get("open", previous_level)) if isinstance(previous, dict) else None,
+            "previous_bar_open": _bar_value(previous, "open"),
             "previous_bar_high": previous_high,
             "previous_bar_low": previous_low,
-            "previous_bar_close": float(previous["close"]) if hasattr(previous, "dtype") and previous.dtype.names and "close" in previous.dtype.names else float(previous.get("close", previous_level)) if isinstance(previous, dict) else None,
-            "current_bar_open": float(current["open"]) if hasattr(current, "dtype") and current.dtype.names and "open" in current.dtype.names else float(current.get("open", current_extreme)) if isinstance(current, dict) else None,
+            "previous_bar_close": _bar_value(previous, "close"),
+            "current_bar_open": _bar_value(current, "open"),
             "current_bar_high": current_high,
             "current_bar_low": current_low,
-            "current_bar_close": float(current["close"]) if hasattr(current, "dtype") and current.dtype.names and "close" in current.dtype.names else float(current.get("close", current_extreme)) if isinstance(current, dict) else None,
+            "current_bar_close": _bar_value(current, "close"),
             "entry_price_current_variant": entry,
             "current_bar_extreme": current_extreme,
             "previous_level_name": source_level_name,
