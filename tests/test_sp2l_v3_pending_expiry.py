@@ -582,3 +582,64 @@ def test_existing_owned_position_is_adopted_and_close_result_is_not_lost_after_r
     mod._run_scoped_symbol_lifecycle(cfg, s)
     assert sent == ["CLOSED result"]
     assert 9101 in s["deals"]
+
+
+
+def test_missing_tracked_position_emits_one_diagnostic_without_fabricating_close(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    cfg = {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}
+    s = state()
+    s["orders"].add(9301)
+    s["positions"].add(9401)
+    m.positions_get = lambda symbol=None: []
+    m.history_deals_get = lambda *args, **kwargs: []
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    monkeypatch.setattr(mod.runner, "save_state", lambda state: None)
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda *args, **kwargs: sent.append(args) or SimpleNamespace(success=True, detail="HTTP_200"),
+    )
+
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+
+    gaps = [event for event in events if event.get("event") == "POSITION_RECONCILIATION_GAP"]
+    assert len(gaps) == 1
+    assert gaps[0]["position"] == 9401
+    assert gaps[0]["reason"] == "POSITION_ABSENT_WITHOUT_BROKER_EXIT_DEAL"
+    assert gaps[0]["diagnostic_only"] is True
+    assert gaps[0]["closed"] is False
+    assert gaps[0]["pnl"] is None
+    assert sent == []
+    assert "POSITION_RECONCILIATION_GAP:9401" in s["order_states"]
+
+
+def test_broker_exit_deal_prevents_missing_position_gap(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    cfg = {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}
+    s = state()
+    s["orders"].add(9501)
+    s["positions"].add(9402)
+    exit_deal = SimpleNamespace(
+        ticket=9601, time=int(time.time()), order=9501, position_id=9402,
+        entry=1, reason=0, price=2297.0, profit=-3.0, commission=0.0, swap=0.0,
+        volume=0.01,
+    )
+    m.positions_get = lambda symbol=None: []
+    m.history_deals_get = lambda *args, **kwargs: [exit_deal]
+    monkeypatch.setattr(mod.runner, "position_entry_price", lambda deal, magic: 2300.0)
+    monkeypatch.setattr(mod.runner, "lifecycle_message", lambda *args, **kwargs: "CLOSED result")
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda *args, **kwargs: SimpleNamespace(success=True, detail="HTTP_200"),
+    )
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    monkeypatch.setattr(mod.runner, "save_state", lambda state: None)
+
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+
+    assert any(event.get("event") == "TELEGRAM_DEAL_LIFECYCLE" for event in events)
+    assert not any(event.get("event") == "POSITION_RECONCILIATION_GAP" for event in events)
