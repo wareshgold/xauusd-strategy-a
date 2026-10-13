@@ -316,6 +316,8 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
         is_entry = int(getattr(deal,"entry",-1)) == mt5.DEAL_ENTRY_IN
         entry_price=float(deal.price) if is_entry else runner.position_entry_price(deal, magic)
         if not is_entry and entry_price is None:
+            # Do not send a close before its actual entry can be linked.
+            # Keep polling history; the broker record may become available later.
             continue
         execution_meta={}
         for linked_order in state.get("position_orders",{}).get(str(position),set()):
@@ -323,6 +325,7 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             if execution_meta: break
         tg=runner.gateway.send_telegram_message(
             runner.lifecycle_message(deal,symbol,pip,magic), parse_mode="HTML")
+        delivered=bool(getattr(tg,"success",False))
         profit=float(getattr(deal,"profit",0.0) or 0.0)
         commission=float(getattr(deal,"commission",0.0) or 0.0)
         swap=float(getattr(deal,"swap",0.0) or 0.0)
@@ -338,10 +341,20 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             "theoretical_tp":execution_meta.get("tp"),
             "exit_price":float(deal.price),"profit":profit,
             "commission":commission,"swap":swap,"net":profit+commission+swap,
-            "telegram":{"success":bool(getattr(tg,"success",False)),"detail":getattr(tg,"detail",None)},
+            "telegram":{"success":delivered,"detail":getattr(tg,"detail",None)},
             "canonical":False})
-        if getattr(tg,"success",False):
+        if delivered:
+            # Persist each acknowledged deal immediately. Otherwise a later
+            # empty-rate poll or process crash could cause a successful post
+            # to be sent again after restart.
             state["deals"].add(ticket)
+            runner.save_state(state)
+        else:
+            # Preserve chronological OPENED -> CLOSED delivery. A failed
+            # earlier deal remains eligible for retry; do not leapfrog it
+            # with a later close message for the same history poll.
+            runner.save_state(state)
+            break
 
 runner.enforce_pending_order_expiry=_run_scoped_pending
 runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
