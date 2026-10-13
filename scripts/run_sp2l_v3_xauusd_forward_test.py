@@ -299,7 +299,21 @@ def _run_scoped_position_lifecycle(cfg_runtime, state):
             "canonical":False})
 
 def _run_scoped_symbol_lifecycle(cfg_runtime, state):
-    symbol, magic, pip = cfg_runtime["symbol"], cfg_runtime["magic"], cfg_runtime["pip_size"]
+    symbol, magic, pip = cfg_runtime["symbol"], int(cfg_runtime["magic"]), cfg_runtime["pip_size"]
+
+    # Adopt only currently open positions owned by this exact symbol + magic.
+    # V3 intentionally starts with fresh in-memory state to avoid replaying old
+    # signals; without this narrow reconciliation, a position opened before a
+    # runner restart would be invisible to the CLOSED-result watcher.
+    for active_position in (mt5.positions_get(symbol=symbol) or []):
+        position_id = int(getattr(active_position, "ticket", 0) or 0)
+        if (
+            position_id > 0
+            and str(getattr(active_position, "symbol", "") or "") == symbol
+            and int(getattr(active_position, "magic", 0) or 0) == magic
+        ):
+            state["positions"].add(position_id)
+
     tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
     if not tracked_orders and not tracked_positions:
         return
