@@ -51,5 +51,5 @@ def test_simulation_records_actual_exit_bar_time_and_next_bar_trailing():
     assert result["entry_time"] == 1
     assert result["exit_time"] == 3
     assert result["reason"] == "TRAIL_SL"
-    assert result["exit_price"] == 100.08
+    assert abs(result["exit_price"] - 100.08) < 1e-9
     assert result["realized_R"] > 0
