@@ -162,10 +162,10 @@ def test_manifest_cannot_reference_artifact_outside_its_directory(tmp_path):
 def test_line_ending_conversion_fails_byte_hash_validation(tmp_path):
     manifest, _, daily, _ = _write_fixture(tmp_path)
     original = daily.read_bytes()
-    assert b"\\r\\n" not in original
+    assert b"\r\n" not in original
 
     # Simulate a Windows checkout that rewrites LF bytes to CRLF.
-    daily.write_bytes(original.replace(b"\\n", b"\\r\\n"))
+    daily.write_bytes(original.replace(b"\n", b"\r\n"))
 
     result = evaluate_availability_manifest(manifest)
 
