@@ -1,8 +1,9 @@
 """Entry-geometry audit for the current SP2L V3 research variant.
 
 This module measures how the current-candle extreme entry differs from the
-source-noted previous-candle Low/High. It does not select canonical geometry,
-infer intrabar order, or simulate fills/performance.
+source-noted previous-candle Low/High. It also records the actual timestamps
+and OHLC of both adjacent bars so data gaps and trigger/bar alignment can be
+audited without inferring intrabar order or simulating fills/performance.
 """
 from __future__ import annotations
 
@@ -28,18 +29,25 @@ def audit_candidates(bars, candidates, eps: float = 1e-7) -> list[dict]:
         direction = str(candidate["direction"]).upper()
         if direction not in {"BUY", "SELL"}:
             raise ValueError(f"unsupported direction: {direction}")
+
         current = bars[entry_idx]
         previous = bars[entry_idx - 1]
         entry = float(candidate["theoretical_entry"])
+        current_time = int(current["time"])
+        previous_time = int(previous["time"])
+        trigger_time = int(candidate["trigger_time"])
+        seconds_between_bars = current_time - previous_time
         current_high, current_low = float(current["high"]), float(current["low"])
+        previous_high, previous_low = float(previous["high"]), float(previous["low"])
+
         if direction == "BUY":
             current_extreme = current_low
-            previous_level = float(previous["low"])
+            previous_level = previous_low
             source_level_name = "previous_candle_low"
             crossed_beyond_previous_level = current_low < previous_level - eps
         else:
             current_extreme = current_high
-            previous_level = float(previous["high"])
+            previous_level = previous_high
             source_level_name = "previous_candle_high"
             crossed_beyond_previous_level = current_high > previous_level + eps
 
@@ -47,11 +55,22 @@ def audit_candidates(bars, candidates, eps: float = 1e-7) -> list[dict]:
         delta = entry - previous_level
         rows.append({
             "direction": direction,
-            "trigger_time": int(candidate["trigger_time"]),
+            "trigger_time": trigger_time,
             "entry_index": int(entry_idx),
-            "entry_price_current_variant": entry,
+            "candidate_trigger_matches_current_bar": trigger_time == current_time,
+            "previous_bar_time": previous_time,
+            "current_bar_time": current_time,
+            "previous_to_current_seconds": seconds_between_bars,
+            "bars_are_consecutive_m1": seconds_between_bars == 60,
+            "previous_bar_open": float(previous["open"]) if "open" in previous.dtype.names if hasattr(previous, "dtype") and previous.dtype.names else float(previous.get("open", previous_level)) if isinstance(previous, dict) else None,
+            "previous_bar_high": previous_high,
+            "previous_bar_low": previous_low,
+            "previous_bar_close": float(previous["close"]) if hasattr(previous, "dtype") and previous.dtype.names and "close" in previous.dtype.names else float(previous.get("close", previous_level)) if isinstance(previous, dict) else None,
+            "current_bar_open": float(current["open"]) if hasattr(current, "dtype") and current.dtype.names and "open" in current.dtype.names else float(current.get("open", current_extreme)) if isinstance(current, dict) else None,
             "current_bar_high": current_high,
             "current_bar_low": current_low,
+            "current_bar_close": float(current["close"]) if hasattr(current, "dtype") and current.dtype.names and "close" in current.dtype.names else float(current.get("close", current_extreme)) if isinstance(current, dict) else None,
+            "entry_price_current_variant": entry,
             "current_bar_extreme": current_extreme,
             "previous_level_name": source_level_name,
             "previous_candle_level": previous_level,
@@ -80,6 +99,8 @@ def summarize_rows(rows: list[dict]) -> dict:
             "previous_level_inside_entry_bar_range_count": sum(bool(r["previous_level_inside_entry_bar_range"]) for r in group),
             "bar_extends_beyond_previous_level_count": sum(bool(r["bar_extends_beyond_previous_level"]) for r in group),
             "level_outside_entry_bar_range_count": sum(bool(r["level_outside_entry_bar_range"]) for r in group),
+            "nonconsecutive_m1_bar_count": sum(not bool(r["bars_are_consecutive_m1"]) for r in group),
+            "trigger_current_bar_mismatch_count": sum(not bool(r["candidate_trigger_matches_current_bar"]) for r in group),
             "median_absolute_entry_level_difference": statistics.median(abs_deltas) if abs_deltas else None,
             "max_absolute_entry_level_difference": max(abs_deltas) if abs_deltas else None,
             "min_signed_entry_minus_previous_level": min(deltas) if deltas else None,
