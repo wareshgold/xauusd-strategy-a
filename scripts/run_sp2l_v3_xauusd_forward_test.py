@@ -378,8 +378,8 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
 
     # Reconcile disappearance separately from a close. A missing position
     # is not proof of an exit: only a broker history deal can establish P/L.
-    # Emit one durable diagnostic if a tracked position is absent from the
-    # current position snapshot and no exit deal for it is present in history.
+    # Emit one diagnostic per tracked position per process if it is absent
+    # from the current position snapshot and no exit deal is present in history.
     active_position_ids = {
         int(
             getattr(position, "identifier", 0)
