@@ -110,7 +110,7 @@ def main() -> None:
     parser.add_argument("--output-dir", default=str(OUT))
     args = parser.parse_args()
 
-    from scripts import run_sp2l_v3_xauusd_trailing_matrix as matrix
+    import run_sp2l_v3_xauusd_trailing_matrix as matrix
     import MetaTrader5 as mt5
 
     start, end = datetime.fromisoformat(args.start), datetime.fromisoformat(args.end)
