@@ -306,7 +306,13 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # signals; without this narrow reconciliation, a position opened before a
     # runner restart would be invisible to the CLOSED-result watcher.
     for active_position in (mt5.positions_get(symbol=symbol) or []):
-        position_id = int(getattr(active_position, "ticket", 0) or 0)
+        # Deal.position_id corresponds to the stable MT5 position identifier,
+        # not necessarily the mutable/current position ticket.
+        position_id = int(
+            getattr(active_position, "identifier", 0)
+            or getattr(active_position, "ticket", 0)
+            or 0
+        )
         if (
             position_id > 0
             and str(getattr(active_position, "symbol", "") or "") == symbol
@@ -375,11 +381,19 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # Emit one durable diagnostic if a tracked position is absent from the
     # current position snapshot and no exit deal for it is present in history.
     active_position_ids = {
-        int(getattr(position, "ticket", 0) or 0)
+        int(
+            getattr(position, "identifier", 0)
+            or getattr(position, "ticket", 0)
+            or 0
+        )
         for position in (mt5.positions_get(symbol=symbol) or [])
         if str(getattr(position, "symbol", "") or "") == symbol
         and int(getattr(position, "magic", 0) or 0) == magic
-        and int(getattr(position, "ticket", 0) or 0) > 0
+        and int(
+            getattr(position, "identifier", 0)
+            or getattr(position, "ticket", 0)
+            or 0
+        ) > 0
     }
     observed_exit_positions = {
         int(getattr(deal, "position_id", 0) or 0)
