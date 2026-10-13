@@ -475,3 +475,39 @@ def test_lifecycle_retries_failed_open_before_sending_close(monkeypatch, tmp_pat
     assert sent == ["OPENED:100", "OPENED:100", "CLOSED:101"]
     assert s["deals"] == {100, 101}
     assert saved[-2:] == [{100}, {100, 101}], "persist each acknowledged lifecycle post"
+
+def test_pending_signal_message_explicitly_says_not_filled(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda message, **kwargs: sent.append(message) or SimpleNamespace(success=True, detail="ok"),
+    )
+    candidate = {
+        "symbol": SYMBOL, "direction": "BUY", "trigger_time": int(time.time()),
+        "risk": 2.0, "theoretical_entry": 2300.0, "sl": 2298.0,
+        "tp": 2304.0, "secondary_entry_2x": 2299.0, "volume": 0.01,
+        "signal_id": "test-signal",
+    }
+    result = mod.runner.send_signal(candidate, 0.01, order_ticket=456)
+    assert result.success is True
+    assert "PENDING ORDER ACCEPTED (NOT FILLED)" in sent[0]
+    assert "Pending Limit ACCEPTED" in sent[0]
+
+
+def test_execution_blocked_message_reports_no_order(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda message, **kwargs: sent.append(message) or SimpleNamespace(success=True, detail="ok"),
+    )
+    candidate = {"symbol": SYMBOL, "direction": "SELL", "signal_id": "blocked-signal"}
+    result = mod.runner.send_execution_blocked(
+        candidate, {"reason": "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET"}
+    )
+    assert result.success is True
+    assert "ORDER NOT PLACED" in sent[0]
+    assert "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET" in sent[0]
+    assert "No pending order accepted" in sent[0]
+
