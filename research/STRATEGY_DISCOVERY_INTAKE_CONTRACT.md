@@ -49,6 +49,8 @@ This module does not:
 - optimize parameters or rank strategies;
 - approve a backtest, Holdout, Forward Test, or production deployment.
 
-## Next integration step
+## CandidatePlan integration
 
-Connect this intake contract to a generic external-strategy blueprint and the existing finite CandidatePlan machinery. Keep external provenance distinct from SP2L source-resolution state. Only run backtests after a candidate has an explicit rule specification, declared data requirements, executable adapter, execution/cost assumptions, and fixture coverage. Development optimization must remain isolated from Fresh Holdout; post-Holdout tuning remains prohibited.
+The external-strategy blueprint now binds this intake record to a rule specification, declared data capability, execution and cost assumptions, and a finite parameter grid. It creates an EXTERNAL CandidatePlan with its own provenance fingerprint and no fabricated SP2L source-resolution fingerprint. Source uncertainties must either remain explicit or have a separately recorded resolution rationale.
+
+The existing candidate runner still requires immutable DEVELOPMENT data, matching dataset bytes, an injected adapter that implements the declared rules, and fingerprint-bound metrics net of costs. The blueprint is not itself a backtest engine or source crawler. Next work is the source-capture/connectors and a safe adapter contract; Fresh Holdout remains untouched by optimization, and post-Holdout tuning remains prohibited.
