@@ -184,3 +184,39 @@ def test_external_candidate_matrix_still_requires_matching_dataset_bytes(tmp_pat
     assert len(results) == 3
     assert all(row.candidate.provenance_mode == "EXTERNAL" for row in results)
     assert all(row.candidate.source_resolution_fingerprint is None for row in results)
+
+
+
+def test_intake_uncertainty_cannot_be_silently_dropped_from_blueprint():
+    intake = replace(
+        make_intake(),
+        unresolved_questions=("Stop anchor not specified",),
+    )
+    with pytest.raises(StrategyBlueprintError, match="must remain unresolved"):
+        make_blueprint(intake=intake, unresolved_questions=())
+
+
+def test_explicit_resolution_rationale_is_bound_into_blueprint_fingerprint():
+    intake = replace(
+        make_intake(),
+        unresolved_questions=("Stop anchor not specified",),
+    )
+    resolved = make_blueprint(
+        intake=intake,
+        resolved_source_questions={
+            "Stop anchor not specified": "A separately recorded research interpretation was selected."
+        },
+    )
+    plan = resolved.to_candidate_plan(
+        dataset=make_dataset(),
+        dataset_content_sha256="c" * 64,
+        execution_fingerprint="execution-sha",
+    )
+    changed = make_blueprint(
+        intake=intake,
+        resolved_source_questions={
+            "Stop anchor not specified": "A different interpretation was selected."
+        },
+    )
+    assert plan.provenance_mode == "EXTERNAL"
+    assert resolved.fingerprint != changed.fingerprint

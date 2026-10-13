@@ -81,6 +81,25 @@ class ExternalStrategyBlueprint:
             raise StrategyBlueprintError("unresolved_questions must be a tuple")
         if any(not isinstance(q, str) or not q.strip() for q in self.unresolved_questions):
             raise StrategyBlueprintError("unresolved questions must be non-empty strings")
+        resolved = self.resolved_source_questions or {}
+        if not isinstance(resolved, Mapping):
+            raise StrategyBlueprintError("resolved_source_questions must be a mapping")
+        if any(
+            not isinstance(question, str) or not question.strip()
+            or not isinstance(rationale, str) or not rationale.strip()
+            for question, rationale in resolved.items()
+        ):
+            raise StrategyBlueprintError("each resolved source question needs a non-empty rationale")
+        source_questions = set(self.intake.unresolved_questions)
+        if set(resolved) - source_questions:
+            raise StrategyBlueprintError("resolution notes reference questions absent from source intake")
+        if set(resolved) & set(self.unresolved_questions):
+            raise StrategyBlueprintError("a source question cannot be both resolved and unresolved")
+        missing_source_questions = source_questions - set(resolved) - set(self.unresolved_questions)
+        if missing_source_questions:
+            raise StrategyBlueprintError(
+                "intake unresolved questions must remain unresolved or have explicit resolution notes"
+            )
         if self.max_candidates < 1:
             raise StrategyBlueprintError("max_candidates must be positive")
 
@@ -110,6 +129,7 @@ class ExternalStrategyBlueprint:
                 for key in sorted(self.parameter_grid)
             },
             "unresolved_questions": list(self.unresolved_questions),
+            "resolved_source_questions": dict(self.resolved_source_questions or {}),
             "max_candidates": self.max_candidates,
         }
         return sha256(_json_bytes(payload)).hexdigest()
@@ -180,6 +200,7 @@ class ExternalStrategyBlueprint:
                 for key in sorted(self.parameter_grid)
             },
             "unresolved_questions": list(self.unresolved_questions),
+            "resolved_source_questions": dict(self.resolved_source_questions or {}),
             "fingerprint": self.fingerprint,
             "research_draft_only": True,
             "canonical": False,
