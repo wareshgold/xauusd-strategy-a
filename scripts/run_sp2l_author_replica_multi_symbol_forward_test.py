@@ -666,7 +666,7 @@ def lifecycle_message(deal, symbol: str, pip_size: float, magic: int | None = No
     else:
         icon = "🔵" if pips is not None and pips > 0 else "🟠"
 
-    dt = display_time_from_mt5(int(deal.time))
+    dt = datetime.fromtimestamp(int(deal.time), timezone.utc).astimezone(IRAN_TZ)
     digits = max(2, int(mt5.symbol_info(symbol).digits))
     entry_str = f"{entry:.{digits}f}" if entry is not None else "n/a (unlinked)"
     reason = lifecycle_reason(deal)
