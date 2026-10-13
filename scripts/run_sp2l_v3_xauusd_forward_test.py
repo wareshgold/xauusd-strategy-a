@@ -306,7 +306,13 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # signals; without this narrow reconciliation, a position opened before a
     # runner restart would be invisible to the CLOSED-result watcher.
     for active_position in (mt5.positions_get(symbol=symbol) or []):
-        position_id = int(getattr(active_position, "ticket", 0) or 0)
+        # Deal.position_id corresponds to the stable MT5 position identifier,
+        # not necessarily the mutable/current position ticket.
+        position_id = int(
+            getattr(active_position, "identifier", 0)
+            or getattr(active_position, "ticket", 0)
+            or 0
+        )
         if (
             position_id > 0
             and str(getattr(active_position, "symbol", "") or "") == symbol
@@ -369,6 +375,51 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             # with a later close message for the same history poll.
             runner.save_state(state)
             break
+
+    # Reconcile disappearance separately from a close. A missing position
+    # is not proof of an exit: only a broker history deal can establish P/L.
+    # Emit one diagnostic per tracked position per process if it is absent
+    # from the current position snapshot and no exit deal is present in history.
+    active_position_ids = {
+        int(
+            getattr(position, "identifier", 0)
+            or getattr(position, "ticket", 0)
+            or 0
+        )
+        for position in (mt5.positions_get(symbol=symbol) or [])
+        if str(getattr(position, "symbol", "") or "") == symbol
+        and int(getattr(position, "magic", 0) or 0) == magic
+        and int(
+            getattr(position, "identifier", 0)
+            or getattr(position, "ticket", 0)
+            or 0
+        ) > 0
+    }
+    observed_exit_positions = {
+        int(getattr(deal, "position_id", 0) or 0)
+        for deal in deals
+        if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN
+        and int(getattr(deal, "position_id", 0) or 0) > 0
+    }
+    for position_id in sorted(tracked_positions - active_position_ids - observed_exit_positions):
+        marker = f"POSITION_RECONCILIATION_GAP:{position_id}"
+        if marker in state["order_states"]:
+            continue
+        state["order_states"].add(marker)
+        runner.log_event({
+            "event": "POSITION_RECONCILIATION_GAP",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "position": position_id,
+            "reason": "POSITION_ABSENT_WITHOUT_BROKER_EXIT_DEAL",
+            "history_start_utc": _RUN_STARTED_UTC.isoformat(),
+            "history_end_utc": datetime.now(timezone.utc).isoformat(),
+            "diagnostic_only": True,
+            "closed": False,
+            "pnl": None,
+            "canonical": False,
+        })
+        runner.save_state(state)
 
 runner.enforce_pending_order_expiry=_run_scoped_pending
 runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
