@@ -2,3 +2,9 @@
 # Disable Git text/EOL conversion so Windows checkouts retain the committed bytes.
 data/mt5-acquisition/*.csv -text
 data/mt5-acquisition/*.manifest.json -text
+
+# Availability matrix files carry SHA-256 values in their manifests.
+# Preserve their committed bytes on Windows checkouts as well.
+data/mt5-session-availability/*.csv -text
+data/mt5-session-availability/*.gaps.json -text
+data/mt5-session-availability/*.manifest.json -text
