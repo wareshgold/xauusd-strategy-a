@@ -169,6 +169,10 @@ class CandidatePlan:
                 "base_revision": self.base_revision,
                 "plan_fingerprint": self.fingerprint,
                 "parameters": parameters,
+                "geometry_fingerprint": self.geometry_fingerprint,
+                "source_resolution_fingerprint": self.source_resolution_fingerprint,
+                "provenance_mode": self.provenance_mode,
+                "external_source_fingerprint": self.external_source_fingerprint,
             }
             result.append(ResearchCandidate(
                 candidate_id=candidate_id,
@@ -224,6 +228,10 @@ class ResearchCandidate:
             "base_revision": self.base_revision,
             "plan_fingerprint": self.plan_fingerprint,
             "parameters": dict(self.parameters),
+            "geometry_fingerprint": self.geometry_fingerprint,
+            "source_resolution_fingerprint": self.source_resolution_fingerprint,
+            "provenance_mode": self.provenance_mode,
+            "external_source_fingerprint": self.external_source_fingerprint,
         })
         if expected != self.candidate_fingerprint:
             raise CandidateLabError("candidate fingerprint mismatch")
@@ -363,7 +371,6 @@ def run_candidate_matrix(
             raise CandidateLabError("dataset artifact changed during candidate execution")
         if not isinstance(observation, CandidateObservation):
             raise CandidateLabError("candidate adapter must return CandidateObservation")
-        observation.validate()
         if observation.candidate.candidate_fingerprint != candidate.candidate_fingerprint:
             raise CandidateLabError("candidate adapter returned a result for a different candidate")
         if observation.candidate.plan_fingerprint != plan.fingerprint:
@@ -385,6 +392,7 @@ def run_candidate_matrix(
             raise CandidateLabError(
                 "candidate adapter changed the declared external-source fingerprint"
             )
+        observation.validate()
         observations.append(observation)
     if len(observations) != len(candidates):
         raise CandidateLabError("candidate matrix did not produce one result per candidate")
