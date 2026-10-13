@@ -510,4 +510,6 @@ def test_execution_blocked_message_reports_no_order(monkeypatch, tmp_path):
     assert "ORDER NOT PLACED" in sent[0]
     assert "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET" in sent[0]
     assert "No pending order accepted" in sent[0]
+    assert "\\n" not in sent[0], "message must not contain literal backslash-n sequences"
+    assert sent[0].count("\n") >= 4, "message fields should be separated by actual newlines"
 
