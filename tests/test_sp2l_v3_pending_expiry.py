@@ -546,3 +546,39 @@ def test_blocked_execution_notification_success_clears_retry_queue(monkeypatch, 
     assert "blocked-2" not in s["pending_execution_notifications"]
     assert events[-1]["event"] == "TELEGRAM_EXECUTION_BLOCKED"
     assert events[-1]["success"] is True
+
+
+
+def test_existing_owned_position_is_adopted_and_close_result_is_not_lost_after_restart(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    active = SimpleNamespace(ticket=9001, symbol=SYMBOL, magic=MAGIC)
+    close_deal = SimpleNamespace(
+        ticket=9101, time=int(time.time()), order=9201, position_id=9001,
+        entry=1, reason=0, price=2297.0, profit=-3.0, commission=0.0, swap=0.0,
+        volume=0.01,
+    )
+    m.positions_get = lambda symbol=None: [active]
+    m.history_deals_get = lambda *args, **kwargs: []
+    s = state()
+    cfg = {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}
+
+    # First poll after restart: adopt the exact owned open position.
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+    assert 9001 in s["positions"]
+
+    # Later the position has closed. Its exit deal must still be eligible.
+    m.positions_get = lambda symbol=None: []
+    m.history_deals_get = lambda *args, **kwargs: [close_deal]
+    monkeypatch.setattr(mod.runner, "position_entry_price", lambda deal, magic: 2300.0)
+    monkeypatch.setattr(mod.runner, "lifecycle_message", lambda *args, **kwargs: "CLOSED result")
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda message, **kwargs: sent.append(message) or SimpleNamespace(success=True, detail="HTTP_200"),
+    )
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: None)
+    monkeypatch.setattr(mod.runner, "save_state", lambda state: None)
+
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+    assert sent == ["CLOSED result"]
+    assert 9101 in s["deals"]
