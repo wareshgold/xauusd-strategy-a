@@ -384,7 +384,7 @@ def _v3_main():
     # forward runner or guess an offset: defer candidate detection until the
     # clock helper succeeds on a later poll. Other read-only/lifecycle polling
     # in the base loop continues; no new candidate can reach execution here.
-    session_clock_error_log_at = 0.0
+    session_clock_error_log_at = -300.0  # Ensure the first unavailable-clock event is always logged.
 
     def _forward_session_find(data, symbol):
         nonlocal session_clock_error_log_at
