@@ -280,7 +280,13 @@ def main():
             writer.writerows(matrix)
         trades_path = base.with_name(base.name + "_trades.csv")
         with trades_path.open("w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=list(trade_rows[0].keys()))
+            trade_fields = (list(trade_rows[0].keys()) if trade_rows else [
+                "activation_price", "trail_distance_price", "direction", "trigger_time",
+                "entry", "initial_sl", "initial_tp", "risk_price", "final_sl",
+                "trailing_activated", "max_favorable_price", "exit_price", "reason",
+                "ambiguous", "realized_price", "realized_R",
+            ])
+            writer = csv.DictWriter(f, fieldnames=trade_fields)
             writer.writeheader()
             writer.writerows(trade_rows)
         snapshot_path = base.with_name(base.name + "_SNAPSHOT.md")
