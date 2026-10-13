@@ -771,6 +771,23 @@ def send_execution_blocked(candidate: dict, result: dict):
     return gateway.send_telegram_message(text, parse_mode="HTML")
 
 
+def notify_execution_blocked(candidate: dict, result: dict, signal_id: str, state: dict) -> bool:
+    """Notify an unplaced order and persist failed Telegram delivery for retry."""
+    notice = send_execution_blocked(candidate, result)
+    notice_ok = bool(getattr(notice, "success", False))
+    log_event({
+        "event": "TELEGRAM_EXECUTION_BLOCKED", "symbol": candidate.get("symbol"),
+        "signal_id": signal_id, "success": notice_ok,
+        "detail": getattr(notice, "detail", None), "canonical": False,
+    })
+    pending = state.setdefault("pending_execution_notifications", {})
+    if notice_ok:
+        pending.pop(signal_id, None)
+    else:
+        pending[signal_id] = {"candidate": dict(candidate), "result": dict(result)}
+    return notice_ok
+
+
 def execute_candidate(candidate: dict, magic: int) -> dict:
     symbol = candidate["symbol"]
     gateway.SYMBOL = symbol
@@ -1311,6 +1328,12 @@ def main() -> None:
                 volume_ok, volume_reason = volume_guard(cfg)
                 if not volume_ok:
                     log_event({"event":"EXECUTION_BLOCKED_VOLUME","symbol":symbol,"signal_id":trigger_key,"requested_volume":float(cfg.get("volume",VOLUME)),"volume_min":cfg.get("volume_min"),"volume_max":cfg.get("volume_max"),"volume_step":cfg.get("volume_step"),"reason":volume_reason,"canonical":False})
+                    blocked_candidate = dict(candidate)
+                    blocked_candidate["signal_id"] = trigger_key
+                    notify_execution_blocked(blocked_candidate, {
+                        "reason": volume_reason,
+                        "comment": f"requested_volume={cfg.get('volume', VOLUME)}; min={cfg.get('volume_min')}; max={cfg.get('volume_max')}; step={cfg.get('volume_step')}",
+                    }, trigger_key, state)
                     seen_trigger[symbol] = trigger_key
                     save_state(state)
                     continue
@@ -1350,13 +1373,7 @@ def main() -> None:
                         "reason": result.get("reason") or result.get("error") or "ORDER_REJECTED",
                         "result": result, "canonical": False,
                     })
-                    notice = send_execution_blocked(candidate, result)
-                    notice_ok = bool(getattr(notice, "success", False))
-                    log_event({"event":"TELEGRAM_EXECUTION_BLOCKED","symbol":symbol,"signal_id":trigger_key,"success":notice_ok,"detail":getattr(notice,"detail",None),"canonical":False})
-                    if not notice_ok:
-                        state.setdefault("pending_execution_notifications", {})[trigger_key] = {
-                            "candidate": dict(candidate), "result": dict(result)
-                        }
+                    notify_execution_blocked(candidate, result, trigger_key, state)
                 save_state(state)
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
