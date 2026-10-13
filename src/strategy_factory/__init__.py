@@ -201,3 +201,8 @@ from .strategy_comparison_runner import (
     StrategyComparisonRunnerError,
     build_one_vs_one_from_runs,
 )
+
+from .strategy_blueprint import (
+    ExternalStrategyBlueprint,
+    StrategyBlueprintError,
+)

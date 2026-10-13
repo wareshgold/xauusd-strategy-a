@@ -54,8 +54,10 @@ class CandidatePlan:
     fixed_parameters: Mapping[str, Any]
     parameter_grid: Mapping[str, tuple[Any, ...]]
     geometry_fingerprint: str
-    source_resolution_fingerprint: str
+    source_resolution_fingerprint: str | None
     max_candidates: int = 64
+    provenance_mode: str = "SP2L"
+    external_source_fingerprint: str | None = None
 
     def validate(self) -> None:
         self.dataset.validate()
@@ -78,10 +80,28 @@ class CandidatePlan:
             )
         if not self.execution_fingerprint:
             raise CandidateLabError("execution fingerprint is required")
-        if not self.geometry_fingerprint or not self.source_resolution_fingerprint:
-            raise CandidateLabError(
-                "geometry and source-resolution fingerprints must be explicitly supplied"
-            )
+        if not self.geometry_fingerprint:
+            raise CandidateLabError("strategy rule-specification fingerprint is required")
+        if self.provenance_mode == "SP2L":
+            if not self.source_resolution_fingerprint:
+                raise CandidateLabError(
+                    "SP2L plans require an explicit source-resolution fingerprint"
+                )
+            if self.external_source_fingerprint is not None:
+                raise CandidateLabError(
+                    "SP2L plans cannot carry external-source provenance as a substitute"
+                )
+        elif self.provenance_mode == "EXTERNAL":
+            if self.source_resolution_fingerprint is not None:
+                raise CandidateLabError(
+                    "external plans must not use the SP2L source-resolution fingerprint"
+                )
+            if not self.external_source_fingerprint:
+                raise CandidateLabError(
+                    "external plans require an explicit external-source fingerprint"
+                )
+        else:
+            raise CandidateLabError("provenance_mode must be SP2L or EXTERNAL")
         if not isinstance(self.execution_semantics, ExecutionSemantics):
             raise CandidateLabError("execution semantics must be explicit")
         if not self.parameter_grid:
@@ -130,6 +150,8 @@ class CandidatePlan:
             "parameter_grid": {k: list(self.parameter_grid[k]) for k in sorted(self.parameter_grid)},
             "geometry_fingerprint": self.geometry_fingerprint,
             "source_resolution_fingerprint": self.source_resolution_fingerprint,
+            "provenance_mode": self.provenance_mode,
+            "external_source_fingerprint": self.external_source_fingerprint,
             "max_candidates": self.max_candidates,
         })
 
@@ -159,6 +181,8 @@ class CandidatePlan:
                 execution_fingerprint=self.execution_fingerprint,
                 geometry_fingerprint=self.geometry_fingerprint,
                 source_resolution_fingerprint=self.source_resolution_fingerprint,
+                provenance_mode=self.provenance_mode,
+                external_source_fingerprint=self.external_source_fingerprint,
             ))
         return tuple(result)
 
@@ -174,16 +198,26 @@ class ResearchCandidate:
     dataset_fingerprint: str
     execution_fingerprint: str
     geometry_fingerprint: str
-    source_resolution_fingerprint: str
+    source_resolution_fingerprint: str | None
+    provenance_mode: str = "SP2L"
+    external_source_fingerprint: str | None = None
 
     def validate(self) -> None:
         if not all((
             self.candidate_id, self.strategy_family, self.base_revision,
             self.plan_fingerprint, self.candidate_fingerprint,
             self.dataset_fingerprint, self.execution_fingerprint,
-            self.geometry_fingerprint, self.source_resolution_fingerprint,
+            self.geometry_fingerprint,
         )):
             raise CandidateLabError("candidate provenance is incomplete")
+        if self.provenance_mode == "SP2L":
+            if not self.source_resolution_fingerprint or self.external_source_fingerprint is not None:
+                raise CandidateLabError("SP2L candidate provenance is incomplete or mixed")
+        elif self.provenance_mode == "EXTERNAL":
+            if self.source_resolution_fingerprint is not None or not self.external_source_fingerprint:
+                raise CandidateLabError("external candidate provenance is incomplete or mixed")
+        else:
+            raise CandidateLabError("candidate provenance_mode must be SP2L or EXTERNAL")
         expected = _sha256({
             "candidate_id": self.candidate_id,
             "strategy_family": self.strategy_family,
@@ -339,13 +373,17 @@ def run_candidate_matrix(
         if observation.candidate.execution_fingerprint != plan.execution_fingerprint:
             raise CandidateLabError("candidate adapter changed the declared execution profile")
         if observation.candidate.geometry_fingerprint != plan.geometry_fingerprint:
-            raise CandidateLabError("candidate adapter changed the declared geometry fingerprint")
-        if (
-            observation.candidate.source_resolution_fingerprint
-            != plan.source_resolution_fingerprint
-        ):
+            raise CandidateLabError("candidate adapter changed the declared strategy rule-specification fingerprint")
+        if observation.candidate.provenance_mode != plan.provenance_mode:
+            raise CandidateLabError("candidate adapter changed the declared provenance mode")
+        if plan.provenance_mode == "SP2L":
+            if observation.candidate.source_resolution_fingerprint != plan.source_resolution_fingerprint:
+                raise CandidateLabError(
+                    "candidate adapter changed the declared source-resolution fingerprint"
+                )
+        elif observation.candidate.external_source_fingerprint != plan.external_source_fingerprint:
             raise CandidateLabError(
-                "candidate adapter changed the declared source-resolution fingerprint"
+                "candidate adapter changed the declared external-source fingerprint"
             )
         observations.append(observation)
     if len(observations) != len(candidates):
@@ -385,9 +423,13 @@ def assess_candidates(
         if candidate.execution_fingerprint != first.execution_fingerprint:
             raise CandidateLabError("candidate results do not share execution semantics/config")
         if candidate.geometry_fingerprint != first.geometry_fingerprint:
-            raise CandidateLabError("candidate results do not share frozen geometry")
+            raise CandidateLabError("candidate results do not share strategy rule-specification identity")
+        if candidate.provenance_mode != first.provenance_mode:
+            raise CandidateLabError("candidate results mix SP2L and external provenance modes")
         if candidate.source_resolution_fingerprint != first.source_resolution_fingerprint:
             raise CandidateLabError("candidate results do not share source-resolution evidence")
+        if candidate.external_source_fingerprint != first.external_source_fingerprint:
+            raise CandidateLabError("candidate results do not share external-source provenance")
     ids = [row.candidate.candidate_id for row in rows]
     if len(set(ids)) != len(ids):
         raise CandidateLabError("duplicate candidate result detected")
