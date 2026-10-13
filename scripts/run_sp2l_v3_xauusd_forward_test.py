@@ -31,7 +31,40 @@ runner.EVENTS=runner.ARTIFACTS / "SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl
 runner.STATE_FILE=runner.RUNTIME / "sp2l_v3_xauusd_rr2_trail4_forward_state.json"
 runner.session_gate_status=lambda trigger_ts:(True,"V3_ALL_MARKET_HOURS")
 _original_rates=runner.rates
-runner.rates=lambda symbol,count=10:_original_rates(symbol,30)
+# Read-only diagnostics: the base runner silently skips a poll when rates()
+# returns None, which otherwise looks like a healthy but inactive process.
+# This wrapper records the condition without changing candidate or order logic.
+_rates_diagnostic = {"status": None, "last_log_monotonic": 0.0}
+def _rates_with_diagnostics(symbol, count=10):
+    data = _original_rates(symbol, 30)
+    now_mono = time.monotonic()
+    if data is None:
+        if (_rates_diagnostic["status"] != "unavailable"
+                or now_mono - _rates_diagnostic["last_log_monotonic"] >= 300.0):
+            runner.log_event({
+                "event": "MARKET_DATA_UNAVAILABLE",
+                "version": cfg.VERSION,
+                "symbol": symbol,
+                "reason": "RATES_NONE_OR_INSUFFICIENT_BARS",
+                "requested_bars": 30,
+                "last_error": str(mt5.last_error()),
+                "retry_interval_seconds": 300,
+                "canonical": False,
+            })
+            _rates_diagnostic["last_log_monotonic"] = now_mono
+        _rates_diagnostic["status"] = "unavailable"
+        return None
+    if _rates_diagnostic["status"] == "unavailable":
+        runner.log_event({
+            "event": "MARKET_DATA_RECOVERED",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "bars_received": len(data),
+            "canonical": False,
+        })
+    _rates_diagnostic["status"] = "available"
+    return data
+runner.rates = _rates_with_diagnostics
 
 _original_monitor=runner.monitor_position_lifecycle
 def trail_positions(cfg_runtime,state):
