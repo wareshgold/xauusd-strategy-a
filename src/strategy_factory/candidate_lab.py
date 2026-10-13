@@ -371,8 +371,9 @@ def run_candidate_matrix(
             raise CandidateLabError("dataset artifact changed during candidate execution")
         if not isinstance(observation, CandidateObservation):
             raise CandidateLabError("candidate adapter must return CandidateObservation")
-        if observation.candidate.candidate_fingerprint != candidate.candidate_fingerprint:
-            raise CandidateLabError("candidate adapter returned a result for a different candidate")
+        # Compare declared plan fields before candidate identity. This keeps
+        # provenance-tampering diagnostics specific instead of collapsing them
+        # into the generic candidate-fingerprint mismatch.
         if observation.candidate.plan_fingerprint != plan.fingerprint:
             raise CandidateLabError("candidate adapter returned a result from a different plan")
         if observation.candidate.dataset_fingerprint != expected_sha256:
@@ -392,6 +393,8 @@ def run_candidate_matrix(
             raise CandidateLabError(
                 "candidate adapter changed the declared external-source fingerprint"
             )
+        if observation.candidate.candidate_fingerprint != candidate.candidate_fingerprint:
+            raise CandidateLabError("candidate adapter returned a result for a different candidate")
         observation.validate()
         observations.append(observation)
     if len(observations) != len(candidates):

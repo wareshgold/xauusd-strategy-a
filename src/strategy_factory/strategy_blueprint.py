@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Source-agnostic strategy blueprint for the external discovery track."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from hashlib import sha256
 import json
 from typing import Any, Mapping
@@ -49,7 +49,8 @@ class ExternalStrategyBlueprint:
     cost_model_fingerprint: str
     fixed_parameters: Mapping[str, Any]
     parameter_grid: Mapping[str, tuple[Any, ...]]
-    unresolved_questions: tuple[str] = ()
+    unresolved_questions: tuple[str, ...] = ()
+    resolved_source_questions: Mapping[str, str] = field(default_factory=dict)
     max_candidates: int = 64
 
     def validate(self) -> None:
