@@ -551,7 +551,8 @@ def test_blocked_execution_notification_success_clears_retry_queue(monkeypatch, 
 
 def test_existing_owned_position_is_adopted_and_close_result_is_not_lost_after_restart(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
-    active = SimpleNamespace(ticket=9001, symbol=SYMBOL, magic=MAGIC)
+    # MT5 position ticket may differ from the stable identifier referenced by deals.
+    active = SimpleNamespace(ticket=9991, identifier=9001, symbol=SYMBOL, magic=MAGIC)
     close_deal = SimpleNamespace(
         ticket=9101, time=int(time.time()), order=9201, position_id=9001,
         entry=1, reason=0, price=2297.0, profit=-3.0, commission=0.0, swap=0.0,
