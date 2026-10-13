@@ -158,3 +158,26 @@ def test_manifest_cannot_reference_artifact_outside_its_directory(tmp_path):
 
     assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
     assert any("sibling filename" in error for error in result["errors"])
+
+def test_line_ending_conversion_fails_byte_hash_validation(tmp_path):
+    manifest, _, daily, _ = _write_fixture(tmp_path)
+    original = daily.read_bytes()
+    assert b"\\r\\n" not in original
+
+    # Simulate a Windows checkout that rewrites LF bytes to CRLF.
+    daily.write_bytes(original.replace(b"\\n", b"\\r\\n"))
+
+    result = evaluate_availability_manifest(manifest)
+
+    assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
+    assert any("SHA-256 mismatch" in error for error in result["errors"])
+
+
+def test_gitattributes_preserves_hashed_availability_artifact_bytes():
+    attributes_path = Path(__file__).resolve().parents[1] / ".gitattributes"
+    lines = attributes_path.read_text(encoding="utf-8").splitlines()
+
+    assert "data/mt5-session-availability/*.csv -text" in lines
+    assert "data/mt5-session-availability/*.gaps.json -text" in lines
+    assert "data/mt5-session-availability/*.manifest.json -text" in lines
+
