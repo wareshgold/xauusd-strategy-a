@@ -381,7 +381,7 @@ def run_candidate_matrix(
         if observation.candidate.execution_fingerprint != plan.execution_fingerprint:
             raise CandidateLabError("candidate adapter changed the declared execution profile")
         if observation.candidate.geometry_fingerprint != plan.geometry_fingerprint:
-            raise CandidateLabError("candidate adapter changed the declared strategy rule-specification fingerprint")
+            raise CandidateLabError("candidate adapter changed the declared geometry fingerprint (strategy rule-specification fingerprint)")
         if observation.candidate.provenance_mode != plan.provenance_mode:
             raise CandidateLabError("candidate adapter changed the declared provenance mode")
         if plan.provenance_mode == "SP2L":
