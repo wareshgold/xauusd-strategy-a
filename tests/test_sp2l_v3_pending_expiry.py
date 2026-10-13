@@ -513,3 +513,36 @@ def test_execution_blocked_message_reports_no_order(monkeypatch, tmp_path):
     assert "\\n" not in sent[0], "message must not contain literal backslash-n sequences"
     assert sent[0].count("\n") >= 4, "message fields should be separated by actual newlines"
 
+
+
+def test_blocked_execution_notification_is_queued_when_telegram_fails(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    candidate = {"symbol": SYMBOL, "direction": "BUY", "signal_id": "blocked-1"}
+    result = {"reason": "VOLUME_BELOW_MIN", "comment": "requested_volume=0.01"}
+    sent = []
+    events = []
+    monkeypatch.setattr(mod.runner, "send_execution_blocked", lambda c, r: sent.append((c, r)) or SimpleNamespace(success=False, detail="HTTP timeout"))
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    s = state()
+
+    assert mod.runner.notify_execution_blocked(candidate, result, "blocked-1", s) is False
+    assert len(sent) == 1
+    assert s["pending_execution_notifications"]["blocked-1"] == {"candidate": candidate, "result": result}
+    assert events[-1]["event"] == "TELEGRAM_EXECUTION_BLOCKED"
+    assert events[-1]["success"] is False
+
+
+def test_blocked_execution_notification_success_clears_retry_queue(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    candidate = {"symbol": SYMBOL, "direction": "SELL", "signal_id": "blocked-2"}
+    result = {"reason": "ORDER_REJECTED"}
+    events = []
+    monkeypatch.setattr(mod.runner, "send_execution_blocked", lambda c, r: SimpleNamespace(success=True, detail="HTTP_200"))
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    s = state()
+    s["pending_execution_notifications"] = {"blocked-2": {"candidate": candidate, "result": result}}
+
+    assert mod.runner.notify_execution_blocked(candidate, result, "blocked-2", s) is True
+    assert "blocked-2" not in s["pending_execution_notifications"]
+    assert events[-1]["event"] == "TELEGRAM_EXECUTION_BLOCKED"
+    assert events[-1]["success"] is True
