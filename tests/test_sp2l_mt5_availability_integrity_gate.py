@@ -5,10 +5,8 @@ from pathlib import Path
 
 from sp2l_mt5_availability_integrity_gate import evaluate_availability_manifest, main
 
-
 def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
 
 def _write_fixture(root: Path):
     daily = root / "fixture.daily.csv"
@@ -88,7 +86,6 @@ def _write_fixture(root: Path):
     manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     return manifest, data, daily, gaps
 
-
 def test_valid_raw_availability_artifacts_pass_structure_only(tmp_path):
     manifest, _, _, _ = _write_fixture(tmp_path)
 
@@ -102,7 +99,6 @@ def test_valid_raw_availability_artifacts_pass_structure_only(tmp_path):
     assert result["gap_record_count"] == 1
     assert result["source_artifacts_modified"] is False
 
-
 def test_hash_mismatch_fails_closed(tmp_path):
     manifest, _, daily, _ = _write_fixture(tmp_path)
     daily.write_text(daily.read_text(encoding="utf-8") + "\n", encoding="utf-8")
@@ -111,7 +107,6 @@ def test_hash_mismatch_fails_closed(tmp_path):
 
     assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
     assert any("SHA-256 mismatch" in error for error in result["errors"])
-
 
 def test_manifest_count_mismatch_fails(tmp_path):
     manifest, data, _, _ = _write_fixture(tmp_path)
@@ -122,7 +117,6 @@ def test_manifest_count_mismatch_fails(tmp_path):
 
     assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
     assert any("actual_bar_count disagrees" in error for error in result["errors"])
-
 
 def test_gap_missing_bar_count_mismatch_fails(tmp_path):
     manifest, _, _, gaps_path = _write_fixture(tmp_path)
@@ -138,7 +132,6 @@ def test_gap_missing_bar_count_mismatch_fails(tmp_path):
     assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
     assert any("missing_m1_bars disagrees" in error for error in result["errors"])
 
-
 def test_non_acquired_window_is_not_interpreted_as_market_closure(tmp_path):
     manifest, _, _, _ = _write_fixture(tmp_path)
 
@@ -147,7 +140,6 @@ def test_non_acquired_window_is_not_interpreted_as_market_closure(tmp_path):
     assert result["no_data_window_count"] == 1
     assert result["market_session_approval"] == "NOT_ESTABLISHED"
     assert "historical completeness remain unverified" in result["meaning"]
-
 
 def test_manifest_cannot_reference_artifact_outside_its_directory(tmp_path):
     manifest, data, _, _ = _write_fixture(tmp_path)
@@ -172,7 +164,6 @@ def test_line_ending_conversion_fails_byte_hash_validation(tmp_path):
     assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
     assert any("SHA-256 mismatch" in error for error in result["errors"])
 
-
 def test_gitattributes_preserves_hashed_availability_artifact_bytes():
     attributes_path = Path(__file__).resolve().parents[1] / ".gitattributes"
     lines = attributes_path.read_text(encoding="utf-8").splitlines()
@@ -180,9 +171,6 @@ def test_gitattributes_preserves_hashed_availability_artifact_bytes():
     assert "data/mt5-session-availability/*.csv -text" in lines
     assert "data/mt5-session-availability/*.gaps.json -text" in lines
     assert "data/mt5-session-availability/*.manifest.json -text" in lines
-
-
-
 
 def test_cli_pass_exit_code_does_not_approve_market_sessions(
     tmp_path, monkeypatch, capsys
@@ -199,7 +187,6 @@ def test_cli_pass_exit_code_does_not_approve_market_sessions(
     assert report["research_interpretation"] == "RAW_AVAILABILITY_ONLY_NOT_SESSION_APPROVED"
     assert report["source_artifacts_modified"] is False
 
-
 def test_cli_fail_exit_code_and_machine_readable_report(
     tmp_path, monkeypatch, capsys
 ):
@@ -214,3 +201,52 @@ def test_cli_fail_exit_code_and_machine_readable_report(
     assert report["canonical"] is False
     assert report["market_session_approval"] == "NOT_ESTABLISHED"
     assert any("SHA-256 mismatch" in error for error in report["errors"])
+
+
+def test_malformed_manifest_fails_closed(tmp_path):
+    manifest, _, _, _ = _write_fixture(tmp_path)
+    manifest.write_text("{not-json", encoding="utf-8")
+
+    result = evaluate_availability_manifest(manifest)
+
+    assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
+    assert result["canonical"] is False
+    assert result["market_session_approval"] == "NOT_ESTABLISHED"
+    assert any("Expecting property name" in error for error in result["errors"])
+
+
+def test_non_utc_requested_timestamp_fails_closed(tmp_path):
+    manifest, data, _, _ = _write_fixture(tmp_path)
+    data["windows"][0]["requested_start_utc"] = "2026-07-06T01:00:00+01:00"
+    manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+    result = evaluate_availability_manifest(manifest)
+
+    assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
+    assert any("expected a UTC timestamp" in error for error in result["errors"])
+
+
+def test_duplicate_window_indices_fail_closed(tmp_path):
+    manifest, data, _, _ = _write_fixture(tmp_path)
+    data["windows"][1]["window_index"] = 1
+    manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+    result = evaluate_availability_manifest(manifest)
+
+    assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
+    assert any("duplicate window_index" in error for error in result["errors"])
+
+
+def test_gap_interval_timestamp_disagreement_fails_closed(tmp_path):
+    manifest, _, _, gaps_path = _write_fixture(tmp_path)
+    gaps = json.loads(gaps_path.read_text(encoding="utf-8"))
+    gaps[0]["interval_minutes"] = 4
+    gaps_path.write_text(json.dumps(gaps, indent=2) + "\n", encoding="utf-8")
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    data["gap_artifact_sha256"] = _sha(gaps_path)
+    manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+    result = evaluate_availability_manifest(manifest)
+
+    assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
+    assert any("interval_minutes disagrees with timestamps" in error for error in result["errors"])
