@@ -84,6 +84,7 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
     trailing_activated = False
     max_favorable = 0.0
     exit_price = None
+    exit_time = None
     reason = "OPEN_OR_UNRESOLVED"
     ambiguous = False
 
@@ -100,13 +101,16 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
 
         if hit_sl and hit_tp:
             ambiguous, reason = True, "SL_AND_TP_SAME_BAR"
+            exit_time = int(bar["time"])
             break
         if hit_sl:
             exit_price = current_sl
+            exit_time = int(bar["time"])
             reason = "TRAIL_SL" if trailing_activated and current_sl != initial_sl else "SL"
             break
         if hit_tp:
             exit_price, reason = tp, "TP"
+            exit_time = int(bar["time"])
             break
 
         if direction == "BUY":
@@ -135,6 +139,8 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
     return {
         "direction": direction,
         "trigger_time": int(candidate["trigger_time"]),
+        "entry_time": int(candidate["trigger_time"]),
+        "exit_time": exit_time,
         "entry": entry,
         "initial_sl": initial_sl,
         "initial_tp": tp,
@@ -152,30 +158,61 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
     }
 
 
-def summarize(rows):
+def summarize(rows, dataset_end_time=None):
     decisive = [r for r in rows if not r["ambiguous"] and r["realized_R"] is not None]
-    wins = [r for r in decisive if r["realized_R"] > 0]
-    losses = [r for r in decisive if r["realized_R"] < 0]
-    net_r = sum(r["realized_R"] for r in decisive)
+    # Trade-level equity diagnostics must be ordered by actual exit time, not
+    # candidate discovery order or signal/trigger time.
+    exit_order = sorted(
+        decisive,
+        key=lambda r: (int(r["exit_time"]), int(r["trigger_time"]))
+        if r.get("exit_time") is not None
+        else (2**63 - 1, int(r["trigger_time"])),
+    )
+    wins = [r for r in exit_order if r["realized_R"] > 0]
+    losses = [r for r in exit_order if r["realized_R"] < 0]
+    net_r = sum(r["realized_R"] for r in exit_order)
     gross_win = sum(r["realized_R"] for r in wins)
     gross_loss = abs(sum(r["realized_R"] for r in losses))
     equity = peak = max_dd = 0.0
-    for r in decisive:
+    for r in exit_order:
         equity += r["realized_R"]
         peak = max(peak, equity)
         max_dd = max(max_dd, peak - equity)
+
+    # Independent trades can overlap. This is a concurrency diagnostic only,
+    # not a portfolio equity curve or a claim that all trades could be funded.
+    end_time = int(dataset_end_time) if dataset_end_time is not None else None
+    events = []
+    for row in rows:
+        start_time = row.get("entry_time", row.get("trigger_time"))
+        finish_time = row.get("exit_time")
+        if finish_time is None:
+            finish_time = end_time
+        if start_time is None or finish_time is None or int(finish_time) < int(start_time):
+            continue
+        # For equal timestamps, process exits before new entries.
+        events.append((int(start_time), 1))
+        events.append((int(finish_time), -1))
+    events.sort(key=lambda event: (event[0], event[1]))
+    active = max_active = 0
+    for _, delta in events:
+        active += delta
+        max_active = max(max_active, active)
+
     return {
         "signals": len(rows),
-        "decisive": len(decisive),
+        "decisive": len(exit_order),
         "wins": len(wins),
         "losses": len(losses),
         "ambiguous": sum(bool(r["ambiguous"]) for r in rows),
         "open_or_unresolved": sum(r["realized_R"] is None and not r["ambiguous"] for r in rows),
-        "win_rate_decisive_pct": 100 * len(wins) / len(decisive) if decisive else None,
+        "win_rate_decisive_pct": 100 * len(wins) / len(exit_order) if exit_order else None,
         "net_R": net_r,
         "profit_factor": gross_win / gross_loss if gross_loss else None,
         "max_drawdown_R": max_dd,
-        "max_consecutive_losses": max_consecutive_losses(decisive),
+        "drawdown_basis": "decisive trade R ordered by exit_time; independent trades, no portfolio sizing",
+        "max_consecutive_losses": max_consecutive_losses(exit_order),
+        "max_concurrent_independent_trades": max_active,
         "trail_activated_count": sum(bool(r["trailing_activated"]) for r in rows),
     }
 
@@ -226,7 +263,7 @@ def main():
                     simulate_one(bars, c, idx, activation, distance)
                     for c, idx in candidates
                 ]
-                summary = summarize(rows)
+                summary = summarize(rows, dataset_end_time=int(bars[-1]["time"]))
                 matrix.append({
                     "activation_price": activation,
                     "trail_distance_price": distance,
@@ -267,6 +304,8 @@ def main():
                 "costs": "spread, commission, swap, and slippage not included",
                 "entries": "one primary entry only; 2X secondary entries excluded to isolate trailing parameters",
                 "gap_fills": "assumes fill at modeled SL/TP level; broker gap/slippage behavior not modeled",
+                "drawdown": "decisive trade R ordered by exit time; independent trades and no portfolio sizing, so not account/portfolio drawdown",
+                "overlap": "maximum concurrent independent simulated trades reported; no capital, margin, or execution-capacity constraint",
             },
             "matrix": matrix,
         }
@@ -282,7 +321,7 @@ def main():
         with trades_path.open("w", newline="", encoding="utf-8") as f:
             trade_fields = (list(trade_rows[0].keys()) if trade_rows else [
                 "activation_price", "trail_distance_price", "direction", "trigger_time",
-                "entry", "initial_sl", "initial_tp", "risk_price", "final_sl",
+                "entry_time", "exit_time", "entry", "initial_sl", "initial_tp", "risk_price", "final_sl",
                 "trailing_activated", "max_favorable_price", "exit_price", "reason",
                 "ambiguous", "realized_price", "realized_R",
             ])
@@ -298,6 +337,8 @@ def main():
             f"Config module: {args.config_module}\n"
             f"Activation price grid: {activations}\nTrail-distance price grid: {distances}\n"
             "Trailing update applies starting on the next completed M1 bar; no same-bar look-ahead.\n"
+            "Trade-level drawdown and consecutive losses are sorted by exit time.\n"
+            "Maximum concurrent independent simulated trades is reported; this is not portfolio drawdown.\n"
             "Fixed initial TP; same-bar SL+TP ambiguity excluded from decisive metrics.\n"
             "Costs and 2X entries excluded; results are gross research diagnostics, not production evidence.\n"
             f"JSON: {json_path.name}\nMatrix CSV: {csv_path.name}\nTrade CSV: {trades_path.name}\n",
