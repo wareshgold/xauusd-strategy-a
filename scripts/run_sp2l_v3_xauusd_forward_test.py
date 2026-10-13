@@ -277,10 +277,30 @@ def _run_scoped_pending_lifecycle(cfg_runtime, state):
             "canonical":False})
 
 def _run_scoped_position_lifecycle(cfg_runtime, state):
-    symbol, magic = cfg_runtime["symbol"], cfg_runtime["magic"]
-    for position in (mt5.positions_get(symbol=symbol) or []):
-        position_id = int(getattr(position,"ticket",0) or 0)
-        if position_id not in state["positions"] or int(getattr(position,"magic",0) or 0) != magic:
+    symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
+    positions = mt5.positions_get(symbol=symbol)
+    if positions is None:
+        runner.log_event({
+            "event": "POSITION_SNAPSHOT_QUERY_FAILED",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "reason": "MT5_POSITIONS_GET_RETURNED_NONE",
+            "mt5_error": str(mt5.last_error()),
+            "diagnostic_only": True,
+            "canonical": False,
+        })
+        return
+    for position in positions:
+        position_id = int(
+            getattr(position, "identifier", 0)
+            or getattr(position, "ticket", 0)
+            or 0
+        )
+        if (
+            position_id not in state["positions"]
+            or str(getattr(position, "symbol", "") or "") != symbol
+            or int(getattr(position, "magic", 0) or 0) != magic
+        ):
             continue
         marker=f"POSITION:{position_id}:{float(getattr(position,'sl',0.0) or 0.0)}:{float(getattr(position,'tp',0.0) or 0.0)}"
         if marker in state["order_states"]:
@@ -305,7 +325,21 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # V3 intentionally starts with fresh in-memory state to avoid replaying old
     # signals; without this narrow reconciliation, a position opened before a
     # runner restart would be invisible to the CLOSED-result watcher.
-    for active_position in (mt5.positions_get(symbol=symbol) or []):
+    active_positions = mt5.positions_get(symbol=symbol)
+    if active_positions is None:
+        runner.log_event({
+            "event": "POSITION_SNAPSHOT_QUERY_FAILED",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "reason": "MT5_POSITIONS_GET_RETURNED_NONE",
+            "mt5_error": str(mt5.last_error()),
+            "diagnostic_only": True,
+            "canonical": False,
+        })
+        runner.save_state(state)
+        return
+
+    for active_position in active_positions:
         # Deal.position_id corresponds to the stable MT5 position identifier,
         # not necessarily the mutable/current position ticket.
         position_id = int(
@@ -323,7 +357,24 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
     if not tracked_orders and not tracked_positions:
         return
-    deals = mt5.history_deals_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or []
+    deals_result = mt5.history_deals_get(
+        _RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol
+    )
+    if deals_result is None:
+        runner.log_event({
+            "event": "POSITION_HISTORY_QUERY_FAILED",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "reason": "MT5_HISTORY_DEALS_GET_RETURNED_NONE",
+            "mt5_error": str(mt5.last_error()),
+            "history_start_utc": _RUN_STARTED_UTC.isoformat(),
+            "history_end_utc": datetime.now(timezone.utc).isoformat(),
+            "diagnostic_only": True,
+            "canonical": False,
+        })
+        runner.save_state(state)
+        return
+    deals = list(deals_result)
     for deal in sorted(deals, key=lambda x:(int(x.time), int(x.ticket))):
         ticket=int(deal.ticket)
         if ticket in state["deals"]:
@@ -386,7 +437,7 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             or getattr(position, "ticket", 0)
             or 0
         )
-        for position in (mt5.positions_get(symbol=symbol) or [])
+        for position in active_positions
         if str(getattr(position, "symbol", "") or "") == symbol
         and int(getattr(position, "magic", 0) or 0) == magic
         and int(
