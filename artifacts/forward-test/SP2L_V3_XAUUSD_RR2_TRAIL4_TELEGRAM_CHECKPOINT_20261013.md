@@ -25,7 +25,7 @@ Checkpoint Telegram notification evidence before the next historical trailing-ma
 
 ## Next sequence
 1. Reconcile the reported +$0.23 close against its matching `TELEGRAM_DEAL_LIFECYCLE` record; if necessary inspect only the latest matching events.
-2. Prepare a deterministic historical comparison of trailing-management variants using the same data, signal set, fills, spread/commission assumptions, and exit-resolution rules. Do not choose settings from a single favorable metric; report net P/L, R, drawdown, profit factor, win rate, trade count, and stability by time segment.
+2. Prepare a deterministic historical comparison of trailing-management variants using the same dataset, signal set, and exit-resolution rules. The first matrix is gross (spread, commission, swap, and slippage excluded) and isolates one primary entry; record this limitation and add costs/2X only in a separate follow-up. Do not choose settings from a single favorable metric; report R, drawdown, profit factor, win rate, trade count, ambiguity count, and stability by time segment.
 3. Freeze the tested parameter grid and record all assumptions before comparing results. Treat any unresolved source geometry as unresolved; the backtest cannot make a source rule canonical.
 4. Only after the user selects a tested research configuration, update the forward-test configuration in a controlled, documented change and take a fresh runtime snapshot.
 5. Return to Factory work after the backtest/configuration decision.
