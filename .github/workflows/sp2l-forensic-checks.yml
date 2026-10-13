@@ -25,3 +25,5 @@ jobs:
         run: python -m pytest -q tests/test_sp2l_v3_pending_expiry.py tests/test_pending_order_expiry.py
       - name: Run trailing matrix chronology audit tests
         run: python -m pytest -q tests/test_sp2l_v3_xauusd_trailing_matrix_audit.py
+      - name: Run entry geometry diagnostic tests
+        run: python -m pytest -q tests/test_sp2l_v3_entry_geometry_audit.py
