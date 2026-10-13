@@ -53,6 +53,18 @@ class ExternalStrategyBlueprint:
     resolved_source_questions: Mapping[str, str] = field(default_factory=dict)
     max_candidates: int = 64
 
+    def __post_init__(self) -> None:
+        # Reject source-uncertainty loss at the intake/blueprint boundary,
+        # rather than waiting for a later fingerprint or plan operation.
+        intake_questions = set(self.intake.unresolved_questions)
+        carried_questions = set(self.unresolved_questions)
+        resolved_questions = set(self.resolved_source_questions or {})
+        unaccounted = intake_questions - carried_questions - resolved_questions
+        if unaccounted:
+            raise StrategyBlueprintError(
+                "intake unresolved questions must remain unresolved or have explicit resolution notes"
+            )
+
     def validate(self) -> None:
         if not all(
             isinstance(value, str) and value.strip()
