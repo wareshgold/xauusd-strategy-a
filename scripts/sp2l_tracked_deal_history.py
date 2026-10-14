@@ -17,7 +17,7 @@ def collect_tracked_deals(*, history_deals_get, history_orders_get, symbol, trac
         except Exception:
             historical_orders = []
         for order in historical_orders:
-            if str(getattr(order, "symbol", "") or "") != symbol:
+            if str(getattr(order, "symbol", symbol) or symbol) != symbol:
                 continue
             if int(getattr(order, "ticket", 0) or 0) != order_id:
                 continue
@@ -30,7 +30,7 @@ def collect_tracked_deals(*, history_deals_get, history_orders_get, symbol, trac
         except Exception:
             order_deals = []
         for deal in order_deals:
-            if str(getattr(deal, "symbol", "") or "") != symbol:
+            if str(getattr(deal, "symbol", symbol) or symbol) != symbol:
                 continue
             if int(getattr(deal, "order", 0) or 0) != order_id:
                 continue
