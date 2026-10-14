@@ -303,15 +303,23 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
     if not tracked_orders and not tracked_positions:
         return
-    deals = mt5.history_deals_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or []
-    for deal in sorted(deals, key=lambda x:(int(x.time), int(x.ticket))):
+
+    # MT5 time-window history can omit recent deals when broker timestamps use
+    # a different clock basis from host UTC. Resolve only runner-owned IDs.
+    from sp2l_tracked_deal_history import collect_tracked_deals
+    deals = collect_tracked_deals(
+        history_deals_get=mt5.history_deals_get,
+        history_orders_get=mt5.history_orders_get,
+        symbol=symbol,
+        tracked_orders=tracked_orders,
+        tracked_positions=tracked_positions,
+    )
+    for deal in deals:
         ticket=int(deal.ticket)
         if ticket in state["deals"]:
             continue
         order=int(getattr(deal,"order",0) or 0)
         position=int(getattr(deal,"position_id",0) or 0)
-        if order not in tracked_orders and position not in tracked_positions:
-            continue
         runner._remember_position_links(state, deal)
         is_entry = int(getattr(deal,"entry",-1)) == mt5.DEAL_ENTRY_IN
         entry_price=float(deal.price) if is_entry else runner.position_entry_price(deal, magic)
@@ -344,15 +352,10 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             "telegram":{"success":delivered,"detail":getattr(tg,"detail",None)},
             "canonical":False})
         if delivered:
-            # Persist each acknowledged deal immediately. Otherwise a later
-            # empty-rate poll or process crash could cause a successful post
-            # to be sent again after restart.
             state["deals"].add(ticket)
             runner.save_state(state)
         else:
-            # Preserve chronological OPENED -> CLOSED delivery. A failed
-            # earlier deal remains eligible for retry; do not leapfrog it
-            # with a later close message for the same history poll.
+            # Preserve chronological OPENED -> CLOSED delivery and retry failed sends.
             runner.save_state(state)
             break
 
