@@ -375,8 +375,17 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
         runner.save_state(state)
         return
     deals = list(deals_result)
+    # Enforce the forward-session boundary against each returned deal's Unix
+    # epoch as well as the MT5 history query bounds. If MT5 returns records
+    # outside the requested range, never send a new Telegram message for a
+    # deal that predates this run. A genuinely new close of a pre-existing
+    # position still passes because the close deal has its own current timestamp.
+    run_started_epoch = int(_RUN_STARTED_UTC.timestamp())
     for deal in sorted(deals, key=lambda x:(int(x.time), int(x.ticket))):
         ticket=int(deal.ticket)
+        deal_epoch = int(getattr(deal, "time", 0) or 0)
+        if deal_epoch < run_started_epoch:
+            continue
         if ticket in state["deals"]:
             continue
         order=int(getattr(deal,"order",0) or 0)
