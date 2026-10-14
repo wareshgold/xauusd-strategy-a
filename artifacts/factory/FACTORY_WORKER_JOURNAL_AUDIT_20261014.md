@@ -63,7 +63,7 @@ These are different job IDs in separate files. They do not supply the missing `E
 
 The current branch already contains read-only audit logic in `src/strategy_factory/worker_journal_audit.py` and focused lifecycle tests in `tests/test_factory_worker_journal_lifecycle_history.py`. The code deliberately surfaces repeated/conflicting terminal lifecycle records even when the current worker snapshot does not reference the job, and does not repair the history.
 
-The local Factory suite was reported as **811 passed** on the current worktree. GitHub Actions for the PR head commit also completed successfully: **Factory Research Tests** (run 577) and **SP2L forensic deterministic checks** (run 349). These CI results validate the branch's configured checks; they do not independently inspect the user's local runtime files or resolve the lifecycle findings.
+The local Factory suite was reported as **811 passed** on the current worktree. GitHub Actions completed successfully for the initial audit snapshot commit: **Factory Research Tests** (run 577) and **SP2L forensic deterministic checks** (run 349). The subsequent change only updates this document to record those results; no workflow run was returned yet for that follow-up commit. These CI results validate the configured checks on the tested commit; they do not independently inspect the user's local runtime files or resolve the lifecycle findings.
 
 ## Required next actions
 
