@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+import pytest
+
 from scripts.sp2l_tracked_deal_history import collect_tracked_deals
 
 
@@ -67,3 +69,36 @@ def test_collects_known_position_and_deduplicates_deals():
     )
 
     assert [deal.ticket for deal in result] == [1, 2]
+
+
+
+def test_none_history_result_raises_instead_of_becoming_empty():
+    from scripts.sp2l_tracked_deal_history import DealHistoryQueryError
+
+    with pytest.raises(DealHistoryQueryError, match="MT5 returned None") as exc:
+        collect_tracked_deals(
+            history_deals_get=lambda **kwargs: None,
+            history_orders_get=lambda **kwargs: [],
+            symbol="XAUUSD.ecn",
+            tracked_orders={123},
+            tracked_positions=set(),
+        )
+    assert exc.value.query == "history_deals_get(ticket)"
+    assert exc.value.target == 123
+
+
+def test_history_exception_is_preserved_as_query_failure():
+    from scripts.sp2l_tracked_deal_history import DealHistoryQueryError
+
+    def failed_query(**kwargs):
+        raise OSError("terminal IPC unavailable")
+
+    with pytest.raises(DealHistoryQueryError, match="terminal IPC unavailable") as exc:
+        collect_tracked_deals(
+            history_deals_get=failed_query,
+            history_orders_get=lambda **kwargs: [],
+            symbol="XAUUSD.ecn",
+            tracked_orders={123},
+            tracked_positions=set(),
+        )
+    assert exc.value.query == "history_deals_get(ticket)"

@@ -430,14 +430,15 @@ def test_deal_lifecycle_timestamp_uses_utc_then_iran_time(monkeypatch, tmp_path)
 
 def test_lifecycle_retries_failed_open_before_sending_close(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
+    run_epoch = int(time.time()) + 10
     entry = SimpleNamespace(
         ticket=100, order=500, position_id=900, entry=m.DEAL_ENTRY_IN,
-        reason=0, time=100, price=2300.0, volume=0.01, profit=0.0,
+        reason=0, time=run_epoch, price=2300.0, volume=0.01, profit=0.0,
         commission=0.0, swap=0.0, magic=MAGIC, type=m.DEAL_TYPE_BUY,
     )
     close = SimpleNamespace(
         ticket=101, order=501, position_id=900, entry=m.DEAL_ENTRY_OUT,
-        reason=1, time=101, price=2301.0, volume=0.01, profit=1.0,
+        reason=1, time=run_epoch + 1, price=2301.0, volume=0.01, profit=1.0,
         commission=-0.05, swap=0.0, magic=MAGIC, type=m.DEAL_TYPE_SELL,
     )
     m.history_deals_get = lambda *args, **kwargs: [close, entry]
@@ -513,3 +514,47 @@ def test_execution_blocked_message_reports_no_order(monkeypatch, tmp_path):
     assert "\\n" not in sent[0], "message must not contain literal backslash-n sequences"
     assert sent[0].count("\n") >= 4, "message fields should be separated by actual newlines"
 
+
+
+
+def test_lifecycle_history_query_failure_defers_telegram(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    m.history_orders_get = lambda **kwargs: []
+    m.history_deals_get = lambda **kwargs: None
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", events.append)
+    monkeypatch.setattr(mod.runner, "save_state", lambda current: None)
+    s = state()
+    s["orders"].add(123)
+
+    mod._run_scoped_symbol_lifecycle(
+        {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}, s
+    )
+
+    assert any(e.get("event") == "MT5_DEAL_HISTORY_QUERY_FAILED" for e in events)
+    assert not any(e.get("event") == "TELEGRAM_DEAL_LIFECYCLE" for e in events)
+    assert not s["deals"]
+
+
+def test_lifecycle_suppresses_stale_deal_returned_outside_query_window(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    stale = SimpleNamespace(
+        ticket=987, order=123, position_id=0,
+        time=int(time.time()) - 120,
+        symbol=SYMBOL, entry=0, price=2300.0,
+    )
+    m.history_orders_get = lambda **kwargs: []
+    m.history_deals_get = lambda **kwargs: [stale] if kwargs == {"ticket": 123} else []
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", events.append)
+    monkeypatch.setattr(mod.runner, "save_state", lambda current: None)
+    s = state()
+    s["orders"].add(123)
+
+    mod._run_scoped_symbol_lifecycle(
+        {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}, s
+    )
+
+    assert 987 in s["deals"]
+    assert any(e.get("event") == "TELEGRAM_STALE_DEAL_SUPPRESSED" for e in events)
+    assert not any(e.get("event") == "TELEGRAM_DEAL_LIFECYCLE" for e in events)

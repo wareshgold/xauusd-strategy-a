@@ -307,17 +307,54 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # MT5 time-window history can omit recent deals when broker timestamps use
     # a different clock basis from host UTC. Resolve only runner-owned IDs,
     # then query each linked position so its closing deal is not missed.
-    from sp2l_tracked_deal_history import collect_tracked_deals
-    deals = collect_tracked_deals(
-        history_deals_get=mt5.history_deals_get,
-        history_orders_get=getattr(mt5, "history_orders_get", lambda **kwargs: []),
-        symbol=symbol,
-        tracked_orders=tracked_orders,
-        tracked_positions=tracked_positions,
+    from sp2l_tracked_deal_history import (
+        DealHistoryQueryError,
+        collect_tracked_deals,
     )
+    try:
+        deals = collect_tracked_deals(
+            history_deals_get=mt5.history_deals_get,
+            history_orders_get=getattr(mt5, "history_orders_get", None),
+            symbol=symbol,
+            tracked_orders=tracked_orders,
+            tracked_positions=tracked_positions,
+        )
+    except DealHistoryQueryError as exc:
+        # MT5 query failure is not an empty history snapshot. Defer lifecycle
+        # delivery and reconciliation until a later poll can read history.
+        runner.log_event({
+            "event": "MT5_DEAL_HISTORY_QUERY_FAILED",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "query": exc.query,
+            "target": exc.target,
+            "detail": exc.detail,
+            "canonical": False,
+        })
+        runner.save_state(state)
+        return
+
+    run_started_epoch = int(_RUN_STARTED_UTC.timestamp())
     for deal in deals:
         ticket=int(deal.ticket)
         if ticket in state["deals"]:
+            continue
+        deal_epoch = int(getattr(deal, "time", 0) or 0)
+        if deal_epoch > 0 and deal_epoch < run_started_epoch:
+            # Suppress historical deals even if MT5 unexpectedly returns them
+            # outside the requested time bounds. Record the suppression once;
+            # a genuinely new close deal has its own post-start timestamp.
+            state["deals"].add(ticket)
+            runner.log_event({
+                "event": "TELEGRAM_STALE_DEAL_SUPPRESSED",
+                "version": cfg.VERSION,
+                "symbol": symbol,
+                "deal": ticket,
+                "deal_time": deal_epoch,
+                "run_started_epoch": run_started_epoch,
+                "canonical": False,
+            })
+            runner.save_state(state)
             continue
         order=int(getattr(deal,"order",0) or 0)
         position=int(getattr(deal,"position_id",0) or 0)

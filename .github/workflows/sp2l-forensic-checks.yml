@@ -23,5 +23,7 @@ jobs:
         run: python -m pytest -q tests/test_reconcile_sp2l_forward_backtest.py
       - name: Run pending-order expiry regression tests
         run: python -m pytest -q tests/test_sp2l_v3_pending_expiry.py tests/test_pending_order_expiry.py
+      - name: Run tracked-deal history query regression tests
+        run: python -m pytest -q tests/test_sp2l_v3_tracked_deal_history.py
       - name: Run trailing matrix chronology audit tests
         run: python -m pytest -q tests/test_sp2l_v3_xauusd_trailing_matrix_audit.py
