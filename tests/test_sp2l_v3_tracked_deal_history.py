@@ -1,0 +1,69 @@
+from types import SimpleNamespace
+
+from scripts.sp2l_tracked_deal_history import collect_tracked_deals
+
+
+def test_collects_sl_exit_by_position_without_host_time_window():
+    entry = SimpleNamespace(
+        ticket=62593812, order=63407773, position_id=63407773,
+        time=1791969426, symbol="XAUUSD.ecn", entry=0, price=4159.75,
+    )
+    exit_deal = SimpleNamespace(
+        ticket=62594573, order=63408767, position_id=63407773,
+        time=1791970020, symbol="XAUUSD.ecn", entry=1, price=4154.55,
+    )
+    unrelated = SimpleNamespace(
+        ticket=777, order=888, position_id=888,
+        time=1791970030, symbol="XAUUSD.ecn", entry=1, price=1.0,
+    )
+    order = SimpleNamespace(ticket=63407773, position_id=63407773, symbol="XAUUSD.ecn")
+    calls = []
+
+    def deals_get(**kwargs):
+        calls.append(("deals", kwargs))
+        if kwargs == {"ticket": 63407773}:
+            return [entry]
+        if kwargs == {"position": 63407773}:
+            return [entry, exit_deal, unrelated]
+        raise AssertionError(f"unexpected history query: {kwargs}")
+
+    def orders_get(**kwargs):
+        calls.append(("orders", kwargs))
+        assert kwargs == {"ticket": 63407773}
+        return [order]
+
+    result = collect_tracked_deals(
+        history_deals_get=deals_get,
+        history_orders_get=orders_get,
+        symbol="XAUUSD.ecn",
+        tracked_orders={63407773},
+        tracked_positions=set(),
+    )
+
+    assert [deal.ticket for deal in result] == [62593812, 62594573]
+    assert ("deals", {"position": 63407773}) in calls
+    assert not any("date_from" in kwargs or "date_to" in kwargs for _, kwargs in calls)
+
+
+def test_collects_known_position_and_deduplicates_deals():
+    first = SimpleNamespace(
+        ticket=1, order=10, position_id=20, time=100, symbol="XAUUSD.ecn",
+    )
+    second = SimpleNamespace(
+        ticket=2, order=11, position_id=20, time=101, symbol="XAUUSD.ecn",
+    )
+
+    def deals_get(**kwargs):
+        if kwargs == {"position": 20}:
+            return [first, second]
+        return []
+
+    result = collect_tracked_deals(
+        history_deals_get=deals_get,
+        history_orders_get=lambda **kwargs: [],
+        symbol="XAUUSD.ecn",
+        tracked_orders=set(),
+        tracked_positions={20},
+    )
+
+    assert [deal.ticket for deal in result] == [1, 2]
