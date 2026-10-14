@@ -318,8 +318,18 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     if not tracked_orders and not tracked_positions:
         return
     deals = mt5.history_deals_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or []
+    # Enforce the forward-session boundary against each returned deal's Unix
+    # epoch as well as the MT5 history query bounds. Some terminal/history
+    # combinations may return records outside the requested range; never send
+    # a newly delivered Telegram message for a deal that predates this run.
+    # A position opened before restart can still report a genuinely new close,
+    # because the close deal's own timestamp is checked independently here.
+    run_started_epoch = int(_RUN_STARTED_UTC.timestamp())
     for deal in sorted(deals, key=lambda x:(int(x.time), int(x.ticket))):
         ticket=int(deal.ticket)
+        deal_epoch = int(getattr(deal, "time", 0) or 0)
+        if deal_epoch < run_started_epoch:
+            continue
         if ticket in state["deals"]:
             continue
         order=int(getattr(deal,"order",0) or 0)
