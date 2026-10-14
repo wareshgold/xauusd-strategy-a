@@ -9,7 +9,7 @@ def load(monkeypatch, tmp_path):
         initialize=lambda path=None: True,
         shutdown=lambda: None,
         terminal_info=lambda: SimpleNamespace(connected=True, trade_allowed=True),
-        account_info=lambda: SimpleNamespace(login=812930,server="OtetGroup-MT5",balance=994.32,equity=995.10),
+        account_info=lambda: SimpleNamespace(login=812930,server="OtetGroup-MT5",balance=994.32,equity=995.10,trade_mode=0),
         symbol_info_tick=lambda s: SimpleNamespace(bid=4189.66,ask=4189.84),
         orders_get=lambda symbol=None: [],
         positions_get=lambda symbol=None: [],
