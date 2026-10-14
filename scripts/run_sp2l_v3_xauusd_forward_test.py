@@ -24,6 +24,15 @@ os.environ.setdefault("ALLOW_REAL_EXECUTION","true")
 
 import run_sp2l_author_replica_multi_symbol_forward_test as runner
 
+# RR2/TRAIL4 Telegram display convention only: one pip = $0.10 price.
+# Do not alter the generic runner's pip_size or execution configuration.
+_original_send_signal = runner.send_signal
+def _rr2_trail4_send_signal(candidate, pip_size, order_ticket=None):
+    return _original_send_signal(
+        candidate, float(cfg.XAU_PIP_SIZE_PRICE), order_ticket
+    )
+runner.send_signal = _rr2_trail4_send_signal
+
 runner.detect=cfg.detect
 runner.find_first_entry=cfg.find_first_entry
 runner.find_latest_candidate=cfg.find_latest_candidate
@@ -370,7 +379,7 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             execution_meta=state.get("signal_orders",{}).get(str(linked_order),{})
             if execution_meta: break
         tg=runner.gateway.send_telegram_message(
-            runner.lifecycle_message(deal,symbol,pip,magic), parse_mode="HTML")
+            runner.lifecycle_message(deal,symbol,cfg.XAU_PIP_SIZE_PRICE,magic), parse_mode="HTML")
         delivered=bool(getattr(tg,"success",False))
         profit=float(getattr(deal,"profit",0.0) or 0.0)
         commission=float(getattr(deal,"commission",0.0) or 0.0)
