@@ -88,6 +88,14 @@ The following producer/consumer paths were inspected on `research/xauusd-availab
 
 ### Source-trace conclusion
 
+Git history adds an important timing clue:
+
+- The latest reported `DISCOVERY-1` event time is `2026-10-11T10:56:36Z`.
+- Commit [`71196fb`](https://github.com/wareshgold/xauusd-strategy-a/commit/71196fb9bd48d9da9e41507e462720b7265576f6), titled `fix(factory): enforce job lifecycle transitions and audit conflicts`, was committed at `2026-10-11T11:03:19Z` — 6 minutes 43 seconds after that reported latest event time. Its commit record explicitly describes the then-observed repeated `DISCOVERY-1` completions and adds persisted-ledger transition enforcement.
+- Commit [`a39674b`](https://github.com/wareshgold/xauusd-strategy-a/commit/a39674b47f553d42f7abac311ecedabf6c42035b), at `2026-10-11T11:06:46Z`, then scoped strict transition enforcement to persisted journals so in-memory synthetic/imported-history fixtures could still classify intentionally invalid histories.
+
+This chronology strongly supports that the repeated completions were already present before the current persisted-ledger guard was introduced, rather than demonstrating that the current guarded append path is still emitting them. It does **not** identify which command or process wrote every row, and it does not explain the separate `JOB-EVENT-001` conflicting terminal sequence. Those remain historical evidence to preserve, not a reason to rerun the old writer.
+
 The current inspected code and regression tests already guard against repeated terminal writes through a persisted ledger. The local journal's 122 `COMPLETED` rows therefore cannot be attributed to the inspected current persisted-ledger path without additional evidence. Plausible unresolved possibilities include historical rows written before the guard existed, a producer that bypassed the persisted ledger, or a different runtime code revision/path. These are hypotheses, not findings.
 
 No additional code patch is justified yet: the existing repeated-completion regression already covers the invariant, and changing it without identifying the actual writer risks masking the source of the evidence. The next discriminating evidence is the exact runtime command/process or script that appended to the main journal at the reported timestamps, plus the relevant source revision then in use. Preserve the original files; do not run the writer against them to reproduce the anomaly.
