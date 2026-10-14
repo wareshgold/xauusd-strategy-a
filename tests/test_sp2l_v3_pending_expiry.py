@@ -430,6 +430,9 @@ def test_deal_lifecycle_timestamp_uses_utc_then_iran_time(monkeypatch, tmp_path)
 
 def test_lifecycle_retries_failed_open_before_sending_close(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
+    from datetime import datetime, timezone
+    # The fixture uses tiny Unix timestamps; make them valid for this run.
+    monkeypatch.setattr(mod, "_RUN_STARTED_UTC", datetime.fromtimestamp(99, timezone.utc))
     entry = SimpleNamespace(
         ticket=100, order=500, position_id=900, entry=m.DEAL_ENTRY_IN,
         reason=0, time=100, price=2300.0, volume=0.01, profit=0.0,
@@ -475,6 +478,40 @@ def test_lifecycle_retries_failed_open_before_sending_close(monkeypatch, tmp_pat
     assert sent == ["OPENED:100", "OPENED:100", "CLOSED:101"]
     assert s["deals"] == {100, 101}
     assert saved[-2:] == [{100}, {100, 101}], "persist each acknowledged lifecycle post"
+
+def test_lifecycle_never_sends_deals_that_predate_runner_start(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    from datetime import timedelta
+
+    old_time = int((mod._RUN_STARTED_UTC - timedelta(minutes=5)).timestamp())
+    old_deal = SimpleNamespace(
+        ticket=7001, order=5001, position_id=9001,
+        entry=m.DEAL_ENTRY_IN, reason=0, time=old_time,
+        price=2300.0, volume=0.01, profit=0.0,
+        commission=0.0, swap=0.0, magic=MAGIC, type=m.DEAL_TYPE_BUY,
+    )
+    m.positions_get = lambda symbol=None: []
+    # Simulate a terminal returning an out-of-range historical record despite
+    # the requested history bounds. Explicit deal-time gating must reject it.
+    m.history_deals_get = lambda *args, **kwargs: [old_deal]
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda message, **kwargs: sent.append(message) or SimpleNamespace(success=True, detail="HTTP_200"),
+    )
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: None)
+    monkeypatch.setattr(mod.runner, "save_state", lambda state: None)
+    s = state()
+    s["orders"].add(5001)
+    s["positions"].add(9001)
+
+    mod._run_scoped_symbol_lifecycle(
+        {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}, s
+    )
+
+    assert sent == [], "a pre-run historical deal must never trigger a new Telegram message"
+    assert s["deals"] == set()
+
 
 def test_pending_signal_message_explicitly_says_not_filled(monkeypatch, tmp_path):
     mod, _ = load_v3(monkeypatch, tmp_path)
