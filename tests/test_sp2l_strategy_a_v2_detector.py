@@ -1,3 +1,5 @@
+import pytest
+
 from scripts.sp2l_strategy_a_v2_detector import detect_setup, find_first_entry
 
 
@@ -23,8 +25,8 @@ def test_buy_v2_setup_and_trigger():
     assert entry is not None
     assert entry["entry_index"] == 4
     assert entry["entry"] == 105.0
-    assert entry["risk"] == 5.1
-    assert entry["tp"] == 110.1
+    assert entry["risk"] == pytest.approx(5.1)
+    assert entry["tp"] == pytest.approx(110.1)
 
 
 def test_sell_v2_setup_and_trigger():
@@ -45,7 +47,7 @@ def test_sell_v2_setup_and_trigger():
     assert entry["entry_index"] == 4
     assert entry["entry"] == 95.0
     assert entry["risk"] == 5.1
-    assert entry["tp"] == 89.9
+    assert entry["tp"] == pytest.approx(89.9)
 
 
 def test_first_invalid_trigger_rejects_setup():
