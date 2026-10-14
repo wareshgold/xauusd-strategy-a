@@ -41,6 +41,25 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def acquisition_output_paths(output: Path) -> tuple[Path, Path, Path]:
+    """Return final data, temporary data, and manifest paths for one acquisition."""
+    temp_path = output.with_name(output.name + ".partial")
+    manifest_path = output.with_suffix("").with_suffix(".manifest.json")
+    return output, temp_path, manifest_path
+
+
+def ensure_acquisition_outputs_absent(output: Path) -> tuple[Path, Path, Path]:
+    """Fail closed if any output for this acquisition already exists."""
+    paths = acquisition_output_paths(output)
+    existing = [str(path) for path in paths if path.exists()]
+    if existing:
+        raise FileExistsError(
+            "refusing to overwrite existing acquisition artifact(s): "
+            + ", ".join(existing)
+        )
+    return paths
+
+
 def _float(value: object) -> float:
     try:
         number = float(value)
@@ -83,6 +102,9 @@ def acquire(
     if output.suffix.lower() != ".gz":
         raise ValueError("output must end in .csv.gz to make the artifact compact and deterministic")
 
+    # Refuse collisions before initializing MT5; never replace prior evidence.
+    _, temp_path, manifest_path = ensure_acquisition_outputs_absent(output)
+
     try:
         import MetaTrader5 as mt5
     except ImportError as exc:
@@ -103,7 +125,6 @@ def acquire(
             raise RuntimeError(f"symbol_info({symbol!r}) failed: {mt5.last_error()}")
 
         output.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = output.with_name(output.name + ".partial")
         tick_count = 0
         valid_quote_count = 0
         crossed_quote_count = 0
@@ -118,7 +139,8 @@ def acquire(
         spread_count = 0
 
         # gzip mtime=0 makes identical CSV bytes compress deterministically.
-        with temp_path.open("wb") as raw:
+        # Exclusive creation protects a pre-existing partial artifact from truncation.
+        with temp_path.open("xb") as raw:
             with gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=0) as compressed:
                 import io
                 text = io.TextIOWrapper(compressed, encoding="utf-8", newline="", write_through=True)
@@ -167,7 +189,10 @@ def acquire(
                     cursor = chunk_end
                 text.flush()
                 text.detach()
-        temp_path.replace(output)
+        # Atomic no-clobber publication: unlike replace(), link() fails if the
+        # final path appeared while acquisition was running.
+        os.link(temp_path, output)
+        temp_path.unlink()
         digest = sha256_file(output)
         manifest = {
             "schema_version": 1,
@@ -210,8 +235,9 @@ def acquire(
             "forward_runner_touched": False,
             "account_login_recorded": False
         }
-        manifest_path = output.with_suffix("").with_suffix(".manifest.json")
-        manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        # Exclusive manifest creation preserves any evidence that appeared mid-run.
+        with manifest_path.open("x", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
         return manifest
     finally:
         mt5.shutdown()
