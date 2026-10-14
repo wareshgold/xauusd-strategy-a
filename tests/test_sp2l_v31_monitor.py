@@ -17,6 +17,9 @@ def load(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules,"MetaTrader5",fake)
     sys.modules.pop("sp2l_v31_monitor",None)
     mod=importlib.import_module("sp2l_v31_monitor")
+    # Bind the fake terminal directly to the loaded module even if another test
+    # imported a monitor module under a different module name earlier.
+    mod.mt5=fake
     monkeypatch.setattr(mod,"STATE_FILE",tmp_path/"state.json")
     monkeypatch.setattr(mod,"EVENTS",tmp_path/"events.jsonl")
     mod.STATE_FILE.write_text(json.dumps({"orders":[],"positions":[],"deals":[]}),encoding="utf-8")
