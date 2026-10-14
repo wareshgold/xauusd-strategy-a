@@ -90,6 +90,23 @@ def build_matrix(
                 )
             )
 
+        # Keep cross-symbol/timeframe robustness cases explicitly diagnostic.
+        # They are never added to the PRIMARY population or treated as canonical.
+        for symbol in ("XAUUSD", "BTCUSD"):
+            for timeframe in ("M5", "M15"):
+                cases.append(
+                    MatrixCase(
+                        case_id=f"ROBUSTNESS-{symbol}-{timeframe}-{week_start.isoformat()}",
+                        symbol=symbol,
+                        timeframe=timeframe,
+                        window_start_utc=ws,
+                        window_end_utc=we,
+                        session_start_utc=None,
+                        session_end_utc=None,
+                        population="ROBUSTNESS_DIAGNOSTIC",
+                    )
+                )
+
     return cases
 
 
