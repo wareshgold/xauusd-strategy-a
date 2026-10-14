@@ -46,7 +46,7 @@ def test_sell_v2_setup_and_trigger():
     assert entry is not None
     assert entry["entry_index"] == 4
     assert entry["entry"] == 95.0
-    assert entry["risk"] == 5.1
+    assert entry["risk"] == pytest.approx(5.1)
     assert entry["tp"] == pytest.approx(89.9)
 
 
