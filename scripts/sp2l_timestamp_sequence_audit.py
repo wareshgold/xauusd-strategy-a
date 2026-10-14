@@ -10,6 +10,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -67,8 +68,13 @@ def audit_timestamp_sequence(
         "source_artifacts_modified": False,
     }
 
-    if not isinstance(interval_minutes, (int, float)) or isinstance(interval_minutes, bool) or interval_minutes <= 0:
-        errors.append("interval_minutes must be a positive number")
+    if (
+        not isinstance(interval_minutes, (int, float))
+        or isinstance(interval_minutes, bool)
+        or not math.isfinite(interval_minutes)
+        or interval_minutes <= 0
+    ):
+        errors.append("interval_minutes must be a finite positive number")
     if not isinstance(timestamp_column, str) or not timestamp_column.strip():
         errors.append("timestamp_column must be a non-empty string")
     if errors:
