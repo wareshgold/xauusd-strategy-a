@@ -100,14 +100,15 @@ def test_missing_timestamp_column_fails_closed(tmp_path):
     assert any("not found in CSV header" in error for error in report["errors"])
 
 
-def test_invalid_interval_fails_closed(tmp_path):
+@pytest.mark.parametrize("bad_interval", [0, -1, float("nan"), float("inf"), float("-inf")])
+def test_invalid_interval_fails_closed(tmp_path, bad_interval):
     source = tmp_path / "bars.csv"
     _write_csv(source, ["2026-10-12T10:00:00Z"])
 
-    report = audit_timestamp_sequence(source, "time", 0)
+    report = audit_timestamp_sequence(source, "time", bad_interval)
 
     assert report["status"] == "STRUCTURAL_INTEGRITY_FAIL"
-    assert any("positive number" in error for error in report["errors"])
+    assert any("finite positive number" in error for error in report["errors"])
 
 
 def test_cli_emits_machine_readable_json_and_exit_code(tmp_path, monkeypatch, capsys):
