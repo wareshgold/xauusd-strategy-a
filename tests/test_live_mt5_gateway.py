@@ -92,7 +92,7 @@ def test_sell_dry_run_builds_sell_order(monkeypatch, tmp_path):
 
 def test_max_open_positions_blocks_execution(monkeypatch, tmp_path):
     gateway, mt5 = load_gateway(monkeypatch, tmp_path)
-    mt5.positions_get = lambda symbol=None: [object()]
+    mt5.positions_get = lambda symbol=None: [SimpleNamespace(magic=gateway.MAGIC)]
     signal = gateway.Signal.from_json({
         "direction": "BUY",
         "symbol": "XAUUSD.ecn",

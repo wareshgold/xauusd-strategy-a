@@ -9,7 +9,7 @@ def load(monkeypatch, tmp_path):
         initialize=lambda path=None: True,
         shutdown=lambda: None,
         terminal_info=lambda: SimpleNamespace(connected=True, trade_allowed=True),
-        account_info=lambda: SimpleNamespace(login=812930,server="OtetGroup-MT5",balance=994.32,equity=995.10),
+        account_info=lambda: SimpleNamespace(login=812930,server="OtetGroup-MT5",balance=994.32,equity=995.10,trade_mode=0),
         symbol_info_tick=lambda s: SimpleNamespace(bid=4189.66,ask=4189.84),
         orders_get=lambda symbol=None: [],
         positions_get=lambda symbol=None: [],
@@ -17,6 +17,9 @@ def load(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules,"MetaTrader5",fake)
     sys.modules.pop("sp2l_v31_monitor",None)
     mod=importlib.import_module("sp2l_v31_monitor")
+    # Bind the fake terminal directly to the loaded module even if another test
+    # imported a monitor module under a different module name earlier.
+    mod.mt5=fake
     monkeypatch.setattr(mod,"STATE_FILE",tmp_path/"state.json")
     monkeypatch.setattr(mod,"EVENTS",tmp_path/"events.jsonl")
     mod.STATE_FILE.write_text(json.dumps({"orders":[],"positions":[],"deals":[]}),encoding="utf-8")
