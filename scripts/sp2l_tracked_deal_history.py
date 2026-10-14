@@ -45,7 +45,7 @@ def collect_tracked_deals(*, history_deals_get, history_orders_get, symbol, trac
         except Exception:
             position_deals = []
         for deal in position_deals:
-            if str(getattr(deal, "symbol", "") or "") != symbol:
+            if str(getattr(deal, "symbol", symbol) or symbol) != symbol:
                 continue
             deal_order = int(getattr(deal, "order", 0) or 0)
             deal_position = int(getattr(deal, "position_id", 0) or 0)
