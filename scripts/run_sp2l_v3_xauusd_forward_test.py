@@ -309,7 +309,7 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     from sp2l_tracked_deal_history import collect_tracked_deals
     deals = collect_tracked_deals(
         history_deals_get=mt5.history_deals_get,
-        history_orders_get=mt5.history_orders_get,
+        history_orders_get=getattr(mt5, "history_orders_get", lambda **kwargs: []),
         symbol=symbol,
         tracked_orders=tracked_orders,
         tracked_positions=tracked_positions,
