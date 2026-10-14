@@ -430,14 +430,15 @@ def test_deal_lifecycle_timestamp_uses_utc_then_iran_time(monkeypatch, tmp_path)
 
 def test_lifecycle_retries_failed_open_before_sending_close(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
+    run_epoch = int(time.time()) + 10
     entry = SimpleNamespace(
         ticket=100, order=500, position_id=900, entry=m.DEAL_ENTRY_IN,
-        reason=0, time=100, price=2300.0, volume=0.01, profit=0.0,
+        reason=0, time=run_epoch, price=2300.0, volume=0.01, profit=0.0,
         commission=0.0, swap=0.0, magic=MAGIC, type=m.DEAL_TYPE_BUY,
     )
     close = SimpleNamespace(
         ticket=101, order=501, position_id=900, entry=m.DEAL_ENTRY_OUT,
-        reason=1, time=101, price=2301.0, volume=0.01, profit=1.0,
+        reason=1, time=run_epoch + 1, price=2301.0, volume=0.01, profit=1.0,
         commission=-0.05, swap=0.0, magic=MAGIC, type=m.DEAL_TYPE_SELL,
     )
     m.history_deals_get = lambda *args, **kwargs: [close, entry]
