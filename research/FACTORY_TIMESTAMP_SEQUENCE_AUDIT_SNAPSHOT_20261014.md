@@ -9,7 +9,7 @@ This branch adds a standalone, read-only diagnostic for timestamped CSVs. It is 
 ## Branch provenance
 
 - Base branch: `research/xauusd-availability-integrity-gate-20261013`
-- Base commit: `5fa9d60be98a5ad8e4b9b5075557bc53a7ddc877`
+- Base commit at branch creation: `0a03411d648f3bceb178410cd4a792c9a3c89087`
 - Work branch: `research/factory-timestamp-sequence-audit-20261014`
 
 ## Added files
@@ -21,6 +21,7 @@ This branch adds a standalone, read-only diagnostic for timestamped CSVs. It is 
 ## Diagnostic semantics
 
 - Fails closed on invalid/non-UTC timestamps, duplicate instants, backward timestamp transitions, missing CSV/column, and read errors.
+- Rejects non-finite or non-positive expected intervals.
 - Reports forward gaps separately. A gap is not classified as a market closure, holiday, provider issue, or missing-history cause.
 - Reports SHA-256 before/after and never sorts, deduplicates, repairs, or writes to the input.
 - Reports `canonical=false`, `market_session_approval=NOT_ESTABLISHED`, and `source_artifacts_modified=false`.
@@ -35,4 +36,4 @@ Tests have been authored but have not yet been executed in the Factory worktree 
 
 ## Next step
 
-From the Factory worktree, run the focused test, then the full suite. Locate the exact immutable raw M1 artifact and inspect its CSV header before running the audit. Preserve the complete JSON report as a separate evidence artifact; do not rewrite source data to make a failing audit pass.
+From an isolated Factory worktree, run the focused test, then the full suite. Locate the exact immutable raw M1 artifact and inspect its CSV header before running the audit. Preserve the complete JSON report as a separate evidence artifact; do not rewrite source data to make a failing audit pass.
