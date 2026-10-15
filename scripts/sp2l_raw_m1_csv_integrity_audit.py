@@ -212,6 +212,7 @@ def main() -> int:
     output = Path(args.output) if args.output else None
     rendered = json.dumps(result, indent=2, ensure_ascii=False)
     if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(rendered + "\n", encoding="utf-8")
     print(rendered)
     return 0 if result["status"] == "STRUCTURAL_INTEGRITY_PASS" else 2
