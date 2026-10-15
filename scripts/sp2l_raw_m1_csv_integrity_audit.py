@@ -40,7 +40,7 @@ def _sha256_lf_normalized(path: Path) -> str:
             pending = b"\r" if data.endswith(b"\r") else b""
             if pending:
                 data = data[:-1]
-            digest.update(data.replace(b"\r\n, b"\n"))
+            digest.update(data.replace(b"\r\n", b"\n"))
     if pending:
         digest.update(pending)
     return digest.hexdigest()
