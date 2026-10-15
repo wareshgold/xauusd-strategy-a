@@ -104,6 +104,8 @@ def evaluate_availability_manifest(manifest_path: str | Path) -> dict[str, Any]:
         if not isinstance(windows, list):
             errors.append("manifest windows must be an array")
             windows = []
+        if not windows:
+            errors.append("manifest windows must contain at least one requested window")
         if manifest.get("window_count") != len(windows):
             errors.append("window_count does not match manifest windows length")
 
