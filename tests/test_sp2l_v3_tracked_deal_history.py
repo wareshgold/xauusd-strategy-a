@@ -102,3 +102,29 @@ def test_history_exception_is_preserved_as_query_failure():
             tracked_positions=set(),
         )
     assert exc.value.query == "history_deals_get(ticket)"
+
+
+def test_history_query_failure_log_gate_suppresses_repeats_until_success():
+    from scripts.sp2l_history_query_failure_log import HistoryQueryFailureLogGate
+
+    gate = HistoryQueryFailureLogGate()
+    failure = ("history_deals_get(ticket)", 63440809, "MT5 returned None")
+
+    assert gate.should_log(*failure)
+    assert not gate.should_log(*failure)
+
+    gate.mark_success()
+
+    assert gate.should_log(*failure)
+
+
+def test_history_query_failure_log_gate_keeps_distinct_failures_visible():
+    from scripts.sp2l_history_query_failure_log import HistoryQueryFailureLogGate
+
+    gate = HistoryQueryFailureLogGate()
+
+    assert gate.should_log("history_deals_get(ticket)", 10, "MT5 returned None")
+    assert gate.should_log("history_deals_get(ticket)", 11, "MT5 returned None")
+    assert gate.should_log("history_deals_get(ticket)", 10, "IPC timeout")
+    assert not gate.should_log("history_deals_get(ticket)", 10, "IPC timeout")
+
