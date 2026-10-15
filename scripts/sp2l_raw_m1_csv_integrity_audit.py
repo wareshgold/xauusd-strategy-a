@@ -104,9 +104,11 @@ def audit_raw_m1_csv(csv_path: str | Path, manifest_path: str | Path | None = No
                     seen.add(stamp)
                     if previous is not None:
                         delta = int((stamp - previous).total_seconds())
-                        if delta <= 0:
+                        if delta < 0:
                             out_of_order_pairs += 1
-                            errors.append(f"row {row_number}: timestamp is not strictly increasing")
+                            errors.append(f"row {row_number}: timestamp is out of order")
+                        elif delta == 0:
+                            errors.append(f"row {row_number}: timestamp is not strictly increasing (duplicate)")
                         elif delta > 60:
                             timestamp_gaps.append({
                                 "from_utc": previous.isoformat().replace("+00:00", "Z"),
