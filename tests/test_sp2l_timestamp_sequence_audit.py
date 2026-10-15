@@ -43,6 +43,22 @@ def test_ordered_unique_timestamps_pass_and_gaps_remain_unclassified(tmp_path):
     assert _sha(source) == before
 
 
+def test_header_only_csv_fails_closed_without_modifying_source(tmp_path):
+    source = tmp_path / "bars.csv"
+    source.write_text("time,close\n", encoding="utf-8", newline="")
+    before = _sha(source)
+
+    report = audit_timestamp_sequence(source, "time")
+
+    assert report["status"] == "STRUCTURAL_INTEGRITY_FAIL"
+    assert report["row_count"] == 0
+    assert report["valid_timestamp_count"] == 0
+    assert any("no data rows" in error for error in report["errors"])
+    assert report["source_sha256"] == before
+    assert report["source_sha256_after_audit"] == before
+    assert _sha(source) == before
+
+
 def test_duplicate_timestamps_fail_and_report_excess_rows(tmp_path):
     source = tmp_path / "bars.csv"
     _write_csv(source, [

@@ -17,7 +17,7 @@ Replace `<raw-bars.csv>` and `time` with the actual input path and timestamp col
 
 ## Interpretation and fail-closed behavior
 
-- Duplicate timestamps, invalid/non-UTC timestamps, backward transitions, missing files, and missing timestamp columns fail the structural audit.
+- Duplicate timestamps, invalid/non-UTC timestamps, backward transitions, missing files, missing timestamp columns, and CSVs with a header but zero data rows fail the structural audit.
 - Forward gaps are reported, not automatically failed. A gap may reflect a market schedule, acquisition limitation, provider behavior, or a data issue; this tool does not determine which.
 - The report records the source SHA-256 and checks that the source hash is unchanged across the audit.
 - The input file is never rewritten, sorted, deduplicated, or repaired.
