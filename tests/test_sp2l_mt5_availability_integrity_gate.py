@@ -99,6 +99,37 @@ def test_valid_raw_availability_artifacts_pass_structure_only(tmp_path):
     assert result["gap_record_count"] == 1
     assert result["source_artifacts_modified"] is False
 
+def test_empty_window_manifest_fails_closed(tmp_path):
+    manifest, data, daily, gaps = _write_fixture(tmp_path)
+
+    # Empty windows plus empty, correctly hashed artifacts must not pass as a
+    # structurally valid availability matrix.
+    with daily.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "window_index", "utc_date", "weekday", "first_m1_utc",
+                "last_m1_utc", "m1_bar_count", "gap_count_touching_day",
+                "gap_boundaries_ending_0100_utc",
+            ],
+            lineterminator="\\n",
+        )
+        writer.writeheader()
+    gaps.write_text("[]\\n", encoding="utf-8")
+    data["windows"] = []
+    data["window_count"] = 0
+    data["daily_artifact_sha256"] = _sha(daily)
+    data["gap_artifact_sha256"] = _sha(gaps)
+    manifest.write_text(json.dumps(data, indent=2) + "\\n", encoding="utf-8")
+
+    result = evaluate_availability_manifest(manifest)
+
+    assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
+    assert any("at least one requested window" in error for error in result["errors"])
+    assert result["canonical"] is False
+    assert result["market_session_approval"] == "NOT_ESTABLISHED"
+
+
 def test_hash_mismatch_fails_closed(tmp_path):
     manifest, _, daily, _ = _write_fixture(tmp_path)
     daily.write_text(daily.read_text(encoding="utf-8") + "\n", encoding="utf-8")
