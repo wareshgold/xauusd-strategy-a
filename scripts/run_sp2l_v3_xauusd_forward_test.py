@@ -48,6 +48,7 @@ runner.STATE_FILE=runner.RUNTIME / "sp2l_v3_xauusd_rr2_trail4_forward_state.json
 runner.session_gate_status=lambda trigger_ts:(True,"V3_ALL_MARKET_HOURS")
 _original_rates=runner.rates
 runner.rates=lambda symbol,count=10:_original_rates(symbol,30)
+runner.DIAGNOSTIC_RATE_COUNT=30
 
 _original_monitor=runner.monitor_position_lifecycle
 def trail_positions(cfg_runtime,state):
@@ -468,9 +469,32 @@ def _v3_main():
 
         candidate = original_find(data, symbol)
         if candidate is None:
+            if runner._POLL_DIAGNOSTIC_GATE.should_log(f"{symbol}:DETECTOR_NO_CANDIDATE"):
+                try:
+                    latest_bar_time = int(data[-1]["time"])
+                except Exception:
+                    latest_bar_time = None
+                runner.log_event({
+                    "event": "DETECTOR_NO_CANDIDATE",
+                    "symbol": symbol,
+                    "rates_count": len(data),
+                    "latest_bar_time": latest_bar_time,
+                    "retry_interval_seconds": 60,
+                    "meaning": "Existing candidate detector returned None; no market-regime inference is made.",
+                    "canonical": False,
+                })
             return None
         trigger_time = int(candidate.get("trigger_time", 0) or 0)
         if trigger_time <= session_cutoff_epoch:
+            if runner._POLL_DIAGNOSTIC_GATE.should_log(f"{symbol}:CANDIDATE_PRE_START_CUTOFF"):
+                runner.log_event({
+                    "event": "CANDIDATE_PRE_START_CUTOFF",
+                    "symbol": symbol,
+                    "trigger_time": trigger_time,
+                    "session_cutoff_epoch": session_cutoff_epoch,
+                    "retry_interval_seconds": 60,
+                    "canonical": False,
+                })
             return None
         return candidate
 
