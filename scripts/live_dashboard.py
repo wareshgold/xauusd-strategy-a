@@ -211,6 +211,13 @@ def _process_cpu_delta(pid: int) -> str:
                 return ((int(self.high) << 32) | int(self.low)) / 10_000_000.0
 
         kernel32 = ctypes.windll.kernel32
+        kernel32.OpenProcess.restype = ctypes.c_void_p
+        kernel32.OpenProcess.argtypes = [ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32]
+        kernel32.GetProcessTimes.argtypes = [
+            ctypes.c_void_p, ctypes.POINTER(FILETIME), ctypes.POINTER(FILETIME),
+            ctypes.POINTER(FILETIME), ctypes.POINTER(FILETIME)
+        ]
+        kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
         handle = kernel32.OpenProcess(0x1000, False, pid)
         if not handle:
             return "unavailable"
