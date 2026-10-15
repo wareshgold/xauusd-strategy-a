@@ -19,6 +19,10 @@ os.environ["SP2L_TP_R"]=str(cfg.TP_R)
 os.environ["SP2L_VOLUME"]=str(cfg.VOLUME)
 os.environ["MT5_FORWARD_ORDER_MODE"]=cfg.ORDER_MODE
 os.environ["SP2L_PENDING_TTL_MINUTES"]=str(cfg.PENDING_TTL_MINUTES)
+# Operator-confirmed OtetGroup-MT5 server clock: UTC+03:00 (2026-10-15).
+# An explicit process environment value takes precedence; expiry still fails closed
+# unless fresh-tick and observed-offset checks pass.
+os.environ.setdefault("SP2L_PENDING_SERVER_OFFSET_HOURS", "3")
 os.environ.setdefault("LIVE_TRADING_ENABLE","true")
 os.environ.setdefault("ALLOW_REAL_EXECUTION","true")
 
