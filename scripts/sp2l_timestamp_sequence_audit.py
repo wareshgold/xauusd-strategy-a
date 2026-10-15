@@ -103,6 +103,9 @@ def audit_timestamp_sequence(
                     invalid_count += 1
                     errors.append(str(exc))
 
+            if row_count == 0:
+                errors.append("CSV contains a header but no data rows")
+
         timestamps = [stamp for _, stamp in parsed_rows]
         counts = Counter(timestamps)
         duplicate_groups = [
