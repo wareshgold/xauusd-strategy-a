@@ -112,15 +112,15 @@ def test_empty_window_manifest_fails_closed(tmp_path):
                 "last_m1_utc", "m1_bar_count", "gap_count_touching_day",
                 "gap_boundaries_ending_0100_utc",
             ],
-            lineterminator="\\n",
+            lineterminator="\n",
         )
         writer.writeheader()
-    gaps.write_text("[]\\n", encoding="utf-8")
+    gaps.write_text("[]\n", encoding="utf-8")
     data["windows"] = []
     data["window_count"] = 0
     data["daily_artifact_sha256"] = _sha(daily)
     data["gap_artifact_sha256"] = _sha(gaps)
-    manifest.write_text(json.dumps(data, indent=2) + "\\n", encoding="utf-8")
+    manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
     result = evaluate_availability_manifest(manifest)
 
