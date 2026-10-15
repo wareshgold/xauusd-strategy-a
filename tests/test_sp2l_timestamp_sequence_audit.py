@@ -45,7 +45,7 @@ def test_ordered_unique_timestamps_pass_and_gaps_remain_unclassified(tmp_path):
 
 def test_header_only_csv_fails_closed_without_modifying_source(tmp_path):
     source = tmp_path / "bars.csv"
-    source.write_text("time,close\\n", encoding="utf-8", newline="")
+    source.write_text("time,close\n", encoding="utf-8", newline="")
     before = _sha(source)
 
     report = audit_timestamp_sequence(source, "time")
