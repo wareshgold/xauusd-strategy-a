@@ -33,9 +33,16 @@ def _sha256(path: Path) -> str:
 def _sha256_lf_normalized(path: Path) -> str:
     """Hash CSV bytes after normalizing CRLF to LF, without modifying the source."""
     digest = hashlib.sha256()
+    pending = b""
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk.replace(b"\\r\\n", b"\\n"))
+            data = pending + chunk
+            pending = b"\\r" if data.endswith(b"\\r") else b""
+            if pending:
+                data = data[:-1]
+            digest.update(data.replace(b"\\r\\n", b"\\n"))
+    if pending:
+        digest.update(pending)
     return digest.hexdigest()
 
 
