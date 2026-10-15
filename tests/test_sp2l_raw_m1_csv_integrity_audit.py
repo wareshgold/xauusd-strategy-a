@@ -44,6 +44,21 @@ def test_valid_csv_passes_structure_only_and_reports_gap_unclassified(tmp_path):
     assert result["warnings"]
 
 
+def test_crlf_checkout_matches_lf_manifest_without_modifying_source(tmp_path):
+    csv_path, manifest = _write_fixture(tmp_path)
+    original_lf = csv_path.read_bytes()
+    csv_path.write_bytes(original_lf.replace(b"\\n", b"\\r\\n"))
+
+    result = audit_raw_m1_csv(csv_path, manifest)
+
+    assert result["status"] == "STRUCTURAL_INTEGRITY_PASS"
+    assert result["csv_sha256"] != result["csv_sha256_lf_normalized"]
+    assert result["csv_sha256_lf_normalized"] == json.loads(manifest.read_text(encoding="utf-8"))["artifact_sha256"]
+    assert result["line_ending_normalization"] == "CRLF_TO_LF_FOR_MANIFEST_COMPARISON_ONLY"
+    assert any("uses CRLF line endings" in warning for warning in result["warnings"])
+    assert csv_path.read_bytes() == original_lf.replace(b"\\n", b"\\r\\n")
+
+
 def test_hash_mismatch_fails_closed(tmp_path):
     csv_path, manifest = _write_fixture(tmp_path)
     csv_path.write_text(csv_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
