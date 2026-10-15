@@ -30,6 +30,22 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _sha256_lf_normalized(path: Path) -> str:
+    """Hash CSV bytes after normalizing CRLF to LF, without modifying the source."""
+    digest = hashlib.sha256()
+    pending = b""
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            data = pending + chunk
+            pending = b"\\r" if data.endswith(b"\\r") else b""
+            if pending:
+                data = data[:-1]
+            digest.update(data.replace(b"\\r\\n", b"\\n"))
+    if pending:
+        digest.update(pending)
+    return digest.hexdigest()
+
+
 def _utc_minute(value: str, row_number: int) -> datetime:
     if not value:
         raise ValueError(f"row {row_number}: timestamp is empty")
@@ -82,6 +98,13 @@ def audit_raw_m1_csv(csv_path: str | Path, manifest_path: str | Path | None = No
         return result
 
     result["csv_sha256"] = _sha256(source)
+    result["csv_sha256_lf_normalized"] = _sha256_lf_normalized(source)
+    result["line_ending_normalization"] = "CRLF_TO_LF_FOR_MANIFEST_COMPARISON_ONLY"
+    if result["csv_sha256"] != result["csv_sha256_lf_normalized"]:
+        warnings.append(
+            "CSV uses CRLF line endings; manifest hash is checked against CRLF-to-LF-normalized bytes. "
+            "Raw working-copy SHA-256 is reported separately."
+        )
     try:
         with source.open("r", newline="", encoding="utf-8-sig") as handle:
             reader = csv.DictReader(handle)
@@ -170,8 +193,8 @@ def audit_raw_m1_csv(csv_path: str | Path, manifest_path: str | Path | None = No
             expected_hash = manifest.get("artifact_sha256")
             if not isinstance(expected_hash, str) or len(expected_hash) != 64:
                 errors.append("manifest artifact_sha256 must be a 64-character SHA-256")
-            elif expected_hash.lower() != result["csv_sha256"].lower():
-                errors.append("manifest artifact_sha256 does not match CSV bytes")
+            elif expected_hash.lower() != result["csv_sha256_lf_normalized"].lower():
+                errors.append("manifest artifact_sha256 does not match CSV bytes after CRLF-to-LF normalization")
             expected_count = manifest.get("returned_bar_count")
             if not isinstance(expected_count, int) or isinstance(expected_count, bool) or expected_count < 0:
                 errors.append("manifest returned_bar_count must be a non-negative integer")
