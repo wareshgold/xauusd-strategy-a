@@ -441,6 +441,9 @@ def test_lifecycle_retries_failed_open_before_sending_close(monkeypatch, tmp_pat
         reason=1, time=run_epoch + 1, price=2301.0, volume=0.01, profit=1.0,
         commission=-0.05, swap=0.0, magic=MAGIC, type=m.DEAL_TYPE_SELL,
     )
+    m.history_orders_get = lambda **kwargs: [
+        SimpleNamespace(ticket=kwargs["ticket"], symbol=SYMBOL, position_id=900)
+    ]
     m.history_deals_get = lambda *args, **kwargs: [close, entry]
     monkeypatch.setattr(mod.runner, "_remember_position_links", lambda s, d: None)
     monkeypatch.setattr(mod.runner, "position_entry_price", lambda d, magic=None: 2300.0)
@@ -519,7 +522,9 @@ def test_execution_blocked_message_reports_no_order(monkeypatch, tmp_path):
 
 def test_lifecycle_history_query_failure_defers_telegram(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
-    m.history_orders_get = lambda **kwargs: []
+    m.history_orders_get = lambda **kwargs: [
+        SimpleNamespace(ticket=kwargs["ticket"], symbol=SYMBOL, position_id=900)
+    ]
     m.history_deals_get = lambda **kwargs: None
     events = []
     monkeypatch.setattr(mod.runner, "log_event", events.append)
@@ -539,17 +544,17 @@ def test_lifecycle_history_query_failure_defers_telegram(monkeypatch, tmp_path):
 def test_lifecycle_suppresses_stale_deal_returned_outside_query_window(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     stale = SimpleNamespace(
-        ticket=987, order=123, position_id=0,
+        ticket=987, order=123, position_id=900,
         time=int(time.time()) - 120,
         symbol=SYMBOL, entry=0, price=2300.0,
     )
     m.history_orders_get = lambda **kwargs: []
-    m.history_deals_get = lambda **kwargs: [stale] if kwargs == {"ticket": 123} else []
+    m.history_deals_get = lambda **kwargs: [stale] if kwargs == {"position": 900} else []
     events = []
     monkeypatch.setattr(mod.runner, "log_event", events.append)
     monkeypatch.setattr(mod.runner, "save_state", lambda current: None)
     s = state()
-    s["orders"].add(123)
+    s["positions"].add(900)
 
     mod._run_scoped_symbol_lifecycle(
         {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}, s

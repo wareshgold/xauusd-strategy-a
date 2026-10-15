@@ -23,11 +23,8 @@ def test_collects_sl_exit_by_position_without_host_time_window():
 
     def deals_get(**kwargs):
         calls.append(("deals", kwargs))
-        if kwargs == {"ticket": 63407773}:
-            return [entry]
-        if kwargs == {"position": 63407773}:
-            return [entry, exit_deal, unrelated]
-        raise AssertionError(f"unexpected history query: {kwargs}")
+        assert kwargs == {"position": 63407773}
+        return [entry, exit_deal, unrelated]
 
     def orders_get(**kwargs):
         calls.append(("orders", kwargs))
@@ -78,12 +75,12 @@ def test_none_history_result_raises_instead_of_becoming_empty():
     with pytest.raises(DealHistoryQueryError, match="MT5 returned None") as exc:
         collect_tracked_deals(
             history_deals_get=lambda **kwargs: None,
-            history_orders_get=lambda **kwargs: [],
+            history_orders_get=None,
             symbol="XAUUSD.ecn",
-            tracked_orders={123},
-            tracked_positions=set(),
+            tracked_orders=set(),
+            tracked_positions={123},
         )
-    assert exc.value.query == "history_deals_get(ticket)"
+    assert exc.value.query == "history_deals_get(position)"
     assert exc.value.target == 123
 
 
@@ -96,12 +93,12 @@ def test_history_exception_is_preserved_as_query_failure():
     with pytest.raises(DealHistoryQueryError, match="terminal IPC unavailable") as exc:
         collect_tracked_deals(
             history_deals_get=failed_query,
-            history_orders_get=lambda **kwargs: [],
+            history_orders_get=None,
             symbol="XAUUSD.ecn",
-            tracked_orders={123},
-            tracked_positions=set(),
+            tracked_orders=set(),
+            tracked_positions={123},
         )
-    assert exc.value.query == "history_deals_get(ticket)"
+    assert exc.value.query == "history_deals_get(position)"
 
 
 def test_history_query_failure_log_gate_suppresses_repeats_until_success():

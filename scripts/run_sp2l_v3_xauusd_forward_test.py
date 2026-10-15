@@ -334,6 +334,7 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             symbol=symbol,
             tracked_orders=tracked_orders,
             tracked_positions=tracked_positions,
+            last_error=getattr(mt5, "last_error", None),
         )
     except DealHistoryQueryError as exc:
         # MT5 query failure is not an empty history snapshot. Defer lifecycle
