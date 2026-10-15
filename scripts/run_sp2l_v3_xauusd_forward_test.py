@@ -23,6 +23,9 @@ os.environ.setdefault("LIVE_TRADING_ENABLE","true")
 os.environ.setdefault("ALLOW_REAL_EXECUTION","true")
 
 import run_sp2l_author_replica_multi_symbol_forward_test as runner
+from sp2l_history_query_failure_log import HistoryQueryFailureLogGate
+
+_HISTORY_QUERY_FAILURE_LOG_GATE = HistoryQueryFailureLogGate()
 
 # RR2/TRAIL4 Telegram display convention only: one pip = $0.10 price.
 # Do not alter the generic runner's pip_size or execution configuration.
@@ -331,18 +334,22 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     except DealHistoryQueryError as exc:
         # MT5 query failure is not an empty history snapshot. Defer lifecycle
         # delivery and reconciliation until a later poll can read history.
-        runner.log_event({
-            "event": "MT5_DEAL_HISTORY_QUERY_FAILED",
-            "version": cfg.VERSION,
-            "symbol": symbol,
-            "query": exc.query,
-            "target": exc.target,
-            "detail": exc.detail,
-            "canonical": False,
-        })
+        # Deduplicate identical diagnostics until a complete history poll succeeds;
+        # this changes telemetry volume only, never lifecycle state or retry behavior.
+        if _HISTORY_QUERY_FAILURE_LOG_GATE.should_log(exc.query, exc.target, exc.detail):
+            runner.log_event({
+                "event": "MT5_DEAL_HISTORY_QUERY_FAILED",
+                "version": cfg.VERSION,
+                "symbol": symbol,
+                "query": exc.query,
+                "target": exc.target,
+                "detail": exc.detail,
+                "canonical": False,
+            })
         runner.save_state(state)
         return
 
+    _HISTORY_QUERY_FAILURE_LOG_GATE.mark_success()
     run_started_epoch = int(_RUN_STARTED_UTC.timestamp())
     for deal in deals:
         ticket=int(deal.ticket)
