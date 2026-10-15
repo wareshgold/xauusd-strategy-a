@@ -3,8 +3,8 @@
 Serves one auto-refreshing page (default http://127.0.0.1:8790) so the
 operator can SEE the session working without touching logs:
 
-  - session heartbeat (state-file mtime, runner/watchdog pids alive)
-  - execution mode (LIVE-DEMO / DRY-RUN) with the raw operator flags
+  - V3 state/event freshness, runner PID and read-only process CPU delta
+  - execution flags with an explicit source/verification status
   - MT5 account + per-symbol live tick prices
   - today's signals / fills / W-L / net USD (from the event log)
   - today's orders (fills, cancels, expiry outcomes)
@@ -100,10 +100,10 @@ def _runner_mode_from_process() -> tuple[str, str] | None:
     except Exception:
         return None
 
-STATE_FILE = ROOT / "runtime" / "sp2l_multi_symbol_forward_state.json"
+STATE_FILE = ROOT / "runtime" / "sp2l_v3_xauusd_rr2_trail4_forward_state.json"
 RUNNER_LOCK = ROOT / "runtime" / "sp2l_multi_symbol_forward_runner.lock"
 WATCHDOG_PID = ROOT / "runtime" / "forward_watchdog.pid"
-EVENTS = ROOT / "artifacts" / "forward-test" / "SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl"
+EVENTS = ROOT / "artifacts" / "forward-test" / "SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl"
 
 PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8790"))
 REFRESH_SECONDS = 5
@@ -165,28 +165,124 @@ def session_status() -> str:
     watchdog = (
         f'<span class="ok">alive (pid {watchdog_pid})</span>'
         if _proc_alive(watchdog_pid)
-        else '<span class="bad">DEAD</span>'
+        else '<span class="dim">not running / not configured</span>'
     )
     flags = _runner_mode_from_process()
     if flags is None:
-        flags = (
-            os.getenv("LIVE_TRADING_ENABLE", "false").lower(),
-            os.getenv("ALLOW_REAL_EXECUTION", "false").lower(),
-        )
-    live, allow = flags
-    mode = (
-        '<span class="ok">🟩 LIVE-DEMO</span>' if live == "true" and allow == "true"
-        else '<span class="warn">🟨 DRY-RUN</span>'
-    )
+        live, allow = "unknown", "unknown"
+        flag_source = "runner environment unavailable; dashboard environment is not substituted"
+        mode = '<span class="warn">UNVERIFIED</span>'
+    else:
+        live, allow = flags
+        flag_source = "best-effort read of runner process environment"
+        if live == "true" and allow == "true":
+            mode = '<span class="bad">EXECUTION FLAGS ENABLED</span>'
+        elif live == "false" or allow == "false":
+            mode = '<span class="warn">at least one execution flag is false</span>'
+        else:
+            mode = '<span class="warn">UNVERIFIED</span>'
     return (
         f"<h2>Session</h2><table>"
-        f"<tr><th>Heartbeat</th><td class='big'>{beat}</td></tr>"
+        f"<tr><th>State-file freshness (not a heartbeat)</th><td class='big'>{beat}</td></tr>"
         f"<tr><th>Runner</th><td>{runner}</td></tr>"
         f"<tr><th>Watchdog</th><td>{watchdog}</td></tr>"
         f"<tr><th>Execution mode</th><td class='big'>{mode} "
-        f"<span class='dim'>(LIVE_TRADING_ENABLE={live} · "
-        f"ALLOW_REAL_EXECUTION={allow} — read from the live runner process)</span></td></tr>"
+        f"<span class='dim'>(LIVE_TRADING_ENABLE={html.escape(live)} · "
+        f"ALLOW_REAL_EXECUTION={html.escape(allow)} · source: {html.escape(flag_source)})</span></td></tr>"
         f"</table>"
+    )
+
+
+_CPU_SAMPLES: dict[int, tuple[float, float]] = {}
+
+
+def _process_cpu_delta(pid: int) -> str:
+    """Read cumulative CPU time for one process; report delta since last page render."""
+    if os.name != "nt" or pid <= 0:
+        return "unavailable"
+    handle = None
+    try:
+        import ctypes
+
+        class FILETIME(ctypes.Structure):
+            _fields_ = [("low", ctypes.c_uint32), ("high", ctypes.c_uint32)]
+
+            def seconds(self) -> float:
+                return ((int(self.high) << 32) | int(self.low)) / 10_000_000.0
+
+        kernel32 = ctypes.windll.kernel32
+        kernel32.OpenProcess.restype = ctypes.c_void_p
+        kernel32.OpenProcess.argtypes = [ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32]
+        kernel32.GetProcessTimes.argtypes = [
+            ctypes.c_void_p, ctypes.POINTER(FILETIME), ctypes.POINTER(FILETIME),
+            ctypes.POINTER(FILETIME), ctypes.POINTER(FILETIME)
+        ]
+        kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
+        handle = kernel32.OpenProcess(0x1000, False, pid)
+        if not handle:
+            return "unavailable"
+        created, exited, kernel, user = FILETIME(), FILETIME(), FILETIME(), FILETIME()
+        if not kernel32.GetProcessTimes(
+            handle, ctypes.byref(created), ctypes.byref(exited),
+            ctypes.byref(kernel), ctypes.byref(user)
+        ):
+            return "unavailable"
+        now = time.monotonic()
+        cpu = kernel.seconds() + user.seconds()
+        previous = _CPU_SAMPLES.get(pid)
+        _CPU_SAMPLES[pid] = (now, cpu)
+        if previous is None:
+            return "sampling…"
+        elapsed = max(0.001, now - previous[0])
+        delta = max(0.0, cpu - previous[1])
+        return f"{delta:.3f}s CPU / {elapsed:.1f}s elapsed"
+    except Exception:
+        return "unavailable"
+    finally:
+        if handle:
+            try:
+                ctypes.windll.kernel32.CloseHandle(handle)
+            except Exception:
+                pass
+
+
+def runner_health() -> str:
+    """Show state and event freshness separately; a live PID is not proof of progress."""
+    runner_pid = _read_pid(RUNNER_LOCK)
+    alive = _proc_alive(runner_pid)
+    cpu_delta = _process_cpu_delta(runner_pid) if alive else "process not alive"
+    state_age = None
+    event_age = None
+    try:
+        state_age = max(0.0, time.time() - STATE_FILE.stat().st_mtime)
+    except OSError:
+        pass
+    try:
+        event_age = max(0.0, time.time() - EVENTS.stat().st_mtime)
+    except OSError:
+        pass
+
+    def freshness(age):
+        if age is None:
+            return '<span class="bad">FILE MISSING</span>'
+        if age <= 30:
+            return f'<span class="ok">{age:.0f}s ago</span>'
+        if age <= 180:
+            return f'<span class="warn">STALE ({age:.0f}s ago)</span>'
+        return f'<span class="bad">STALE ({age:.0f}s ago)</span>'
+
+    process_status = (
+        f'<span class="ok">alive PID {runner_pid}</span>' if alive
+        else f'<span class="bad">not confirmed alive (lock PID {runner_pid or "unknown"})</span>'
+    )
+    return (
+        '<h2>V3 Runner Diagnostics</h2><table>'
+        f'<tr><th>Runner process</th><td>{process_status}</td></tr>'
+        f'<tr><th>CPU delta</th><td>{html.escape(cpu_delta)} · read-only sample</td></tr>'
+        f'<tr><th>V3 state last write</th><td>{freshness(state_age)}</td></tr>'
+        f'<tr><th>V3 event log last write</th><td>{freshness(event_age)}</td></tr>'
+        '<tr><th>Progress interpretation</th><td class="warn">A running process or fresh state file alone does not prove a successful market poll. Compare state and event freshness.</td></tr>'
+        '</table>'
     )
 
 
@@ -296,6 +392,48 @@ def today_stats() -> tuple[str, str, str]:
     return stats, orders_html, events
 
 
+
+
+def recent_trade_ledger(events: list[dict]) -> str:
+    """Render only lifecycle events actually present in the active V3 event log."""
+    rows = []
+    for ev in reversed(events):
+        if ev.get("event") != "TELEGRAM_DEAL_LIFECYCLE":
+            continue
+        try:
+            stamp = datetime.fromisoformat(str(ev.get("ts_utc", "")).replace("Z", "+00:00"))
+            stamp_text = stamp.astimezone(IRAN_TZ).strftime("%H:%M:%S")
+        except (ValueError, TypeError):
+            stamp_text = "—"
+        is_entry = int(ev.get("entry", -1)) == getattr(mt5, "DEAL_ENTRY_IN", 0)
+        action = "OPEN / ENTRY" if is_entry else "CLOSE / EXIT"
+        net = ev.get("net")
+        if net is None:
+            net = ev.get("profit")
+        try:
+            net_text = f"{float(net):+.2f}" if net is not None else "not recorded"
+        except (TypeError, ValueError):
+            net_text = "not recorded"
+        direction = str(ev.get("direction") or ev.get("side") or "—")
+        rows.append(
+            f"<tr><td>{stamp_text}</td><td>{action}</td><td>{html.escape(str(ev.get('symbol') or '—'))}</td>"
+            f"<td>{html.escape(str(ev.get('position') or '—'))}</td>"
+            f"<td>{html.escape(direction)}</td><td>{html.escape(str(ev.get('price') or '—'))}</td>"
+            f"<td>{html.escape(net_text)}</td><td>{html.escape(str(ev.get('deal') or '—'))}</td></tr>"
+        )
+        if len(rows) >= 20:
+            break
+    if not rows:
+        rows_html = "<tr><td colspan='8' class='dim'>No lifecycle trade events recorded in the active V3 log.</td></tr>"
+    else:
+        rows_html = "".join(rows)
+    return (
+        "<h2>Latest V3 trade lifecycle events (event-log evidence)</h2><table>"
+        "<tr><th>Time Tehran</th><th>Lifecycle</th><th>Symbol</th><th>Position</th>"
+        "<th>Side</th><th>Price</th><th>Net/profit field</th><th>Deal ticket</th></tr>"
+        + rows_html + "</table>"
+    )
+
 def render() -> str:
     stats, orders_html, events = today_stats()
     ev_rows = []
@@ -318,7 +456,8 @@ def render() -> str:
         + "".join(ev_rows) + "</table>"
     )
     return (
-        _PG_UP + session_status() + mt5_status() + stats + orders_html + events_html
+        _PG_UP + session_status() + runner_health() + mt5_status()
+        + recent_trade_ledger(events) + stats + orders_html + events_html
         + f"<p class='dim'>{datetime.now(IRAN_TZ).strftime('%H:%M:%S')} Iran time · "
         + "read-only page · dashboard never places orders</p></body></html>"
     )
