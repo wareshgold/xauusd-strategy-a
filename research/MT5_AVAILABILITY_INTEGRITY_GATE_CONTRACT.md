@@ -37,6 +37,8 @@ The report must retain:
 - `research_interpretation: "RAW_AVAILABILITY_ONLY_NOT_SESSION_APPROVED"`
 - `source_artifacts_modified: false`
 
+A manifest with zero requested windows fails structural integrity, even when its daily and gap artifacts are empty and correctly hashed.
+
 A failed check is a stop-and-review condition for this artifact; do not silently
 skip the failure or infer a session cause from repeated timestamps.
 
