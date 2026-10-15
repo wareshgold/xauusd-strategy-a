@@ -23,6 +23,10 @@ import MetaTrader5 as mt5
 
 import live_mt5_gateway as gateway
 
+from sp2l_forward_diagnostic_gate import ForwardDiagnosticGate
+
+_POLL_DIAGNOSTIC_GATE = ForwardDiagnosticGate()
+
 # Symbol selection is configuration only (research/forward-test scope):
 # override with SP2L_SYMBOLS only when an additional symbol has been explicitly approved for research/forward testing
 # first entry. Order here defines the magic-number slot (MAGIC_BASE+index+1).
@@ -1293,10 +1297,48 @@ def main() -> None:
                 monitor_symbol_lifecycle(cfg, state)
                 data = rates(symbol)
                 if data is None:
+                    if _POLL_DIAGNOSTIC_GATE.should_log(f"{symbol}:RATES_UNAVAILABLE"):
+                        try:
+                            mt5_error = mt5.last_error()
+                        except Exception as exc:
+                            mt5_error = f"{type(exc).__name__}: {exc}"
+                        log_event({
+                            "event": "RATES_UNAVAILABLE",
+                            "symbol": symbol,
+                            "timeframe": int(TIMEFRAME),
+                            "requested_count": int(getattr(sys.modules[__name__], "DIAGNOSTIC_RATE_COUNT", 10)),
+                            "mt5_last_error": repr(mt5_error),
+                            "retry_interval_seconds": 60,
+                            "canonical": False,
+                        })
                     continue
                 candidate = find_latest_candidate(data, symbol)
-                trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}" if candidate else None
-                if candidate is None or seen_trigger.get(symbol) == trigger_key:
+                if candidate is None:
+                    if _POLL_DIAGNOSTIC_GATE.should_log(f"{symbol}:CANDIDATE_SCAN_EMPTY"):
+                        try:
+                            latest_bar_time = int(data[-1]["time"])
+                        except Exception:
+                            latest_bar_time = None
+                        log_event({
+                            "event": "CANDIDATE_SCAN_EMPTY",
+                            "symbol": symbol,
+                            "rates_count": len(data),
+                            "latest_bar_time": latest_bar_time,
+                            "retry_interval_seconds": 60,
+                            "meaning": "Existing detector returned no eligible candidate; this does not classify market regime.",
+                            "canonical": False,
+                        })
+                    continue
+                trigger_key = f"{symbol}:{candidate['trigger_time']}:{candidate['direction']}"
+                if seen_trigger.get(symbol) == trigger_key:
+                    if _POLL_DIAGNOSTIC_GATE.should_log(f"{symbol}:CANDIDATE_ALREADY_SEEN"):
+                        log_event({
+                            "event": "CANDIDATE_ALREADY_SEEN",
+                            "symbol": symbol,
+                            "signal_id": trigger_key,
+                            "retry_interval_seconds": 60,
+                            "canonical": False,
+                        })
                     continue
                 candidate["signal_id"] = trigger_key
                 candidate["volume"] = float(cfg.get("volume", VOLUME))
