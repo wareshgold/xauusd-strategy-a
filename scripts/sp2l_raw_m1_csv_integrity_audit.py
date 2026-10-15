@@ -37,10 +37,10 @@ def _sha256_lf_normalized(path: Path) -> str:
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             data = pending + chunk
-            pending = b"\\r" if data.endswith(b"\\r") else b""
+            pending = b"\r" if data.endswith(b"\r") else b""
             if pending:
                 data = data[:-1]
-            digest.update(data.replace(b"\\r\\n", b"\\n"))
+            digest.update(data.replace(b"\r\n, b"\n"))
     if pending:
         digest.update(pending)
     return digest.hexdigest()
