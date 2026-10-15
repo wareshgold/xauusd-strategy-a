@@ -61,6 +61,7 @@ def test_duplicate_and_out_of_order_timestamps_fail(tmp_path):
     result = audit_raw_m1_csv(csv_path, manifest)
     assert result["status"] == "STRUCTURAL_INTEGRITY_FAIL"
     assert result["duplicate_timestamp_count"] == 1
+    # The equal adjacent pair is counted as a duplicate, not as out-of-order.
     assert result["out_of_order_pair_count"] == 1
 
 
