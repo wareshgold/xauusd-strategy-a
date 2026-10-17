@@ -77,7 +77,12 @@ class StrategyComparisonParticipant:
             raise StrategyComparisonError("strategy identity is required")
         self.metrics.validate()
         if self.external_reference is not None:
-            self.external_reference.validate()
+            try:
+                self.external_reference.validate()
+            except ExternalStrategyError as exc:
+                raise StrategyComparisonError(
+                    "external reference is invalid for strategy comparison"
+                ) from exc
             if self.external_reference.strategy_id != self.strategy_id:
                 raise StrategyComparisonError(
                     "external reference strategy_id does not match participant"
@@ -120,7 +125,15 @@ class OneVsOneStrategyComparison:
     def _fingerprint_payload(self) -> dict[str, Any]:
         return {
             "comparison_revision": self.comparison_revision,
-            "dataset": {\n                "dataset_id": self.dataset.dataset_id,\n                "role": self.dataset.role.value,\n                "data_revision": self.dataset.data_revision,\n                "start": self.dataset.start,\n                "end": self.dataset.end,\n                "source": self.dataset.source,\n                "immutable": self.dataset.immutable,\n            },
+            "dataset": {
+                "dataset_id": self.dataset.dataset_id,
+                "role": self.dataset.role.value,
+                "data_revision": self.dataset.data_revision,
+                "start": self.dataset.start,
+                "end": self.dataset.end,
+                "source": self.dataset.source,
+                "immutable": self.dataset.immutable,
+            },
             "execution_semantics": self.execution_semantics.value,
             "baseline": self.baseline.as_dict(),
             "challenger": self.challenger.as_dict(),

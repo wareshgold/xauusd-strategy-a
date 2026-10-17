@@ -33,6 +33,7 @@ class FactoryOrchestrator:
     fleet: FactoryWorkerFleet
     queue: list[QueuedResearchJob] = field(default_factory=list)
     events: FactoryJobEventLedger = field(default_factory=FactoryJobEventLedger)
+    telemetry_errors: list[dict[str, str]] = field(default_factory=list)
 
     def submit(
         self,
@@ -43,14 +44,14 @@ class FactoryOrchestrator:
         detail: str = "Queued for research execution",
     ) -> None:
         job.validate()
-        self.queue.append(
-            QueuedResearchJob(
-                job=job,
-                station=station,
-                phase=phase,
-                detail=detail,
-            )
+        already_seen = any(item.job.job_id == job.job_id for item in self.queue) or any(
+            event.job_id == job.job_id for event in self.events.entries()
         )
+        if already_seen:
+            raise ValueError(f"factory job id has already been submitted: {job.job_id}")
+
+        # Persist the queue event before mutating the in-memory queue. If
+        # the journal write fails, submit leaves no phantom pending job.
         self.events.append(
             event_type="QUEUED",
             job_id=job.job_id,
@@ -59,10 +60,46 @@ class FactoryOrchestrator:
             phase=phase,
             detail=detail,
         )
-        self.fleet.publish()
+        self.queue.append(
+            QueuedResearchJob(
+                job=job,
+                station=station,
+                phase=phase,
+                detail=detail,
+            )
+        )
+        # The job is already durably queued. Telemetry failure must not make
+        # submit appear unsuccessful and invite a caller to retry submission.
+        self._publish_telemetry_safely(
+            job_id=job.job_id,
+            worker_id="",
+            operation="publish_after_submit",
+        )
 
     def pending(self) -> tuple[QueuedResearchJob, ...]:
         return tuple(self.queue)
+
+    def _publish_telemetry_safely(
+        self,
+        *,
+        job_id: str,
+        worker_id: str,
+        operation: str,
+    ) -> dict[str, str] | None:
+        """Record telemetry publication faults without changing job outcome."""
+        try:
+            self.fleet.publish()
+        except Exception as exc:
+            error = {
+                "job_id": job_id,
+                "worker_id": worker_id,
+                "operation": operation,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+            }
+            self.telemetry_errors.append(error)
+            return error
+        return None
 
     def handoff(
         self,
@@ -93,14 +130,63 @@ class FactoryOrchestrator:
         self.events.append(
             event_type="HANDOFF_ACCEPTED",
             job_id=record.run_id,
-            job_fingerprint=record.run_fingerprint,
+            # HANDOFF_ACCEPTED remains attached to the source job identity;
+            # the run fingerprint is separately recorded on its COMPLETED event.
+            job_fingerprint=handoff.job_fingerprint,
             station=destination_station,
             phase=destination_station.upper(),
             detail=detail,
             output_artifact=record.evidence_id,
         )
-        self.fleet.publish()
+        # HANDOFF_ACCEPTED is already durable. Telemetry failure must not
+        # make an accepted handoff appear unsuccessful to the caller.
+        self._publish_telemetry_safely(
+            job_id=record.run_id,
+            worker_id="",
+            operation="publish_after_handoff",
+        )
         return handoff
+
+    def submit_replay(
+        self,
+        plan: Any,
+        *,
+        station: str,
+        phase: str,
+        detail: str = "Explicitly approved failed-job replay queued for review",
+    ) -> None:
+        """Queue a reviewed replay plan only when its original failure is journaled.
+
+        This does not execute the replay. Callers must explicitly invoke
+        run_next later, using an executor that validates the replay inputs.
+        """
+        request = getattr(plan, "request", None)
+        replay_job = getattr(plan, "replay_job", None)
+        original_fingerprint = getattr(plan, "original_job_fingerprint", None)
+        if request is None or replay_job is None or not original_fingerprint:
+            raise ValueError("a complete FailedJobReplayPlan is required")
+        replay_job.validate()
+        if request.job_id == "" or replay_job.job_id == request.job_id:
+            raise ValueError("replay job must have a distinct job_id")
+        if not replay_job.job_id.startswith(f"{request.job_id}::replay::"):
+            raise ValueError("replay job_id does not match its replay request")
+
+        original_events = self.events.for_job(request.job_id)
+        failures = [event for event in original_events if event.event_type == "FAILED"]
+        completions = [event for event in original_events if event.event_type == "COMPLETED"]
+        if not failures or completions:
+            raise ValueError("original job must have a journaled FAILED event and no COMPLETED event")
+        if any(event.job_fingerprint != original_fingerprint for event in original_events):
+            raise ValueError("original job fingerprint does not match replay plan")
+        if failures[-1].worker_id != request.failed_worker_id:
+            raise ValueError("failed worker does not match the journaled failure")
+
+        self.submit(
+            replay_job,
+            station=station,
+            phase=phase,
+            detail=detail,
+        )
 
     def run_next(
         self,
@@ -123,14 +209,10 @@ class FactoryOrchestrator:
                 f"worker {worker_id!r} is not available: {worker.state}"
             )
 
-        queued = self.queue.pop(0)
-        worker.start(
-            job_id=queued.job.job_id,
-            job_type=queued.job.test_id,
-            station=queued.station,
-            phase=queued.phase,
-            detail=queued.detail,
-        )
+        queued = self.queue[0]
+        # Journal dispatch before removing the job from the in-memory queue.
+        # A persistence error therefore leaves the job queued and the worker
+        # untouched; no implicit retry or queue reconstruction is attempted.
         self.events.append(
             event_type="DISPATCHED",
             job_id=queued.job.job_id,
@@ -140,28 +222,74 @@ class FactoryOrchestrator:
             phase=queued.phase,
             detail=queued.detail,
         )
-        self.fleet.publish()
+        # Once DISPATCHED is durable, remove the in-memory queue entry before
+        # touching worker state. If worker.start raises or the process stops
+        # here, this process must not later dispatch the same job again from a
+        # stale queue; the journal remains the source for manual reconciliation.
+        self.queue.pop(0)
+        worker.start(
+            job_id=queued.job.job_id,
+            job_type=queued.job.test_id,
+            station=queued.station,
+            phase=queued.phase,
+            detail=queued.detail,
+        )
+        self._publish_telemetry_safely(
+            job_id=queued.job.job_id,
+            worker_id=worker.worker_id,
+            operation="publish_after_dispatch",
+        )
 
         try:
             if heartbeat_every is not None:
                 heartbeat_every(worker)
-                self.fleet.publish()
+                self._publish_telemetry_safely(
+                    job_id=queued.job.job_id,
+                    worker_id=worker.worker_id,
+                    operation="publish_after_heartbeat",
+                )
             result = execute(queued.job, worker)
             if heartbeat_every is not None:
                 heartbeat_every(worker)
-                self.fleet.publish()
+                self._publish_telemetry_safely(
+                    job_id=queued.job.job_id,
+                    worker_id=worker.worker_id,
+                    operation="publish_after_heartbeat",
+                )
         except Exception as exc:
             worker.fail(str(exc))
-            self.events.append(
-                event_type="FAILED",
+            try:
+                self.events.append(
+                    event_type="FAILED",
+                    job_id=queued.job.job_id,
+                    job_fingerprint=queued.job.fingerprint,
+                    worker_id=worker.worker_id,
+                    station=queued.station,
+                    phase=queued.phase,
+                    detail=str(exc),
+                )
+            except Exception as journal_exc:
+                # Preserve the executor/heartbeat failure as the primary
+                # exception. The read-only consistency audit can report the
+                # resulting worker/journal mismatch; never auto-repair it.
+                exc.add_note(
+                    "Factory failed to persist the FAILED journal event; "
+                    f"worker state is FAILED but journal reconciliation is required "
+                    f"({type(journal_exc).__name__}: {journal_exc})"
+                )
+            telemetry_error = self._publish_telemetry_safely(
                 job_id=queued.job.job_id,
-                job_fingerprint=queued.job.fingerprint,
                 worker_id=worker.worker_id,
-                station=queued.station,
-                phase=queued.phase,
-                detail=str(exc),
+                operation="publish_after_failure",
             )
-            self.fleet.publish()
+            if telemetry_error is not None:
+                # Keep the execution exception primary while also retaining a
+                # structured in-memory diagnostic for the telemetry failure.
+                exc.add_note(
+                    "Factory failed to publish worker telemetry while handling "
+                    f"the execution failure ({telemetry_error['error_type']}: "
+                    f"{telemetry_error['error']})"
+                )
             raise
 
         artifact = None
@@ -184,7 +312,13 @@ class FactoryOrchestrator:
             output_artifact=artifact,
             research_run_fingerprint=(result.get("run_fingerprint") if isinstance(result, dict) else None),
         )
-        self.fleet.publish()
+        # The COMPLETED event is already durable and the worker is terminal.
+        # Never turn successful research execution into an apparent job failure.
+        self._publish_telemetry_safely(
+            job_id=queued.job.job_id,
+            worker_id=worker.worker_id,
+            operation="publish_after_completion",
+        )
         return result
 
 

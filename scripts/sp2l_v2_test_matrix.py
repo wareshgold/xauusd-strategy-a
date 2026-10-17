@@ -90,6 +90,21 @@ def build_matrix(
                 )
             )
 
+        # Explicitly segregated robustness diagnostics. These are never PRIMARY
+        # cases and must not be pooled with the XAUUSD M1 primary population.
+        cases.append(
+            MatrixCase(
+                case_id=f"ROBUSTNESS-{week_start.isoformat()}-BTCUSD-M15",
+                symbol="BTCUSD",
+                timeframe="M15",
+                window_start_utc=ws,
+                window_end_utc=we,
+                session_start_utc=None,
+                session_end_utc=None,
+                population="ROBUSTNESS_DIAGNOSTIC",
+            )
+        )
+
     return cases
 
 

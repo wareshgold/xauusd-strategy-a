@@ -129,41 +129,68 @@ class DemoForwardSessionFactory:
         if gate.gate.status is not GateStatus.PASS:
             raise ForwardSessionError("Demo forward session requires Forward Gate PASS")
 
+        if gate.gate.name != "FRESH_HOLDOUT_TO_FORWARD":
+            raise ForwardSessionError("Demo forward session requires the Fresh Holdout-to-Forward gate")
+
         if not session_id:
             raise ForwardSessionError("session_id is required")
         if not forward_dataset_id or not forward_dataset_artifact_id:
             raise ForwardSessionError("forward dataset identity is required")
-        if len(forward_dataset_content_sha256) != 64:
-            raise ForwardSessionError("forward dataset SHA must be SHA-256")
+        if (
+            not isinstance(forward_dataset_content_sha256, str)
+            or len(forward_dataset_content_sha256) != 64
+            or any(char not in "0123456789abcdef" for char in forward_dataset_content_sha256)
+        ):
+            raise ForwardSessionError(
+                "forward dataset SHA must be a lowercase hexadecimal SHA-256"
+            )
         if post_holdout_tuning:
             raise ForwardSessionError("post-holdout tuning is forbidden")
 
         details = gate.gate.details
+        if details.get("source_station") != "holdout" or details.get("destination_station") != "forward":
+            raise ForwardSessionError("Forward Gate route is not Fresh Holdout-to-Forward")
         if details.get("production_decision") is not False:
             raise ForwardSessionError("Forward Gate does not prove a non-production boundary")
         handoff_fingerprint = str(details.get("handoff_fingerprint", ""))
-        if len(handoff_fingerprint) != 64:
-            raise ForwardSessionError("Forward Gate lacks Holdout handoff fingerprint")
+        if (
+            len(handoff_fingerprint) != 64
+            or any(char not in "0123456789abcdef" for char in handoff_fingerprint)
+        ):
+            raise ForwardSessionError("Forward Gate lacks a valid Holdout handoff fingerprint")
         if details.get("strategy_revision") != source_record.strategy_revision:
             raise ForwardSessionError("Forward Gate strategy revision does not match Holdout record")
         if details.get("manifest_revision") != source_record.manifest_revision:
             raise ForwardSessionError("Forward Gate manifest revision does not match Holdout record")
         if details.get("holdout_dataset_id") != source_record.dataset_id:
             raise ForwardSessionError("Forward Gate Holdout dataset does not match source record")
-        if details.get("holdout_artifact_id") != gate.gate.details.get("holdout_artifact_id"):
-            raise ForwardSessionError("Forward Gate Holdout artifact identity is inconsistent")
 
         holdout_sha = str(details.get("holdout_dataset_sha256", ""))
         holdout_artifact_id = str(details.get("holdout_artifact_id", ""))
-        if len(holdout_sha) != 64 or not holdout_artifact_id:
+        if (
+            len(holdout_sha) != 64
+            or any(char not in "0123456789abcdef" for char in holdout_sha)
+            or not holdout_artifact_id
+        ):
             raise ForwardSessionError("Forward Gate lacks complete Holdout dataset identity")
 
+        # Reject Holdout reuse before comparing requested Forward identity with
+        # the gate, so the failure explains the actual provenance violation.
         if forward_dataset_id == source_record.dataset_id:
             raise ForwardSessionError("forward dataset must differ from Holdout dataset")
         if forward_dataset_artifact_id == holdout_artifact_id:
             raise ForwardSessionError("forward artifact must differ from Holdout artifact")
         if forward_dataset_content_sha256 == holdout_sha:
             raise ForwardSessionError("forward dataset must differ from Holdout dataset")
+
+        if details.get("forward_session_id") != session_id:
+            raise ForwardSessionError("Forward Gate session id does not match requested session")
+        if details.get("forward_dataset_id") != forward_dataset_id:
+            raise ForwardSessionError("Forward Gate dataset id does not match requested Forward dataset")
+        if details.get("forward_artifact_id") != forward_dataset_artifact_id:
+            raise ForwardSessionError("Forward Gate artifact id does not match requested Forward artifact")
+        if details.get("forward_dataset_sha256") != forward_dataset_content_sha256:
+            raise ForwardSessionError("Forward Gate dataset SHA does not match requested Forward dataset")
 
         draft = DemoForwardSession(
             session_revision=session_revision,

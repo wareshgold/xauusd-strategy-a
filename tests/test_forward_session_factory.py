@@ -11,12 +11,23 @@ from strategy_factory.forward_session_factory import (
 from strategy_factory.models import GateResult, GateStatus
 
 
-def _gate():
+def _gate(
+    *,
+    forward_dataset_id="FWD-DATA-1",
+    forward_dataset_artifact_id="FWD-ART-1",
+    forward_dataset_sha256="b" * 64,
+):
     return GateResult(
         name="FRESH_HOLDOUT_TO_FORWARD",
         status=GateStatus.PASS,
         evidence="holdout=HOLDOUT-1;forward=FWD-1",
         details={
+            "source_station": "holdout",
+            "destination_station": "forward",
+            "forward_session_id": "FWD-SESSION-1",
+            "forward_dataset_id": forward_dataset_id,
+            "forward_artifact_id": forward_dataset_artifact_id,
+            "forward_dataset_sha256": forward_dataset_sha256,
             "strategy_revision": "REV-1",
             "manifest_revision": "MANIFEST-1",
             "holdout_dataset_id": "HOLDOUT-DATA-1",
@@ -105,7 +116,9 @@ def test_demo_forward_session_rejects_reused_forward_dataset():
 
 def test_demo_forward_session_is_deterministic():
     kwargs = dict(
-        gate=type("R", (), {"gate": _gate()})(),
+        gate=type("R", (), {"gate": _gate(
+            forward_dataset_sha256=hashlib.sha256(b"forward").hexdigest()
+        )})(),
         source_record=_record(),
         session_id="FWD-SESSION-1",
         forward_dataset_id="FWD-DATA-1",
@@ -128,4 +141,28 @@ def test_demo_forward_session_rejects_missing_handoff_fingerprint(tmp_path):
             forward_dataset_id="FWD-DATA-1",
             forward_dataset_artifact_id="FWD-ART-1",
             forward_dataset_content_sha256="b" * 64,
+        )
+
+def test_demo_forward_session_rejects_gate_dataset_identity_mismatch():
+    with pytest.raises(ForwardSessionError, match="dataset id does not match"):
+        DemoForwardSessionFactory().prepare(
+            gate=type("R", (), {"gate": _gate()})(),
+            source_record=_record(),
+            session_id="FWD-SESSION-1",
+            forward_dataset_id="OTHER-FWD-DATA",
+            forward_dataset_artifact_id="FWD-ART-1",
+            forward_dataset_content_sha256="b" * 64,
+        )
+
+
+@pytest.mark.parametrize("bad_sha", ["g" * 64, "f" * 63])
+def test_demo_forward_session_rejects_malformed_sha256(bad_sha):
+    with pytest.raises(ForwardSessionError, match="lowercase hexadecimal SHA-256"):
+        DemoForwardSessionFactory().prepare(
+            gate=type("R", (), {"gate": _gate()})(),
+            source_record=_record(),
+            session_id="FWD-SESSION-1",
+            forward_dataset_id="FWD-DATA-1",
+            forward_dataset_artifact_id="FWD-ART-1",
+            forward_dataset_content_sha256=bad_sha,
         )

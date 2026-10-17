@@ -34,11 +34,18 @@ def _session():
             status=GateStatus.PASS,
             evidence="synthetic-runtime-evidence",
             details={
+                "source_station": "holdout",
+                "destination_station": "forward",
+                "forward_session_id": "FORWARD-RUNTIME-SESSION-1",
+                "forward_dataset_id": "FORWARD-RUNTIME-DATA-1",
+                "forward_artifact_id": "FORWARD-RUNTIME-ART-1",
+                "forward_dataset_sha256": _sha(b"forward-runtime"),
                 "strategy_revision": record.strategy_revision,
                 "manifest_revision": record.manifest_revision,
                 "holdout_dataset_id": record.dataset_id,
                 "holdout_dataset_sha256": _sha(b"holdout-runtime"),
                 "holdout_artifact_id": "HOLDOUT-RUNTIME-ART-1",
+                "handoff_fingerprint": _sha(b"synthetic-runtime-handoff"),
                 "production_decision": False,
             },
         )

@@ -70,3 +70,26 @@ def test_snapshot_changes_when_passport_changes():
 
     assert snap_a.passport_fingerprint != snap_b.passport_fingerprint
     assert snap_a.fingerprint != snap_b.fingerprint
+
+
+
+@pytest.mark.parametrize(
+    "field, value, message",
+    [
+        ("snapshot_revision", "", "identity is incomplete"),
+        ("strategy_id", "", "identity is incomplete"),
+        ("manifest_revision", "", "identity is incomplete"),
+        ("manifest_fingerprint", "not-a-sha", "SHA-256 digest"),
+        ("passport_fingerprint", "G" * 64, "SHA-256 digest"),
+        ("fingerprint", None, "SHA-256 digest"),
+    ],
+)
+def test_snapshot_rejects_malformed_identity_and_digest_fields(field, value, message):
+    manifest = build_sp2l_research_manifest()
+    snapshot = build_readiness_snapshot(
+        manifest, passport(manifest), SourceResolutionLedger()
+    )
+    tampered = replace(snapshot, **{field: value})
+
+    with pytest.raises(ValueError, match=message):
+        tampered.validate()
