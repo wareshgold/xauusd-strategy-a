@@ -62,3 +62,19 @@ Existing artifacts show large raw historical results and high sensitivity to tra
 ## Decision
 
 **Do not launch a new optimization matrix yet.** Reuse and audit the existing matrix tools first. The most urgent issue is the conflicting pip-distance conventions and lack of a demonstrated one-to-one mapping between the current RR2/TRAIL4 forward runner and each historical replay. This is the appropriate next engineering gate; once passed, matrix automation can execute the staged experiment plan without inventing strategy rules.
+
+
+## Additional audit — RR2/TRAIL4 matrix branch
+
+The separate branch `research/rr2-trail4-trailing-matrix-20261013` contains `scripts/run_sp2l_v3_xauusd_trailing_matrix.py`. It describes a deterministic V3 trailing-management matrix that reuses one MT5 M1 dataset and the imported V3 config, keeps a newly calculated stop inactive until the next completed bar, and does not simulate spread, commission, slippage, or 2X. This is a better starting point for auditing exit-only sensitivity than the broader matrix that also changes P-Gap/spike/max-SL/TTL.
+
+However, it is not yet evidence that the exact current forward RR2/TRAIL4 runner is matched:
+- the associated V3 config on that branch declares `XAU_PIP_SIZE_PRICE = 0.1`, while the current environment's requested convention is 0.01 price units per point/pip;
+- the V3 config shown in that branch defaults to TP_R=1 and TRAIL_PIPS=10, not the user's RR2/TRAIL4 target;
+- the matrix is a historical counterfactual based on theoretical candidate entries, not replay of actual forward fills;
+- it explicitly omits transaction costs and 2X.
+Thus this matrix should be reused only after a source/config/unit comparison and a reproducible baseline run, not launched unchanged.
+
+The branch also contains an older research record with a three-month 1,522-signal matrix and very large raw Net R / PF values. The report itself notes no spread/slippage/commission, M1 trailing simulation, and ambiguous same-bar outcomes. Treat these as exploratory outputs, not an established edge or an automatic recommendation for Trail 5.
+
+**Required follow-up:** compare the exact current RR2/TRAIL4 branch's runner/config with this matrix script and the actual-forward-trade matrix. Resolve parameter units first; then add a baseline identity test (same candidate IDs, entry/SL/TP, and outcome under the baseline configuration) before generating any parameter sweep.
