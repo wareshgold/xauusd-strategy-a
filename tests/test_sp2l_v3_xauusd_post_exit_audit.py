@@ -60,3 +60,36 @@ def test_post_exit_audit_excludes_exit_minute_and_measures_buy_and_sell_symmetri
 def test_price_excursions_returns_null_for_missing_window():
     result = audit.price_excursions("BUY", 100.0, [], 60, 120)
     assert result == {"mfe_price": None, "mae_price": None, "bars": 0}
+
+
+def test_fetch_m1_does_not_skip_seven_day_chunk_boundary(monkeypatch):
+    import datetime as dt
+    import numpy as np
+
+    setup_mt5_constants()
+    mt5 = sys.modules["MetaTrader5"]
+    mt5.TIMEFRAME_M1 = 1
+    calls = []
+
+    def fake_copy_rates_range(symbol, timeframe, start, end):
+        calls.append((start, end))
+        return np.array(
+            [(int(start.timestamp()), 10.0, 12.0, 9.0, 11.0)],
+            dtype=[
+                ("time", "i8"),
+                ("open", "f8"),
+                ("high", "f8"),
+                ("low", "f8"),
+                ("close", "f8"),
+            ],
+        )
+
+    monkeypatch.setattr(audit.mt5, "copy_rates_range", fake_copy_rates_range)
+    start = int(dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc).timestamp())
+    end = start + 7 * 24 * 60 * 60 + 60
+    bars, _ = audit.fetch_m1("XAUUSD.ecn", start, end)
+
+    assert len(calls) == 2
+    assert calls[1][0] == calls[0][1]
+    # The boundary timestamp is deduplicated if the API includes it in both chunks.
+    assert [bar["time"] for bar in bars] == sorted({bar["time"] for bar in bars})
