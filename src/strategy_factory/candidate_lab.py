@@ -68,8 +68,13 @@ class CandidatePlan:
             )
         if not all((self.plan_id, self.strategy_family, self.base_revision)):
             raise CandidateLabError("plan and strategy identity are required")
-        if len(self.dataset_content_sha256) != 64:
-            raise CandidateLabError("dataset content SHA-256 is required")
+        if (
+            len(self.dataset_content_sha256) != 64
+            or any(c not in "0123456789abcdef" for c in self.dataset_content_sha256.lower())
+        ):
+            raise CandidateLabError(
+                "dataset content SHA-256 must be a 64-character hexadecimal digest"
+            )
         if not self.execution_fingerprint:
             raise CandidateLabError("execution fingerprint is required")
         if not self.geometry_fingerprint or not self.source_resolution_fingerprint:
