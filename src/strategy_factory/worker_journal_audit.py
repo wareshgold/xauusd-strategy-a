@@ -48,6 +48,7 @@ def inspect_worker_journal_consistency(
     recovery_rows = ledger.recovery_summary()
     recovery_by_job = {row["job_id"]: row for row in recovery_rows}
     recovery_status_counts: dict[str, int] = {}
+    findings: list[dict[str, str]] = []
     for recovery_row in recovery_rows:
         status = recovery_row["status"]
         recovery_status_counts[status] = recovery_status_counts.get(status, 0) + 1
@@ -74,7 +75,6 @@ def inspect_worker_journal_consistency(
 
     worker_rows: list[dict[str, Any]] = []
     seen_worker_ids: set[str] = set()
-    findings: list[dict[str, str]] = []
     workers_by_job: dict[str, list[dict[str, Any]]] = {}
 
     for worker in workers:
