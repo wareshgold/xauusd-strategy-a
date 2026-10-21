@@ -76,6 +76,7 @@ def test_audit_separates_duplicate_timestamp_classes_and_out_of_order(tmp_path: 
     assert result["duplicate_timestamp_rows_same_time_utc_same_bidask"] == 1
     assert result["duplicate_timestamp_rows_same_time_utc_different_bidask"] == 1
     assert result["duplicate_timestamp_rows_different_time_utc"] == 1
+    assert result["tick_order_sensitive_execution_validation"] == "NOT_CERTIFIED"
     assert result["adjacent_out_of_order_transitions"] == 1
     assert result["time_utc_timestamp_mismatch_rows"] == 1
     assert result["invalid_time_utc_rows"] == 0
@@ -97,6 +98,7 @@ def test_audit_does_not_modify_source_artifacts(tmp_path: Path) -> None:
     source, manifest = _write_fixture(tmp_path, [_row(100), _row(101)])
     before_source = source.read_bytes()
     before_manifest = manifest.read_bytes()
-    audit_dataset(source, manifest)
+    result = audit_dataset(source, manifest)
+    assert result["tick_order_sensitive_execution_validation"] == "NOT_ESTABLISHED"
     assert source.read_bytes() == before_source
     assert manifest.read_bytes() == before_manifest
