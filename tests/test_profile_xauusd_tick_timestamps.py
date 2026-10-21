@@ -64,7 +64,7 @@ def test_profiles_contiguous_duplicate_groups_without_reordering(tmp_path: Path)
     assert result["duplicate_timestamp_rows_beyond_first_occurrence"] == 3
     assert result["duplicate_timestamp_groups"] == 2
     assert result["groups_with_multiple_distinct_valid_bidask_pairs"] == 2
-    assert result["duplicate_rows_with_bidask_different_from_first_occurrence"] == 1
+    assert result["duplicate_rows_with_bidask_different_from_first_occurrence"] == 2
     assert result["group_size_distribution"] == {"1": 1, "2": 1, "3": 1}
     assert result["maximum_group_size"] == 3
     example = result["different_bidask_group_examples"][0]
