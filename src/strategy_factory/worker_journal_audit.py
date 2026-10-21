@@ -48,13 +48,33 @@ def inspect_worker_journal_consistency(
     recovery_rows = ledger.recovery_summary()
     recovery_by_job = {row["job_id"]: row for row in recovery_rows}
     recovery_status_counts: dict[str, int] = {}
+    findings: list[dict[str, str]] = []
     for recovery_row in recovery_rows:
         status = recovery_row["status"]
         recovery_status_counts[status] = recovery_status_counts.get(status, 0) + 1
 
+    # A journal can be structurally valid JSONL while its lifecycle sequence is
+    # contradictory (for example, a second COMPLETED for the same job). Surface
+    # these conflicts even when no current worker snapshot references that job.
+    # This is diagnostic only: never repair, replay, or retry automatically.
+    for recovery_row in recovery_rows:
+        status = recovery_row["status"]
+        if status in {
+            "TERMINAL_CONFLICT_REVIEW_REQUIRED",
+            "LIFECYCLE_CONFLICT_REVIEW_REQUIRED",
+        }:
+            findings.append({
+                "code": "JOB_LIFECYCLE_CONFLICT",
+                "worker_id": str(recovery_row.get("last_worker_id") or ""),
+                "job_id": str(recovery_row.get("job_id") or ""),
+                "detail": (
+                    f"Journal lifecycle history is invalid ({status}); "
+                    "manual reconciliation required; no automatic retry"
+                ),
+            })
+
     worker_rows: list[dict[str, Any]] = []
     seen_worker_ids: set[str] = set()
-    findings: list[dict[str, str]] = []
     workers_by_job: dict[str, list[dict[str, Any]]] = {}
 
     for worker in workers:
