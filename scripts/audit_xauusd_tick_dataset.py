@@ -186,6 +186,11 @@ def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
         "duplicate_timestamp_rows_same_time_utc_same_bidask": duplicate_same_utc_same_quote,
         "duplicate_timestamp_rows_same_time_utc_different_bidask": duplicate_same_utc_different_quote,
         "duplicate_timestamp_rows_different_time_utc": duplicate_different_utc,
+        "tick_order_sensitive_execution_validation": (
+            "NOT_CERTIFIED"
+            if duplicate_same_utc_different_quote > 0 or duplicate_different_utc > 0
+            else "NOT_ESTABLISHED"
+        ),
         "adjacent_out_of_order_transitions": out_of_order_transitions,
         "first_time_msc_in_file_order": first_time_msc,
         "last_time_msc_in_file_order": last_time_msc,
