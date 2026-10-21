@@ -9,6 +9,7 @@ transitions. These are distinct diagnostics and are not silently repaired.
 """
 
 import argparse
+from contextlib import closing
 import csv
 import gzip
 import hashlib
@@ -59,51 +60,52 @@ def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
     # Disk-backed set avoids keeping ~10.8 million timestamps in Python RAM.
     with tempfile.TemporaryDirectory(prefix="sp2l_tick_audit_") as temp_dir:
         db_path = Path(temp_dir) / "timestamps.sqlite3"
-        with sqlite3.connect(db_path) as db:
-            db.execute("CREATE TABLE seen (time_msc INTEGER PRIMARY KEY)")
-            with gzip.open(source, "rt", encoding="utf-8-sig", newline="") as stream:
-                reader = csv.DictReader(stream)
-                columns = list(reader.fieldnames or [])
-                missing_columns = sorted(REQUIRED_COLUMNS.difference(columns))
-                if missing_columns:
-                    raise ValueError(f"missing required CSV columns: {missing_columns}")
+        with closing(sqlite3.connect(db_path)) as connection:
+            with connection as db:
+                db.execute("CREATE TABLE seen (time_msc INTEGER PRIMARY KEY)")
+                with gzip.open(source, "rt", encoding="utf-8-sig", newline="") as stream:
+                    reader = csv.DictReader(stream)
+                    columns = list(reader.fieldnames or [])
+                    missing_columns = sorted(REQUIRED_COLUMNS.difference(columns))
+                    if missing_columns:
+                        raise ValueError(f"missing required CSV columns: {missing_columns}")
 
-                for row in reader:
-                    row_count += 1
-                    raw_time = (row.get("time_msc") or "").strip()
-                    try:
-                        time_msc = int(raw_time)
-                    except (TypeError, ValueError):
-                        invalid_time_count += 1
-                        continue
+                    for row in reader:
+                        row_count += 1
+                        raw_time = (row.get("time_msc") or "").strip()
+                        try:
+                            time_msc = int(raw_time)
+                        except (TypeError, ValueError):
+                            invalid_time_count += 1
+                            continue
 
-                    if first_time_msc is None:
-                        first_time_msc = time_msc
-                    last_time_msc = time_msc
-                    if previous_time_msc is not None and time_msc < previous_time_msc:
-                        out_of_order_transitions += 1
-                    previous_time_msc = time_msc
+                        if first_time_msc is None:
+                            first_time_msc = time_msc
+                        last_time_msc = time_msc
+                        if previous_time_msc is not None and time_msc < previous_time_msc:
+                            out_of_order_transitions += 1
+                        previous_time_msc = time_msc
 
-                    cursor = db.execute(
-                        "INSERT OR IGNORE INTO seen(time_msc) VALUES (?)",
-                        (time_msc,),
-                    )
-                    if cursor.rowcount == 0:
-                        duplicate_timestamp_rows += 1
+                        cursor = db.execute(
+                            "INSERT OR IGNORE INTO seen(time_msc) VALUES (?)",
+                            (time_msc,),
+                        )
+                        if cursor.rowcount == 0:
+                            duplicate_timestamp_rows += 1
 
-                    try:
-                        bid = float(row.get("bid") or "")
-                        ask = float(row.get("ask") or "")
-                        quote_valid = math.isfinite(bid) and math.isfinite(ask) and bid > 0 and ask > 0
-                    except (TypeError, ValueError):
-                        quote_valid = False
-                        bid = ask = 0.0
-                    if not quote_valid:
-                        missing_quote_count += 1
-                    elif ask < bid:
-                        crossed_quote_count += 1
-                    else:
-                        valid_quote_count += 1
+                        try:
+                            bid = float(row.get("bid") or "")
+                            ask = float(row.get("ask") or "")
+                            quote_valid = math.isfinite(bid) and math.isfinite(ask) and bid > 0 and ask > 0
+                        except (TypeError, ValueError):
+                            quote_valid = False
+                            bid = ask = 0.0
+                        if not quote_valid:
+                            missing_quote_count += 1
+                        elif ask < bid:
+                            crossed_quote_count += 1
+                        else:
+                            valid_quote_count += 1
 
     expected_rows = manifest.get("tick_count")
     result = {
