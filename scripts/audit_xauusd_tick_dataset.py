@@ -11,6 +11,7 @@ transitions. These are distinct diagnostics and are not silently repaired.
 import argparse
 from contextlib import closing
 import csv
+from datetime import datetime, timezone
 import gzip
 import hashlib
 import json
@@ -33,6 +34,21 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def parse_time_utc_msc(value: str | None) -> int | None:
+    """Parse a timezone-aware ISO-8601 timestamp into integer Unix milliseconds."""
+    raw = (value or "").strip()
+    if not raw:
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
+    delta = parsed.astimezone(timezone.utc) - datetime(1970, 1, 1, tzinfo=timezone.utc)
+    return delta.days * 86_400_000 + delta.seconds * 1_000 + delta.microseconds // 1_000
+
+
 def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
     if not source.is_file():
         raise FileNotFoundError(f"dataset not found: {source}")
@@ -47,10 +63,15 @@ def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
 
     row_count = 0
     invalid_time_count = 0
+    invalid_time_utc_count = 0
+    time_utc_mismatch_count = 0
     missing_quote_count = 0
     crossed_quote_count = 0
     valid_quote_count = 0
     duplicate_timestamp_rows = 0
+    duplicate_same_utc_same_quote = 0
+    duplicate_same_utc_different_quote = 0
+    duplicate_different_utc = 0
     out_of_order_transitions = 0
     first_time_msc = None
     last_time_msc = None
@@ -62,7 +83,11 @@ def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
         db_path = Path(temp_dir) / "timestamps.sqlite3"
         with closing(sqlite3.connect(db_path)) as connection:
             with connection as db:
-                db.execute("CREATE TABLE seen (time_msc INTEGER PRIMARY KEY)")
+                db.execute(
+                    "CREATE TABLE seen ("
+                    "time_msc INTEGER PRIMARY KEY, first_time_utc_msc INTEGER, "
+                    "first_time_utc_raw TEXT, first_bid REAL, first_ask REAL)"
+                )
                 with gzip.open(source, "rt", encoding="utf-8-sig", newline="") as stream:
                     reader = csv.DictReader(stream)
                     columns = list(reader.fieldnames or [])
@@ -86,12 +111,12 @@ def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
                             out_of_order_transitions += 1
                         previous_time_msc = time_msc
 
-                        cursor = db.execute(
-                            "INSERT OR IGNORE INTO seen(time_msc) VALUES (?)",
-                            (time_msc,),
-                        )
-                        if cursor.rowcount == 0:
-                            duplicate_timestamp_rows += 1
+                        raw_time_utc = (row.get("time_utc") or "").strip()
+                        time_utc_msc = parse_time_utc_msc(raw_time_utc)
+                        if time_utc_msc is None:
+                            invalid_time_utc_count += 1
+                        elif time_utc_msc != time_msc:
+                            time_utc_mismatch_count += 1
 
                         try:
                             bid = float(row.get("bid") or "")
@@ -100,6 +125,36 @@ def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
                         except (TypeError, ValueError):
                             quote_valid = False
                             bid = ask = 0.0
+
+                        cursor = db.execute(
+                            "INSERT OR IGNORE INTO seen("
+                            "time_msc, first_time_utc_msc, first_time_utc_raw, first_bid, first_ask"
+                            ") VALUES (?, ?, ?, ?, ?)",
+                            (time_msc, time_utc_msc, raw_time_utc, bid if quote_valid else None,
+                             ask if quote_valid else None),
+                        )
+                        if cursor.rowcount == 0:
+                            duplicate_timestamp_rows += 1
+                            first = db.execute(
+                                "SELECT first_time_utc_msc, first_time_utc_raw, first_bid, first_ask "
+                                "FROM seen WHERE time_msc = ?",
+                                (time_msc,),
+                            ).fetchone()
+                            first_utc_msc, first_utc_raw, first_bid, first_ask = first
+                            same_utc = (
+                                time_utc_msc == first_utc_msc
+                                if time_utc_msc is not None and first_utc_msc is not None
+                                else raw_time_utc == first_utc_raw
+                            )
+                            if not same_utc:
+                                duplicate_different_utc += 1
+                            elif (
+                                quote_valid and first_bid is not None and first_ask is not None
+                                and bid == first_bid and ask == first_ask
+                            ):
+                                duplicate_same_utc_same_quote += 1
+                            else:
+                                duplicate_same_utc_different_quote += 1
                         if not quote_valid:
                             missing_quote_count += 1
                         elif ask < bid:
@@ -125,7 +180,12 @@ def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
         "manifest_tick_count": expected_rows,
         "row_count_matches_manifest": row_count == expected_rows,
         "invalid_time_msc_rows": invalid_time_count,
+        "invalid_time_utc_rows": invalid_time_utc_count,
+        "time_utc_timestamp_mismatch_rows": time_utc_mismatch_count,
         "duplicate_timestamp_rows_beyond_first_occurrence": duplicate_timestamp_rows,
+        "duplicate_timestamp_rows_same_time_utc_same_bidask": duplicate_same_utc_same_quote,
+        "duplicate_timestamp_rows_same_time_utc_different_bidask": duplicate_same_utc_different_quote,
+        "duplicate_timestamp_rows_different_time_utc": duplicate_different_utc,
         "adjacent_out_of_order_transitions": out_of_order_transitions,
         "first_time_msc_in_file_order": first_time_msc,
         "last_time_msc_in_file_order": last_time_msc,
@@ -146,6 +206,8 @@ def audit_dataset(source: Path, manifest_path: Path) -> dict[str, Any]:
         size_matches,
         row_count == expected_rows,
         invalid_time_count == 0,
+        invalid_time_utc_count == 0,
+        time_utc_mismatch_count == 0,
         missing_quote_count == 0,
         crossed_quote_count == 0,
     )
