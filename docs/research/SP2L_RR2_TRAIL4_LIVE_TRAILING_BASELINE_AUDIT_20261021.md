@@ -52,3 +52,16 @@ The matrix also documents that spread, commission, swap, slippage, broker gap fi
 - No new matrix was run; no “best” distance is recommended.
 - The live runner must remain uninterrupted during the current observation window.
 - This RR2/TRAIL4 variant remains research-only, not canonical source-confirmed Strategy A.
+
+## Additional blocker — observed-trade matrix
+
+A second existing tool, `scripts/run_sp2l_v3_mt5_actual_trailing_matrix.py`, is intended to replay alternative exits for actual MT5 positions. It must not be used for a trail recommendation unchanged:
+
+- It imports `sp2l_v3_config.py` (the Trail-10 / TP_R=1 research config), not the RR2/TRAIL4 config. For completed trades it often uses recorded TP, but fallback TP and metadata still come from the other config.
+- Its parameter labels are `activation_pips` and `trail_pips`, but in `main()` it overwrites the conversion with `info.point`. In the documented XAUUSD.ecn environment, point=0.01, so the current grid's maximum trail value 20 means 0.20 price units; it never includes the live offset of 0.40. This is not the live baseline.
+- In `replay()`, it computes a new SL from the current candle's high/low before checking that same candle against the updated SL. M1 OHLC does not establish whether the favorable extreme preceded the adverse extreme, so this can introduce same-bar trailing look-ahead. The safer existing matrix policy is to check the stop/target active before the bar, then make a newly calculated stop eligible from the next completed bar; same-bar SL/TP contact remains ambiguous.
+- It aggregates observed `profit` fields but does not aggregate commission and swap into the observed net result. The counterfactual `realized_usd` is a simplified price × volume × 100 estimate and is not a broker-cost-aware reconstruction.
+- It updates the matrix's global `PIP` from broker point metadata at runtime, so the same named grid values have a different price meaning from the live config's `XAU_PIP_SIZE_PRICE=0.1`.
+
+These are research-engine parity/measurement blockers, not evidence that the live trailing implementation itself is malfunctioning. Fix and regression-test the research path before using it to rank trail variants. Keep actual observed forward results separate from modeled counterfactuals.
+
