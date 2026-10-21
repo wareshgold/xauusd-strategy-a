@@ -186,6 +186,61 @@ def fetch_m1(symbol: str, start_epoch: int, end_epoch: int):
     return bars, hashlib.sha256(rates.tobytes()).hexdigest()
 
 
+
+def inspect_trail_event(event: dict, point_size: float) -> dict:
+    """Compare a logged stop target with the runner's documented trail geometry.
+
+    This is a read-only consistency check, not a claim about broker execution.
+    The expected target is derived from the event's own logged distance.
+    """
+    direction = str(event.get("direction", "")).upper()
+    try:
+        high = float(event["bar_high"])
+        low = float(event["bar_low"])
+        entry = float(event["entry"])
+        old_sl = float(event["old_sl"])
+        new_sl = float(event["new_sl"])
+        distance = float(event["trail_distance_price"])
+    except (KeyError, TypeError, ValueError):
+        return {
+            "geometry_status": "MISSING_FIELDS",
+            "formula_match": None,
+            "improvement_ok": None,
+            "favorable_trigger_ok": None,
+            "expected_new_sl": None,
+            "formula_delta_price": None,
+        }
+
+    if direction == "BUY":
+        expected = high - distance
+        improvement_ok = old_sl <= 0 or new_sl > old_sl
+        favorable = high - entry
+    elif direction == "SELL":
+        expected = low + distance
+        improvement_ok = old_sl <= 0 or new_sl < old_sl
+        favorable = entry - low
+    else:
+        return {
+            "geometry_status": "INVALID_DIRECTION",
+            "formula_match": None,
+            "improvement_ok": None,
+            "favorable_trigger_ok": None,
+            "expected_new_sl": None,
+            "formula_delta_price": None,
+        }
+
+    delta = new_sl - expected
+    formula_match = abs(delta) <= max(float(point_size) * 0.51, 1e-8)
+    favorable_trigger_ok = favorable + 1e-8 >= distance
+    return {
+        "geometry_status": "PASS" if formula_match and improvement_ok and favorable_trigger_ok else "MISMATCH",
+        "formula_match": formula_match,
+        "improvement_ok": improvement_ok,
+        "favorable_trigger_ok": favorable_trigger_ok,
+        "expected_new_sl": expected,
+        "formula_delta_price": delta,
+    }
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mt5-path", required=True)
@@ -231,6 +286,25 @@ def main():
                 "point_size": float(info.point),
                 "digits": int(info.digits),
             }
+            geometry_checks = [
+                {
+                    "position_id": position_id,
+                    "completed_bar_time": int(event.get("completed_bar_time", 0) or 0),
+                    "direction": event.get("direction"),
+                    "old_sl": event.get("old_sl"),
+                    "new_sl": event.get("new_sl"),
+                    **inspect_trail_event(event, float(info.point)),
+                }
+                for event in sorted(events, key=lambda item: int(item.get("completed_bar_time", 0) or 0))
+            ]
+            row.update({
+                "trail_geometry_formula_matches": sum(item["formula_match"] is True for item in geometry_checks),
+                "trail_geometry_formula_mismatches": sum(item["formula_match"] is False for item in geometry_checks),
+                "trail_geometry_improvement_violations": sum(item["improvement_ok"] is False for item in geometry_checks),
+                "trail_geometry_trigger_violations": sum(item["favorable_trigger_ok"] is False for item in geometry_checks),
+                "trail_geometry_missing_or_invalid": sum(item["geometry_status"] in ("MISSING_FIELDS", "INVALID_DIRECTION") for item in geometry_checks),
+                "trail_geometry_details_json": json.dumps(geometry_checks, separators=(",", ":")),
+            })
             if trade.get("history_status") != "CLOSED":
                 rows.append(row)
                 continue
