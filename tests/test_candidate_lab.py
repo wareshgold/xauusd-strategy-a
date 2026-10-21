@@ -73,6 +73,14 @@ def test_optimization_rejects_holdout_or_mutable_dataset():
         make_plan(immutable=False).candidates()
 
 
+def test_dataset_content_sha_must_be_hexadecimal_sha256():
+    with pytest.raises(CandidateLabError, match="64-character hexadecimal"):
+        make_plan(data_sha="g" * 64).candidates()
+
+    # Hexadecimal SHA-256 digests are case-insensitive at the validation boundary.
+    assert len(make_plan(data_sha="A" * 64).candidates()) == 6
+
+
 def test_matrix_cap_rejects_unbounded_search():
     plan = make_plan()
     too_small = CandidatePlan(**{
