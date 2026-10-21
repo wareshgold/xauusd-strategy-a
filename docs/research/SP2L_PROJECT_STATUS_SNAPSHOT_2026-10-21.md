@@ -29,7 +29,7 @@
 - Branch: `research/xauusd-tick-timestamp-profiling-20261021`
 - Base: PR #337 branch `research/xauusd-tick-dataset-offline-audit-20261021`.
 - State at snapshot: **open, Draft, unmerged**. It is stacked on #337; do not merge it independently of its prerequisite.
-- Latest head verified by fetch: `366272690de6396bc198856d449fff2bd4c4e709`.
+- Latest head verified by GitHub on 2026-10-21: `3df305b6c342ae592f7554ffa0454651d74ec58a` (workflow-path fix included).
 - Files added: `scripts/profile_xauusd_tick_timestamps.py`, `tests/test_profile_xauusd_tick_timestamps.py`.
 - It profiles in original row order; does not sort, deduplicate, repair, or write the source; report path must be new.
 
@@ -63,19 +63,19 @@ Audit/profile facts recorded from the acquired dataset:
 
 ## 4. Latest focused test attempt — be precise about what was verified
 
-- Commit under review: `366272690de6396bc198856d449fff2bd4c4e709`.
+- Commit under review: `3df305b6c342ae592f7554ffa0454651d74ec58a`. The two focused test files are included in the current `Factory Research Tests` workflow.
 - Two focused suites were invoked: `tests/test_audit_xauusd_tick_dataset.py` and `tests/test_profile_xauusd_tick_timestamps.py`.
 - The isolated export test run returned **5 passed, 1 warning** in 0.56 seconds using `pytest -c NUL`.
-- Caveat: the export was reconstructed with PowerShell `Set-Content -Encoding utf8`, which added BOMs/changed file encoding; `pytest.ini` then required bypassing with `-c NUL`. Thus this is useful test evidence but **not a byte-for-byte clean checkout verification**. A clean checkout/worktree run and confirmation that GitHub CI actually runs both new test files remain outstanding.
+- Caveat: the export was reconstructed with PowerShell `Set-Content -Encoding utf8`, which added BOMs/changed file encoding; `pytest.ini` then required bypassing with `-c NUL`. Thus the local run is useful test evidence but **not a byte-for-byte clean checkout verification**. GitHub CI now explicitly selects both focused test files; a clean checkout/worktree run remains outstanding.
 - The warning was pytest cache creation under `NUL`, not a test failure.
 
 ## 5. CI / review follow-up
 
-Previously inspected workflows did not explicitly include both new files:
-- `.github/workflows/factory-tests.yml`
-- `.github/workflows/sp2l-forensic-checks.yml`
+The current `.github/workflows/factory-tests.yml` explicitly runs:
+- `tests/test_audit_xauusd_tick_dataset.py`
+- `tests/test_profile_xauusd_tick_timestamps.py`
 
-Re-check the current workflow definitions and PR checks. Ensure the two new test files are actually selected by CI. Do not treat unrelated green CI as proof that these tests ran.
+For the checked heads of PR #337 and PR #338, both `Factory Research Tests` and `SP2L forensic deterministic checks` completed successfully. This confirms the focused suites were selected by the Factory workflow; it does **not** replace a clean local checkout verification or source-semantic review.
 
 ## 6. Other source/data gates still relevant
 
@@ -93,9 +93,9 @@ Re-check the current workflow definitions and PR checks. Ensure the two new test
 ## 8. Exact next actions
 
 1. Reconcile Factory local vs remote HEAD and worktree evidence without destructive commands.
-2. Verify PR #338 focused tests from a clean checkout, preserving all existing verification folders.
-3. Confirm CI runs both audit and profiler test files; adjust only the narrow workflow scope if needed.
-4. Review the real timestamp-profile report and retain the unresolved event-order semantics as an explicit blocker.
+2. Run the focused tests from a clean checkout/worktree, preserving existing verification folders and all untracked evidence.
+3. Review the real timestamp-profile report and retain unresolved event-order semantics as an explicit blocker.
+4. Review and resolve any remaining code-level findings before changing #337/#338 from Draft.
 5. Keep #337 and #338 Draft/unmerged until prerequisites and review are complete.
 6. Continue Factory/Candidate Lab and source-resolution work; do not touch live runner/trailing unless explicitly requested.
 
