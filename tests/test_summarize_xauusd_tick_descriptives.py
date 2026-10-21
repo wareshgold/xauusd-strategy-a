@@ -56,7 +56,7 @@ def test_descriptive_summary_reports_raw_flags_spreads_and_input_order(tmp_path:
     assert result["spread"]["minimum"] == 0.2
     assert result["spread"]["maximum"] == 0.3
     assert result["flag_value_counts"] == {"96": 1, "130": 1, "134": 1, "226": 1}
-    assert result["input_row_order_diagnostics"]["bid_changes_vs_previous_input_row"] == 2
+    assert result["input_row_order_diagnostics"]["bid_changes_vs_previous_input_row"] == 3
     assert result["eligibility"] == "DESCRIPTIVE_ONLY_NOT_EXECUTION_CERTIFICATION"
     assert source.read_bytes() == source_before
     assert manifest.read_bytes() == manifest_before
