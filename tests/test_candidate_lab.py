@@ -77,8 +77,11 @@ def test_dataset_content_sha_must_be_hexadecimal_sha256():
     with pytest.raises(CandidateLabError, match="64-character hexadecimal"):
         make_plan(data_sha="g" * 64).candidates()
 
-    # Hexadecimal SHA-256 digests are case-insensitive at the validation boundary.
-    assert len(make_plan(data_sha="A" * 64).candidates()) == 6
+    # Equivalent hexadecimal spellings must produce the same canonical identity.
+    upper = make_plan(data_sha="A" * 64)
+    lower = make_plan(data_sha="a" * 64)
+    assert upper.fingerprint == lower.fingerprint
+    assert upper.candidates()[0].dataset_fingerprint == lower.candidates()[0].dataset_fingerprint
 
 
 def test_matrix_cap_rejects_unbounded_search():
