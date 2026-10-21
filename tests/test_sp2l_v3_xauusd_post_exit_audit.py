@@ -91,5 +91,7 @@ def test_fetch_m1_does_not_skip_seven_day_chunk_boundary(monkeypatch):
 
     assert len(calls) == 2
     assert calls[1][0] == calls[0][1]
-    # The boundary timestamp is deduplicated if the API includes it in both chunks.
+    # The fake API returns one bar at each requested start, including the boundary.
+    assert len(bars) == 2
+    assert bars[1]["time"] == int(calls[0][1].timestamp())
     assert [bar["time"] for bar in bars] == sorted({bar["time"] for bar in bars})
