@@ -252,9 +252,9 @@ def main():
             last_sl = float(last_event.get("new_sl", 0.0) or 0.0)
             entry_price = float(trade["entry_price"])
             if last_sl > 0:
-                row["last_requested_sl_locked_price"] = (
-                    last_sl - entry_price if trade["direction"] == "BUY" else entry_price - last_sl
-                )
+                locked = last_sl - entry_price if trade["direction"] == "BUY" else entry_price - last_sl
+                row["last_requested_sl_locked_price"] = locked
+                row["last_requested_sl_locked_points"] = locked / float(info.point)
             rows.append(row)
         OUT.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -278,9 +278,11 @@ def main():
             "digits": int(info.digits),
             "post_exit_horizons_minutes": horizons,
             "exit_minute_policy": "exclude the entire exit minute; first post-exit bar starts at the next full M1 minute",
+            "quote_basis": "MT5 M1 OHLC chart prices; bid/ask spread and executable close-side quote are not reconstructed",
             "cost_policy": "observed net = sum of MT5 deal profit + commission + swap + fee; modeled price excursions are price-only and are not P&L",
             "limitations": [
                 "M1 OHLC cannot establish intrabar ordering.",
+                "MT5 M1 OHLC does not reconstruct executable bid/ask prices, spread, slippage, or tick sequence; SELL-side excursion values are chart-price diagnostics, not executable outcomes.",
                 "Post-exit excursions do not simulate an alternative stop or guarantee that a wider stop would have filled at a particular price.",
                 "Only positions represented by TRAIL_UPDATE events in the supplied event log are analyzed.",
             ],
