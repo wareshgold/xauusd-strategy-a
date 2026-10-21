@@ -233,6 +233,12 @@ def profile_dataset(source: Path, manifest_path: Path, sample_limit: int = 20) -
         "groups_with_different_quotes_by_utc_day": dict(sorted(differing_groups_by_utc_day.items())),
         "maximum_size_group_examples": max_group_samples[:sample_limit],
         "different_bidask_group_examples": differing_quote_samples[:sample_limit],
+        # This profile cannot establish the true sequence of events sharing a
+        # millisecond timestamp. Keep this explicit for downstream consumers.
+        "within_millisecond_event_order": "UNRESOLVED",
+        "tick_order_sensitive_execution_validation": (
+            "NOT_CERTIFIED" if groups_with_different_quotes > 0 else "NOT_ESTABLISHED"
+        ),
         "interpretation": (
             "Read-only diagnostics. Input rows are neither sorted nor modified. "
             "Groups are contiguous equal-time_msc runs; adjacent ordering is reported separately. "
