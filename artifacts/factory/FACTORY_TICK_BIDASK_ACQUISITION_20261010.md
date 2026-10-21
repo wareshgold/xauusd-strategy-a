@@ -26,12 +26,31 @@ The acquisition writes to `data/raw/`, which is ignored by Git; raw market data 
 From the repository root, in the same Python environment that has the `MetaTrader5` package and access to the intended terminal:
 
 ```powershell
-..venvScriptspython.exe .\scripts\acquire_xauusd_tick_bidask.py `
-  --start "2026-08-21T00:00:00Z" `
-  --end "2026-09-19T00:00:00Z" `
-  --symbol "XAUUSD.ecn" `
-  --terminal-path "C:\Program Files\Otet Group MT5 Terminal\terminal64.exe" `
-  --output ".\data\raw\ticks\xauusd-ecn-ticks-20260821_20260919.csv.gz"
+# Set these to the Factory worktree and the Python environment that has MetaTrader5 installed.
+$Repo = "D:\path\to\xauusd-strategy-a-factory-candidate-lab"
+$Python = "D:\path\to\python.exe"
+$Terminal = "C:\Program Files\Otet Group MT5 Terminal\terminal64.exe"
+$Output = Join-Path $Repo "data\raw\ticks\xauusd-ecn-ticks-20260821_20260919.csv.gz"
+
+if (!(Test-Path $Repo)) { throw "Factory repository not found: $Repo" }
+if (!(Test-Path $Python)) { throw "Python environment not found: $Python" }
+if (!(Test-Path $Terminal)) { throw "MT5 terminal not found: $Terminal" }
+
+Push-Location $Repo
+try {
+    & $Python .\scripts\acquire_xauusd_tick_bidask.py `
+      --start "2026-08-21T00:00:00Z" `
+      --end "2026-09-19T00:00:00Z" `
+      --symbol "XAUUSD.ecn" `
+      --terminal-path $Terminal `
+      --output $Output
+    if ($LASTEXITCODE -ne 0) {
+        throw "Tick acquisition failed with exit code $LASTEXITCODE"
+    }
+}
+finally {
+    Pop-Location
+}
 ```
 
 If the terminal does not have the requested history cached/available, the script may return a small or empty dataset. `ACQUIRED` only means there are ticks and some valid non-crossed Bid/Ask quotes; it does not certify completeness. Review:
