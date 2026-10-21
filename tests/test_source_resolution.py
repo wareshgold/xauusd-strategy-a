@@ -88,6 +88,30 @@ def test_fixture_set_without_evidence_remains_blocked():
     assert all(item.verdict is SourceVerdict.BLOCKED for item in results)
 
 
+def test_duplicate_evidence_for_one_question_is_rejected_fail_closed():
+    fixture = _fixture("SP2L.F12.Q1")
+    evidence = (
+        SourceEvidence(
+            evidence_id="SRC-F12-TOUCH",
+            question_id=fixture.question_id,
+            selected_alternative="TOUCH",
+            source_reference="PRIMARY-FRAME-A",
+            rationale="One source interpretation.",
+            directly_supported=True,
+        ),
+        SourceEvidence(
+            evidence_id="SRC-F12-PENETRATION",
+            question_id=fixture.question_id,
+            selected_alternative="PENETRATION",
+            source_reference="PRIMARY-FRAME-B",
+            rationale="A conflicting source interpretation.",
+            directly_supported=True,
+        ),
+    )
+    with pytest.raises(SourceResolutionError, match="multiple source evidence records"):
+        resolve_fixture_set((fixture,), evidence)
+
+
 def test_partial_evidence_does_not_resolve_other_questions():
     fixtures = build_sp2l_discrimination_fixtures()
     evidence = (

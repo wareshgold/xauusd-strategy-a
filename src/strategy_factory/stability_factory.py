@@ -63,6 +63,35 @@ class StabilityFactory:
         context.source_record.validate()
         context.source_event.validate()
 
+        if context.readiness_snapshot.strategy_id != context.spec.strategy_id:
+            raise StabilityFactoryError(
+                "stability strategy_id does not match the frozen readiness snapshot"
+            )
+        if context.readiness_snapshot.manifest_revision != context.manifest_revision:
+            raise StabilityFactoryError(
+                "stability manifest_revision does not match the frozen readiness snapshot"
+            )
+        if context.source_record.snapshot_fingerprint != context.readiness_snapshot.fingerprint:
+            raise StabilityFactoryError(
+                "stability readiness snapshot fingerprint does not match the upstream research record"
+            )
+        if context.source_record.strategy_id != context.spec.strategy_id:
+            raise StabilityFactoryError(
+                "stability strategy_id does not match the upstream research record"
+            )
+        if context.source_record.strategy_revision != context.spec.strategy_revision:
+            raise StabilityFactoryError(
+                "stability strategy_revision does not match the upstream research record"
+            )
+        if context.source_record.manifest_revision != context.manifest_revision:
+            raise StabilityFactoryError(
+                "stability manifest_revision does not match the upstream research record"
+            )
+        if context.source_record.execution_semantics != context.spec.execution_semantics.value:
+            raise StabilityFactoryError(
+                "stability execution_semantics does not match the upstream research record"
+            )
+
         if context.handoff.destination_station != "stability":
             raise StabilityFactoryError("handoff destination must be stability")
         if context.handoff.dataset_content_sha256 != context.dataset_content_sha256:

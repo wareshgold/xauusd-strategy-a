@@ -28,6 +28,12 @@ def _session():
             status=GateStatus.PASS,
             evidence="holdout-pass",
             details={
+                "source_station": "holdout",
+                "destination_station": "forward",
+                "forward_session_id": "SESSION-1",
+                "forward_dataset_id": "FORWARD-1",
+                "forward_artifact_id": "ART-F",
+                "forward_dataset_sha256": _sha("forward"),
                 "production_decision": False,
                 "handoff_fingerprint": _sha("handoff"),
                 "strategy_revision": "STRAT-1",

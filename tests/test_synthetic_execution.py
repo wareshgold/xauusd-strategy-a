@@ -2,7 +2,7 @@ import hashlib
 
 import pytest
 
-from strategy_factory.datasets import DatasetRegistry
+from strategy_factory.datasets import DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
@@ -38,7 +38,7 @@ def make_spec_and_job(semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH):
     )
     job = ResearchJobSpec.from_test_spec(
         spec, manifest_revision="SYNTH-M1",
-        dataset_fingerprint="a" * 64,
+        dataset_fingerprint=fingerprint_dataset(dataset, "a" * 64),
         job_id=f"JOB-{semantics.value}",
     )
     return spec, job
@@ -49,8 +49,8 @@ def make_snapshot(spec):
         snapshot_revision="READINESS-SNAPSHOT-SYNTHETIC",
         strategy_id=spec.strategy_id,
         manifest_revision="SYNTH-M1",
-        manifest_fingerprint="m" * 64,
-        passport_fingerprint="p" * 64,
+        manifest_fingerprint="c" * 64,
+        passport_fingerprint="d" * 64,
         source_ledger={},
         source_readiness={},
         passport_eligibility={},
@@ -60,8 +60,8 @@ def make_snapshot(spec):
         snapshot_revision="READINESS-SNAPSHOT-SYNTHETIC",
         strategy_id=spec.strategy_id,
         manifest_revision="SYNTH-M1",
-        manifest_fingerprint="m" * 64,
-        passport_fingerprint="p" * 64,
+        manifest_fingerprint="c" * 64,
+        passport_fingerprint="d" * 64,
         source_ledger={},
         source_readiness={},
         passport_eligibility={},

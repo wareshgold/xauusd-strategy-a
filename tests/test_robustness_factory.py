@@ -27,12 +27,12 @@ from strategy_factory.usage import DatasetUsageLedger
 from strategy_factory.runner import ResearchJobRunner
 
 
-def _snapshot(spec):
+def _snapshot(spec, *, snapshot_revision="SYNTH"):
     ledger = {"entries": [], "resolution_state": "SYNTHETIC_ONLY"}
     readiness = {"status": "SYNTHETIC_ONLY"}
     eligibility = {"status": "SYNTHETIC_ONLY"}
     payload = ReadinessSnapshot._fingerprint_payload(
-        snapshot_revision="SYNTH",
+        snapshot_revision=snapshot_revision,
         strategy_id=spec.strategy_id,
         manifest_revision="MANIFEST",
         manifest_fingerprint="1" * 64,
@@ -42,7 +42,7 @@ def _snapshot(spec):
         passport_eligibility=eligibility,
     )
     return ReadinessSnapshot(
-        snapshot_revision="SYNTH",
+        snapshot_revision=snapshot_revision,
         strategy_id=spec.strategy_id,
         manifest_revision="MANIFEST",
         manifest_fingerprint="1" * 64,
@@ -164,3 +164,18 @@ def test_robustness_factory_blocks_dataset_mismatch(tmp_path):
         assert "dataset SHA" in str(exc)
     else:
         raise AssertionError("dataset mismatch must be rejected")
+
+def test_robustness_factory_rejects_readiness_snapshot_drift(tmp_path):
+    from dataclasses import replace
+
+    runner, context = _context(tmp_path)
+    drifted = replace(
+        context,
+        readiness_snapshot=_snapshot(context.spec, snapshot_revision="DRIFTED"),
+    )
+    try:
+        RobustnessFactory(runner).prepare_and_run(drifted)
+    except RobustnessFactoryError as exc:
+        assert "snapshot fingerprint" in str(exc)
+    else:
+        raise AssertionError("snapshot drift must be rejected")

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 from pathlib import Path
 
@@ -163,6 +164,21 @@ def _fixture(tmp_path: Path):
     return snapshot, record, event, handoff
 
 
+def _resign_snapshot(snapshot, **changes):
+    updated = replace(snapshot, **changes)
+    payload = type(updated)._fingerprint_payload(
+        snapshot_revision=updated.snapshot_revision,
+        strategy_id=updated.strategy_id,
+        manifest_revision=updated.manifest_revision,
+        manifest_fingerprint=updated.manifest_fingerprint,
+        passport_fingerprint=updated.passport_fingerprint,
+        source_ledger=updated.source_ledger,
+        source_readiness=updated.source_readiness,
+        passport_eligibility=updated.passport_eligibility,
+    )
+    return replace(updated, fingerprint=hashlib.sha256(payload).hexdigest())
+
+
 def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
     snapshot, record, event, handoff = _fixture(tmp_path)
     context = ForwardGateContext(
@@ -224,4 +240,45 @@ def test_forward_gate_rejects_unfrozen_strategy(tmp_path):
             ForwardGateContext("MANIFEST", snapshot, handoff, record, event,
                                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                                 strategy_revision_frozen=False)
+        )
+
+
+
+def test_forward_gate_rejects_snapshot_manifest_revision_drift(tmp_path):
+    snapshot, record, event, handoff = _fixture(tmp_path)
+    drifted = _resign_snapshot(snapshot, manifest_revision="MANIFEST-DRIFT")
+
+    with pytest.raises(ForwardGateError, match="manifest_revision.*snapshot"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", drifted, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+            )
+        )
+
+
+def test_forward_gate_rejects_snapshot_not_bound_to_holdout_record(tmp_path):
+    snapshot, record, event, handoff = _fixture(tmp_path)
+    altered = _resign_snapshot(
+        snapshot, source_readiness={"status": "BLOCKED", "audit_probe": "changed"}
+    )
+
+    with pytest.raises(ForwardGateError, match="snapshot fingerprint"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", altered, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+            )
+        )
+
+
+def test_forward_gate_rejects_non_hex_forward_dataset_sha(tmp_path):
+    snapshot, record, event, handoff = _fixture(tmp_path)
+
+    with pytest.raises(ForwardGateError, match="lowercase hexadecimal SHA-256"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "g" * 64,
+            )
         )

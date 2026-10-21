@@ -27,18 +27,25 @@ def _sha(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _gate() -> ForwardGateResult:
+def _gate(session_id: str, dataset_id: str, artifact_id: str, dataset_sha256: str) -> ForwardGateResult:
     return ForwardGateResult(
         gate=GateResult(
             name="FRESH_HOLDOUT_TO_FORWARD",
             status=GateStatus.PASS,
             evidence="synthetic-holdout-forward-evidence",
             details={
+                "source_station": "holdout",
+                "destination_station": "forward",
+                "forward_session_id": session_id,
+                "forward_dataset_id": dataset_id,
+                "forward_artifact_id": artifact_id,
+                "forward_dataset_sha256": dataset_sha256,
                 "strategy_revision": "REV-SYNTH-FWD-1",
                 "manifest_revision": "MANIFEST-SYNTH-FWD-1",
                 "holdout_dataset_id": "HOLDOUT-SYNTH-1",
                 "holdout_dataset_sha256": _sha(b"holdout"),
                 "holdout_artifact_id": "HOLDOUT-ART-SYNTH-1",
+                "handoff_fingerprint": _sha(b"synthetic-handoff"),
                 "production_decision": False,
             },
         )
@@ -46,10 +53,15 @@ def _gate() -> ForwardGateResult:
 
 
 def test_factory_forward_readiness_composes_gate_session_lifecycle_and_reconciliation():
-    gate = _gate()
     record = SyntheticHoldoutRecord()
 
     forward_sha = _sha(b"forward")
+    gate = _gate(
+        "FORWARD-SESSION-SYNTH-1",
+        "FORWARD-DATA-SYNTH-1",
+        "FORWARD-ART-SYNTH-1",
+        forward_sha,
+    )
     session = DemoForwardSessionFactory().prepare(
         gate=gate,
         source_record=record,
@@ -111,15 +123,21 @@ def test_factory_forward_readiness_composes_gate_session_lifecycle_and_reconcili
 
 
 def test_factory_forward_readiness_preserves_frozen_identity_fingerprints():
-    gate = _gate()
     record = SyntheticHoldoutRecord()
+    forward_sha = _sha(b"forward-2")
+    gate = _gate(
+        "FORWARD-SESSION-SYNTH-2",
+        "FORWARD-DATA-SYNTH-2",
+        "FORWARD-ART-SYNTH-2",
+        forward_sha,
+    )
     kwargs = dict(
         gate=gate,
         source_record=record,
         session_id="FORWARD-SESSION-SYNTH-2",
         forward_dataset_id="FORWARD-DATA-SYNTH-2",
         forward_dataset_artifact_id="FORWARD-ART-SYNTH-2",
-        forward_dataset_content_sha256=_sha(b"forward-2"),
+        forward_dataset_content_sha256=forward_sha,
     )
 
     a = DemoForwardSessionFactory().prepare(**kwargs).session

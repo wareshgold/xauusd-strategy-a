@@ -106,6 +106,8 @@ HEALTH_FILE = ROOT / "runtime" / "sp2l_multi_symbol_forward_health.json"
 RUNNER_LOCK = ROOT / "runtime" / "sp2l_multi_symbol_forward_runner.lock"
 WATCHDOG_PID = ROOT / "runtime" / "forward_watchdog.pid"
 EVENTS = ROOT / "artifacts" / "forward-test" / "SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl"
+ARTIFACTS = ROOT / "artifacts" / "forward-test"
+RUNTIME = ROOT / "runtime"
 
 PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8790"))
 REFRESH_SECONDS = 5
