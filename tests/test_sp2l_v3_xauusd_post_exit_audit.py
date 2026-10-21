@@ -57,6 +57,44 @@ def test_post_exit_audit_excludes_exit_minute_and_measures_buy_and_sell_symmetri
     assert abs(sell["post_exit_2m_mae_price"] - 0.60) < 1e-9
 
 
+
+def test_trail_geometry_matches_buy_and_sell_extreme_offset_and_improves_stop():
+    buy = audit.inspect_trail_event({
+        "direction": "BUY", "bar_high": 101.0, "bar_low": 99.0,
+        "entry": 100.0, "old_sl": 100.2, "new_sl": 100.6,
+        "trail_distance_price": 0.4,
+    }, point_size=0.01)
+    assert buy["geometry_status"] == "PASS"
+    assert buy["formula_match"] is True
+    assert buy["improvement_ok"] is True
+    assert buy["favorable_trigger_ok"] is True
+    assert abs(buy["expected_new_sl"] - 100.6) < 1e-9
+
+    sell = audit.inspect_trail_event({
+        "direction": "SELL", "bar_high": 101.0, "bar_low": 99.0,
+        "entry": 100.0, "old_sl": 99.8, "new_sl": 99.4,
+        "trail_distance_price": 0.4,
+    }, point_size=0.01)
+    assert sell["geometry_status"] == "PASS"
+    assert sell["formula_match"] is True
+    assert sell["improvement_ok"] is True
+    assert sell["favorable_trigger_ok"] is True
+    assert abs(sell["expected_new_sl"] - 99.4) < 1e-9
+
+
+def test_trail_geometry_flags_wrong_target_and_missing_fields():
+    wrong = audit.inspect_trail_event({
+        "direction": "BUY", "bar_high": 101.0, "bar_low": 99.0,
+        "entry": 100.0, "old_sl": 100.2, "new_sl": 100.5,
+        "trail_distance_price": 0.4,
+    }, point_size=0.01)
+    assert wrong["geometry_status"] == "MISMATCH"
+    assert wrong["formula_match"] is False
+
+    missing = audit.inspect_trail_event({"direction": "BUY"}, point_size=0.01)
+    assert missing["geometry_status"] == "MISSING_FIELDS"
+    assert missing["formula_match"] is None
+
 def test_price_excursions_returns_null_for_missing_window():
     result = audit.price_excursions("BUY", 100.0, [], 60, 120)
     assert result == {"mfe_price": None, "mae_price": None, "bars": 0}
