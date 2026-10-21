@@ -34,9 +34,10 @@
 - It profiles in original row order; does not sort, deduplicate, repair, or write the source; report path must be new.
 
 ### Important branch reconciliation item
-- The latest locally reported Factory worktree was `research/factory-candidate-lab-20261010` at `5c9f6fe2`, with untracked runtime/artifact evidence preserved.
-- GitHub PR #337 currently reports its base branch SHA as `ea35b682ef12592366e4557fc99f1d03aa63930c`.
-- These references do not match. Before updating Factory or creating another stacked change, compare local HEAD, remote branch HEAD, and untracked/modified evidence. Do not reset, clean, or overwrite anything to force alignment.
+- Latest locally reported Factory worktree: `research/factory-candidate-lab-20261010` at `cd48a52b15703586e6b01789a5ff9f78a08274d1`; untracked runtime/artifact evidence was explicitly preserved. An older handoff mentioned `5c9f6fe2`; do not treat that older SHA as current.
+- GitHub PR #337 base SHA: `ea35b682ef12592366e4557fc99f1d03aa63930c`.
+- GitHub compare confirms the remote base is **2 commits ahead** of the latest locally reported SHA, with no reported local-only commits in that comparison: `ea35b682` (PowerShell acquisition-doc fix) and `0ee25b03` (test journal isolation guard).
+- This comparison is against the previously reported local SHA, not a fresh read of the user's disk. Before any local update, re-check actual HEAD/status and preserve all untracked/modified evidence. Do not reset, clean, or overwrite anything to force alignment.
 
 ## 3. Tick dataset — known evidence
 
