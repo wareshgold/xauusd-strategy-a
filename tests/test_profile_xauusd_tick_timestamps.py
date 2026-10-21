@@ -105,3 +105,23 @@ def test_does_not_claim_event_order_is_resolved_when_duplicate_quotes_match(tmp_
     assert result["within_millisecond_event_order"] == "UNRESOLVED"
     assert result["tick_order_sensitive_execution_validation"] == "NOT_ESTABLISHED"
 
+def test_preserves_order_and_opaque_flags_for_same_millisecond_rows(tmp_path: Path) -> None:
+    rows = [
+        _row(100, bid="2500.00", ask="2500.20", flags="134"),
+        _row(100, bid="2500.10", ask="2500.20", flags="226"),
+        _row(100, bid="2500.00", ask="2500.30", flags="226"),
+    ]
+    source, manifest = _fixture(tmp_path, rows)
+    before_source = source.read_bytes()
+
+    result = profile_dataset(source, manifest, sample_limit=10)
+
+    assert result["csv_row_count"] == 3
+    assert result["duplicate_timestamp_rows_beyond_first_occurrence"] == 2
+    assert result["groups_with_multiple_distinct_valid_bidask_pairs"] == 1
+    assert result["within_millisecond_event_order"] == "UNRESOLVED"
+    assert result["tick_order_sensitive_execution_validation"] == "NOT_CERTIFIED"
+    sample = result["different_bidask_group_examples"][0]
+    assert [row["flags"] for row in sample["rows"]] == ["134", "226", "226"]
+    assert [row["bid"] for row in sample["rows"]] == ["2500.00", "2500.10", "2500.00"]
+    assert source.read_bytes() == before_source
