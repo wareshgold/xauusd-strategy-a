@@ -64,6 +64,8 @@ def test_profiles_contiguous_duplicate_groups_without_reordering(tmp_path: Path)
     assert result["duplicate_timestamp_rows_beyond_first_occurrence"] == 3
     assert result["duplicate_timestamp_groups"] == 2
     assert result["groups_with_multiple_distinct_valid_bidask_pairs"] == 2
+    assert result["within_millisecond_event_order"] == "UNRESOLVED"
+    assert result["tick_order_sensitive_execution_validation"] == "NOT_CERTIFIED"
     assert result["duplicate_rows_with_bidask_different_from_first_occurrence"] == 2
     assert result["group_size_distribution"] == {"1": 1, "2": 1, "3": 1}
     assert result["maximum_group_size"] == 3
@@ -86,3 +88,20 @@ def test_reports_out_of_order_transitions_and_utc_mismatches(tmp_path: Path) -> 
     assert result["time_utc_timestamp_mismatch_rows"] == 1
     assert result["unique_timestamp_groups"] == 2
     assert result["duplicate_timestamp_rows_beyond_first_occurrence"] == 0
+
+def test_does_not_claim_event_order_is_resolved_when_duplicate_quotes_match(tmp_path: Path) -> None:
+    rows = [
+        _row(100),
+        _row(101, bid="2500.00", ask="2500.20"),
+        _row(101, bid="2500.00", ask="2500.20"),
+    ]
+    source, manifest = _fixture(tmp_path, rows)
+
+    result = profile_dataset(source, manifest)
+
+    # Matching quotes in this sample do not establish the provider's ordering
+    # semantics for same-millisecond events in general.
+    assert result["groups_with_multiple_distinct_valid_bidask_pairs"] == 0
+    assert result["within_millisecond_event_order"] == "UNRESOLVED"
+    assert result["tick_order_sensitive_execution_validation"] == "NOT_ESTABLISHED"
+
