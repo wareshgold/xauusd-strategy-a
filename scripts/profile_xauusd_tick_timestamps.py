@@ -14,7 +14,7 @@ import hashlib
 import json
 import math
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -128,6 +128,7 @@ def profile_dataset(source: Path, manifest_path: Path, sample_limit: int = 20) -
             "distinct_valid_bidask_pairs": len(current_quote_set),
             "duplicate_rows_with_bidask_different_from_first": current_different_from_first,
             "rows": current_samples,
+            "differing_quote_rows": current_differing_samples,
         }
         if current_rows > max_group_size:
             max_group_size = current_rows
