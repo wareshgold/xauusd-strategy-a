@@ -4,6 +4,7 @@ import csv
 import gzip
 import json
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
@@ -37,28 +38,49 @@ def _write_fixture(tmp_path: Path, rows: list[dict[str, str]]) -> tuple[Path, Pa
     return source, manifest
 
 
-def _row(time_msc: int) -> dict[str, str]:
+def _row(
+    time_msc: int,
+    bid: str = "2500.00",
+    ask: str = "2500.20",
+    time_utc_msc: int | None = None,
+) -> dict[str, str]:
+    utc_msc = time_msc if time_utc_msc is None else time_utc_msc
+    utc_dt = datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(milliseconds=utc_msc)
+    time_utc = utc_dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")
     return {
         "time_msc": str(time_msc),
-        "time_utc": "2026-08-21T00:00:00.000Z",
-        "bid": "2500.00",
-        "ask": "2500.20",
+        "time_utc": time_utc,
+        "bid": bid,
+        "ask": ask,
         "last": "0",
         "volume": "0",
         "flags": "3",
     }
 
 
-def test_audit_separates_duplicate_timestamps_from_out_of_order(tmp_path: Path) -> None:
+def test_audit_separates_duplicate_timestamp_classes_and_out_of_order(tmp_path: Path) -> None:
     source, manifest = _write_fixture(
-        tmp_path, [_row(100), _row(101), _row(101), _row(99)]
+        tmp_path,
+        [
+            _row(100),
+            _row(101),
+            _row(101),
+            _row(101, bid="2500.10", ask="2500.30"),
+            _row(101, time_utc_msc=102),
+            _row(99),
+        ],
     )
     result = audit_dataset(source, manifest)
-    assert result["integrity_gate"] == "PASS"
-    assert result["duplicate_timestamp_rows_beyond_first_occurrence"] == 1
+    assert result["integrity_gate"] == "FAIL"
+    assert result["duplicate_timestamp_rows_beyond_first_occurrence"] == 3
+    assert result["duplicate_timestamp_rows_same_time_utc_same_bidask"] == 1
+    assert result["duplicate_timestamp_rows_same_time_utc_different_bidask"] == 1
+    assert result["duplicate_timestamp_rows_different_time_utc"] == 1
     assert result["adjacent_out_of_order_transitions"] == 1
-    assert result["csv_row_count"] == result["manifest_tick_count"] == 4
-    assert result["status"] == "PASS_WITH_TIMESTAMP_WARNINGS"
+    assert result["time_utc_timestamp_mismatch_rows"] == 1
+    assert result["invalid_time_utc_rows"] == 0
+    assert result["csv_row_count"] == result["manifest_tick_count"] == 6
+    assert result["status"] == "FAIL"
 
 
 def test_audit_fails_when_manifest_row_count_does_not_match(tmp_path: Path) -> None:
