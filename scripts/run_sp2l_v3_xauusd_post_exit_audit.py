@@ -169,7 +169,10 @@ def fetch_m1(symbol: str, start_epoch: int, end_epoch: int):
             raise RuntimeError(f"copy_rates_range failed: {mt5.last_error()}")
         if len(rates):
             chunks.append(rates.copy())
-        cursor = chunk_end + timedelta(minutes=1)
+        # copy_rates_range may include the chunk-end bar. Re-request that boundary
+        # on the next chunk and deduplicate by timestamp below; advancing one minute
+        # here can silently skip a bar at every seven-day boundary.
+        cursor = chunk_end
     if not chunks:
         return [], hashlib.sha256(b"").hexdigest()
     rates = np.concatenate(chunks)
