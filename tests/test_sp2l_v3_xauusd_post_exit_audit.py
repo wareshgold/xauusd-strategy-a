@@ -1,4 +1,4 @@
-"""Deterministic unit tests for the read-only RR2/TRAIL4 post-exit audit."""
+""""Deterministic unit tests for the read-only RR2/TRAIL4 post-exit audit."""
 import sys
 import types
 from pathlib import Path
@@ -84,7 +84,7 @@ def test_fetch_m1_does_not_skip_seven_day_chunk_boundary(monkeypatch):
             ],
         )
 
-    monkeypatch.setattr(audit.mt5, "copy_rates_range", fake_copy_rates_range)
+    monkeypatch.setattr(audit.mt5, "copy_rates_range", fake_copy_rates_range, raising=False)
     start = int(dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc).timestamp())
     end = start + 7 * 24 * 60 * 60 + 60
     bars, _ = audit.fetch_m1("XAUUSD.ecn", start, end)
