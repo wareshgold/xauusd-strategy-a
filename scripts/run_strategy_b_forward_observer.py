@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,6 +42,7 @@ SOURCE_SYMBOL = "XAUUSD"
 SYMBOL = os.getenv("STRATEGY_B_SYMBOL", "XAUUSD.ecn").strip()
 BARS = int(os.getenv("STRATEGY_B_BARS", "500"))
 POLL_SECONDS = float(os.getenv("STRATEGY_B_POLL_SECONDS", "0.5"))
+TERMINAL_PATH = os.getenv("STRATEGY_B_MT5_TERMINAL_PATH", "").strip()
 CONFIG = StrategyBConfig()
 
 
@@ -169,6 +171,34 @@ def attach_source_ema(candles: list[dict], ema_by_time: dict[int, float]) -> Non
             del ema_by_time[stamp]
 
 
+
+def exact_terminal_process_running() -> bool:
+    """Fail closed unless the exact configured MT5 executable is already running."""
+    if os.name != "nt" or not TERMINAL_PATH or not Path(TERMINAL_PATH).is_absolute():
+        print("BLOCKED: set STRATEGY_B_MT5_TERMINAL_PATH to an absolute Windows terminal64.exe path.")
+        return False
+    executable = Path(TERMINAL_PATH)
+    if executable.name.lower() != "terminal64.exe" or not executable.is_file():
+        print("BLOCKED: configured MT5 terminal executable is missing or is not terminal64.exe.")
+        return False
+    script = String.raw`$expected = [System.IO.Path]::GetFullPath($env:STRATEGY_B_MT5_TERMINAL_PATH); $matches = @(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'terminal64.exe' -and $_.ExecutablePath -eq $expected }); if ($matches.Count -gt 0) { exit 0 } else { exit 1 }`
+    try:
+        result = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        print(f"BLOCKED: could not verify existing MT5 process: {exc}")
+        return False
+    if result.returncode != 0:
+        print("BLOCKED: exact MT5 terminal process is not already running; observer will not launch it.")
+        return False
+    return True
+
+
 def main() -> int:
     if not OBSERVER_ENABLE:
         print("BLOCKED: set STRATEGY_B_OBSERVER_ENABLE=true to start the read-only observer.")
@@ -180,6 +210,9 @@ def main() -> int:
         print("BLOCKED: STRATEGY_B_BARS must be >=100 and poll interval must be >0.")
         return 2
 
+    if not exact_terminal_process_running():
+        return 3
+
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     if not acquire_lock():
@@ -190,8 +223,8 @@ def main() -> int:
         release_lock()
         raise
 
-    # No terminal path is guessed or launched. MT5 must already be available.
-    if not mt5.initialize():
+    # Exact process path was checked above. Attach using that explicit path; never use bare initialize().
+    if not mt5.initialize(path=TERMINAL_PATH, timeout=10000):
         print(json.dumps({"status": "MT5_INITIALIZE_FAILED", "last_error": mt5.last_error()}))
         release_lock()
         return 3
@@ -200,8 +233,13 @@ def main() -> int:
         terminal = mt5.terminal_info()
         account = mt5.account_info()
         info = mt5.symbol_info(SYMBOL)
+        expected_terminal_dir = os.path.normcase(os.path.realpath(str(Path(TERMINAL_PATH).parent)))
+        actual_terminal_dir = os.path.normcase(os.path.realpath(str(getattr(terminal, "path", "")))) if terminal is not None else ""
         if terminal is None or account is None:
             print(json.dumps({"status": "MT5_SESSION_METADATA_UNAVAILABLE"}))
+            return 3
+        if actual_terminal_dir != expected_terminal_dir:
+            print(json.dumps({"status": "MT5_TERMINAL_PATH_MISMATCH", "expected_directory": expected_terminal_dir, "actual_directory": actual_terminal_dir}))
             return 3
         if info is None:
             print(json.dumps({"status": "EXACT_SOURCE_SYMBOL_UNAVAILABLE", "symbol": SYMBOL}))
