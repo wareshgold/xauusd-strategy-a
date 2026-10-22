@@ -180,12 +180,22 @@ def evaluate_pending_entry(
         return "INVALID"
 
     entry_time = current.get("time", current.get("timestamp", len(candles) - 1))
-    if setup.setup_pos >= len(candles):
+    # The source locates setup_pos_time in the current dataframe on every
+    # poll. Re-find it by timestamp rather than retaining an index that can
+    # drift when the rolling 500-bar window advances.
+    setup_pos = next(
+        (
+            i for i, row in enumerate(candles)
+            if row.get("time", row.get("timestamp", i)) == setup.setup_time
+        ),
+        None,
+    )
+    if setup_pos is None:
         return None
 
     if config.use_trend_filter:
         opposite = 0
-        for pos in range(setup.setup_pos + 1, len(candles)):
+        for pos in range(setup_pos + 1, len(candles)):
             if setup.direction == "BUY":
                 favorable = _v(candles[pos], "high") > _v(candles[pos - 1], "high")
             else:
