@@ -1,4 +1,5 @@
 """Safety contract checks for the Strategy B read-only observer."""
+import ast
 from pathlib import Path
 
 
@@ -6,8 +7,20 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts" / "run_strategy_b_forward_observer.py"
 
 
+def executable_source_without_module_docstring(path: Path) -> str:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    if (
+        tree.body
+        and isinstance(tree.body[0], ast.Expr)
+        and isinstance(tree.body[0].value, ast.Constant)
+        and isinstance(tree.body[0].value.value, str)
+    ):
+        tree.body.pop(0)
+    return ast.unparse(tree)
+
+
 def test_observer_has_no_order_execution_api_or_live_gateway_import():
-    source = RUNNER.read_text(encoding="utf-8")
+    source = executable_source_without_module_docstring(RUNNER)
     assert "order_send" not in source
     assert "TRADE_ACTION_DEAL" not in source
     assert "TRADE_ACTION_PENDING" not in source
