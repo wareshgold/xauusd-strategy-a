@@ -31,6 +31,8 @@ ARTIFACT_DIR = ROOT / "artifacts" / "strategy-b-forward"
 RUNTIME_DIR = ROOT / "runtime"
 EVENTS_FILE = ARTIFACT_DIR / "STRATEGY_B_FORWARD_EVENTS.jsonl"
 STATE_FILE = RUNTIME_DIR / "strategy_b_forward_observer_state.json"
+LOCK_FILE = RUNTIME_DIR / "strategy_b_forward_observer.lock"
+_LOCK_TOKEN: str | None = None
 
 # Fail closed: require an explicit opt-in even for this read-only observer.
 OBSERVER_ENABLE = os.getenv("STRATEGY_B_OBSERVER_ENABLE", "false").lower() == "true"
@@ -65,6 +67,31 @@ def save_state(state: dict) -> None:
     tmp = STATE_FILE.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
     tmp.replace(STATE_FILE)
+
+
+def acquire_lock() -> bool:
+    """Exclusive lock; stale locks require deliberate operator inspection."""
+    global _LOCK_TOKEN
+    RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+    token = f"{os.getpid()} {utc_now()}\\n"
+    try:
+        with LOCK_FILE.open("x", encoding="utf-8") as handle:
+            handle.write(token)
+        _LOCK_TOKEN = token
+        return True
+    except FileExistsError:
+        print(f"BLOCKED: observer lock exists at {LOCK_FILE}; inspect its PID before removing it.")
+        return False
+
+
+def release_lock() -> None:
+    if _LOCK_TOKEN is None:
+        return
+    try:
+        if LOCK_FILE.read_text(encoding="utf-8") == _LOCK_TOKEN:
+            LOCK_FILE.unlink()
+    except OSError:
+        pass
 
 
 def setup_from_json(value: dict | None) -> Setup | None:
@@ -102,6 +129,8 @@ def main() -> int:
 
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+    if not acquire_lock():
+        return 4
     state = load_state()
 
     # No terminal path is guessed or launched. MT5 must already be available.
@@ -213,6 +242,7 @@ def main() -> int:
         return 0
     finally:
         mt5.shutdown()
+        release_lock()
 
 
 if __name__ == "__main__":
