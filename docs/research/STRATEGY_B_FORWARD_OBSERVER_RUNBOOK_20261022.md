@@ -24,7 +24,7 @@ Strategy A files, event logs, state, process, magic number, and configuration ar
 
 ## Source-derived defaults
 
-- M1; 500 bars available to the observer (source live bot's lookback).
+- M1; 500 bars available to the observer (source live bot's lookback); polling interval defaults to 0.5 seconds, matching the source live bot.
 - Spike body multiplier 1.5.
 - P-Gap 100 broker points, converted using the connected broker symbol's actual `point` (current preflight: `0.01`, so P-Gap price distance is `1.00`).
 - Maximum stop distance 1000 broker points, converted using the connected broker symbol's actual `point` (current preflight: `10.00` price units).
