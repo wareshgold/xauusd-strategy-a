@@ -9,33 +9,34 @@ from scripts.strategy_b_pythontraderbot_core import (
 
 def buy_fixture():
     return [
-        {"time": i, "open": 98.0, "high": 99.0, "low": 97.0, "close": 98.0},
+        {"time": 0, "open": 98.0, "high": 99.0, "low": 97.0, "close": 98.0},
         {"time": 1, "open": 99.0, "high": 100.0, "low": 98.0, "close": 99.0},
         {"time": 2, "open": 100.0, "high": 102.0, "low": 99.0, "close": 101.0},
         {"time": 3, "open": 101.5, "high": 111.0, "low": 101.0, "close": 105.5},
-        {"time": 4, "open": 106.0, "high": 108.0, "low": 104.0, "close": 107.0},
+        {"time": 4, "open": 106.0, "high": 108.0, "low": 105.0, "close": 107.0},
+        {"time": 5, "open": 106.0, "high": 108.0, "low": 104.0, "close": 107.0},
     ]
 
 
 def sell_fixture():
     return [
-        {"time": i, "open": 112.0, "high": 113.0, "low": 111.0, "close": 112.0},
+        {"time": 0, "open": 112.0, "high": 113.0, "low": 111.0, "close": 112.0},
         {"time": 1, "open": 111.0, "high": 112.0, "low": 110.0, "close": 111.0},
         {"time": 2, "open": 110.0, "high": 111.0, "low": 108.0, "close": 109.0},
         {"time": 3, "open": 108.5, "high": 109.0, "low": 104.0, "close": 104.5},
-        {"time": 4, "open": 104.0, "high": 105.0, "low": 102.5, "close": 103.0},
+        {"time": 4, "open": 104.0, "high": 104.5, "low": 102.5, "close": 103.0},
+        {"time": 5, "open": 104.0, "high": 105.0, "low": 102.5, "close": 103.0},
     ]
 
 
 def test_source_buy_geometry_detects_forming_candle_setup():
     candles = buy_fixture()
-    # The current candle's low is below the post-spike candle's low.
     candles[-1]["low"] = 103.9
     setup = detect_setup(candles, broker_point=0.01)
     assert setup is not None
     assert setup.direction == "BUY"
-    assert setup.setup_time == 4
-    assert setup.sl == 99.0  # low of candle immediately before the spike
+    assert setup.setup_time == 5
+    assert setup.sl == 99.0
     assert setup.spike_body == 4.0
 
 
@@ -45,8 +46,8 @@ def test_source_sell_geometry_detects_forming_candle_setup():
     setup = detect_setup(candles, broker_point=0.01)
     assert setup is not None
     assert setup.direction == "SELL"
-    assert setup.setup_time == 4
-    assert setup.sl == 111.0  # high of candle immediately before the spike
+    assert setup.setup_time == 5
+    assert setup.sl == 111.0
     assert setup.spike_body == 4.0
 
 
@@ -63,9 +64,8 @@ def test_pending_buy_entry_tp_and_max_sl_are_source_shaped():
     candles[-1]["low"] = 103.9
     setup = detect_setup(candles, broker_point=0.01)
     assert setup is not None
-    # Keep the setup timestamp in the rolling history, matching source lookup.
     candles.append({
-        "time": 5, "open": 106.0, "high": 107.0, "low": 103.8, "close": 106.5
+        "time": 6, "open": 106.0, "high": 107.0, "low": 103.8, "close": 106.5
     })
     cfg = StrategyBConfig(use_ema_filter=False, use_trend_filter=False)
     candidate = evaluate_pending_entry(candles, setup, broker_point=0.01, config=cfg)
@@ -80,9 +80,9 @@ def test_pending_buy_entry_tp_and_max_sl_are_source_shaped():
 def test_pending_entry_rejects_nonpositive_risk():
     candles = buy_fixture()
     candles[-1]["low"] = 103.9
-    setup = Setup("BUY", 4, 4, 104.0, 4.0)
+    setup = Setup("BUY", 5, 5, 104.0, 4.0)
     candles.append({
-        "time": 5, "open": 106.0, "high": 107.0, "low": 103.8, "close": 106.5
+        "time": 6, "open": 106.0, "high": 107.0, "low": 103.8, "close": 106.5
     })
     cfg = StrategyBConfig(use_ema_filter=False, use_trend_filter=False)
     assert evaluate_pending_entry(candles, setup, broker_point=0.01, config=cfg) == "INVALID"
