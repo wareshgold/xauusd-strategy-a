@@ -65,7 +65,8 @@ document.getElementById('started').textContent = new Date().toLocaleString();
 function esc(x){return String(x??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function money(x,cur){return x==null?'—':Number(x).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+(cur?' '+cur:'');}
 function table(rows,cols){if(!rows||!rows.length)return '<div class="muted">None currently detected</div>';return '<div style="overflow:auto"><table><thead><tr>'+cols.map(c=>'<th>'+esc(c[1])+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+cols.map(c=>'<td>'+esc(r[c[0]])+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
-async function refresh(){try{let r=await fetch('/api',{cache:'no-store'});let d=await r.json();
+const apiPath = window.location.pathname.replace(/\/?$/, '/') + 'api';
+async function refresh(){try{let r=await fetch(apiPath,{cache:'no-store'});let d=await r.json();
 let runner=document.getElementById('runner');runner.textContent=d.runner.running?'RUNNING':'NOT DETECTED';runner.className='value '+(d.runner.running?'good':'bad');
 document.getElementById('runnerDetail').textContent=d.runner.pids.length?'PID(s): '+d.runner.pids.join(', '):'No matching runner process';
 document.getElementById('account').textContent=d.mt5.ok?(d.mt5.demo?'DEMO':'NON-DEMO'):'UNAVAILABLE';
