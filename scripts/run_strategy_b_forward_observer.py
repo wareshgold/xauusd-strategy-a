@@ -118,6 +118,57 @@ def setup_to_json(value: Setup) -> dict:
     }
 
 
+def attach_source_ema(candles: list[dict], ema_by_time: dict[int, float]) -> None:
+    """Mirror source EMA initialization and forming-candle update semantics."""
+    if not candles:
+        return
+    alpha = 2.0 / (CONFIG.ema_period + 1.0)
+    times = [int(row["time"]) for row in candles]
+
+    if not ema_by_time or not any(stamp in ema_by_time for stamp in times):
+        ema = float(candles[0]["close"])
+        ema_by_time.clear()
+        ema_by_time[times[0]] = ema
+        candles[0]["ema"] = ema
+        for row, stamp in zip(candles[1:], times[1:]):
+            ema = alpha * float(row["close"]) + (1.0 - alpha) * ema
+            ema_by_time[stamp] = ema
+            row["ema"] = ema
+        return
+
+    for i, (row, stamp) in enumerate(zip(candles, times)):
+        if stamp in ema_by_time:
+            row["ema"] = ema_by_time[stamp]
+        elif i > 0 and times[i - 1] in ema_by_time:
+            ema = alpha * float(row["close"]) + (1.0 - alpha) * ema_by_time[times[i - 1]]
+            ema_by_time[stamp] = ema
+            row["ema"] = ema
+        else:
+            # Unexpected history discontinuity: re-seed as a fresh source process.
+            ema_by_time.clear()
+            ema = float(candles[0]["close"])
+            ema_by_time[times[0]] = ema
+            candles[0]["ema"] = ema
+            for seed_row, seed_stamp in zip(candles[1:], times[1:]):
+                ema = alpha * float(seed_row["close"]) + (1.0 - alpha) * ema
+                ema_by_time[seed_stamp] = ema
+                seed_row["ema"] = ema
+            return
+
+    # Recalculate the forming candle from the previous candle's cached EMA
+    # on every poll, rather than compounding its prior forming EMA.
+    if len(candles) >= 2:
+        previous_ema = ema_by_time[times[-2]]
+        current_ema = alpha * float(candles[-1]["close"]) + (1.0 - alpha) * previous_ema
+        ema_by_time[times[-1]] = current_ema
+        candles[-1]["ema"] = current_ema
+
+    active = set(times)
+    for stamp in list(ema_by_time):
+        if stamp not in active:
+            del ema_by_time[stamp]
+
+
 def main() -> int:
     if not OBSERVER_ENABLE:
         print("BLOCKED: set STRATEGY_B_OBSERVER_ENABLE=true to start the read-only observer.")
@@ -155,9 +206,7 @@ def main() -> int:
         if info is None:
             print(json.dumps({"status": "EXACT_SOURCE_SYMBOL_UNAVAILABLE", "symbol": SYMBOL}))
             return 3
-        if not mt5.symbol_select(SYMBOL, True):
-            print(json.dumps({"status": "SOURCE_SYMBOL_SELECT_FAILED", "symbol": SYMBOL, "last_error": mt5.last_error()}))
-            return 3
+        # Do not mutate Market Watch selection; preflight confirmed this symbol is visible.
 
         identity = {
             "server": getattr(account, "server", None),
@@ -190,6 +239,7 @@ def main() -> int:
         append_event({"event": "OBSERVER_STARTED", "identity": identity, "config": CONFIG.__dict__, "source_symbol": SOURCE_SYMBOL, "broker_symbol": SYMBOL, "symbol_mapping": identity["symbol_mapping"]})
         print(json.dumps({"status": "READ_ONLY_OBSERVER_STARTED", "identity": identity, "source_symbol": SOURCE_SYMBOL, "broker_symbol": SYMBOL, "symbol_mapping": identity["symbol_mapping"], "orders_sent": False}, sort_keys=True))
 
+        ema_by_time: dict[int, float] = {}
         while True:
             rates = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 0, BARS)
             if rates is None or len(rates) < 100:
@@ -210,6 +260,8 @@ def main() -> int:
                     "spread": int(row["spread"]),
                     "real_volume": int(row["real_volume"]),
                 })
+
+            attach_source_ema(candles, ema_by_time)
 
             pending = setup_from_json(state.get("pending_setup"))
             # Preserve source loop ordering: evaluate a pre-existing setup before
