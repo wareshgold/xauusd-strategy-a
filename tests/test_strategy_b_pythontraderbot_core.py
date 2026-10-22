@@ -87,3 +87,21 @@ def test_pending_entry_keeps_setup_when_risk_is_nonpositive():
     })
     cfg = StrategyBConfig(use_ema_filter=False, use_trend_filter=False)
     assert evaluate_pending_entry(candles, setup, broker_point=0.01, config=cfg) is None
+
+
+
+def test_ema_filter_uses_source_incremental_ema_when_provided():
+    candles = buy_fixture()
+    candles[-1]["low"] = 103.9
+    setup = detect_setup(candles, broker_point=0.01)
+    assert setup is not None
+    candles.append({
+        "time": 6, "open": 106.0, "high": 107.0, "low": 103.8,
+        "close": 106.5, "ema": 106.6
+    })
+    cfg = StrategyBConfig(use_ema_filter=True, use_trend_filter=False)
+    assert evaluate_pending_entry(candles, setup, broker_point=0.01, config=cfg) is None
+
+    candles[-1]["ema"] = 106.4
+    candidate = evaluate_pending_entry(candles, setup, broker_point=0.01, config=cfg)
+    assert candidate is not None and candidate != "INVALID"
