@@ -131,11 +131,16 @@ def main() -> int:
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     if not acquire_lock():
         return 4
-    state = load_state()
+    try:
+        state = load_state()
+    except Exception:
+        release_lock()
+        raise
 
     # No terminal path is guessed or launched. MT5 must already be available.
     if not mt5.initialize():
         print(json.dumps({"status": "MT5_INITIALIZE_FAILED", "last_error": mt5.last_error()}))
+        release_lock()
         return 3
 
     try:
