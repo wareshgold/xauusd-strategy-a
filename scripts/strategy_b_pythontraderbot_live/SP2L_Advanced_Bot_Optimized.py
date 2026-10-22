@@ -25,6 +25,7 @@ import sys
 import pandas as pd
 import numpy as np
 import os
+import json
 import subprocess
 import atexit
 from pathlib import Path
@@ -1378,6 +1379,117 @@ def get_second_entry(
     return entry + risk / 2
 
 
+
+# STRATEGY_B_LIFECYCLE_REPORT_V1
+# Notification-only close reconciliation. Strategy/order parameters are untouched.
+_LIFECYCLE_STATE_PATH = Path(__file__).resolve().parents[2] / "runtime" / "strategy_b_lifecycle_notifications.json"
+
+def report_closed_strategy_b_trade(symbol):
+    """Report a confirmed MT5 exit from deal history; retry when history is unavailable."""
+    try:
+        now_utc = datetime.now(timezone.utc)
+        # Wider window tolerates broker/server clock offsets observed in this environment.
+        deals = mt5.history_deals_get(now_utc - timedelta(days=3), now_utc + timedelta(days=1))
+        if deals is None:
+            print(f"Strategy B close report deferred: MT5 deal history unavailable ({mt5.last_error()}).")
+            return False
+
+        exits = [
+            d for d in deals
+            if getattr(d, "symbol", None) == symbol
+            and int(getattr(d, "magic", -1)) in (MAGIC, SECOND_ENTRY_MAGIC)
+            and int(getattr(d, "entry", -1)) in (
+                getattr(mt5, "DEAL_ENTRY_OUT", 1),
+                getattr(mt5, "DEAL_ENTRY_OUT_BY", 3),
+                getattr(mt5, "DEAL_ENTRY_INOUT", 2),
+            )
+        ]
+        if not exits:
+            print("Strategy B close report deferred: no matching exit deal found yet.")
+            return False
+
+        try:
+            sent_ids = json.loads(_LIFECYCLE_STATE_PATH.read_text(encoding="utf-8"))
+            if not isinstance(sent_ids, list):
+                sent_ids = []
+        except (OSError, ValueError):
+            sent_ids = []
+        sent_ids = {str(value) for value in sent_ids}
+
+        # Latest unreported exit for this symbol/magic; tie all P&L to its position_id.
+        exits.sort(key=lambda d: int(getattr(d, "time", 0)), reverse=True)
+        exit_deal = next((d for d in exits if str(int(getattr(d, "ticket", 0))) not in sent_ids), None)
+        if exit_deal is None:
+            return True
+
+        position_id = int(getattr(exit_deal, "position_id", 0))
+        position_deals = [
+            d for d in deals
+            if int(getattr(d, "position_id", -1)) == position_id
+            and getattr(d, "symbol", None) == symbol
+            and int(getattr(d, "magic", -1)) in (MAGIC, SECOND_ENTRY_MAGIC)
+        ]
+        if not position_deals:
+            print(f"Strategy B close report deferred: no deals for position_id={position_id}.")
+            return False
+
+        entries = [d for d in position_deals if int(getattr(d, "entry", -1)) == getattr(mt5, "DEAL_ENTRY_IN", 0)]
+        if not entries:
+            entries = [d for d in position_deals if int(getattr(d, "type", -1)) != int(getattr(exit_deal, "type", -2))]
+        if not entries:
+            print(f"Strategy B close report deferred: entry deal missing for position_id={position_id}.")
+            return False
+
+        entry_deal = min(entries, key=lambda d: int(getattr(d, "time", 0)))
+        is_buy = int(getattr(entry_deal, "type", -1)) == int(getattr(mt5, "DEAL_TYPE_BUY", 0))
+        direction = "BUY" if is_buy else "SELL"
+        entry_price = float(getattr(entry_deal, "price", 0.0))
+        exit_price = float(getattr(exit_deal, "price", 0.0))
+        point = float(getattr(mt5.symbol_info(symbol), "point", 0.01) or 0.01)
+        pip_size = point  # Strategy B XAUUSD convention: one pip = one broker point = $0.01.
+        pips = ((exit_price - entry_price) if is_buy else (entry_price - exit_price)) / pip_size
+        net_profit = sum(
+            float(getattr(d, "profit", 0.0))
+            + float(getattr(d, "commission", 0.0))
+            + float(getattr(d, "swap", 0.0))
+            + float(getattr(d, "fee", 0.0))
+            for d in position_deals
+        )
+        reason_code = int(getattr(exit_deal, "reason", -1))
+        reason_names = {
+            getattr(mt5, "DEAL_REASON_SL", 4): "STOP LOSS",
+            getattr(mt5, "DEAL_REASON_TP", 5): "TAKE PROFIT",
+            getattr(mt5, "DEAL_REASON_SO", 6): "STOP OUT",
+            getattr(mt5, "DEAL_REASON_CLIENT", 0): "MANUAL/CLIENT",
+            getattr(mt5, "DEAL_REASON_EXPERT", 1): "EXPERT",
+        }
+        reason = reason_names.get(reason_code, f"EXIT (reason {reason_code})")
+        volume = float(getattr(exit_deal, "volume", getattr(entry_deal, "volume", 0.0)))
+        sign = "+" if net_profit >= 0 else ""
+        message = (
+            f"CLOSED {direction} {symbol}\n"
+            f"Position: {position_id} | Volume: {volume:.2f}\n"
+            f"Entry: {entry_price:.2f} | Exit: {exit_price:.2f}\n"
+            f"Result: {pips:+.1f} pips | Net P/L: {sign}{net_profit:.2f} USD\n"
+            f"Exit reason: {reason}\n"
+            f"Closed at (MT5): {datetime.fromtimestamp(int(getattr(exit_deal, 'time', 0)), timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC"
+        )
+        if not TeleBot().SendMessage(message):
+            print(f"Strategy B close notification not confirmed; will retry position_id={position_id}.")
+            return False
+
+        sent_ids.add(str(int(getattr(exit_deal, "ticket", 0))))
+        _LIFECYCLE_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path = _LIFECYCLE_STATE_PATH.with_suffix(".tmp")
+        temporary_path.write_text(json.dumps(sorted(sent_ids), indent=2), encoding="utf-8")
+        temporary_path.replace(_LIFECYCLE_STATE_PATH)
+        print(f"Strategy B close notification confirmed for position_id={position_id}.")
+        return True
+    except Exception as exc:
+        print(f"Strategy B close reconciliation deferred ({type(exc).__name__}); runner continues.")
+        return False
+
+
 # ============================================================
 # TRADE STATE
 # ============================================================
@@ -1793,6 +1905,9 @@ while True:
             # -------------------------------------------------
 
             if not position_exists and status:
+
+                # Send only after position disappearance is observed; source P&L from MT5 history.
+                report_closed_strategy_b_trade(symbol)
 
                 status = False
                 buy = False
