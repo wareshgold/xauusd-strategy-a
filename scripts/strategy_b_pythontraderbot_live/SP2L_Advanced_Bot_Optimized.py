@@ -232,6 +232,22 @@ if BROKER_POINT <= 0:
     mt5.shutdown()
     raise RuntimeError("Invalid broker point.")
 
+# Refuse to start if this Strategy B identity already has exposure or pending orders.
+_existing_b_positions = mt5.positions_get(symbol=SYMBOL)
+_existing_b_orders = mt5.orders_get(symbol=SYMBOL)
+if _existing_b_positions is None or _existing_b_orders is None:
+    mt5.shutdown()
+    raise SystemExit(f"BLOCKED: could not verify existing Strategy B positions/orders: {mt5.last_error()}")
+_owned_b_positions = [p for p in _existing_b_positions if int(p.magic) in (MAGIC, SECOND_ENTRY_MAGIC)]
+_owned_b_orders = [o for o in _existing_b_orders if int(o.magic) in (MAGIC, SECOND_ENTRY_MAGIC)]
+if _owned_b_positions or _owned_b_orders:
+    mt5.shutdown()
+    raise SystemExit(
+        "BLOCKED: existing Strategy B magic 8/9 exposure detected; "
+        f"positions={[int(p.ticket) for p in _owned_b_positions]}, "
+        f"orders={[int(o.ticket) for o in _owned_b_orders]}. Inspect manually before starting."
+    )
+
 P_GAP_PRICE = PGAP_POINTS * BROKER_POINT
 
 MAX_SL_DISTANCE_PRICE = (
