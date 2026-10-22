@@ -28,5 +28,5 @@ class TeleBot:
                 return True
             print(f"Strategy B Telegram API rejected message: {result.get('description', 'unknown error')}")
         except Exception as exc:
-            print(f"Strategy B Telegram send failed: {exc}")
+            print(f"Strategy B Telegram send failed ({type(exc).__name__}); message delivery was not confirmed.")
         return False
