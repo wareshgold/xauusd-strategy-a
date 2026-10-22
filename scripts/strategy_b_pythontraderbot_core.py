@@ -176,7 +176,9 @@ def evaluate_pending_entry(
         entry = _v(current, "high")
         risk = setup.sl - entry
 
-    if risk <= 0 or risk > config.max_sl_distance_points * broker_point:
+    if risk <= 0:
+        return None
+    if risk > config.max_sl_distance_points * broker_point:
         return "INVALID"
 
     entry_time = current.get("time", current.get("timestamp", len(candles) - 1))
