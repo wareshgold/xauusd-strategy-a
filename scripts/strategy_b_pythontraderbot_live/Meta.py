@@ -859,8 +859,8 @@ class Meta:
                     print(f"{Fore.LIGHTCYAN_EX}CLOSE {Style.RESET_ALL}BUY POSITION: {result.comment}")
                     pct = np.round(100*(after-before)/before, 6)
                     print(f"your profit:{pct}")
-                    if Meta.teleBotMessage:
-                        TeleBot().SendMessage(f"CLOSE BUY {symbol}: {result.comment}")
+                    if Meta.teleBotMessage and getattr(result, "retcode", None) == mt5.TRADE_RETCODE_DONE:
+                        TeleBot().SendMessage(f"CLOSED BUY {symbol}: {result.comment}")
                     if result.comment != "Request executed":
                         print("WARNINGS", result.comment)
                     print("-"*75)   
@@ -893,8 +893,8 @@ class Meta:
                     after = mt5.account_info().balance                    
                     pct = np.round(100*(after-before)/before, 6)
                     print(f"your profit:{pct}")
-                    if Meta.teleBotMessage:
-                        TeleBot().SendMessage(f"CLOSE SELL {symbol}: {result.comment}")
+                    if Meta.teleBotMessage and getattr(result, "retcode", None) == mt5.TRADE_RETCODE_DONE:
+                        TeleBot().SendMessage(f"CLOSED SELL {symbol}: {result.comment}")
                     if result.comment != "Request executed":
                         print("WARNINGS", result.comment)                   
                     print("-"*75)
@@ -918,8 +918,8 @@ class Meta:
                     print(f"{Fore.GREEN if buy == True else Fore.WHITE}BUY: {buy} \t  {Fore.RED if sell == True else Fore.WHITE}SELL: {sell} {Style.RESET_ALL} \t Magic: {magic}")
                     print(f"OPEN BUY POSITION: {result.comment}")
                     print(f"price: {result.request.price} \t SL: {result.request.sl} \t TP: {result.request.tp}")
-                    if Meta.teleBotMessage:
-                        TeleBot().SendMessage(f"OPEN Buy {symbol}: {result.comment} price:{result.request.price} sl:{result.request.sl} tp:{result.request.tp}")
+                    if Meta.teleBotMessage and getattr(result, "retcode", None) in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED):
+                        TeleBot().SendMessage(f"OPENED BUY {symbol}: {result.comment} price:{result.request.price} sl:{result.request.sl} tp:{result.request.tp}")
                     if result.comment != "Request executed":
                         print("WARNINGS", result.comment)
                     print("-"*75)
@@ -943,8 +943,8 @@ class Meta:
                     print(f"{Fore.GREEN if buy == True else Fore.WHITE}BUY: {buy} \t  {Fore.RED if sell == True else Fore.WHITE}SELL: {sell} {Style.RESET_ALL} \t Magic: {magic}")
                     print(f"OPEN SELL POSITION: {result.comment}")
                     print(f"price: {result.request.price} \t SL: {result.request.sl} \t TP: {result.request.tp}")
-                    if Meta.teleBotMessage:
-                        TeleBot().SendMessage(f"OPEN SELL {symbol}: {result.comment} price:{result.request.price} sl:{result.request.sl} tp:{result.request.tp}")
+                    if Meta.teleBotMessage and getattr(result, "retcode", None) in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED):
+                        TeleBot().SendMessage(f"OPENED SELL {symbol}: {result.comment} price:{result.request.price} sl:{result.request.sl} tp:{result.request.tp}")
                     if result.comment != "Request executed":
                         print("WARNINGS",  result.comment)
                     print("-"*75)
