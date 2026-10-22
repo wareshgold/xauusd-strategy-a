@@ -32,6 +32,7 @@ def test_observer_is_opt_in_and_exact_symbol_only():
     assert 'os.getenv("STRATEGY_B_OBSERVER_ENABLE", "false")' in source
     assert 'SOURCE_SYMBOL = "XAUUSD"' in source
     assert 'os.getenv("STRATEGY_B_SYMBOL", "XAUUSD.ecn")' in source
+    assert 'os.getenv("STRATEGY_B_POLL_SECONDS", "0.5")' in source
     assert 'if SYMBOL not in (SOURCE_SYMBOL, "XAUUSD.ecn"):' in source
     assert 'EXPLICIT_BROKER_SUFFIX_ADAPTER' in source
 
