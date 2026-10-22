@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -159,7 +158,7 @@ def main() -> int:
 
         identity = {
             "server": getattr(account, "server", None),
-            "login_present": getattr(account, "login", None) is not None,
+            "account_login": int(account.login) if getattr(account, "login", None) is not None else None,
             "account_trade_mode": getattr(account, "trade_mode", None),
             "symbol": SYMBOL,
             "point": float(info.point),
