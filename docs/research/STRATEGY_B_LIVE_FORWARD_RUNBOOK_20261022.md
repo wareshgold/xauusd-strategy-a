@@ -19,7 +19,8 @@ This is an isolated copy of the upstream live bot at
 - Explicit absolute terminal executable is mandatory; runner checks that exact `terminal64.exe` is already running, initializes using that path, then verifies the connected terminal directory.
 - Only server `OtetGroup-MT5` and MT5 demo-account mode are permitted. Real-account execution is blocked.
 - Both `STRATEGY_B_LIVE_TRADING_ENABLE=true` and `STRATEGY_B_ALLOW_DEMO_EXECUTION=true` are mandatory.
-- MT5 order comment: `Strategy B PythonTraderBot`; magic 8 identifies the first-entry strategy.
+- MT5 order comment: `Strategy B PythonTraderBot`; magic 8 identifies the first-entry strategy. Telegram OPENED/CLOSED trade notifications are sent only for successful MT5 retcodes; the runner also requires a successful tagged Telegram startup message before entering its trading loop.
+- A Strategy B-only single-instance lock prevents two copies running at once. A stale lock is not auto-deleted. Startup also blocks if magic 8/9 already has a position or pending order on the configured symbol.
 - Telegram credentials are environment variables only; every message from this copy is prefixed `STRATEGY B |`. No Strategy A configuration/state is read or modified.
 - Source logic still uses the forming M1 candle and the upstream 0.5-second loop. This remains an experimental demo forward test, not validated production authority.
 
