@@ -280,7 +280,7 @@ class Meta:
             sl = price + varsl
         return tp, sl
                
-    def PlacePendingOrder(symbol, lot, buy, sell, price, sl, tp, magic=0, comment="No specific comment"):
+    def PlacePendingOrder(symbol, lot, buy, sell, price, sl, tp, magic=0, comment="Strategy B PythonTraderBot"):
         try:
             filling_type = mt5.ORDER_FILLING_RETURN
 
@@ -328,7 +328,7 @@ class Meta:
                 TeleBot().SendMessage(exceptMessage)
             return None
 
-    def SendOrder(symbol, lot, buy, sell, ticket=None,pct_tp=0.02, pct_sl=0.01, comment="No specific comment", magic=0, stopLossWithAtr=False, stopLossPure=False):    
+    def SendOrder(symbol, lot, buy, sell, ticket=None,pct_tp=0.02, pct_sl=0.01, comment="Strategy B PythonTraderBot", magic=0, stopLossWithAtr=False, stopLossPure=False):    
 
         filling_type=Meta.FindFillingMode(symbol)
         #این سیاست اجرا به این معنی است که یک سفارش فقط در حجم مشخص شده قابل اجرا است.
@@ -794,7 +794,7 @@ class Meta:
                     passBecauseStopLossHit = True
             # برای باز کردن پوزیشن جدید در شرایط بسته بودن بازار
             else:
-                result = Meta.SendOrder(symbol, lot, buy, sell, ticket=ticket,pct_tp=pct_tp, pct_sl=pct_sl, comment=" No specific comment", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
+                result = Meta.SendOrder(symbol, lot, buy, sell, ticket=ticket,pct_tp=pct_tp, pct_sl=pct_sl, comment="Strategy B PythonTraderBot", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
                 # فقط برای اینکه خالی نباشد
                 # مقدار این متغیر برای بستن پوزیشن کاربرد دارد
                 before = 1
@@ -838,7 +838,7 @@ class Meta:
             # اگر سفارش خرید داشتی و الان باید ببندیش                
             elif buy == False and position == 0 and magic == magicFromPositon:
                 before = mt5.account_info().balance
-                result = Meta.SendOrder(symbol, lot, True, False, ticket=ticket,pct_tp=pct_tp, pct_sl=pct_sl, comment=" No specific comment", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
+                result = Meta.SendOrder(symbol, lot, True, False, ticket=ticket,pct_tp=pct_tp, pct_sl=pct_sl, comment="Strategy B PythonTraderBot", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
                 
                 # درصورتی که بازار بسته بشه بایستی صبر کرد تا زمانی که بازار باز شود و سفارش را ببندیم
                 if result.comment == "Market closed":
@@ -872,7 +872,7 @@ class Meta:
                 
             elif sell == False and position == 1 and magic == magicFromPositon:
                 before = mt5.account_info().balance
-                result = Meta.SendOrder(symbol, lot, False, True, ticket=ticket,pct_tp=pct_tp, pct_sl=pct_sl, comment=" No specific comment", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
+                result = Meta.SendOrder(symbol, lot, False, True, ticket=ticket,pct_tp=pct_tp, pct_sl=pct_sl, comment="Strategy B PythonTraderBot", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
 
                 # درصورتی که بازار بسته بشه بایستی صبر کرد تا زمانی که بازار باز شود و سفارش را ببندیم
                 if result.comment == "Market closed":
@@ -902,7 +902,7 @@ class Meta:
                     print(f"{Fore.YELLOW}Warning: {Style.RESET_ALL}The close sell SendOrder result for magic {magic} is None!")
 
             elif buy == True:
-                result =  Meta.SendOrder(symbol, lot, True, False, ticket=None,pct_tp=pct_tp, pct_sl=pct_sl, comment=" No specific comment", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
+                result =  Meta.SendOrder(symbol, lot, True, False, ticket=None,pct_tp=pct_tp, pct_sl=pct_sl, comment="Strategy B PythonTraderBot", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
 
 
                 if result != None:
@@ -927,7 +927,7 @@ class Meta:
                     print(f"{Fore.YELLOW}Warning: {Style.RESET_ALL}The open buy SendOrder result is None!")
 
             elif sell == True:
-                result = Meta.SendOrder(symbol, lot, False, True, ticket=None,pct_tp=pct_tp, pct_sl=pct_sl, comment=" No specific comment", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
+                result = Meta.SendOrder(symbol, lot, False, True, ticket=None,pct_tp=pct_tp, pct_sl=pct_sl, comment="Strategy B PythonTraderBot", magic=magic, stopLossWithAtr=stopLossWithAtr, stopLossPure=stopLossPure)
 
 
                 if result != None:
