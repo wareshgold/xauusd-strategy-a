@@ -63,3 +63,10 @@ finally { Pop-Location }
 ```
 
 Only after tests pass and a separate read-only terminal/account preflight is reviewed should the observer be considered for a bounded, supervised run. The current operator preflight confirmed the `OtetGroup-MT5` session and `XAUUSD.ecn` point/digits. Before starting, run the full read-only symbol/account/order/position preflight and inspect source magic values 8/9; this observer itself never submits or modifies orders. Starting the observer remains a separate, explicit operator action.
+
+
+## Source-parity refinement (2026-10-22)
+
+- EMA is enabled in the source live bot. The observer now mirrors its initialization/update pattern: initial EWM with `adjust=False` over fetched history, then updates only the forming candle from the previous candle's cached EMA on each poll. It does not recompute the EMA across the rolling window every 0.5 seconds.
+- The observer no longer calls `mt5.symbol_select`; the operator's read-only preflight showed `XAUUSD.ecn` is already visible, so Market Watch selection need not be changed.
+- These are research-observation parity improvements, not execution parity. The observer still cannot submit or modify orders and must pass local tests before an operator starts it.
