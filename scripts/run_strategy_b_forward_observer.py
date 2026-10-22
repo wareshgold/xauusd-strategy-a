@@ -35,7 +35,10 @@ _LOCK_TOKEN: str | None = None
 
 # Fail closed: require an explicit opt-in even for this read-only observer.
 OBSERVER_ENABLE = os.getenv("STRATEGY_B_OBSERVER_ENABLE", "false").lower() == "true"
-SYMBOL = os.getenv("STRATEGY_B_SYMBOL", "XAUUSD").strip()
+# Source strategy default and broker-specific symbol are deliberately distinct.
+SOURCE_SYMBOL = "XAUUSD"
+# Current terminal only exposes XAUUSD.ecn; this explicit adapter does not alter strategy parameters.
+SYMBOL = os.getenv("STRATEGY_B_SYMBOL", "XAUUSD.ecn").strip()
 BARS = int(os.getenv("STRATEGY_B_BARS", "500"))
 POLL_SECONDS = float(os.getenv("STRATEGY_B_POLL_SECONDS", "1"))
 CONFIG = StrategyBConfig()
@@ -119,8 +122,8 @@ def main() -> int:
     if not OBSERVER_ENABLE:
         print("BLOCKED: set STRATEGY_B_OBSERVER_ENABLE=true to start the read-only observer.")
         return 2
-    if SYMBOL != "XAUUSD":
-        print(f"BLOCKED: source symbol is XAUUSD; refusing implicit symbol substitution ({SYMBOL!r}).")
+    if SYMBOL not in (SOURCE_SYMBOL, "XAUUSD.ecn"):
+        print(f"BLOCKED: unsupported broker symbol mapping {SYMBOL!r}; allowed mappings are XAUUSD or XAUUSD.ecn.")
         return 2
     if BARS < 100 or POLL_SECONDS <= 0:
         print("BLOCKED: STRATEGY_B_BARS must be >=100 and poll interval must be >0.")
@@ -160,9 +163,18 @@ def main() -> int:
             "server": getattr(account, "server", None),
             "account_login": int(account.login) if getattr(account, "login", None) is not None else None,
             "account_trade_mode": getattr(account, "trade_mode", None),
+            "source_symbol": SOURCE_SYMBOL,
             "symbol": SYMBOL,
+            "symbol_mapping": "SOURCE_NAME_MATCH" if SYMBOL == SOURCE_SYMBOL else "EXPLICIT_BROKER_SUFFIX_ADAPTER",
             "point": float(info.point),
             "digits": int(info.digits),
+            "contract_size": float(getattr(info, "trade_contract_size", 0.0)),
+            "trade_calc_mode": int(getattr(info, "trade_calc_mode", -1)),
+            "filling_mode": int(getattr(info, "filling_mode", -1)),
+            "order_mode": int(getattr(info, "order_mode", -1)),
+            "currency_base": getattr(info, "currency_base", None),
+            "currency_profit": getattr(info, "currency_profit", None),
+            "currency_margin": getattr(info, "currency_margin", None),
             "volume_min": float(info.volume_min),
             "volume_step": float(info.volume_step),
             "trade_mode": int(info.trade_mode),
@@ -175,8 +187,8 @@ def main() -> int:
             state["seen_candidate_ids"] = []
         state["terminal_identity"] = identity
         save_state(state)
-        append_event({"event": "OBSERVER_STARTED", "identity": identity, "config": CONFIG.__dict__})
-        print(json.dumps({"status": "READ_ONLY_OBSERVER_STARTED", "identity": identity}, sort_keys=True))
+        append_event({"event": "OBSERVER_STARTED", "identity": identity, "config": CONFIG.__dict__, "source_symbol": SOURCE_SYMBOL, "broker_symbol": SYMBOL, "symbol_mapping": identity["symbol_mapping"]})
+        print(json.dumps({"status": "READ_ONLY_OBSERVER_STARTED", "identity": identity, "source_symbol": SOURCE_SYMBOL, "broker_symbol": SYMBOL, "symbol_mapping": identity["symbol_mapping"], "orders_sent": False}, sort_keys=True))
 
         while True:
             rates = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 0, BARS)
