@@ -16,6 +16,10 @@ def test_live_bot_has_opt_in_terminal_server_and_demo_account_gates():
     assert 'mt5.ACCOUNT_TRADE_MODE_DEMO' in source
     assert 'EXPECTED_SERVER' in source
     assert 'if not mt5.initialize()' not in source
+    assert 'strategy_b_pythontraderbot_live.lock' in source
+    assert 'STRATEGY_B lock exists' in source
+    assert 'FORWARD TEST STARTED' in source
+    assert 'BLOCKED: Strategy B Telegram startup check failed' in source
 
 def test_strategy_b_uses_explicit_broker_symbol_and_source_settings():
     source = BOT.read_text(encoding="utf-8")
@@ -33,6 +37,8 @@ def test_broker_symbol_is_not_auto_selected_and_order_comment_is_strategy_b():
     meta = META.read_text(encoding="utf-8")
     assert 'mt5.symbol_select(' not in source
     assert 'comment="Strategy B PythonTraderBot"' in meta
+    assert 'comment=" No specific comment"' not in meta
+    assert 'BLOCKED: existing Strategy B magic 8/9 exposure detected' in source
 
 def test_telegram_is_environment_configured_and_tags_all_messages():
     source = TELEGRAM.read_text(encoding="utf-8")
