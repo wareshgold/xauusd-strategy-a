@@ -181,7 +181,7 @@ def exact_terminal_process_running() -> bool:
     if executable.name.lower() != "terminal64.exe" or not executable.is_file():
         print("BLOCKED: configured MT5 terminal executable is missing or is not terminal64.exe.")
         return False
-    script = r"""$expected = [System.IO.Path]::GetFullPath($env:STRATEGY_B_MT5_TERMINAL_PATH); $matches = @(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'terminal64.exe' -and $_.ExecutablePath -eq $expected }); if ($matches.Count -gt 0) { exit 0 } else { exit 1 }"""
+    script = r"""$expected = [System.IO.Path]::GetFullPath($env:STRATEGY_B_MT5_TERMINAL_PATH); $foundProcesses = @(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'terminal64.exe' -and $_.ExecutablePath -eq $expected }); if ($foundProcesses.Count -gt 0) { exit 0 } else { exit 1 }"""
     try:
         result = subprocess.run(
             ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
