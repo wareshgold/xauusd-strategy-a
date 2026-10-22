@@ -53,7 +53,8 @@ def test_source_sell_geometry_detects_forming_candle_setup():
 
 def test_p_gap_is_points_times_actual_symbol_point_and_comparison_is_strict():
     candles = buy_fixture()
-    candles[-1]["low"] = 103.9
+    # Keep the entry-trigger inequality true so this isolates the P-Gap boundary.
+    candles[-1]["low"] = 102.9
     # high[-4] = 102, point gap = 100 * .01 = 1; exact boundary is not > 103.
     candles[-2]["low"] = 103.0
     assert detect_setup(candles, broker_point=0.01) is None
