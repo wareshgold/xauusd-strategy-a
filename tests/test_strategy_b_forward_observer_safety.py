@@ -27,7 +27,7 @@ def test_observer_has_no_order_execution_api_or_live_gateway_import():
     assert "live_mt5_gateway" not in source
 
 
-def test_observer_is_opt_in_and_exact_symbol_only():
+def test_observer_is_opt_in_and_uses_explicit_broker_symbol_mapping():
     source = RUNNER.read_text(encoding="utf-8")
     assert 'os.getenv("STRATEGY_B_OBSERVER_ENABLE", "false")' in source
     assert 'SOURCE_SYMBOL = "XAUUSD"' in source
