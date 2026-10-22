@@ -24,7 +24,7 @@ Strategy A files, event logs, state, process, magic number, and configuration ar
 
 ## MT5 attachment safety gate
 
-Before an observer start, set `STRATEGY_B_MT5_TERMINAL_PATH` to the full executable path of the already-running terminal (for this machine, `C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe`). The observer checks through Windows process metadata that this exact executable is already running before creating observer files, calls `mt5.initialize(path=..., timeout=10000)` rather than bare initialization, and verifies the connected terminal directory matches the configured executable directory. If the process cannot be verified or the path differs, it fails closed. It does not launch MT5 intentionally.
+Before an observer start, set `STRATEGY_B_MT5_TERMINAL_PATH` to the full executable path of the already-running terminal (for this machine, `C:\Program Files\Otet Group MT5 Terminal\terminal64.exe`). The observer checks through Windows process metadata that this exact executable is already running before creating observer files, calls `mt5.initialize(path=..., timeout=10000)` rather than bare initialization, and verifies the connected terminal directory matches the configured executable directory. If the process cannot be verified or the path differs, it fails closed. It does not launch MT5 intentionally.
 
 The preflight on 2026-10-22 confirmed PID 8940 at that exact path, server `OtetGroup-MT5`, symbol `XAUUSD.ecn`, point `0.01`, zero open orders and zero positions at the time of inspection. This is a snapshot, not a persistent guarantee; repeat preflight immediately before any observer start. The observer remains opt-in and has not been started by this change.
 
