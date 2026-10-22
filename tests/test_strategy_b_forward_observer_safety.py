@@ -25,6 +25,7 @@ def test_observer_has_no_order_execution_api_or_live_gateway_import():
     assert "TRADE_ACTION_DEAL" not in source
     assert "TRADE_ACTION_PENDING" not in source
     assert "live_mt5_gateway" not in source
+    assert "symbol_select" not in source
 
 
 def test_observer_is_opt_in_and_uses_explicit_broker_symbol_mapping():
@@ -35,6 +36,11 @@ def test_observer_is_opt_in_and_uses_explicit_broker_symbol_mapping():
     assert 'os.getenv("STRATEGY_B_POLL_SECONDS", "0.5")' in source
     assert 'if SYMBOL not in (SOURCE_SYMBOL, "XAUUSD.ecn"):' in source
     assert 'EXPLICIT_BROKER_SUFFIX_ADAPTER' in source
+
+
+def test_observer_does_not_mutate_market_watch_selection():
+    source = executable_source_without_module_docstring(RUNNER)
+    assert "symbol_select" not in source
 
 
 def test_observer_uses_strategy_b_isolated_paths_and_lock():
