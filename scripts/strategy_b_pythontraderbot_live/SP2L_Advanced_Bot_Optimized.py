@@ -10,7 +10,7 @@ __status__ = "Test"
 __doc__ = "you can see the tutorials in https://youtube.com/@alirezasadabadi?si=d8o7LK_Ai1Hf68is"
 
 import MetaTrader5 as mt5
-from datetime import datetime, timezone, time
+from datetime import datetime, timezone, time, timedelta
 import time as time_module
 from zoneinfo import ZoneInfo
 from Meta import *
@@ -1383,6 +1383,7 @@ def get_second_entry(
 # STRATEGY_B_LIFECYCLE_REPORT_V1
 # Notification-only close reconciliation. Strategy/order parameters are untouched.
 _LIFECYCLE_STATE_PATH = Path(__file__).resolve().parents[2] / "runtime" / "strategy_b_lifecycle_notifications.json"
+_LIFECYCLE_START_UTC = datetime.now(timezone.utc)
 
 def report_closed_strategy_b_trade(symbol):
     """Report a confirmed MT5 exit from deal history; retry when history is unavailable."""
@@ -1398,6 +1399,7 @@ def report_closed_strategy_b_trade(symbol):
             d for d in deals
             if getattr(d, "symbol", None) == symbol
             and int(getattr(d, "magic", -1)) in (MAGIC, SECOND_ENTRY_MAGIC)
+            and int(getattr(d, "time", 0)) >= int(_LIFECYCLE_START_UTC.timestamp())
             and int(getattr(d, "entry", -1)) in (
                 getattr(mt5, "DEAL_ENTRY_OUT", 1),
                 getattr(mt5, "DEAL_ENTRY_OUT_BY", 3),
