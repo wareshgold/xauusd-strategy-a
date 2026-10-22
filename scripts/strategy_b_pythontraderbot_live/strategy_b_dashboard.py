@@ -30,7 +30,6 @@ STARTED_AT = datetime.now().astimezone().isoformat(timespec="seconds")
 
 PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="refresh" content="0;url=/">
 <title>Strategy B | Read-only Monitor</title>
 <style>
 :root{color-scheme:dark;font-family:Inter,Segoe UI,Arial,sans-serif;background:#0b1220;color:#e7edf7}
