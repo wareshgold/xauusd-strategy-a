@@ -208,10 +208,16 @@ def evaluate_pending_entry(
 
     if config.use_ema_filter:
         closes = [_v(row, "close") for row in candles]
-        emas = _ema(closes, config.ema_period)
-        if setup.direction == "BUY" and closes[-1] <= emas[-1]:
+        # The live observer supplies EMA calculated with the source bot's
+        # cached/incremental semantics. Offline fixtures may omit it.
+        current_ema = (
+            float(candles[-1]["ema"])
+            if candles[-1].get("ema") is not None
+            else _ema(closes, config.ema_period)[-1]
+        )
+        if setup.direction == "BUY" and closes[-1] <= current_ema:
             return None
-        if setup.direction == "SELL" and closes[-1] >= emas[-1]:
+        if setup.direction == "SELL" and closes[-1] >= current_ema:
             return None
 
     if config.use_range_filter:
