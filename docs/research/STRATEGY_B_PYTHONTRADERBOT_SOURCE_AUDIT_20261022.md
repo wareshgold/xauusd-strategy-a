@@ -88,3 +88,18 @@ Entry trigger in the live bot uses the current/forming candle: BUY when current 
 ## Current disposition
 
 Research only. No MT5 order was sent as part of this audit. No existing Strategy A worktree, process, state file, event log or Telegram configuration should be changed by this branch.
+
+## Source symbol resolution follow-up (2026-10-22)
+
+Direct inspection of the current upstream live bot (`SP2L_Advanced_Bot_Optimized.py`, blob `14c936ed1810e8101a4ead74f3536ae6f3a6e4f5`) resolves the configuration question:
+
+- `SYMBOL = "XAUUSD"` is a hard-coded default/configuration constant in the script, not a broker-symbol discovery or alias-resolution mechanism.
+- Startup immediately calls `mt5.symbol_info(SYMBOL)`. If it returns `None`, the script calls `mt5.shutdown()` and raises `RuntimeError`. There is no fallback to `XAUUSD.ecn` or suffix matching.
+- On successful startup, `BROKER_POINT` and `DIGITS` are read from that exact symbol. `P_GAP_PRICE = PGAP_POINTS * BROKER_POINT` and max-SL price is likewise points multiplied by that symbol's point. Rates, ticks, position lookups and order requests subsequently use the configured symbol name.
+- Therefore, the string can technically be changed in a separate research configuration, but changing it to `XAUUSD.ecn` is a source adaptation, not an exact source-default run. Equal `point=0.01` alone does not prove full contract/execution equivalence. Do not make this substitution silently or enable orders on the basis of this check.
+
+Read-only MT5 preflight performed by the operator on 2026-10-22:
+- Terminal path matched `C:\\Program Files\\Otet Group MT5 Terminal`; connected server reported `OtetGroup-MT5`.
+- `XAUUSD` was absent from `symbols_get(group="*XAUUSD*")` results.
+- `XAUUSD.ecn` was present with point `0.01`, digits `2`, minimum volume `0.01` and volume step `0.01`. No `symbol_select`, order-send, or order-modification call was made by the preflight.
+- Disposition: source-default symbol cannot currently be observed under its exact name on this terminal. Keep the Strategy B observer blocked until source/configuration intent and symbol compatibility are explicitly resolved. No Strategy A files or runner were changed.
