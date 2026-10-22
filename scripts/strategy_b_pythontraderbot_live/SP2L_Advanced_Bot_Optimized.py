@@ -24,8 +24,64 @@ import socket
 import sys
 import pandas as pd
 import numpy as np
+import os
+import subprocess
+import atexit
+from pathlib import Path
 
 colorama_init()
+
+# Strategy B isolated forward-test safety gate.
+TERMINAL_PATH = os.environ.get("STRATEGY_B_MT5_TERMINAL_PATH", "").strip()
+EXPECTED_SERVER = os.environ.get("STRATEGY_B_EXPECTED_SERVER", "OtetGroup-MT5").strip()
+EXPECTED_SYMBOL = os.environ.get("STRATEGY_B_SYMBOL", "XAUUSD.ecn").strip()
+
+if os.environ.get("STRATEGY_B_LIVE_TRADING_ENABLE", "").lower() != "true":
+    raise SystemExit("BLOCKED: set STRATEGY_B_LIVE_TRADING_ENABLE=true to opt in.")
+if os.environ.get("STRATEGY_B_ALLOW_DEMO_EXECUTION", "").lower() != "true":
+    raise SystemExit("BLOCKED: set STRATEGY_B_ALLOW_DEMO_EXECUTION=true to permit demo orders.")
+if not os.environ.get("STRATEGY_B_TELEGRAM_BOT_TOKEN") or not os.environ.get("STRATEGY_B_TELEGRAM_CHAT_ID"):
+    raise SystemExit("BLOCKED: Strategy B Telegram token/chat ID environment variables are required.")
+if not EXPECTED_SERVER:
+    raise SystemExit("BLOCKED: STRATEGY_B_EXPECTED_SERVER must be explicit.")
+if EXPECTED_SYMBOL not in ("XAUUSD.ecn", "XAUUSD"):
+    raise SystemExit(f"BLOCKED: unsupported Strategy B symbol adapter: {EXPECTED_SYMBOL!r}")
+if os.name != "nt" or not TERMINAL_PATH or not Path(TERMINAL_PATH).is_absolute():
+    raise SystemExit("BLOCKED: STRATEGY_B_MT5_TERMINAL_PATH must be an absolute Windows terminal64.exe path.")
+_terminal_exe = Path(TERMINAL_PATH)
+if _terminal_exe.name.lower() != "terminal64.exe" or not _terminal_exe.is_file():
+    raise SystemExit("BLOCKED: configured MT5 terminal64.exe path is invalid.")
+
+# Strategy B-only single-instance lock. A stale lock is never deleted automatically.
+_LOCK_PATH = Path(__file__).resolve().parents[2] / "runtime" / "strategy_b_pythontraderbot_live.lock"
+_LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
+_LOCK_TOKEN = f"{os.getpid()}\n"
+try:
+    with _LOCK_PATH.open("x", encoding="utf-8") as _lock_handle:
+        _lock_handle.write(_LOCK_TOKEN)
+except FileExistsError:
+    raise SystemExit(f"BLOCKED: Strategy B lock exists at {_LOCK_PATH}; inspect the recorded PID before removal.")
+
+def _release_strategy_b_lock():
+    try:
+        if _LOCK_PATH.read_text(encoding="utf-8") == _LOCK_TOKEN:
+            _LOCK_PATH.unlink()
+    except OSError:
+        pass
+
+atexit.register(_release_strategy_b_lock)
+
+_ps = r"$expected = [System.IO.Path]::GetFullPath($env:STRATEGY_B_MT5_TERMINAL_PATH); $foundProcesses = @(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'terminal64.exe' -and $_.ExecutablePath -eq $expected }); if ($foundProcesses.Count -gt 0) { exit 0 } else { exit 1 }"
+try:
+    _process_check = subprocess.run(
+        ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", _ps],
+        capture_output=True, text=True, timeout=10, check=False,
+    )
+except (OSError, subprocess.TimeoutExpired) as _exc:
+    raise SystemExit(f"BLOCKED: could not verify the exact running MT5 terminal: {_exc}")
+if _process_check.returncode != 0:
+    raise SystemExit("BLOCKED: exact configured MT5 terminal is not already running; refusing to launch/attach elsewhere.")
+
 
 # ============================================================
 # MT5 INITIALIZE
