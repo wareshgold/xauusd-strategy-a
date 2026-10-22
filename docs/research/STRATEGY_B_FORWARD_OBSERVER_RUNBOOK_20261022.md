@@ -14,7 +14,7 @@ Source audit: [STRATEGY_B_PYTHONTRADERBOT_SOURCE_AUDIT_20261022.md](STRATEGY_B_P
 - Events: `artifacts/strategy-b-forward/STRATEGY_B_FORWARD_EVENTS.jsonl`.
 - State: `runtime/strategy_b_forward_observer_state.json`.
 - Lock: `runtime/strategy_b_forward_observer.lock`.
-- Exact source symbol only: `XAUUSD`; no automatic substitution to `XAUUSD.ecn`.
+- Source strategy default remains `XAUUSD`; the broker adapter defaults to the operator-verified available symbol `XAUUSD.ecn` and records `EXPLICIT_BROKER_SUFFIX_ADAPTER` in identity/events. This is an explicit environment mapping, not a claim that the broker symbol name is identical to source. Arbitrary symbol names are rejected.
 - No order placement/modification/cancellation APIs are present in the observer.
 - Startup is blocked unless `STRATEGY_B_OBSERVER_ENABLE=true`.
 - State is cleared if the detected server/account metadata or symbol specification changes. State schema/strategy mismatch fails closed.
@@ -26,8 +26,8 @@ Strategy A files, event logs, state, process, magic number, and configuration ar
 
 - M1; 500 bars available to the observer (source live bot's lookback).
 - Spike body multiplier 1.5.
-- P-Gap 100 broker points, converted using the connected symbol's actual `point`.
-- Maximum stop distance 1000 broker points.
+- P-Gap 100 broker points, converted using the connected broker symbol's actual `point` (current preflight: `0.01`, so P-Gap price distance is `1.00`).
+- Maximum stop distance 1000 broker points, converted using the connected broker symbol's actual `point` (current preflight: `10.00` price units).
 - TP 0.9R.
 - Pivot SL disabled; default SL is the candle before the spike (BUY low / SELL high).
 - EMA close-vs-EMA filter enabled, period 60.
@@ -62,4 +62,4 @@ try {
 finally { Pop-Location }
 ```
 
-Only after tests pass and a separate read-only terminal/account preflight is reviewed should the observer be considered for a bounded, supervised run. No startup command is provided here because the account/session and symbol point have not yet been verified.
+Only after tests pass and a separate read-only terminal/account preflight is reviewed should the observer be considered for a bounded, supervised run. The current operator preflight confirmed the `OtetGroup-MT5` session and `XAUUSD.ecn` point/digits. Before starting, run the full read-only symbol/account/order/position preflight and inspect source magic values 8/9; this observer itself never submits or modifies orders. Starting the observer remains a separate, explicit operator action.
