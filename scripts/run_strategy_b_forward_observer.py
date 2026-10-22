@@ -40,7 +40,7 @@ SOURCE_SYMBOL = "XAUUSD"
 # Current terminal only exposes XAUUSD.ecn; this explicit adapter does not alter strategy parameters.
 SYMBOL = os.getenv("STRATEGY_B_SYMBOL", "XAUUSD.ecn").strip()
 BARS = int(os.getenv("STRATEGY_B_BARS", "500"))
-POLL_SECONDS = float(os.getenv("STRATEGY_B_POLL_SECONDS", "1"))
+POLL_SECONDS = float(os.getenv("STRATEGY_B_POLL_SECONDS", "0.5"))
 CONFIG = StrategyBConfig()
 
 
