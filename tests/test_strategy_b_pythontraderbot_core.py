@@ -77,7 +77,7 @@ def test_pending_buy_entry_tp_and_max_sl_are_source_shaped():
     assert abs(candidate.tp - (103.8 + 0.9 * 4.8)) < 1e-9
 
 
-def test_pending_entry_rejects_nonpositive_risk():
+def test_pending_entry_keeps_setup_when_risk_is_nonpositive():
     candles = buy_fixture()
     candles[-1]["low"] = 103.9
     setup = Setup("BUY", 5, 5, 104.0, 4.0)
@@ -85,4 +85,4 @@ def test_pending_entry_rejects_nonpositive_risk():
         "time": 6, "open": 106.0, "high": 107.0, "low": 103.8, "close": 106.5
     })
     cfg = StrategyBConfig(use_ema_filter=False, use_trend_filter=False)
-    assert evaluate_pending_entry(candles, setup, broker_point=0.01, config=cfg) == "INVALID"
+    assert evaluate_pending_entry(candles, setup, broker_point=0.01, config=cfg) is None
