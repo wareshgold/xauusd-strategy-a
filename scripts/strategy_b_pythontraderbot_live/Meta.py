@@ -919,7 +919,7 @@ class Meta:
                     print(f"OPEN BUY POSITION: {result.comment}")
                     print(f"price: {result.request.price} \t SL: {result.request.sl} \t TP: {result.request.tp}")
                     if Meta.teleBotMessage and getattr(result, "retcode", None) in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED):
-                        TeleBot().SendMessage(f"OPENED BUY {symbol}: {result.comment} price:{result.request.price} sl:{result.request.sl} tp:{result.request.tp}")
+                        TeleBot().SendMessage(f"OPENED BUY {symbol}\nFill: {float(getattr(result, 'price', 0.0) or result.request.price):.2f}\nVolume: {float(getattr(result, 'volume', 0.0) or lot):.2f} | Magic: {magic}\nStop Loss: {float(result.request.sl):.2f}\nTake Profit: {float(result.request.tp):.2f}\nMT5 status: {result.comment} | Deal: {int(getattr(result, 'deal', 0) or 0)}")
                     if result.comment != "Request executed":
                         print("WARNINGS", result.comment)
                     print("-"*75)
@@ -944,7 +944,7 @@ class Meta:
                     print(f"OPEN SELL POSITION: {result.comment}")
                     print(f"price: {result.request.price} \t SL: {result.request.sl} \t TP: {result.request.tp}")
                     if Meta.teleBotMessage and getattr(result, "retcode", None) in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED):
-                        TeleBot().SendMessage(f"OPENED SELL {symbol}: {result.comment} price:{result.request.price} sl:{result.request.sl} tp:{result.request.tp}")
+                        TeleBot().SendMessage(f"OPENED SELL {symbol}\nFill: {float(getattr(result, 'price', 0.0) or result.request.price):.2f}\nVolume: {float(getattr(result, 'volume', 0.0) or lot):.2f} | Magic: {magic}\nStop Loss: {float(result.request.sl):.2f}\nTake Profit: {float(result.request.tp):.2f}\nMT5 status: {result.comment} | Deal: {int(getattr(result, 'deal', 0) or 0)}")
                     if result.comment != "Request executed":
                         print("WARNINGS",  result.comment)
                     print("-"*75)
