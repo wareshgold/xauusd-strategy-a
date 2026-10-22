@@ -17,7 +17,7 @@ def test_live_bot_has_opt_in_terminal_server_and_demo_account_gates():
     assert 'EXPECTED_SERVER' in source
     assert 'if not mt5.initialize()' not in source
     assert 'strategy_b_pythontraderbot_live.lock' in source
-    assert 'STRATEGY_B lock exists' in source
+    assert 'Strategy B lock exists' in source
     assert 'FORWARD TEST STARTED' in source
     assert 'BLOCKED: Strategy B Telegram startup check failed' in source
 
