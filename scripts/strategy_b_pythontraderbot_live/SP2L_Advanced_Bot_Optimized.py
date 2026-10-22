@@ -1794,7 +1794,7 @@ def Strategy(
 # ============================================================
 
 if not TeleBot().SendMessage(
-    f"FORWARD TEST STARTED | symbol={SYMBOL} | timeframe=M1 | lot={LOT} | magic={MAGIC} | server={_account_info.server} | mode=DEMO"
+    f"FORWARD TEST STARTED\nSymbol: {SYMBOL} | Timeframe: M1\nMode: DEMO | Server: {_account_info.server}\nVolume: {LOT:.2f} | Magic: {MAGIC} (secondary: {SECOND_ENTRY_MAGIC})\nEntry: market | SL: previous candle | TP: {TP_R:.2f}R\nFilters: EMA{EMA_PERIOD}={'ON' if USE_EMA_FILTER else 'OFF'} | Trend={'ON' if USE_TREND_FILTER else 'OFF'} | Session={'ON' if USE_SESSION_FILTER else 'OFF'}"
 ):
     mt5.shutdown()
     raise SystemExit("BLOCKED: Strategy B Telegram startup check failed; no trading loop entered.")
