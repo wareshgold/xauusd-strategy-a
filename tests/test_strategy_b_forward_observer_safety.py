@@ -48,3 +48,13 @@ def test_observer_uses_strategy_b_isolated_paths_and_lock():
     assert 'ARTIFACT_DIR = ROOT / "artifacts" / "strategy-b-forward"' in source
     assert 'STATE_FILE = RUNTIME_DIR / "strategy_b_forward_observer_state.json"' in source
     assert 'LOCK_FILE = RUNTIME_DIR / "strategy_b_forward_observer.lock"' in source
+
+
+def test_observer_requires_exact_preexisting_mt5_terminal_and_explicit_path():
+    source = RUNNER.read_text(encoding="utf-8")
+    assert 'STRATEGY_B_MT5_TERMINAL_PATH' in source
+    assert 'def exact_terminal_process_running()' in source
+    assert 'powershell.exe' in source
+    assert 'mt5.initialize(path=TERMINAL_PATH, timeout=10000)' in source
+    assert 'if not mt5.initialize()' not in source
+    assert 'MT5_TERMINAL_PATH_MISMATCH' in source
