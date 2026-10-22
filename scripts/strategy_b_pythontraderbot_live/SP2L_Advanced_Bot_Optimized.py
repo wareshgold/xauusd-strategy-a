@@ -1607,6 +1607,12 @@ def Strategy(
 # ACCOUNT INFORMATION
 # ============================================================
 
+if not TeleBot().SendMessage(
+    f"FORWARD TEST STARTED | symbol={SYMBOL} | timeframe=M1 | lot={LOT} | magic={MAGIC} | server={_account_info.server} | mode=DEMO"
+):
+    mt5.shutdown()
+    raise SystemExit("BLOCKED: Strategy B Telegram startup check failed; no trading loop entered.")
+
 accountInfo = mt5.account_info()
 
 print("-" * 75)
