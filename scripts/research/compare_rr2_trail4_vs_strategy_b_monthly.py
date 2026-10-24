@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Research-only signal-candidate replay; does not fabricate fills or P&L."""
+"""Research-only independent signal-candidate replay; does not fabricate fills or P&L. Not a position-level trade simulation."""
 import argparse, csv, hashlib, json, math
 from collections import Counter
 from datetime import datetime, timezone
@@ -11,7 +11,7 @@ PGAP, SPIKE, MAX_SL = 1.0, 1.5, 10.0
 
 def ts(v):
     v=v.strip()
-    if v.isdigit(): return int(v)
+    if v.isdigit():\n        n=int(v); return n//1000 if n>10_000_000_000 else n
     d=datetime.fromisoformat(v.replace("Z","+00:00"))
     if d.tzinfo is None: raise ValueError("timestamp has no timezone: "+v)
     return int(d.astimezone(timezone.utc).timestamp())
@@ -52,7 +52,7 @@ def a_detect(bars,i):
 def b_detect(bars,i):
     # Strategy B source: -4 pre-spike, -3 spike, -2 after, -1 detection candle.
     p,s,a,c=bars[i-3],bars[i-2],bars[i-1],bars[i]
-    buy=(c["low"]<a["low"] and a["close"]>s["close"] and a["open"]>s["open"] and s["close"]>p["close"] and s["open"]>p["open"] and a["close"]>a["open"] and s["close"]>s["open"] and p["close"]>p["open"] and a["low"]>p["high"]+PGAP and (s["close"]-s["open"])>SPIKE*(a["close"]-a["open"]) and (s["close"]-s["open"])>SPIKE*(s["close"]-p["open"]) and (s["close"]-s["open"])>SPIKE*(c["close"]-c["open"]))
+    buy=(c["low"]<a["low"] and a["close"]>s["close"] and a["open"]>s["open"] and s["close"]>p["close"] and s["open"]>p["open"] and a["close"]>a["open"] and s["close"]>s["open"] and p["close"]>p["open"] and a["low"]>p["high"]+PGAP and (s["close"]-s["open"])>SPIKE*(a["close"]-a["open"]) and (s["close"]-s["open"])>SPIKE*(p["close"]-p["open"]) and (s["close"]-s["open"])>SPIKE*(c["close"]-c["open"]))
     sell=(c["high"]>a["high"] and a["close"]<s["close"] and a["open"]<s["open"] and s["close"]<p["close"] and s["open"]<p["open"] and a["close"]<a["open"] and s["close"]<s["open"] and p["close"]<p["open"] and a["high"]<p["low"]-PGAP and (s["open"]-s["close"])>SPIKE*(a["open"]-a["close"]) and (s["open"]-s["close"])>SPIKE*(p["open"]-p["close"]) and (s["open"]-s["close"])>SPIKE*(c["open"]-c["close"]))
     return "BUY" if buy and not sell else "SELL" if sell and not buy else None
 
@@ -89,10 +89,10 @@ def replay_a(bars):
     return rows,c
 
 def replay_b(bars):
-    rows=[]; c=Counter(); emas=ema([b["close"] for b in bars]); pending=None; in_position=False
+    rows=[]; c=Counter(); emas=ema([b["close"] for b in bars]); pending=None
     for i in range(4,len(bars)):
         cur=bars[i]
-        if pending and not in_position:
+        if pending:
             d=pending["direction"]
             trigger=cur["low"]<bars[i-1]["low"] if d=="BUY" else cur["high"]>bars[i-1]["high"]
             if trigger:
@@ -102,7 +102,7 @@ def replay_b(bars):
                 elif not (cur["close"]>emas[i] if d=="BUY" else cur["close"]<emas[i]):c["blocked_ema"]+=1
                 else:
                     rows.append({"strategy":"B_PYTHONTRADERBOT","direction":d,"setup_utc":datetime.fromtimestamp(bars[pending["index"]]["time"],timezone.utc).isoformat(),"trigger_utc":datetime.fromtimestamp(cur["time"],timezone.utc).isoformat(),"theoretical_entry":entry,"sl":sl,"risk_price":risk,"tp_0_9r":entry+0.9*risk if d=="BUY" else entry-0.9*risk,"fill_status":"UNRESOLVED_MARKET_FILL_NOT_IN_M1_OHLC"})
-                    c["candidates"]+=1; pending=None; in_position=True
+                    c["candidates"]+=1; pending=None
         if in_position:
             c["bars_while_exit_state_unresolved"]+=1
             continue
@@ -123,7 +123,7 @@ def main():
     p.add_argument("--out",type=Path,default=Path("artifacts/monthly_strategy_comparison_20261024"))
     a=p.parse_args(); bars,audit=load(a.csv); ar,ac=replay_a(bars); br,bc=replay_b(bars); a.out.mkdir(parents=True,exist_ok=True)
     write_csv(a.out/"strategy_a_candidates.csv",ar);write_csv(a.out/"strategy_b_candidates.csv",br)
-    result={"input":audit,"source_versions":{"A":"SP2L_V3_XAUUSD_RR2_TRAIL4_20261001","B":"Strategy B script at commit 0037c540; TP_R=0.9, EMA60, trend filter enabled, max opposite moves=1, second entry/range/session filters disabled"},"counts":{"A":dict(ac),"B":dict(bc)},"candidate_counts":{"A":len(ar),"B":len(br)},"performance_metrics":{"closed_trades":"NOT COMPUTED","wins_losses":"NOT COMPUTED","net_pnl":"NOT COMPUTED","total_R":"NOT COMPUTED","profit_factor":"NOT COMPUTED","max_drawdown":"NOT COMPUTED","filled_unfilled_cancelled":"NOT COMPUTED"},"reason":"M1 OHLC alone cannot establish A pending-limit fills/TTL outcomes, B market fill prices and execution-based TP, or intrabar stop/target ordering. No fills or P&L are fabricated."}
+    result={"input":audit,"source_versions":{"A":"SP2L_V3_XAUUSD_RR2_TRAIL4_20261001","B":"Strategy B script at commit 0037c540; TP_R=0.9, EMA60, trend filter enabled, max opposite moves=1, second entry/range/session filters disabled"},"counts":{"A":dict(ac),"B":dict(bc)},"candidate_counts":{"A":len(ar),"B":len(br)},"performance_metrics":{"closed_trades":"NOT COMPUTED","wins_losses":"NOT COMPUTED","net_pnl":"NOT COMPUTED","total_R":"NOT COMPUTED","profit_factor":"NOT COMPUTED","max_drawdown":"NOT COMPUTED","filled_unfilled_cancelled":"NOT COMPUTED"},"reason":"Independent candidate counts only (not single-position portfolio replay). M1 OHLC alone cannot establish A pending-limit fills/TTL outcomes, B market fill prices and execution-based TP, or intrabar stop/target ordering. No fills or P&L are fabricated."}
     (a.out/"summary.json").write_text(json.dumps(result,indent=2),encoding="utf-8")
     md="# Monthly signal replay: RR2/TRAIL4 vs Strategy B\n\n"
     md+=f"- Input SHA-256: {audit['sha256']}\n- Rows: {audit['rows']}\n- Window: {audit['window_start_utc']} to {audit['window_end_utc_exclusive']}\n- Gap segments >1 minute: {audit['gap_segments_gt_1m']}\n\n"
