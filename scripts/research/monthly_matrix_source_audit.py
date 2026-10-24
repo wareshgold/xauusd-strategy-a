@@ -3,6 +3,8 @@
 
 Does not claim fills, exits, P&L, PF, win rate, or drawdown. OHLC does not
 establish A pending-limit fills, B market execution prices, or intrabar order.
+Strategy B risk handling follows source snapshot 0037c540: non-positive risk
+returns None (continue searching); risk above maximum returns INVALID (stop).
 """
 import argparse, csv, hashlib, json
 from datetime import datetime, timezone
@@ -94,7 +96,7 @@ def replay_a(bars):
     return rows,counts
 
 def replay_b(bars):
-    em=ema(bars,B_EMA); rows=[]; counts={"setup_trigger_bars":0,"valid_theoretical_entries":0,"ema_blocked_trigger_attempts":0,"trend_blocked_trigger_attempts":0,"invalid_risk_trigger_attempts":0,"gap_terminated":0,"no_following_entry_trigger":0}
+    em=ema(bars,B_EMA); rows=[]; counts={"setup_trigger_bars":0,"valid_theoretical_entries":0,"ema_blocked_trigger_attempts":0,"trend_blocked_trigger_attempts":0,"nonpositive_risk_trigger_attempts":0,"over_max_risk_trigger_attempts":0,"gap_terminated":0,"no_following_entry_trigger":0}
     for i in range(3,len(bars)):
         if len({bars[k]["segment"] for k in range(i-3,i+1)})!=1: continue
         d=b_detect(bars[i-3],bars[i-2],bars[i-1],bars[i])
@@ -105,7 +107,18 @@ def replay_b(bars):
             trig=bars[j]["low"]<bars[j-1]["low"] if d=="BUY" else bars[j]["high"]>bars[j-1]["high"]
             if not trig: continue
             entry=bars[j]["low"] if d=="BUY" else bars[j]["high"]; risk=entry-sl if d=="BUY" else sl-entry
-            if risk<=0 or risk>B_MAXSL: status="INVALID_RISK_FIRST_TRIGGER"; counts["invalid_risk_trigger_attempts"]+=1; found={"j":j,"entry":entry,"risk":risk}; break
+            # Source fidelity: check_pending_buy/sell returns None for risk <= 0,
+            # so that trigger is ignored and the pending setup keeps searching.
+            if risk <= 0:
+                counts["nonpositive_risk_trigger_attempts"] += 1
+                continue
+            # Source fidelity: risk above the configured maximum returns "INVALID"
+            # and terminates the pending setup immediately.
+            if risk > B_MAXSL:
+                status="INVALID_RISK_OVER_MAX_FIRST_TRIGGER"
+                counts["over_max_risk_trigger_attempts"] += 1
+                found={"j":j,"entry":entry,"risk":risk}
+                break
             if not trend_ok(bars,i,j,d): counts["trend_blocked_trigger_attempts"]+=1; continue
             if not (bars[j]["close"]>em[j] if d=="BUY" else bars[j]["close"]<em[j]): counts["ema_blocked_trigger_attempts"]+=1; continue
             found={"j":j,"entry":entry,"risk":risk}; status="THEORETICAL_TRIGGER_ONLY"; counts["valid_theoretical_entries"]+=1; break
