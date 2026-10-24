@@ -15,6 +15,7 @@ on:
       - 'docs/research/REPLAY_EVENT_LEDGER_CONTRACT_20261024.md'
       - 'docs/research/EVENT_LEDGER_SCHEMA_VALIDATOR_20261024.md'
       - 'docs/research/RR2_TRAIL4_EVENT_ADAPTER_FIELD_MAP_20261024.md'
+      - 'docs/research/STRATEGY_B_EVENT_ADAPTER_FIELD_MAP_20261024.md'
       - '.github/workflows/research-readonly-replay-audits.yml'
   pull_request:
     paths:
