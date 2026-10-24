@@ -7,6 +7,7 @@ on:
       - 'scripts/audit_sp2l_replay_ledger_readonly.py'
       - 'scripts/validate_sp2l_event_ledger_readonly.py'
       - 'scripts/audit_sp2l_exact_deal_join_readonly.py'
+      - 'scripts/audit_mt5_m1_snapshot_readonly.py'
       - 'tests/test_audit_sp2l_replay_json_readonly.py'
       - 'tests/test_audit_sp2l_replay_ledger_readonly.py'
       - 'tests/test_replay_fill_exit_evidence_fixtures.py'
@@ -14,6 +15,7 @@ on:
       - 'tests/test_replay_event_ledger_contract_fixtures.py'
       - 'tests/test_validate_sp2l_event_ledger_readonly.py'
       - 'tests/test_audit_sp2l_exact_deal_join_readonly.py'
+      - 'tests/test_audit_mt5_m1_snapshot_readonly.py'
       - 'docs/research/REPLAY_EVENT_LEDGER_CONTRACT_20261024.md'
       - 'docs/research/EVENT_LEDGER_SCHEMA_VALIDATOR_20261024.md'
       - 'docs/research/RR2_TRAIL4_EVENT_ADAPTER_FIELD_MAP_20261024.md'
@@ -73,5 +75,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_replay_event_ledger_contract_fixtures.py' -v
       - name: Run event ledger schema validation tests
         run: python -m unittest discover -s tests -p 'test_validate_sp2l_event_ledger_readonly.py' -v
+      - name: Run MT5 M1 snapshot audit tests
+        run: python -m unittest tests.test_audit_mt5_m1_snapshot_readonly -v
+
       - name: Run exact broker-deal join audit tests
         run: python -m unittest discover -s tests -p 'test_audit_sp2l_exact_deal_join_readonly.py' -v
