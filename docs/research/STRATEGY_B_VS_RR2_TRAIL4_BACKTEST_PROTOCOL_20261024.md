@@ -160,3 +160,8 @@ Before any adapter is implemented, use the [immutable paired-replay evidence int
 ### Durable handoff checkpoint
 
 The current progress, verified CI state, source/evidence limitations, and ordered next steps are recorded in the [SP2L research handoff snapshot](./SP2L_RESEARCH_HANDOFF_SNAPSHOT_20261024.md). Update this checkpoint after material changes; never treat queued or running checks as passed.
+
+
+### MT5 market-data intake
+
+A one-month MT5 candle export can provide shared offline market data, but cannot replace actual execution evidence. See the [MT5 XAUUSD market-data intake checklist](./MT5_XAUUSD_MARKET_DATA_INTAKE_CHECKLIST_20261024.md) for immutable export, timestamp, symbol, hash, and separate broker-deal requirements.
