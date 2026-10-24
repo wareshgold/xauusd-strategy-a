@@ -150,3 +150,8 @@ The companion [Strategy B event adapter field map](./STRATEGY_B_EVENT_ADAPTER_FI
 separates a market-order request/response from a broker-confirmed deal and lists
 the immutable deal-history fields required before actual-fill rows can be built.
 It is an offline source map only; no historical broker evidence was inferred.
+
+
+### Immutable evidence intake
+
+Before any adapter is implemented, use the [immutable paired-replay evidence intake contract](./IMMUTABLE_PAIRED_REPLAY_EVIDENCE_INTAKE_CONTRACT_20261024.md) to preserve source bytes, hashes, timestamp evidence, version pins, and unmatched/conflicting join diagnostics. The contract is a research intake gate, not a claim that required broker exports currently exist.
