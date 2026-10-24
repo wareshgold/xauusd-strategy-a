@@ -54,3 +54,34 @@ Before paired replay:
 - state explicitly whether the available data can support M1 replay, tick-level sequencing, and/or actual-fill accounting.
 
 A green schema check or a matching candle timestamp is not proof of execution truth or profitability. All outputs remain research-only pending source-rule resolution and the project's full validation workflow.
+
+
+## 6. First local MT5 snapshot received (2026-10-24)
+
+The user ran the read-only downloader locally. The raw CSV stays on the user's machine and is **not committed to GitHub**.
+
+- Local folder: `D:\\Mirzaei\\Private\\1\\sp2l-mt5-market-data\\20261024T075827Z`
+- CSV: `xauusd_ecn_m1_30d.csv`
+- Manifest: `manifest.json`
+- Symbol/timeframe: `XAUUSD.ecn` / M1
+- Actual first bar: `2026-09-24T07:57:00+00:00`
+- Actual last bar: `2026-10-23T23:57:00+00:00`
+- Rows returned: 29,919
+- Duplicate timestamps reported by downloader: 0
+- Interior gap segments reported by downloader: 21
+- Missing minute slots between returned bars: 12,802 (these are not yet classified as true data loss; market closures/session context matter)
+- CSV SHA-256: `b0782e716c7eccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285`
+
+The requested 30-day window began earlier than the first returned bar by roughly eight hours. This boundary-coverage issue must be included in the integrity audit; interior gap counts alone do not cover the full requested window. The new `scripts/audit_mt5_m1_snapshot_readonly.py` checks the raw hash against the manifest, timestamp/epoch agreement, OHLC shape, duplicate/order problems, gap segments and requested-window boundary coverage. It writes a separate report and refuses to overwrite an existing report.
+
+Next local command (run from the repository root; adjust only if the output folder differs):
+
+```powershell
+$Python = 'D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe'
+if (-not (Test-Path $Python)) { $Python = 'C:\\Users\\Mr.Mirzaei\\AppData\\Local\\Programs\\Python\\Python312\\python.exe' }
+$Data = 'D:\\Mirzaei\\Private\\1\\sp2l-mt5-market-data\\20261024T075827Z'
+$Report = Join-Path $Data 'integrity-audit.json'
+& $Python .\\scripts\\audit_mt5_m1_snapshot_readonly.py --csv (Join-Path $Data 'xauusd_ecn_m1_30d.csv') --manifest (Join-Path $Data 'manifest.json') --output $Report
+```
+
+Do not interpret `PASS_STRUCTURAL_ONLY` as a clean market session calendar or strategy-validity result. Gap/session classification, exact timestamp mapping, and any later replay eligibility require further review.
