@@ -114,3 +114,6 @@ The fixtures explicitly keep candidates separate from fills, require bounded evi
 
 
 The follow-up [event source-availability audit](./STRATEGY_B_VS_RR2_EVENT_SOURCE_AVAILABILITY_20261024.md) pinned the Strategy B execution adapter (`Meta.py`, blob `5a145fd02c282950b169165eb8b888e904d1fe6a`): it submits market-deal requests and returns MT5 results, but an immutable actual-deal/event artifact is still needed for replay. RR2/TRAIL4 has named lifecycle/deal logging in its runner; the base logger's `ts_utc` is runner observation/write time, while the inspected deal event omits the original broker `deal.time` and source sequence ID. Preserve those as separate missing fields until evidence is available. These are evidence gaps, not permission to infer events.
+
+
+A read-only [event-ledger schema validator](./EVENT_LEDGER_SCHEMA_VALIDATOR_20261024.md) and 11 synthetic schema tests now guard the proposed envelope. This checks structure/provenance metadata and timestamp evidence requirements; it does not supply missing broker deal artifacts or unblock the historical comparison.
