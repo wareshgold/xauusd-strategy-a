@@ -1,0 +1,82 @@
+name: research-readonly-replay-audits
+
+on:
+  push:
+    paths:
+      - 'scripts/audit_sp2l_replay_json_readonly.py'
+      - 'scripts/audit_sp2l_replay_ledger_readonly.py'
+      - 'scripts/validate_sp2l_event_ledger_readonly.py'
+      - 'scripts/audit_sp2l_exact_deal_join_readonly.py'
+      - 'scripts/audit_mt5_m1_snapshot_readonly.py'
+      - 'tests/test_audit_sp2l_replay_json_readonly.py'
+      - 'tests/test_audit_sp2l_replay_ledger_readonly.py'
+      - 'tests/test_replay_fill_exit_evidence_fixtures.py'
+      - 'tests/test_strategy_source_parity_fixtures.py'
+      - 'tests/test_replay_event_ledger_contract_fixtures.py'
+      - 'tests/test_validate_sp2l_event_ledger_readonly.py'
+      - 'tests/test_audit_sp2l_exact_deal_join_readonly.py'
+      - 'tests/test_audit_mt5_m1_snapshot_readonly.py'
+      - 'docs/research/REPLAY_EVENT_LEDGER_CONTRACT_20261024.md'
+      - 'docs/research/EVENT_LEDGER_SCHEMA_VALIDATOR_20261024.md'
+      - 'docs/research/RR2_TRAIL4_EVENT_ADAPTER_FIELD_MAP_20261024.md'
+      - 'docs/research/STRATEGY_B_EVENT_ADAPTER_FIELD_MAP_20261024.md'
+      - 'docs/research/IMMUTABLE_PAIRED_REPLAY_EVIDENCE_INTAKE_CONTRACT_20261024.md'
+      - 'docs/research/EXACT_BROKER_DEAL_JOIN_AUDIT_20261024.md'
+      - 'docs/research/SP2L_RESEARCH_HANDOFF_SNAPSHOT_20261024.md'
+      - 'docs/research/MT5_XAUUSD_MARKET_DATA_INTAKE_CHECKLIST_20261024.md'
+      - 'docs/research/SP2L_RESEARCH_HANDOFF_SNAPSHOT_20261024.md'
+      - '.github/workflows/research-readonly-replay-audits.yml'
+  pull_request:
+    paths:
+      - 'scripts/audit_sp2l_replay_json_readonly.py'
+      - 'scripts/audit_sp2l_replay_ledger_readonly.py'
+      - 'scripts/validate_sp2l_event_ledger_readonly.py'
+      - 'scripts/audit_sp2l_exact_deal_join_readonly.py'
+      - 'tests/test_audit_sp2l_replay_json_readonly.py'
+      - 'tests/test_audit_sp2l_replay_ledger_readonly.py'
+      - 'tests/test_replay_fill_exit_evidence_fixtures.py'
+      - 'tests/test_strategy_source_parity_fixtures.py'
+      - 'tests/test_replay_event_ledger_contract_fixtures.py'
+      - 'tests/test_validate_sp2l_event_ledger_readonly.py'
+      - 'tests/test_audit_sp2l_exact_deal_join_readonly.py'
+      - 'docs/research/REPLAY_EVENT_LEDGER_CONTRACT_20261024.md'
+      - 'docs/research/EVENT_LEDGER_SCHEMA_VALIDATOR_20261024.md'
+      - 'docs/research/RR2_TRAIL4_EVENT_ADAPTER_FIELD_MAP_20261024.md'
+      - 'docs/research/STRATEGY_B_EVENT_ADAPTER_FIELD_MAP_20261024.md'
+      - 'docs/research/IMMUTABLE_PAIRED_REPLAY_EVIDENCE_INTAKE_CONTRACT_20261024.md'
+      - 'docs/research/EXACT_BROKER_DEAL_JOIN_AUDIT_20261024.md'
+      - 'docs/research/SP2L_RESEARCH_HANDOFF_SNAPSHOT_20261024.md'
+      - 'docs/research/MT5_XAUUSD_MARKET_DATA_INTAKE_CHECKLIST_20261024.md'
+      - '.github/workflows/research-readonly-replay-audits.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-audits:
+    name: Read-only replay audit unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile audit tools and synthetic fixtures
+        run: python -m py_compile scripts/audit_sp2l_replay_json_readonly.py scripts/audit_sp2l_replay_ledger_readonly.py scripts/validate_sp2l_event_ledger_readonly.py scripts/audit_sp2l_exact_deal_join_readonly.py tests/test_validate_sp2l_event_ledger_readonly.py tests/test_replay_fill_exit_evidence_fixtures.py tests/test_strategy_source_parity_fixtures.py tests/test_replay_event_ledger_contract_fixtures.py tests/test_audit_sp2l_exact_deal_join_readonly.py
+      - name: Run replay audit tests
+        run: python -m unittest discover -s tests -p 'test_audit_sp2l_replay_*.py' -v
+      - name: Run synthetic evidence contract fixtures
+        run: python -m unittest discover -s tests -p 'test_replay_fill_exit_evidence_fixtures.py' -v
+      - name: Run source parity arithmetic fixtures
+        run: python -m unittest discover -s tests -p 'test_strategy_source_parity_fixtures.py' -v
+      - name: Run event ledger lifecycle fixtures
+        run: python -m unittest discover -s tests -p 'test_replay_event_ledger_contract_fixtures.py' -v
+      - name: Run event ledger schema validation tests
+        run: python -m unittest discover -s tests -p 'test_validate_sp2l_event_ledger_readonly.py' -v
+      - name: Run MT5 M1 snapshot audit tests
+        run: python -m unittest discover -s tests -p 'test_audit_mt5_m1_snapshot_readonly.py' -v
+
+      - name: Run exact broker-deal join audit tests
+        run: python -m unittest discover -s tests -p 'test_audit_sp2l_exact_deal_join_readonly.py' -v
