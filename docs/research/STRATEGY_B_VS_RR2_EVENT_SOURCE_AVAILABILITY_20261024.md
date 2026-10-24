@@ -10,7 +10,8 @@ This audit inspects the checked-in Strategy B source copy and the RR2/TRAIL4 run
 |---|---|---|
 | Strategy B signal/setup source | `research/strategy-b-pythontraderbot-execution-20261022/scripts/strategy_b_pythontraderbot_live/SP2L_Advanced_Bot_Optimized.py` | Blob SHA `ec275d3fef7ef372823a3626dba5f2718001c52d`; 2,268 lines inspected |
 | Strategy B execution adapter | `research/strategy-b-pythontraderbot-execution-20261022/scripts/strategy_b_pythontraderbot_live/Meta.py` | Blob SHA `5a145fd02c282950b169165eb8b888e904d1fe6a`; 965 lines inspected |
-| RR2/TRAIL4 runner | `fix/rr2-trail4-pending-lifecycle-safe-20261011/scripts/run_sp2l_v3_xauusd_forward_test.py` | Blob SHA `fdfe34ed15eadf38fa0d24d4a80781357d72328d` |
+| RR2/TRAIL4 wrapper | `fix/rr2-trail4-pending-lifecycle-safe-20261011/scripts/run_sp2l_v3_xauusd_forward_test.py` | Blob SHA `fdfe34ed15eadf38fa0d24d4a80781357d72328d` |
+| RR2/TRAIL4 base runner/logger | `fix/rr2-trail4-pending-lifecycle-safe-20261011/scripts/run_sp2l_author_replica_multi_symbol_forward_test.py` | Blob SHA `185dc62d74c6e202e01c361c9550592d0c33470b` |
 | Event ledger contract | [proposed contract](./REPLAY_EVENT_LEDGER_CONTRACT_20261024.md) | Research-only schema proposal |
 | Synthetic event tests | `tests/test_replay_event_ledger_contract_fixtures.py` | Deterministic synthetic cases only |
 
@@ -40,7 +41,9 @@ The inspected runner wraps the V3 lifecycle monitor and writes named events thro
 - `TELEGRAM_DEAL_LIFECYCLE` (around line 404): records deal/order/position identifiers, entry/reason, exit price, profit, commission, and swap.
 - `POSITION_RECONCILIATION_GAP` and `SESSION_CUTOFF_DEFERRED` are also emitted in specific conditions.
 
-This is useful lifecycle evidence, but it is not automatically a complete event ledger. The normalized adapter must inspect the base runner's `log_event` envelope and preserve its original event time, event file hash, source row reference, source sequence/order token if any, and timezone mapping status. Do not assume these fields exist simply because the wrapper logs named events.
+The base runner's `log_event` (around line 320) appends JSONL rows with `ts_utc = datetime.now(timezone.utc).isoformat()`. That field is the runner's event-observation/write time, not necessarily the broker's event time. `TELEGRAM_DEAL_LIFECYCLE` carries deal/order/position IDs and deal entry/reason, entry/exit prices, profit, commission and swap, but the inspected row does not include the original MT5 `deal.time` timestamp or a source sequence ID. The event adapter must not mislabel `ts_utc` as the deal execution time. Preserve it as `observed_at_utc`; the broker event timestamp and source ordering remain separate nullable fields until evidenced.
+
+This is useful lifecycle evidence, but it is not automatically a complete event ledger. The normalized adapter must preserve the original event-file hash, stable JSONL row reference, observation timestamp, broker event timestamp where available, source sequence/order token if any, and timezone mapping status. Do not assume those fields exist simply because the wrapper logs named events.
 
 ## Availability matrix
 
