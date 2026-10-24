@@ -83,3 +83,8 @@ Tests must use synthetic data only and must not import MT5, broker APIs, forward
 ## Current gate
 
 **Comparison remains BLOCKED.** Historical timestamp mapping, actual fill/exit evidence, intrabar trailing ordering, overlap, and common historical costs are still unresolved. This contract is research instrumentation only; no paired backtest should be presented as execution-accurate until those gates are independently resolved.
+
+
+## Structural validation gate
+
+The proposed envelope is now checked by [the read-only schema validator](./EVENT_LEDGER_SCHEMA_VALIDATOR_20261024.md) and its synthetic tests. The validator checks key presence, nullable-field handling, identifier uniqueness, hash shape, event vocabulary, JSONL syntax, and timestamp conversion evidence. It deliberately does not prove the event is true or the timestamp mapping is correct. Passing this gate is structural validation only.
