@@ -40,6 +40,8 @@ class ReplayLedgerAuditTests(unittest.TestCase):
             self.assertEqual(report["conditional_fixed_R_accounting"]["profit_factor"], 4.0)
             self.assertTrue(any("totalR differs" in item for item in report["warnings"]))
             self.assertTrue(any("profit_factor differs" in item for item in report["warnings"]))
+            self.assertEqual(report["entry_fill_assessment"]["status"], "NOT_VERIFIABLE_FROM_ARTIFACT")
+            self.assertEqual(report["entry_fill_assessment"]["signals_with_explicit_fill_evidence"], 0)
             self.assertEqual(
                 report["overlap_assessment"]["status"],
                 "NOT_DETERMINABLE_FROM_ARTIFACT",
@@ -71,6 +73,7 @@ class ReplayLedgerAuditTests(unittest.TestCase):
             self.assertEqual(report["conditional_fixed_R_accounting"]["profit_factor"], 1.0)
             self.assertFalse(any("totalR differs" in item for item in report["warnings"]))
             self.assertTrue(any("overlap cannot be validated" in item for item in report["warnings"]))
+            self.assertTrue(any("Entry fills are not verified" in item for item in report["warnings"]))
 
 
 if __name__ == "__main__":
