@@ -217,3 +217,8 @@ The intake is ready for adapter review only when:
 - unresolved limitations remain visible in the output.
 
 Even then, the first replay is research-only. No performance claim, source-rule promotion, or production action follows automatically from a passing intake.
+
+
+## Implemented exact-ID join audit
+
+The research-only utility `scripts/audit_sp2l_exact_deal_join_readonly.py` implements a narrow exact-`deal_id` audit over already-normalized offline JSONL snapshots. Its input contract, status meanings, and safe invocation are documented in [Exact broker-deal join audit](./EXACT_BROKER_DEAL_JOIN_AUDIT_20261024.md). The tool does not replace source-specific adapters or prove that a source artifact is authentic. It must be run only after raw source bytes have been preserved and the normalization mapping reviewed.
