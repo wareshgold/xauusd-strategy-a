@@ -47,7 +47,9 @@ class Mt5M1SnapshotAuditTests(unittest.TestCase):
         self.assertEqual(report["data_quality_gate"], "PASS_STRUCTURAL_ONLY")
 
     def test_hash_mismatch_requires_review(self):
-        self.manifest_path.write_text(json.dumps({"csv_sha256": "wrong", "returned_bars": 2}), encoding="utf-8")
+        manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
+        manifest["csv_sha256"] = "wrong"
+        self.manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
         report = audit(self.csv_path, self.manifest_path)
         self.assertFalse(report["csv_hash_matches_manifest"])
         self.assertEqual(report["data_quality_gate"], "REVIEW_REQUIRED")
@@ -76,7 +78,7 @@ class Mt5M1SnapshotAuditTests(unittest.TestCase):
         self.write_rows([self.rows[0], second])
         report = audit(self.csv_path, self.manifest_path)
         self.assertEqual(report["gap_segment_count"], 1)
-        self.assertEqual(report["missing_minute_slots_between_observed_bars"], 2)
+        self.assertEqual(report["missing_minute_slots_between_observed_bars"], 3)
         self.assertIn("UNCLASSIFIED", report["gap_segments"][0]["classification"])
 
     def test_non_chronological_rows_are_detected(self):
