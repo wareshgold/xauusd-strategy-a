@@ -104,3 +104,10 @@ The fixture helpers are intentionally small arithmetic/evidence classifiers, not
 ## Current decision
 
 **BLOCKED — do not compute or publish a strategy winner yet.** The parameter differences are now explicitly documented, but time mapping, fill evidence, replay parity, overlap, trailing intrabar ordering, and common historical cost accounting remain unresolved. This document does not define canonical Strategy A rules and does not authorize live orders, forward-test changes, or production decisions.
+
+
+## Event ledger contract follow-up (2026-10-24)
+
+Added [research-only event ledger contract](./REPLAY_EVENT_LEDGER_CONTRACT_20261024.md) and deterministic fixtures in `tests/test_replay_event_ledger_contract_fixtures.py`. The contract preserves event provenance, source/config/dataset hashes, original timestamps and timezone evidence, source sequence IDs, and distinct Strategy B market-deal versus RR2/TRAIL4 pending-limit profiles.
+
+The fixtures explicitly keep candidates separate from fills, require bounded evidence for a terminal rejection to support `NOT_FILLED`, preserve ambiguous same-time ordering without sequence evidence, and treat `DATA_END` as distinct from `EXIT_FILL`. The dedicated read-only workflow passes for this revision. This is schema/fixture validation only; it does not resolve historical event availability or make the backtest comparison unblocked.
