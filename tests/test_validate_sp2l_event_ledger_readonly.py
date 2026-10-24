@@ -103,6 +103,61 @@ class EventLedgerSchemaValidationTests(unittest.TestCase):
         result = validate_rows([["not", "an", "event"]])
         self.assertTrue(any(i["code"] == "ROW_NOT_OBJECT" for i in result["issues"]))
 
+    def test_source_observed_event_requires_artifact_hash_and_row_reference(self):
+        row = valid_event(evidence_class="source_observed",
+                          source_artifact_sha256=None, source_row_ref=None)
+        result = validate_rows([row])
+        codes = {i["code"] for i in result["issues"]}
+        self.assertIn("SOURCE_EVENT_WITHOUT_ARTIFACT_HASH", codes)
+        self.assertIn("SOURCE_EVENT_WITHOUT_ROW_REF", codes)
+
+    def test_ohlc_proxy_cannot_be_labeled_as_actual_fill(self):
+        row = valid_event(event_type="ENTRY_FILL", evidence_class="ohlc_proxy")
+        result = validate_rows([row])
+        self.assertIn("INFERRED_FILL_FORBIDDEN", {i["code"] for i in result["issues"]})
+
+    def test_derived_assessment_cannot_be_labeled_as_actual_exit_fill(self):
+        row = valid_event(event_type="EXIT_FILL", evidence_class="derived_assessment")
+        result = validate_rows([row])
+        self.assertIn("INFERRED_FILL_FORBIDDEN", {i["code"] for i in result["issues"]})
+
+    def test_source_observed_fill_requires_deal_price_and_volume(self):
+        row = valid_event(
+            event_type="ENTRY_FILL",
+            evidence_class="source_observed",
+            source_artifact_sha256="a" * 64,
+            source_row_ref="deals.csv:row-2",
+            deal_id=None,
+            price=None,
+            volume=None,
+        )
+        result = validate_rows([row])
+        codes = {i["code"] for i in result["issues"]}
+        self.assertIn("SOURCE_FILL_MISSING_EXECUTION_FIELD", codes)
+
+    def test_source_observed_fill_rejects_nonpositive_or_boolean_volume(self):
+        base = valid_event(
+            event_type="ENTRY_FILL",
+            evidence_class="source_observed",
+            source_artifact_sha256="a" * 64,
+            source_row_ref="deals.csv:row-2",
+            deal_id="deal-2",
+            price=2000.0,
+            volume=True,
+        )
+        result = validate_rows([base])
+        self.assertIn("INVALID_EXECUTION_NUMBER", {i["code"] for i in result["issues"]})
+        result = validate_rows([valid_event(
+            event_type="EXIT_FILL",
+            evidence_class="source_observed",
+            source_artifact_sha256="a" * 64,
+            source_row_ref="deals.csv:row-3",
+            deal_id="deal-3",
+            price=2001.0,
+            volume=0,
+        )])
+        self.assertIn("INVALID_EXECUTION_NUMBER", {i["code"] for i in result["issues"]})
+
 
 if __name__ == "__main__":
     unittest.main()
