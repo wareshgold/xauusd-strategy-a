@@ -136,3 +136,11 @@ The B candidate detector had an extra requirement that the spike candle body exc
 - Strategy A pending-limit fill semantics and actual trailing-stop path without tick-level evidence.
 
 Accordingly, the monthly matrix can now be source-aligned for setup/filters and the Strategy B execution path can be described accurately, but realized RR/profit per trade still requires tick/quote and deal-history evidence. Do not substitute theoretical `0.9R` for actual RR or actual net P&L.
+
+### Additional bar-replay and instrument caveats
+
+- The market-data CSV is for `XAUUSD.ecn`, while the inspected Strategy B source sets `SYMBOL = "XAUUSD"`. These are not confirmed to be the same broker symbol or to share the same point/spread/quote stream. A comparison must explicitly record this mismatch; do not silently treat the point size or executable prices as identical.
+- The live loop polls about every 0.5 seconds and intentionally evaluates the currently forming M1 candle. A setup can be detected intrabar and then evaluated as a pending setup on a subsequent poll within that same candle. A once-per-bar OHLC replay cannot reproduce the exact order of those intrabar state transitions, Ask/Bid, or the market deal. The current CSV candidate replay is therefore a bar-based candidate scan, not an exact deterministic reproduction of live Strategy B.
+- The source's EMA uses pandas `ewm(span=60, adjust=False)`; the replay uses the equivalent recursive form. However, the live source rebuilds indicators on a rolling history of `NUMBER_OF_DATA=500` bars, while the research scan currently seeds from the entire CSV. This is expected to be close after warm-up but is not byte-for-byte identical at the start of the sample.
+- Because of these constraints, the detector correction removes one known false condition but does not certify the remaining candidate counts as exact live signal counts. Exact per-trade RR/profit requires quote/tick sequencing and historical deal/position records, or a separately specified and clearly labelled OHLC proxy model.
+
