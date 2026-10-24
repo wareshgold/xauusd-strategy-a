@@ -133,3 +133,12 @@ After pulling this documentation branch, run only offline checks first. Do not s
 
 
 Before implementing a replay adapter, run the [event-ledger schema validator](./EVENT_LEDGER_SCHEMA_VALIDATOR_20261024.md) on immutable snapshots and retain its input SHA-256 and report. A passing schema check is not event-truth validation and does not replace broker deal evidence, timestamp mapping, or source-profile review.
+
+
+### RR2/TRAIL4 source-field map
+
+The offline field-by-field mapping for the inspected base runner is documented in
+[RR2/TRAIL4 event adapter field map](./RR2_TRAIL4_EVENT_ADAPTER_FIELD_MAP_20261024.md).
+It distinguishes runner observation time from broker event time and records which
+lifecycle fields cannot safely be promoted to actual fills. This narrows adapter
+requirements only; it does not remove the immutable snapshot / actual-deal evidence gate.
