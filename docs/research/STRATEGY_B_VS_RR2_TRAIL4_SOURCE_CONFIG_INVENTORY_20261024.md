@@ -89,6 +89,18 @@ Therefore this author-replica JSON is not a valid substitute for either the Stra
 6. Validate counts and metrics independently from the ledger; report uncertainty and dependent windows honestly.
 7. Only after these gates pass, run the predeclared one-week and one-month paired tests. Then robustness/stability; a fresh untouched holdout only after rules and protocol are frozen.
 
+## Follow-up synthetic source-parity fixtures (2026-10-24)
+
+Added `tests/test_strategy_source_parity_fixtures.py` and wired it into the dedicated read-only research workflow. These tests cover only small deterministic facts read from the sources:
+
+- Strategy B's 100-point P-Gap and 1,000-point maximum SL convert through the configured broker point; same point counts do not imply the same price distance for all symbols.
+- Strategy B TP_R=0.9 and RR2/TRAIL4 TP_R=2.0 remain distinct.
+- RR2/TRAIL4's inspected configuration calculates 4 × 0.1 = 0.40 price-unit trailing distance and direction-specific stop arithmetic.
+- Strategy B's BUY entry candidate checks a current-low break versus the previous low; that condition is not a broker fill confirmation.
+- A single OHLC bar touching both SL and TP remains ambiguous without finer event-sequence evidence.
+
+The fixture helpers are intentionally small arithmetic/evidence classifiers, not a shared strategy engine. They do not determine canonical SP2L geometry, simulate broker orders, resolve timestamp mapping, or establish profitability. The tests should run alongside the existing evidence fixtures in the `research-readonly-replay-audits` workflow.
+
 ## Current decision
 
 **BLOCKED — do not compute or publish a strategy winner yet.** The parameter differences are now explicitly documented, but time mapping, fill evidence, replay parity, overlap, trailing intrabar ordering, and common historical cost accounting remain unresolved. This document does not define canonical Strategy A rules and does not authorize live orders, forward-test changes, or production decisions.
