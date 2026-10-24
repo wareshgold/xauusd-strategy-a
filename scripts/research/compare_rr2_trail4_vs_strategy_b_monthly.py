@@ -8,7 +8,7 @@ from pathlib import Path
 START = int(datetime(2026, 9, 24, tzinfo=timezone.utc).timestamp())
 END = int(datetime(2026, 10, 24, tzinfo=timezone.utc).timestamp())
 PGAP, SPIKE, MAX_SL = 1.0, 1.5, 10.0
-EXPECTED_DATA_SHA256 = "b0782e716e7ccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285"
+EXPECTED_DATA_SHA256 = "b0782e716c7eccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285"
 
 def ts(v):
     v=v.strip()
