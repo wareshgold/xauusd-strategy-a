@@ -137,3 +137,16 @@ Never describe a queued/running workflow as passed. Never claim a source artifac
 - When requesting the user's MT5 export, ask for the raw export only plus non-secret metadata: exact symbol as shown in MT5, timeframe, broker/server name, requested UTC or displayed-time interval, terminal/build, and whether timestamps are server-local or UTC. Do not ask for credentials or account secrets. Keep broker deal-history exports separate from market bars.
 - Do not begin a paired historical replay or report profitability from market bars alone. Actual execution comparison remains blocked until immutable runner event snapshots and broker-confirmed deal-history exports can be verified and exact-ID joins reviewed.
 - This is the point at which user action may be required: download/export the month of XAUUSD M1 bars from MT5 when ready and provide the original file through the conversation. If tick export is available, preserve it as a separate file; do not replace M1 with ticks. No data has yet been downloaded or modified by the assistant.
+
+
+## 12. Local MT5 M1 snapshot and integrity-audit implementation (2026-10-24)
+
+- User successfully downloaded the latest 30-day `XAUUSD.ecn` M1 snapshot locally; raw market data remains local and was not uploaded or committed.
+- CSV path: `D:\\Mirzaei\\Private\\1\\sp2l-mt5-market-data\\20261024T075827Z\\xauusd_ecn_m1_30d.csv`
+- SHA-256: `b0782e716c7eccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285`
+- 29,919 bars; first observed `2026-09-24T07:57:00Z`; last observed `2026-10-23T23:57:00Z`; zero duplicates per downloader; 21 interior gap segments / 12,802 missing minute slots between observed bars.
+- The requested window starts roughly eight hours before the first returned bar, so boundary coverage must be explicitly audited. Interior gap counts alone understate unobserved minute slots across the requested window. Gaps are not automatically classed as missing history because market closures/session context are not yet validated.
+- Added `scripts/audit_mt5_m1_snapshot_readonly.py` and six synthetic tests in `tests/test_audit_mt5_m1_snapshot_readonly.py`. The audit checks raw hash vs manifest, epoch/ISO agreement, OHLC sanity, duplicates, ordering, gap segments, and leading/trailing/requested-window coverage; it never synthesizes bars and refuses to overwrite a report.
+- Added the audit and tests to `research-readonly-replay-audits.yml`, including py_compile and unittest discovery; latest CI must be checked before treating this as verified.
+- Added the local snapshot metadata and a paste-ready local audit command to the MT5 intake checklist. The CSV itself stays off GitHub.
+- Next immediate user-side step: run the local integrity audit command from the checklist and share its short JSON summary. Then review boundary and gap diagnostics before creating a shared-dataset replay/matrix harness. Do not yet infer source strategy rules, actual fills, or profitability.
