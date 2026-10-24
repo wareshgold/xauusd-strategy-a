@@ -62,6 +62,36 @@ def validate_rows(rows: list[Any]) -> dict[str, Any]:
             issue(index, "INVALID_EVENT_TYPE", "event_type is not in the research vocabulary.")
         if row.get("evidence_class") not in EVIDENCE_CLASSES:
             issue(index, "INVALID_EVIDENCE_CLASS", "evidence_class is not recognized.")
+        evidence_class = row.get("evidence_class")
+        event_type = row.get("event_type")
+        if evidence_class == "source_observed":
+            if not _nonempty(row.get("source_row_ref")):
+                issue(index, "SOURCE_EVENT_WITHOUT_ROW_REF",
+                      "source_observed events require a stable source_row_ref.")
+            if not _nonempty(row.get("source_artifact_sha256")):
+                issue(index, "SOURCE_EVENT_WITHOUT_ARTIFACT_HASH",
+                      "source_observed events require the source artifact SHA-256.")
+            elif not HEX_64.fullmatch(row["source_artifact_sha256"]):
+                # Also reported by the generic hash check below; this message makes the
+                # source-evidence requirement explicit.
+                pass
+        if evidence_class in {"ohlc_proxy", "derived_assessment"} and event_type in {"ENTRY_FILL", "EXIT_FILL"}:
+            issue(index, "INFERRED_FILL_FORBIDDEN",
+                  "A proxy/derived assessment cannot be represented as an actual ENTRY_FILL or EXIT_FILL.")
+        if evidence_class == "source_observed" and event_type in {"ENTRY_FILL", "EXIT_FILL"}:
+            for key in ("deal_id", "price", "volume"):
+                value = row.get(key)
+                if value is None or (isinstance(value, str) and not value.strip()):
+                    issue(index, "SOURCE_FILL_MISSING_EXECUTION_FIELD",
+                          f"source_observed {event_type} requires evidenced {key}.")
+            for key in ("price", "volume"):
+                value = row.get(key)
+                if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))):
+                    issue(index, "INVALID_EXECUTION_NUMBER",
+                          f"{key} must be numeric or null.")
+                elif isinstance(value, (int, float)) and (value <= 0):
+                    issue(index, "INVALID_EXECUTION_NUMBER",
+                          f"{key} must be positive for a source-observed fill.")
 
         run_id, event_id = row.get("run_id"), row.get("event_id")
         if _nonempty(run_id) and _nonempty(event_id):
