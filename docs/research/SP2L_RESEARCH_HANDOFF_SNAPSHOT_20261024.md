@@ -150,3 +150,11 @@ Never describe a queued/running workflow as passed. Never claim a source artifac
 - Added the audit and tests to `research-readonly-replay-audits.yml`, including py_compile and unittest discovery; latest CI must be checked before treating this as verified.
 - Added the local snapshot metadata and a paste-ready local audit command to the MT5 intake checklist. The CSV itself stays off GitHub.
 - Next immediate user-side step: run the local integrity audit command from the checklist and share its short JSON summary. Then review boundary and gap diagnostics before creating a shared-dataset replay/matrix harness. Do not yet infer source strategy rules, actual fills, or profitability.
+
+
+## 13. MT5 integrity audit test correction / CI status (2026-10-24 08:02 UTC)
+
+- First CI attempt exposed two test-fixture issues (a hash-mismatch fixture omitted required window fields; a gap fixture expected the wrong number of missing minute slots). Both fixtures were corrected based on the actual audit calculation; production audit behavior was not weakened.
+- [Read-only audit CI run 40076474198](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40076474198) passed on commit `af5497c07982b0c6ceda034af2bb14590b73f1c7`.
+- The subsequent change only normalized path examples in the intake documentation. Its read-only CI run [40076499651](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40076499651) was queued at the last check; verify before reporting the latest head as fully green.
+- Immediate local task is now running the integrity audit against the user's immutable CSV/manifest and reviewing the resulting JSON summary. This audit is structural only; it does not classify all no-bar minutes as missing market data, validate strategy semantics, or prove execution outcomes.
