@@ -17,6 +17,7 @@ on:
       - 'tests/test_audit_sp2l_replay_json_readonly.py'
       - 'tests/test_audit_sp2l_replay_ledger_readonly.py'
       - 'tests/test_replay_fill_exit_evidence_fixtures.py'
+      - 'tests/test_strategy_source_parity_fixtures.py'
       - '.github/workflows/research-readonly-replay-audits.yml'
 
 permissions:
