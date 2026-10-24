@@ -20,6 +20,7 @@ on:
       - 'docs/research/STRATEGY_B_EVENT_ADAPTER_FIELD_MAP_20261024.md'
       - 'docs/research/IMMUTABLE_PAIRED_REPLAY_EVIDENCE_INTAKE_CONTRACT_20261024.md'
       - 'docs/research/EXACT_BROKER_DEAL_JOIN_AUDIT_20261024.md'
+      - 'docs/research/SP2L_RESEARCH_HANDOFF_SNAPSHOT_20261024.md'
       - '.github/workflows/research-readonly-replay-audits.yml'
   pull_request:
     paths:
