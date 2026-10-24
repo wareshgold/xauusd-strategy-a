@@ -127,3 +127,13 @@ Never describe a queued/running workflow as passed. Never claim a source artifac
 - Latest PR head at this update: `6231f4d647a3808865620766d395aa63070933b8`; PR #341 remains OPEN / DRAFT / NOT MERGED (65 commits, 24 files).
 - At last check, read-only run [40075953053](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075953053) and legacy suite run [40075953021](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075953021) were queued for the latest head. Re-check before reporting their result.
 - No MT5 data has been downloaded or changed in this work; no terminal, live runner, forward test, config, or runtime state was touched.
+
+
+## 11. CI confirmation and next evidence gate (2026-10-24 07:55 UTC)
+
+- [Read-only replay audits run 40075971486](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075971486) completed **SUCCESS** on commit `3b2f3a350d412f094c50c7b837c72df4f71a8a71`. All steps passed, including the four newly added edge-case tests.
+- Latest verified PR head at time of writing: `3b2f3a350d412f094c50c7b837c72df4f71a8a71`; PR remains open/draft/unmerged.
+- The remaining blocker is now an evidence acquisition/verification gate, not the deterministic exact-ID tool: actual immutable month-level market data and source execution evidence are not present in this branch. A user-provided MT5 export can supply the shared market-data snapshot. It must be kept as an original, hashed file and checked for exact symbol/timezone/coverage/gaps before replay.
+- When requesting the user's MT5 export, ask for the raw export only plus non-secret metadata: exact symbol as shown in MT5, timeframe, broker/server name, requested UTC or displayed-time interval, terminal/build, and whether timestamps are server-local or UTC. Do not ask for credentials or account secrets. Keep broker deal-history exports separate from market bars.
+- Do not begin a paired historical replay or report profitability from market bars alone. Actual execution comparison remains blocked until immutable runner event snapshots and broker-confirmed deal-history exports can be verified and exact-ID joins reviewed.
+- This is the point at which user action may be required: download/export the month of XAUUSD M1 bars from MT5 when ready and provide the original file through the conversation. If tick export is available, preserve it as a separate file; do not replace M1 with ticks. No data has yet been downloaded or modified by the assistant.
