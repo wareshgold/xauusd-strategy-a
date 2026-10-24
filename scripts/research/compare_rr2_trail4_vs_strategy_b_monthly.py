@@ -26,7 +26,7 @@ def load(path):
         r=csv.DictReader(f)
         if not r.fieldnames: raise ValueError("CSV has no header")
         names={x.strip().lower():x for x in r.fieldnames}
-        tc=next((names[x] for x in ("time","timestamp","datetime","date","time_utc","gmt time") if x in names),None)
+        tc=next((names[x] for x in ("time_utc_iso","time","timestamp","datetime","date","time_utc","gmt time","time_epoch_seconds") if x in names),None)
         if not tc or any(k not in names for k in ("open","high","low","close")):
             raise ValueError("CSV needs timestamp/time and open,high,low,close columns; found "+repr(r.fieldnames))
         bars=[]
