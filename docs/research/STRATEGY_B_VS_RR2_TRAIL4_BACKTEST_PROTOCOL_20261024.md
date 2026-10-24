@@ -101,16 +101,19 @@ The current author-replica JSON does not store exit candle indexes/timestamps or
 position lifecycle events. Consequently, the tool must report concurrent-position
 and holding-overlap status as **not determinable from artifact**. Do not infer
 that trades do not overlap merely because each signal has a terminal outcome.
-If overlap matters to the comparison, the ledger schema must first be extended
-in a separate research-only replay revision with auditable exit references and
-synthetic fixtures; do not rewrite existing evidence.
+If overlap matters to the comparison, use the proposed
+[research-only event ledger contract](./REPLAY_EVENT_LEDGER_CONTRACT_20261024.md)
+and its synthetic lifecycle fixtures as the next schema proposal. This contract
+does not create missing historical exit references; overlap remains not
+determinable until the source artifacts provide sufficient interval boundaries.
+Do not rewrite existing evidence.
 
 ## Decision sequence
 
 1. Source/config audit.
 2. Immutable shared dataset and timestamp audit.
-3. Synthetic fixtures for signal timing, fills, SL/TP, ambiguous bars, trailing, and accounting.
-4. Replay implementation and deterministic tests.
+3. Synthetic fixtures for signal timing, fills, SL/TP, ambiguous bars, trailing, accounting, and event lifecycle/order.
+4. Freeze the source-aware event ledger schema and adapter profiles; implement replay only after the required source events and timestamp basis are available.
 5. Run the one-week and one-month paired comparisons.
 6. Inspect trade ledgers and reproduce headline metrics independently from those ledgers.
 7. Robustness/stability analysis on predeclared slices; no parameter search on the comparison windows.
