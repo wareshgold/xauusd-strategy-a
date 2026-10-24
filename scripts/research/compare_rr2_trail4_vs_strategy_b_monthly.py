@@ -56,8 +56,8 @@ def a_detect(bars,i):
 def b_detect(bars,i):
     # Strategy B source: -4 pre-spike, -3 spike, -2 after, -1 detection candle.
     p,s,a,c=bars[i-3],bars[i-2],bars[i-1],bars[i]
-    buy=(c["low"]<a["low"] and a["close"]>s["close"] and a["open"]>s["open"] and s["close"]>p["close"] and s["open"]>p["open"] and a["close"]>a["open"] and s["close"]>s["open"] and p["close"]>p["open"] and a["low"]>p["high"]+PGAP and (s["close"]-s["open"])>SPIKE*(a["close"]-a["open"]) and (s["close"]-s["open"])>SPIKE*(p["close"]-p["open"]) and (s["close"]-s["open"])>SPIKE*(c["close"]-c["open"]))
-    sell=(c["high"]>a["high"] and a["close"]<s["close"] and a["open"]<s["open"] and s["close"]<p["close"] and s["open"]<p["open"] and a["close"]<a["open"] and s["close"]<s["open"] and p["close"]<p["open"] and a["high"]<p["low"]-PGAP and (s["open"]-s["close"])>SPIKE*(a["open"]-a["close"]) and (s["open"]-s["close"])>SPIKE*(p["open"]-p["close"]) and (s["open"]-s["close"])>SPIKE*(c["open"]-c["close"]))
+    buy=(c["low"]<a["low"] and a["close"]>s["close"] and a["open"]>s["open"] and s["close"]>p["close"] and s["open"]>p["open"] and a["close"]>a["open"] and s["close"]>s["open"] and p["close"]>p["open"] and a["low"]>p["high"]+PGAP and (s["close"]-s["open"])>SPIKE*(a["close"]-a["open"]) and (s["close"]-s["open"])>SPIKE*(p["close"]-p["open"]))
+    sell=(c["high"]>a["high"] and a["close"]<s["close"] and a["open"]<s["open"] and s["close"]<p["close"] and s["open"]<p["open"] and a["close"]<a["open"] and s["close"]<s["open"] and p["close"]<p["open"] and a["high"]<p["low"]-PGAP and (s["open"]-s["close"])>SPIKE*(a["open"]-a["close"]) and (s["open"]-s["close"])>SPIKE*(p["open"]-p["close"]))
     return "BUY" if buy and not sell else "SELL" if sell and not buy else None
 
 def ema(values,period=60):
