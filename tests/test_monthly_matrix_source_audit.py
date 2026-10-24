@@ -37,9 +37,9 @@ class MonthlyMatrixSourceAuditTests(unittest.TestCase):
 
     def test_load_prefers_time_utc_iso_when_epoch_column_also_exists(self):
         csv_text = (
-            "time_epoch_seconds,time_utc_iso,open,high,low,close\\n"
-            "1790856000,2026-10-01T12:00:00Z,100,101,99,100.5\\n"
-            "1790856060,2026-10-01T12:01:00Z,100.5,102,100,101.5\\n"
+            "time_epoch_seconds,time_utc_iso,open,high,low,close\n"
+            "1790856000,2026-10-01T12:00:00Z,100,101,99,100.5\n"
+            "1790856060,2026-10-01T12:01:00Z,100.5,102,100,101.5\n"
         )
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "bars.csv"
