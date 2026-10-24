@@ -48,6 +48,7 @@ These are contract tests for the future research replay, not claims about real f
 
 | Fixture ID | Setup | Required assertion |
 |---|---|---|
+| `FILL-00-explicit-no-fill-evidence` | An authoritative synthetic terminal order event explicitly records rejection before any fill, with a stable event reference. | `NOT_FILLED` is allowed because the negative event is explicit and traceable; absence of a fill event alone is insufficient. |
 | `FILL-01-entry-never-touched` | Candidate entry reference is never touched in subsequent synthetic candles; a later candle touches the proposed SL or TP price. No order/fill event exists. | Entry status must not become `FILLED` from the later SL/TP touch. With no approved fill rule/evidence, it remains `UNKNOWN`; no realized trade P&L is asserted. |
 | `FILL-02-entry-touched-semantics-unknown` | A candle range crosses the candidate entry reference, but there is no tick/order record and no approved touch/penetration/close rule. | Record the observed touch; entry status remains `UNKNOWN`. Do not silently equate touch with fill. |
 | `EXIT-03-both-levels-same-bar` | For an already-evidenced synthetic fill, one OHLC candle spans both SL and TP; no finer-grained data exists. | Exit status is `AMBIGUOUS`; no favorable path is selected. |
@@ -56,7 +57,7 @@ These are contract tests for the future research replay, not claims about real f
 
 ## Acceptance gates before implementation
 
-1. Tests must prove the epistemic distinction between `UNKNOWN` and `NOT_FILLED`.
+1. Tests must prove the epistemic distinction between `UNKNOWN` and `NOT_FILLED`: missing fill evidence yields `UNKNOWN`; an explicit, authoritative negative order event may support `NOT_FILLED`.
 2. Tests must prove a later SL/TP touch cannot create fill evidence.
 3. Tests must preserve `AMBIGUOUS` when both exit levels occur within one OHLC candle and no finer data resolves order.
 4. Overlap computation must require evidenced interval boundaries and state its basis.
