@@ -155,3 +155,8 @@ It is an offline source map only; no historical broker evidence was inferred.
 ### Immutable evidence intake
 
 Before any adapter is implemented, use the [immutable paired-replay evidence intake contract](./IMMUTABLE_PAIRED_REPLAY_EVIDENCE_INTAKE_CONTRACT_20261024.md) to preserve source bytes, hashes, timestamp evidence, version pins, and unmatched/conflicting join diagnostics. The contract is a research intake gate, not a claim that required broker exports currently exist.
+
+
+### Durable handoff checkpoint
+
+The current progress, verified CI state, source/evidence limitations, and ordered next steps are recorded in the [SP2L research handoff snapshot](./SP2L_RESEARCH_HANDOFF_SNAPSHOT_20261024.md). Update this checkpoint after material changes; never treat queued or running checks as passed.
