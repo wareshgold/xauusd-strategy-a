@@ -2,7 +2,7 @@ import { describe, it } from 'vitest';
 import {
   assertCanonicalGeometryFrozen,
   createResearchCandidate,
-} from '../research/harness/sp2l_geometry_contract_v1';
+} from '../research/harness/sp2l_geometry_contract_v1.js';
 
 function expectThrow(fn: () => void): void {
   let threw = false;

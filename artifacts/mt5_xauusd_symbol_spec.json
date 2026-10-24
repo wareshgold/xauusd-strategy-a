@@ -1,0 +1,47 @@
+{
+  "status": "ACQUIRED",
+  "research_only": true,
+  "retrieved_at_utc": "2026-09-19T10:17:04.842878+00:00",
+  "symbol": "XAUUSD.ecn",
+  "terminal": {
+    "version": [
+      500,
+      6182,
+      "5 Sep 2026"
+    ],
+    "terminal_info": "TerminalInfo(community_account=False, community_connection=False, connected=True, dlls_allowed=False, trade_allowed=True, tradeapi_disabled=False, email_enabled=False, ftp_enabled=False, notifications_enabled=False, mqid=False, build=6182, maxbars=100000, codepage=0, ping_last=102741, community_balance=0.0, retransmission=18.560528229448835, company='Otet Group Ltd.', name='Otet Group MT5 Terminal', language='English', path='C:\\\\Program Files\\\\Otet Group MT5 Terminal', data_path='C:\\\\Users\\\\Mr.Mirzaei\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\915A84104ED5196B12929C08F8F242A6', commondata_path='C:\\\\Users\\\\Mr.Mirzaei\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\Common')",
+    "account_info": "AccountInfo(login=812930, trade_mode=0, leverage=200, limit_orders=0, margin_so_mode=0, trade_allowed=True, trade_expert=True, margin_mode=2, currency_digits=2, fifo_close=False, balance=999.97, credit=0.0, profit=0.0, equity=999.97, margin=0.0, margin_free=999.97, margin_level=0.0, margin_so_call=100.0, margin_so_so=50.0, margin_initial=0.0, margin_maintenance=0.0, assets=0.0, liabilities=0.0, commission_blocked=0.0, name='ali  mirzaei', server='OtetGroup-MT5', currency='USD', company='Otet Group Ltd.')"
+  },
+  "symbol_spec": {
+    "name": "XAUUSD.ecn",
+    "path": "Metals\\XAUUSD.ecn",
+    "description": "Gold vs US-Dollar",
+    "currency_base": "USD",
+    "currency_profit": "USD",
+    "currency_margin": "USD",
+    "digits": 2,
+    "point": 0.01,
+    "trade_tick_size": 0.01,
+    "trade_tick_value": 1.0,
+    "trade_tick_value_profit": 1.0,
+    "trade_tick_value_loss": 1.0,
+    "trade_contract_size": 100.0,
+    "trade_calc_mode": 4,
+    "trade_mode": 4,
+    "volume_min": 0.01,
+    "volume_max": 100.0,
+    "volume_step": 0.01,
+    "filling_mode": 3,
+    "order_mode": 127,
+    "spread": 22,
+    "visible": true,
+    "select": true
+  },
+  "current_tick": {
+    "time": 1789775876,
+    "bid": 4378.0,
+    "ask": 4378.22,
+    "last": 0.0
+  },
+  "guard": "METADATA_ONLY; DOES NOT DEFINE STRATEGY GEOMETRY OR EXECUTION RULES"
+}

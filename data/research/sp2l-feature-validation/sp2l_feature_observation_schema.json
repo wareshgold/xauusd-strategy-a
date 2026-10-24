@@ -1,0 +1,45 @@
+{
+  "schema_version": "2026-09-20",
+  "purpose": "SP2L source feature observation research only",
+  "status": "RESEARCH_ONLY",
+  "constraints": [
+    "No signal generation",
+    "No executable geometry",
+    "No frozen rule promotion"
+  ],
+  "fields": {
+    "timestamp": "datetime",
+    "symbol": "string",
+    "timeframe": "string",
+    "session": "string",
+    "market_context": {
+      "type": "observation",
+      "allowed": ["observed", "not_observed", "unknown"]
+    },
+    "pgap_observation": {
+      "type": "observation",
+      "allowed": ["observed", "not_observed", "unknown"],
+      "source_status": "SOURCE_CONFIRMED_CONCEPT_EXECUTABLE_UNRESOLVED"
+    },
+    "two_leg_observation": {
+      "leg1_observed": "boolean_or_unknown",
+      "leg2_observed": "boolean_or_unknown",
+      "similarity_observation": "numeric_or_unknown",
+      "source_status": "SOURCE_CONFIRMED_CONCEPT_EXECUTABLE_UNRESOLVED"
+    },
+    "key_bar_observation": {
+      "follow_through_observed": "boolean_or_unknown",
+      "role_status": "TRIGGER_UNRESOLVED"
+    },
+    "stop_structure_observation": {
+      "structural_candidate": "boolean_or_unknown",
+      "anchor_status": "UNRESOLVED"
+    },
+    "forward_analysis": {
+      "window": "integer",
+      "mfe": "numeric",
+      "mae": "numeric",
+      "outcome_class": ["research_only"]
+    }
+  }
+}

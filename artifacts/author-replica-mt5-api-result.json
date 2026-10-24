@@ -1,0 +1,1085 @@
+{
+  "research_only": true,
+  "source": "MetaTrader5.copy_rates_from",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "requested_bars": 10000,
+  "returned_bars": 10000,
+  "first_utc": "2026-09-08T05:00:00+00:00",
+  "last_utc": "2026-09-17T10:45:00+00:00",
+  "config": {
+    "pGapPrice": 1.0,
+    "spikeMultiplier": 1.5,
+    "maxSlPrice": 10.0,
+    "tpR": 1.0
+  },
+  "signals_detected": 62,
+  "trades_closed_or_ambiguous": 62,
+  "wins": 44,
+  "losses": 16,
+  "ambiguous": 2,
+  "open_or_unresolved": 0,
+  "win_rate_decisive": 0.7333333333333333,
+  "totalR": 28,
+  "profit_factor": 2.75,
+  "signals": [
+    {
+      "index": 11,
+      "direction": "SELL",
+      "entry": 4429.94,
+      "sl": 4433.97,
+      "tp": 4425.909999999999,
+      "time": 1788844200
+    },
+    {
+      "index": 717,
+      "direction": "BUY",
+      "entry": 4403.42,
+      "sl": 4397.38,
+      "tp": 4409.46,
+      "time": 1788886560
+    },
+    {
+      "index": 1180,
+      "direction": "SELL",
+      "entry": 4353.75,
+      "sl": 4355.47,
+      "tp": 4352.03,
+      "time": 1788918000
+    },
+    {
+      "index": 1391,
+      "direction": "BUY",
+      "entry": 4373.72,
+      "sl": 4371.92,
+      "tp": 4375.52,
+      "time": 1788930660
+    },
+    {
+      "index": 1443,
+      "direction": "SELL",
+      "entry": 4380.14,
+      "sl": 4382.68,
+      "tp": 4377.6,
+      "time": 1788933780
+    },
+    {
+      "index": 1501,
+      "direction": "SELL",
+      "entry": 4375.27,
+      "sl": 4377.35,
+      "tp": 4373.1900000000005,
+      "time": 1788937260
+    },
+    {
+      "index": 1555,
+      "direction": "BUY",
+      "entry": 4380.44,
+      "sl": 4378.54,
+      "tp": 4382.339999999999,
+      "time": 1788940500
+    },
+    {
+      "index": 1747,
+      "direction": "BUY",
+      "entry": 4409.22,
+      "sl": 4407.02,
+      "tp": 4411.42,
+      "time": 1788952020
+    },
+    {
+      "index": 1899,
+      "direction": "BUY",
+      "entry": 4398.32,
+      "sl": 4396.35,
+      "tp": 4400.289999999999,
+      "time": 1788961140
+    },
+    {
+      "index": 1976,
+      "direction": "SELL",
+      "entry": 4407.76,
+      "sl": 4410.47,
+      "tp": 4405.05,
+      "time": 1788965760
+    },
+    {
+      "index": 2157,
+      "direction": "SELL",
+      "entry": 4418.09,
+      "sl": 4421.72,
+      "tp": 4414.46,
+      "time": 1788976620
+    },
+    {
+      "index": 2556,
+      "direction": "SELL",
+      "entry": 4400.99,
+      "sl": 4403.58,
+      "tp": 4398.4,
+      "time": 1789004220
+    },
+    {
+      "index": 2604,
+      "direction": "SELL",
+      "entry": 4398.39,
+      "sl": 4400.92,
+      "tp": 4395.860000000001,
+      "time": 1789007100
+    },
+    {
+      "index": 2613,
+      "direction": "SELL",
+      "entry": 4395.18,
+      "sl": 4398.15,
+      "tp": 4392.210000000001,
+      "time": 1789007640
+    },
+    {
+      "index": 2652,
+      "direction": "BUY",
+      "entry": 4395.24,
+      "sl": 4393.05,
+      "tp": 4397.429999999999,
+      "time": 1789009980
+    },
+    {
+      "index": 2708,
+      "direction": "BUY",
+      "entry": 4414.98,
+      "sl": 4408.66,
+      "tp": 4421.299999999999,
+      "time": 1789013340
+    },
+    {
+      "index": 2856,
+      "direction": "SELL",
+      "entry": 4410.26,
+      "sl": 4412.17,
+      "tp": 4408.35,
+      "time": 1789022220
+    },
+    {
+      "index": 3007,
+      "direction": "SELL",
+      "entry": 4424.94,
+      "sl": 4427.54,
+      "tp": 4422.339999999999,
+      "time": 1789031280
+    },
+    {
+      "index": 3352,
+      "direction": "SELL",
+      "entry": 4377.94,
+      "sl": 4382.66,
+      "tp": 4373.219999999999,
+      "time": 1789051980
+    },
+    {
+      "index": 3386,
+      "direction": "SELL",
+      "entry": 4364.59,
+      "sl": 4367.89,
+      "tp": 4361.29,
+      "time": 1789054020
+    },
+    {
+      "index": 3475,
+      "direction": "SELL",
+      "entry": 4370.42,
+      "sl": 4374.75,
+      "tp": 4366.09,
+      "time": 1789059360
+    },
+    {
+      "index": 3635,
+      "direction": "SELL",
+      "entry": 4359.49,
+      "sl": 4365.03,
+      "tp": 4353.95,
+      "time": 1789068960
+    },
+    {
+      "index": 3718,
+      "direction": "SELL",
+      "entry": 4353.92,
+      "sl": 4357.38,
+      "tp": 4350.46,
+      "time": 1789073940
+    },
+    {
+      "index": 4107,
+      "direction": "BUY",
+      "entry": 4327.74,
+      "sl": 4321.32,
+      "tp": 4334.16,
+      "time": 1789100880
+    },
+    {
+      "index": 4311,
+      "direction": "BUY",
+      "entry": 4332.11,
+      "sl": 4329.08,
+      "tp": 4335.139999999999,
+      "time": 1789113120
+    },
+    {
+      "index": 4341,
+      "direction": "SELL",
+      "entry": 4336.91,
+      "sl": 4339.4,
+      "tp": 4334.42,
+      "time": 1789114920
+    },
+    {
+      "index": 4351,
+      "direction": "BUY",
+      "entry": 4336.64,
+      "sl": 4333.86,
+      "tp": 4339.420000000001,
+      "time": 1789115520
+    },
+    {
+      "index": 4451,
+      "direction": "BUY",
+      "entry": 4352.8,
+      "sl": 4349.89,
+      "tp": 4355.71,
+      "time": 1789121520
+    },
+    {
+      "index": 4544,
+      "direction": "SELL",
+      "entry": 4353.44,
+      "sl": 4356.56,
+      "tp": 4350.319999999999,
+      "time": 1789127100
+    },
+    {
+      "index": 4561,
+      "direction": "BUY",
+      "entry": 4350.41,
+      "sl": 4345.56,
+      "tp": 4355.259999999999,
+      "time": 1789128120
+    },
+    {
+      "index": 4835,
+      "direction": "BUY",
+      "entry": 4392.04,
+      "sl": 4383.76,
+      "tp": 4400.32,
+      "time": 1789144560
+    },
+    {
+      "index": 4906,
+      "direction": "BUY",
+      "entry": 4373.82,
+      "sl": 4369.07,
+      "tp": 4378.57,
+      "time": 1789148820
+    },
+    {
+      "index": 4961,
+      "direction": "SELL",
+      "entry": 4373.0,
+      "sl": 4375.32,
+      "tp": 4370.68,
+      "time": 1789152120
+    },
+    {
+      "index": 5263,
+      "direction": "SELL",
+      "entry": 4346.48,
+      "sl": 4348.09,
+      "tp": 4344.869999999999,
+      "time": 1789170240
+    },
+    {
+      "index": 5323,
+      "direction": "BUY",
+      "entry": 4336.78,
+      "sl": 4333.62,
+      "tp": 4339.94,
+      "time": 1789350360
+    },
+    {
+      "index": 5368,
+      "direction": "BUY",
+      "entry": 4339.04,
+      "sl": 4336.92,
+      "tp": 4341.16,
+      "time": 1789353060
+    },
+    {
+      "index": 5401,
+      "direction": "BUY",
+      "entry": 4332.99,
+      "sl": 4330.57,
+      "tp": 4335.41,
+      "time": 1789355040
+    },
+    {
+      "index": 5722,
+      "direction": "SELL",
+      "entry": 4328.18,
+      "sl": 4330.25,
+      "tp": 4326.110000000001,
+      "time": 1789374300
+    },
+    {
+      "index": 5870,
+      "direction": "SELL",
+      "entry": 4312.82,
+      "sl": 4319.66,
+      "tp": 4305.98,
+      "time": 1789383180
+    },
+    {
+      "index": 6024,
+      "direction": "BUY",
+      "entry": 4290.47,
+      "sl": 4287.8,
+      "tp": 4293.14,
+      "time": 1789392420
+    },
+    {
+      "index": 6283,
+      "direction": "BUY",
+      "entry": 4276.39,
+      "sl": 4271.04,
+      "tp": 4281.740000000001,
+      "time": 1789407960
+    },
+    {
+      "index": 6382,
+      "direction": "BUY",
+      "entry": 4303.29,
+      "sl": 4298.79,
+      "tp": 4307.79,
+      "time": 1789413900
+    },
+    {
+      "index": 6399,
+      "direction": "BUY",
+      "entry": 4303.92,
+      "sl": 4301.15,
+      "tp": 4306.6900000000005,
+      "time": 1789414920
+    },
+    {
+      "index": 6529,
+      "direction": "SELL",
+      "entry": 4305.84,
+      "sl": 4308.66,
+      "tp": 4303.02,
+      "time": 1789422720
+    },
+    {
+      "index": 6875,
+      "direction": "SELL",
+      "entry": 4298.31,
+      "sl": 4301.83,
+      "tp": 4294.790000000001,
+      "time": 1789447140
+    },
+    {
+      "index": 6893,
+      "direction": "BUY",
+      "entry": 4301.06,
+      "sl": 4298.21,
+      "tp": 4303.910000000001,
+      "time": 1789448220
+    },
+    {
+      "index": 7239,
+      "direction": "SELL",
+      "entry": 4284.42,
+      "sl": 4286.76,
+      "tp": 4282.08,
+      "time": 1789468980
+    },
+    {
+      "index": 7306,
+      "direction": "SELL",
+      "entry": 4268.15,
+      "sl": 4269.19,
+      "tp": 4267.11,
+      "time": 1789473000
+    },
+    {
+      "index": 7401,
+      "direction": "BUY",
+      "entry": 4273.85,
+      "sl": 4270.34,
+      "tp": 4277.360000000001,
+      "time": 1789478700
+    },
+    {
+      "index": 7532,
+      "direction": "BUY",
+      "entry": 4280.77,
+      "sl": 4274.73,
+      "tp": 4286.810000000001,
+      "time": 1789486560
+    },
+    {
+      "index": 7554,
+      "direction": "SELL",
+      "entry": 4289.98,
+      "sl": 4295.79,
+      "tp": 4284.169999999999,
+      "time": 1789487880
+    },
+    {
+      "index": 7666,
+      "direction": "SELL",
+      "entry": 4279.23,
+      "sl": 4282.96,
+      "tp": 4275.499999999999,
+      "time": 1789494600
+    },
+    {
+      "index": 7759,
+      "direction": "BUY",
+      "entry": 4293.32,
+      "sl": 4287.99,
+      "tp": 4298.65,
+      "time": 1789500180
+    },
+    {
+      "index": 7829,
+      "direction": "BUY",
+      "entry": 4296.15,
+      "sl": 4293.05,
+      "tp": 4299.249999999999,
+      "time": 1789504380
+    },
+    {
+      "index": 7839,
+      "direction": "SELL",
+      "entry": 4293.35,
+      "sl": 4295.82,
+      "tp": 4290.880000000001,
+      "time": 1789504980
+    },
+    {
+      "index": 7864,
+      "direction": "BUY",
+      "entry": 4296.7,
+      "sl": 4294.83,
+      "tp": 4298.57,
+      "time": 1789506480
+    },
+    {
+      "index": 7870,
+      "direction": "BUY",
+      "entry": 4301.95,
+      "sl": 4297.67,
+      "tp": 4306.23,
+      "time": 1789506840
+    },
+    {
+      "index": 8175,
+      "direction": "BUY",
+      "entry": 4284.28,
+      "sl": 4283.06,
+      "tp": 4285.499999999999,
+      "time": 1789528800
+    },
+    {
+      "index": 8288,
+      "direction": "BUY",
+      "entry": 4292.57,
+      "sl": 4289.17,
+      "tp": 4295.969999999999,
+      "time": 1789535580
+    },
+    {
+      "index": 8582,
+      "direction": "SELL",
+      "entry": 4334.3,
+      "sl": 4335.73,
+      "tp": 4332.870000000001,
+      "time": 1789553220
+    },
+    {
+      "index": 9603,
+      "direction": "BUY",
+      "entry": 4304.37,
+      "sl": 4296.79,
+      "tp": 4311.95,
+      "time": 1789618080
+    },
+    {
+      "index": 9852,
+      "direction": "SELL",
+      "entry": 4292.94,
+      "sl": 4294.94,
+      "tp": 4290.94,
+      "time": 1789633020
+    }
+  ],
+  "trades": [
+    {
+      "index": 11,
+      "direction": "SELL",
+      "entry": 4429.94,
+      "sl": 4433.97,
+      "tp": 4425.909999999999,
+      "time": 1788844200,
+      "outcome": "WIN"
+    },
+    {
+      "index": 717,
+      "direction": "BUY",
+      "entry": 4403.42,
+      "sl": 4397.38,
+      "tp": 4409.46,
+      "time": 1788886560,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 1180,
+      "direction": "SELL",
+      "entry": 4353.75,
+      "sl": 4355.47,
+      "tp": 4352.03,
+      "time": 1788918000,
+      "outcome": "WIN"
+    },
+    {
+      "index": 1391,
+      "direction": "BUY",
+      "entry": 4373.72,
+      "sl": 4371.92,
+      "tp": 4375.52,
+      "time": 1788930660,
+      "outcome": "WIN"
+    },
+    {
+      "index": 1443,
+      "direction": "SELL",
+      "entry": 4380.14,
+      "sl": 4382.68,
+      "tp": 4377.6,
+      "time": 1788933780,
+      "outcome": "WIN"
+    },
+    {
+      "index": 1501,
+      "direction": "SELL",
+      "entry": 4375.27,
+      "sl": 4377.35,
+      "tp": 4373.1900000000005,
+      "time": 1788937260,
+      "outcome": "WIN"
+    },
+    {
+      "index": 1555,
+      "direction": "BUY",
+      "entry": 4380.44,
+      "sl": 4378.54,
+      "tp": 4382.339999999999,
+      "time": 1788940500,
+      "outcome": "WIN"
+    },
+    {
+      "index": 1747,
+      "direction": "BUY",
+      "entry": 4409.22,
+      "sl": 4407.02,
+      "tp": 4411.42,
+      "time": 1788952020,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 1899,
+      "direction": "BUY",
+      "entry": 4398.32,
+      "sl": 4396.35,
+      "tp": 4400.289999999999,
+      "time": 1788961140,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 1976,
+      "direction": "SELL",
+      "entry": 4407.76,
+      "sl": 4410.47,
+      "tp": 4405.05,
+      "time": 1788965760,
+      "outcome": "WIN"
+    },
+    {
+      "index": 2157,
+      "direction": "SELL",
+      "entry": 4418.09,
+      "sl": 4421.72,
+      "tp": 4414.46,
+      "time": 1788976620,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 2556,
+      "direction": "SELL",
+      "entry": 4400.99,
+      "sl": 4403.58,
+      "tp": 4398.4,
+      "time": 1789004220,
+      "outcome": "WIN"
+    },
+    {
+      "index": 2604,
+      "direction": "SELL",
+      "entry": 4398.39,
+      "sl": 4400.92,
+      "tp": 4395.860000000001,
+      "time": 1789007100,
+      "outcome": "WIN"
+    },
+    {
+      "index": 2613,
+      "direction": "SELL",
+      "entry": 4395.18,
+      "sl": 4398.15,
+      "tp": 4392.210000000001,
+      "time": 1789007640,
+      "outcome": "WIN"
+    },
+    {
+      "index": 2652,
+      "direction": "BUY",
+      "entry": 4395.24,
+      "sl": 4393.05,
+      "tp": 4397.429999999999,
+      "time": 1789009980,
+      "outcome": "WIN"
+    },
+    {
+      "index": 2708,
+      "direction": "BUY",
+      "entry": 4414.98,
+      "sl": 4408.66,
+      "tp": 4421.299999999999,
+      "time": 1789013340,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 2856,
+      "direction": "SELL",
+      "entry": 4410.26,
+      "sl": 4412.17,
+      "tp": 4408.35,
+      "time": 1789022220,
+      "outcome": "WIN"
+    },
+    {
+      "index": 3007,
+      "direction": "SELL",
+      "entry": 4424.94,
+      "sl": 4427.54,
+      "tp": 4422.339999999999,
+      "time": 1789031280,
+      "outcome": "WIN"
+    },
+    {
+      "index": 3352,
+      "direction": "SELL",
+      "entry": 4377.94,
+      "sl": 4382.66,
+      "tp": 4373.219999999999,
+      "time": 1789051980,
+      "outcome": "WIN"
+    },
+    {
+      "index": 3386,
+      "direction": "SELL",
+      "entry": 4364.59,
+      "sl": 4367.89,
+      "tp": 4361.29,
+      "time": 1789054020,
+      "outcome": "AMBIGUOUS"
+    },
+    {
+      "index": 3475,
+      "direction": "SELL",
+      "entry": 4370.42,
+      "sl": 4374.75,
+      "tp": 4366.09,
+      "time": 1789059360,
+      "outcome": "WIN"
+    },
+    {
+      "index": 3635,
+      "direction": "SELL",
+      "entry": 4359.49,
+      "sl": 4365.03,
+      "tp": 4353.95,
+      "time": 1789068960,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 3718,
+      "direction": "SELL",
+      "entry": 4353.92,
+      "sl": 4357.38,
+      "tp": 4350.46,
+      "time": 1789073940,
+      "outcome": "WIN"
+    },
+    {
+      "index": 4107,
+      "direction": "BUY",
+      "entry": 4327.74,
+      "sl": 4321.32,
+      "tp": 4334.16,
+      "time": 1789100880,
+      "outcome": "WIN"
+    },
+    {
+      "index": 4311,
+      "direction": "BUY",
+      "entry": 4332.11,
+      "sl": 4329.08,
+      "tp": 4335.139999999999,
+      "time": 1789113120,
+      "outcome": "WIN"
+    },
+    {
+      "index": 4341,
+      "direction": "SELL",
+      "entry": 4336.91,
+      "sl": 4339.4,
+      "tp": 4334.42,
+      "time": 1789114920,
+      "outcome": "WIN"
+    },
+    {
+      "index": 4351,
+      "direction": "BUY",
+      "entry": 4336.64,
+      "sl": 4333.86,
+      "tp": 4339.420000000001,
+      "time": 1789115520,
+      "outcome": "WIN"
+    },
+    {
+      "index": 4451,
+      "direction": "BUY",
+      "entry": 4352.8,
+      "sl": 4349.89,
+      "tp": 4355.71,
+      "time": 1789121520,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 4544,
+      "direction": "SELL",
+      "entry": 4353.44,
+      "sl": 4356.56,
+      "tp": 4350.319999999999,
+      "time": 1789127100,
+      "outcome": "WIN"
+    },
+    {
+      "index": 4561,
+      "direction": "BUY",
+      "entry": 4350.41,
+      "sl": 4345.56,
+      "tp": 4355.259999999999,
+      "time": 1789128120,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 4835,
+      "direction": "BUY",
+      "entry": 4392.04,
+      "sl": 4383.76,
+      "tp": 4400.32,
+      "time": 1789144560,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 4906,
+      "direction": "BUY",
+      "entry": 4373.82,
+      "sl": 4369.07,
+      "tp": 4378.57,
+      "time": 1789148820,
+      "outcome": "WIN"
+    },
+    {
+      "index": 4961,
+      "direction": "SELL",
+      "entry": 4373.0,
+      "sl": 4375.32,
+      "tp": 4370.68,
+      "time": 1789152120,
+      "outcome": "WIN"
+    },
+    {
+      "index": 5263,
+      "direction": "SELL",
+      "entry": 4346.48,
+      "sl": 4348.09,
+      "tp": 4344.869999999999,
+      "time": 1789170240,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 5323,
+      "direction": "BUY",
+      "entry": 4336.78,
+      "sl": 4333.62,
+      "tp": 4339.94,
+      "time": 1789350360,
+      "outcome": "WIN"
+    },
+    {
+      "index": 5368,
+      "direction": "BUY",
+      "entry": 4339.04,
+      "sl": 4336.92,
+      "tp": 4341.16,
+      "time": 1789353060,
+      "outcome": "WIN"
+    },
+    {
+      "index": 5401,
+      "direction": "BUY",
+      "entry": 4332.99,
+      "sl": 4330.57,
+      "tp": 4335.41,
+      "time": 1789355040,
+      "outcome": "WIN"
+    },
+    {
+      "index": 5722,
+      "direction": "SELL",
+      "entry": 4328.18,
+      "sl": 4330.25,
+      "tp": 4326.110000000001,
+      "time": 1789374300,
+      "outcome": "AMBIGUOUS"
+    },
+    {
+      "index": 5870,
+      "direction": "SELL",
+      "entry": 4312.82,
+      "sl": 4319.66,
+      "tp": 4305.98,
+      "time": 1789383180,
+      "outcome": "WIN"
+    },
+    {
+      "index": 6024,
+      "direction": "BUY",
+      "entry": 4290.47,
+      "sl": 4287.8,
+      "tp": 4293.14,
+      "time": 1789392420,
+      "outcome": "WIN"
+    },
+    {
+      "index": 6283,
+      "direction": "BUY",
+      "entry": 4276.39,
+      "sl": 4271.04,
+      "tp": 4281.740000000001,
+      "time": 1789407960,
+      "outcome": "WIN"
+    },
+    {
+      "index": 6382,
+      "direction": "BUY",
+      "entry": 4303.29,
+      "sl": 4298.79,
+      "tp": 4307.79,
+      "time": 1789413900,
+      "outcome": "WIN"
+    },
+    {
+      "index": 6399,
+      "direction": "BUY",
+      "entry": 4303.92,
+      "sl": 4301.15,
+      "tp": 4306.6900000000005,
+      "time": 1789414920,
+      "outcome": "WIN"
+    },
+    {
+      "index": 6529,
+      "direction": "SELL",
+      "entry": 4305.84,
+      "sl": 4308.66,
+      "tp": 4303.02,
+      "time": 1789422720,
+      "outcome": "WIN"
+    },
+    {
+      "index": 6875,
+      "direction": "SELL",
+      "entry": 4298.31,
+      "sl": 4301.83,
+      "tp": 4294.790000000001,
+      "time": 1789447140,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 6893,
+      "direction": "BUY",
+      "entry": 4301.06,
+      "sl": 4298.21,
+      "tp": 4303.910000000001,
+      "time": 1789448220,
+      "outcome": "WIN"
+    },
+    {
+      "index": 7239,
+      "direction": "SELL",
+      "entry": 4284.42,
+      "sl": 4286.76,
+      "tp": 4282.08,
+      "time": 1789468980,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 7306,
+      "direction": "SELL",
+      "entry": 4268.15,
+      "sl": 4269.19,
+      "tp": 4267.11,
+      "time": 1789473000,
+      "outcome": "WIN"
+    },
+    {
+      "index": 7401,
+      "direction": "BUY",
+      "entry": 4273.85,
+      "sl": 4270.34,
+      "tp": 4277.360000000001,
+      "time": 1789478700,
+      "outcome": "WIN"
+    },
+    {
+      "index": 7532,
+      "direction": "BUY",
+      "entry": 4280.77,
+      "sl": 4274.73,
+      "tp": 4286.810000000001,
+      "time": 1789486560,
+      "outcome": "WIN"
+    },
+    {
+      "index": 7554,
+      "direction": "SELL",
+      "entry": 4289.98,
+      "sl": 4295.79,
+      "tp": 4284.169999999999,
+      "time": 1789487880,
+      "outcome": "WIN"
+    },
+    {
+      "index": 7666,
+      "direction": "SELL",
+      "entry": 4279.23,
+      "sl": 4282.96,
+      "tp": 4275.499999999999,
+      "time": 1789494600,
+      "outcome": "WIN"
+    },
+    {
+      "index": 7759,
+      "direction": "BUY",
+      "entry": 4293.32,
+      "sl": 4287.99,
+      "tp": 4298.65,
+      "time": 1789500180,
+      "outcome": "WIN"
+    },
+    {
+      "index": 7829,
+      "direction": "BUY",
+      "entry": 4296.15,
+      "sl": 4293.05,
+      "tp": 4299.249999999999,
+      "time": 1789504380,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 7839,
+      "direction": "SELL",
+      "entry": 4293.35,
+      "sl": 4295.82,
+      "tp": 4290.880000000001,
+      "time": 1789504980,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 7864,
+      "direction": "BUY",
+      "entry": 4296.7,
+      "sl": 4294.83,
+      "tp": 4298.57,
+      "time": 1789506480,
+      "outcome": "WIN"
+    },
+    {
+      "index": 7870,
+      "direction": "BUY",
+      "entry": 4301.95,
+      "sl": 4297.67,
+      "tp": 4306.23,
+      "time": 1789506840,
+      "outcome": "WIN"
+    },
+    {
+      "index": 8175,
+      "direction": "BUY",
+      "entry": 4284.28,
+      "sl": 4283.06,
+      "tp": 4285.499999999999,
+      "time": 1789528800,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 8288,
+      "direction": "BUY",
+      "entry": 4292.57,
+      "sl": 4289.17,
+      "tp": 4295.969999999999,
+      "time": 1789535580,
+      "outcome": "WIN"
+    },
+    {
+      "index": 8582,
+      "direction": "SELL",
+      "entry": 4334.3,
+      "sl": 4335.73,
+      "tp": 4332.870000000001,
+      "time": 1789553220,
+      "outcome": "WIN"
+    },
+    {
+      "index": 9603,
+      "direction": "BUY",
+      "entry": 4304.37,
+      "sl": 4296.79,
+      "tp": 4311.95,
+      "time": 1789618080,
+      "outcome": "LOSS"
+    },
+    {
+      "index": 9852,
+      "direction": "SELL",
+      "entry": 4292.94,
+      "sl": 4294.94,
+      "tp": 4290.94,
+      "time": 1789633020,
+      "outcome": "WIN"
+    }
+  ]
+}

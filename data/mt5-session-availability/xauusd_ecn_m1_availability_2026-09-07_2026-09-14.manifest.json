@@ -1,0 +1,27 @@
+{
+  "dataset_id": "xauusd_ecn_m1_availability_2026-09-07_2026-09-14",
+  "provider": "MetaTrader5 terminal API",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "requested_interval_utc": {
+    "start": "2026-09-07T00:00:00Z",
+    "end": "2026-09-14T00:00:00Z"
+  },
+  "actual_first_utc": "2026-09-07T01:00:00Z",
+  "actual_last_utc": "2026-09-11T23:57:00Z",
+  "actual_bar_count": 6753,
+  "gap_count": 4,
+  "non_chronological_count": 0,
+  "gap_ranges_artifact": "xauusd_ecn_m1_availability_2026-09-07_2026-09-14.gaps.json",
+  "retrieval_timestamp_utc": "2026-09-17T11:00:41.137957Z",
+  "artifact": "xauusd_ecn_m1_availability_2026-09-07_2026-09-14.csv",
+  "artifact_sha256": "9028506fc357a42bd8b7c6bc72fe6bfb36acabdd9d6d95bcfb2f8e114228e4ca",
+  "interpretation_status": "RAW_AVAILABILITY_ONLY",
+  "session_close_inference": "NOT_PERFORMED",
+  "utc_offset_inference": "NOT_PERFORMED",
+  "dst_inference": "NOT_PERFORMED",
+  "holiday_inference": "NOT_PERFORMED",
+  "audit_status": "ACQUIRED_WITHOUT_GAP_INTERPRETATION"
+}

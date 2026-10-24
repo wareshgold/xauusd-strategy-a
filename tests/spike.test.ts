@@ -5,7 +5,7 @@ import { detectFollowThrough } from '../src/domain/market/FollowThroughDetector.
 import { detectSpikeCandidates } from '../src/domain/strategy-a/SpikeDetector.js';
 import { collectPGAPObservations } from '../src/domain/strategy-a/PGAPResearch.js';
 
-const c = (i: number, open: number, high: number, low: number, close: number): Candle => ({ timestamp: `2026-01-01T00:${String(i).padStart(2, '0')}:00Z`, timeframe: '1m', open, high, low, close });
+const c = (i: number, open: number, high: number, low: number, close: number): Candle => ({ timestamp: `2026-01-01T00:${String(i).padStart(2, '0')}:00Z`, open, high, low, close });
 
 describe('Strategy A spike research', () => {
   it('creates a candidate only after breakout and follow-through', () => {

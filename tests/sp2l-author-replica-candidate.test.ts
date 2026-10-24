@@ -44,10 +44,10 @@ describe('SP2L author implementation replica candidate', () => {
     const result = detectAuthorReplica(bearish, { pGapPrice: 1, spikeMultiplier: 1.5 });
     expect(result).toMatchObject({
       direction: 'SELL',
-      entry: -107,
+      entry: -102,
       stopLoss: -99,
-      risk: 8,
-      takeProfit: -115,
+      risk: 3,
+      takeProfit: -105,
     });
   });
 

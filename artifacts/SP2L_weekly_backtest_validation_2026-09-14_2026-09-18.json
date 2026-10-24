@@ -1,0 +1,37 @@
+{
+  "ambiguous": 1,
+  "closed_missing_exit_price": 1,
+  "closed_missing_r": 1,
+  "consistency_ok": true,
+  "duplicate_signal_ids": [],
+  "duplicate_time_direction_entry": [],
+  "engine_signal_counts": {
+    "ambiguous": 1,
+    "duplicates_rejected": 0,
+    "loss": 10,
+    "total": 38,
+    "win": 27
+  },
+  "loss": 10,
+  "missing_outcome": 1,
+  "open_or_unresolved": 0,
+  "recomputed_net_r": 17.0,
+  "recomputed_profit_factor": 2.7,
+  "schema": "sp2l.weekly_backtest_validation.v1",
+  "signal_count": 38,
+  "source_artifact": "artifacts/SP2L_author_replica_2026-09-14_2026-09-18.json",
+  "source_summary": {
+    "ambiguous": 1,
+    "decisive_win_rate": 0.7297297297297297,
+    "losses": 10,
+    "open_or_unresolved": 0,
+    "profit_factor": 2.7,
+    "total_R": 17,
+    "wins": 27
+  },
+  "trade_count": 38,
+  "unparsable_timestamp_rows": 0,
+  "week_end_utc": "2026-09-18T23:59:59+00:00",
+  "week_start_utc": "2026-09-14T00:00:00+00:00",
+  "win": 27
+}

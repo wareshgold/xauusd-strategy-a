@@ -1,0 +1,17 @@
+{
+  "research_only": true,
+  "status": "HOLDOUT_DATA_UNAVAILABLE",
+  "requested_start_utc": "2026-09-19T00:00:00+00:00",
+  "requested_end_utc": "2026-09-19T08:47:36.164915+00:00",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "acquisition_source": "MetaTrader5.copy_rates_range",
+  "acquisition_error": null,
+  "frozen_config": {
+    "pGapPrice": 1.0,
+    "spikeMultiplier": 1.5,
+    "maxSlPrice": 10.0,
+    "tpR": 1.0
+  },
+  "code_revision_note": "Run from the committed repository revision; record git SHA externally with the artifact."
+}

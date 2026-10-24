@@ -1,0 +1,75 @@
+{
+  "dataset_id": "xauusd_ecn_m1_availability_june_to_july_2026",
+  "provider": "MetaTrader5 terminal API",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "window_count": 5,
+  "windows": [
+    {
+      "status": "NO_DATA_IN_REQUESTED_INTERVAL",
+      "requested_start_utc": "2026-06-01T00:00:00Z",
+      "requested_end_utc": "2026-06-08T00:00:00Z",
+      "window_index": 1
+    },
+    {
+      "status": "ACQUIRED",
+      "requested_start_utc": "2026-06-08T00:00:00Z",
+      "requested_end_utc": "2026-06-15T00:00:00Z",
+      "window_index": 2,
+      "actual_first_utc": "2026-06-08T15:15:00Z",
+      "actual_last_utc": "2026-06-12T23:57:00Z",
+      "actual_bar_count": 6043,
+      "day_count": 5,
+      "gap_count": 4,
+      "non_chronological_count": 0
+    },
+    {
+      "status": "ACQUIRED",
+      "requested_start_utc": "2026-06-15T00:00:00Z",
+      "requested_end_utc": "2026-06-22T00:00:00Z",
+      "window_index": 3,
+      "actual_first_utc": "2026-06-15T01:00:00Z",
+      "actual_last_utc": "2026-06-19T20:00:00Z",
+      "actual_bar_count": 6661,
+      "day_count": 5,
+      "gap_count": 4,
+      "non_chronological_count": 0
+    },
+    {
+      "status": "ACQUIRED",
+      "requested_start_utc": "2026-06-22T00:00:00Z",
+      "requested_end_utc": "2026-06-29T00:00:00Z",
+      "window_index": 4,
+      "actual_first_utc": "2026-06-22T01:00:00Z",
+      "actual_last_utc": "2026-06-26T23:57:00Z",
+      "actual_bar_count": 6898,
+      "day_count": 5,
+      "gap_count": 4,
+      "non_chronological_count": 0
+    },
+    {
+      "status": "ACQUIRED",
+      "requested_start_utc": "2026-06-29T00:00:00Z",
+      "requested_end_utc": "2026-07-06T00:00:00Z",
+      "window_index": 5,
+      "actual_first_utc": "2026-06-29T01:00:00Z",
+      "actual_last_utc": "2026-07-03T20:00:00Z",
+      "actual_bar_count": 6661,
+      "day_count": 5,
+      "gap_count": 4,
+      "non_chronological_count": 0
+    }
+  ],
+  "daily_artifact": "xauusd_ecn_m1_availability_june_to_july_2026.daily.csv",
+  "gap_artifact": "xauusd_ecn_m1_availability_june_to_july_2026.gaps.json",
+  "daily_artifact_sha256": "349dd50d86ab1e9b1d682720b473a324aa5b4c815fe67ed56e84823dcbdf586b",
+  "gap_artifact_sha256": "29fe768ad65b2083d6c87f40e4f026e8332bdb6abb38df5d7dd894f3ccc08f21",
+  "interpretation_status": "RAW_AVAILABILITY_MATRIX_ONLY",
+  "session_close_inference": "NOT_PERFORMED",
+  "utc_offset_inference": "NOT_PERFORMED",
+  "dst_inference": "NOT_PERFORMED",
+  "holiday_inference": "NOT_PERFORMED",
+  "execution_or_signal_logic": "NOT_PERFORMED"
+}

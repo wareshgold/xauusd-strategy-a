@@ -48,8 +48,10 @@ function observe(bars: FixtureBar[]): Event[] {
     .sort((a, b) => normalizeUtc(a.timestamp).localeCompare(normalizeUtc(b.timestamp)));
 
   for (let i = 1; i < ordered.length; i += 1) {
-    const previous = Date.parse(ordered[i - 1].timestamp);
-    const current = Date.parse(ordered[i].timestamp);
+    const previousBar = ordered[i - 1]!;
+    const currentBar = ordered[i]!;
+    const previous = Date.parse(previousBar.timestamp);
+    const current = Date.parse(currentBar.timestamp);
     if (current - previous > 60_000) {
       events.push({
         type: 'DATA_QUALITY_EVENT',
@@ -105,8 +107,10 @@ describe('SP2L live observation contract', () => {
     const b = observe([bar({ timestamp: '2026-09-17T10:00:00Z' })]);
     expect(a[0]).toMatchObject({ type: 'OBSERVATION' });
     expect(b[0]).toMatchObject({ type: 'OBSERVATION' });
-    if (a[0].type === 'OBSERVATION' && b[0].type === 'OBSERVATION') {
-      expect(a[0].observation.normalizedTimestamp).toBe(b[0].observation.normalizedTimestamp);
+    const firstEvent = a[0]!;
+    const secondEvent = b[0]!;
+    if (firstEvent.type === 'OBSERVATION' && secondEvent.type === 'OBSERVATION') {
+      expect(firstEvent.observation.normalizedTimestamp).toBe(secondEvent.observation.normalizedTimestamp);
     }
   });
 

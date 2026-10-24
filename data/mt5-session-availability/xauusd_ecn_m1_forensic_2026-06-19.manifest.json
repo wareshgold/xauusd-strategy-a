@@ -1,0 +1,27 @@
+{
+  "dataset_id": "xauusd_ecn_m1_forensic_2026-06-19",
+  "provider": "MetaTrader5 terminal API",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "requested_interval_utc": {
+    "start": "2026-06-19T00:00:00Z",
+    "end": "2026-06-22T04:00:00Z"
+  },
+  "actual_first_utc": "2026-06-19T01:00:00Z",
+  "actual_last_utc": "2026-06-22T04:00:00Z",
+  "actual_bar_count": 1322,
+  "gap_count": 1,
+  "non_chronological_count": 0,
+  "gap_ranges_artifact": "xauusd_ecn_m1_forensic_2026-06-19.gaps.json",
+  "retrieval_timestamp_utc": "2026-09-17T11:27:34.491877Z",
+  "artifact": "xauusd_ecn_m1_forensic_2026-06-19.csv",
+  "artifact_sha256": "860cb8790d5e57c62527c10e85ba2b11730d0da2fb420f880eabd4d678444542",
+  "interpretation_status": "RAW_AVAILABILITY_ONLY",
+  "session_close_inference": "NOT_PERFORMED",
+  "utc_offset_inference": "NOT_PERFORMED",
+  "dst_inference": "NOT_PERFORMED",
+  "holiday_inference": "NOT_PERFORMED",
+  "audit_status": "ACQUIRED_WITHOUT_GAP_INTERPRETATION"
+}

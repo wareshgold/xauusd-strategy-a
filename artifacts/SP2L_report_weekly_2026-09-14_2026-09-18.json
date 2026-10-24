@@ -1,0 +1,53 @@
+{
+  "daily_breakdown": {
+    "rows": [],
+    "timezone": "America/New_York"
+  },
+  "determinism": {
+    "input_signal_records": 6,
+    "input_trade_records": 6,
+    "period_signal_records": 0,
+    "period_trade_records": 0,
+    "sorted_by": "timestamp_utc,signal_id,deal_id",
+    "unclassified_records": 0
+  },
+  "execution": {
+    "broker_reconciliation_status": "NO_DATA",
+    "closed_trades": 0,
+    "dry_run_trades": 0,
+    "execution_failed": 0,
+    "open_trades": 0
+  },
+  "generated_at_utc": "2026-09-20T11:19:28.498281+00:00",
+  "performance": {
+    "closed_missing_r": 0,
+    "closed_with_r": 0,
+    "max_drawdown_r": 0.0,
+    "net_pips": null,
+    "net_r": 0.0,
+    "pips_basis": "EXPLICIT_PIP_SIZE",
+    "profit_factor": null,
+    "win_rate_pct": null
+  },
+  "period": {
+    "basis": "EXPLICIT_PERIOD_BOUNDS",
+    "end_utc": "2026-09-18T21:00:00+00:00",
+    "session_timezone": "America/New_York",
+    "start_utc": "2026-09-11T21:00:00+00:00"
+  },
+  "report_type": "weekly",
+  "schema": "sp2l.live_report.v1",
+  "signals": {
+    "ambiguous": 0,
+    "duplicates_rejected": 0,
+    "loss": 0,
+    "total": 0,
+    "win": 0
+  },
+  "system": {
+    "geometry_status": "UNRESOLVED_FROZEN_GEOMETRY_GATE",
+    "journal_source": "runtime/journal",
+    "live_trading_status": "DISABLED (LIVE_TRADING_ENABLE=false)"
+  },
+  "trade_list_summary": []
+}

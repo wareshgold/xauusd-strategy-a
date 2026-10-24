@@ -1,0 +1,11 @@
+{
+  "direction": "BUY",
+  "symbol": "XAUUSD.ecn",
+  "entry": 0.0,
+  "sl": 0.0,
+  "tp": 0.0,
+  "volume": 0.01,
+  "signal_id": "SIG-YYYYMMDD-HHMMSS-001",
+  "source": "HUMAN_APPROVED_OR_CANONICAL_ENGINE",
+  "status": "APPROVED"
+}

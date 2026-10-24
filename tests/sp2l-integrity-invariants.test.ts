@@ -3,7 +3,7 @@ import {
   assert125RPreserved,
   assertNoCanonicalPromotionFromPerformance,
   assertNoTradingDecisionSurface,
-} from '../research/harness/sp2l_integrity_invariants_v1';
+} from '../research/harness/sp2l_integrity_invariants_v1.js';
 
 describe('SP2L integrity invariants', () => {
   it('accepts research-only objects without trading decision fields', () => {

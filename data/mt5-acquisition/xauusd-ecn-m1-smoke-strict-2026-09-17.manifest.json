@@ -1,0 +1,23 @@
+{
+  "dataset_id": "xauusd-ecn-m1-smoke-strict-2026-09-17",
+  "provider": "MetaTrader5 terminal API",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "requested_interval_utc": {
+    "start": "2026-09-16T00:00:00Z",
+    "end": "2026-09-16T01:00:00Z"
+  },
+  "actual_first_utc": "2026-09-16T01:00:00Z",
+  "actual_last_utc": "2026-09-16T01:00:00Z",
+  "requested_bar_count": 61,
+  "actual_bar_count": 1,
+  "count_match": false,
+  "boundary_match": false,
+  "chronology_continuity_match": true,
+  "artifact": "xauusd-ecn-m1-smoke-strict-2026-09-17.csv",
+  "artifact_sha256": "f07d0264f3ccc0d22cdc20a1802e499491ca3adaea21496ebcbfa2d1985bd471",
+  "retrieval_timestamp_utc": "2026-09-17T08:31:22.337924Z",
+  "audit_status": "AUDITED_FAIL"
+}

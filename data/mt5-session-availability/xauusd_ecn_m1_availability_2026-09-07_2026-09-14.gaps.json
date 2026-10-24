@@ -1,0 +1,30 @@
+[
+  {
+    "previous_bar_utc": "2026-09-07T21:36:00Z",
+    "next_bar_utc": "2026-09-08T01:00:00Z",
+    "interval_minutes": 204.0,
+    "missing_m1_bars": 203,
+    "kind": "gap"
+  },
+  {
+    "previous_bar_utc": "2026-09-08T23:58:00Z",
+    "next_bar_utc": "2026-09-09T01:00:00Z",
+    "interval_minutes": 62.0,
+    "missing_m1_bars": 61,
+    "kind": "gap"
+  },
+  {
+    "previous_bar_utc": "2026-09-09T23:58:00Z",
+    "next_bar_utc": "2026-09-10T01:00:00Z",
+    "interval_minutes": 62.0,
+    "missing_m1_bars": 61,
+    "kind": "gap"
+  },
+  {
+    "previous_bar_utc": "2026-09-10T23:59:00Z",
+    "next_bar_utc": "2026-09-11T01:00:00Z",
+    "interval_minutes": 61.0,
+    "missing_m1_bars": 60,
+    "kind": "gap"
+  }
+]

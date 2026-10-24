@@ -1,4 +1,4 @@
-import { Provenance, Sp2lGeometryContract } from './sp2l_geometry_contract_v1';
+import { Provenance, Sp2lGeometryContract } from './sp2l_geometry_contract_v1.js';
 
 export type FrozenGeometryGateStatus = 'READY' | 'BLOCKED';
 

@@ -172,13 +172,16 @@ export function candidateAnchors(
   values: Record<string, number>,
   kind: AnchorKind,
 ): readonly [number, number, number, number] {
-  if (kind === "wick") {
-    return [values.A_wick, values.B_wick, values.C_wick, values.D_wick];
+  const keys = kind === "wick"
+    ? ["A_wick", "B_wick", "C_wick", "D_wick"]
+    : kind === "body"
+      ? ["A_body", "B_body", "C_body", "D_body"]
+      : ["A_pivot", "B_pivot", "C_pivot", "D_pivot"];
+  const selected = keys.map((key) => values[key]);
+  if (selected.some((value) => value === undefined)) {
+    throw new Error("Missing discrimination anchor");
   }
-  if (kind === "body") {
-    return [values.A_body, values.B_body, values.C_body, values.D_body];
-  }
-  return [values.A_pivot, values.B_pivot, values.C_pivot, values.D_pivot];
+  return [selected[0]!, selected[1]!, selected[2]!, selected[3]!];
 }
 
 export function entryAndLeg2AreDistinct(entry: number, leg2Start: number): boolean {

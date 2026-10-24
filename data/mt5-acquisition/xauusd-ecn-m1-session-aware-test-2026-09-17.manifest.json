@@ -1,0 +1,32 @@
+{
+  "dataset_id": "xauusd-ecn-m1-session-aware-test-2026-09-17",
+  "provider": "MetaTrader5 terminal API",
+  "terminal": "Otet Group MT5 Terminal",
+  "server": "OtetGroup-MT5",
+  "symbol": "XAUUSD.ecn",
+  "timeframe": "M1",
+  "requested_interval_utc": {
+    "start": "2026-09-16T22:00:00Z",
+    "end": "2026-09-17T02:00:00Z"
+  },
+  "session_calendar_id": "xauusd-ecn-session-current-observation-2026-09-17",
+  "session_calendar_evidence_date": "2026-09-17",
+  "session_calendar_historical_applicability": "UNVERIFIED",
+  "expected_active_bar_count": 181,
+  "returned_bar_count": 181,
+  "missing_expected_timestamps": [],
+  "unexpected_returned_timestamps": [],
+  "unique_timestamps": true,
+  "chronological": true,
+  "timestamp_jumps": [
+    {
+      "from": "2026-09-16T23:59:00Z",
+      "to": "2026-09-17T01:00:00Z",
+      "delta_seconds": 3660
+    }
+  ],
+  "artifact": "xauusd-ecn-m1-session-aware-test-2026-09-17.csv",
+  "artifact_sha256": "9be20f3533c97d24cc1d35b367141747c7203e11a4a697eaeb5a5250a40e228e",
+  "retrieval_timestamp_utc": "2026-09-17T08:57:07.405994Z",
+  "audit_status": "AUDITED_FAIL"
+}

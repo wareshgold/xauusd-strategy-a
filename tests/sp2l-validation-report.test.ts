@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1';
+import { createResearchCandidate, Sp2lGeometryContract } from '../research/harness/sp2l_geometry_contract_v1.js';
 import {
   aggregateCanonicalMetrics,
   createBlockedValidationReport,
   createReadyValidationReport,
-} from '../research/harness/sp2l_validation_report_v1';
+} from '../research/harness/sp2l_validation_report_v1.js';
 
 describe('SP2L deterministic validation report', () => {
   it('keeps blocked geometry visible but out of canonical metrics', () => {
