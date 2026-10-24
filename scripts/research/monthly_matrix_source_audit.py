@@ -27,7 +27,7 @@ def load(path):
         rd=csv.DictReader(f)
         if not rd.fieldnames: raise ValueError("CSV has no header")
         cols={c.strip().lower():c for c in rd.fieldnames}
-        tc=next((cols[k] for k in ("time","timestamp","datetime","timestamp_utc","date") if k in cols),None)
+        tc=next((cols[k] for k in ("time_utc_iso","timestamp_utc","timestamp","datetime","time","date") if k in cols),None)
         if not tc: raise ValueError("No recognized timestamp column: "+repr(rd.fieldnames))
         if any(k not in cols for k in ("open","high","low","close")): raise ValueError("OHLC columns missing")
         bars=[]
