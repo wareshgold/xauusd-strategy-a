@@ -34,3 +34,13 @@ python scripts/validate_sp2l_event_ledger_readonly.py --input .\path\to\snapshot
 ```
 
 The script exits with status 0 for structurally valid records and 1 for validation errors. This validator is an instrumentation gate only; historical paired comparison remains blocked by unresolved timestamp mapping, fill/exit evidence, trailing order, overlap, and common cost accounting.
+
+
+## Evidence-class invariants
+
+The validator also enforces these narrow safeguards:
+
+- A `source_observed` event must point to a source row and carry a valid source artifact SHA-256.
+- A source-observed `ENTRY_FILL` or `EXIT_FILL` must include deal ID, positive numeric price, and positive numeric volume.
+- An `ohlc_proxy` or `derived_assessment` cannot be labeled as an actual `ENTRY_FILL` / `EXIT_FILL`. Such evidence may support a separately labeled proxy/assessment event, but cannot be upgraded to broker execution evidence by the schema.
+- These rules validate the evidence envelope, not the truth of a supplied deal ID or source row. A malicious or mistaken artifact can still be internally well-formed; manual provenance review remains required.
