@@ -1,0 +1,36 @@
+name: research-readonly-replay-audits
+
+on:
+  push:
+    paths:
+      - 'scripts/audit_sp2l_replay_json_readonly.py'
+      - 'scripts/audit_sp2l_replay_ledger_readonly.py'
+      - 'tests/test_audit_sp2l_replay_json_readonly.py'
+      - 'tests/test_audit_sp2l_replay_ledger_readonly.py'
+      - '.github/workflows/research-readonly-replay-audits.yml'
+  pull_request:
+    paths:
+      - 'scripts/audit_sp2l_replay_json_readonly.py'
+      - 'scripts/audit_sp2l_replay_ledger_readonly.py'
+      - 'tests/test_audit_sp2l_replay_json_readonly.py'
+      - 'tests/test_audit_sp2l_replay_ledger_readonly.py'
+      - '.github/workflows/research-readonly-replay-audits.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-audits:
+    name: Read-only replay audit unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile audit tools
+        run: python -m py_compile scripts/audit_sp2l_replay_json_readonly.py scripts/audit_sp2l_replay_ledger_readonly.py
+      - name: Run replay audit tests
+        run: python -m unittest discover -s tests -p 'test_audit_sp2l_replay_*.py' -v
