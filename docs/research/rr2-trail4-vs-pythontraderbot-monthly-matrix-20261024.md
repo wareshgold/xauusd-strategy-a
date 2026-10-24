@@ -81,3 +81,26 @@ if ($LASTEXITCODE -ne 0) { throw "Research replay failed with exit code $LASTEXI
 Outputs: `comparison.md`, `summary.json`, `strategy_a_candidates.csv`, and `strategy_b_candidates.csv`.
 
 **Important:** The B candidate replay is an independent candidate scan, not a single-position account simulation. The script does not read or modify any forward-test process, orders, state, or logs. P&L metrics remain unavailable until fill/exit semantics are resolved using source-confirmed behavior or tick-level evidence.
+
+## Safe isolated execution (preferred)
+
+To keep existing worktrees, local modifications, and both forward tests untouched, use this PowerShell block. It clones the research branch into a new sibling folder, verifies the exact audited CSV SHA-256, and writes results only inside that new clone:
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$Branch = 'research/rr2-trail4-vs-pythontraderbot-monthly-matrix-20261024'
+$Repo = 'D:\Mirzaei\Private\1\xauusd-strategy-a-monthly-matrix-20261024'
+$Csv = 'D:\Mirzaei\Private\1\sp2l-mt5-market-data\20261024T075827Z\xauusd_ecn_m1_30d.csv'
+if (Test-Path $Repo) { throw "Safety stop: target already exists; nothing was changed: $Repo" }
+if (-not (Test-Path $Csv -PathType Leaf)) { throw "CSV not found: $Csv" }
+git clone --branch $Branch --single-branch https://github.com/wareshgold/xauusd-strategy-a.git $Repo
+if ($LASTEXITCODE -ne 0) { throw 'git clone failed' }
+$Py = (Get-Command python -ErrorAction Stop).Source
+& $Py (Join-Path $Repo 'scripts\research\compare_rr2_trail4_vs_strategy_b_monthly.py') --csv $Csv --out (Join-Path $Repo 'artifacts\monthly_strategy_comparison_20261024')
+if ($LASTEXITCODE -ne 0) { throw "Research replay failed with exit code $LASTEXITCODE" }
+Get-Content (Join-Path $Repo 'artifacts\monthly_strategy_comparison_20261024\comparison.md')
+```
+
+Expected CSV SHA-256 is enforced by the script: b0782e716e7ccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285. A mismatch stops the run rather than silently testing a different file.
+
+Note: the harness transcribes the A configuration and B setup/filter logic for a research-only independent candidate scan. It does not import or execute the live bot module, which has MT5 initialization and execution side effects.
