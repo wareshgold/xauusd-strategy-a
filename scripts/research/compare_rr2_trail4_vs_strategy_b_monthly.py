@@ -103,9 +103,6 @@ def replay_b(bars):
                 else:
                     rows.append({"strategy":"B_PYTHONTRADERBOT","direction":d,"setup_utc":datetime.fromtimestamp(bars[pending["index"]]["time"],timezone.utc).isoformat(),"trigger_utc":datetime.fromtimestamp(cur["time"],timezone.utc).isoformat(),"theoretical_entry":entry,"sl":sl,"risk_price":risk,"tp_0_9r":entry+0.9*risk if d=="BUY" else entry-0.9*risk,"fill_status":"UNRESOLVED_MARKET_FILL_NOT_IN_M1_OHLC"})
                     c["candidates"]+=1; pending=None
-        if in_position:
-            c["bars_while_exit_state_unresolved"]+=1
-            continue
         d=b_detect(bars,i)
         if d:
             c["setups"]+=1
