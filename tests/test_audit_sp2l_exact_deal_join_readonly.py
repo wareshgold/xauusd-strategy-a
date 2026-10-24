@@ -133,5 +133,28 @@ class ExactDealJoinAuditTests(unittest.TestCase):
         self.assertIn("MISSING_EVENT_ID", result["source_event_results"][0]["reason_codes"])
 
 
+    def test_conflicting_position_link_is_ambiguous(self):
+        result = self.audit([event(position_id="position-A")], [deal(position_id="position-B")])
+        self.assertEqual(result["source_event_results"][0]["status"], "AMBIGUOUS")
+        self.assertIn("CONFLICTING_LINK_FIELDS:POSITION_ID", result["source_event_results"][0]["reason_codes"])
+
+    def test_duplicate_event_ids_block_both_claims(self):
+        result = self.audit([event(event_id="duplicate"), event(event_id="duplicate", deal_id="deal-2")],
+                            [deal(), deal(deal_id="deal-2", order_id="order-2", position_id="position-2")])
+        self.assertTrue(all(row["status"] == "AMBIGUOUS" for row in result["source_event_results"]))
+        self.assertEqual(result["integrity_and_duplicates"]["duplicate_event_ids"], ["duplicate"])
+
+    def test_non_object_json_row_is_reported(self):
+        result = self.audit([event()], [deal()], malformed_events=(b'["not", "an", "object"]',))
+        self.assertEqual(result["row_counts"]["source_event_rejected_rows"], 1)
+        self.assertEqual(result["rejected_rows"]["source_events"][0]["reason"], "ROW_NOT_OBJECT")
+
+    def test_malformed_broker_deal_row_is_reported(self):
+        result = self.audit([event()], [deal()], malformed_deals=(b"not-json",))
+        self.assertEqual(result["row_counts"]["broker_deal_rejected_rows"], 1)
+        self.assertEqual(result["rejected_rows"]["broker_deals"][0]["reason"], "INVALID_JSON")
+
+
+
 if __name__ == "__main__":
     unittest.main()
