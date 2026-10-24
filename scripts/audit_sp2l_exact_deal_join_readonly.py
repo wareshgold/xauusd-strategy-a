@@ -118,6 +118,12 @@ def audit_join(events_path: Path, deals_path: Path) -> dict[str, Any]:
                 ambiguous += 1
             else:
                 deal = candidates[0]
+                if not nonempty(event_id) or str(event_id) in duplicate_event_ids:
+                    result["status"] = "AMBIGUOUS"
+                    result["reason_codes"].append("INVALID_OR_DUPLICATE_EVENT_ID")
+                    ambiguous += 1
+                    event_results.append(result)
+                    continue
                 conflicts = []
                 for key in ("order_id", "position_id"):
                     left, right = event.get(key), deal.get(key)
