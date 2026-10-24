@@ -1,7 +1,7 @@
 # RR2/TRAIL4 vs Strategy B — Monthly comparison matrix
 
 **Created:** 2026-10-24  
-**Status:** Matrix scaffold committed; performance results not yet computed.  
+**Status:** Source-aligned candidate replay harness committed; local replay still needs to be run against the user's CSV. Realized performance is intentionally unresolved.  
 **Purpose:** Research-only historical comparison. This is not a forward-test change and does not authorize production signals.
 
 ## Frozen comparison window
@@ -16,13 +16,13 @@
 
 | Parameter | Strategy A: SP2L V3 RR2/TRAIL4 | Strategy B: PythonTraderBot / Gold-Spike |
 |---|---|---|
-| Source | `scripts/sp2l_v3_rr2_trail4_config.py` on `research/sp2l-rr2-trail4-daily-replay-20261008` | `src/live_trader.py` on `wareshgold/Gold-Spike@master` |
+| Source | `scripts/sp2l_v3_rr2_trail4_config.py` on `research/sp2l-rr2-trail4-daily-replay-20261008` | `scripts/strategy_b_pythontraderbot_live/SP2L_Advanced_Bot_Optimized.py` at Strategy B commit `0037c540` on `research/strategy-b-pythontraderbot-forward-20261022` |
 | Version/profile | `SP2L_V3_XAUUSD_RR2_TRAIL4_20261001` | `src/live_trader.py` v4.1 |
 | Spike multiplier | 1.5 | 1.5 |
 | P-Gap | 1.00 price units | 100 broker points; 1.00 price units if point=0.01 |
 | Max SL distance | 10.00 price units | 1,000 broker points; 10.00 price units if point=0.01 |
 | Initial target | 2R | 1R |
-| Initial SL anchor | Spike-candle extreme (research profile) | Previous-to-spike candle extreme as coded in Strategy B |
+| Initial SL anchor | Source inconsistency: config label says `SPIKE_CANDLE_EXTREME_RESEARCH`, but `find_first_entry()` indexes `candles[start_index-2]` (pre-spike candle extreme). Must remain flagged unresolved until the intended anchor is source-confirmed | Previous-to-spike candle extreme as coded in Strategy B |
 | Entry/execution | Pending limit research mode | Entry condition is based on current bar low/high and then the bot's own execution path |
 | Trailing | 4 configured pips × configured XAU pip size 0.1 = 0.40 price units; completed-M1-bar update in runner | No trailing stop parameter in the inspected source settings |
 | Second entry | Candidate includes a secondary-entry level; must verify whether this profile actually places it in the historical replay | Disabled |
@@ -62,3 +62,22 @@ No values are populated until both source implementations have actually been rep
 ## Next execution step
 
 Use a research-only replay harness that imports the frozen A configuration and the exact Strategy B source, validates the input manifest/hash, writes machine-readable per-trade ledgers and this metrics table, and attaches the outputs to the run. If the exact fill semantics cannot be established from source, keep the affected metric explicitly unresolved rather than inventing a rule.
+
+
+## Replay harness
+
+A research-only script is committed at `scripts/research/compare_rr2_trail4_vs_strategy_b_monthly.py`. It reads the local CSV, validates the timestamp/OHLC columns and duplicate timestamps, filters the UTC window, records the input SHA-256, and writes separate candidate ledgers plus a summary. Candidate counts are not realized trades. It deliberately does not invent fills, exits, P&L, PF, or drawdown from M1 OHLC.
+
+From the repository root in PowerShell, run this single command (read-only to the data and forward-test runtime; writes only to a new research output directory):
+
+```powershell
+$Repo = (Get-Location).Path
+$Csv = 'D:\Mirzaei\Private\1\sp2l-mt5-market-data\20261024T075827Z\xauusd_ecn_m1_30d.csv'
+$Py = if (Test-Path (Join-Path $Repo '.venv\Scripts\python.exe')) { Join-Path $Repo '.venv\Scripts\python.exe' } else { (Get-Command python).Source }
+& $Py (Join-Path $Repo 'scripts\research\compare_rr2_trail4_vs_strategy_b_monthly.py') --csv $Csv --out (Join-Path $Repo 'artifacts\monthly_strategy_comparison_20261024')
+if ($LASTEXITCODE -ne 0) { throw "Research replay failed with exit code $LASTEXITCODE" }
+```
+
+Outputs: `comparison.md`, `summary.json`, `strategy_a_candidates.csv`, and `strategy_b_candidates.csv`.
+
+**Important:** The B candidate replay is an independent candidate scan, not a single-position account simulation. The script does not read or modify any forward-test process, orders, state, or logs. P&L metrics remain unavailable until fill/exit semantics are resolved using source-confirmed behavior or tick-level evidence.
