@@ -8,6 +8,7 @@ on:
       - 'tests/test_audit_sp2l_replay_json_readonly.py'
       - 'tests/test_audit_sp2l_replay_ledger_readonly.py'
       - 'tests/test_replay_fill_exit_evidence_fixtures.py'
+      - 'tests/test_strategy_source_parity_fixtures.py'
       - '.github/workflows/research-readonly-replay-audits.yml'
   pull_request:
     paths:
@@ -33,8 +34,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile audit tools and synthetic fixtures
-        run: python -m py_compile scripts/audit_sp2l_replay_json_readonly.py scripts/audit_sp2l_replay_ledger_readonly.py tests/test_replay_fill_exit_evidence_fixtures.py
+        run: python -m py_compile scripts/audit_sp2l_replay_json_readonly.py scripts/audit_sp2l_replay_ledger_readonly.py tests/test_replay_fill_exit_evidence_fixtures.py tests/test_strategy_source_parity_fixtures.py
       - name: Run replay audit tests
         run: python -m unittest discover -s tests -p 'test_audit_sp2l_replay_*.py' -v
       - name: Run synthetic evidence contract fixtures
         run: python -m unittest discover -s tests -p 'test_replay_fill_exit_evidence_fixtures.py' -v
+      - name: Run source parity arithmetic fixtures
+        run: python -m unittest discover -s tests -p 'test_strategy_source_parity_fixtures.py' -v
