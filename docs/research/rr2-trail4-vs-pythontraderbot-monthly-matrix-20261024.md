@@ -9,7 +9,7 @@
 - Target window: 2026-09-24 through 2026-10-23 UTC (the last complete 30-day dataset previously audited).
 - Shared instrument: XAUUSD.ecn, M1.
 - Previously identified local dataset: `D:\\Mirzaei\\Private\\1\\sp2l-mt5-market-data\\20261024T075827Z\\xauusd_ecn_m1_30d.csv`
-- Previously reported dataset SHA-256: `b0782e716e7ccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285`
+- Previously reported dataset SHA-256: `b0782e716c7eccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285`
 - Previously reported structural audit: 29,919 rows; zero duplicate timestamps; 21 gap segments; 12,802 missing minute slots; trailing unobserved slots 480. Structural PASS is not a claim of complete market coverage or strategy profitability.
 
 ## Source-aligned parameter matrix
@@ -101,6 +101,6 @@ if ($LASTEXITCODE -ne 0) { throw "Research replay failed with exit code $LASTEXI
 Get-Content (Join-Path $Repo 'artifacts\monthly_strategy_comparison_20261024\comparison.md')
 ```
 
-Expected CSV SHA-256 is enforced by the script: b0782e716e7ccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285. A mismatch stops the run rather than silently testing a different file.
+Expected CSV SHA-256 is enforced by the script: b0782e716c7eccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285. A mismatch stops the run rather than silently testing a different file.
 
 Note: the harness transcribes the A configuration and B setup/filter logic for a research-only independent candidate scan. It does not import or execute the live bot module, which has MT5 initialization and execution side effects.
