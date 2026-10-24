@@ -11,7 +11,8 @@ PGAP, SPIKE, MAX_SL = 1.0, 1.5, 10.0
 
 def ts(v):
     v=v.strip()
-    if v.isdigit():\n        n=int(v); return n//1000 if n>10_000_000_000 else n
+    if v.isdigit():
+        n=int(v); return n//1000 if n>10_000_000_000 else n
     d=datetime.fromisoformat(v.replace("Z","+00:00"))
     if d.tzinfo is None: raise ValueError("timestamp has no timezone: "+v)
     return int(d.astimezone(timezone.utc).timestamp())
