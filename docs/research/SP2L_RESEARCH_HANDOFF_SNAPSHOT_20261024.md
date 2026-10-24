@@ -115,3 +115,15 @@ Never describe a queued/running workflow as passed. Never claim a source artifac
 - At the time of this check, runs [40075781218](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075781218) (read-only audit) and [40075781268](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075781268) (legacy fixture suite) were queued for head `9cddb34b6b565b480539c5438708a96dee92caba`. They must not be described as passed until completed.
 - The legacy fixture run on `4bc381e0ac8637b1d802228ae12359a3d04fd49f` failed at TypeScript build step; deterministic tests were skipped. Detailed errors are summarized in section 4.
 - Current next action remains: verify the newest read-only CI after the snapshot/protocol/workflow changes; separately inspect the legacy build failure only if scoped and necessary; then continue deterministic evidence audit improvements without touching live environments.
+
+
+## 10. Follow-up work after the user's MT5 data note (2026-10-24 07:54 UTC)
+
+- User confirmed they can download approximately one month of recent data from MT5 if that is the bottleneck.
+- Added [MT5 XAUUSD market-data intake checklist](./MT5_XAUUSD_MARKET_DATA_INTAKE_CHECKLIST_20261024.md) and linked it from the comparison protocol. It distinguishes shared M1/tick market data from the separate execution-evidence requirement, and requires exact symbol/server, timestamp/timezone evidence, immutable raw bytes, SHA-256, coverage/gap checks, and separate broker deal exports where available.
+- Important: the MT5 market-data export **can unblock the shared price-data input**, but **does not alone unblock actual-fill reconciliation**. We still need immutable source event snapshots and broker-confirmed deal history to verify execution IDs, times, prices, volumes and costs. M1 bars alone may not resolve intrabar trailing order; ticks may help with sequencing but do not replace broker deal records.
+- Expanded `tests/test_audit_sp2l_exact_deal_join_readonly.py` with four synthetic edge cases: conflicting position ID, duplicate event IDs, JSON row that is not an object, and malformed broker-deal JSON. The read-only audit workflow passed on commit `93b3121b9047aba054641490ee2ca475cb0984e8`: [run 40075899529](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075899529).
+- The new MT5 checklist and snapshot are included in the read-only workflow path filters. The protocol now links the checklist.
+- Latest PR head at this update: `6231f4d647a3808865620766d395aa63070933b8`; PR #341 remains OPEN / DRAFT / NOT MERGED (65 commits, 24 files).
+- At last check, read-only run [40075953053](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075953053) and legacy suite run [40075953021](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075953021) were queued for the latest head. Re-check before reporting their result.
+- No MT5 data has been downloaded or changed in this work; no terminal, live runner, forward test, config, or runtime state was touched.
