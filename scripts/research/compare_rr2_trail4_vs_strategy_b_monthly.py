@@ -8,6 +8,7 @@ from pathlib import Path
 START = int(datetime(2026, 9, 24, tzinfo=timezone.utc).timestamp())
 END = int(datetime(2026, 10, 24, tzinfo=timezone.utc).timestamp())
 PGAP, SPIKE, MAX_SL = 1.0, 1.5, 10.0
+EXPECTED_DATA_SHA256 = "b0782e716e7ccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285"
 
 def ts(v):
     v=v.strip()
@@ -19,6 +20,8 @@ def ts(v):
 
 def load(path):
     digest=hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest.lower() != EXPECTED_DATA_SHA256:
+        raise ValueError(f"CSV SHA-256 mismatch: expected {EXPECTED_DATA_SHA256}, got {digest}. Refusing to replay a different dataset.")
     with path.open(encoding="utf-8-sig",newline="") as f:
         r=csv.DictReader(f)
         if not r.fieldnames: raise ValueError("CSV has no header")
