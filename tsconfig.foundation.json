@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": [
+    "src/domain/market.ts",
+    "src/engine/deterministic-engine.ts",
+    "src/replay/backtest-runner.ts",
+    "src/replay/csv-replay.ts",
+    "src/replay/execution-simulator.ts",
+    "src/replay/replay-runner.ts",
+    "src/replay/run-manifest.ts",
+    "src/replay/trade-ledger.ts",
+    "src/research/metrics.ts",
+    "tests/backtest-runner.test.ts",
+    "tests/csv-replay.test.ts",
+    "tests/deterministic-engine.test.ts"
+  ]
+}
