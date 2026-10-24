@@ -60,7 +60,7 @@ A green schema check or a matching candle timestamp is not proof of execution tr
 
 The user ran the read-only downloader locally. The raw CSV stays on the user's machine and is **not committed to GitHub**.
 
-- Local folder: `D:\\Mirzaei\\Private\\1\\sp2l-mt5-market-data\\20261024T075827Z`
+- Local folder: `D:\Mirzaei\Private\1\sp2l-mt5-market-data\20261024T075827Z`
 - CSV: `xauusd_ecn_m1_30d.csv`
 - Manifest: `manifest.json`
 - Symbol/timeframe: `XAUUSD.ecn` / M1
@@ -77,11 +77,11 @@ The requested 30-day window began earlier than the first returned bar by roughly
 Next local command (run from the repository root; adjust only if the output folder differs):
 
 ```powershell
-$Python = 'D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe'
-if (-not (Test-Path $Python)) { $Python = 'C:\\Users\\Mr.Mirzaei\\AppData\\Local\\Programs\\Python\\Python312\\python.exe' }
-$Data = 'D:\\Mirzaei\\Private\\1\\sp2l-mt5-market-data\\20261024T075827Z'
+$Python = 'D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe'
+if (-not (Test-Path $Python)) { $Python = 'C:\Users\Mr.Mirzaei\AppData\Local\Programs\Python\Python312\python.exe' }
+$Data = 'D:\Mirzaei\Private\1\sp2l-mt5-market-data\20261024T075827Z'
 $Report = Join-Path $Data 'integrity-audit.json'
-& $Python .\\scripts\\audit_mt5_m1_snapshot_readonly.py --csv (Join-Path $Data 'xauusd_ecn_m1_30d.csv') --manifest (Join-Path $Data 'manifest.json') --output $Report
+& $Python .\scripts\audit_mt5_m1_snapshot_readonly.py --csv (Join-Path $Data 'xauusd_ecn_m1_30d.csv') --manifest (Join-Path $Data 'manifest.json') --output $Report
 ```
 
 Do not interpret `PASS_STRUCTURAL_ONLY` as a clean market session calendar or strategy-validity result. Gap/session classification, exact timestamp mapping, and any later replay eligibility require further review.
