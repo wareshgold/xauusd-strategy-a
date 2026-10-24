@@ -84,6 +84,29 @@ def audit(csv_path: Path, manifest_path: Path) -> dict[str, Any]:
                 "classification": "UNCLASSIFIED_NEEDS_SESSION_AND_HISTORY_CONTEXT",
             })
 
+    requested_start = parse_utc(manifest["requested_start_utc"])
+    requested_end = parse_utc(manifest["requested_end_utc"])
+    requested_start_epoch = int(requested_start.timestamp())
+    requested_end_epoch = int(requested_end.timestamp())
+    expected_window_slots = max(0, (requested_end_epoch - requested_start_epoch) // 60 + 1)
+    in_window_epochs = sorted({
+        epoch for epoch in epochs
+        if requested_start_epoch <= epoch <= requested_end_epoch
+    })
+    first_in_window = in_window_epochs[0] if in_window_epochs else None
+    last_in_window = in_window_epochs[-1] if in_window_epochs else None
+    leading_unobserved_slots = (
+        max(0, (first_in_window - requested_start_epoch) // 60)
+        if first_in_window is not None else expected_window_slots
+    )
+    trailing_unobserved_slots = (
+        max(0, (requested_end_epoch - last_in_window) // 60)
+        if last_in_window is not None else 0
+    )
+    unique_observed_in_window = len(in_window_epochs)
+    total_unobserved_slots_in_requested_window = max(
+        0, expected_window_slots - unique_observed_in_window
+    )
     weekday_counts = Counter(row["weekday"] for row in rows)
     hour_counts = Counter(row["hour_utc"] for row in rows)
     data = {
@@ -99,6 +122,11 @@ def audit(csv_path: Path, manifest_path: Path) -> dict[str, Any]:
         "requested_end_utc": manifest.get("requested_end_utc"),
         "manifest_first_bar_utc": manifest.get("actual_first_bar_utc"),
         "manifest_last_bar_utc": manifest.get("actual_last_bar_utc"),
+        "requested_window_expected_minute_slots": expected_window_slots,
+        "unique_observed_timestamps_inside_requested_window": unique_observed_in_window,
+        "unobserved_minute_slots_in_requested_window_including_closures": total_unobserved_slots_in_requested_window,
+        "leading_unobserved_minute_slots_before_first_returned_bar": leading_unobserved_slots,
+        "trailing_unobserved_minute_slots_after_last_returned_bar": trailing_unobserved_slots,
         "rows_read": len(rows) + len(rejected),
         "valid_rows": len(rows),
         "rejected_rows": rejected,
