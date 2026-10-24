@@ -6,6 +6,16 @@ import unittest
 
 FIXTURES = [
     {
+        "id": "FILL-00-explicit-no-fill-evidence",
+        "entry_reference": 100.0,
+        "fill_events": [],
+        "authoritative_order_event": {
+            "kind": "terminal_rejection_before_any_fill",
+            "source_ref": "synthetic:order-event-1",
+        },
+        "expected_entry_status": "NOT_FILLED",
+    },
+    {
         "id": "FILL-01-entry-never-touched",
         "entry_reference": 100.0,
         "subsequent_candles": [{"low": 104.0, "high": 106.0}, {"low": 89.0, "high": 92.0}],
@@ -71,6 +81,7 @@ class ReplayEvidenceSyntheticFixtureTests(unittest.TestCase):
         self.assertEqual(
             set(ids),
             {
+                "FILL-00-explicit-no-fill-evidence",
                 "FILL-01-entry-never-touched",
                 "FILL-02-entry-touched-semantics-unknown",
                 "EXIT-03-both-levels-same-bar",
@@ -79,25 +90,33 @@ class ReplayEvidenceSyntheticFixtureTests(unittest.TestCase):
             },
         )
 
-    def test_later_stop_touch_does_not_create_fill_event(self):
+    def test_not_filled_requires_explicit_authoritative_negative_evidence(self):
         fixture = FIXTURES[0]
+        event = fixture["authoritative_order_event"]
+        self.assertEqual(event["kind"], "terminal_rejection_before_any_fill")
+        self.assertTrue(event["source_ref"])
+        self.assertEqual(fixture["fill_events"], [])
+        self.assertEqual(fixture["expected_entry_status"], "NOT_FILLED")
+
+    def test_later_stop_touch_does_not_create_fill_event(self):
+        fixture = FIXTURES[1]
         self.assertFalse(fixture["observed_entry_touch"])
         self.assertEqual(fixture["fill_events"], [])
         self.assertEqual(fixture["expected_entry_status"], "UNKNOWN")
-        # SL price is inside a later candle, but no fill evidence exists.
         self.assertTrue(any(
             candle["low"] <= fixture["sl_reference"] <= candle["high"]
             for candle in fixture["subsequent_candles"]
         ))
 
     def test_entry_touch_without_approved_rule_remains_unknown(self):
-        fixture = FIXTURES[1]
+        fixture = FIXTURES[2]
         self.assertTrue(fixture["observed_entry_touch"])
         self.assertIsNone(fixture["approved_fill_rule"])
         self.assertEqual(fixture["expected_entry_status"], "UNKNOWN")
+        self.assertNotEqual(fixture["expected_entry_status"], "NOT_FILLED")
 
     def test_same_bar_sl_tp_touch_is_ambiguous_without_finer_evidence(self):
-        fixture = FIXTURES[2]
+        fixture = FIXTURES[3]
         candle = fixture["exit_candle"]
         self.assertLessEqual(candle["low"], fixture["sl_reference"])
         self.assertGreaterEqual(candle["high"], fixture["tp_reference"])
@@ -105,7 +124,7 @@ class ReplayEvidenceSyntheticFixtureTests(unittest.TestCase):
         self.assertEqual(fixture["expected_exit_status"], "AMBIGUOUS")
 
     def test_overlap_requires_both_interval_boundaries(self):
-        fixture = FIXTURES[3]
+        fixture = FIXTURES[4]
         first, second = fixture["trades"]
         self.assertTrue(first["entry_evidenced"] and first["exit_evidenced"])
         self.assertTrue(second["entry_evidenced"] and second["exit_evidenced"])
@@ -119,7 +138,7 @@ class ReplayEvidenceSyntheticFixtureTests(unittest.TestCase):
         self.assertEqual(control["expected_overlap_status"], "NOT_DETERMINABLE")
 
     def test_tp_r2_conditional_accounting_is_explicit_and_deterministic(self):
-        fixture = FIXTURES[4]
+        fixture = FIXTURES[5]
         total_r = fixture["wins"] * fixture["tp_r"] - fixture["losses"]
         profit_factor = fixture["wins"] * fixture["tp_r"] / fixture["losses"]
         self.assertEqual(total_r, fixture["expected_conditional_total_r"])
