@@ -3,6 +3,7 @@ import hashlib
 import json
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 from scripts.audit_mt5_m1_snapshot_readonly import audit
@@ -15,10 +16,10 @@ class Mt5M1SnapshotAuditTests(unittest.TestCase):
         self.csv_path = self.root / "bars.csv"
         self.manifest_path = self.root / "manifest.json"
         self.rows = [
-            {"time_epoch_seconds": "1790000000", "time_utc_iso": "2026-09-21T00:53:20+00:00",
+            {"time_epoch_seconds": str(int(datetime(2026, 9, 21, 0, 53, 20, tzinfo=timezone.utc).timestamp())), "time_utc_iso": "2026-09-21T00:53:20+00:00",
              "open": "2500", "high": "2502", "low": "2499", "close": "2501",
              "tick_volume": "12", "spread": "20", "real_volume": "0"},
-            {"time_epoch_seconds": "1790000060", "time_utc_iso": "2026-09-21T00:54:20+00:00",
+            {"time_epoch_seconds": str(int(datetime(2026, 9, 21, 0, 54, 20, tzinfo=timezone.utc).timestamp())), "time_utc_iso": "2026-09-21T00:54:20+00:00",
              "open": "2501", "high": "2503", "low": "2500", "close": "2502",
              "tick_volume": "13", "spread": "20", "real_volume": "0"},
         ]
@@ -75,7 +76,7 @@ class Mt5M1SnapshotAuditTests(unittest.TestCase):
         self.write_rows([self.rows[0], second])
         report = audit(self.csv_path, self.manifest_path)
         self.assertEqual(report["gap_segment_count"], 1)
-        self.assertEqual(report["missing_minute_slots_between_observed_bars"], 3)
+        self.assertEqual(report["missing_minute_slots_between_observed_bars"], 2)
         self.assertIn("UNCLASSIFIED", report["gap_segments"][0]["classification"])
 
     def test_non_chronological_rows_are_detected(self):
