@@ -8,14 +8,15 @@ This audit inspects the checked-in Strategy B source copy and the RR2/TRAIL4 run
 
 | Component | Branch / source | Identity |
 |---|---|---|
-| Strategy B source copy | `research/strategy-b-pythontraderbot-execution-20261022/scripts/strategy_b_pythontraderbot_live/SP2L_Advanced_Bot_Optimized.py` | Blob SHA `ec275d3fef7ef372823a3626dba5f2718001c52d`; 2,268 lines inspected |
+| Strategy B signal/setup source | `research/strategy-b-pythontraderbot-execution-20261022/scripts/strategy_b_pythontraderbot_live/SP2L_Advanced_Bot_Optimized.py` | Blob SHA `ec275d3fef7ef372823a3626dba5f2718001c52d`; 2,268 lines inspected |
+| Strategy B execution adapter | `research/strategy-b-pythontraderbot-execution-20261022/scripts/strategy_b_pythontraderbot_live/Meta.py` | Blob SHA `5a145fd02c282950b169165eb8b888e904d1fe6a`; 965 lines inspected |
 | RR2/TRAIL4 runner | `fix/rr2-trail4-pending-lifecycle-safe-20261011/scripts/run_sp2l_v3_xauusd_forward_test.py` | Blob SHA `fdfe34ed15eadf38fa0d24d4a80781357d72328d` |
 | Event ledger contract | [proposed contract](./REPLAY_EVENT_LEDGER_CONTRACT_20261024.md) | Research-only schema proposal |
 | Synthetic event tests | `tests/test_replay_event_ledger_contract_fixtures.py` | Deterministic synthetic cases only |
 
 ## Strategy B source copy: observed availability
 
-The inspected file contains strategy/setup calculations, pending setup state, and a helper for querying second-entry order/position state. It does not expose a durable normalized event-ledger writer or an explicit `ENTRY_FILL` / `EXIT_FILL` record in this file.
+The inspected strategy file contains strategy/setup calculations, pending setup state, and a helper for querying second-entry order/position state. It does not expose a durable normalized event-ledger writer or an explicit `ENTRY_FILL` / `EXIT_FILL` record in this file. The companion `Meta.py` file is the execution adapter inspected below.
 
 The only `mt5.order_send(request)` occurrence found in this file is in `cancel_second_pending_order` around line 1457; the request uses `TRADE_ACTION_REMOVE` to remove a second-entry pending order. This observation must **not** be generalized to every possible wrapper/adapter outside this file.
 
@@ -23,8 +24,9 @@ Consequences:
 
 - A candidate/trigger derived from this file is not proof of a market deal.
 - This file alone is insufficient to reconstruct actual entry/exit deal IDs, execution timestamps, fill price/volume, commission/swap, or source event ordering.
-- The broader Strategy B source audit describes a market-deal execution path, but the replay implementation must identify and pin the exact execution adapter/artifact that produces broker requests and actual deal evidence. Do not fill this gap with a candle-touch proxy without explicitly labeling and approving it.
-- Until that adapter or immutable broker-history artifact is available and source-identified, event rows for actual fills/exits must remain `UNKNOWN` / `NOT_DETERMINABLE`.
+- The companion `Meta.py` adapter has BUY/SELL `TRADE_ACTION_DEAL` request paths (BUY around line 401; SELL around line 487), passes the current Ask/Bid as the request price, and calls `mt5.order_send`. When execution-based TP is enabled in the inspected path, it calls `UpdateTPAfterFill` after accepted return codes. This confirms the adapter source path, not that any particular historical order actually filled.
+- The inspected adapter prints execution diagnostics and returns the MT5 result, but this source file does not itself expose a durable normalized event-ledger writer or immutable deal-history extract. A replay still needs an immutable source artifact for actual deals/fills and its time basis. Do not fill this gap with a candle-touch proxy without explicitly labeling and approving it.
+- Until an immutable broker-history/event artifact is available and source-identified, event rows for actual fills/exits in a historical replay must remain `UNKNOWN` / `NOT_DETERMINABLE`.
 
 ## RR2/TRAIL4 runner: observed event logging
 
