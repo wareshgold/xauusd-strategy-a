@@ -87,6 +87,24 @@ For each strategy and each window, save a unique report bundle containing:
 
 Do not compare win rate alone. Report the number of observations and uncertainty; include a confidence interval for win rate and a bootstrap or other predeclared uncertainty estimate for expectancy/drawdown where the sample and dependence structure make it defensible. Consecutive trades and overlapping market regimes are not necessarily independent.
 
+## Offline replay-ledger audit
+
+Before interpreting a replay summary, run the read-only ledger diagnostic
+`scripts/audit_sp2l_replay_ledger_readonly.py` against the existing JSON using
+a new report path or stdout. It checks outcome counts and compares reported
+`totalR` / `profit_factor` with a clearly labeled conditional calculation
+(`wins × config.tpR − losses`, and `wins × config.tpR ÷ losses`). This arithmetic
+is only a diagnostic assumption; it does not prove actual fills, costs, or
+profitability.
+
+The current author-replica JSON does not store exit candle indexes/timestamps or
+position lifecycle events. Consequently, the tool must report concurrent-position
+and holding-overlap status as **not determinable from artifact**. Do not infer
+that trades do not overlap merely because each signal has a terminal outcome.
+If overlap matters to the comparison, the ledger schema must first be extended
+in a separate research-only replay revision with auditable exit references and
+synthetic fixtures; do not rewrite existing evidence.
+
 ## Decision sequence
 
 1. Source/config audit.
