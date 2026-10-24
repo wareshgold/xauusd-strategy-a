@@ -104,3 +104,14 @@ For every subsequent handoff, append or update:
 - explicit confirmation that live MT5/forward state was not touched.
 
 Never describe a queued/running workflow as passed. Never claim a source artifact exists unless its bytes/path were actually verified.
+
+
+## 9. Snapshot publication / latest check (2026-10-24 07:51 UTC)
+
+- Snapshot created at `be619be90b2ccb70aa61e52b249180d0c8b7e6a6`; this file's content blob at the subsequent verification was `5c3d2963d37e3ba1030b9bfcf4ba9f2404342c1e`.
+- Added a durable link to this snapshot in the main comparison protocol and added this snapshot path to the read-only workflow's path filters.
+- Latest verified PR head before this addendum: `9cddb34b6b565b480539c5438708a96dee92caba`; PR #341 remained OPEN / DRAFT / NOT MERGED, 60 commits and 23 changed files.
+- [Read-only replay audit run 40075771254](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075771254) completed **SUCCESS** at commit `0cc97009ade6fc74256a345c4e5d23f48c5b1026`.
+- At the time of this check, runs [40075781218](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075781218) (read-only audit) and [40075781268](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40075781268) (legacy fixture suite) were queued for head `9cddb34b6b565b480539c5438708a96dee92caba`. They must not be described as passed until completed.
+- The legacy fixture run on `4bc381e0ac8637b1d802228ae12359a3d04fd49f` failed at TypeScript build step; deterministic tests were skipped. Detailed errors are summarized in section 4.
+- Current next action remains: verify the newest read-only CI after the snapshot/protocol/workflow changes; separately inspect the legacy build failure only if scoped and necessary; then continue deterministic evidence audit improvements without touching live environments.
