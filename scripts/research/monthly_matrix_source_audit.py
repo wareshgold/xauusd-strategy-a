@@ -95,6 +95,15 @@ def replay_a(bars):
         rows.append({"strategy":"A_RR2_TRAIL4","direction":d,"setup_time_utc":iso(bars[i]["time"]),"setup_index":i,"segment":bars[i]["segment"],"event_status":status,"sl_theoretical":sl,"trigger_time_utc":iso(bars[found["j"]]["time"]) if found else "","entry_theoretical":found["entry"] if found else "","risk_theoretical":found["risk"] if found else "","tp_2r_theoretical":tp,"fill_status":"UNRESOLVED_FROM_M1_OHLC","exit_status":"NOT_SIMULATED"})
     return rows,counts
 
+def b_risk_action(risk):
+    """Mirror Strategy B check_pending_buy/sell risk branch ordering."""
+    if risk <= 0:
+        return "IGNORE_AND_CONTINUE"
+    if risk > B_MAXSL:
+        return "INVALID_AND_STOP"
+    return "CONTINUE_TO_FILTERS"
+
+
 def replay_b(bars):
     em=ema(bars,B_EMA); rows=[]; counts={"setup_trigger_bars":0,"valid_theoretical_entries":0,"ema_blocked_trigger_attempts":0,"trend_blocked_trigger_attempts":0,"nonpositive_risk_trigger_attempts":0,"over_max_risk_trigger_attempts":0,"gap_terminated":0,"no_following_entry_trigger":0}
     for i in range(3,len(bars)):
@@ -109,12 +118,13 @@ def replay_b(bars):
             entry=bars[j]["low"] if d=="BUY" else bars[j]["high"]; risk=entry-sl if d=="BUY" else sl-entry
             # Source fidelity: check_pending_buy/sell returns None for risk <= 0,
             # so that trigger is ignored and the pending setup keeps searching.
-            if risk <= 0:
+            risk_action = b_risk_action(risk)
+            if risk_action == "IGNORE_AND_CONTINUE":
                 counts["nonpositive_risk_trigger_attempts"] += 1
                 continue
             # Source fidelity: risk above the configured maximum returns "INVALID"
             # and terminates the pending setup immediately.
-            if risk > B_MAXSL:
+            if risk_action == "INVALID_AND_STOP":
                 status="INVALID_RISK_OVER_MAX_FIRST_TRIGGER"
                 counts["over_max_risk_trigger_attempts"] += 1
                 found={"j":j,"entry":entry,"risk":risk}
