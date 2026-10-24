@@ -142,3 +142,11 @@ The offline field-by-field mapping for the inspected base runner is documented i
 It distinguishes runner observation time from broker event time and records which
 lifecycle fields cannot safely be promoted to actual fills. This narrows adapter
 requirements only; it does not remove the immutable snapshot / actual-deal evidence gate.
+
+
+### Strategy B source-field map
+
+The companion [Strategy B event adapter field map](./STRATEGY_B_EVENT_ADAPTER_FIELD_MAP_20261024.md)
+separates a market-order request/response from a broker-confirmed deal and lists
+the immutable deal-history fields required before actual-fill rows can be built.
+It is an offline source map only; no historical broker evidence was inferred.
