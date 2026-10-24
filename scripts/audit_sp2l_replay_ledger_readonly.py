@@ -115,6 +115,22 @@ def audit(path: Path) -> dict[str, Any]:
 
     # The source output contains signal index and outcome but no exit candle index.
     # Therefore actual holding overlap cannot be established from this JSON alone.
+    fill_assessment = {
+        "status": "NOT_VERIFIABLE_FROM_ARTIFACT",
+        "reason": "The replay JSON has no subsequent candle series, entry-fill event, or broker execution record.",
+        "signals_with_entry_price": sum(
+            isinstance(s, dict) and isinstance(s.get("entry"), (int, float))
+            for s in signals
+        ),
+        "signals_with_explicit_fill_evidence": sum(
+            isinstance(s, dict) and any(k in s for k in ("filled", "fill_time", "fill_price"))
+            for s in signals
+        ),
+    }
+    warnings.append(
+        "Entry fills are not verified: an entry price plus a later SL/TP touch does not prove the entry was filled."
+    )
+
     overlap_assessment = {
         "status": "NOT_DETERMINABLE_FROM_ARTIFACT",
         "reason": "Trade rows do not contain exit candle index/time or position lifecycle events.",
@@ -136,7 +152,7 @@ def audit(path: Path) -> dict[str, Any]:
 
     return {
         "research_only": True,
-        "audit_version": 1,
+        "audit_version": 2,
         "input_path": str(path),
         "input_sha256": hashlib.sha256(raw).hexdigest(),
         "input_size_bytes": len(raw),
@@ -166,6 +182,7 @@ def audit(path: Path) -> dict[str, Any]:
             "profit_factor": conditional_pf,
             "warning": "Conditional diagnostic only; not execution-aware P&L or validated profitability.",
         },
+        "entry_fill_assessment": fill_assessment,
         "overlap_assessment": overlap_assessment,
         "warnings": warnings,
         "interpretation": (
