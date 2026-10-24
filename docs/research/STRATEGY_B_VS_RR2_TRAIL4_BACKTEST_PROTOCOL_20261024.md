@@ -130,3 +130,6 @@ The supplied JSON summaries do not contain the full raw rows or complete per-tra
 ## Operator handoff
 
 After pulling this documentation branch, run only offline checks first. Do not start the live Strategy B runner or change the existing RR2/TRAIL4 forward test as part of this comparison. Record the exact local commit, dataset hash, test output, and any blockers before asking for the next research change.
+
+
+Before implementing a replay adapter, run the [event-ledger schema validator](./EVENT_LEDGER_SCHEMA_VALIDATOR_20261024.md) on immutable snapshots and retain its input SHA-256 and report. A passing schema check is not event-truth validation and does not replace broker deal evidence, timestamp mapping, or source-profile review.
