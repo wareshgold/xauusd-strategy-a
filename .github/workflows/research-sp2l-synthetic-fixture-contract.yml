@@ -1,0 +1,31 @@
+name: Research - SP2L Synthetic Fixture Contract
+
+on:
+  pull_request:
+    paths:
+      - "research/fixtures/sp2l_synthetic_fixture_contract.py"
+      - "research/fixtures/test_sp2l_synthetic_fixture_contract.py"
+      - "docs/research/SP2L_SYNTHETIC_FIXTURE_CONTRACT_2026-09-14.md"
+      - ".github/workflows/research-sp2l-synthetic-fixture-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fixture-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependency
+        run: python -m pip install pytest
+
+      - name: Run deterministic fixture contract tests
+        run: python -m pytest -q research/fixtures/test_sp2l_synthetic_fixture_contract.py
