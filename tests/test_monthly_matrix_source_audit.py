@@ -35,6 +35,20 @@ class MonthlyMatrixSourceAuditTests(unittest.TestCase):
         self.assertEqual(time_col, "timestamp_utc")
         self.assertEqual(len(digest), 64)
 
+    def test_load_prefers_time_utc_iso_when_epoch_column_also_exists(self):
+        csv_text = (
+            "time_epoch_seconds,time_utc_iso,open,high,low,close\\n"
+            "1790856000,2026-10-01T12:00:00Z,100,101,99,100.5\\n"
+            "1790856060,2026-10-01T12:01:00Z,100.5,102,100,101.5\\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bars.csv"
+            path.write_text(csv_text, encoding="utf-8")
+            bars, digest, time_col = AUDIT.load(path)
+        self.assertEqual(len(bars), 2)
+        self.assertEqual(time_col, "time_utc_iso")
+        self.assertEqual(bars[1]["time"] - bars[0]["time"], 60)
+
     def test_rejects_duplicate_or_nonmonotonic_timestamps(self):
         csv_text = (
             "time,open,high,low,close\n"
