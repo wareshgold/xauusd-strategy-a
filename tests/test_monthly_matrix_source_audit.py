@@ -66,6 +66,17 @@ class MonthlyMatrixSourceAuditTests(unittest.TestCase):
         values = AUDIT.ema(bars, 3)
         self.assertEqual(values, [10.0, 11.0, 12.5])
 
+    def test_strategy_b_nonpositive_risk_keeps_searching(self):
+        self.assertEqual(AUDIT.b_risk_action(0.0), "IGNORE_AND_CONTINUE")
+        self.assertEqual(AUDIT.b_risk_action(-0.2), "IGNORE_AND_CONTINUE")
+
+    def test_strategy_b_over_max_risk_stops_pending_setup(self):
+        self.assertEqual(AUDIT.b_risk_action(AUDIT.B_MAXSL + 0.01), "INVALID_AND_STOP")
+
+    def test_strategy_b_valid_risk_reaches_filters(self):
+        self.assertEqual(AUDIT.b_risk_action(0.01), "CONTINUE_TO_FILTERS")
+        self.assertEqual(AUDIT.b_risk_action(AUDIT.B_MAXSL), "CONTINUE_TO_FILTERS")
+
     def test_trend_filter_respects_max_opposite_moves(self):
         bars = [
             {"high": 10, "low": 5}, {"high": 11, "low": 6},
