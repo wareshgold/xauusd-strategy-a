@@ -77,3 +77,41 @@ Do not resolve fill semantics, intrabar ordering, spread/slippage, or execution 
 Next action: locate the original author material (and any contemporaneous source notes already maintained by the project), cite the precise passage for trailing behavior, and map each item above to **SOURCE-CONFIRMED**, **SOURCE-CONTRADICTED**, or **UNRESOLVED**. If no primary-source passage exists, preserve the unresolved status; do not promote either proxy to canonical.
 
 No synthetic fixtures, frozen geometry, or production behavior should be changed on the basis of this checkpoint alone.
+
+
+## One-month retrospective — decision support, not rule selection
+
+**Data window:** the supplied XAUUSD.ecn M1 file spans `2026-09-24 07:57 UTC` through `2026-10-23 23:57 UTC`. This is approximately 30 days, not a complete calendar month. It contains 29,919 bars and 21 gaps longer than one minute (12,802 missing minute slots were not synthesized).
+
+All figures below are **OHLC proxy R-multiples**, not broker-executed P&L. They exclude spread, slippage, commission, swap and cash-equity sizing. The file is bid-side OHLC with spread recorded separately; real BUY/SELL fill and intrabar path semantics are not established. Overlapping candidate trades exist, so independent-trade totals are not a deployable portfolio result.
+
+### Strategy A — independent candidate outcomes
+
+| Variant | Candidates | Closed proxy | W / L / flat | Win rate | Total R | Average R | Gross PF |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Fixed SL/TP, no trailing | 462 | 461 | 191 / 270 / 0 | 41.43% | +112.608974R | +0.244271R | 1.417 |
+| V1 trailing proxy (updates after any favorable excursion) | 462 | 461 | 397 / 62 / 2 | 86.12%* | +195.093909R | +0.423197R | 12.735 |
+| V3 trailing proxy (requires 0.40 activation excursion) | 462 | 461 | 432 / 27 / 2 | 93.71%* | +192.710301R | +0.418027R | 8.137 |
+
+`*` Trailing win-rate denominators/count conventions in the supplied summary should be reconciled before treating those percentages as a comparable decisive-trade win rate. The raw reported win/loss/flat counts and summary percentages are preserved as supplied, not silently recalculated here.
+
+One candidate remains unresolved at the end of the data window and is excluded from closed-proxy R metrics. V1 exceeds V3 by `2.383608R` in this sample, but that difference does not determine which rule matches the author/source.
+
+### Single-position sensitivity (conservative overlap policy)
+
+| Variant | Accepted | Rejected for overlap | Closed / unresolved | W / L / flat | Total R | Average R | Gross PF | Max drawdown |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| A fixed SL/TP | 355 | 107 | 354 / 1 | 147 / 207 / 0 | +87.000000R | +0.245763R | 1.420 | 12R |
+| A V1 trailing proxy | 449 | 13 | 448 / 1 | 387 / 60 / 1 | +183.645749R | +0.409924R | 12.159 | 1.148148R |
+| A V3 trailing proxy | 448 | 14 | 447 / 1 | 419 / 27 / 1 | +180.413243R | +0.403609R | 7.682 | 2R |
+
+This single-position policy is itself a research assumption, not a source-confirmed execution contract. The independent candidate totals and single-position totals answer different questions and must not be mixed.
+
+### How to use this retrospective
+
+1. Treat it as a **one-month historical sensitivity comparison**, not proof of a stable edge or a live-trading recommendation.
+2. If the goal is to decide whether a trail improves the historical outcome, compare fixed SL/TP, V1 and V3 under the same entry candidates, same data, same exit-order assumptions and a documented overlap policy; then add spread/cost and execution realism where suitable data permits.
+3. If the goal is to choose what the SP2L teacher actually means, performance cannot answer it. Keep the source rule unresolved until a primary-source passage is located.
+4. Do not use these proxy results to change live runner settings or enable production trailing.
+
+The supplied month therefore suggests that **both trailing proxies outperform the fixed SL/TP proxy in this specific OHLC replay**, while V1 is only `2.383608R` ahead of V3 on independent candidates (`3.232506R` ahead in the single-position comparison). It does not establish that the apparent improvement survives costs, realistic fills, alternate periods, or fresh holdout data.
