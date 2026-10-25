@@ -4,8 +4,9 @@ Reuses the selected V3 config's signal geometry and compares independent
 activation and trail-offset price distances over one shared MT5 M1 dataset.
 A newly calculated stop becomes active on the NEXT completed bar; it is never
 tested against the same bar that created it (avoids intrabar look-ahead).
-No commissions, spread, slippage, or 2X entries are simulated in this first
-isolated trailing comparison; these limitations are recorded in the output.
+This research simulator models adverse stop gap-through using the bar open;
+spread, commission, swap, and non-gap slippage remain outside this model.
+No 2X entries are simulated.
 """
 from __future__ import annotations
 import argparse, csv, hashlib, importlib, json
@@ -90,6 +91,8 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
     exit_time = None
     reason = "OPEN_OR_UNRESOLVED"
     ambiguous = False
+    gap_through_stop = False
+    stop_gap_slippage_price = 0.0
 
     for k in range(entry_idx + 1, len(bars)):
         bar = bars[k]
@@ -107,7 +110,21 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
             exit_time = int(bar["time"])
             break
         if hit_sl:
-            exit_price = current_sl
+            # Conservative stop-market gap handling: if the bar opens beyond
+            # the active stop, fill at the open rather than the unattainable
+            # stop level. Otherwise use the stop level. This is still a bar
+            # approximation; tick sequence and broker-specific fills are unknown.
+            bar_open = float(bar["open"])
+            if direction == "BUY" and bar_open < current_sl:
+                exit_price = bar_open
+                gap_through_stop = True
+                stop_gap_slippage_price = current_sl - bar_open
+            elif direction == "SELL" and bar_open > current_sl:
+                exit_price = bar_open
+                gap_through_stop = True
+                stop_gap_slippage_price = bar_open - current_sl
+            else:
+                exit_price = current_sl
             exit_time = int(bar["time"])
             reason = "TRAIL_SL" if trailing_activated and current_sl != initial_sl else "SL"
             break
@@ -156,6 +173,8 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
         "exit_price": exit_price,
         "reason": reason,
         "ambiguous": ambiguous,
+        "gap_through_stop": gap_through_stop,
+        "stop_gap_slippage_price": stop_gap_slippage_price,
         "realized_price": realized,
         "realized_R": realized_r,
     }
@@ -217,6 +236,8 @@ def summarize(rows, dataset_end_time=None):
         "max_consecutive_losses": max_consecutive_losses(exit_order),
         "max_concurrent_independent_trades": max_active,
         "trail_activated_count": sum(bool(r["trailing_activated"]) for r in rows),
+        "gap_through_stop_count": sum(bool(r.get("gap_through_stop", False)) for r in rows),
+        "stop_gap_slippage_price_total": sum(float(r.get("stop_gap_slippage_price", 0.0) or 0.0) for r in rows),
     }
 
 
@@ -327,7 +348,7 @@ def main():
                 "same_bar_policy": "SL and TP both touched under pre-bar levels => ambiguous",
                 "costs": "spread, commission, swap, and slippage not included",
                 "entries": "one primary entry only; 2X secondary entries excluded to isolate trailing parameters",
-                "gap_fills": "assumes fill at modeled SL/TP level; broker gap/slippage behavior not modeled",
+                "gap_fills": "stop gaps fill at adverse bar open when it is beyond the active stop; intrabar tick path and broker-specific execution remain unmodeled",
                 "drawdown": "decisive trade R ordered by exit time; independent trades and no portfolio sizing, so not account/portfolio drawdown",
                 "overlap": "maximum concurrent independent simulated trades reported; no capital, margin, or execution-capacity constraint",
             },
@@ -365,7 +386,8 @@ def main():
             "Trade-level drawdown and consecutive losses are sorted by exit time.\n"
             "Maximum concurrent independent simulated trades is reported; this is not portfolio drawdown.\n"
             "Fixed initial TP; same-bar SL+TP ambiguity excluded from decisive metrics.\n"
-            "Costs and 2X entries excluded; results are gross research diagnostics, not production evidence.\n"
+            "Adverse stop gaps fill at bar open when beyond stop; gap-through-stop counts and price slippage are reported.\n"
+            "Spread, commission, swap, non-gap slippage and 2X entries excluded; results are research diagnostics, not production evidence.\n"
             f"JSON: {json_path.name}\nMatrix CSV: {csv_path.name}\nTrade CSV: {trades_path.name}\n",
             encoding="utf-8",
         )
