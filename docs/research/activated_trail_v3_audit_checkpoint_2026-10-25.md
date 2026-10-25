@@ -69,3 +69,27 @@ The reported exit is above entry while the exit reason is `SL`. This is a diagno
 - No historical results are reclassified without traceable evidence.
 - Preserve source artifacts and snapshots; no cleanup/reset or overwrite.
 - Fresh holdout remains required after rules and geometry are frozen.
+
+
+## GitHub repository inspection update
+
+The GitHub repository tree was inspected directly on branch `research/monthly-matrix-ohlc-proxy-20261024` (tree SHA `c858d9aae97a0e0c1c0d0c4ca15911cf732e7b42`). The two exact generated trade CSV paths listed above are **not tracked in that branch's Git tree**. Searches for the exact filename, snapshot directory, and supplied SHA-256 also returned no indexed code/file match. Therefore the local CSV output cannot be independently read from GitHub at those exact paths; the supplied local report remains the evidence for its row-level identity.
+
+Relevant implementation files do exist on GitHub:
+- `scripts/research/monthly_matrix_ohlc_proxy_backtest.py`
+- `scripts/research/monthly_matrix_source_audit.py`
+- `scripts/research/monthly_matrix_trail_same_bar_ambiguity_diagnostic.py`
+
+The proxy implementation explicitly labels itself hypothetical/non-canonical and states these assumptions: theoretical trigger price as entry proxy; exit checks start after the trigger bar; same-bar stop and target both touched means stop-first; gap-through exits use the next observed bar's open; trailing distance is 0.40 price units from the best completed-bar high/low, with updates effective on the next bar. These are implementation assumptions, not source-confirmed execution semantics. The code's declared expected input SHA-256 is `b0782e716c7eccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285`; that input hash must be reconciled with the actual frozen monthly OHLC file before any rerun or result is trusted.
+
+A different branch, `research/rr2-trail4-vs-pythontraderbot-monthly-matrix-20261024`, contains other historical CSV/JSON research artifacts (including multi-megabyte exit matrices and M1 acquisition files), but those are not the exact 462-row activated-proxy output and must not be substituted for it.
+
+## Diagnostic-tool correction
+
+The first local run displayed one blank `exit_price` at CSV line 463. The original diagnostic incorrectly treated every non-numeric row as an invalid numeric row even when the trade status is unresolved and exit fields are expected to be blank. The audit script has now been updated to:
+- perform R arithmetic only on rows whose status is `CLOSED`;
+- count and report non-closed/unresolved rows separately;
+- flag partially populated exit fields on unresolved rows without treating ordinary blank exits as malformed;
+- retain the byte-for-byte comparison and positive-R `SL` diagnostics.
+
+This correction is committed on the audit branch. The corrected script has been fetched back from GitHub, but still needs to be rerun against the actual local CSVs before drawing row-level conclusions.
