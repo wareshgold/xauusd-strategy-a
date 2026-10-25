@@ -93,3 +93,6 @@ The first local run displayed one blank `exit_price` at CSV line 463. The origin
 - retain the byte-for-byte comparison and positive-R `SL` diagnostics.
 
 This correction is committed on the audit branch. The corrected script has been fetched back from GitHub, but still needs to be rerun against the actual local CSVs before drawing row-level conclusions.
+
+
+The local audit CLI now prints a concise summary by default to avoid terminal truncation and accepts `--report-out <new-path.json>` for the complete row-level JSON. The report path must not already exist; existing reports are never overwritten.
