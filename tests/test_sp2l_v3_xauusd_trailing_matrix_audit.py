@@ -59,7 +59,7 @@ def test_simulation_records_actual_exit_bar_time_and_next_bar_trailing():
 def test_no_trailing_baseline_keeps_initial_sl_and_never_activates():
     bars = [
         {"time": 1, "open": 100.0, "high": 100.0, "low": 99.5},
-        {"time": 2, "open": 99.2, "high": 100.2, "low": 98.9},
+        {"time": 2, "open": 99.5, "high": 100.2, "low": 98.9},
     ]
     candidate = {
         "direction": "BUY",
