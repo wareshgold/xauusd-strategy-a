@@ -109,7 +109,7 @@ def test_zero_activation_still_applies_new_stop_from_next_bar():
 def test_buy_stop_gap_fills_at_adverse_bar_open_not_stop_level():
     bars = [
         {"time": 1, "open": 100.0, "high": 100.0, "low": 99.5},
-        {"time": 2, "open": 98.7, "high": 99.2, "low": 98.5},
+        {"time": 2, "open": 98.7, "high": 102.5, "low": 98.5},
     ]
     candidate = {
         "direction": "BUY",
