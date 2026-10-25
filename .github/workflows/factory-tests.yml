@@ -30,4 +30,6 @@ jobs:
           tests/test_forward_observed_statistics.py \
           tests/test_forward_statistical_boundary.py \
           tests/test_forward_observed_report.py \
+          tests/test_factory_forward_e2e_readiness.py \
+          tests/test_factory_holdout_forward_e2e.py \
           tests/test_factory_test_journal_isolation.py -q
