@@ -105,26 +105,29 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
         else:
             hit_sl, hit_tp = high >= current_sl, low <= tp
 
+        # A gap through the active stop is ordered at the open, before any
+        # later movement within this bar. Do not label it ambiguous merely
+        # because the bar's later high/low also spans the fixed TP.
+        bar_open = float(bar["open"])
+        gap_open_through_stop = (
+            (direction == "BUY" and bar_open < current_sl)
+            or (direction == "SELL" and bar_open > current_sl)
+        )
+        if hit_sl and gap_open_through_stop:
+            exit_price = bar_open
+            gap_through_stop = True
+            stop_gap_slippage_price = abs(current_sl - bar_open)
+            exit_time = int(bar["time"])
+            reason = "TRAIL_SL" if trailing_activated and current_sl != initial_sl else "SL"
+            break
         if hit_sl and hit_tp:
             ambiguous, reason = True, "SL_AND_TP_SAME_BAR"
             exit_time = int(bar["time"])
             break
         if hit_sl:
-            # Conservative stop-market gap handling: if the bar opens beyond
-            # the active stop, fill at the open rather than the unattainable
-            # stop level. Otherwise use the stop level. This is still a bar
-            # approximation; tick sequence and broker-specific fills are unknown.
-            bar_open = float(bar["open"])
-            if direction == "BUY" and bar_open < current_sl:
-                exit_price = bar_open
-                gap_through_stop = True
-                stop_gap_slippage_price = current_sl - bar_open
-            elif direction == "SELL" and bar_open > current_sl:
-                exit_price = bar_open
-                gap_through_stop = True
-                stop_gap_slippage_price = bar_open - current_sl
-            else:
-                exit_price = current_sl
+            # Non-gap stop touches are modeled at the active stop level.
+            # Intrabar tick sequence and broker-specific fills remain unknown.
+            exit_price = current_sl
             exit_time = int(bar["time"])
             reason = "TRAIL_SL" if trailing_activated and current_sl != initial_sl else "SL"
             break
