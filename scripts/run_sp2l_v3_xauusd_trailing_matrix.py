@@ -41,13 +41,15 @@ def fetch_m1_rates(symbol, start, end):
     return bars[np.sort(idx)]
 
 
-def parse_prices(raw: str, name: str) -> list[float]:
+def parse_prices(raw: str, name: str, allow_zero: bool = False) -> list[float]:
     try:
         values = [float(part.strip()) for part in raw.split(",") if part.strip()]
     except ValueError as exc:
         raise argparse.ArgumentTypeError(f"{name} must be comma-separated price distances") from exc
-    if not values or any(v <= 0 for v in values):
-        raise argparse.ArgumentTypeError(f"{name} values must all be > 0")
+    invalid = any((v < 0) if allow_zero else (v <= 0) for v in values)
+    if not values or invalid:
+        constraint = ">= 0" if allow_zero else "> 0"
+        raise argparse.ArgumentTypeError(f"{name} values must all be {constraint}")
     return sorted(set(values))
 
 
@@ -75,6 +77,7 @@ def collect_candidates(bars, cfg, symbol):
 
 
 def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_price):
+    """Simulate one candidate; activation_price=None is the fixed-SL/TP baseline."""
     direction = candidate["direction"]
     entry = float(candidate["theoretical_entry"])
     initial_sl = float(candidate["sl"])
@@ -116,7 +119,7 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
         if direction == "BUY":
             favorable = high - entry
             max_favorable = max(max_favorable, favorable)
-            if favorable >= activation_price:
+            if activation_price is not None and favorable >= activation_price:
                 candidate_sl = high - trail_distance_price
                 if candidate_sl > current_sl and candidate_sl < high:
                     current_sl = candidate_sl
@@ -124,7 +127,7 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
         else:
             favorable = entry - low
             max_favorable = max(max_favorable, favorable)
-            if favorable >= activation_price:
+            if activation_price is not None and favorable >= activation_price:
                 candidate_sl = low + trail_distance_price
                 if candidate_sl < current_sl and candidate_sl > low:
                     current_sl = candidate_sl
@@ -235,12 +238,12 @@ def main():
     ap.add_argument("--start", default="2026-07-13T00:00:00+00:00")
     ap.add_argument("--end", default="2026-10-13T00:00:00+00:00")
     ap.add_argument("--config-module", default="sp2l_v3_rr2_trail4_config")
-    ap.add_argument("--activation-prices", default="0.05,0.10",
-                    help="independent favorable-move thresholds in XAUUSD price units")
+    ap.add_argument("--activation-prices", default="0.00,0.05,0.10,0.20,0.40",
+                    help="independent favorable-move thresholds in XAUUSD price units; 0.00 starts at the first eligible completed-bar check")
     ap.add_argument("--trail-distances", default="0.02,0.04,0.10,0.20,0.40",
                     help="independent trailing offsets in XAUUSD price units")
     args = ap.parse_args()
-    activations = parse_prices(args.activation_prices, "activation-prices")
+    activations = parse_prices(args.activation_prices, "activation-prices", allow_zero=True)
     distances = parse_prices(args.trail_distances, "trail-distances")
     start, end = datetime.fromisoformat(args.start), datetime.fromisoformat(args.end)
     if start.tzinfo is None or end.tzinfo is None or start >= end:
@@ -257,6 +260,23 @@ def main():
         candidates = collect_candidates(bars, cfg, args.symbol)
         matrix = []
         trade_rows = []
+
+        # Same candidates, entries, initial SL and TP; the baseline disables all stop updates.
+        baseline_rows = [simulate_one(bars, c, idx, None, None) for c, idx in candidates]
+        matrix.append({
+            "scenario": "NO_TRAIL_FIXED_SL_TP",
+            "activation_price": None,
+            "trail_distance_price": None,
+            **summarize(baseline_rows, dataset_end_time=int(bars[-1]["time"])),
+        })
+        for row in baseline_rows:
+            trade_rows.append({
+                "scenario": "NO_TRAIL_FIXED_SL_TP",
+                "activation_price": None,
+                "trail_distance_price": None,
+                **row,
+            })
+
         for activation in activations:
             for distance in distances:
                 rows = [
@@ -265,12 +285,14 @@ def main():
                 ]
                 summary = summarize(rows, dataset_end_time=int(bars[-1]["time"]))
                 matrix.append({
+                    "scenario": "TRAILING",
                     "activation_price": activation,
                     "trail_distance_price": distance,
                     **summary,
                 })
                 for row in rows:
                     trade_rows.append({
+                        "scenario": "TRAILING",
                         "activation_price": activation,
                         "trail_distance_price": distance,
                         **row,
@@ -298,6 +320,8 @@ def main():
             "simulation": {
                 "activation_prices": activations,
                 "trail_distance_prices": distances,
+                "baseline": "same candidates and initial SL/TP, trailing disabled",
+                "scenario_count": 1 + len(activations) * len(distances),
                 "trailing_policy": "completed M1 bar; updated SL applies starting next bar",
                 "tp_policy": "fixed initial TP",
                 "same_bar_policy": "SL and TP both touched under pre-bar levels => ambiguous",
@@ -335,6 +359,7 @@ def main():
             f"Window UTC: {start.isoformat()} → {end.isoformat()}\n"
             f"Bars: {len(bars)}\nBars SHA256: {bars_sha}\n"
             f"Config module: {args.config_module}\n"
+            "No-trailing baseline included: same entries and initial SL/TP; trailing disabled.\n"
             f"Activation price grid: {activations}\nTrail-distance price grid: {distances}\n"
             "Trailing update applies starting on the next completed M1 bar; no same-bar look-ahead.\n"
             "Trade-level drawdown and consecutive losses are sorted by exit time.\n"
