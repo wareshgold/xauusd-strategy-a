@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Read-only audit for activated-trailing proxy V3 trade CSVs.
 
-This tool checks artifact identity and arithmetic consistency only. It does not
-validate source fidelity, trailing activation, OHLC event ordering, fills, or
-canonical Strategy A semantics. It never edits input files.
+Checks artifact identity and directional R arithmetic only. It does not validate
+source fidelity, trailing activation, OHLC event ordering, fills, or canonical
+Strategy A semantics. Input files are never edited.
+
+Rows not marked CLOSED are treated as unresolved candidates: blank exit fields
+are expected and are not misreported as invalid numeric data.
 """
 from __future__ import annotations
 
@@ -16,20 +19,9 @@ from pathlib import Path
 from typing import Any
 
 REQUIRED_COLUMNS = {
-    "strategy",
-    "variant",
-    "direction",
-    "setup_time_utc",
-    "entry_time_utc",
-    "entry_proxy",
-    "sl_initial",
-    "target",
-    "risk_price",
-    "exit_time_utc",
-    "exit_price",
-    "exit_reason",
-    "status",
-    "r_multiple",
+    "strategy", "variant", "direction", "setup_time_utc", "entry_time_utc",
+    "entry_proxy", "sl_initial", "target", "risk_price", "exit_time_utc",
+    "exit_price", "exit_reason", "status", "r_multiple",
 }
 
 
@@ -73,15 +65,36 @@ def audit(path: Path) -> dict[str, Any]:
     positive_r_sl_rows: list[dict[str, Any]] = []
     r_mismatches: list[dict[str, Any]] = []
     invalid_rows: list[dict[str, Any]] = []
+    unresolved_rows: list[dict[str, Any]] = []
+    closed_rows = 0
 
     for row_number, row in enumerate(rows, start=2):
         variant = row.get("variant", "")
         reason = row.get("exit_reason", "")
-        status = row.get("status", "")
+        status = row.get("status", "").strip().upper()
         variants[variant] = variants.get(variant, 0) + 1
         exit_reasons[reason] = exit_reasons.get(reason, 0) + 1
         statuses[status] = statuses.get(status, 0) + 1
 
+        if status != "CLOSED":
+            # End-of-data/open rows commonly have empty exit_price and r_multiple.
+            unresolved_rows.append({
+                "csv_row": row_number,
+                "status": status,
+                "exit_reason": reason,
+                "exit_time_utc": row.get("exit_time_utc", ""),
+                "exit_price_blank": not bool(row.get("exit_price", "").strip()),
+                "r_multiple_blank": not bool(row.get("r_multiple", "").strip()),
+            })
+            if bool(row.get("exit_price", "").strip()) != bool(row.get("r_multiple", "").strip()):
+                invalid_rows.append({
+                    "csv_row": row_number,
+                    "error": "non-CLOSED row has only one of exit_price/r_multiple populated",
+                    "status": status,
+                })
+            continue
+
+        closed_rows += 1
         try:
             entry = as_float(row, "entry_proxy", row_number)
             exit_price = as_float(row, "exit_price", row_number)
@@ -97,7 +110,6 @@ def audit(path: Path) -> dict[str, Any]:
             else:
                 raise ValueError(f"row {row_number}: unsupported direction {direction!r}")
 
-            # Diagnostic arithmetic only; does not validate stop/target semantics.
             if abs(diagnostic_r - reported_r) > 1e-5:
                 r_mismatches.append({
                     "csv_row": row_number,
@@ -122,10 +134,10 @@ def audit(path: Path) -> dict[str, Any]:
                     "risk_price": risk,
                     "reported_r": reported_r,
                     "diagnostic_r": round(diagnostic_r, 10),
-                    "note": "diagnostic flag only; moved stop or other documented semantics may explain this",
+                    "note": "diagnostic flag only; moved stop or documented semantics may explain this",
                 })
         except ValueError as exc:
-            invalid_rows.append({"csv_row": row_number, "error": str(exc)})
+            invalid_rows.append({"csv_row": row_number, "error": str(exc), "status": status})
 
     return {
         "path": str(path),
@@ -133,6 +145,8 @@ def audit(path: Path) -> dict[str, Any]:
         "sha256": sha256(path),
         "columns": columns,
         "data_rows": len(rows),
+        "closed_rows": closed_rows,
+        "non_closed_unresolved_rows": len(unresolved_rows),
         "variants": variants,
         "exit_reasons": exit_reasons,
         "statuses": statuses,
@@ -140,12 +154,13 @@ def audit(path: Path) -> dict[str, Any]:
         "directional_r_arithmetic_mismatches_sample": r_mismatches[:50],
         "sl_with_positive_directional_r_count": len(positive_r_sl_rows),
         "sl_with_positive_directional_r_sample": positive_r_sl_rows[:100],
-        "invalid_numeric_or_direction_rows_count": len(invalid_rows),
-        "invalid_numeric_or_direction_rows_sample": invalid_rows[:50],
+        "invalid_closed_or_partially_populated_rows_count": len(invalid_rows),
+        "invalid_rows_sample": invalid_rows[:50],
+        "unresolved_rows_sample": unresolved_rows[:100],
         "interpretation_limit": (
-            "This report checks file identity and directional R arithmetic only. "
-            "It does not establish source fidelity, trailing activation, fill behavior, "
-            "intrabar OHLC ordering, stop/target precedence, or canonical rules."
+            "Checks file identity and directional R arithmetic only. It does not establish "
+            "source fidelity, trailing activation, fill behavior, intrabar OHLC ordering, "
+            "stop/target precedence, or canonical rules."
         ),
     }
 
