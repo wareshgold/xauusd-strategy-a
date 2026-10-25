@@ -12,6 +12,16 @@ Does the authoritative SP2L source explicitly define *when* a trailing stop acti
 
 Until a primary source answers that question, the activation gate and the distance `0.40` must remain research assumptions. Backtest performance is not evidence of source meaning.
 
+## Existing GitHub source-boundary evidence
+
+A review of earlier source-boundary commits found that this is an already-recorded blocker, not a newly discovered parameter gap:
+
+- The [MT5 Trailing Stop Integration Gate](https://github.com/wareshgold/xauusd-strategy-a/blob/cf1234647f0da9ddde9dd8ddc63d0c82250dc8b6/docs/execution/MT5_TRAILING_STOP_INTEGRATION_GATE_2026-09-15.md) explicitly leaves **trailing distance, activation threshold, step size, and tick/bar evaluation cadence unresolved**. It also says synthetic prices are fixtures, not Strategy A parameters, and trailing remains OFF by default.
+- The [Deterministic Trailing Execution State Machine](https://github.com/wareshgold/xauusd-strategy-a/blob/661eb62558d8d1d99fe1e7b86addfc45bc438578/docs/execution/MT5_TRAILING_STOP_STATE_MACHINE_2026-09-15.md) explicitly does not define trailing distance, activation threshold, step size, tick-vs-bar evaluation, fill semantics, or Strategy A geometry.
+- The [Unified SP2L Source Blocker Matrix](https://github.com/wareshgold/xauusd-strategy-a/blob/0f3a360b0ffb8ff6b3be343ef8ac4132f1c245ad/docs/research/SP2L_UNIFIED_SOURCE_BLOCKER_MATRIX_2026-09-16.md) and [Batch 33 Source Matrix Addendum](https://github.com/wareshgold/xauusd-strategy-a/blob/e879918d4e4ee9ae12dc23615c4ba017e4ccf595/docs/research/SP2L_BATCH33_MATRIX_ADDENDUM_2026-09-16.md) reinforce the same boundary: performance and worked examples do not justify promoting unresolved geometry or activation semantics to canonical status.
+
+These are project engineering/source-boundary records. They are not primary author evidence for a particular trailing rule.
+
 ## Evidence currently available
 
 ### 1. GitHub source-audit implementation
