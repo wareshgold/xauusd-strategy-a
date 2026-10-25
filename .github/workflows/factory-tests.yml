@@ -32,4 +32,6 @@ jobs:
           tests/test_forward_observed_report.py \
           tests/test_factory_forward_e2e_readiness.py \
           tests/test_factory_holdout_forward_e2e.py \
+          tests/test_factory_job_events.py \
+          tests/test_factory_worker_journal_audit.py \
           tests/test_factory_test_journal_isolation.py -q
