@@ -28,7 +28,8 @@ Activation 0.00 means the first eligible completed-bar check can create a trail;
 - TP remains fixed at the initial RR2 target.
 - SL/TP hits are evaluated using levels active before the bar. If both are touched on the same bar, the trade is marked ambiguous and excluded from decisive metrics.
 - A newly calculated trail applies starting on the next completed M1 bar.
-- Spread, commissions, swap, slippage, broker rejection, gap execution, account sizing and margin are not modeled.
+- If a bar opens beyond an active stop, the simulator fills at the adverse bar open rather than assuming a fill at the stop level. The gap count and aggregate adverse price difference are reported.
+- Intrabar tick sequence, broker-specific execution, spread, commissions, swap, non-gap slippage, rejection, account sizing and margin are not modeled.
 
 ## Run
 
@@ -61,7 +62,7 @@ The prior 2026-10-15 matrix reported 93,628 M1 bars and SHA-256 beginning `d5d33
 
 ## Readout / interpretation
 
-For each scenario compare decisive trades, ambiguous rows, unresolved/open rows, win rate, net R, gross PF, max consecutive losses, max concurrency, and drawdown in exit-time order. The reported drawdown is not portfolio drawdown because independent candidates can overlap.
+For each scenario compare decisive trades, ambiguous rows, unresolved/open rows, win rate, gross R/PF, max consecutive losses, max concurrency, drawdown in exit-time order, gap-through-stop count, and aggregate gap slippage. A stop gap can still be worse than the modeled stop; this change only avoids assuming a fill at an already-crossed stop price. The reported drawdown is not portfolio drawdown because independent candidates can overlap.
 
 The baseline is included once rather than duplicated for every distance. Never rank scenarios on net R alone; inspect unresolved/ambiguous counts, time stability, direction/exit-reason breakdowns, costs and broker execution limitations. A single historical window is exploratory, not proof of a statistically validated edge. Reserve an untouched fresh holdout after source rules and parameters are frozen.
 
