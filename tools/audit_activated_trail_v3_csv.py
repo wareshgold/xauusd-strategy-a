@@ -6,7 +6,8 @@ source fidelity, trailing activation, OHLC event ordering, fills, or canonical
 Strategy A semantics. Input files are never edited.
 
 Rows not marked CLOSED are treated as unresolved candidates: blank exit fields
-are expected and are not misreported as invalid numeric data.
+are expected and are not misreported as invalid numeric data. The console output
+is concise; --report-out optionally writes the full JSON report to a new file.
 """
 from __future__ import annotations
 
@@ -77,7 +78,6 @@ def audit(path: Path) -> dict[str, Any]:
         statuses[status] = statuses.get(status, 0) + 1
 
         if status != "CLOSED":
-            # End-of-data/open rows commonly have empty exit_price and r_multiple.
             unresolved_rows.append({
                 "csv_row": row_number,
                 "status": status,
@@ -151,12 +151,12 @@ def audit(path: Path) -> dict[str, Any]:
         "exit_reasons": exit_reasons,
         "statuses": statuses,
         "directional_r_arithmetic_mismatch_count": len(r_mismatches),
-        "directional_r_arithmetic_mismatches_sample": r_mismatches[:50],
+        "directional_r_arithmetic_mismatches": r_mismatches,
         "sl_with_positive_directional_r_count": len(positive_r_sl_rows),
-        "sl_with_positive_directional_r_sample": positive_r_sl_rows[:100],
+        "sl_with_positive_directional_r": positive_r_sl_rows,
         "invalid_closed_or_partially_populated_rows_count": len(invalid_rows),
-        "invalid_rows_sample": invalid_rows[:50],
-        "unresolved_rows_sample": unresolved_rows[:100],
+        "invalid_rows": invalid_rows,
+        "unresolved_rows": unresolved_rows,
         "interpretation_limit": (
             "Checks file identity and directional R arithmetic only. It does not establish "
             "source fidelity, trailing activation, fill behavior, intrabar OHLC ordering, "
@@ -165,10 +165,48 @@ def audit(path: Path) -> dict[str, Any]:
     }
 
 
+def concise(report: dict[str, Any]) -> dict[str, Any]:
+    def one(file_report: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "path": file_report["path"],
+            "size_bytes": file_report["size_bytes"],
+            "sha256": file_report["sha256"],
+            "data_rows": file_report["data_rows"],
+            "closed_rows": file_report["closed_rows"],
+            "non_closed_unresolved_rows": file_report["non_closed_unresolved_rows"],
+            "variants": file_report["variants"],
+            "exit_reasons": file_report["exit_reasons"],
+            "statuses": file_report["statuses"],
+            "directional_r_arithmetic_mismatch_count": file_report["directional_r_arithmetic_mismatch_count"],
+            "directional_r_arithmetic_mismatches_sample": file_report["directional_r_arithmetic_mismatches"][:10],
+            "sl_with_positive_directional_r_count": file_report["sl_with_positive_directional_r_count"],
+            "sl_with_positive_directional_r_sample": file_report["sl_with_positive_directional_r"][:10],
+            "invalid_closed_or_partially_populated_rows_count": file_report["invalid_closed_or_partially_populated_rows_count"],
+            "invalid_rows_sample": file_report["invalid_rows"][:10],
+            "unresolved_rows_sample": file_report["unresolved_rows"][:10],
+        }
+
+    return {
+        "audit_type": report["audit_type"],
+        "files_byte_for_byte_equal": report["files_byte_for_byte_equal"],
+        "same_sha256": report["same_sha256"],
+        "same_size_bytes": report["same_size_bytes"],
+        "same_data_rows": report["same_data_rows"],
+        "file_a": one(report["file_a"]),
+        "file_b": one(report["file_b"]),
+        "full_report_path": report.get("full_report_path"),
+        "interpretation_limit": report["file_a"]["interpretation_limit"],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("csv_a", type=Path, help="First CSV path")
     parser.add_argument("csv_b", type=Path, help="Second CSV path")
+    parser.add_argument(
+        "--report-out", type=Path,
+        help="Optional path for full JSON report; must not already exist",
+    )
     args = parser.parse_args()
 
     report_a = audit(args.csv_a)
@@ -183,7 +221,14 @@ def main() -> int:
         "file_a": report_a,
         "file_b": report_b,
     }
-    print(json.dumps(report, indent=2, ensure_ascii=False))
+    if args.report_out:
+        if args.report_out.exists():
+            raise FileExistsError(f"Refusing to overwrite existing report: {args.report_out}")
+        args.report_out.parent.mkdir(parents=True, exist_ok=True)
+        args.report_out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        report["full_report_path"] = str(args.report_out.resolve())
+
+    print(json.dumps(concise(report), indent=2, ensure_ascii=False))
     return 0 if bytes_equal else 2
 
 
