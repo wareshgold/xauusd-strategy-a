@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Research-only same-bar trailing-stop ambiguity sensitivity for frozen Strategy A V3 trades.
 
-Baseline checks the existing stop/target first, then updates the trail for the next
-bar. The alternate scenario assumes a newly tightened stop is crossed on the same
-bar when its adverse extreme reaches it. OHLC cannot prove intrabar order or fills.
+Baseline checks the existing stop/target first (including an open beyond a level),
+then updates the trail for the next bar. The alternate scenario assumes a newly
+tightened stop is crossed on the same bar when its adverse extreme reaches it.
+OHLC cannot prove intrabar order or fills.
 This diagnostic does not change canonical rules, frozen geometry, or production.
 """
 import argparse
@@ -107,15 +108,15 @@ def simulate(bars, ix, trade, scenario):
         gap = i > 0 and b["time"] - bars[i - 1]["time"] > 60
         o, h, l = b["open"], b["high"], b["low"]
         if direction == "BUY":
-            if gap and o <= stop: px, reason = o, "GAP_STOP_AT_OPEN"
-            elif gap and o >= target: px, reason = o, "GAP_TARGET_AT_OPEN"
+            if o <= stop: px, reason = o, "GAP_STOP_AT_OPEN"
+            elif o >= target: px, reason = o, "GAP_TARGET_AT_OPEN"
             elif l <= stop and h >= target: px, reason = stop, "BOTH_TOUCHED_STOP_FIRST"
             elif l <= stop: px, reason = stop, "SL"
             elif h >= target: px, reason = target, "TP"
             else: px = reason = None
         else:
-            if gap and o >= stop: px, reason = o, "GAP_STOP_AT_OPEN"
-            elif gap and o <= target: px, reason = o, "GAP_TARGET_AT_OPEN"
+            if o >= stop: px, reason = o, "GAP_STOP_AT_OPEN"
+            elif o <= target: px, reason = o, "GAP_TARGET_AT_OPEN"
             elif h >= stop and l <= target: px, reason = stop, "BOTH_TOUCHED_STOP_FIRST"
             elif h >= stop: px, reason = stop, "SL"
             elif l <= target: px, reason = target, "TP"
@@ -197,8 +198,12 @@ def main():
         alt = simulate(bars, ix, trade, "IMMEDIATE_NEW_STOP_SAME_BAR")
         baseline.append(base)
         immediate.append(alt)
+        saved_exit_time = trade["exit_time_utc"].strip()
+        replay_exit_time = base["exit_time_utc"].strip()
+        times_match = (not saved_exit_time and not replay_exit_time) or (
+            bool(saved_exit_time) and bool(replay_exit_time) and ts(saved_exit_time) == ts(replay_exit_time))
         match = (trade["status"] == base["status"] and trade["exit_reason"] == base["exit_reason"] and
-                 trade["exit_time_utc"] == base["exit_time_utc"])
+                 times_match)
         for key in ("exit_price", "r_multiple"):
             saved, replayed = trade.get(key, ""), base.get(key, "")
             if bool(saved) != bool(replayed):
@@ -225,13 +230,13 @@ def main():
             gap = i > 0 and b["time"] - bars[i - 1]["time"] > 60
             o, h, l = b["open"], b["high"], b["low"]
             if direction == "BUY":
-                if (gap and (o <= stop or o >= target)) or l <= stop or h >= target: break
+                if o <= stop or o >= target or l <= stop or h >= target: break
                 best = max(best, h)
                 newly = not activated and best >= entry + TRAIL_DISTANCE
                 proposed = max(stop, best - TRAIL_DISTANCE) if best >= entry + TRAIL_DISTANCE else stop
                 crossed, adverse = proposed > stop and l <= proposed, l
             else:
-                if (gap and (o >= stop or o <= target)) or h >= stop or l <= target: break
+                if o >= stop or o <= target or h >= stop or l <= target: break
                 best = min(best, l)
                 newly = not activated and best <= entry - TRAIL_DISTANCE
                 proposed = min(stop, best + TRAIL_DISTANCE) if best <= entry - TRAIL_DISTANCE else stop
