@@ -26,7 +26,7 @@ Activation 0.00 means the first eligible completed-bar check can create a trail;
 - The same candidate's theoretical entry, initial SL, initial TP, and risk are reused in every scenario.
 - One primary entry per candidate; 2X secondary entries remain excluded.
 - TP remains fixed at the initial RR2 target.
-- SL/TP hits are evaluated using levels active before the bar. If both are touched on the same bar, the trade is marked ambiguous and excluded from decisive metrics.
+- SL/TP hits are evaluated using levels active before the bar. If both are touched on the same bar, the trade is marked ambiguous unless the bar opens beyond the active stop; that opening gap establishes the stop event first.
 - A newly calculated trail applies starting on the next completed M1 bar.
 - If a bar opens beyond an active stop, the simulator fills at the adverse bar open rather than assuming a fill at the stop level. The gap count and aggregate adverse price difference are reported.
 - Intrabar tick sequence, broker-specific execution, spread, commissions, swap, non-gap slippage, rejection, account sizing and margin are not modeled.
