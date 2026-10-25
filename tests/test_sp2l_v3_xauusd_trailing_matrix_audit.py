@@ -30,9 +30,9 @@ def test_summary_uses_exit_time_not_candidate_order():
 
 def test_simulation_records_actual_exit_bar_time_and_next_bar_trailing():
     bars = [
-        {"time": 1, "high": 100.0, "low": 99.5},
-        {"time": 2, "high": 100.10, "low": 100.00},
-        {"time": 3, "high": 100.15, "low": 100.05},
+        {"time": 1, "open": 100.0, "high": 100.0, "low": 99.5},
+        {"time": 2, "open": 100.0, "high": 100.10, "low": 100.00},
+        {"time": 3, "open": 100.10, "high": 100.15, "low": 100.05},
     ]
     candidate = {
         "direction": "BUY",
@@ -53,3 +53,130 @@ def test_simulation_records_actual_exit_bar_time_and_next_bar_trailing():
     assert result["reason"] == "TRAIL_SL"
     assert abs(result["exit_price"] - 100.08) < 1e-9
     assert result["realized_R"] > 0
+
+
+
+def test_no_trailing_baseline_keeps_initial_sl_and_never_activates():
+    bars = [
+        {"time": 1, "open": 100.0, "high": 100.0, "low": 99.5},
+        {"time": 2, "open": 99.5, "high": 100.2, "low": 98.9},
+    ]
+    candidate = {
+        "direction": "BUY",
+        "trigger_time": 1,
+        "theoretical_entry": 100.0,
+        "sl": 99.0,
+        "tp": 102.0,
+        "risk": 1.0,
+    }
+
+    result = matrix.simulate_one(
+        bars, candidate, entry_idx=0,
+        activation_price=None, trail_distance_price=None,
+    )
+
+    assert result["reason"] == "SL"
+    assert result["final_sl"] == 99.0
+    assert result["trailing_activated"] is False
+    assert result["realized_R"] == -1.0
+
+
+def test_zero_activation_still_applies_new_stop_from_next_bar():
+    bars = [
+        {"time": 1, "open": 100.0, "high": 100.0, "low": 99.5},
+        {"time": 2, "open": 100.0, "high": 100.10, "low": 100.00},
+        {"time": 3, "open": 100.10, "high": 100.15, "low": 100.05},
+    ]
+    candidate = {
+        "direction": "BUY",
+        "trigger_time": 1,
+        "theoretical_entry": 100.0,
+        "sl": 99.0,
+        "tp": 102.0,
+        "risk": 1.0,
+    }
+
+    result = matrix.simulate_one(
+        bars, candidate, entry_idx=0,
+        activation_price=0.00, trail_distance_price=0.02,
+    )
+
+    assert result["reason"] == "TRAIL_SL"
+    assert abs(result["final_sl"] - 100.08) < 1e-9
+    assert result["exit_time"] == 3
+
+
+def test_buy_stop_gap_fills_at_adverse_bar_open_not_stop_level():
+    bars = [
+        {"time": 1, "open": 100.0, "high": 100.0, "low": 99.5},
+        {"time": 2, "open": 98.7, "high": 102.5, "low": 98.5},
+    ]
+    candidate = {
+        "direction": "BUY",
+        "trigger_time": 1,
+        "theoretical_entry": 100.0,
+        "sl": 99.0,
+        "tp": 102.0,
+        "risk": 1.0,
+    }
+
+    result = matrix.simulate_one(
+        bars, candidate, entry_idx=0,
+        activation_price=None, trail_distance_price=None,
+    )
+
+    assert result["reason"] == "SL"
+    assert result["exit_price"] == 98.7
+    assert result["gap_through_stop"] is True
+    assert abs(result["stop_gap_slippage_price"] - 0.3) < 1e-9
+    assert abs(result["realized_R"] - (-1.3)) < 1e-9
+
+
+def test_sell_stop_gap_fills_at_adverse_bar_open_not_stop_level():
+    bars = [
+        {"time": 1, "open": 100.0, "high": 100.5, "low": 100.0},
+        {"time": 2, "open": 101.4, "high": 101.7, "low": 100.8},
+    ]
+    candidate = {
+        "direction": "SELL",
+        "trigger_time": 1,
+        "theoretical_entry": 100.0,
+        "sl": 101.0,
+        "tp": 98.0,
+        "risk": 1.0,
+    }
+
+    result = matrix.simulate_one(
+        bars, candidate, entry_idx=0,
+        activation_price=None, trail_distance_price=None,
+    )
+
+    assert result["reason"] == "SL"
+    assert result["exit_price"] == 101.4
+    assert result["gap_through_stop"] is True
+    assert abs(result["stop_gap_slippage_price"] - 0.4) < 1e-9
+    assert abs(result["realized_R"] - (-1.4)) < 1e-9
+
+
+def test_stop_touch_without_gap_fills_at_stop_level():
+    bars = [
+        {"time": 1, "open": 100.0, "high": 100.0, "low": 99.5},
+        {"time": 2, "open": 99.5, "high": 100.0, "low": 98.9},
+    ]
+    candidate = {
+        "direction": "BUY",
+        "trigger_time": 1,
+        "theoretical_entry": 100.0,
+        "sl": 99.0,
+        "tp": 102.0,
+        "risk": 1.0,
+    }
+
+    result = matrix.simulate_one(
+        bars, candidate, entry_idx=0,
+        activation_price=None, trail_distance_price=None,
+    )
+
+    assert result["exit_price"] == 99.0
+    assert result["gap_through_stop"] is False
+    assert result["stop_gap_slippage_price"] == 0.0
