@@ -23,7 +23,7 @@ class TrailingStabilityAuditTests(unittest.TestCase):
         daily = MODULE.aggregate_period(rows, "day")
         self.assertEqual([x["period_utc"] for x in daily], ["2026-10-01", "2026-10-02"])
         self.assertEqual([x["total_R"] for x in daily], [1.0, -0.5])
-        self.assertEqual(daily[1]["period_end_drawdown_R"], 0.0)
+        self.assertEqual(daily[1]["period_end_drawdown_R"], 0.5)
 
     def test_drawdown_and_profit_factor_are_deterministic(self):
         self.assertEqual(MODULE.max_drawdown([1.0, -0.5, -1.0, 0.75]), 1.5)
