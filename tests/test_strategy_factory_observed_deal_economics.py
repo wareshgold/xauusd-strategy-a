@@ -15,9 +15,9 @@ def test_sums_only_explicit_observed_values_and_keeps_deal_tickets():
     assert result.observed_deal_count == 2
     assert result.observed_volume_sum == 0.03
     assert result.gross_profit_sum == 3.0
-    assert result.commission_sum == -0.6
-    assert result.swap_sum == -0.1
-    assert result.fee_sum == -0.05
+    assert abs(result.commission_sum - (-0.6)) < 1e-12
+    assert abs(result.swap_sum - (-0.1)) < 1e-12
+    assert abs(result.fee_sum - (-0.05)) < 1e-12
     assert abs(result.net_result_sum - 2.25) < 1e-12
 
 
