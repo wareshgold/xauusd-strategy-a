@@ -21,11 +21,13 @@ Scope: source trace only, exact research branch `fix/rr2-trail4-telegram-deal-ti
 - A successful return code is DONE or PLACED. This is pending-order acceptance, not proof of fill.
 - After acceptance, the code attempts to verify stored entry/SL/TP with tolerance `max(2 * point, 1e-12)`.
 
-## Important source-level verification concern
+## Verification concern and research-branch fix
 
-The gateway's stated intent is fail-closed if broker-stored levels cannot be verified. In the pinned implementation, if verification returns `verified=false` **and the order cannot be found in the active-order query**, the code does not enter the cancellation/false-return branch; it falls through and returns `ok` based on the original DONE/PLACED retcode while including a failed verification object.
+The pinned source previously reported success when the broker accepted a pending request but the returned ticket was missing, or when the ticket could not be found and verified. That violated the intended fail-closed contract.
 
-This is a source-path concern requiring a dedicated regression test and careful patch review before that gateway revision is used for any future research run. This document does not modify the live gateway or claim the behavior has been fixed. A future code fix should make missing/unverified broker order state non-accepted and emit a distinct reason, without broadening cancellation scope.
+On this Factory PR branch only, `scripts/live_mt5_gateway.py` now returns `ok=false` when a DONE/PLACED pending request has no ticket or when the stored order cannot be verified. If the exact ticket remains active and its stored levels mismatch, it attempts removal and still reports the request as not accepted by the research contract; it does not broaden cancellation to other orders. If the order is absent, the code does not infer that it is safe or cancellable and returns a distinct unverified status.
+
+Fake-MT5 regression tests cover: missing ticket, missing order in both active/history queries, active order with mismatched levels (including a scoped removal attempt), and matching active order. These tests do not connect to MT5 or prove real-broker behavior. The patch is unmerged and must not be assumed to affect any already-running local process or forward test.
 
 ## Trailing pre-send behavior
 
@@ -44,4 +46,4 @@ This is a source-path concern requiring a dedicated regression test and careful 
 
 ## Factory disposition
 
-The added source execution fixtures are preflight contract tests, not a replay engine. They intentionally return `REQUEST_ELIGIBLE` rather than accepted/filled whenever source guards pass. The replay gate stays BLOCKED until the verification concern, fill/cost semantics, tick ordering, candle construction and immutable dataset binding are resolved and reviewed.
+The added source execution fixtures are preflight contract tests, not a replay engine. They intentionally return `REQUEST_ELIGIBLE` rather than accepted/filled whenever source guards pass. The research-branch gateway fix has fake-MT5 regression coverage but has not been applied to any live/local runner and does not prove broker execution. The replay gate stays BLOCKED until fill/cost semantics, tick ordering, candle construction and immutable dataset binding are resolved and reviewed.
