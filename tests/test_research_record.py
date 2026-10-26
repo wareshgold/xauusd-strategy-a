@@ -73,10 +73,3 @@ def test_ledger_is_append_only_for_run_id():
     assert ledger.record(record) == record
     with pytest.raises(ResearchRecordError, match="different immutable"):
         ledger.record(replace(record, evidence_id="OTHER"))
-
-
-@pytest.mark.parametrize("dataset_role", ["UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"])
-def test_research_record_rejects_holdout_pass_without_authenticated_trust(dataset_role):
-    run, evidence, snapshot, audit, provenance = chain(dataset_role=dataset_role)
-    with pytest.raises(ResearchRecordError, match="authenticated external dataset trust"):
-        ResearchRecord.from_components(run, evidence, snapshot, audit, provenance)

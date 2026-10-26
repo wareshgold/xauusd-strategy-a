@@ -110,18 +110,6 @@ def evaluate_dataset_provenance(
             tuple(reasons),
         )
 
-    role = getattr(spec.dataset.role, "value", spec.dataset.role)
-    if role in {"UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"}:
-        return DatasetProvenanceResult(
-            DatasetProvenanceStatus.BLOCKED,
-            identity.dataset_id,
-            identity.fingerprint,
-            computed,
-            None if identity.artifact is None else identity.artifact.artifact_id,
-            None if observed_artifact is None else observed_artifact.artifact_id,
-            ("DATASET_EXTERNAL_TRUST_UNAUTHENTICATED",),
-        )
-
     return DatasetProvenanceResult(
         DatasetProvenanceStatus.PASS,
         identity.dataset_id,

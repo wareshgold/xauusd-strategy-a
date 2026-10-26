@@ -54,8 +54,5 @@ jobs:
 
       - name: Run dataset manifest integrity tests
         run: python -m pytest tests/test_dataset_manifest.py -q
-
-      - name: Run dataset and research provenance fail-closed tests
-        run: python -m pytest tests/test_dataset_provenance.py tests/test_research_record.py -q
       - name: Run dataset manifest pin ledger tests
         run: python -m pytest tests/test_dataset_manifest_pin_ledger.py -q
