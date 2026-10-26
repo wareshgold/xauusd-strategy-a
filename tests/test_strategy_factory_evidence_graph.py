@@ -236,3 +236,41 @@ def test_inconclusive_non_source_evidence_stays_unresolved_and_non_authorizing()
     assert any(action.target == "STATISTICAL_VALIDATION" for action in plan.actions)
     assert all(action.canonical_authorized is False for action in plan.actions)
     assert all(action.production_decision_authorized is False for action in plan.actions)
+
+def test_contradiction_keeps_same_role_open_even_if_other_evidence_supports_it():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C-SAME-ROLE-CONFLICT", "Conflicting source evidence",
+                          ("SOURCE", "STATISTICAL_VALIDATION")),),
+        evidence=(
+            ev("source-support", "SOURCE", "SUPPORTS"),
+            ev("source-counterexample", "SOURCE", "CONTRADICTS"),
+            ev("stats-support", "STATISTICAL_VALIDATION", "SUPPORTS"),
+        ),
+        edges=(
+            EvidenceEdge("source-support", "C-SAME-ROLE-CONFLICT", EdgeRelation.SUPPORTS),
+            EvidenceEdge("source-counterexample", "C-SAME-ROLE-CONFLICT", EdgeRelation.CONTRADICTS),
+            EvidenceEdge("stats-support", "C-SAME-ROLE-CONFLICT", EdgeRelation.SUPPORTS),
+        ),
+    )
+    plan = build_research_plan(graph)
+    assert any(action.kind is PlanActionKind.RESOLVE_CONTRADICTION for action in plan.actions)
+    assert any(action.kind is PlanActionKind.COLLECT_MISSING_EVIDENCE
+               and action.target == "SOURCE" for action in plan.actions)
+    assert "C-SAME-ROLE-CONFLICT" in plan.unresolved_claim_ids
+    assert all(action.canonical_authorized is False for action in plan.actions)
+    assert all(action.production_decision_authorized is False for action in plan.actions)
+
+
+def test_canonical_review_is_retained_even_when_other_actions_exist():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C-CANONICAL-GAP", "Potential canonical change",
+                          ("SOURCE", "DATA"), True),),
+        evidence=(ev("source", "SOURCE"),),
+        edges=(EvidenceEdge("source", "C-CANONICAL-GAP", EdgeRelation.SUPPORTS),),
+    )
+    plan = build_research_plan(graph)
+    assert any(action.kind is PlanActionKind.COLLECT_MISSING_EVIDENCE
+               and action.target == "DATA" for action in plan.actions)
+    assert any(action.kind is PlanActionKind.HUMAN_SOURCE_REVIEW for action in plan.actions)
+    assert all(action.canonical_authorized is False for action in plan.actions)
+    assert all(action.production_decision_authorized is False for action in plan.actions)
