@@ -8,7 +8,8 @@ This audit follows the current research-branch implementation from manifest cons
 2. `DatasetManifestPinLedger.append(manifest)` adds the manifest fingerprint to a hash-chained ledger. `to_json()` serializes it, but the module does not persist it to durable storage or publish an external attestation.
 3. `DatasetManifestPinLedger.from_json(..., expected_external_tip_fingerprint=...)` verifies the chain and supplied expected tip. It does not fetch or authenticate the source of that expected tip.
 4. `DatasetManifestRegistry(trusted_pins=...)` accepts a caller-provided mapping. The registry validates mapping format and manifest equality, but cannot independently establish that the mapping came from a trusted authority.
-5. `evaluate_comparison_validation_gate(..., dataset_manifest_registry=...)` requires a registry for `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT`. The gate now blocks these roles with `DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED` whenever a registry is supplied, without trusting a caller-controlled boolean/property or duck-typed `validate_record` method. No concrete authenticated provider is implemented.
+5. `evaluate_comparison_validation_gate(..., dataset_manifest_registry=...)` requires a registry for `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT`. The gate blocks these roles with `DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED` whenever a registry is supplied, without trusting a caller-controlled boolean/property or duck-typed `validate_record` method. No concrete authenticated provider is implemented.
+6. The unified research-quality and certification constructors now reject `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` records until authenticated external dataset trust and a role-matched comparison gate are implemented. This closes a cross-role promotion path where a development comparison gate could otherwise be supplied alongside a validation/holdout record.
 
 ## Findings
 
@@ -20,7 +21,7 @@ This audit follows the current research-branch implementation from manifest cons
 
 ## Fail-closed disposition
 
-Until an independently controlled trust source is selected and its identity/signature is verified by the surrounding workflow, the comparison gate now blocks `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` even when the manifest hashes match. The prerequisite remains unresolved; no holdout may be described as independently authenticated.
+Until an independently controlled trust source is selected and its identity/signature is verified by the surrounding workflow, the comparison gate now blocks `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` even when the manifest hashes match. The prerequisite remains unresolved; no holdout may be described as independently authenticated. Research-quality acceptance and certification also fail closed for those roles, so a development comparison result cannot be reused to label a holdout result accepted/certified.
 
 ## Required decision and implementation criteria
 

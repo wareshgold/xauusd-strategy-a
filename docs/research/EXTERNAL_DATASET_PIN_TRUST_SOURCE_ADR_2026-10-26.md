@@ -50,3 +50,8 @@ The mapping-only `DatasetManifestRegistry` exposes `has_authenticated_external_t
 ## Activation gate
 
 Implementation of an authenticated provider can begin once the owner identifies the real independent trust channel and confirms its control/permission model. Until then, `FRESH_HOLDOUT` remains blocked from any claim of independently authenticated provenance. Existing hash-chain and registry checks remain integrity controls only.
+
+
+## Research-quality and certification boundary added on 2026-10-26
+
+`evaluate_unified_research_quality(...)` and `certify_research_result(...)` now explicitly block `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` records until the trust provider is authenticated and the comparison gate is demonstrably bound to the same dataset role. This prevents a development comparison gate from being paired with a relabelled validation/holdout record to produce `accepted=True` or `certified=True`. Synthetic regression tests cover both paths. The change does not authenticate a source or establish that any holdout has passed.
