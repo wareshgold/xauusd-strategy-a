@@ -51,3 +51,17 @@ def test_research_certification_cannot_be_marked_production():
     bad = replace(certification, production_eligible=True)
     with pytest.raises(ResearchCertificationError):
         bad.validate()
+
+
+def test_research_certification_rejects_holdout_record_with_development_gate():
+    record, statistical, stability, bundle, ledger, acceptance, gate, quality, _ = certified_chain()
+    changed = replace(record, dataset_role="FRESH_HOLDOUT", fingerprint="")
+    fingerprint = __import__("hashlib").sha256(
+        changed._payload(changed.as_dict(include_fingerprint=False))
+    ).hexdigest()
+    holdout_record = replace(changed, fingerprint=fingerprint)
+
+    with pytest.raises(ResearchCertificationError, match="role-matched comparison gate"):
+        certify_research_result(
+            holdout_record, statistical, stability, bundle, ledger, acceptance, gate, quality
+        )

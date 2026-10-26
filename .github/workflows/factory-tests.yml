@@ -56,3 +56,6 @@ jobs:
         run: python -m pytest tests/test_dataset_manifest.py -q
       - name: Run dataset manifest pin ledger tests
         run: python -m pytest tests/test_dataset_manifest_pin_ledger.py -q
+
+      - name: Run research quality and certification boundary tests
+        run: python -m pytest tests/test_unified_research_quality.py tests/test_research_certification.py tests/test_research_certification_ledger.py -q

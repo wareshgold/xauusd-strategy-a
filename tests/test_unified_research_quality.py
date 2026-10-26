@@ -77,3 +77,17 @@ def test_unified_quality_rejects_non_pass_comparison():
     )
     with pytest.raises(UnifiedResearchQualityError):
         evaluate_unified_research_quality(record, None, None, bundle, ledger, acceptance, bad)
+
+
+def test_unified_quality_rejects_holdout_record_with_development_gate():
+    record, stat, stability, bundle, ledger, acceptance, gate = full_chain()
+    changed = replace(record, dataset_role="FRESH_HOLDOUT", fingerprint="")
+    fingerprint = hashlib.sha256(
+        changed._payload(changed.as_dict(include_fingerprint=False))
+    ).hexdigest()
+    holdout_record = replace(changed, fingerprint=fingerprint)
+
+    with pytest.raises(UnifiedResearchQualityError, match="role-matched comparison gate"):
+        evaluate_unified_research_quality(
+            holdout_record, stat, stability, bundle, ledger, acceptance, gate
+        )

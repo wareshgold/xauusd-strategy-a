@@ -82,6 +82,12 @@ def certify_research_result(
     *,
     certification_revision: str = "RESEARCH-CERTIFICATION-1",
 ) -> ResearchCertification:
+    if record.dataset_role in {"UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"}:
+        raise ResearchCertificationError(
+            "validation/holdout certification is blocked until authenticated external dataset trust "
+            "and a role-matched comparison gate are implemented"
+        )
+
     try:
         record.validate()
         statistical.validate()

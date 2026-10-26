@@ -66,6 +66,12 @@ def evaluate_unified_research_quality(
     *,
     quality_revision: str = "UNIFIED-RESEARCH-QUALITY-1",
 ) -> UnifiedResearchQuality:
+    if record.dataset_role in {"UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"}:
+        raise UnifiedResearchQualityError(
+            "validation/holdout quality is blocked until authenticated external dataset trust "
+            "and a role-matched comparison gate are implemented"
+        )
+
     try:
         record.validate()
         statistical.validate()
