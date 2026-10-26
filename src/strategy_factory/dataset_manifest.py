@@ -111,6 +111,16 @@ class DatasetManifestRegistry:
             if not dataset_id or len(fingerprint) != 64 or any(c not in "0123456789abcdef" for c in fingerprint):
                 raise DatasetManifestError("trusted pin must map dataset_id to a SHA-256 fingerprint")
 
+    @property
+    def has_authenticated_external_trust_root(self) -> bool:
+        """Whether this registry has verified an independent issuer/trust source.
+
+        This mapping-only implementation has no authenticated trust provider,
+        so it deliberately returns False. A caller-supplied digest mapping is
+        an integrity input, not proof of publisher identity.
+        """
+        return False
+
     def register(self, manifest: DatasetManifest) -> DatasetManifest:
         manifest.validate()
         trusted = self._trusted_pins.get(manifest.dataset_id)

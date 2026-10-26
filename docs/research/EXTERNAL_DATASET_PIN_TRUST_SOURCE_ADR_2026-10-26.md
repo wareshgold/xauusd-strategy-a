@@ -43,6 +43,10 @@ The verifier must derive trust from a configured, independently administered ide
 
 Every failure must leave the holdout gate blocked and must not silently fall back to a caller-provided digest. Tests must use synthetic fixtures and must not imply that a real dataset has been frozen.
 
+## Interim enforcement added on 2026-10-26
+
+The mapping-only `DatasetManifestRegistry` now exposes `has_authenticated_external_trust_root = False`. The unified comparison gate explicitly blocks `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` with `DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED` when this registry is used, even if every supplied manifest hash matches. A regression test covers the fully matching caller-supplied mapping and research-record identities. This is an interim fail-closed guard, not an authenticated provider.
+
 ## Activation gate
 
-Implementation can begin once the owner identifies the real independent trust channel and confirms its control/permission model. Until then, `FRESH_HOLDOUT` remains blocked from any claim of independently authenticated provenance. Existing hash-chain and registry checks remain integrity controls only.
+Implementation of an authenticated provider can begin once the owner identifies the real independent trust channel and confirms its control/permission model. Until then, `FRESH_HOLDOUT` remains blocked from any claim of independently authenticated provenance. Existing hash-chain and registry checks remain integrity controls only.

@@ -129,6 +129,9 @@ def evaluate_comparison_validation_gate(
                     )
                 if dataset_manifest_registry is None:
                     reasons.append("DATASET_MANIFEST_REGISTRY_REQUIRED")
+                elif not dataset_manifest_registry.has_authenticated_external_trust_root:
+                    if "DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED" not in reasons:
+                        reasons.append("DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED")
                 else:
                     try:
                         dataset_manifest_registry.validate_record(record, comparison.dataset_role)

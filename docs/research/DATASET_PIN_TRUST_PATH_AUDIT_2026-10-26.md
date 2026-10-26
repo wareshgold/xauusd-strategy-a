@@ -8,18 +8,19 @@ This audit follows the current research-branch implementation from manifest cons
 2. `DatasetManifestPinLedger.append(manifest)` adds the manifest fingerprint to a hash-chained ledger. `to_json()` serializes it, but the module does not persist it to durable storage or publish an external attestation.
 3. `DatasetManifestPinLedger.from_json(..., expected_external_tip_fingerprint=...)` verifies the chain and supplied expected tip. It does not fetch or authenticate the source of that expected tip.
 4. `DatasetManifestRegistry(trusted_pins=...)` accepts a caller-provided mapping. The registry validates mapping format and manifest equality, but cannot independently establish that the mapping came from a trusted authority.
-5. `evaluate_comparison_validation_gate(..., dataset_manifest_registry=...)` requires a registry for `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` and checks the upstream research record against the registered manifest. It does not acquire or authenticate the registry's pin source itself.
+5. `evaluate_comparison_validation_gate(..., dataset_manifest_registry=...)` requires a registry for `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT`. The mapping-only registry now explicitly reports that it has no authenticated external trust root, and the gate blocks these roles with `DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED` instead of treating a caller-supplied mapping as sufficient. A future authenticated provider is not implemented.
 
 ## Findings
 
 - Integrity checks and chain verification are implemented.
 - Pin authenticity, publisher identity, durable independent storage, and verifier/publisher permission separation are not implemented by this path.
-- The current gate can only rely on trust established by the caller outside this code. A caller-generated digest, environment variable, label, or pin stored next to the ledger is not sufficient evidence of an independent trust root.
+- The comparison gate now fails closed for validation/holdout roles when only the mapping-based registry is supplied. This closes the in-code false-trust path; it does not create or authenticate an external trust root.
+- A caller-generated digest, environment variable, label, or pin stored next to the ledger is not sufficient evidence of an independent trust root.
 - The inspected code and synthetic tests do not demonstrate that a real holdout has been independently frozen or authenticated.
 
 ## Fail-closed disposition
 
-Until an independently controlled trust source is selected and its identity/signature is verified by the surrounding workflow, do not mark a pin as externally trusted and do not treat `FRESH_HOLDOUT` as independently authenticated. Keep the existing provenance gate, but report the external trust-root prerequisite as unresolved.
+Until an independently controlled trust source is selected and its identity/signature is verified by the surrounding workflow, the comparison gate now blocks `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` even when the manifest hashes match. The prerequisite remains unresolved; no holdout may be described as independently authenticated.
 
 ## Required decision and implementation criteria
 

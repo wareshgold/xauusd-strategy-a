@@ -42,6 +42,12 @@ def test_registry_requires_exact_external_pin():
         wrong_pin.register(item)
 
 
+def test_mapping_only_registry_does_not_claim_authenticated_external_trust():
+    item = manifest()
+    registry = DatasetManifestRegistry({item.dataset_id: item.fingerprint})
+    assert registry.has_authenticated_external_trust_root is False
+
+
 def test_registry_blocks_unpinned_manifest():
     item = manifest()
     with pytest.raises(DatasetManifestError, match="no external trusted pin"):
