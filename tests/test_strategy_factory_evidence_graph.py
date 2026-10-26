@@ -152,3 +152,87 @@ def test_inconclusive_source_requests_source_resolution_before_downstream_test()
     assert any(action.kind is PlanActionKind.RESOLVE_SOURCE_AMBIGUITY for action in plan.actions)
     assert not any(action.kind is PlanActionKind.DESIGN_DISCRIMINATING_TEST for action in plan.actions)
     assert all(action.canonical_authorized is False for action in plan.actions)
+
+def test_many_statistical_supports_never_outvote_linked_source_contradiction():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C-SOURCE-CONFLICT", "Source-defined claim",
+                          ("SOURCE", "DATA", "TEST", "STATISTICAL_VALIDATION"), True),),
+        evidence=(
+            ev("source-counterexample", "SOURCE", "CONTRADICTS"),
+            ev("data-support", "DATA"),
+            ev("test-support", "TEST"),
+            ev("stats-support-1", "STATISTICAL_VALIDATION"),
+            ev("stats-support-2", "STATISTICAL_VALIDATION"),
+            ev("stats-support-3", "STATISTICAL_VALIDATION"),
+        ),
+        edges=(
+            EvidenceEdge("source-counterexample", "C-SOURCE-CONFLICT", EdgeRelation.CONTRADICTS),
+            EvidenceEdge("data-support", "C-SOURCE-CONFLICT", EdgeRelation.SUPPORTS),
+            EvidenceEdge("test-support", "C-SOURCE-CONFLICT", EdgeRelation.SUPPORTS),
+            EvidenceEdge("stats-support-1", "C-SOURCE-CONFLICT", EdgeRelation.SUPPORTS),
+            EvidenceEdge("stats-support-2", "C-SOURCE-CONFLICT", EdgeRelation.SUPPORTS),
+            EvidenceEdge("stats-support-3", "C-SOURCE-CONFLICT", EdgeRelation.SUPPORTS),
+        ),
+    )
+    plan = build_research_plan(graph)
+    assert any(action.kind is PlanActionKind.RESOLVE_CONTRADICTION for action in plan.actions)
+    assert any(action.target == "SOURCE" for action in plan.actions)
+    assert all(action.canonical_authorized is False for action in plan.actions)
+    assert all(action.production_decision_authorized is False for action in plan.actions)
+
+
+def test_contradictory_source_does_not_satisfy_required_source_role():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C-SOURCE-REQUIRED", "Source must support this claim",
+                          ("SOURCE", "STATISTICAL_VALIDATION")),),
+        evidence=(
+            ev("source-no", "SOURCE", "CONTRADICTS"),
+            ev("stats-yes", "STATISTICAL_VALIDATION", "SUPPORTS"),
+        ),
+        edges=(
+            EvidenceEdge("source-no", "C-SOURCE-REQUIRED", EdgeRelation.CONTRADICTS),
+            EvidenceEdge("stats-yes", "C-SOURCE-REQUIRED", EdgeRelation.SUPPORTS),
+        ),
+    )
+    plan = build_research_plan(graph)
+    assert any(action.kind is PlanActionKind.COLLECT_MISSING_EVIDENCE
+               and action.target == "SOURCE" for action in plan.actions)
+    assert any(action.kind is PlanActionKind.RESOLVE_CONTRADICTION for action in plan.actions)
+
+
+def test_inconclusive_test_cannot_be_attached_as_support():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C-INCONCLUSIVE-TEST", "A test with unresolved result",
+                          ("SOURCE", "TEST")),),
+        evidence=(
+            ev("source", "SOURCE"),
+            ev("test-maybe", "TEST", "INCONCLUSIVE"),
+        ),
+        edges=(
+            EvidenceEdge("source", "C-INCONCLUSIVE-TEST", EdgeRelation.SUPPORTS),
+            EvidenceEdge("test-maybe", "C-INCONCLUSIVE-TEST", EdgeRelation.SUPPORTS),
+        ),
+    )
+    with pytest.raises(ValueError, match="conflicts with evidence outcome"):
+        build_research_plan(graph)
+
+
+def test_inconclusive_non_source_evidence_stays_unresolved_and_non_authorizing():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C-TEST-MAYBE", "Unresolved test outcome",
+                          ("SOURCE", "TEST", "STATISTICAL_VALIDATION"), True),),
+        evidence=(
+            ev("source", "SOURCE"),
+            ev("test-maybe", "TEST", "INCONCLUSIVE"),
+        ),
+        edges=(
+            EvidenceEdge("source", "C-TEST-MAYBE", EdgeRelation.SUPPORTS),
+            EvidenceEdge("test-maybe", "C-TEST-MAYBE", EdgeRelation.DEPENDS_ON),
+        ),
+    )
+    plan = build_research_plan(graph)
+    assert any(action.kind is PlanActionKind.DESIGN_DISCRIMINATING_TEST
+               for action in plan.actions)
+    assert any(action.target == "STATISTICAL_VALIDATION" for action in plan.actions)
+    assert all(action.canonical_authorized is False for action in plan.actions)
+    assert all(action.production_decision_authorized is False for action in plan.actions)
