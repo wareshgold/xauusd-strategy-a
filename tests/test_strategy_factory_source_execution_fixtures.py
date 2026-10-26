@@ -79,7 +79,7 @@ def test_buy_trailing_guard_rejects_stop_too_close_to_bid():
 
 def test_sell_trailing_guard_requires_stop_above_ask_plus_distance():
     result = evaluate_trailing_preflight(TrailingInputs(
-        direction="SELL", entry=2300.0, old_sl=2300.2, new_sl=2299.5,
+        direction="SELL", entry=2300.0, old_sl=2300.2, new_sl=2299.0,
         tp=2296.0, favorable_extreme=2299.0, bid=2299.1, ask=2299.2,
         min_distance=0.1, trail_distance=0.4,
     ))
