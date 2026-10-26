@@ -178,3 +178,27 @@ def test_manifest_parser_rejects_unknown_digest_algorithm():
     serialized["artifacts"][0]["digest_algorithm"] = "sha512"
     with pytest.raises(EvidenceArchiveError, match="digest algorithm"):
         EvidenceArchiveManifest.from_dict(serialized)
+
+
+
+def test_retrieval_converts_local_store_corruption_to_blocked_result(tmp_path):
+    store = FileSystemContentAddressedStore(tmp_path / "archive")
+    locator = store.put(b"original")
+    digest = locator.removeprefix("sha256:")
+    path = Path(tmp_path / "archive" / "sha256" / digest[:2] / digest)
+    path.write_bytes(b"tampered")
+    manifest = EvidenceArchiveManifest(
+        archive_record_id="ARCHIVE-CORRUPT",
+        evaluator_revision="evaluator@abc123",
+        policy_revision="policy@1",
+        artifacts=(ArtifactDescriptor(
+            role="evidence",
+            schema_revision="evidence@1",
+            digest_sha256=digest,
+            byte_length=len(b"original"),
+            locator=locator,
+        ),),
+    )
+    result, data = retrieve_verified_artifact(manifest, "evidence", store)
+    assert result.status is ArtifactVerificationStatus.DIGEST_MISMATCH
+    assert data is None

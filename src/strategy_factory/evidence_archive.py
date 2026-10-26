@@ -284,6 +284,12 @@ def retrieve_verified_artifact(
             ArtifactVerificationStatus.ARCHIVE_UNAVAILABLE, role,
             descriptor.digest_sha256, expected_length=descriptor.byte_length, detail=str(exc),
         ), None
+    except EvidenceArchiveError as exc:
+        return ArtifactVerificationResult(
+            ArtifactVerificationStatus.DIGEST_MISMATCH, role,
+            descriptor.digest_sha256, expected_length=descriptor.byte_length,
+            detail=f"storage adapter integrity check failed: {exc}",
+        ), None
 
     observed_length = len(data)
     observed_digest = hashlib.sha256(data).hexdigest()
