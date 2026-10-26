@@ -7,6 +7,7 @@ import json
 
 from .multiple_comparison import MultipleComparisonResult
 from .research_comparison import ResearchComparison
+from .research_record import ResearchRecordLedger
 from .statistical_comparison_evidence import (
     StatisticalComparisonEvidence,
     StatisticalComparisonEvidenceError,
@@ -79,6 +80,7 @@ def evaluate_comparison_validation_gate(
     governance_ledger: StatisticalComparisonUsageLedger,
     *,
     purpose: str = "FINAL_EVIDENCE",
+    research_record_ledger: ResearchRecordLedger | None = None,
 ) -> ComparisonValidationGateResult:
     reasons: list[str] = []
     try:
@@ -96,6 +98,33 @@ def evaluate_comparison_validation_gate(
             reasons=(str(exc),),
         )
         return result
+
+    # Validation/holdout roles must resolve to exact upstream research records.
+    if comparison.dataset_role in {"UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"}:
+        if research_record_ledger is None:
+            reasons.append("RESEARCH_RECORD_PROVENANCE_LEDGER_REQUIRED")
+        else:
+            for observation in (comparison.baseline, *comparison.candidates):
+                try:
+                    record = research_record_ledger.get(observation.run_id)
+                    record.validate()
+                except Exception as exc:
+                    reasons.append(
+                        f"RESEARCH_RECORD_PROVENANCE_UNRESOLVED:{observation.run_id}:{exc}"
+                    )
+                    continue
+                if record.fingerprint != observation.research_record_fingerprint:
+                    reasons.append(
+                        f"RESEARCH_RECORD_FINGERPRINT_MISMATCH:{observation.run_id}"
+                    )
+                if record.dataset_role != comparison.dataset_role:
+                    reasons.append(
+                        f"RESEARCH_RECORD_DATASET_ROLE_MISMATCH:{observation.run_id}"
+                    )
+                if not record.dataset_id or not record.dataset_fingerprint:
+                    reasons.append(
+                        f"RESEARCH_RECORD_DATASET_IDENTITY_INCOMPLETE:{observation.run_id}"
+                    )
 
     registered = evidence_ledger.contains(evidence)
     if not registered:
