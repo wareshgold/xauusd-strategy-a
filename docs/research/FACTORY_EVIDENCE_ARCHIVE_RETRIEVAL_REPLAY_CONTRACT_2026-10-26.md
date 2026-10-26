@@ -111,3 +111,10 @@ This is deliberately not described as end-to-end provenance replay. The current 
 `serialize_provenance_input_artifact(role, value, schema_revision=...)` now provides a deterministic serialization boundary for the eight currently used provenance input objects. It uses an explicit role-to-exact-class allowlist, calls an object's `validate()` when that contract exists, requires `as_dict()`, and wraps the payload with the role and an explicitly supplied schema revision. The caller/owner must choose that revision; this code does not declare the fixture label used by tests to be a production schema.
 
 Tests cover repeatable bytes, payload preservation, role/class mismatch, unknown roles, and missing schema revision. This is serialization only. No `from_dict`/deserializer is introduced, so archived bytes cannot yet be reconstructed into the original typed inputs and passed through `evaluate_research_provenance(...)`. End-to-end replay remains blocked pending versioned deserializers and round-trip/tamper tests for each contract. Serialization and content digests are not issuer authentication, evaluator authentication, or durable external storage.
+
+
+## First versioned provenance decoder
+
+The first concrete round-trip decoder is now implemented for `test_spec` only, under schema revision `HISTORICAL-TEST-SPEC-1`. It reconstructs `TestDataset` and `HistoricalTestSpec`, validates enum values and the actual contract, rejects extra/missing payload keys, and requires canonical JSON bytes on re-serialization. Tests cover round-trip equality and role/schema/payload/enum tampering.
+
+The decoder explicitly refuses roles without a versioned decoder. This is intentional: the other seven provenance inputs include nested contracts or derived records and must not be reconstructed using guessed field mappings. The eight-role provenance archive therefore remains incomplete and must not be advertised as end-to-end replayable. This decoder provides structural/schema validation only, not issuer or evaluator authentication.

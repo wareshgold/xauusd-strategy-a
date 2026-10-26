@@ -13,7 +13,7 @@ from .execution import ExecutionReceipt, validate_execution_binding
 from .jobs import ResearchJobSpec, validate_job_matches_test_spec
 from .runs import ResearchRunIdentity
 from .snapshot import ReadinessSnapshot
-from .test_contract import HistoricalTestSpec
+from .test_contract import DatasetRole, ExecutionSemantics, HistoricalTestSpec, TestDataset
 
 
 class ResearchProvenanceStatus(str, Enum):
@@ -278,3 +278,83 @@ def serialize_provenance_input_artifact(
         ).encode("utf-8")
     except (TypeError, ValueError) as exc:
         raise ValueError("provenance input is not canonical-JSON serializable") from exc
+
+
+PROVENANCE_INPUT_SCHEMA_REVISIONS = {
+    "test_spec": "HISTORICAL-TEST-SPEC-1",
+}
+
+
+def deserialize_provenance_input_artifact(
+    data: bytes, *, expected_role: str, expected_schema_revision: str
+) -> object:
+    """Reconstruct the first explicitly versioned provenance input contract.
+
+    Only roles with an implemented versioned decoder are accepted. This decoder
+    validates the envelope, role, schema revision, exact payload keys, enum
+    values, and the reconstructed object. It is not an authenticated archive.
+    """
+    if not isinstance(data, bytes):
+        raise TypeError("artifact data must be bytes")
+    if expected_role not in PROVENANCE_INPUT_SCHEMA_REVISIONS:
+        raise ValueError(f"no versioned decoder for provenance role: {expected_role}")
+    if not expected_schema_revision or expected_schema_revision != PROVENANCE_INPUT_SCHEMA_REVISIONS[expected_role]:
+        raise ValueError("expected schema revision does not match the implemented decoder")
+    try:
+        envelope = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("artifact is not valid UTF-8 JSON") from exc
+    if not isinstance(envelope, dict) or set(envelope) != {
+        "artifact_role", "schema_revision", "payload"
+    }:
+        raise ValueError("provenance artifact envelope keys are invalid")
+    if envelope["artifact_role"] != expected_role:
+        raise ValueError("provenance artifact role mismatch")
+    if envelope["schema_revision"] != expected_schema_revision:
+        raise ValueError("provenance artifact schema revision mismatch")
+    payload = envelope["payload"]
+    if not isinstance(payload, dict):
+        raise ValueError("provenance artifact payload must be an object")
+    if expected_role == "test_spec":
+        required = {
+            "test_id", "strategy_id", "strategy_revision", "dataset",
+            "execution_semantics", "parameters", "objective",
+        }
+        if set(payload) != required:
+            raise ValueError("test spec payload keys are invalid")
+        dataset = payload["dataset"]
+        if not isinstance(dataset, dict) or set(dataset) != {
+            "dataset_id", "role", "data_revision", "start", "end", "source", "immutable"
+        }:
+            raise ValueError("test spec dataset keys are invalid")
+        if not isinstance(payload["parameters"], dict):
+            raise ValueError("test spec parameters must be an object")
+        if not isinstance(dataset["immutable"], bool):
+            raise ValueError("test spec dataset immutable must be boolean")
+        try:
+            spec = HistoricalTestSpec(
+                test_id=payload["test_id"],
+                strategy_id=payload["strategy_id"],
+                strategy_revision=payload["strategy_revision"],
+                dataset=TestDataset(
+                    dataset_id=dataset["dataset_id"],
+                    role=DatasetRole(dataset["role"]),
+                    data_revision=dataset["data_revision"],
+                    start=dataset["start"],
+                    end=dataset["end"],
+                    source=dataset["source"],
+                    immutable=dataset["immutable"],
+                ),
+                execution_semantics=ExecutionSemantics(payload["execution_semantics"]),
+                parameters=payload["parameters"],
+                objective=payload["objective"],
+            )
+            spec.validate()
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("test spec artifact failed contract validation") from exc
+        if serialize_provenance_input_artifact(
+            "test_spec", spec, schema_revision=expected_schema_revision
+        ) != data:
+            raise ValueError("test spec artifact is not canonical JSON")
+        return spec
+    raise ValueError(f"no versioned decoder for provenance role: {expected_role}")

@@ -18,6 +18,7 @@ from strategy_factory.research_provenance import (
     evaluate_research_provenance,
     serialize_research_provenance_decision,
     serialize_provenance_input_artifact,
+    deserialize_provenance_input_artifact,
 )
 from strategy_factory.runs import ResearchRunIdentity
 from strategy_factory.snapshot import build_readiness_snapshot
@@ -321,3 +322,60 @@ def test_provenance_input_serialization_rejects_unknown_role_wrong_type_and_miss
         )
     with pytest.raises(ValueError, match="schema_revision is required"):
         serialize_provenance_input_artifact("test_spec", chain["spec"], schema_revision=" ")
+
+
+
+def test_test_spec_artifact_round_trip_uses_explicit_versioned_decoder():
+    spec = make_spec()
+    schema = "HISTORICAL-TEST-SPEC-1"
+    encoded = serialize_provenance_input_artifact(
+        "test_spec", spec, schema_revision=schema
+    )
+    decoded = deserialize_provenance_input_artifact(
+        encoded, expected_role="test_spec", expected_schema_revision=schema
+    )
+    assert type(decoded) is HistoricalTestSpec
+    assert decoded.as_dict() == spec.as_dict()
+    assert serialize_provenance_input_artifact(
+        "test_spec", decoded, schema_revision=schema
+    ) == encoded
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda env: {**env, "artifact_role": "research_job"}, "role mismatch"),
+        (lambda env: {**env, "schema_revision": "HISTORICAL-TEST-SPEC-2"},
+         "schema revision mismatch"),
+        (lambda env: {**env, "payload": {**env["payload"], "unexpected": True}},
+         "payload keys are invalid"),
+        (lambda env: {**env, "payload": {
+            **env["payload"], "execution_semantics": "GUESSED_EXECUTION"
+        }}, "contract validation"),
+    ],
+    ids=("role-drift", "schema-drift", "extra-payload-field", "invalid-enum"),
+)
+def test_test_spec_decoder_rejects_tampered_or_incompatible_artifacts(mutate, message):
+    schema = "HISTORICAL-TEST-SPEC-1"
+    encoded = serialize_provenance_input_artifact(
+        "test_spec", make_spec(), schema_revision=schema
+    )
+    envelope = __import__("json").loads(encoded)
+    changed = __import__("json").dumps(
+        mutate(envelope), sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode("utf-8")
+    with pytest.raises(ValueError, match=message):
+        deserialize_provenance_input_artifact(
+            changed, expected_role="test_spec", expected_schema_revision=schema
+        )
+
+
+def test_test_spec_decoder_blocks_unimplemented_roles_and_schema_revisions():
+    with pytest.raises(ValueError, match="no versioned decoder"):
+        deserialize_provenance_input_artifact(
+            b"{}", expected_role="research_job", expected_schema_revision="RESEARCH-JOB-1"
+        )
+    with pytest.raises(ValueError, match="does not match the implemented decoder"):
+        deserialize_provenance_input_artifact(
+            b"{}", expected_role="test_spec", expected_schema_revision="HISTORICAL-TEST-SPEC-2"
+        )
