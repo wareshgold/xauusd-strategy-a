@@ -50,3 +50,6 @@ jobs:
           tests/test_strategy_factory_experiment_planner.py \
           tests/test_strategy_factory_execution_result_ingestion.py \
           tests/test_strategy_factory_ledger_report.py -q
+
+      - name: Run dataset manifest integrity tests
+        run: python -m pytest tests/test_dataset_manifest.py -q
