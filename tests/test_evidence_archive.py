@@ -14,6 +14,9 @@ from strategy_factory.evidence_archive import (
     EvidenceArchiveError,
     EvidenceArchiveManifest,
     FileSystemContentAddressedStore,
+    ManifestCommitStatus,
+    ReplayStatus,
+    replay_archived_decision,
     retrieve_verified_artifact,
 )
 
@@ -202,3 +205,101 @@ def test_retrieval_converts_local_store_corruption_to_blocked_result(tmp_path):
     result, data = retrieve_verified_artifact(manifest, "evidence", store)
     assert result.status is ArtifactVerificationStatus.DIGEST_MISMATCH
     assert data is None
+
+
+
+def test_manifest_commit_is_idempotent_and_retrievable_after_reopen(tmp_path):
+    manifest, data = build_manifest()
+    root = tmp_path / "archive"
+    store = FileSystemContentAddressedStore(root)
+    assert store.put(data) == manifest.artifacts[0].locator
+    assert store.commit_manifest(manifest) is ManifestCommitStatus.STORED_AND_VERIFIED
+    reopened = FileSystemContentAddressedStore(root)
+    assert reopened.commit_manifest(manifest) is ManifestCommitStatus.ALREADY_PRESENT_MATCHING_DIGEST
+    assert reopened.get_manifest(manifest.archive_record_id).fingerprint() == manifest.fingerprint()
+
+
+def test_manifest_commit_rejects_conflicting_content_for_same_record_id(tmp_path):
+    manifest, data = build_manifest()
+    other, other_data = build_manifest(b'{"decision":"FAIL"}')
+    store = FileSystemContentAddressedStore(tmp_path / "archive")
+    store.put(data)
+    store.put(other_data)
+    assert store.commit_manifest(manifest) is ManifestCommitStatus.STORED_AND_VERIFIED
+    conflict = replace(other, archive_record_id=manifest.archive_record_id)
+    assert store.commit_manifest(conflict) is ManifestCommitStatus.CONFLICTING_MANIFEST
+    assert store.get_manifest(manifest.archive_record_id).fingerprint() == manifest.fingerprint()
+
+
+def test_manifest_commit_rejects_unsafe_record_id(tmp_path):
+    manifest, _ = build_manifest()
+    store = FileSystemContentAddressedStore(tmp_path / "archive")
+    assert store.commit_manifest(replace(manifest, archive_record_id="../escape")) is ManifestCommitStatus.MANIFEST_INVALID
+
+
+
+def build_replay_manifest():
+    input_bytes = b'{"input":1}'
+    decision_bytes = b'{"decision":"PASS"}'
+    input_digest = hashlib.sha256(input_bytes).hexdigest()
+    decision_digest = hashlib.sha256(decision_bytes).hexdigest()
+    manifest = EvidenceArchiveManifest(
+        archive_record_id="REPLAY-001",
+        evaluator_revision="evaluator@pinned",
+        policy_revision="policy@pinned",
+        artifacts=(
+            ArtifactDescriptor("input", "input@1", input_digest, len(input_bytes), f"sha256:{input_digest}"),
+            ArtifactDescriptor("decision", "decision@1", decision_digest, len(decision_bytes), f"sha256:{decision_digest}"),
+        ),
+    )
+    return manifest, input_bytes, decision_bytes
+
+
+def test_replay_harness_matches_only_exact_reproduced_decision():
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    store = FakeStore({
+        manifest.artifacts[0].locator: input_bytes,
+        manifest.artifacts[1].locator: decision_bytes,
+    })
+    result = replay_archived_decision(
+        manifest, store, required_input_roles=("input",), decision_role="decision",
+        evaluator=lambda inputs: decision_bytes if inputs["input"] == input_bytes else b"wrong",
+    )
+    assert result.status is ReplayStatus.MATCH
+    mismatch = replay_archived_decision(
+        manifest, store, required_input_roles=("input",), decision_role="decision",
+        evaluator=lambda inputs: b'{"decision":"FAIL"}',
+    )
+    assert mismatch.status is ReplayStatus.MISMATCH
+
+
+def test_replay_harness_blocks_missing_inputs_and_missing_evaluator():
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    missing = replay_archived_decision(
+        manifest, FakeStore(), required_input_roles=("input",), decision_role="decision",
+        evaluator=lambda inputs: decision_bytes,
+    )
+    assert missing.status is ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE
+    unavailable = replay_archived_decision(
+        manifest, FakeStore({manifest.artifacts[0].locator: input_bytes, manifest.artifacts[1].locator: decision_bytes}),
+        required_input_roles=("input",), decision_role="decision", evaluator=None,
+    )
+    assert unavailable.status is ReplayStatus.BLOCKED_EVALUATOR_UNAVAILABLE
+
+
+def test_replay_harness_blocks_evaluator_errors_and_invalid_role_contract():
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    store = FakeStore({
+        manifest.artifacts[0].locator: input_bytes,
+        manifest.artifacts[1].locator: decision_bytes,
+    })
+    failed = replay_archived_decision(
+        manifest, store, required_input_roles=("input",), decision_role="decision",
+        evaluator=lambda inputs: 17,
+    )
+    assert failed.status is ReplayStatus.BLOCKED_EVALUATOR_ERROR
+    invalid = replay_archived_decision(
+        manifest, store, required_input_roles=("decision",), decision_role="decision",
+        evaluator=lambda inputs: decision_bytes,
+    )
+    assert invalid.status is ReplayStatus.MANIFEST_INVALID

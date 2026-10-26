@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
-from typing import Protocol
+from typing import Callable, Mapping, Protocol
 
 
 ARCHIVE_MANIFEST_SCHEMA_REVISION = "FACTORY-EVIDENCE-ARCHIVE-MANIFEST-1"
@@ -168,6 +168,24 @@ class ArtifactStore(Protocol):
         ...
 
 
+class ManifestCommitStatus(str, Enum):
+    STORED_AND_VERIFIED = "STORED_AND_VERIFIED"
+    ALREADY_PRESENT_MATCHING_DIGEST = "ALREADY_PRESENT_MATCHING_DIGEST"
+    CONFLICTING_MANIFEST = "CONFLICTING_MANIFEST"
+    MANIFEST_NOT_FOUND = "MANIFEST_NOT_FOUND"
+    MANIFEST_INVALID = "MANIFEST_INVALID"
+    ARCHIVE_UNAVAILABLE = "ARCHIVE_UNAVAILABLE"
+
+
+def _safe_record_id(record_id: str) -> str:
+    if not record_id or any(ch not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-" for ch in record_id):
+        raise EvidenceArchiveError("archive record ID contains unsupported characters")
+    if record_id in {".", ".."}:
+        raise EvidenceArchiveError("archive record ID contains unsupported characters")
+    return record_id
+
+
+
 class FileSystemContentAddressedStore:
     """Local content-addressed adapter with create-if-absent writes.
 
@@ -223,6 +241,72 @@ class FileSystemContentAddressedStore:
             raise ArchiveUnavailable(f"local artifact store write failed: {exc}") from exc
         return f"sha256:{digest}"
 
+    def commit_manifest(self, manifest: EvidenceArchiveManifest) -> ManifestCommitStatus:
+        """Atomically create an immutable record manifest, rejecting conflicts."""
+        try:
+            serialized = manifest.as_dict()
+            record_id = _safe_record_id(manifest.archive_record_id)
+        except EvidenceArchiveError:
+            return ManifestCommitStatus.MANIFEST_INVALID
+        # A committed record must not advertise artifacts that are absent or corrupt.
+        for artifact in manifest.artifacts:
+            try:
+                stored = self.get(artifact.locator)
+            except ArtifactNotFound:
+                return ManifestCommitStatus.MANIFEST_INVALID
+            except (ArchiveUnavailable, EvidenceArchiveError):
+                return ManifestCommitStatus.ARCHIVE_UNAVAILABLE
+            if len(stored) != artifact.byte_length or hashlib.sha256(stored).hexdigest() != artifact.digest_sha256:
+                return ManifestCommitStatus.MANIFEST_INVALID
+        target = self.root / "manifests" / f"{record_id}.json"
+        data = json.dumps(serialized, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(
+                mode="wb", prefix=".manifest-", dir=target.parent, delete=False
+            ) as handle:
+                temporary = Path(handle.name)
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+            try:
+                os.link(temporary, target)
+            except FileExistsError:
+                try:
+                    existing_raw = json.loads(target.read_text(encoding="utf-8"))
+                    existing = EvidenceArchiveManifest.from_dict(existing_raw)
+                except (OSError, json.JSONDecodeError, EvidenceArchiveError):
+                    return ManifestCommitStatus.ARCHIVE_UNAVAILABLE
+                if existing.fingerprint() != manifest.fingerprint():
+                    return ManifestCommitStatus.CONFLICTING_MANIFEST
+                return ManifestCommitStatus.ALREADY_PRESENT_MATCHING_DIGEST
+            finally:
+                temporary.unlink(missing_ok=True)
+            try:
+                verified = EvidenceArchiveManifest.from_dict(json.loads(target.read_text(encoding="utf-8")))
+            except (OSError, json.JSONDecodeError, EvidenceArchiveError):
+                return ManifestCommitStatus.ARCHIVE_UNAVAILABLE
+            if verified.fingerprint() != manifest.fingerprint():
+                return ManifestCommitStatus.ARCHIVE_UNAVAILABLE
+            return ManifestCommitStatus.STORED_AND_VERIFIED
+        except OSError:
+            return ManifestCommitStatus.ARCHIVE_UNAVAILABLE
+
+    def get_manifest(self, record_id: str) -> EvidenceArchiveManifest:
+        """Load a committed manifest and verify its self-consistency."""
+        safe_id = _safe_record_id(record_id)
+        path = self.root / "manifests" / f"{safe_id}.json"
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError as exc:
+            raise ArtifactNotFound(f"archive manifest not found: {record_id}") from exc
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ArchiveUnavailable(f"archive manifest read failed: {exc}") from exc
+        try:
+            return EvidenceArchiveManifest.from_dict(raw)
+        except EvidenceArchiveError as exc:
+            raise ArchiveUnavailable(f"archive manifest failed verification: {exc}") from exc
+
     def get(self, locator: str) -> bytes:
         digest = self._digest_from_locator(locator)
         path = self._path_for_digest(digest)
@@ -246,6 +330,88 @@ class ArtifactVerificationResult:
     expected_length: int | None = None
     observed_length: int | None = None
     detail: str = ""
+
+
+class ReplayStatus(str, Enum):
+    MATCH = "MATCH"
+    MISMATCH = "MISMATCH"
+    BLOCKED_ARTIFACT_UNAVAILABLE = "BLOCKED_ARTIFACT_UNAVAILABLE"
+    BLOCKED_EVALUATOR_UNAVAILABLE = "BLOCKED_EVALUATOR_UNAVAILABLE"
+    BLOCKED_EVALUATOR_ERROR = "BLOCKED_EVALUATOR_ERROR"
+    MANIFEST_INVALID = "MANIFEST_INVALID"
+
+
+@dataclass(frozen=True)
+class ReplayResult:
+    status: ReplayStatus
+    manifest_fingerprint: str
+    expected_decision_digest: str | None = None
+    observed_decision_digest: str | None = None
+    blocked_role: str | None = None
+    detail: str = ""
+
+
+def replay_archived_decision(
+    manifest: EvidenceArchiveManifest,
+    store: ArtifactStore,
+    *,
+    required_input_roles: tuple[str, ...],
+    decision_role: str,
+    evaluator: Callable[[Mapping[str, bytes]], bytes] | None,
+) -> ReplayResult:
+    """Replay a caller-supplied evaluator over exact verified archived inputs.
+
+    This is a deterministic harness, not a code loader or evaluator authenticator.
+    The caller is responsible for supplying the exact pinned evaluator revision;
+    missing inputs or evaluator failures never become a decision.
+    """
+    try:
+        manifest.validate()
+    except EvidenceArchiveError as exc:
+        return ReplayResult(ReplayStatus.MANIFEST_INVALID, "", detail=str(exc))
+    manifest_fp = manifest.fingerprint()
+    descriptor = next((item for item in manifest.artifacts if item.role == decision_role), None)
+    if descriptor is None or decision_role in required_input_roles or len(set(required_input_roles)) != len(required_input_roles):
+        return ReplayResult(ReplayStatus.MANIFEST_INVALID, manifest_fp, detail="decision role or input roles are invalid")
+    if evaluator is None:
+        return ReplayResult(
+            ReplayStatus.BLOCKED_EVALUATOR_UNAVAILABLE, manifest_fp,
+            expected_decision_digest=descriptor.digest_sha256,
+            detail="pinned evaluator implementation was not supplied",
+        )
+    inputs: dict[str, bytes] = {}
+    for role in required_input_roles:
+        result, data = retrieve_verified_artifact(manifest, role, store)
+        if result.status is not ArtifactVerificationStatus.VERIFIED or data is None:
+            return ReplayResult(
+                ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE, manifest_fp,
+                expected_decision_digest=descriptor.digest_sha256,
+                blocked_role=role,
+                detail=f"{result.status.value}: {result.detail}",
+            )
+        inputs[role] = data
+    try:
+        observed = evaluator(inputs)
+        if not isinstance(observed, bytes):
+            raise TypeError("evaluator must return serialized decision bytes")
+    except Exception as exc:
+        return ReplayResult(
+            ReplayStatus.BLOCKED_EVALUATOR_ERROR, manifest_fp,
+            expected_decision_digest=descriptor.digest_sha256,
+            detail=f"evaluator failed: {type(exc).__name__}: {exc}",
+        )
+    observed_digest = hashlib.sha256(observed).hexdigest()
+    expected_length = descriptor.byte_length
+    if len(observed) != expected_length or observed_digest != descriptor.digest_sha256:
+        return ReplayResult(
+            ReplayStatus.MISMATCH, manifest_fp, descriptor.digest_sha256,
+            observed_digest, detail=f"replayed decision length {len(observed)}; expected {expected_length}",
+        )
+    return ReplayResult(
+        ReplayStatus.MATCH, manifest_fp, descriptor.digest_sha256, observed_digest,
+    )
+
+
 
 
 def retrieve_verified_artifact(
