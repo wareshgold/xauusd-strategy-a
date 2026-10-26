@@ -7,7 +7,10 @@ supplies a captured execution report.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
+import re
+
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+
 
 from strategy_factory.research_ledger import (
     EvidenceStatus,
@@ -48,6 +51,12 @@ def ingest_execution_result(
         raise ValueError("result sequence must immediately follow its plan in this single-record ingestion")
     if previous_record_sha256 != plan_record.record_sha256:
         raise ValueError("previous hash must link to the referenced plan")
+    if not isinstance(captured.exit_code, int) or isinstance(captured.exit_code, bool):
+        raise ValueError("captured exit_code must be an integer")
+    for field_name in ("output_sha256", "environment_sha256"):
+        value = getattr(captured, field_name)
+        if not isinstance(value, str) or not _SHA256_RE.fullmatch(value):
+            raise ValueError(f"{field_name} must be a lowercase 64-character SHA-256 digest")
     if not captured.result_summary.strip():
         raise ValueError("captured result summary is required")
     if not captured.evidence_refs or any(not ref.strip() for ref in captured.evidence_refs):
