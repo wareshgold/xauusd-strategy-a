@@ -263,12 +263,14 @@ def test_replay_harness_matches_only_exact_reproduced_decision():
     })
     result = replay_archived_decision(
         manifest, store, required_input_roles=("input",), decision_role="decision",
-        evaluator=lambda inputs: decision_bytes if inputs["input"] == input_bytes else b"wrong",
+        evaluator_revision="evaluator@pinned", required_input_schemas={"input": "input@1"},
+        decision_schema_revision="decision@1", evaluator=lambda inputs: decision_bytes if inputs["input"] == input_bytes else b"wrong",
     )
     assert result.status is ReplayStatus.MATCH
     mismatch = replay_archived_decision(
         manifest, store, required_input_roles=("input",), decision_role="decision",
-        evaluator=lambda inputs: b'{"decision":"FAIL"}',
+        evaluator_revision="evaluator@pinned", required_input_schemas={"input": "input@1"},
+        decision_schema_revision="decision@1", evaluator=lambda inputs: b'{"decision":"FAIL"}',
     )
     assert mismatch.status is ReplayStatus.MISMATCH
 
@@ -277,12 +279,15 @@ def test_replay_harness_blocks_missing_inputs_and_missing_evaluator():
     manifest, input_bytes, decision_bytes = build_replay_manifest()
     missing = replay_archived_decision(
         manifest, FakeStore(), required_input_roles=("input",), decision_role="decision",
-        evaluator=lambda inputs: decision_bytes,
+        evaluator_revision="evaluator@pinned", required_input_schemas={"input": "input@1"},
+        decision_schema_revision="decision@1", evaluator=lambda inputs: decision_bytes,
     )
     assert missing.status is ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE
     unavailable = replay_archived_decision(
         manifest, FakeStore({manifest.artifacts[0].locator: input_bytes, manifest.artifacts[1].locator: decision_bytes}),
         required_input_roles=("input",), decision_role="decision", evaluator=None,
+        evaluator_revision="evaluator@pinned", required_input_schemas={"input": "input@1"},
+        decision_schema_revision="decision@1",
     )
     assert unavailable.status is ReplayStatus.BLOCKED_EVALUATOR_UNAVAILABLE
 
@@ -295,11 +300,44 @@ def test_replay_harness_blocks_evaluator_errors_and_invalid_role_contract():
     })
     failed = replay_archived_decision(
         manifest, store, required_input_roles=("input",), decision_role="decision",
-        evaluator=lambda inputs: 17,
+        evaluator_revision="evaluator@pinned", required_input_schemas={"input": "input@1"},
+        decision_schema_revision="decision@1", evaluator=lambda inputs: 17,
     )
     assert failed.status is ReplayStatus.BLOCKED_EVALUATOR_ERROR
     invalid = replay_archived_decision(
         manifest, store, required_input_roles=("decision",), decision_role="decision",
-        evaluator=lambda inputs: decision_bytes,
+        evaluator_revision="evaluator@pinned", required_input_schemas={"decision": "decision@1"},
+        decision_schema_revision="decision@1", evaluator=lambda inputs: decision_bytes,
     )
     assert invalid.status is ReplayStatus.MANIFEST_INVALID
+
+
+
+def test_replay_harness_blocks_revision_mismatch_and_schema_mismatch():
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    store = FakeStore({
+        manifest.artifacts[0].locator: input_bytes,
+        manifest.artifacts[1].locator: decision_bytes,
+    })
+    kwargs = dict(
+        manifest=manifest, store=store, required_input_roles=("input",),
+        decision_role="decision", evaluator=lambda inputs: decision_bytes,
+        evaluator_revision="evaluator@wrong",
+        required_input_schemas={"input": "input@1"}, decision_schema_revision="decision@1",
+    )
+    assert replay_archived_decision(**kwargs).status is ReplayStatus.BLOCKED_EVALUATOR_REVISION_MISMATCH
+    kwargs["evaluator_revision"] = "evaluator@pinned"
+    kwargs["required_input_schemas"] = {"input": "input@wrong"}
+    assert replay_archived_decision(**kwargs).status is ReplayStatus.MANIFEST_INVALID
+
+
+def test_replay_harness_requires_verified_archived_decision_artifact():
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    store = FakeStore({manifest.artifacts[0].locator: input_bytes})
+    result = replay_archived_decision(
+        manifest, store, required_input_roles=("input",), decision_role="decision",
+        evaluator=lambda inputs: decision_bytes, evaluator_revision="evaluator@pinned",
+        required_input_schemas={"input": "input@1"}, decision_schema_revision="decision@1",
+    )
+    assert result.status is ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE
+    assert result.blocked_role == "decision"

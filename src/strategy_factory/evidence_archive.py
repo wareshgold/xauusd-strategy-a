@@ -337,6 +337,7 @@ class ReplayStatus(str, Enum):
     MISMATCH = "MISMATCH"
     BLOCKED_ARTIFACT_UNAVAILABLE = "BLOCKED_ARTIFACT_UNAVAILABLE"
     BLOCKED_EVALUATOR_UNAVAILABLE = "BLOCKED_EVALUATOR_UNAVAILABLE"
+    BLOCKED_EVALUATOR_REVISION_MISMATCH = "BLOCKED_EVALUATOR_REVISION_MISMATCH"
     BLOCKED_EVALUATOR_ERROR = "BLOCKED_EVALUATOR_ERROR"
     MANIFEST_INVALID = "MANIFEST_INVALID"
 
@@ -358,26 +359,58 @@ def replay_archived_decision(
     required_input_roles: tuple[str, ...],
     decision_role: str,
     evaluator: Callable[[Mapping[str, bytes]], bytes] | None,
+    evaluator_revision: str,
+    required_input_schemas: Mapping[str, str],
+    decision_schema_revision: str,
 ) -> ReplayResult:
     """Replay a caller-supplied evaluator over exact verified archived inputs.
 
-    This is a deterministic harness, not a code loader or evaluator authenticator.
-    The caller is responsible for supplying the exact pinned evaluator revision;
-    missing inputs or evaluator failures never become a decision.
+    The supplied evaluator revision is checked against the manifest but is not
+    cryptographically bound to the callable. This harness is not a code loader
+    or evaluator authenticator. Required role/schema contracts are explicit.
     """
     try:
         manifest.validate()
     except EvidenceArchiveError as exc:
         return ReplayResult(ReplayStatus.MANIFEST_INVALID, "", detail=str(exc))
     manifest_fp = manifest.fingerprint()
-    descriptor = next((item for item in manifest.artifacts if item.role == decision_role), None)
-    if descriptor is None or decision_role in required_input_roles or len(set(required_input_roles)) != len(required_input_roles):
-        return ReplayResult(ReplayStatus.MANIFEST_INVALID, manifest_fp, detail="decision role or input roles are invalid")
+    descriptors = {item.role: item for item in manifest.artifacts}
+    descriptor = descriptors.get(decision_role)
+    if (
+        descriptor is None
+        or decision_role in required_input_roles
+        or len(set(required_input_roles)) != len(required_input_roles)
+        or set(required_input_schemas) != set(required_input_roles)
+        or any(not schema.strip() for schema in required_input_schemas.values())
+        or not decision_schema_revision.strip()
+    ):
+        return ReplayResult(ReplayStatus.MANIFEST_INVALID, manifest_fp, detail="decision role or required input role/schema contract is invalid")
+    if descriptor.schema_revision != decision_schema_revision:
+        return ReplayResult(ReplayStatus.MANIFEST_INVALID, manifest_fp, detail="decision artifact schema revision mismatch")
+    for role, schema in required_input_schemas.items():
+        item = descriptors.get(role)
+        if item is None or item.schema_revision != schema:
+            return ReplayResult(ReplayStatus.MANIFEST_INVALID, manifest_fp, blocked_role=role, detail="required input role missing or schema revision mismatch")
+    if not evaluator_revision or evaluator_revision != manifest.evaluator_revision:
+        return ReplayResult(
+            ReplayStatus.BLOCKED_EVALUATOR_REVISION_MISMATCH, manifest_fp,
+            expected_decision_digest=descriptor.digest_sha256,
+            detail="supplied evaluator revision does not match manifest revision",
+        )
     if evaluator is None:
         return ReplayResult(
             ReplayStatus.BLOCKED_EVALUATOR_UNAVAILABLE, manifest_fp,
             expected_decision_digest=descriptor.digest_sha256,
             detail="pinned evaluator implementation was not supplied",
+        )
+    # Verify the archived reference decision itself before using its digest.
+    reference_result, reference_bytes = retrieve_verified_artifact(manifest, decision_role, store)
+    if reference_result.status is not ArtifactVerificationStatus.VERIFIED or reference_bytes is None:
+        return ReplayResult(
+            ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE, manifest_fp,
+            expected_decision_digest=descriptor.digest_sha256,
+            blocked_role=decision_role,
+            detail=f"{reference_result.status.value}: {reference_result.detail}",
         )
     inputs: dict[str, bytes] = {}
     for role in required_input_roles:
@@ -401,16 +434,14 @@ def replay_archived_decision(
             detail=f"evaluator failed: {type(exc).__name__}: {exc}",
         )
     observed_digest = hashlib.sha256(observed).hexdigest()
-    expected_length = descriptor.byte_length
-    if len(observed) != expected_length or observed_digest != descriptor.digest_sha256:
+    if len(observed) != len(reference_bytes) or observed_digest != hashlib.sha256(reference_bytes).hexdigest():
         return ReplayResult(
             ReplayStatus.MISMATCH, manifest_fp, descriptor.digest_sha256,
-            observed_digest, detail=f"replayed decision length {len(observed)}; expected {expected_length}",
+            observed_digest, detail=f"replayed decision length {len(observed)}; expected {len(reference_bytes)}",
         )
     return ReplayResult(
         ReplayStatus.MATCH, manifest_fp, descriptor.digest_sha256, observed_digest,
     )
-
 
 
 
