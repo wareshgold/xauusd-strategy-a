@@ -138,6 +138,13 @@ def test_exact_chain_passes():
 
     assert result.status is ResearchProvenanceStatus.PASS
     assert result.reasons == ()
+    result.validate()
+    assert dict(result.input_fingerprints)["research_run"] == __import__(
+        "hashlib"
+    ).sha256(__import__("json").dumps(
+        chain["run"].as_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode("utf-8")).hexdigest()
+    assert len(result.decision_fingerprint) == 64
 
 
 @pytest.mark.parametrize(
@@ -229,3 +236,24 @@ def test_receipt_semantics_mismatch_fails():
 
     assert result.status is ResearchProvenanceStatus.FAIL
     assert any(reason.startswith("EXECUTION_BINDING:") for reason in result.reasons)
+
+def test_provenance_decision_fingerprint_detects_tampering():
+    result = evaluate_research_provenance(**make_chain())
+    altered = replace(result, reasons=("MANUALLY_CHANGED",))
+    with pytest.raises(ValueError, match="decision fingerprint mismatch"):
+        altered.validate()
+
+
+def test_provenance_decision_binds_execution_receipt_and_dataset_provenance():
+    chain = make_chain()
+    result = evaluate_research_provenance(**chain)
+    bound = dict(result.input_fingerprints)
+    assert bound["execution_receipt"]
+    assert bound["dataset_provenance"]
+    changed = dict(chain)
+    changed["receipt"] = replace(
+        chain["receipt"], execution_id="EXEC-OTHER"
+    )
+    replay = evaluate_research_provenance(**changed)
+    assert replay.status is ResearchProvenanceStatus.FAIL
+    assert replay.decision_fingerprint != result.decision_fingerprint

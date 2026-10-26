@@ -26,6 +26,6 @@ The current design is best described as deterministic cross-object consistency c
 
 Define an immutable provenance-decision record binding schema and policy revision; run, spec, job, receipt, evidence, audit, snapshot, and dataset-provenance fingerprints; status and stable reason codes; artifact identifiers; and a documented retrieval/retention contract. Record creation should verify the decision binds the exact same components. Add adversarial tests for manually constructed PASS results, cross-run/cross-dataset reuse, missing artifacts, and fingerprint mismatches. Treat digests as integrity only; independent authenticity requires a separately selected trust root and verification policy.
 
-## Decision and limits
+## Follow-up status
 
-Audit only; no code change claims provenance is authenticated or replayable. No canonical SP2L geometry, dataset role, execution semantics, MT5 configuration, runner, or forward-test evidence was changed.
+The follow-up contract is implemented in `docs/research/FACTORY_PROVENANCE_DECISION_RECORD_CONTRACT_2026-10-26.md`: PASS provenance decisions now bind deterministic input fingerprints, and research-record creation checks the decision against the supplied core components. This improves integrity and cross-object binding only; it does not authenticate the evaluator, prove the execution receipt is truthful, or make artifacts durably retrievable. No canonical SP2L geometry, dataset-role policy, execution semantics, MT5 configuration, runner, or forward-test evidence was changed.

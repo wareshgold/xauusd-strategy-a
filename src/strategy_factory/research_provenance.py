@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
 from enum import Enum
 from typing import Any
 
@@ -26,12 +28,61 @@ class ResearchProvenanceResult:
 
     status: ResearchProvenanceStatus
     reasons: tuple[str, ...]
+    input_fingerprints: tuple[tuple[str, str], ...] = ()
+    decision_fingerprint: str = ""
+
+    @staticmethod
+    def _decision_payload(
+        status: ResearchProvenanceStatus,
+        reasons: tuple[str, ...],
+        input_fingerprints: tuple[tuple[str, str], ...],
+    ) -> dict[str, Any]:
+        return {
+            "schema_revision": "RESEARCH-PROVENANCE-DECISION-1",
+            "status": status.value,
+            "reasons": list(reasons),
+            "input_fingerprints": {key: value for key, value in input_fingerprints},
+        }
+
+    def validate(self) -> None:
+        if self.status is ResearchProvenanceStatus.PASS and not self.input_fingerprints:
+            raise ValueError("PASS provenance decision requires bound input fingerprints")
+        expected = hashlib.sha256(json.dumps(
+            self._decision_payload(self.status, self.reasons, self.input_fingerprints),
+            sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+        ).encode("utf-8")).hexdigest()
+        if self.decision_fingerprint != expected:
+            raise ValueError("provenance decision fingerprint mismatch")
 
     def as_dict(self) -> dict[str, Any]:
-        return {
-            "status": self.status.value,
-            "reasons": list(self.reasons),
+        return self._decision_payload(self.status, self.reasons, self.input_fingerprints) | {
+            "decision_fingerprint": self.decision_fingerprint,
         }
+
+
+def _object_fingerprint(value: Any) -> str:
+    payload = value.as_dict()
+    return hashlib.sha256(json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+    ).encode("utf-8")).hexdigest()
+
+
+def _decision_result(
+    status: ResearchProvenanceStatus,
+    reasons: tuple[str, ...],
+    *,
+    inputs: dict[str, Any] | None = None,
+) -> ResearchProvenanceResult:
+    fingerprints: tuple[tuple[str, str], ...] = ()
+    if inputs is not None:
+        fingerprints = tuple(sorted(
+            (name, _object_fingerprint(value)) for name, value in inputs.items()
+        ))
+    payload = ResearchProvenanceResult._decision_payload(status, reasons, fingerprints)
+    digest = hashlib.sha256(json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+    ).encode("utf-8")).hexdigest()
+    return ResearchProvenanceResult(status, reasons, fingerprints, digest)
 
 
 def evaluate_research_provenance(
@@ -149,6 +200,19 @@ def evaluate_research_provenance(
             if "DATASET_PROVENANCE_BLOCKED" in reasons
             else ResearchProvenanceStatus.FAIL
         )
-        return ResearchProvenanceResult(status, tuple(reasons))
+        return _decision_result(status, tuple(reasons))
 
-    return ResearchProvenanceResult(ResearchProvenanceStatus.PASS, ())
+    return _decision_result(
+        ResearchProvenanceStatus.PASS,
+        (),
+        inputs={
+            "test_spec": spec,
+            "research_job": job,
+            "research_run": run,
+            "execution_receipt": receipt,
+            "evidence_bundle": evidence,
+            "research_audit": audit,
+            "readiness_snapshot": snapshot,
+            "dataset_provenance": dataset_provenance,
+        },
+    )

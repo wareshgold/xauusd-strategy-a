@@ -83,6 +83,8 @@ class ResearchRecord:
     def validate(self) -> None:
         if not self.run_id or not self.strategy_id or not self.strategy_revision:
             raise ResearchRecordError("research record identity is incomplete")
+        if not self.provenance_decision_fingerprint:
+            raise ResearchRecordError("research record requires a provenance decision fingerprint")
         if not isinstance(self.provenance_status, ResearchProvenanceStatus):
             raise ResearchRecordError("research record provenance status must be explicit")
         if self.provenance_status.value != ResearchProvenanceStatus.PASS.value:
