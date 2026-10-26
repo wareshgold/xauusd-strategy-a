@@ -84,3 +84,25 @@ def test_holdout_revision_change_fails():
     result = evaluate_dataset_provenance(changed, registry, HASH_A, observed_artifact=artifact())
     assert result.status is DatasetProvenanceStatus.FAIL
     assert "DATA_REVISION_MISMATCH" in result.reasons
+
+
+def test_matching_holdout_hash_is_blocked_without_authenticated_external_trust():
+    spec = make_spec(DatasetRole.FRESH_HOLDOUT)
+    registry = DatasetRegistry()
+    registry.register(spec.dataset, HASH_A, artifact=artifact())
+    result = evaluate_dataset_provenance(
+        spec, registry, HASH_A, observed_artifact=artifact()
+    )
+    assert result.status is DatasetProvenanceStatus.BLOCKED
+    assert result.reasons == ("DATASET_EXTERNAL_TRUST_UNAUTHENTICATED",)
+
+
+def test_matching_untouched_validation_hash_is_blocked_without_authenticated_external_trust():
+    spec = make_spec(DatasetRole.UNTOUCHED_VALIDATION)
+    registry = DatasetRegistry()
+    registry.register(spec.dataset, HASH_A, artifact=artifact())
+    result = evaluate_dataset_provenance(
+        spec, registry, HASH_A, observed_artifact=artifact()
+    )
+    assert result.status is DatasetProvenanceStatus.BLOCKED
+    assert result.reasons == ("DATASET_EXTERNAL_TRUST_UNAUTHENTICATED",)

@@ -50,3 +50,8 @@ The mapping-only `DatasetManifestRegistry` exposes `has_authenticated_external_t
 ## Activation gate
 
 Implementation of an authenticated provider can begin once the owner identifies the real independent trust channel and confirms its control/permission model. Until then, `FRESH_HOLDOUT` remains blocked from any claim of independently authenticated provenance. Existing hash-chain and registry checks remain integrity controls only.
+
+
+## Additional fail-closed boundary added on 2026-10-26
+
+The parallel dataset-provenance path now reports `BLOCKED` for matching local-registry hashes when the declared role is `UNTOUCHED_VALIDATION` or `FRESH_HOLDOUT`, while preserving `FAIL` for observed identity/content mismatches. `ResearchRecord.validate()` also rejects validation/holdout records until an authenticated external trust provider exists, so a caller-created `ResearchProvenanceResult(PASS, ...)` cannot independently promote such a record. Synthetic regression tests cover both roles. This closes a separate in-memory provenance path; it does not resolve the owner decision or authenticate any existing dataset.

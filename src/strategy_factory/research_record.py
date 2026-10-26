@@ -87,6 +87,11 @@ class ResearchRecord:
             raise ResearchRecordError("research record provenance status must be explicit")
         if self.provenance_status.value != ResearchProvenanceStatus.PASS.value:
             raise ResearchRecordError("research record requires PASS provenance status")
+        if self.dataset_role in {"UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"}:
+            raise ResearchRecordError(
+                "validation/holdout research record requires authenticated external dataset trust; "
+                "no authenticated trust provider is implemented"
+            )
         expected = hashlib.sha256(self._payload(self.as_dict(include_fingerprint=False))).hexdigest()
         if self.fingerprint != expected:
             raise ResearchRecordError("research record fingerprint mismatch")
