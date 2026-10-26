@@ -44,4 +44,4 @@
 
 ## Next increment
 
-Add a deterministic Evidence Graph and research-action planner. The planner may point to missing evidence, explicit contradictions, inconclusive findings, and required human source review. It must not invent evidence, infer canonical meaning, or issue trading decisions.
+Implement a versioned, append-only experiment ledger binding hypothesis version, frozen input hash, code hash, result, evidence status, counterexamples, and prior failures. Pin its expected tip/count externally when using it to detect truncation.
