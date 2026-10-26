@@ -42,6 +42,16 @@
 
 - `docs/research/RECONCILIATION_COUNTEREXAMPLE_AUDIT_2026-10-26.md` records the duplicate-identity counterexamples and explicitly scopes the tests as synthetic structural checks.
 
+## Experiment ledger increment completed
+
+- Ledger implementation: `src/strategy_factory/research_ledger.py`.
+- Focused tests: `tests/test_strategy_factory_research_ledger.py`.
+- Contract: `docs/research/FACTORY_RESEARCH_EXPERIMENT_LEDGER_CONTRACT_2026-10-26.md`.
+- Implementation commit: `1022d1a3721a421ecaa181fdcec7abdc6fe0bf94`.
+- CI workflow continuation fix: `942d0f7de494c228be444417ab4ac8b2090fb275`.
+- Both workflows passed on the fixed commit: Factory Research Tests [run 40295014150](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40295014150); SP2L forensic deterministic checks [run 40295014134](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40295014134).
+- The ledger does not contain fabricated historical or trading outcomes; no experiment was run as part of this increment.
+
 ## Next increment
 
-Implement a versioned, append-only experiment ledger binding hypothesis version, frozen input hash, code hash, result, evidence status, counterexamples, and prior failures. Pin its expected tip/count externally when using it to detect truncation.
+Connect the ledger to explicit hypothesis and synthetic-fixture registries with stable IDs, so planned cases can be recorded without fabricating outcomes. Only actual executed results should receive PASS/FAIL; source interpretation and canonical promotion remain a human-reviewed gate.
