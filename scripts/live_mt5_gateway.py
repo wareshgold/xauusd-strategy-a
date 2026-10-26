@@ -335,7 +335,22 @@ def execute_signal(signal: Signal) -> dict:
 
         ok = result.retcode in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED)
         verification = None
-        if ok and result.order:
+        if ok:
+            # A successful retcode is not enough: this path is explicitly
+            # pending-limit research, so require a ticket and independently
+            # verified broker-stored levels before reporting acceptance.
+            if not result.order:
+                return {
+                    "ok": False,
+                    "dry_run": False,
+                    "retcode": result.retcode,
+                    "order": result.order,
+                    "deal": result.deal,
+                    "comment": result.comment,
+                    "order_mode": order_mode,
+                    "reason": "PENDING_ORDER_TICKET_MISSING",
+                    "verification": {"verified": False, "reason": "NO_ORDER_TICKET"},
+                }
             verification = _verify_pending_order_levels(
                 int(result.order),
                 signal.entry,
@@ -343,9 +358,11 @@ def execute_signal(signal: Signal) -> dict:
                 signal.tp,
             )
             if not verification["verified"]:
-                # Fail closed for research/demo: never accept a pending order
-                # whose broker-stored SL/TP differs from the signal levels.
+                # Never report an unverified pending order as accepted. Only
+                # attempt removal when the exact ticket is still active; if
+                # it is absent, do not infer that it is safe or cancellable.
                 active = mt5.orders_get(ticket=int(result.order)) or []
+                cancel_retcode = None
                 if active:
                     cancel_request = {
                         "action": mt5.TRADE_ACTION_REMOVE,
@@ -355,18 +372,23 @@ def execute_signal(signal: Signal) -> dict:
                         "comment": "SP2L-SL-VERIFY-FAIL"[:31],
                     }
                     cancel_result = mt5.order_send(cancel_request)
-                    return {
-                        "ok": False,
-                        "dry_run": False,
-                        "retcode": result.retcode,
-                        "order": result.order,
-                        "deal": result.deal,
-                        "comment": result.comment,
-                        "order_mode": order_mode,
-                        "reason": "BROKER_STORED_LEVELS_MISMATCH",
-                        "verification": verification,
-                        "cancel_retcode": getattr(cancel_result, "retcode", None),
-                    }
+                    cancel_retcode = getattr(cancel_result, "retcode", None)
+                return {
+                    "ok": False,
+                    "dry_run": False,
+                    "retcode": result.retcode,
+                    "order": result.order,
+                    "deal": result.deal,
+                    "comment": result.comment,
+                    "order_mode": order_mode,
+                    "reason": (
+                        "BROKER_STORED_LEVELS_MISMATCH"
+                        if verification.get("reason") is None
+                        else "BROKER_STORED_ORDER_UNVERIFIED"
+                    ),
+                    "verification": verification,
+                    "cancel_retcode": cancel_retcode,
+                }
         return {"ok": ok,
                 "dry_run": False, "retcode": result.retcode, "order": result.order,
                 "deal": result.deal, "comment": result.comment, "order_mode": order_mode,
