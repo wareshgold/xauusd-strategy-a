@@ -131,10 +131,14 @@ def build_research_plan(graph: EvidenceGraph) -> ResearchPlan:
                        key=lambda edge: (edge.evidence_id, edge.relation.value))
         contradictions = [edge.evidence_id for edge in edges
                           if edge.relation is EdgeRelation.CONTRADICTS]
+        contradicted_roles = {
+            evidence[edge.evidence_id].role for edge in edges
+            if edge.relation is EdgeRelation.CONTRADICTS
+        }
         supported_roles = {
             evidence[edge.evidence_id].role for edge in edges
             if edge.relation is EdgeRelation.SUPPORTS
-        }
+        } - contradicted_roles
         role_priority = {"SOURCE": 0, "DATA": 1, "TEST": 2, "EXECUTION": 3, "STATISTICAL_VALIDATION": 4}
         missing_roles = sorted(set(claim.required_roles) - supported_roles,
                                key=lambda role: (role_priority[role], role))
@@ -181,7 +185,7 @@ def build_research_plan(graph: EvidenceGraph) -> ResearchPlan:
                 reason="Linked non-source evidence is inconclusive; no outcome is presumed.",
                 expected_artifact="FROZEN_INPUT_COUNTEREXAMPLE_FIXTURE",
             ))
-        if claim.canonical_rule_change and not claim_actions:
+        if claim.canonical_rule_change:
             claim_actions.append(ResearchAction(
                 action_id=f"{claim.claim_id}:human-review",
                 kind=PlanActionKind.HUMAN_SOURCE_REVIEW,
