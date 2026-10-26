@@ -125,3 +125,29 @@ def test_unknown_edge_relation_fails_closed():
         edges=(EvidenceEdge("source", "C1", "RELATED"),))
     with pytest.raises(ValueError, match="known EdgeRelation"):
         validate_graph(graph)
+
+
+def test_source_evidence_is_prioritized_before_downstream_roles():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C-SOURCE-FIRST", "Research-first claim",
+                          ("STATISTICAL_VALIDATION", "TEST", "DATA", "SOURCE", "EXECUTION")),),
+        evidence=(), edges=(),
+    )
+    plan = build_research_plan(graph)
+    assert [action.target for action in plan.actions] == [
+        "SOURCE", "DATA", "TEST", "EXECUTION", "STATISTICAL_VALIDATION"
+    ]
+
+
+def test_inconclusive_source_requests_source_resolution_before_downstream_test():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C-SOURCE-AMBIGUOUS", "Unresolved source meaning", ("SOURCE", "TEST")),),
+        evidence=(ev("source-maybe", "SOURCE", "INCONCLUSIVE"),),
+        edges=(EvidenceEdge("source-maybe", "C-SOURCE-AMBIGUOUS", EdgeRelation.DEPENDS_ON),),
+    )
+    plan = build_research_plan(graph)
+    assert plan.actions[0].kind is PlanActionKind.COLLECT_MISSING_EVIDENCE
+    assert plan.actions[0].target == "SOURCE"
+    assert any(action.kind is PlanActionKind.RESOLVE_SOURCE_AMBIGUITY for action in plan.actions)
+    assert not any(action.kind is PlanActionKind.DESIGN_DISCRIMINATING_TEST for action in plan.actions)
+    assert all(action.canonical_authorized is False for action in plan.actions)
