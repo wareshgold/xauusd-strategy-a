@@ -251,26 +251,40 @@ def execute_signal(signal: Signal) -> dict:
     # entry. This does NOT establish canonical fill/lifecycle semantics.
     order_mode = os.getenv("MT5_FORWARD_ORDER_MODE", "MARKET").upper()
     if order_mode == "PENDING_LIMIT_RESEARCH":
-        if signal.direction == "BUY":
-            if signal.entry >= float(tick.ask):
+        # Broker-side pending-price rules vary by symbol. Fail closed before
+        # order_send: a BUY_LIMIT must be below Bid (not merely below Ask),
+        # and a SELL_LIMIT must be above Ask. Use the symbol's actual trade
+        # tick size when available; never round/alter source-derived levels.
+        bid = float(getattr(tick, "bid", 0.0) or 0.0)
+        ask = float(getattr(tick, "ask", 0.0) or 0.0)
+        tick_size = float(getattr(info, "trade_tick_size", 0.0) or 0.0)
+        if tick_size <= 0:
+            tick_size = point
+        if tick_size > 0:
+            grid_steps = signal.entry / tick_size
+            if abs(grid_steps - round(grid_steps)) > 1e-7:
                 return {
-                    "ok": False,
-                    "dry_run": False,
-                    "reason": "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET",
-                    "observed_market_price": price,
-                    "signal_entry": signal.entry,
+                    "ok": False, "dry_run": False,
+                    "reason": "PENDING_ENTRY_OFF_TICK_GRID",
+                    "signal_entry": signal.entry, "trade_tick_size": tick_size,
                     "order_mode": order_mode,
+                }
+        if signal.direction == "BUY":
+            if signal.entry >= bid:
+                return {
+                    "ok": False, "dry_run": False,
+                    "reason": "BUY_LIMIT_NOT_BELOW_BID",
+                    "observed_bid": bid, "observed_ask": ask,
+                    "signal_entry": signal.entry, "order_mode": order_mode,
                 }
             order_type = mt5.ORDER_TYPE_BUY_LIMIT
         else:
-            if signal.entry <= float(tick.bid):
+            if signal.entry <= ask:
                 return {
-                    "ok": False,
-                    "dry_run": False,
-                    "reason": "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET",
-                    "observed_market_price": price,
-                    "signal_entry": signal.entry,
-                    "order_mode": order_mode,
+                    "ok": False, "dry_run": False,
+                    "reason": "SELL_LIMIT_NOT_ABOVE_ASK",
+                    "observed_bid": bid, "observed_ask": ask,
+                    "signal_entry": signal.entry, "order_mode": order_mode,
                 }
             order_type = mt5.ORDER_TYPE_SELL_LIMIT
 
