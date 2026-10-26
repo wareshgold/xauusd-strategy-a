@@ -48,5 +48,5 @@ def audit_event_timeline(events):
         if len(group) > 1:
             findings.append(TimelineFinding(TimelineStatus.SAME_TIME_AMBIGUOUS, tuple(e.event_id for e in group), tuple(e.source_row for e in group), stamp, "SAME_MILLISECOND_ORDER_UNRESOLVED"))
     if not findings:
-        findings.append(TimelineFinding(TimelineStatus.ORDERED, tuple(e.event_id for e in rows), tuple(e.source_row for e in rows), rows[-1].time_msc if rows else None, "NO_ANOMALY_DETECTED_NOT_CAUSAL_PROOF"))
+        findings.append(TimelineFinding(TimelineStatus.ORDERED, tuple(e.event_id for e in rows), tuple(e.source_row for e in rows), rows[-1].time_msc if rows else None, "NO_ANOMALY_DETECTED_NOT_PROOF_OF_CAUSAL_ORDER"))
     return tuple(findings)
