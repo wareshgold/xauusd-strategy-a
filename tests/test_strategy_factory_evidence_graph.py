@@ -64,7 +64,8 @@ def test_inconclusive_evidence_proposes_discriminating_fixture_not_a_result():
         edges=(EvidenceEdge("maybe", "C1", EdgeRelation.DEPENDS_ON),),
     )
     plan = build_research_plan(graph)
-    assert any(a.kind is PlanActionKind.DESIGN_DISCRIMINATING_TEST for a in plan.actions)
+    assert any(a.kind is PlanActionKind.RESOLVE_SOURCE_AMBIGUITY for a in plan.actions)
+    assert not any(a.kind is PlanActionKind.DESIGN_DISCRIMINATING_TEST for a in plan.actions)
     assert all(a.canonical_authorized is False for a in plan.actions)
 
 
