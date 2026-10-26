@@ -118,3 +118,9 @@ Tests cover repeatable bytes, payload preservation, role/class mismatch, unknown
 The first concrete round-trip decoder is now implemented for `test_spec` only, under schema revision `HISTORICAL-TEST-SPEC-1`. It reconstructs `TestDataset` and `HistoricalTestSpec`, validates enum values and the actual contract, rejects extra/missing payload keys, and requires canonical JSON bytes on re-serialization. Tests cover round-trip equality and role/schema/payload/enum tampering.
 
 The decoder explicitly refuses roles without a versioned decoder. This is intentional: the other seven provenance inputs include nested contracts or derived records and must not be reconstructed using guessed field mappings. The eight-role provenance archive therefore remains incomplete and must not be advertised as end-to-end replayable. This decoder provides structural/schema validation only, not issuer or evaluator authentication.
+
+## Second versioned provenance decoder: research job
+
+The `research_job` input now has a versioned decoder under `RESEARCH-JOB-SPEC-1`. It reconstructs the real `ResearchJobSpec`, requires the exact payload field set, parses the declared `ExecutionSemantics`, validates the dataset fingerprint and required identity fields using the existing job contract, and enforces canonical serialization on round-trip. Tests cover round-trip equality and tampered role/schema/fields/enum/fingerprint cases.
+
+This advances two of eight input decoders (`test_spec`, `research_job`). The remaining six inputs still have no decoder and remain blocked for complete archived provenance replay. The job decoder validates the job's internal contract; matching it to the restored test spec and independently verifying the referenced dataset manifest remain separate checks. It does not authenticate the archive or evaluator.

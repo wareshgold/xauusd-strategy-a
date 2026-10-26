@@ -14,6 +14,7 @@ from .jobs import ResearchJobSpec, validate_job_matches_test_spec
 from .runs import ResearchRunIdentity
 from .snapshot import ReadinessSnapshot
 from .test_contract import DatasetRole, ExecutionSemantics, HistoricalTestSpec, TestDataset
+from .jobs import ResearchJobSpec
 
 
 class ResearchProvenanceStatus(str, Enum):
@@ -282,6 +283,7 @@ def serialize_provenance_input_artifact(
 
 PROVENANCE_INPUT_SCHEMA_REVISIONS = {
     "test_spec": "HISTORICAL-TEST-SPEC-1",
+    "research_job": "RESEARCH-JOB-SPEC-1",
 }
 
 
@@ -315,6 +317,38 @@ def deserialize_provenance_input_artifact(
     payload = envelope["payload"]
     if not isinstance(payload, dict):
         raise ValueError("provenance artifact payload must be an object")
+    if expected_role == "research_job":
+        required = {
+            "job_id", "strategy_id", "strategy_revision", "manifest_revision",
+            "test_id", "dataset_id", "data_revision", "dataset_fingerprint",
+            "execution_semantics", "parameters", "objective",
+        }
+        if set(payload) != required:
+            raise ValueError("research job payload keys are invalid")
+        if not isinstance(payload["parameters"], dict):
+            raise ValueError("research job parameters must be an object")
+        try:
+            job = ResearchJobSpec(
+                job_id=payload["job_id"],
+                strategy_id=payload["strategy_id"],
+                strategy_revision=payload["strategy_revision"],
+                manifest_revision=payload["manifest_revision"],
+                test_id=payload["test_id"],
+                dataset_id=payload["dataset_id"],
+                data_revision=payload["data_revision"],
+                dataset_fingerprint=payload["dataset_fingerprint"],
+                execution_semantics=ExecutionSemantics(payload["execution_semantics"]),
+                parameters=payload["parameters"],
+                objective=payload["objective"],
+            )
+            job.validate()
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("research job artifact failed contract validation") from exc
+        if serialize_provenance_input_artifact(
+            "research_job", job, schema_revision=expected_schema_revision
+        ) != data:
+            raise ValueError("research job artifact is not canonical JSON")
+        return job
     if expected_role == "test_spec":
         required = {
             "test_id", "strategy_id", "strategy_revision", "dataset",

@@ -379,3 +379,51 @@ def test_test_spec_decoder_blocks_unimplemented_roles_and_schema_revisions():
         deserialize_provenance_input_artifact(
             b"{}", expected_role="test_spec", expected_schema_revision="HISTORICAL-TEST-SPEC-2"
         )
+
+
+def test_research_job_artifact_round_trip_uses_explicit_versioned_decoder():
+    job = make_chain()["job"]
+    schema = "RESEARCH-JOB-SPEC-1"
+    encoded = serialize_provenance_input_artifact(
+        "research_job", job, schema_revision=schema
+    )
+    decoded = deserialize_provenance_input_artifact(
+        encoded, expected_role="research_job", expected_schema_revision=schema
+    )
+    assert type(decoded) is ResearchJobSpec
+    assert decoded.as_dict() == job.as_dict()
+    assert serialize_provenance_input_artifact(
+        "research_job", decoded, schema_revision=schema
+    ) == encoded
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda env: {**env, "artifact_role": "test_spec"}, "role mismatch"),
+        (lambda env: {**env, "schema_revision": "RESEARCH-JOB-SPEC-2"},
+         "schema revision mismatch"),
+        (lambda env: {**env, "payload": {**env["payload"], "extra": True}},
+         "payload keys are invalid"),
+        (lambda env: {**env, "payload": {
+            **env["payload"], "execution_semantics": "UNKNOWN_SEMANTICS"
+        }}, "contract validation"),
+        (lambda env: {**env, "payload": {
+            **env["payload"], "dataset_fingerprint": "not-a-sha256"
+        }}, "contract validation"),
+    ],
+    ids=("role-drift", "schema-drift", "extra-field", "invalid-enum", "bad-dataset-fingerprint"),
+)
+def test_research_job_decoder_rejects_tampered_or_incompatible_artifacts(mutate, message):
+    schema = "RESEARCH-JOB-SPEC-1"
+    encoded = serialize_provenance_input_artifact(
+        "research_job", make_chain()["job"], schema_revision=schema
+    )
+    envelope = __import__("json").loads(encoded)
+    changed = __import__("json").dumps(
+        mutate(envelope), sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode("utf-8")
+    with pytest.raises(ValueError, match=message):
+        deserialize_provenance_input_artifact(
+            changed, expected_role="research_job", expected_schema_revision=schema
+        )
