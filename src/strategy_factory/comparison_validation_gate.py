@@ -131,7 +131,7 @@ def evaluate_comparison_validation_gate(
         reasons.append("STATISTICAL_COMPARISON_EVIDENCE_NOT_REGISTERED")
 
     governed = False
-    if registered:
+    if registered and not reasons:
         try:
             governance_ledger.record(
                 evidence,
