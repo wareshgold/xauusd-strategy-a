@@ -1,6 +1,6 @@
 # Factory Evidence Archive, Retrieval, and Replay Contract — 2026-10-26
 
-Status: proposed contract; implementation and storage-provider selection are not implied.
+Status: contract with a first, deliberately limited verification interface implemented; no durable storage adapter, write path, replay runner, or trust root is implemented or implied.
 
 ## Purpose
 
@@ -33,7 +33,7 @@ A future implementation must define a versioned manifest with, at minimum:
 
 The manifest itself must be serialized under a versioned canonicalization rule and have its own digest. Changing artifact bytes, roles, locator metadata, or policy identity must change the appropriate digest or manifest revision. A mutable locator may be retained as a convenience but must not be the sole identity of an artifact.
 
-## Write and retrieval behavior
+## Implemented first increment\n\n`src/strategy_factory/evidence_archive.py` now defines a versioned manifest, artifact descriptors, a storage adapter protocol, explicit retrieval outcomes, and pre-parse SHA-256/byte-length verification. The adapter contract distinguishes `ARTIFACT_NOT_FOUND` from `ARCHIVE_UNAVAILABLE`; invalid manifests, undeclared roles, length mismatches, and digest mismatches return no artifact bytes. The manifest carries `CONTENT_DIGEST_ONLY_NOT_DURABLE_NOT_AUTHENTICATED` assurance scope and rejects attempts to relabel itself as authenticated.\n\nTests use an in-memory fake adapter only. This is a deterministic test fixture, not a persistent archive or proof of durable retention. There is no archive write/commit protocol or replay evaluator yet. The first increment intentionally avoids selecting a provider.\n\n## Write and retrieval behavior
 
 The archive API should expose explicit outcomes rather than collapsing failures into PASS:
 
@@ -82,7 +82,7 @@ Until independent dataset trust is implemented, UNTOUCHED_VALIDATION and FRESH_H
 
 ## Acceptance tests required before implementation is considered complete
 
-- exact manifest round-trip is deterministic;
+- exact manifest serialization/fingerprint is deterministic;\n- retrieval verifies content digest and byte length before returning bytes;\n- missing and unavailable storage outcomes are distinct;\n- unsupported schema, undeclared roles, duplicate roles, and false assurance scope are rejected;
 - each artifact digest/length mismatch is rejected;
 - missing and unavailable artifacts remain distinct blocked outcomes;
 - duplicate write with identical digest is idempotent;
