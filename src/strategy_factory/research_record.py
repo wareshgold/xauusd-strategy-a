@@ -37,6 +37,7 @@ class ResearchRecord:
     execution_semantics: str
     provenance_status: ResearchProvenanceStatus
     provenance_reasons: tuple[str, ...]
+    provenance_decision_fingerprint: str
     fingerprint: str
 
     @staticmethod
@@ -138,6 +139,7 @@ class ResearchRecord:
             execution_semantics=run.execution_semantics.value,
             provenance_status=provenance.status,
             provenance_reasons=provenance.reasons,
+            provenance_decision_fingerprint=provenance.decision_fingerprint,
             fingerprint="",
         )
         fingerprint = hashlib.sha256(record._payload(record.as_dict(include_fingerprint=False))).hexdigest()
