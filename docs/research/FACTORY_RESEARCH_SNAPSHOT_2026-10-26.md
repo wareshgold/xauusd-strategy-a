@@ -64,6 +64,18 @@
 - The new planner tests are included in Factory Research Tests CI. CI must be checked on the final branch head before treating this increment as verified.
 - No local files/worktrees, MT5 session/account, live runner, Strategy A forward-test artifacts, or Strategy B run were touched. No PR merge or production deployment.
 
+
+## Captured execution-result ingestion increment — 2026-10-26
+
+- Ingestion boundary: `src/strategy_factory/execution_result_ingestion.py`.
+- Tests: `tests/test_strategy_factory_execution_result_ingestion.py`.
+- Contract: `docs/research/FACTORY_EXECUTION_RESULT_INGESTION_CONTRACT_2026-10-26.md`.
+- The boundary accepts caller-supplied run ID, command, exit code, output/environment SHA-256 hashes, evidence refs, and result summary; it creates a result record only when linked to a valid `PLANNED` record with the exact prior hash.
+- Zero exit code maps to PASS and nonzero to FAIL for the captured test process only. Evidence hashes are format-validated and included in record provenance. Missing refs, invalid hashes, wrong prior hashes, or non-PLANNED source records fail closed.
+- Important limitation: ingestion validates supplied metadata; it does not run the command, fetch/authenticate CI artifacts, or prove that the claimed execution occurred. Actual output bytes must be preserved and independently hashed by the caller. No captured execution report was ingested in this increment.
+- New tests were added to Factory Research Tests CI; verify results on the final branch head before considering the increment checked.
+- No local worktrees/files, MT5 session/account, live runner, Strategy A forward-test artifacts, or Strategy B run were touched. No historical replay, merge, or production deployment.
+
 ## Next increment
 
-Add a controlled execution-result ingestion boundary that accepts only explicitly captured test-run metadata and output/evidence hashes, distinguishes unexecuted plans from observed outcomes, and preserves failure/counterexample references. Do not run historical replay or infer source semantics until execution/fill/cost/event-order blockers are resolved.
+Add a read-only report builder that checks a full ordered ledger against a separately supplied pinned tip/count and summarizes PLANNED versus captured outcomes, failures, counterexamples, and evidence gaps without upgrading source status or canonical authority. Do not treat caller-supplied execution metadata as independently authenticated.
