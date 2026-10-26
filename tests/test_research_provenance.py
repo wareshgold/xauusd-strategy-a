@@ -17,6 +17,7 @@ from strategy_factory.research_provenance import (
     ResearchProvenanceStatus,
     evaluate_research_provenance,
     serialize_research_provenance_decision,
+    serialize_provenance_input_artifact,
 )
 from strategy_factory.runs import ResearchRunIdentity
 from strategy_factory.snapshot import build_readiness_snapshot
@@ -278,3 +279,45 @@ def test_provenance_decision_archive_serialization_rejects_tampering():
     altered = replace(result, reasons=("MANUALLY_CHANGED",))
     with pytest.raises(ValueError, match="decision fingerprint mismatch"):
         serialize_research_provenance_decision(altered)
+
+
+
+def test_all_provenance_inputs_have_explicit_role_and_schema_serialization():
+    chain = make_chain()
+    role_to_key = {
+        "test_spec": "spec",
+        "research_job": "job",
+        "research_run": "run",
+        "execution_receipt": "receipt",
+        "evidence_bundle": "evidence",
+        "research_audit": "audit",
+        "readiness_snapshot": "snapshot",
+        "dataset_provenance": "dataset_provenance",
+    }
+    for role, key in role_to_key.items():
+        value = chain[key]
+        first = serialize_provenance_input_artifact(
+            role, value, schema_revision="owner-fixture-schema@1"
+        )
+        second = serialize_provenance_input_artifact(
+            role, value, schema_revision="owner-fixture-schema@1"
+        )
+        assert first == second
+        envelope = __import__("json").loads(first)
+        assert envelope["artifact_role"] == role
+        assert envelope["schema_revision"] == "owner-fixture-schema@1"
+        assert envelope["payload"] == value.as_dict()
+
+
+def test_provenance_input_serialization_rejects_unknown_role_wrong_type_and_missing_schema():
+    chain = make_chain()
+    with pytest.raises(ValueError, match="unsupported provenance input role"):
+        serialize_provenance_input_artifact(
+            "unknown", chain["spec"], schema_revision="schema@1"
+        )
+    with pytest.raises(TypeError, match="requires ResearchJobSpec"):
+        serialize_provenance_input_artifact(
+            "research_job", chain["spec"], schema_revision="schema@1"
+        )
+    with pytest.raises(ValueError, match="schema_revision is required"):
+        serialize_provenance_input_artifact("test_spec", chain["spec"], schema_revision=" ")

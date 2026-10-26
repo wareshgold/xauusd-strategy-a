@@ -228,3 +228,53 @@ def serialize_research_provenance_decision(result: ResearchProvenanceResult) -> 
     return json.dumps(
         result.as_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=True,
     ).encode("utf-8")
+
+
+_PROVENANCE_INPUT_TYPES = {
+    "test_spec": HistoricalTestSpec,
+    "research_job": ResearchJobSpec,
+    "research_run": ResearchRunIdentity,
+    "execution_receipt": ExecutionReceipt,
+    "evidence_bundle": EvidenceBundle,
+    "research_audit": ResearchAuditRecord,
+    "readiness_snapshot": ReadinessSnapshot,
+    "dataset_provenance": DatasetProvenanceResult,
+}
+
+
+def serialize_provenance_input_artifact(
+    role: str, value: object, *, schema_revision: str
+) -> bytes:
+    """Serialize one allowlisted provenance input as canonical JSON bytes.
+
+    Schema revision is mandatory and caller/owner-declared; this helper does
+    not infer or certify a schema revision. It provides no deserializer and
+    does not authenticate the caller, evaluator, or archive.
+    """
+    expected_type = _PROVENANCE_INPUT_TYPES.get(role)
+    if expected_type is None:
+        raise ValueError(f"unsupported provenance input role: {role}")
+    if type(value) is not expected_type:
+        raise TypeError(f"role {role!r} requires {expected_type.__name__}")
+    if not isinstance(schema_revision, str) or not schema_revision.strip():
+        raise ValueError("explicit schema_revision is required")
+    validate = getattr(value, "validate", None)
+    if callable(validate):
+        validate()
+    as_dict = getattr(value, "as_dict", None)
+    if not callable(as_dict):
+        raise TypeError(f"{expected_type.__name__} has no as_dict contract")
+    payload = as_dict()
+    if not isinstance(payload, dict):
+        raise TypeError("provenance as_dict() must return a dictionary")
+    envelope = {
+        "artifact_role": role,
+        "schema_revision": schema_revision,
+        "payload": payload,
+    }
+    try:
+        return json.dumps(
+            envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+        ).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise ValueError("provenance input is not canonical-JSON serializable") from exc
