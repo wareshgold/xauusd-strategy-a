@@ -19,6 +19,7 @@ def load_gateway(monkeypatch, tmp_path):
         ORDER_TYPE_SELL_LIMIT=3,
         TRADE_ACTION_DEAL=1,
         TRADE_ACTION_PENDING=5,
+        TRADE_ACTION_REMOVE=8,
         ORDER_TIME_GTC=0,
         ORDER_FILLING_IOC=1,
         ORDER_FILLING_RETURN=2,
@@ -28,7 +29,8 @@ def load_gateway(monkeypatch, tmp_path):
     )
     # exposure guard + limit-mode plumbing added after these fixtures were
     # written; every execute_signal test must provide them.
-    fake_mt5.orders_get = lambda symbol=None: []
+    fake_mt5.orders_get = lambda symbol=None, ticket=None: []
+    fake_mt5.history_orders_get = lambda ticket=None: []
     fake_mt5.positions_get = lambda symbol=None: []
     fake_mt5.symbol_info = lambda symbol: SimpleNamespace(
         trade_stops_level=0, point=0.01, trade_mode=4,
@@ -281,3 +283,91 @@ def test_full_trade_mode_allows_real_order_send(monkeypatch, tmp_path):
     assert result["ok"] is True
     assert result["dry_run"] is False
 
+
+
+def _enable_pending_limit_gateway(gateway, mt5, monkeypatch):
+    monkeypatch.setenv("MT5_FORWARD_ORDER_MODE", "PENDING_LIMIT_RESEARCH")
+    monkeypatch.setenv("LIVE_TRADING_ENABLE", "true")
+    monkeypatch.setenv("ALLOW_REAL_EXECUTION", "true")
+    monkeypatch.setattr(gateway, "LIVE_TRADING_ENABLE", True, raising=False)
+    monkeypatch.setattr(gateway, "ALLOW_REAL_EXECUTION", True, raising=False)
+    mt5.symbol_info_tick = lambda symbol: SimpleNamespace(bid=99.9, ask=100.2)
+    mt5.account_info = lambda: SimpleNamespace(trade_mode=0)
+    mt5.symbol_info = lambda symbol: SimpleNamespace(
+        trade_stops_level=0, point=0.01, trade_mode=4
+    )
+
+
+def test_pending_limit_missing_ticket_fails_closed(monkeypatch, tmp_path):
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    _enable_pending_limit_gateway(gateway, mt5, monkeypatch)
+    mt5.order_send = lambda request: SimpleNamespace(
+        retcode=mt5.TRADE_RETCODE_PLACED, order=0, deal=0, comment="placed"
+    )
+
+    result = gateway.execute_signal(_approved_buy(gateway))
+
+    assert result["ok"] is False
+    assert result["reason"] == "PENDING_ORDER_TICKET_MISSING"
+    assert result["verification"]["reason"] == "NO_ORDER_TICKET"
+
+
+def test_pending_limit_order_not_found_after_placement_fails_closed(monkeypatch, tmp_path):
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    _enable_pending_limit_gateway(gateway, mt5, monkeypatch)
+    mt5.order_send = lambda request: SimpleNamespace(
+        retcode=mt5.TRADE_RETCODE_PLACED, order=111, deal=0, comment="placed"
+    )
+    mt5.orders_get = lambda symbol=None, ticket=None: []
+    mt5.history_orders_get = lambda ticket=None: []
+
+    result = gateway.execute_signal(_approved_buy(gateway))
+
+    assert result["ok"] is False
+    assert result["reason"] == "BROKER_STORED_ORDER_UNVERIFIED"
+    assert result["verification"]["reason"] == "ORDER_NOT_FOUND_AFTER_PLACEMENT"
+    assert result["cancel_retcode"] is None
+
+
+def test_pending_limit_mismatched_active_order_is_not_accepted(monkeypatch, tmp_path):
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    _enable_pending_limit_gateway(gateway, mt5, monkeypatch)
+    active = SimpleNamespace(price_open=100.0, sl=91.0, tp=110.0)
+    mt5.orders_get = lambda symbol=None, ticket=None: [active] if ticket == 111 else []
+    mt5.history_orders_get = lambda ticket=None: []
+    sent = []
+
+    def fake_order_send(request):
+        sent.append(request)
+        if request.get("action") == mt5.TRADE_ACTION_REMOVE:
+            return SimpleNamespace(retcode=10009, order=111, deal=0, comment="removed")
+        return SimpleNamespace(
+            retcode=mt5.TRADE_RETCODE_PLACED, order=111, deal=0, comment="placed"
+        )
+
+    mt5.order_send = fake_order_send
+    result = gateway.execute_signal(_approved_buy(gateway))
+
+    assert result["ok"] is False
+    assert result["reason"] == "BROKER_STORED_LEVELS_MISMATCH"
+    assert result["verification"]["verified"] is False
+    assert len(sent) == 2
+    assert sent[1]["action"] == mt5.TRADE_ACTION_REMOVE
+
+
+def test_pending_limit_matching_active_order_is_accepted_as_verified_pending_only(monkeypatch, tmp_path):
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    _enable_pending_limit_gateway(gateway, mt5, monkeypatch)
+    active = SimpleNamespace(price_open=100.0, sl=90.0, tp=110.0)
+    mt5.orders_get = lambda symbol=None, ticket=None: [active] if ticket == 111 else []
+    mt5.history_orders_get = lambda ticket=None: []
+    mt5.order_send = lambda request: SimpleNamespace(
+        retcode=mt5.TRADE_RETCODE_PLACED, order=111, deal=0, comment="placed"
+    )
+
+    result = gateway.execute_signal(_approved_buy(gateway))
+
+    assert result["ok"] is True
+    assert result["verification"]["verified"] is True
+    assert result["order"] == 111
+    assert result["deal"] == 0

@@ -37,6 +37,7 @@ class ResearchRecord:
     execution_semantics: str
     provenance_status: ResearchProvenanceStatus
     provenance_reasons: tuple[str, ...]
+    provenance_decision_fingerprint: str
     fingerprint: str
 
     @staticmethod
@@ -62,6 +63,7 @@ class ResearchRecord:
             "execution_semantics": self.execution_semantics,
             "provenance_status": self.provenance_status.value,
             "provenance_reasons": list(self.provenance_reasons),
+            "provenance_decision_fingerprint": self.provenance_decision_fingerprint,
         }
         if include_fingerprint:
             data["fingerprint"] = self.fingerprint
@@ -83,6 +85,8 @@ class ResearchRecord:
     def validate(self) -> None:
         if not self.run_id or not self.strategy_id or not self.strategy_revision:
             raise ResearchRecordError("research record identity is incomplete")
+        if not self.provenance_decision_fingerprint:
+            raise ResearchRecordError("research record requires a provenance decision fingerprint")
         if not isinstance(self.provenance_status, ResearchProvenanceStatus):
             raise ResearchRecordError("research record provenance status must be explicit")
         if self.provenance_status.value != ResearchProvenanceStatus.PASS.value:
@@ -135,6 +139,7 @@ class ResearchRecord:
             execution_semantics=run.execution_semantics.value,
             provenance_status=provenance.status,
             provenance_reasons=provenance.reasons,
+            provenance_decision_fingerprint=provenance.decision_fingerprint,
             fingerprint="",
         )
         fingerprint = hashlib.sha256(record._payload(record.as_dict(include_fingerprint=False))).hexdigest()

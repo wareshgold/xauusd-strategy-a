@@ -5,8 +5,10 @@ from enum import Enum
 import hashlib
 import json
 
+from .dataset_manifest import DatasetManifestError, DatasetManifestRegistry
 from .multiple_comparison import MultipleComparisonResult
 from .research_comparison import ResearchComparison
+from .research_record import ResearchRecordLedger
 from .statistical_comparison_evidence import (
     StatisticalComparisonEvidence,
     StatisticalComparisonEvidenceError,
@@ -79,6 +81,8 @@ def evaluate_comparison_validation_gate(
     governance_ledger: StatisticalComparisonUsageLedger,
     *,
     purpose: str = "FINAL_EVIDENCE",
+    research_record_ledger: ResearchRecordLedger | None = None,
+    dataset_manifest_registry: DatasetManifestRegistry | None = None,
 ) -> ComparisonValidationGateResult:
     reasons: list[str] = []
     try:
@@ -97,12 +101,49 @@ def evaluate_comparison_validation_gate(
         )
         return result
 
+    # Validation/holdout roles must resolve to exact upstream research records.
+    if comparison.dataset_role in {"UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"}:
+        if research_record_ledger is None:
+            reasons.append("RESEARCH_RECORD_PROVENANCE_LEDGER_REQUIRED")
+        else:
+            for observation in (comparison.baseline, *comparison.candidates):
+                try:
+                    record = research_record_ledger.get(observation.run_id)
+                    record.validate()
+                except Exception as exc:
+                    reasons.append(
+                        f"RESEARCH_RECORD_PROVENANCE_UNRESOLVED:{observation.run_id}:{exc}"
+                    )
+                    continue
+                if record.fingerprint != observation.research_record_fingerprint:
+                    reasons.append(
+                        f"RESEARCH_RECORD_FINGERPRINT_MISMATCH:{observation.run_id}"
+                    )
+                if record.dataset_role != comparison.dataset_role:
+                    reasons.append(
+                        f"RESEARCH_RECORD_DATASET_ROLE_MISMATCH:{observation.run_id}"
+                    )
+                if not record.dataset_id or not record.dataset_fingerprint:
+                    reasons.append(
+                        f"RESEARCH_RECORD_DATASET_IDENTITY_INCOMPLETE:{observation.run_id}"
+                    )
+                if dataset_manifest_registry is None:
+                    reasons.append("DATASET_MANIFEST_REGISTRY_REQUIRED")
+                else:
+                    # Do not trust a caller-controlled boolean/property or a
+                    # duck-typed registry as proof of issuer authentication.
+                    # No concrete authenticated provider is implemented yet;
+                    # validation/holdout roles therefore remain blocked until
+                    # the gate can verify a provider-specific attestation.
+                    if "DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED" not in reasons:
+                        reasons.append("DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED")
+
     registered = evidence_ledger.contains(evidence)
     if not registered:
         reasons.append("STATISTICAL_COMPARISON_EVIDENCE_NOT_REGISTERED")
 
     governed = False
-    if registered:
+    if registered and not reasons:
         try:
             governance_ledger.record(
                 evidence,

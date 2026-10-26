@@ -23,6 +23,9 @@ class UnifiedResearchQualityError(ValueError):
     """Raised when the unified research quality chain is invalid."""
 
 
+UNIFIED_QUALITY_ASSURANCE_SCOPE = "SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED"
+
+
 @dataclass(frozen=True)
 class UnifiedResearchQuality:
     quality_revision: str
@@ -31,6 +34,7 @@ class UnifiedResearchQuality:
     comparison_gate_fingerprint: str
     accepted: bool
     comparison_validated: bool
+    assurance_scope: str
     fingerprint: str
 
     def _payload(self) -> dict[str, object]:
@@ -41,6 +45,7 @@ class UnifiedResearchQuality:
             "comparison_gate_fingerprint": self.comparison_gate_fingerprint,
             "accepted": self.accepted,
             "comparison_validated": self.comparison_validated,
+            "assurance_scope": self.assurance_scope,
         }
 
     def validate(self) -> None:
@@ -48,6 +53,10 @@ class UnifiedResearchQuality:
             raise UnifiedResearchQualityError("unified research quality run identity is incomplete")
         if not self.accepted or not self.comparison_validated:
             raise UnifiedResearchQualityError("unified research quality is not accepted")
+        if self.assurance_scope != UNIFIED_QUALITY_ASSURANCE_SCOPE:
+            raise UnifiedResearchQualityError(
+                "unified research quality cannot claim authenticated assurance"
+            )
         expected = hashlib.sha256(
             json.dumps(self._payload(), sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
@@ -66,6 +75,12 @@ def evaluate_unified_research_quality(
     *,
     quality_revision: str = "UNIFIED-RESEARCH-QUALITY-1",
 ) -> UnifiedResearchQuality:
+    if record.dataset_role in {"UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"}:
+        raise UnifiedResearchQualityError(
+            "validation/holdout quality is blocked until authenticated external dataset trust "
+            "and a role-matched comparison gate are implemented"
+        )
+
     try:
         record.validate()
         statistical.validate()
@@ -106,6 +121,7 @@ def evaluate_unified_research_quality(
         comparison_gate_fingerprint=comparison_gate.fingerprint,
         accepted=True,
         comparison_validated=True,
+        assurance_scope=UNIFIED_QUALITY_ASSURANCE_SCOPE,
         fingerprint="",
     )
     fingerprint = hashlib.sha256(

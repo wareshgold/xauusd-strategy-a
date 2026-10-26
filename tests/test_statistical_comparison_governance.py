@@ -67,3 +67,23 @@ def test_usage_is_idempotent_and_tamper_evident():
     assert len(ledger.entries()) == 1
     with pytest.raises(StatisticalComparisonUsageError, match="fingerprint"):
         replace(a, purpose="OPTIMIZATION").validate()
+
+@pytest.mark.parametrize("purpose", ["", "HOLDOUT_REVIEW", "FINAL- EVIDENCE", "UNKNOWN"])
+def test_unknown_usage_purpose_is_rejected_even_for_registered_evidence(purpose):
+    evidence = evidence_for(DatasetRole.FRESH_HOLDOUT)
+    registry = StatisticalComparisonEvidenceLedger()
+    registry.record(evidence)
+    usage = StatisticalComparisonUsageLedger()
+    with pytest.raises(StatisticalComparisonUsageError, match="unsupported comparison usage purpose"):
+        usage.record(evidence, ledger=registry, purpose=purpose)
+    assert usage.entries() == ()
+
+
+def test_unknown_purpose_cannot_bypass_holdout_role_restriction():
+    evidence = evidence_for(DatasetRole.FRESH_HOLDOUT)
+    registry = StatisticalComparisonEvidenceLedger()
+    registry.record(evidence)
+    usage = StatisticalComparisonUsageLedger()
+    with pytest.raises(StatisticalComparisonUsageError, match="unsupported comparison usage purpose"):
+        usage.record(evidence, ledger=registry, purpose="RESEARCH_ONLY_NO_FIT")
+    assert usage.entries() == ()

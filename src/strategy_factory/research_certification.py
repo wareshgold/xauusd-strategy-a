@@ -11,11 +11,17 @@ from .research_evidence_ledger import ResearchEvidenceLedger
 from .research_record import ResearchRecord
 from .statistical_evidence import StatisticalEvidence
 from .stability_evidence import StabilityEvidence
-from .unified_research_quality import UnifiedResearchQuality
+from .unified_research_quality import (
+    UNIFIED_QUALITY_ASSURANCE_SCOPE,
+    UnifiedResearchQuality,
+)
 
 
 class ResearchCertificationError(ValueError):
     """Raised when the immutable research certification chain is invalid."""
+
+
+CERTIFICATION_ASSURANCE_SCOPE = "SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED"
 
 
 @dataclass(frozen=True)
@@ -38,6 +44,7 @@ class ResearchCertification:
     source_snapshot_fingerprint: str
     certified: bool
     production_eligible: bool
+    assurance_scope: str
     fingerprint: str
 
     def _payload(self) -> dict[str, object]:
@@ -54,6 +61,7 @@ class ResearchCertification:
             "source_snapshot_fingerprint": self.source_snapshot_fingerprint,
             "certified": self.certified,
             "production_eligible": self.production_eligible,
+            "assurance_scope": self.assurance_scope,
         }
 
     def validate(self) -> None:
@@ -63,6 +71,8 @@ class ResearchCertification:
             raise ResearchCertificationError("research certification is not certified")
         if self.production_eligible:
             raise ResearchCertificationError("research certification cannot authorize production")
+        if self.assurance_scope != CERTIFICATION_ASSURANCE_SCOPE:
+            raise ResearchCertificationError("research certification cannot claim authenticated assurance")
         expected = hashlib.sha256(
             json.dumps(self._payload(), sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
@@ -82,6 +92,12 @@ def certify_research_result(
     *,
     certification_revision: str = "RESEARCH-CERTIFICATION-1",
 ) -> ResearchCertification:
+    if record.dataset_role in {"UNTOUCHED_VALIDATION", "FRESH_HOLDOUT"}:
+        raise ResearchCertificationError(
+            "validation/holdout certification is blocked until authenticated external dataset trust "
+            "and a role-matched comparison gate are implemented"
+        )
+
     try:
         record.validate()
         statistical.validate()
@@ -107,6 +123,10 @@ def certify_research_result(
     if not acceptance.ledger_registered:
         raise ResearchCertificationError("research acceptance ledger registration is not confirmed")
 
+    if quality.assurance_scope != UNIFIED_QUALITY_ASSURANCE_SCOPE:
+        raise ResearchCertificationError(
+            "unified research quality assurance scope is not authenticated and cannot be promoted"
+        )
     if quality.run_id != record.run_id:
         raise ResearchCertificationError("unified research quality run_id does not match record")
     if quality.research_acceptance_fingerprint != acceptance.fingerprint:
@@ -139,6 +159,7 @@ def certify_research_result(
         source_snapshot_fingerprint=source_snapshot_fingerprint,
         certified=True,
         production_eligible=False,
+        assurance_scope=CERTIFICATION_ASSURANCE_SCOPE,
         fingerprint="",
     )
     fingerprint = hashlib.sha256(

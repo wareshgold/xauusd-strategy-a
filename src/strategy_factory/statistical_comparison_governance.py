@@ -78,8 +78,12 @@ class StatisticalComparisonUsageLedger:
             evidence.validate()
         except StatisticalComparisonEvidenceError as exc:
             raise StatisticalComparisonUsageError(str(exc)) from exc
-        if not purpose:
-            raise StatisticalComparisonUsageError("comparison usage purpose is required")
+        allowed_purposes = {"FINAL_EVIDENCE", "DEVELOPMENT", "OPTIMIZATION", "PARAMETER_FIT"}
+        if purpose not in allowed_purposes:
+            raise StatisticalComparisonUsageError(
+                "unsupported comparison usage purpose; expected one of "
+                + ", ".join(sorted(allowed_purposes))
+            )
         if not ledger.contains(evidence):
             raise StatisticalComparisonUsageError("statistical comparison evidence is not registered in ledger")
 
