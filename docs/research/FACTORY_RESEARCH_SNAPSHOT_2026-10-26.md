@@ -76,6 +76,18 @@
 - New tests were added to Factory Research Tests CI; verify results on the final branch head before considering the increment checked.
 - No local worktrees/files, MT5 session/account, live runner, Strategy A forward-test artifacts, or Strategy B run were touched. No historical replay, merge, or production deployment.
 
+
+## Read-only pinned ledger report increment — 2026-10-26
+
+- Report builder: `src/strategy_factory/ledger_report.py`.
+- Tests: `tests/test_strategy_factory_ledger_report.py`.
+- Contract: `docs/research/FACTORY_READ_ONLY_LEDGER_REPORT_CONTRACT_2026-10-26.md`.
+- The report requires an externally pinned tip SHA-256 and record count, verifies the ordered chain against both, and summarizes status/evidence counts, planned/failing/inconclusive/blocked IDs, counterexample references, missing evidence, source-review-required and contradicted records.
+- Wrong/missing pins, truncated chains, or invalid ledgers fail closed. Report output is read-only and deterministic; canonical/production authority remains false.
+- Important limitation: the builder does not authenticate the source of external pins or captured execution artifacts. Counts are research bookkeeping, not statistical performance evidence.
+- New report tests were added to Factory Research Tests CI. Verify the final branch-head runs before calling this increment validated.
+- No local worktrees/files, MT5 session/account, live runner, Strategy A forward-test artifacts, or Strategy B run were touched. No replay, merge, or production deployment.
+
 ## Next increment
 
-Add a read-only report builder that checks a full ordered ledger against a separately supplied pinned tip/count and summarizes PLANNED versus captured outcomes, failures, counterexamples, and evidence gaps without upgrading source status or canonical authority. Do not treat caller-supplied execution metadata as independently authenticated.
+Review the local StarNet/Factory dashboard bootstrap dependency chain separately from this research ledger. Preserve the intended local visual “working factory” dashboard (CEO ALI, telemetry-backed rooms/workers, production locked and BUY/SELL=0); do not replace it with static mock rooms or assume the earlier partial StarNet bootstrap is complete. First map required scripts/assets and identify the last known-good local entry point before proposing any local change.
