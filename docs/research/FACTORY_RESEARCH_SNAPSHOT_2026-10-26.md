@@ -108,3 +108,10 @@ Continue strengthening the Research Brain's evidence handling and experiment pri
 - Added a non-source inconclusive-result case proving a discriminating test remains proposed while missing statistical validation remains a gap; no result is presumed.
 - These are synthetic policy tests only. They do not authenticate the cited source, establish the truth of a claim, execute a test, or establish statistical edge.
 - No canonical geometry, live execution rule, StarNet UI, local worktree, MT5, Strategy A forward-test evidence, or Strategy B run was changed.
+
+## Research Brain cross-evidence gate hardening — 2026-10-26
+
+- The planner now treats a role as still unresolved when any linked evidence for that role contradicts the claim, even if another linked item of the same role supports it. A contradiction can no longer be masked by a same-role supporting record.
+- Canonical-rule-change claims now always retain a separate HUMAN_SOURCE_REVIEW action, even when missing evidence or contradiction-resolution actions are also present.
+- Added adversarial tests for mixed SOURCE support/contradiction and for retaining human review alongside other open research actions.
+- This is planner policy only. It does not adjudicate which source excerpt is correct, decide canonical geometry, execute experiments, or authorize production decisions. Both authority flags remain false.
