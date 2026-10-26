@@ -5,6 +5,7 @@ from enum import Enum
 import hashlib
 import json
 
+from .dataset_manifest import DatasetManifestError, DatasetManifestRegistry
 from .multiple_comparison import MultipleComparisonResult
 from .research_comparison import ResearchComparison
 from .research_record import ResearchRecordLedger
@@ -81,6 +82,7 @@ def evaluate_comparison_validation_gate(
     *,
     purpose: str = "FINAL_EVIDENCE",
     research_record_ledger: ResearchRecordLedger | None = None,
+    dataset_manifest_registry: DatasetManifestRegistry | None = None,
 ) -> ComparisonValidationGateResult:
     reasons: list[str] = []
     try:
@@ -125,6 +127,15 @@ def evaluate_comparison_validation_gate(
                     reasons.append(
                         f"RESEARCH_RECORD_DATASET_IDENTITY_INCOMPLETE:{observation.run_id}"
                     )
+                if dataset_manifest_registry is None:
+                    reasons.append("DATASET_MANIFEST_REGISTRY_REQUIRED")
+                else:
+                    try:
+                        dataset_manifest_registry.validate_record(record, comparison.dataset_role)
+                    except DatasetManifestError as exc:
+                        reasons.append(
+                            f"DATASET_MANIFEST_PROVENANCE_INVALID:{observation.run_id}:{exc}"
+                        )
 
     registered = evidence_ledger.contains(evidence)
     if not registered:
