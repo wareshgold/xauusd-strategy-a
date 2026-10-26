@@ -16,6 +16,8 @@ from strategy_factory.evidence_archive import (
     FileSystemContentAddressedStore,
     ManifestCommitStatus,
     ReplayStatus,
+    PROVENANCE_ARCHIVE_REQUIRED_ROLES,
+    validate_provenance_archive_manifest,
     replay_archived_decision,
     retrieve_verified_artifact,
 )
@@ -341,3 +343,153 @@ def test_replay_harness_requires_verified_archived_decision_artifact():
     )
     assert result.status is ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE
     assert result.blocked_role == "decision"
+
+
+
+@pytest.mark.parametrize(
+    ("store_factory", "expected_status"),
+    [
+        (lambda manifest, input_bytes, decision_bytes: FakeStore(unavailable=True),
+         ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE),
+        (lambda manifest, input_bytes, decision_bytes: FakeStore({
+            manifest.artifacts[0].locator: b"tampered",
+            manifest.artifacts[1].locator: decision_bytes,
+        }), ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE),
+        (lambda manifest, input_bytes, decision_bytes: FakeStore({
+            manifest.artifacts[0].locator: input_bytes,
+        }), ReplayStatus.BLOCKED_ARTIFACT_UNAVAILABLE),
+    ],
+    ids=("archive-unavailable", "input-digest-mismatch", "reference-decision-missing"),
+)
+def test_replay_failure_matrix_never_returns_match(store_factory, expected_status):
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    store = store_factory(manifest, input_bytes, decision_bytes)
+    invoked = []
+    result = replay_archived_decision(
+        manifest, store, required_input_roles=("input",), decision_role="decision",
+        evaluator_revision="evaluator@pinned",
+        required_input_schemas={"input": "input@1"},
+        decision_schema_revision="decision@1",
+        evaluator=lambda inputs: invoked.append(True) or decision_bytes,
+    )
+    assert result.status is expected_status
+    assert result.status is not ReplayStatus.MATCH
+    assert result.blocked_role is not None
+    assert invoked == []
+
+
+@pytest.mark.parametrize(
+    ("kwargs_update", "expected_status"),
+    [
+        ({"decision_schema_revision": "decision@wrong"}, ReplayStatus.MANIFEST_INVALID),
+        ({"required_input_roles": ("input", "input"),
+          "required_input_schemas": {"input": "input@1"}}, ReplayStatus.MANIFEST_INVALID),
+        ({"evaluator_revision": ""}, ReplayStatus.BLOCKED_EVALUATOR_REVISION_MISMATCH),
+    ],
+    ids=("decision-schema-drift", "duplicate-required-role", "empty-evaluator-revision"),
+)
+def test_replay_contract_matrix_blocks_invalid_contracts(kwargs_update, expected_status):
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    store = FakeStore({
+        manifest.artifacts[0].locator: input_bytes,
+        manifest.artifacts[1].locator: decision_bytes,
+    })
+    kwargs = dict(
+        manifest=manifest, store=store, required_input_roles=("input",),
+        decision_role="decision", evaluator=lambda inputs: decision_bytes,
+        evaluator_revision="evaluator@pinned",
+        required_input_schemas={"input": "input@1"}, decision_schema_revision="decision@1",
+    )
+    kwargs.update(kwargs_update)
+    result = replay_archived_decision(**kwargs)
+    assert result.status is expected_status
+    assert result.status is not ReplayStatus.MATCH
+
+
+def test_replay_evaluator_exception_is_blocked_not_a_decision():
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    store = FakeStore({
+        manifest.artifacts[0].locator: input_bytes,
+        manifest.artifacts[1].locator: decision_bytes,
+    })
+
+    def fail(_inputs):
+        raise RuntimeError("deterministic fixture failure")
+
+    result = replay_archived_decision(
+        manifest, store, required_input_roles=("input",), decision_role="decision",
+        evaluator=fail, evaluator_revision="evaluator@pinned",
+        required_input_schemas={"input": "input@1"}, decision_schema_revision="decision@1",
+    )
+    assert result.status is ReplayStatus.BLOCKED_EVALUATOR_ERROR
+    assert result.observed_decision_digest is None
+
+
+
+def test_replay_failure_matrix_does_not_accept_evaluator_exception_or_non_bytes():
+    manifest, input_bytes, decision_bytes = build_replay_manifest()
+    store = FakeStore({
+        manifest.artifacts[0].locator: input_bytes,
+        manifest.artifacts[1].locator: decision_bytes,
+    })
+
+    def raising(_inputs):
+        raise RuntimeError("fixture error")
+
+    for evaluator in (raising, lambda _inputs: {"decision": "PASS"}):
+        result = replay_archived_decision(
+            manifest, store, required_input_roles=("input",), decision_role="decision",
+            evaluator=evaluator, evaluator_revision="evaluator@pinned",
+            required_input_schemas={"input": "input@1"}, decision_schema_revision="decision@1",
+        )
+        assert result.status is ReplayStatus.BLOCKED_EVALUATOR_ERROR
+        assert result.status is not ReplayStatus.MATCH
+
+
+def test_provenance_archive_role_contract_reports_every_missing_role():
+    manifest, _ = build_manifest()
+    reasons = validate_provenance_archive_manifest(manifest)
+    assert reasons == tuple(
+        f"REQUIRED_ROLE_MISSING:{role}"
+        for role in PROVENANCE_ARCHIVE_REQUIRED_ROLES
+        if role != "provenance_decision"
+    )
+
+
+def test_provenance_archive_role_contract_accepts_complete_explicit_role_set():
+    artifacts = []
+    payloads = {}
+    for role in PROVENANCE_ARCHIVE_REQUIRED_ROLES:
+        data = ("fixture:" + role).encode()
+        digest = hashlib.sha256(data).hexdigest()
+        artifacts.append(ArtifactDescriptor(
+            role=role,
+            schema_revision="explicit-fixture-schema@1",
+            digest_sha256=digest,
+            byte_length=len(data),
+            locator=f"sha256:{digest}",
+        ))
+        payloads[f"sha256:{digest}"] = data
+    manifest = EvidenceArchiveManifest(
+        archive_record_id="PROVENANCE-ROLE-COVERAGE-001",
+        evaluator_revision="explicit-fixture-evaluator@1",
+        policy_revision="explicit-fixture-policy@1",
+        artifacts=tuple(artifacts),
+    )
+    assert validate_provenance_archive_manifest(manifest) == ()
+    # This is only role coverage: the fixture schema is intentionally not
+    # represented as a claim about the production schema of any artifact.
+    assert len(payloads) == len(PROVENANCE_ARCHIVE_REQUIRED_ROLES)
+
+
+def test_provenance_archive_role_contract_does_not_infer_missing_schema_semantics():
+    manifest, data = build_manifest()
+    result = replace(
+        manifest,
+        artifacts=(replace(manifest.artifacts[0], schema_revision="owner-defined-schema@future"),),
+    )
+    assert validate_provenance_archive_manifest(result) == tuple(
+        f"REQUIRED_ROLE_MISSING:{role}"
+        for role in PROVENANCE_ARCHIVE_REQUIRED_ROLES
+        if role != "provenance_decision"
+    )

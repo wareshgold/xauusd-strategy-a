@@ -332,6 +332,39 @@ class ArtifactVerificationResult:
     detail: str = ""
 
 
+PROVENANCE_ARCHIVE_REQUIRED_ROLES = (
+    "test_spec",
+    "research_job",
+    "research_run",
+    "execution_receipt",
+    "evidence_bundle",
+    "research_audit",
+    "readiness_snapshot",
+    "dataset_provenance",
+    "provenance_decision",
+)
+
+
+def validate_provenance_archive_manifest(manifest: EvidenceArchiveManifest) -> tuple[str, ...]:
+    """Check role coverage for the current Factory provenance chain.
+
+    This checks only the archive's declared role coverage. It does not parse the
+    payloads, rerun evaluate_research_provenance, or authenticate evaluator code.
+    Schema revisions remain explicit per-artifact values; none are guessed here.
+    """
+    try:
+        manifest.validate()
+    except EvidenceArchiveError as exc:
+        return (f"MANIFEST_INVALID:{exc}",)
+    declared = {item.role for item in manifest.artifacts}
+    missing = tuple(role for role in PROVENANCE_ARCHIVE_REQUIRED_ROLES if role not in declared)
+    if missing:
+        return tuple(f"REQUIRED_ROLE_MISSING:{role}" for role in missing)
+    if manifest.evaluator_revision.strip() == "" or manifest.policy_revision.strip() == "":
+        return ("EVALUATOR_OR_POLICY_REVISION_MISSING",)
+    return ()
+
+
 class ReplayStatus(str, Enum):
     MATCH = "MATCH"
     MISMATCH = "MISMATCH"
