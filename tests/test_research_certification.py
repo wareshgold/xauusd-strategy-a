@@ -22,6 +22,7 @@ def test_research_certification_passes_and_is_deterministic():
     certification.validate()
     assert certification.certified is True
     assert certification.production_eligible is False
+    assert certification.assurance_scope == "SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED"
     assert certification.fingerprint
 
 
@@ -65,3 +66,10 @@ def test_research_certification_rejects_holdout_record_with_development_gate():
         certify_research_result(
             holdout_record, statistical, stability, bundle, ledger, acceptance, gate, quality
         )
+
+
+def test_research_certification_rejects_authenticated_assurance_claim():
+    *_, certification = certified_chain()
+    bad = replace(certification, assurance_scope="AUTHENTICATED")
+    with pytest.raises(ResearchCertificationError, match="cannot claim authenticated assurance"):
+        bad.validate()

@@ -20,3 +20,8 @@ If a certification view is introduced later, it must display the verification sc
 ## Limits
 
 This was a source-level audit of the named dashboard and report modules on the stated commit, not proof that arbitrary external consumers or downstream forks do not exist. No strategy rules, dataset roles, MT5 configuration, runner, or forward-test evidence were changed.
+
+
+## Issuance-boundary follow-up
+
+The certification object itself now carries `assurance_scope=SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED`, and validation rejects any different scope value. The certification-ledger entry binds and preserves that exact scope alongside its own `verification_scope=SELF_CONSISTENT_FINGERPRINT_ONLY_NOT_AUTHENTICATED`. This prevents accidental scope promotion in serialized records; it does not authenticate the caller or make a self-hashed, manually constructed object unforgeable. A selected external trust root and verified attestation are still required for issuer authentication.

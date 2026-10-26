@@ -18,6 +18,9 @@ class ResearchCertificationError(ValueError):
     """Raised when the immutable research certification chain is invalid."""
 
 
+CERTIFICATION_ASSURANCE_SCOPE = "SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED"
+
+
 @dataclass(frozen=True)
 class ResearchCertification:
     """Immutable certification that one research result has a complete evidence chain.
@@ -38,6 +41,7 @@ class ResearchCertification:
     source_snapshot_fingerprint: str
     certified: bool
     production_eligible: bool
+    assurance_scope: str
     fingerprint: str
 
     def _payload(self) -> dict[str, object]:
@@ -54,6 +58,7 @@ class ResearchCertification:
             "source_snapshot_fingerprint": self.source_snapshot_fingerprint,
             "certified": self.certified,
             "production_eligible": self.production_eligible,
+            "assurance_scope": self.assurance_scope,
         }
 
     def validate(self) -> None:
@@ -63,6 +68,8 @@ class ResearchCertification:
             raise ResearchCertificationError("research certification is not certified")
         if self.production_eligible:
             raise ResearchCertificationError("research certification cannot authorize production")
+        if self.assurance_scope != CERTIFICATION_ASSURANCE_SCOPE:
+            raise ResearchCertificationError("research certification cannot claim authenticated assurance")
         expected = hashlib.sha256(
             json.dumps(self._payload(), sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
@@ -145,6 +152,7 @@ def certify_research_result(
         source_snapshot_fingerprint=source_snapshot_fingerprint,
         certified=True,
         production_eligible=False,
+        assurance_scope=CERTIFICATION_ASSURANCE_SCOPE,
         fingerprint="",
     )
     fingerprint = hashlib.sha256(

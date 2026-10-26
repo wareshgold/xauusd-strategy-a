@@ -18,6 +18,7 @@ LEDGER_VERIFICATION_SCOPE = "SELF_CONSISTENT_FINGERPRINT_ONLY_NOT_AUTHENTICATED"
 @dataclass(frozen=True)
 class ResearchCertificationLedgerEntry:
     certification_fingerprint: str
+    certification_assurance_scope: str
     run_id: str
     research_record_fingerprint: str
     source_snapshot_fingerprint: str
@@ -29,6 +30,7 @@ class ResearchCertificationLedgerEntry:
     def _fingerprint_payload(self) -> dict[str, object]:
         return {
             "certification_fingerprint": self.certification_fingerprint,
+            "certification_assurance_scope": self.certification_assurance_scope,
             "run_id": self.run_id,
             "research_record_fingerprint": self.research_record_fingerprint,
             "source_snapshot_fingerprint": self.source_snapshot_fingerprint,
@@ -40,6 +42,8 @@ class ResearchCertificationLedgerEntry:
     def validate(self) -> None:
         if not self.certification_fingerprint or not self.run_id:
             raise ResearchCertificationLedgerError("research certification ledger identity is incomplete")
+        if self.certification_assurance_scope != "SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED":
+            raise ResearchCertificationLedgerError("ledger cannot promote certification assurance scope")
         if self.verification_scope != LEDGER_VERIFICATION_SCOPE:
             raise ResearchCertificationLedgerError(
                 "research certification ledger cannot claim authenticated verification"
@@ -69,6 +73,7 @@ class ResearchCertificationLedger:
 
         candidate = ResearchCertificationLedgerEntry(
             certification_fingerprint=certification.fingerprint,
+            certification_assurance_scope=certification.assurance_scope,
             run_id=certification.run_id,
             research_record_fingerprint=certification.research_record_fingerprint,
             source_snapshot_fingerprint=certification.source_snapshot_fingerprint,
