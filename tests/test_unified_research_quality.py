@@ -91,3 +91,20 @@ def test_unified_quality_rejects_holdout_record_with_development_gate():
         evaluate_unified_research_quality(
             holdout_record, stat, stability, bundle, ledger, acceptance, gate
         )
+
+
+
+def test_unified_quality_cannot_claim_authenticated_assurance():
+    record, stat, stability, bundle, ledger, acceptance, gate = full_chain()
+    result = evaluate_unified_research_quality(
+        record, stat, stability, bundle, ledger, acceptance, gate
+    )
+    forged = replace(result, assurance_scope="AUTHENTICATED", fingerprint="")
+    forged = replace(
+        forged,
+        fingerprint=hashlib.sha256(json.dumps(
+            forged._payload(), sort_keys=True, separators=(",", ":")
+        ).encode()).hexdigest(),
+    )
+    with pytest.raises(UnifiedResearchQualityError, match="cannot claim authenticated assurance"):
+        forged.validate()

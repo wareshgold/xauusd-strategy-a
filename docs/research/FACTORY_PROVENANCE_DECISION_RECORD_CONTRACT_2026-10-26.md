@@ -12,6 +12,12 @@ A PASS result without input fingerprints fails validation. A changed status/reas
 
 `ResearchRecord.from_components` now validates the provenance decision and requires the decision to bind the exact supplied run, evidence, snapshot, and audit serializations. The research record stores the provenance decision fingerprint as part of its own fingerprinted payload. This prevents accidentally reusing an intact decision for different core components.
 
+## Unified quality assurance boundary
+
+`UnifiedResearchQuality` now carries `assurance_scope=SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED` as part of its fingerprinted payload. Its validator rejects any other scope, including a caller-recomputed self-hash that tries to label the result `AUTHENTICATED`. `ResearchCertification` checks the same scope before accepting the quality object, so the certification boundary cannot silently promote the quality object's assurance claim.
+
+This is an explicit scope guard, not a signature, independent issuer identity, or durable provenance store.
+
 ## Security and assurance boundary
 
 This is a deterministic integrity and cross-object binding improvement, not evaluator authentication. The digest is unkeyed; a caller able to construct arbitrary objects can recompute a digest. The result therefore does not prove that the official evaluator produced it, nor that a receipt describes a real execution. The execution receipt is still a contract declaration, and artifact availability/authenticity remains a separate concern.
@@ -25,7 +31,9 @@ Do not describe this decision record as signed, independently authenticated, or 
 - the decision binds execution receipt and dataset-provenance inputs;
 - a manually constructed unbound PASS cannot be accepted by `ResearchRecord.from_components`;
 - a decision generated for one run cannot be reused for a different run;
-- non-PASS provenance remains rejected by the research record.
+- non-PASS provenance remains rejected by the research record;
+- unified quality rejects a self-hash-consistent forged `AUTHENTICATED` scope;
+- certification rejects unified quality that attempts the same scope promotion.
 
 ## Next boundary
 

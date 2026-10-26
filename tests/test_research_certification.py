@@ -73,3 +73,21 @@ def test_research_certification_rejects_authenticated_assurance_claim():
     bad = replace(certification, assurance_scope="AUTHENTICATED")
     with pytest.raises(ResearchCertificationError, match="cannot claim authenticated assurance"):
         bad.validate()
+
+
+
+def test_research_certification_rejects_quality_with_forged_assurance_scope():
+    record, statistical, stability, bundle, ledger, acceptance, gate, quality, _ = certified_chain()
+    forged = replace(quality, assurance_scope="AUTHENTICATED", fingerprint="")
+    forged = replace(
+        forged,
+        fingerprint=__import__("hashlib").sha256(
+            __import__("json").dumps(
+                forged._payload(), sort_keys=True, separators=(",", ":")
+            ).encode()
+        ).hexdigest(),
+    )
+    with pytest.raises(ResearchCertificationError, match="cannot claim authenticated assurance"):
+        certify_research_result(
+            record, statistical, stability, bundle, ledger, acceptance, gate, forged
+        )

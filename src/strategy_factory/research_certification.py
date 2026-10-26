@@ -11,7 +11,10 @@ from .research_evidence_ledger import ResearchEvidenceLedger
 from .research_record import ResearchRecord
 from .statistical_evidence import StatisticalEvidence
 from .stability_evidence import StabilityEvidence
-from .unified_research_quality import UnifiedResearchQuality
+from .unified_research_quality import (
+    UNIFIED_QUALITY_ASSURANCE_SCOPE,
+    UnifiedResearchQuality,
+)
 
 
 class ResearchCertificationError(ValueError):
@@ -120,6 +123,10 @@ def certify_research_result(
     if not acceptance.ledger_registered:
         raise ResearchCertificationError("research acceptance ledger registration is not confirmed")
 
+    if quality.assurance_scope != UNIFIED_QUALITY_ASSURANCE_SCOPE:
+        raise ResearchCertificationError(
+            "unified research quality assurance scope is not authenticated and cannot be promoted"
+        )
     if quality.run_id != record.run_id:
         raise ResearchCertificationError("unified research quality run_id does not match record")
     if quality.research_acceptance_fingerprint != acceptance.fingerprint:

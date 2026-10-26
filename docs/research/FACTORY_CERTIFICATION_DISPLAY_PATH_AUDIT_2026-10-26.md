@@ -25,3 +25,8 @@ This was a source-level audit of the named dashboard and report modules on the s
 ## Issuance-boundary follow-up
 
 The certification object itself now carries `assurance_scope=SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED`, and validation rejects any different scope value. The certification-ledger entry binds and preserves that exact scope alongside its own `verification_scope=SELF_CONSISTENT_FINGERPRINT_ONLY_NOT_AUTHENTICATED`. This prevents accidental scope promotion in serialized records; it does not authenticate the caller or make a self-hashed, manually constructed object unforgeable. A selected external trust root and verified attestation are still required for issuer authentication.
+
+
+## Follow-up: assurance scope propagation
+
+On the follow-up branch revision, `UnifiedResearchQuality` now carries the explicit scope `SELF_CONSISTENT_EVIDENCE_CHAIN_NOT_AUTHENTICATED` inside its fingerprinted payload. Validation rejects scope promotion even if a caller recomputes the unkeyed fingerprint, and `ResearchCertification` checks that scope before consuming the quality result. This reduces ambiguity in the model contract but does not authenticate the evaluator or signer. CI results must be checked against the exact resulting HEAD before treating this follow-up as verified.
