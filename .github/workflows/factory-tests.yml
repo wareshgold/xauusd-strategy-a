@@ -47,4 +47,5 @@ jobs:
           tests/test_strategy_factory_research_brain.py \
           tests/test_strategy_factory_evidence_graph.py \
           tests/test_strategy_factory_research_ledger.py \
-          tests/test_strategy_factory_experiment_planner.py -q
+          tests/test_strategy_factory_experiment_planner.py \
+          tests/test_strategy_factory_execution_result_ingestion.py -q
