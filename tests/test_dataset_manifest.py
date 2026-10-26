@@ -97,3 +97,9 @@ def test_registry_rejects_replacement_of_registered_manifest():
     registry._trusted_pins[second.dataset_id] = second.fingerprint
     with pytest.raises(DatasetManifestError, match="immutable"):
         registry.register(second)
+
+
+def test_manifest_rejects_empty_dataset_fingerprint():
+    with pytest.raises(DatasetManifestError, match="dataset_fingerprint must be a SHA-256 hex digest"):
+        manifest(dataset_fingerprint="")
+
