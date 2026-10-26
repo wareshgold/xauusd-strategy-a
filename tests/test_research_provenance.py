@@ -427,3 +427,29 @@ def test_research_job_decoder_rejects_tampered_or_incompatible_artifacts(mutate,
         deserialize_provenance_input_artifact(
             changed, expected_role="research_job", expected_schema_revision=schema
         )
+
+def test_research_run_artifact_round_trip_uses_explicit_versioned_decoder():
+    run = make_chain()["run"]
+    schema = "RESEARCH-RUN-IDENTITY-1"
+    encoded = serialize_provenance_input_artifact("research_run", run, schema_revision=schema)
+    decoded = deserialize_provenance_input_artifact(encoded, expected_role="research_run", expected_schema_revision=schema)
+    from strategy_factory.runs import ResearchRunIdentity
+    assert type(decoded) is ResearchRunIdentity
+    assert decoded.as_dict() == run.as_dict()
+    assert serialize_provenance_input_artifact("research_run", decoded, schema_revision=schema) == encoded
+
+
+@pytest.mark.parametrize(("mutate", "message"), [
+    (lambda env: {**env, "artifact_role": "research_job"}, "role mismatch"),
+    (lambda env: {**env, "schema_revision": "RESEARCH-RUN-IDENTITY-2"}, "schema revision mismatch"),
+    (lambda env: {**env, "payload": {**env["payload"], "unexpected": True}}, "payload keys are invalid"),
+    (lambda env: {**env, "payload": {**env["payload"], "execution_semantics": "UNKNOWN_SEMANTICS"}}, "contract validation"),
+    (lambda env: {**env, "payload": {**env["payload"], "artifact_id": 7}}, "artifact_id must be a string or null"),
+], ids=("role-drift", "schema-drift", "extra-field", "invalid-enum", "bad-artifact-id"))
+def test_research_run_decoder_rejects_tampered_or_incompatible_artifacts(mutate, message):
+    schema = "RESEARCH-RUN-IDENTITY-1"
+    encoded = serialize_provenance_input_artifact("research_run", make_chain()["run"], schema_revision=schema)
+    envelope = __import__("json").loads(encoded)
+    changed = __import__("json").dumps(mutate(envelope), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    with pytest.raises(ValueError, match=message):
+        deserialize_provenance_input_artifact(changed, expected_role="research_run", expected_schema_revision=schema)

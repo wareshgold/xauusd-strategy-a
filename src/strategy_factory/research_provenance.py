@@ -14,7 +14,6 @@ from .jobs import ResearchJobSpec, validate_job_matches_test_spec
 from .runs import ResearchRunIdentity
 from .snapshot import ReadinessSnapshot
 from .test_contract import DatasetRole, ExecutionSemantics, HistoricalTestSpec, TestDataset
-from .jobs import ResearchJobSpec
 
 
 class ResearchProvenanceStatus(str, Enum):
@@ -284,6 +283,7 @@ def serialize_provenance_input_artifact(
 PROVENANCE_INPUT_SCHEMA_REVISIONS = {
     "test_spec": "HISTORICAL-TEST-SPEC-1",
     "research_job": "RESEARCH-JOB-SPEC-1",
+    "research_run": "RESEARCH-RUN-IDENTITY-1",
 }
 
 
@@ -317,6 +317,22 @@ def deserialize_provenance_input_artifact(
     payload = envelope["payload"]
     if not isinstance(payload, dict):
         raise ValueError("provenance artifact payload must be an object")
+    if expected_role == "research_run":
+        required = {"run_id", "strategy_id", "strategy_revision", "manifest_revision", "dataset_id", "dataset_role", "data_revision", "dataset_fingerprint", "artifact_id", "execution_semantics", "parameters", "objective", "purpose"}
+        if set(payload) != required:
+            raise ValueError("research run payload keys are invalid")
+        if not isinstance(payload["parameters"], dict):
+            raise ValueError("research run parameters must be an object")
+        if payload["artifact_id"] is not None and not isinstance(payload["artifact_id"], str):
+            raise ValueError("research run artifact_id must be a string or null")
+        try:
+            run = ResearchRunIdentity(run_id=payload["run_id"], strategy_id=payload["strategy_id"], strategy_revision=payload["strategy_revision"], manifest_revision=payload["manifest_revision"], dataset_id=payload["dataset_id"], dataset_role=payload["dataset_role"], data_revision=payload["data_revision"], dataset_fingerprint=payload["dataset_fingerprint"], artifact_id=payload["artifact_id"], execution_semantics=ExecutionSemantics(payload["execution_semantics"]), parameters=payload["parameters"], objective=payload["objective"], purpose=payload["purpose"])
+            run.validate()
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("research run artifact failed contract validation") from exc
+        if serialize_provenance_input_artifact("research_run", run, schema_revision=expected_schema_revision) != data:
+            raise ValueError("research run artifact is not canonical JSON")
+        return run
     if expected_role == "research_job":
         required = {
             "job_id", "strategy_id", "strategy_revision", "manifest_revision",

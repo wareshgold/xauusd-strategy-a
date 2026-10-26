@@ -124,3 +124,9 @@ The decoder explicitly refuses roles without a versioned decoder. This is intent
 The `research_job` input now has a versioned decoder under `RESEARCH-JOB-SPEC-1`. It reconstructs the real `ResearchJobSpec`, requires the exact payload field set, parses the declared `ExecutionSemantics`, validates the dataset fingerprint and required identity fields using the existing job contract, and enforces canonical serialization on round-trip. Tests cover round-trip equality and tampered role/schema/fields/enum/fingerprint cases.
 
 This advances two of eight input decoders (`test_spec`, `research_job`). The remaining six inputs still have no decoder and remain blocked for complete archived provenance replay. The job decoder validates the job's internal contract; matching it to the restored test spec and independently verifying the referenced dataset manifest remain separate checks. It does not authenticate the archive or evaluator.
+
+## Third versioned provenance decoder: research run identity
+
+The research_run input now has a versioned decoder under RESEARCH-RUN-IDENTITY-1. It reconstructs the existing ResearchRunIdentity, enforces the exact payload key set, requires parameters to be an object, accepts artifact_id only as a string or null, parses ExecutionSemantics, runs the existing identity validator, and requires canonical byte-for-byte round-trip serialization. Tests cover round-trip equality and tampered role/schema/fields/enum/artifact identifier cases.
+
+Three of eight provenance inputs now have explicit decoders (test_spec, research_job, research_run). The decoder validates the run identity's declared fields, but does not independently prove that the run matches the job, registered dataset, or usage ledger; those remain chain-level checks during provenance evaluation. Five input decoders remain unimplemented, so full archived provenance replay remains blocked. No issuer or evaluator authentication is provided.
