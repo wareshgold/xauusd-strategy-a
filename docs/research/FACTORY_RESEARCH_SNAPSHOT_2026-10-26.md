@@ -140,3 +140,13 @@ Continue strengthening the Research Brain's evidence handling and experiment pri
 - Scope limitation: `ResearchRecordLedger` is currently an in-memory application ledger, not an independently authenticated, durable dataset attestation service. This change prevents the comparison gate from treating a self-declared holdout role as sufficient, but does not establish external immutability/authenticity of the ledger or underlying data. A durable, independently pinned dataset manifest and trusted registry remain necessary before treating holdout provenance as fully authenticated.
 - The gate's existing DEVELOPMENT comparison behavior is unchanged. This is a governance/provenance hardening step, not statistical evidence of edge and not canonical SP2L rule approval.
 - No local worktrees/files, MT5, Strategy A/Strategy B forward runners, PR merge, or production deployment were touched.
+
+## Externally pinned dataset-manifest boundary — 2026-10-26
+
+- Added `src/strategy_factory/dataset_manifest.py`: deterministic content-addressed dataset manifests and an append-only registry that accepts a manifest only when its fingerprint matches a separately supplied trusted pin.
+- Holdout comparison validation now requires both the research-record ledger and the dataset-manifest registry for `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT`. It checks role, dataset fingerprint, revision, and immutability against the pinned manifest before governance can be recorded.
+- Added `tests/test_dataset_manifest.py` for deterministic fingerprints, missing/wrong pins, tampering, role/dataset/revision mismatch, and immutable registration.
+- Trust limitation is explicit: a SHA-256 digest provides integrity, not publisher authenticity. The trusted pin must come from a separately controlled source (for example, a protected registry or reviewed release artifact); a caller-supplied untrusted pin does not establish trust. The registry itself is currently in-memory and is not claimed to be durable storage.
+- This is a dataset-provenance/governance boundary only. It does not resolve SP2L geometry, establish statistical edge, or authorize canonical/production decisions. CI must pass on the final branch head before this increment is treated as validated.
+- No local worktrees/files, MT5 session/account, live runner, Strategy A forward-test artifacts, or Strategy B run were touched. No merge or production deployment.
+
