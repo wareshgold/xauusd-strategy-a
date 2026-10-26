@@ -88,6 +88,15 @@
 - New report tests were added to Factory Research Tests CI. Verify the final branch-head runs before calling this increment validated.
 - No local worktrees/files, MT5 session/account, live runner, Strategy A forward-test artifacts, or Strategy B run were touched. No replay, merge, or production deployment.
 
+
+## Research Brain source-first planning increment — 2026-10-26
+
+- Updated `src/strategy_factory/evidence_graph.py` so missing evidence roles are prioritized in the declared research order: SOURCE → DATA → TEST → EXECUTION → STATISTICAL_VALIDATION, rather than alphabetical order.
+- Added `RESOLVE_SOURCE_AMBIGUITY` action for explicitly inconclusive source evidence. This requests a human-reviewed source excerpt/interpretation diff before downstream discriminating tests; it does not guess source meaning.
+- Added tests proving source-first role ordering and that inconclusive source evidence does not trigger a downstream test as the first resolution step.
+- This is a research-planning policy improvement, not a change to canonical SP2L geometry or production execution. All action authority flags remain false.
+- CI must be checked on the latest branch head before this increment is considered validated. No local dashboard, local worktree, MT5, live runner, Strategy A forward-test, or Strategy B state was touched. StarNet visual work is intentionally deferred until the research brain policy is stable.
+
 ## Next increment
 
-Review the local StarNet/Factory dashboard bootstrap dependency chain separately from this research ledger. Preserve the intended local visual “working factory” dashboard (CEO ALI, telemetry-backed rooms/workers, production locked and BUY/SELL=0); do not replace it with static mock rooms or assume the earlier partial StarNet bootstrap is complete. First map required scripts/assets and identify the last known-good local entry point before proposing any local change.
+Continue strengthening the Research Brain's evidence handling and experiment prioritization against adversarial fixtures before any StarNet visual work. Keep the local dashboard deferred; do not substitute static visual mockups for working telemetry.
