@@ -44,4 +44,5 @@ jobs:
           tests/test_strategy_factory_event_timeline_audit.py \
           tests/test_strategy_factory_observed_deal_economics.py \
           tests/test_strategy_factory_history_query_fixtures.py \
-          tests/test_strategy_factory_research_brain.py -q
+          tests/test_strategy_factory_research_brain.py \
+          tests/test_strategy_factory_evidence_graph.py -q
