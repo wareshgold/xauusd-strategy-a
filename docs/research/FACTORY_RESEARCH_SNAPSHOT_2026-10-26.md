@@ -161,3 +161,14 @@ Continue strengthening the Research Brain's evidence handling and experiment pri
 - Disposition: integrity and internal chain consistency are tested, but pin authenticity remains unresolved. Keep `FRESH_HOLDOUT` blocked from being described as independently authenticated until a concrete independently controlled trust source and verification contract are selected and implemented.
 - Next technical work is gated on that trust-source decision; do not add a caller-controlled boolean, source label, or environment variable as a substitute. Required negative cases include missing/invalid signature, wrong/untrusted/revoked identity, replay, manifest/revision mismatch, and ledger-tip/count mismatch.
 - This is a documentation/audit increment only. No canonical SP2L geometry, trading execution rules, statistical-edge claim, local worktree, MT5, Strategy A/Strategy B forward runner, merge, or production deployment was changed.
+
+
+## External trust-source architecture decision record — 2026-10-26
+
+- ADR: `docs/research/EXTERNAL_DATASET_PIN_TRUST_SOURCE_ADR_2026-10-26.md`.
+- Status: proposed only; no provider or issuer has been assumed, selected, or wired.
+- Preferred design candidate: signed attestation whose issuer is independently verified against a trust policy maintained outside the mutable pin/ledger payload. A separately administered immutable registry remains an alternative if its independent control and permission model can be evidenced.
+- Rejected as trust roots: a pin in the same mutable repository, caller-controlled environment value/boolean/source label, or a tag/release whose protection and signer identity have not been independently verified.
+- Implementation is gated on the operator/security owner confirming the real trust channel, issuer/identity policy, and publication/verification permissions. The ADR defines a candidate contract and negative-test matrix; it does not claim that the provider exists.
+- CI status for the documentation commits: no successful workflow run has yet been confirmed for the newest HEAD in this check. Earlier green runs apply only to their own commits; verify CI again before treating this increment as validated.
+- Holdout disposition unchanged: `FRESH_HOLDOUT` remains blocked from being described as independently authenticated. No canonical geometry, execution semantics, trading signal, local worktree, MT5, or forward runner changed.
