@@ -216,3 +216,15 @@ def evaluate_research_provenance(
             "dataset_provenance": dataset_provenance,
         },
     )
+
+
+def serialize_research_provenance_decision(result: ResearchProvenanceResult) -> bytes:
+    """Return canonical UTF-8 bytes for a validated provenance decision.
+
+    This binds serialized bytes to the declared decision fingerprint. It does
+    not authenticate the issuer or independently replay the upstream chain.
+    """
+    result.validate()
+    return json.dumps(
+        result.as_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+    ).encode("utf-8")

@@ -16,6 +16,7 @@ from strategy_factory.models import StrategyPassport
 from strategy_factory.research_provenance import (
     ResearchProvenanceStatus,
     evaluate_research_provenance,
+    serialize_research_provenance_decision,
 )
 from strategy_factory.runs import ResearchRunIdentity
 from strategy_factory.snapshot import build_readiness_snapshot
@@ -257,3 +258,23 @@ def test_provenance_decision_binds_execution_receipt_and_dataset_provenance():
     replay = evaluate_research_provenance(**changed)
     assert replay.status is ResearchProvenanceStatus.FAIL
     assert replay.decision_fingerprint != result.decision_fingerprint
+
+
+
+def test_provenance_decision_archive_bytes_are_canonical_and_repeatable():
+    chain = make_chain()
+    first = evaluate_research_provenance(**chain)
+    second = evaluate_research_provenance(**chain)
+    first_bytes = serialize_research_provenance_decision(first)
+    assert first_bytes == serialize_research_provenance_decision(second)
+    assert first_bytes.decode("utf-8") == __import__("json").dumps(
+        first.as_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    )
+    assert first.decision_fingerprint.encode() in first_bytes
+
+
+def test_provenance_decision_archive_serialization_rejects_tampering():
+    result = evaluate_research_provenance(**make_chain())
+    altered = replace(result, reasons=("MANUALLY_CHANGED",))
+    with pytest.raises(ValueError, match="decision fingerprint mismatch"):
+        serialize_research_provenance_decision(altered)
