@@ -35,4 +35,5 @@ jobs:
           tests/test_factory_job_events.py \
           tests/test_factory_worker_journal_audit.py \
           tests/test_factory_test_journal_isolation.py \
-          tests/test_factory_orchestrator_default_journal_isolation.py -q
+          tests/test_factory_orchestrator_default_journal_isolation.py \
+          tests/test_strategy_factory_synthetic_fixtures.py -q
