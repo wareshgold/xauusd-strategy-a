@@ -100,3 +100,11 @@
 ## Next increment
 
 Continue strengthening the Research Brain's evidence handling and experiment prioritization against adversarial fixtures before any StarNet visual work. Keep the local dashboard deferred; do not substitute static visual mockups for working telemetry.
+
+## Research Brain adversarial policy fixtures — 2026-10-26
+
+- Added deterministic graph tests where multiple DATA/TEST/STATISTICAL_VALIDATION supporting records coexist with a linked SOURCE contradiction. The planner must retain a contradiction-resolution action, keep SOURCE unresolved when it has no supporting source evidence, and leave canonical/production authority false.
+- Added a fail-closed case proving an INCONCLUSIVE test result cannot be attached using a SUPPORTS edge.
+- Added a non-source inconclusive-result case proving a discriminating test remains proposed while missing statistical validation remains a gap; no result is presumed.
+- These are synthetic policy tests only. They do not authenticate the cited source, establish the truth of a claim, execute a test, or establish statistical edge.
+- No canonical geometry, live execution rule, StarNet UI, local worktree, MT5, Strategy A forward-test evidence, or Strategy B run was changed.
