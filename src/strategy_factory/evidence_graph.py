@@ -20,6 +20,7 @@ class PlanActionKind(str, Enum):
     COLLECT_MISSING_EVIDENCE = "COLLECT_MISSING_EVIDENCE"
     DESIGN_DISCRIMINATING_TEST = "DESIGN_DISCRIMINATING_TEST"
     HUMAN_SOURCE_REVIEW = "HUMAN_SOURCE_REVIEW"
+    RESOLVE_SOURCE_AMBIGUITY = "RESOLVE_SOURCE_AMBIGUITY"
 
 
 @dataclass(frozen=True)
@@ -134,7 +135,9 @@ def build_research_plan(graph: EvidenceGraph) -> ResearchPlan:
             evidence[edge.evidence_id].role for edge in edges
             if edge.relation is EdgeRelation.SUPPORTS
         }
-        missing_roles = sorted(set(claim.required_roles) - supported_roles)
+        role_priority = {"SOURCE": 0, "DATA": 1, "TEST": 2, "EXECUTION": 3, "STATISTICAL_VALIDATION": 4}
+        missing_roles = sorted(set(claim.required_roles) - supported_roles,
+                               key=lambda role: (role_priority[role], role))
         claim_actions: list[ResearchAction] = []
         if contradictions:
             claim_actions.append(ResearchAction(
@@ -154,14 +157,28 @@ def build_research_plan(graph: EvidenceGraph) -> ResearchPlan:
                 reason="No linked supporting evidence currently covers this required role.",
                 expected_artifact=f"PROVENANCE_BOUND_{role}_EVIDENCE",
             ))
-        if any(evidence[eid].outcome == "INCONCLUSIVE"
-               for eid in (edge.evidence_id for edge in edges)):
+        inconclusive_source = any(
+            evidence[edge.evidence_id].role == "SOURCE"
+            and evidence[edge.evidence_id].outcome == "INCONCLUSIVE"
+            for edge in edges
+        )
+        if inconclusive_source:
+            claim_actions.append(ResearchAction(
+                action_id=f"{claim.claim_id}:resolve-source-ambiguity",
+                kind=PlanActionKind.RESOLVE_SOURCE_AMBIGUITY,
+                claim_id=claim.claim_id,
+                target="INCONCLUSIVE_SOURCE_EVIDENCE",
+                reason="Source meaning is inconclusive; resolve it before designing downstream tests.",
+                expected_artifact="HUMAN_REVIEWED_SOURCE_EXCERPT_AND_INTERPRETATION_DIFF",
+            ))
+        elif any(evidence[eid].outcome == "INCONCLUSIVE"
+                 for eid in (edge.evidence_id for edge in edges)):
             claim_actions.append(ResearchAction(
                 action_id=f"{claim.claim_id}:discriminate",
                 kind=PlanActionKind.DESIGN_DISCRIMINATING_TEST,
                 claim_id=claim.claim_id,
                 target="INCONCLUSIVE_EVIDENCE",
-                reason="Linked evidence is inconclusive; no outcome is presumed.",
+                reason="Linked non-source evidence is inconclusive; no outcome is presumed.",
                 expected_artifact="FROZEN_INPUT_COUNTEREXAMPLE_FIXTURE",
             ))
         if claim.canonical_rule_change and not claim_actions:
