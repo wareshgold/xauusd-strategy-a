@@ -51,6 +51,8 @@ class DatasetManifest:
             ("dataset_fingerprint", self.dataset_fingerprint),
             ("artifact_sha256", self.artifact_sha256),
         ):
+            if field_name == "dataset_fingerprint" and not value:
+                raise DatasetManifestError("dataset_fingerprint must be a SHA-256 hex digest")
             if value is not None and (
                 len(value) != 64 or any(char not in "0123456789abcdef" for char in value.lower())
             ):
@@ -103,10 +105,10 @@ class DatasetManifestRegistry:
     """
 
     def __init__(self, trusted_pins: Mapping[str, str]) -> None:
-        self._trusted_pins = dict(trusted_pins)
+        self._trusted_pins = {dataset_id: fingerprint.lower() for dataset_id, fingerprint in trusted_pins.items()}
         self._manifests: dict[str, DatasetManifest] = {}
         for dataset_id, fingerprint in self._trusted_pins.items():
-            if not dataset_id or len(fingerprint) != 64 or any(c not in "0123456789abcdef" for c in fingerprint.lower()):
+            if not dataset_id or len(fingerprint) != 64 or any(c not in "0123456789abcdef" for c in fingerprint):
                 raise DatasetManifestError("trusted pin must map dataset_id to a SHA-256 fingerprint")
 
     def register(self, manifest: DatasetManifest) -> DatasetManifest:
@@ -114,7 +116,7 @@ class DatasetManifestRegistry:
         trusted = self._trusted_pins.get(manifest.dataset_id)
         if trusted is None:
             raise DatasetManifestError("dataset manifest has no external trusted pin")
-        if trusted != manifest.fingerprint:
+        if trusted != manifest.fingerprint.lower():
             raise DatasetManifestError("dataset manifest does not match external trusted pin")
         existing = self._manifests.get(manifest.dataset_id)
         if existing is not None and existing != manifest:
@@ -131,7 +133,7 @@ class DatasetManifestRegistry:
     def validate_record(self, record: Any, expected_role: str) -> None:
         manifest = self.get(record.dataset_id)
         manifest.validate()
-        if self._trusted_pins.get(manifest.dataset_id) != manifest.fingerprint:
+        if self._trusted_pins.get(manifest.dataset_id) != manifest.fingerprint.lower():
             raise DatasetManifestError("dataset manifest external pin mismatch")
         if manifest.dataset_role != expected_role or record.dataset_role != expected_role:
             raise DatasetManifestError("dataset manifest role mismatch")
