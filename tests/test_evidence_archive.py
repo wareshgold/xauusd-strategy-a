@@ -1,4 +1,5 @@
 import hashlib
+from pathlib import Path
 from dataclasses import replace
 
 import pytest
@@ -12,6 +13,7 @@ from strategy_factory.evidence_archive import (
     ArtifactVerificationStatus,
     EvidenceArchiveError,
     EvidenceArchiveManifest,
+    FileSystemContentAddressedStore,
     retrieve_verified_artifact,
 )
 
@@ -126,3 +128,53 @@ def test_manifest_rejects_invalid_digest_and_negative_length():
     bad_length = replace(manifest.artifacts[0], byte_length=-1)
     with pytest.raises(EvidenceArchiveError, match="cannot be negative"):
         replace(manifest, artifacts=(bad_length,)).validate()
+
+
+
+def test_filesystem_store_put_is_idempotent_and_survives_reopen(tmp_path):
+    data = b"evidence payload"
+    store = FileSystemContentAddressedStore(tmp_path / "archive")
+    locator = store.put(data)
+    assert locator == store.put(data)
+    reopened = FileSystemContentAddressedStore(tmp_path / "archive")
+    assert reopened.get(locator) == data
+
+
+def test_filesystem_store_missing_and_corrupted_objects_fail_closed(tmp_path):
+    store = FileSystemContentAddressedStore(tmp_path / "archive")
+    with pytest.raises(ArtifactNotFound):
+        store.get("sha256:" + "a" * 64)
+
+    locator = store.put(b"original")
+    digest = locator.removeprefix("sha256:")
+    path = Path(tmp_path / "archive" / "sha256" / digest[:2] / digest)
+    path.write_bytes(b"tampered")
+    with pytest.raises(EvidenceArchiveError, match="do not match"):
+        store.get(locator)
+
+
+def test_filesystem_store_rejects_non_sha256_locator(tmp_path):
+    store = FileSystemContentAddressedStore(tmp_path / "archive")
+    with pytest.raises(EvidenceArchiveError, match="unsupported content-addressed"):
+        store.get("../../outside")
+
+
+
+def test_manifest_round_trip_and_fingerprint_tampering_rejected():
+    manifest, _ = build_manifest()
+    serialized = manifest.as_dict()
+    restored = EvidenceArchiveManifest.from_dict(serialized)
+    assert restored.as_dict() == serialized
+
+    tampered = dict(serialized)
+    tampered["policy_revision"] = "policy@changed"
+    with pytest.raises(EvidenceArchiveError, match="fingerprint mismatch"):
+        EvidenceArchiveManifest.from_dict(tampered)
+
+
+def test_manifest_parser_rejects_unknown_digest_algorithm():
+    manifest, _ = build_manifest()
+    serialized = manifest.as_dict()
+    serialized["artifacts"][0]["digest_algorithm"] = "sha512"
+    with pytest.raises(EvidenceArchiveError, match="digest algorithm"):
+        EvidenceArchiveManifest.from_dict(serialized)

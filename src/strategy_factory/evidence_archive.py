@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from enum import Enum
 import hashlib
 import json
+import os
+from pathlib import Path
+import tempfile
 from typing import Protocol
 
 
@@ -91,6 +94,51 @@ class EvidenceArchiveManifest:
         self.validate()
         return {**self.payload(), "manifest_fingerprint": self.fingerprint()}
 
+    @classmethod
+    def from_dict(cls, raw: dict[str, object]) -> "EvidenceArchiveManifest":
+        """Parse and verify a serialized manifest without trusting its fingerprint."""
+        try:
+            if not isinstance(raw, dict):
+                raise EvidenceArchiveError("serialized archive manifest must be an object")
+            raw_artifacts = raw["artifacts"]
+            if not isinstance(raw_artifacts, list):
+                raise EvidenceArchiveError("serialized artifacts must be a list")
+            artifacts: list[ArtifactDescriptor] = []
+            for item in raw_artifacts:
+                if not isinstance(item, dict):
+                    raise EvidenceArchiveError("serialized artifact descriptor must be an object")
+                if item.get("digest_algorithm") != "sha256":
+                    raise EvidenceArchiveError("unsupported artifact digest algorithm")
+                artifacts.append(ArtifactDescriptor(
+                    role=str(item["role"]),
+                    schema_revision=str(item["schema_revision"]),
+                    digest_sha256=str(item["digest_sha256"]),
+                    byte_length=int(item["byte_length"]),
+                    locator=str(item["locator"]),
+                ))
+            manifest = cls(
+                archive_record_id=str(raw["archive_record_id"]),
+                evaluator_revision=str(raw["evaluator_revision"]),
+                policy_revision=str(raw["policy_revision"]),
+                artifacts=tuple(artifacts),
+                dataset_manifest_fingerprint=(
+                    str(raw["dataset_manifest_fingerprint"])
+                    if raw.get("dataset_manifest_fingerprint") is not None else None
+                ),
+                dataset_role=str(raw["dataset_role"]) if raw.get("dataset_role") is not None else None,
+                assurance_scope=str(raw["assurance_scope"]),
+                schema_revision=str(raw["schema_revision"]),
+            )
+            manifest.validate()
+            declared_fingerprint = raw.get("manifest_fingerprint")
+            if not isinstance(declared_fingerprint, str) or declared_fingerprint != manifest.fingerprint():
+                raise EvidenceArchiveError("serialized manifest fingerprint mismatch")
+            return manifest
+        except EvidenceArchiveError:
+            raise
+        except (KeyError, TypeError, ValueError) as exc:
+            raise EvidenceArchiveError(f"malformed serialized archive manifest: {exc}") from exc
+
     def validate(self) -> None:
         if self.schema_revision != ARCHIVE_MANIFEST_SCHEMA_REVISION:
             raise EvidenceArchiveError("unsupported archive manifest schema revision")
@@ -118,6 +166,75 @@ class ArtifactStore(Protocol):
     def get(self, locator: str) -> bytes:
         """Return exact artifact bytes or raise ArtifactNotFound / ArchiveUnavailable."""
         ...
+
+
+class FileSystemContentAddressedStore:
+    """Local content-addressed adapter with create-if-absent writes.
+
+    This adapter detects accidental corruption and avoids overwriting an
+    existing digest path. It does not provide WORM guarantees, issuer
+    authentication, backup, or protection from a privileged local actor.
+    """
+
+    def __init__(self, root: str | Path) -> None:
+        self.root = Path(root)
+
+    @staticmethod
+    def _digest_from_locator(locator: str) -> str:
+        prefix = "sha256:"
+        digest = locator[len(prefix):] if locator.startswith(prefix) else ""
+        if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+            raise EvidenceArchiveError("unsupported content-addressed locator")
+        return digest
+
+    def _path_for_digest(self, digest: str) -> Path:
+        return self.root / "sha256" / digest[:2] / digest
+
+    def put(self, data: bytes) -> str:
+        """Persist bytes under their digest; repeat writes are idempotent."""
+        if not isinstance(data, bytes):
+            raise TypeError("artifact content must be bytes")
+        digest = hashlib.sha256(data).hexdigest()
+        target = self._path_for_digest(digest)
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(
+                mode="wb", prefix=".artifact-", dir=target.parent, delete=False
+            ) as handle:
+                temporary = Path(handle.name)
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+            try:
+                # Same-directory hard link makes publication create-if-absent:
+                # readers see either no final path or the complete file.
+                os.link(temporary, target)
+            except FileExistsError:
+                existing = target.read_bytes()
+                if hashlib.sha256(existing).hexdigest() != digest or existing != data:
+                    raise EvidenceArchiveError(
+                        "existing content-addressed object does not match its locator"
+                    )
+            finally:
+                temporary.unlink(missing_ok=True)
+        except EvidenceArchiveError:
+            raise
+        except OSError as exc:
+            raise ArchiveUnavailable(f"local artifact store write failed: {exc}") from exc
+        return f"sha256:{digest}"
+
+    def get(self, locator: str) -> bytes:
+        digest = self._digest_from_locator(locator)
+        path = self._path_for_digest(digest)
+        try:
+            data = path.read_bytes()
+        except FileNotFoundError as exc:
+            raise ArtifactNotFound(f"content-addressed artifact not found: {locator}") from exc
+        except OSError as exc:
+            raise ArchiveUnavailable(f"local artifact store read failed: {exc}") from exc
+        if hashlib.sha256(data).hexdigest() != digest:
+            raise EvidenceArchiveError("stored bytes do not match content-addressed locator")
+        return data
 
 
 @dataclass(frozen=True)
