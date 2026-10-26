@@ -42,9 +42,9 @@ def ingest_execution_result(
     counterexample_refs: tuple[str, ...] = (),
 ) -> ExperimentRecord:
     """Append a result record linked to a PLANNED record; do not execute tests."""
-    validate_record(plan_record)
     if plan_record.status is not ExperimentStatus.PLANNED:
         raise ValueError("execution result must reference a PLANNED record")
+    validate_record(plan_record)
     if not captured.run_id.strip() or not captured.command.strip():
         raise ValueError("captured run_id and command are required")
     if sequence != plan_record.sequence + 1:
