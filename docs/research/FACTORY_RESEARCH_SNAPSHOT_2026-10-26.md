@@ -34,8 +34,13 @@
 ## Follow-up increment later on 2026-10-26
 
 - Evidence Graph and deterministic research-action planner were added in commit 26394e883e769f7b4057c047e42bdfe048636ef3.
-- This follow-up adds adversarial reconciliation fixtures for duplicate order/position identities and stricter graph role/outcome/relation validation.
+- Follow-up commit `0128e1f0e7d7b090d9b9921ffef3b13c34adf733` adds adversarial reconciliation fixtures for duplicate order/position identities and stricter graph role/outcome/relation validation.
+- Latest verified checkpoint at snapshot refresh: `0128e1f0e7d7b090d9b9921ffef3b13c34adf733`; both focused CI workflows succeeded (runs 40293637746 and 40293637776).
 - The baseline commit above remains the original snapshot point; the current branch head and its CI runs define the latest state.
+
+## Added audit record
+
+- `docs/research/RECONCILIATION_COUNTEREXAMPLE_AUDIT_2026-10-26.md` records the duplicate-identity counterexamples and explicitly scopes the tests as synthetic structural checks.
 
 ## Next increment
 
