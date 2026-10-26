@@ -62,6 +62,7 @@ class ResearchRecord:
             "execution_semantics": self.execution_semantics,
             "provenance_status": self.provenance_status.value,
             "provenance_reasons": list(self.provenance_reasons),
+            "provenance_decision_fingerprint": self.provenance_decision_fingerprint,
         }
         if include_fingerprint:
             data["fingerprint"] = self.fingerprint
