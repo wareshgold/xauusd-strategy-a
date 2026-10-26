@@ -123,6 +123,57 @@ def test_holdout_gate_blocks_mapping_only_pin_even_with_matching_record_identity
     assert result.governed is False
 
 
+def test_holdout_gate_rejects_caller_claimed_authenticated_registry():
+    from types import SimpleNamespace
+
+    c, a, _, _ = chain()
+    c2 = replace(c, dataset_role="FRESH_HOLDOUT")
+    fp = hashlib.sha256(
+        json.dumps(c2._fingerprint_payload(), sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    c2 = replace(c2, fingerprint=fp)
+    e2 = bind_statistical_comparison_evidence(c2, a)
+    evidence_ledger = StatisticalComparisonEvidenceLedger()
+    evidence_ledger.record(e2)
+
+    observations = (c2.baseline, *c2.candidates)
+    records = {
+        observation.run_id: SimpleNamespace(
+            fingerprint=observation.research_record_fingerprint,
+            dataset_role="FRESH_HOLDOUT",
+            dataset_id="HOLDOUT-001",
+            dataset_fingerprint="a" * 64,
+            data_revision="DATA-REV-001",
+            validate=lambda: None,
+        )
+        for observation in observations
+    }
+    class RecordLedger:
+        def get(self, run_id):
+            return records[run_id]
+
+    class CallerClaimedTrustedRegistry:
+        # A caller-controlled property is not an authenticated trust root.
+        has_authenticated_external_trust_root = True
+        validate_called = False
+
+        def validate_record(self, record, expected_role):
+            self.validate_called = True
+            return None
+
+    manifest_registry = CallerClaimedTrustedRegistry()
+    result = evaluate_comparison_validation_gate(
+        c2, a, e2, evidence_ledger, StatisticalComparisonUsageLedger(),
+        research_record_ledger=RecordLedger(),
+        dataset_manifest_registry=manifest_registry,
+    )
+
+    assert result.status is ComparisonValidationGateStatus.BLOCKED
+    assert "DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED" in result.blocking_reasons
+    assert result.governed is False
+    assert manifest_registry.validate_called is False
+
+
 def test_self_declared_fresh_holdout_role_requires_record_provenance_ledger():
     c, a, _, _ = chain()
     # Re-fingerprint a caller-relabelled DEVELOPMENT comparison. Internal

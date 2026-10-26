@@ -8,13 +8,13 @@ This audit follows the current research-branch implementation from manifest cons
 2. `DatasetManifestPinLedger.append(manifest)` adds the manifest fingerprint to a hash-chained ledger. `to_json()` serializes it, but the module does not persist it to durable storage or publish an external attestation.
 3. `DatasetManifestPinLedger.from_json(..., expected_external_tip_fingerprint=...)` verifies the chain and supplied expected tip. It does not fetch or authenticate the source of that expected tip.
 4. `DatasetManifestRegistry(trusted_pins=...)` accepts a caller-provided mapping. The registry validates mapping format and manifest equality, but cannot independently establish that the mapping came from a trusted authority.
-5. `evaluate_comparison_validation_gate(..., dataset_manifest_registry=...)` requires a registry for `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT`. The mapping-only registry now explicitly reports that it has no authenticated external trust root, and the gate blocks these roles with `DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED` instead of treating a caller-supplied mapping as sufficient. A future authenticated provider is not implemented.
+5. `evaluate_comparison_validation_gate(..., dataset_manifest_registry=...)` requires a registry for `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT`. The gate now blocks these roles with `DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED` whenever a registry is supplied, without trusting a caller-controlled boolean/property or duck-typed `validate_record` method. No concrete authenticated provider is implemented.
 
 ## Findings
 
 - Integrity checks and chain verification are implemented.
 - Pin authenticity, publisher identity, durable independent storage, and verifier/publisher permission separation are not implemented by this path.
-- The comparison gate now fails closed for validation/holdout roles when only the mapping-based registry is supplied. This closes the in-code false-trust path; it does not create or authenticate an external trust root.
+- The comparison gate now fails closed for validation/holdout roles even if a caller supplies an object claiming `has_authenticated_external_trust_root = True`; it does not call that object's `validate_record` method. This closes the property/duck-typing bypass as well as the mapping-only false-trust path; it does not create or authenticate an external trust root.
 - A caller-generated digest, environment variable, label, or pin stored next to the ledger is not sufficient evidence of an independent trust root.
 - The inspected code and synthetic tests do not demonstrate that a real holdout has been independently frozen or authenticated.
 

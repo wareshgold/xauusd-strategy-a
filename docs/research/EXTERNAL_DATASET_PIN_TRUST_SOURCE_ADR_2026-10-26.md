@@ -45,7 +45,7 @@ Every failure must leave the holdout gate blocked and must not silently fall bac
 
 ## Interim enforcement added on 2026-10-26
 
-The mapping-only `DatasetManifestRegistry` now exposes `has_authenticated_external_trust_root = False`. The unified comparison gate explicitly blocks `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` with `DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED` when this registry is used, even if every supplied manifest hash matches. A regression test covers the fully matching caller-supplied mapping and research-record identities. This is an interim fail-closed guard, not an authenticated provider.
+The mapping-only `DatasetManifestRegistry` exposes `has_authenticated_external_trust_root = False`. The unified comparison gate now blocks `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` with `DATASET_PIN_TRUST_ROOT_UNAUTHENTICATED` for any supplied registry, without treating a caller-controlled property or duck-typed `validate_record` method as authentication. Regression tests cover both a matching caller-supplied mapping and an adversarial registry claiming `has_authenticated_external_trust_root = True`; the latter's `validate_record` method must not be called. This is an interim fail-closed guard, not an authenticated provider.
 
 ## Activation gate
 
