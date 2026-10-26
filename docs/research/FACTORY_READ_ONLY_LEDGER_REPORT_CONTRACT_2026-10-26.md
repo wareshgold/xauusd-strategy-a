@@ -19,3 +19,8 @@
 - `canonical_authorized` and `production_decision_authorized` remain false.
 - It does not authenticate the external pin source or execution artifacts. Pin values must be managed independently and captured output bytes must be retained.
 - Counts summarize the supplied ledger; they are not statistical performance results and do not prove source meaning, broker behavior, canonical SP2L geometry, or a trading edge.
+
+
+## Certification-ledger boundary (2026-10-26)
+
+`ResearchCertificationLedger` stores the certification fingerprint and its run/strategy identifiers. It validates the certification self-hash and hashes its own entry; it does not retain or re-evaluate the full upstream evidence chain, authenticate an issuer, or prove that the certification was emitted by `certify_research_result(...)`. Therefore every serialized entry explicitly carries `verification_scope=SELF_CONSISTENT_FINGERPRINT_ONLY_NOT_AUTHENTICATED`. Consumers must not display this ledger entry as independently authenticated certification. This marker is a scope label, not a cryptographic trust root. An authenticated claim requires a separately selected issuer/trust policy and verification of the underlying attestation.

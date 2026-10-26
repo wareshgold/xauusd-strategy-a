@@ -16,6 +16,8 @@ def test_certification_ledger_records_and_is_idempotent():
     second = ledger.record(certification, strategy_id="SP2L", strategy_revision="R1")
     assert first == second
     assert len(ledger.entries()) == 1
+    assert first.verification_scope == "SELF_CONSISTENT_FINGERPRINT_ONLY_NOT_AUTHENTICATED"
+    assert first.as_dict()["verification_scope"] == "SELF_CONSISTENT_FINGERPRINT_ONLY_NOT_AUTHENTICATED"
     ledger.assert_clean()
 
 
@@ -41,3 +43,12 @@ def test_ledger_entries_are_immutable():
     entry = ResearchCertificationLedger().record(certification, strategy_id="SP2L", strategy_revision="R1")
     with pytest.raises(Exception):
         entry.run_id = "OTHER"
+
+
+def test_ledger_rejects_authenticated_scope_claim():
+    *_, certification = certified_chain()
+    ledger = ResearchCertificationLedger()
+    entry = ledger.record(certification, strategy_id="SP2L", strategy_revision="R1")
+    forged = replace(entry, verification_scope="AUTHENTICATED")
+    with pytest.raises(ResearchCertificationLedgerError, match="cannot claim authenticated"):
+        forged.validate()

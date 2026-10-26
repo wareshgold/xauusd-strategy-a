@@ -11,6 +11,10 @@ class ResearchCertificationLedgerError(ValueError):
     """Raised when a certification ledger entry is invalid or conflicting."""
 
 
+# A self-hash is integrity evidence, not proof of issuer identity or chain execution.
+LEDGER_VERIFICATION_SCOPE = "SELF_CONSISTENT_FINGERPRINT_ONLY_NOT_AUTHENTICATED"
+
+
 @dataclass(frozen=True)
 class ResearchCertificationLedgerEntry:
     certification_fingerprint: str
@@ -19,6 +23,7 @@ class ResearchCertificationLedgerEntry:
     source_snapshot_fingerprint: str
     strategy_id: str
     strategy_revision: str
+    verification_scope: str
     fingerprint: str
 
     def _fingerprint_payload(self) -> dict[str, object]:
@@ -29,11 +34,16 @@ class ResearchCertificationLedgerEntry:
             "source_snapshot_fingerprint": self.source_snapshot_fingerprint,
             "strategy_id": self.strategy_id,
             "strategy_revision": self.strategy_revision,
+            "verification_scope": self.verification_scope,
         }
 
     def validate(self) -> None:
         if not self.certification_fingerprint or not self.run_id:
             raise ResearchCertificationLedgerError("research certification ledger identity is incomplete")
+        if self.verification_scope != LEDGER_VERIFICATION_SCOPE:
+            raise ResearchCertificationLedgerError(
+                "research certification ledger cannot claim authenticated verification"
+            )
         expected = hashlib.sha256(
             json.dumps(self._fingerprint_payload(), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
         ).hexdigest()
@@ -64,6 +74,7 @@ class ResearchCertificationLedger:
             source_snapshot_fingerprint=certification.source_snapshot_fingerprint,
             strategy_id=strategy_id,
             strategy_revision=strategy_revision,
+            verification_scope=LEDGER_VERIFICATION_SCOPE,
             fingerprint="",
         )
         fingerprint = hashlib.sha256(
