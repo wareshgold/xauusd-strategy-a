@@ -44,7 +44,7 @@ def test_nonpositive_risk_or_reward_is_rejected():
 def test_broker_minimum_stop_distance_is_checked_before_send():
     result = evaluate_pending_limit_preflight(PendingLimitInputs(
         direction="BUY", entry=2300.0, sl=2299.8, tp=2300.3,
-        bid=2299.7, ask=2299.8, stops_level_points=40, point=0.01,
+        bid=2299.7, ask=2300.1, stops_level_points=40, point=0.01,
     ))
     assert result.reason == "BELOW_BROKER_MIN_STOP_DISTANCE"
     assert result.min_stop_distance == 0.4
@@ -53,7 +53,7 @@ def test_broker_minimum_stop_distance_is_checked_before_send():
 def test_preflight_pass_does_not_claim_broker_acceptance_or_fill():
     result = evaluate_pending_limit_preflight(PendingLimitInputs(
         direction="BUY", entry=2300.0, sl=2298.0, tp=2304.0,
-        bid=2299.8, ask=2299.9, stops_level_points=0, point=0.01,
+        bid=2299.8, ask=2300.1, stops_level_points=0, point=0.01,
     ))
     assert result.status is SourcePathStatus.REQUEST_ELIGIBLE
     assert "BROKER_RESULT_UNRESOLVED" in result.reason
