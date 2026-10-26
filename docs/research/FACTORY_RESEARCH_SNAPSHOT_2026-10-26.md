@@ -52,6 +52,18 @@
 - Both workflows passed on the fixed commit: Factory Research Tests [run 40295014150](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40295014150); SP2L forensic deterministic checks [run 40295014134](https://github.com/wareshgold/xauusd-strategy-a/actions/runs/40295014134).
 - The ledger does not contain fabricated historical or trading outcomes; no experiment was run as part of this increment.
 
+
+## Experiment planner/registry increment — 2026-10-26
+
+- Planner: `src/strategy_factory/experiment_planner.py`.
+- Tests: `tests/test_strategy_factory_experiment_planner.py`.
+- Contract: `docs/research/FACTORY_EXPERIMENT_PLANNER_REGISTRY_CONTRACT_2026-10-26.md`.
+- Added stable IDs for three evidence-handling research questions and three existing synthetic test cases: same-millisecond tick order, OHLC SL/TP double-touch ambiguity, and explicit completed-bar gating. These are not hypotheses about canonical SP2L trading geometry.
+- `plan_experiments` emits deterministic `PLANNED` records only, binding caller-supplied input/code hashes and the prior record hash. Unknown/duplicate IDs and dangling registry references fail closed.
+- Planned records explicitly state “not executed”; no PASS/FAIL outcomes were fabricated. No actual experiment was run by this increment.
+- The new planner tests are included in Factory Research Tests CI. CI must be checked on the final branch head before treating this increment as verified.
+- No local files/worktrees, MT5 session/account, live runner, Strategy A forward-test artifacts, or Strategy B run were touched. No PR merge or production deployment.
+
 ## Next increment
 
-Connect the ledger to explicit hypothesis and synthetic-fixture registries with stable IDs, so planned cases can be recorded without fabricating outcomes. Only actual executed results should receive PASS/FAIL; source interpretation and canonical promotion remain a human-reviewed gate.
+Add a controlled execution-result ingestion boundary that accepts only explicitly captured test-run metadata and output/evidence hashes, distinguishes unexecuted plans from observed outcomes, and preserves failure/counterexample references. Do not run historical replay or infer source semantics until execution/fill/cost/event-order blockers are resolved.
