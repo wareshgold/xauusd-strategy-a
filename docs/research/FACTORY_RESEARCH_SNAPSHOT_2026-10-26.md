@@ -150,3 +150,14 @@ Continue strengthening the Research Brain's evidence handling and experiment pri
 - This is a dataset-provenance/governance boundary only. It does not resolve SP2L geometry, establish statistical edge, or authorize canonical/production decisions. CI must pass on the final branch head before this increment is treated as validated.
 - No local worktrees/files, MT5 session/account, live runner, Strategy A forward-test artifacts, or Strategy B run were touched. No merge or production deployment.
 
+
+
+## Dataset pin trust-path audit — 2026-10-26
+
+- Current branch checkpoint before this snapshot refresh: `2015acf7ad339b4235b3d784eaf7987c3603be8b`; the current branch head and its CI runs remain the authority for the latest state, not the original baseline commit recorded above.
+- Audit: `docs/research/DATASET_PIN_TRUST_PATH_AUDIT_2026-10-26.md`.
+- Path traced: `DatasetManifest.create` computes a content fingerprint; `DatasetManifestPinLedger.append/to_json` creates/serializes the hash chain; `from_json` verifies against a caller-supplied expected tip; `DatasetManifestRegistry` accepts a caller-supplied pin mapping; the comparison gate checks the registered manifest against upstream research records.
+- Finding: the inspected code does not fetch/authenticate an external pin source, persist the ledger itself, verify a signature/issuer, or establish independent publisher/verifier permissions. The current gate's trust therefore depends on the caller's external handling of the supplied pins.
+- Disposition: integrity and internal chain consistency are tested, but pin authenticity remains unresolved. Keep `FRESH_HOLDOUT` blocked from being described as independently authenticated until a concrete independently controlled trust source and verification contract are selected and implemented.
+- Next technical work is gated on that trust-source decision; do not add a caller-controlled boolean, source label, or environment variable as a substitute. Required negative cases include missing/invalid signature, wrong/untrusted/revoked identity, replay, manifest/revision mismatch, and ledger-tip/count mismatch.
+- This is a documentation/audit increment only. No canonical SP2L geometry, trading execution rules, statistical-edge claim, local worktree, MT5, Strategy A/Strategy B forward runner, merge, or production deployment was changed.
