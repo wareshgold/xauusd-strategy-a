@@ -281,3 +281,40 @@ def test_full_trade_mode_allows_real_order_send(monkeypatch, tmp_path):
     assert result["ok"] is True
     assert result["dry_run"] is False
 
+
+
+
+def test_pending_buy_limit_at_bid_is_blocked_before_order_send(monkeypatch, tmp_path):
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    monkeypatch.setenv("MT5_FORWARD_ORDER_MODE", "PENDING_LIMIT_RESEARCH")
+    monkeypatch.setattr(gateway, "LIVE_TRADING_ENABLE", True, raising=False)
+    monkeypatch.setattr(gateway, "ALLOW_REAL_EXECUTION", True, raising=False)
+    mt5.symbol_info_tick = lambda symbol: SimpleNamespace(bid=100.0, ask=100.2)
+    mt5.symbol_info = lambda symbol: SimpleNamespace(
+        trade_stops_level=0, point=0.01, trade_tick_size=0.01, trade_mode=4
+    )
+    mt5.account_info = lambda: SimpleNamespace(trade_mode=0)
+    mt5.order_send = lambda request: (_ for _ in ()).throw(
+        AssertionError("unplaceable BUY_LIMIT must be blocked before order_send")
+    )
+    signal = _approved_buy(gateway)  # entry equals Bid
+    result = gateway.execute_signal(signal)
+    assert result["ok"] is False
+    assert result["reason"] == "BUY_LIMIT_NOT_BELOW_BID"
+
+
+def test_pending_buy_limit_off_tick_grid_is_blocked(monkeypatch, tmp_path):
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    monkeypatch.setenv("MT5_FORWARD_ORDER_MODE", "PENDING_LIMIT_RESEARCH")
+    mt5.symbol_info_tick = lambda symbol: SimpleNamespace(bid=100.0, ask=100.2)
+    mt5.symbol_info = lambda symbol: SimpleNamespace(
+        trade_stops_level=0, point=0.01, trade_tick_size=0.05, trade_mode=4
+    )
+    signal = gateway.Signal.from_json({
+        "direction": "BUY", "symbol": "XAUUSD.ecn", "entry": 99.97,
+        "sl": 90.0, "tp": 110.0, "volume": 0.01, "signal_id": "TEST-OFF-TICK",
+        "source": "MANUAL_GATEWAY_TEST_ONLY", "status": "APPROVED",
+    })
+    result = gateway.execute_signal(signal)
+    assert result["ok"] is False
+    assert result["reason"] == "PENDING_ENTRY_OFF_TICK_GRID"
