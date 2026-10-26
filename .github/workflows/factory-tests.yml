@@ -40,4 +40,5 @@ jobs:
           tests/test_strategy_factory_source_execution_fixtures.py \
           tests/test_live_mt5_gateway.py \
           tests/test_strategy_factory_source_order_lifecycle.py \
-          tests/test_strategy_factory_order_deal_reconciliation.py -q
+          tests/test_strategy_factory_order_deal_reconciliation.py \
+          tests/test_strategy_factory_event_timeline_audit.py -q
