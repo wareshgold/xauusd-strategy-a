@@ -103,3 +103,25 @@ def test_bad_hash_is_rejected_before_planning():
     )
     with pytest.raises(ValueError, match="provenance/hash"):
         build_research_plan(graph)
+
+
+def test_unknown_role_and_outcome_fail_closed():
+    bad_role = EvidenceGraph(
+        claims=(ClaimNode("C1", "Claim", ("MAGIC",)),), evidence=(), edges=())
+    with pytest.raises(ValueError, match="unknown required role"):
+        validate_graph(bad_role)
+    bad_outcome = EvidenceGraph(
+        claims=(ClaimNode("C1", "Claim", ("SOURCE",)),),
+        evidence=(EvidenceNode("x", "fixture://x", sha256(b"x").hexdigest(),
+                               "SOURCE", "PROBABLY_TRUE"),), edges=())
+    with pytest.raises(ValueError, match="unknown role/outcome"):
+        validate_graph(bad_outcome)
+
+
+def test_unknown_edge_relation_fails_closed():
+    graph = EvidenceGraph(
+        claims=(ClaimNode("C1", "Claim", ("SOURCE",)),),
+        evidence=(ev("source", "SOURCE"),),
+        edges=(EvidenceEdge("source", "C1", "RELATED"),))
+    with pytest.raises(ValueError, match="known EdgeRelation"):
+        validate_graph(graph)

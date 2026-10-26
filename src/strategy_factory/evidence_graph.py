@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable
 
 
 class EdgeRelation(str, Enum):
@@ -84,20 +83,28 @@ def validate_graph(graph: EvidenceGraph) -> None:
         raise ValueError("duplicate evidence ID")
     claims = set(claim_ids)
     evidence = {node.evidence_id: node for node in graph.evidence}
+    valid_roles = {"SOURCE", "DATA", "TEST", "EXECUTION", "STATISTICAL_VALIDATION"}
+    valid_outcomes = {"SUPPORTS", "CONTRADICTS", "INCONCLUSIVE"}
     for node in graph.claims:
         if not node.statement.strip() or not node.required_roles:
             raise ValueError(f"claim {node.claim_id} needs a statement and required roles")
         if len(node.required_roles) != len(set(node.required_roles)):
             raise ValueError(f"claim {node.claim_id} repeats a required role")
+        if any(role not in valid_roles for role in node.required_roles):
+            raise ValueError(f"claim {node.claim_id} has an unknown required role")
     for node in graph.evidence:
         digest = node.content_sha256.lower()
         if (not node.reference or len(digest) != 64
                 or any(char not in "0123456789abcdef" for char in digest)):
             raise ValueError(f"evidence {node.evidence_id} lacks valid provenance/hash")
+        if node.role not in valid_roles or node.outcome not in valid_outcomes:
+            raise ValueError(f"evidence {node.evidence_id} has unknown role/outcome")
     seen_edges: set[tuple[str, str, EdgeRelation]] = set()
     for edge in graph.edges:
         if edge.evidence_id not in evidence or edge.claim_id not in claims:
             raise ValueError("edge endpoint does not exist")
+        if not isinstance(edge.relation, EdgeRelation):
+            raise ValueError("edge relation must be a known EdgeRelation")
         key = (edge.evidence_id, edge.claim_id, edge.relation)
         if key in seen_edges:
             raise ValueError("duplicate evidence edge")

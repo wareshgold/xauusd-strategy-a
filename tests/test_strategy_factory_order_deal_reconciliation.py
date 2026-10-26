@@ -93,3 +93,22 @@ def test_reconciliation_does_not_claim_fill_completion():
     )
     assert not hasattr(rows[0], "filled_volume")
     assert not hasattr(rows[0], "complete_fill")
+
+
+def test_duplicate_order_ticket_does_not_uniquely_link_its_deal():
+    rows = reconcile_order_deals_positions(
+        [OrderRecord(10), OrderRecord(10)], [DealRecord(20, 10, 0)], [])
+    order_rows = [r for r in rows if "DUPLICATE_ORDER_TICKET" in r.issues]
+    orphan_rows = [r for r in rows if "ORPHAN_DEAL_NO_UNIQUE_ORDER" in r.issues]
+    assert len(order_rows) == 1
+    assert order_rows[0].deal_tickets == ()
+    assert len(orphan_rows) == 1
+    assert orphan_rows[0].deal_tickets == (20,)
+
+
+def test_duplicate_position_ticket_is_not_mislabeled_missing():
+    rows = reconcile_order_deals_positions(
+        [OrderRecord(10, 30)], [DealRecord(20, 10, 30)],
+        [PositionRecord(30), PositionRecord(30)])
+    assert any("DUPLICATE_POSITION_TICKET" in r.issues for r in rows)
+    assert not any("POSITION_NOT_PRESENT_IN_SUPPLIED_SNAPSHOT" in r.issues for r in rows)

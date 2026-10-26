@@ -31,6 +31,12 @@
 - Synthetic CI passing does not prove live broker behavior, complete history, canonical SP2L geometry, or statistical edge.
 - Replay remains blocked on unresolved execution, fill/partial-fill, cost, event ordering, trailing, 2X lifecycle, candle-construction, and immutable data-binding questions.
 
+## Follow-up increment later on 2026-10-26
+
+- Evidence Graph and deterministic research-action planner were added in commit 26394e883e769f7b4057c047e42bdfe048636ef3.
+- This follow-up adds adversarial reconciliation fixtures for duplicate order/position identities and stricter graph role/outcome/relation validation.
+- The baseline commit above remains the original snapshot point; the current branch head and its CI runs define the latest state.
+
 ## Next increment
 
 Add a deterministic Evidence Graph and research-action planner. The planner may point to missing evidence, explicit contradictions, inconclusive findings, and required human source review. It must not invent evidence, infer canonical meaning, or issue trading decisions.
