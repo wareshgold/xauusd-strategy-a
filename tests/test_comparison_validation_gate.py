@@ -69,3 +69,52 @@ def test_validation_role_cannot_be_used_for_optimization():
         c2, a, e2, registry, StatisticalComparisonUsageLedger(), purpose="OPTIMIZATION"
     )
     assert result.status is ComparisonValidationGateStatus.BLOCKED
+
+
+
+def test_self_declared_fresh_holdout_role_requires_record_provenance_ledger():
+    c, a, _, _ = chain()
+    # Re-fingerprint a caller-relabelled DEVELOPMENT comparison. Internal
+    # hash consistency alone must not authenticate the claimed holdout role.
+    c2 = replace(c, dataset_role="FRESH_HOLDOUT")
+    fp = hashlib.sha256(
+        json.dumps(c2._fingerprint_payload(), sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    c2 = replace(c2, fingerprint=fp)
+    e2 = bind_statistical_comparison_evidence(c2, a)
+    registry = StatisticalComparisonEvidenceLedger()
+    registry.record(e2)
+
+    result = evaluate_comparison_validation_gate(
+        c2, a, e2, registry, StatisticalComparisonUsageLedger()
+    )
+
+    assert result.status is ComparisonValidationGateStatus.BLOCKED
+    assert "RESEARCH_RECORD_PROVENANCE_LEDGER_REQUIRED" in result.blocking_reasons
+    assert result.governed is False
+
+
+def test_holdout_role_with_empty_record_ledger_is_blocked():
+    from strategy_factory.research_record import ResearchRecordLedger
+
+    c, a, _, registry = chain()
+    c2 = replace(c, dataset_role="UNTOUCHED_VALIDATION")
+    fp = hashlib.sha256(
+        json.dumps(c2._fingerprint_payload(), sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    c2 = replace(c2, fingerprint=fp)
+    e2 = bind_statistical_comparison_evidence(c2, a)
+    registry = StatisticalComparisonEvidenceLedger()
+    registry.record(e2)
+
+    result = evaluate_comparison_validation_gate(
+        c2, a, e2, registry, StatisticalComparisonUsageLedger(),
+        research_record_ledger=ResearchRecordLedger(),
+    )
+
+    assert result.status is ComparisonValidationGateStatus.BLOCKED
+    assert any(
+        reason.startswith("RESEARCH_RECORD_PROVENANCE_UNRESOLVED:")
+        for reason in result.blocking_reasons
+    )
+    assert result.governed is False
