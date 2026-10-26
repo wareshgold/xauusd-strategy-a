@@ -115,3 +115,10 @@ Continue strengthening the Research Brain's evidence handling and experiment pri
 - Canonical-rule-change claims now always retain a separate HUMAN_SOURCE_REVIEW action, even when missing evidence or contradiction-resolution actions are also present.
 - Added adversarial tests for mixed SOURCE support/contradiction and for retaining human review alongside other open research actions.
 - This is planner policy only. It does not adjudicate which source excerpt is correct, decide canonical geometry, execute experiments, or authorize production decisions. Both authority flags remain false.
+
+## Statistical comparison purpose allowlist hardening — 2026-10-26
+
+- Updated `src/strategy_factory/statistical_comparison_governance.py` to fail closed unless usage purpose is one of `FINAL_EVIDENCE`, `DEVELOPMENT`, `OPTIMIZATION`, or `PARAMETER_FIT`. Unknown aliases and empty values cannot be recorded as allowed usage.
+- Added negative tests for empty, misspelled, unknown, and holdout-specific unknown purposes; tests assert the usage ledger remains unchanged after rejection.
+- This closes a purpose-label bypass at the usage-ledger boundary; it does not authenticate the dataset role or source of the evidence, and it does not establish statistical significance or authorize production.
+- CI status must be checked on the final commit before treating this increment as verified. No local worktrees/files, MT5, forward runners, Strategy A or Strategy B execution, PR merge, or production deployment were performed.
