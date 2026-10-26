@@ -32,7 +32,9 @@ class FactoryOrchestrator:
 
     fleet: FactoryWorkerFleet
     queue: list[QueuedResearchJob] = field(default_factory=list)
-    events: FactoryJobEventLedger = field(default_factory=FactoryJobEventLedger)
+    events: FactoryJobEventLedger = field(
+        default_factory=lambda: FactoryJobEventLedger(path=None)
+    )
     telemetry_errors: list[dict[str, str]] = field(default_factory=list)
 
     def submit(
