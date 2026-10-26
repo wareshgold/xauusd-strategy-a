@@ -109,7 +109,6 @@ def test_failed_expiry_attempt_is_retried(monkeypatch, tmp_path):
     tick_times = iter([broker_time, broker_time + 1])
     m.symbol_info_tick = lambda symbol: SimpleNamespace(time=next(tick_times))
     monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", broker_time - 1)
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     attempts = []
 
     def failed_cancel(o, s):
@@ -144,7 +143,6 @@ def test_ttl_uses_broker_timestamp_domain_without_host_offset(monkeypatch, tmp_p
 def test_recent_owned_order_is_not_cancelled(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     m.orders_get = lambda symbol=None: [order(ticket=124, age_minutes=5)]
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
@@ -154,7 +152,6 @@ def test_recent_owned_order_is_not_cancelled(monkeypatch, tmp_path):
 def test_foreign_magic_order_is_never_cancelled(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     m.orders_get = lambda symbol=None: [order(ticket=125, magic=MAGIC + 1, age_minutes=90)]
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
@@ -211,7 +208,6 @@ def test_zero_setup_timestamp_is_never_cancelled(monkeypatch, tmp_path):
     pending = order(ticket=129, age_minutes=120)
     pending.time_setup = 0
     m.orders_get = lambda symbol=None: [pending]
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
@@ -250,7 +246,18 @@ def test_wrong_symbol_and_non_limit_orders_are_never_cancelled(monkeypatch, tmp_
     wrong_symbol.symbol = "EURUSD"
     stop_order = order(ticket=132, age_minutes=120, order_type=m.ORDER_TYPE_BUY_STOP)
     m.orders_get = lambda symbol=None: [wrong_symbol, stop_order]
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_open_position_is_not_subject_to_pending_ttl(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    m.orders_get = lambda symbol=None: []
+    m.positions_get = lambda symbol=None: [
+        SimpleNamespace(ticket=900, symbol=SYMBOL, magic=MAGIC, volume=0.01)
+    ]
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
@@ -275,7 +282,6 @@ def test_cold_start_tick_is_not_enough_to_cancel_expired_order(monkeypatch, tmp_
     broker_time = int(time.time() + 3 * 3600)
     m.symbol_info_tick = lambda symbol: SimpleNamespace(time=broker_time)
     monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", None)
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     m.orders_get = lambda symbol=None: [order(ticket=140, age_minutes=120)]
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
@@ -289,7 +295,6 @@ def test_unchanged_stale_tick_fails_closed(monkeypatch, tmp_path):
     stale_time = int(time.time() + 3 * 3600 - 3600)
     m.symbol_info_tick = lambda symbol: SimpleNamespace(time=stale_time)
     monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", stale_time)
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     m.orders_get = lambda symbol=None: [order(ticket=141, age_minutes=120)]
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
@@ -303,7 +308,6 @@ def test_advancing_tick_allows_clock_revalidation_after_startup(monkeypatch, tmp
     mod, m = load_v3(monkeypatch, tmp_path)
     m.symbol_info_tick = lambda symbol: SimpleNamespace(time=next(tick_times))
     monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", None)
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     m.orders_get = lambda symbol=None: [order(ticket=142, age_minutes=120)]
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
