@@ -42,4 +42,5 @@ jobs:
           tests/test_strategy_factory_source_order_lifecycle.py \
           tests/test_strategy_factory_order_deal_reconciliation.py \
           tests/test_strategy_factory_event_timeline_audit.py \
-          tests/test_strategy_factory_observed_deal_economics.py -q
+          tests/test_strategy_factory_observed_deal_economics.py \
+          tests/test_strategy_factory_history_query_fixtures.py -q
