@@ -195,6 +195,7 @@ def main():
                 "USD conversion assumes linear gross XAUUSD P&L: price move × contract size × lots.",
                 "Spread, commission, swap, slippage, currency conversion and broker costs are excluded.",
                 "Same-bar SL and TP touches are ambiguous; a new trail applies from the next completed M1 bar.",
+                "MFE includes prior eligible bars and the guaranteed entry-to-TP movement on TP exits; OHLC cannot infer favorable overshoot or intrabar order on the exit bar. MAE uses the exit bar's full adverse OHLC range and can be an upper bound.",
                 "Theoretical entry/price-level fills; pending-order fill realism, gaps and broker stop/freeze rejections are not modeled.",
                 "Current-runner-equivalent scenario does not model live bid/ask stop/freeze constraints.",
                 "Independent overlapping trades are not a funded portfolio; drawdown is trade-sequence gross USD drawdown.",
