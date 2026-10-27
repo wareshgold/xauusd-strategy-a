@@ -19,10 +19,8 @@ os.environ["SP2L_TP_R"]=str(cfg.TP_R)
 os.environ["SP2L_VOLUME"]=str(cfg.VOLUME)
 os.environ["MT5_FORWARD_ORDER_MODE"]=cfg.ORDER_MODE
 os.environ["SP2L_PENDING_TTL_MINUTES"]=str(cfg.PENDING_TTL_MINUTES)
-# Operator-confirmed OtetGroup-MT5 server clock: UTC+03:00 (2026-10-15).
-# An explicit process environment value takes precedence; expiry still fails closed
-# unless fresh-tick and observed-offset checks pass.
-os.environ.setdefault("SP2L_PENDING_SERVER_OFFSET_HOURS", "3")
+# Pending-order TTL compares MT5 order setup and tick timestamps in the
+# same broker clock domain. No broker/host offset is configured or inferred.
 os.environ.setdefault("LIVE_TRADING_ENABLE","true")
 os.environ.setdefault("ALLOW_REAL_EXECUTION","true")
 
@@ -129,15 +127,14 @@ def _fresh_v3_state():
             "positions": set(), "order_states": set(), "position_orders": {},
             "signal_orders": {}, "pending_signal_notifications": {}}
 
-# Pending-expiry clock freshness is deliberately stricter than the shared
-# session clock helper: after process start, require the broker tick timestamp
-# to advance before using a server offset for cancellation. This prevents a
-# cached offset (or an unchanged stale tick) from being treated as fresh after
-# a restart. If the market supplies no advancing tick, expiry fails closed.
+# Pending expiry uses only the broker's own timestamp domain. The order's
+# time_setup and the latest MT5 tick time are compared directly; no host-clock
+# conversion or configured server offset is needed. A tick must advance across
+# observations before it can authorize cancellation, including after restart.
 _PENDING_CLOCK_LAST_TICK_TIME: int | None = None
 
 
-def _pending_server_offset_strict(symbol: str):
+def _pending_order_clock_epoch(symbol: str) -> int:
     global _PENDING_CLOCK_LAST_TICK_TIME
     tick = mt5.symbol_info_tick(symbol)
     tick_time = int(getattr(tick, "time", 0) or 0) if tick else 0
@@ -149,50 +146,16 @@ def _pending_server_offset_strict(symbol: str):
         raise RuntimeError("pending expiry clock not yet proven fresh since process start")
     if tick_time <= previous:
         raise RuntimeError("pending expiry clock tick has not advanced since previous observation")
-    # A tick can advance while remaining exactly one hour stale, which is
-    # indistinguishable from a legitimate broker DST offset using tick.time
-    # alone. Require an operator-pinned offset and compare the observed value
-    # against it. Missing/mismatched configuration must never cancel orders.
-    configured = os.getenv("SP2L_PENDING_SERVER_OFFSET_HOURS", "").strip()
-    if not configured:
-        raise RuntimeError("SP2L_PENDING_SERVER_OFFSET_HOURS is required for pending expiry")
-    try:
-        configured_hours = float(configured)
-    except (TypeError, ValueError) as exc:
-        raise RuntimeError("invalid SP2L_PENDING_SERVER_OFFSET_HOURS") from exc
-    if not configured_hours.is_integer() or not -12 <= configured_hours <= 14:
-        raise RuntimeError("SP2L_PENDING_SERVER_OFFSET_HOURS must be an integer from -12 to +14")
-    expected = timedelta(hours=int(configured_hours))
-    # A monotonically advancing tick is not necessarily a fresh tick: a
-    # delayed feed can advance while remaining minutes/hours behind. Compare
-    # its broker timestamp to host UTC shifted by the operator-pinned offset.
-    # If the host clock or feed is outside this bounded tolerance, expiry is
-    # disabled; this is a safety gate, not a strategy or execution rule.
-    expected_tick_epoch = time.time() + expected.total_seconds()
-    tick_age_seconds = expected_tick_epoch - tick_time
-    if abs(tick_age_seconds) > 120:
-        raise RuntimeError(
-            "pending expiry tick timestamp outside freshness tolerance: "
-            f"age_seconds={tick_age_seconds:.1f} tolerance=120"
-        )
-    # Compare the shared helper's offset with the independently pinned
-    # expectation to catch unreviewed server-clock/DST changes.
-    observed = runner.mt5_server_offset_strict()
-    if observed != expected:
-        raise RuntimeError(
-            f"broker offset mismatch: configured={int(configured_hours)}h observed={observed}"
-        )
-    return observed
-
+    return tick_time
 
 def _run_scoped_pending(cfg_runtime, state):
-    """Expire only this runner's XAUUSD limit orders using broker-clock age.
+    """Expire only this runner's XAUUSD limit orders using same-domain MT5 time.
 
-    MT5 order.time_setup is expressed on the broker/server clock. Compare it
-    with the current time on that same clock, using the strict tick-derived
-    server offset. If the offset cannot be established, fail closed and do
-    not cancel anything. Matching symbol + this runner's magic scopes ownership
-    independently of the intentionally fresh signal state after startup.
+    Compare each order's broker time_setup directly with an advancing broker
+    tick timestamp. No host-clock offset is inferred or configured. Missing
+    or non-advancing ticks fail closed. Matching symbol + magic scopes
+    ownership; filled positions are not returned by orders_get and are not
+    subject to pending-order expiry.
     """
     ttl_minutes = float(cfg_runtime.get("pending_ttl_minutes", os.getenv("SP2L_PENDING_TTL_MINUTES", "30")))
     if ttl_minutes <= 0:
@@ -218,11 +181,10 @@ def _run_scoped_pending(cfg_runtime, state):
     if not eligible:
         return
     try:
-        server_offset = _pending_server_offset_strict(symbol)
-        now_server_epoch = time.time() + server_offset.total_seconds()
+        now_server_epoch = _pending_order_clock_epoch(symbol)
     except Exception as exc:
-        # One diagnostic per ticket per process; a later poll may retry when
-        # fresh broker ticks become available. Unknown age must never cancel.
+        # One diagnostic per ticket per process; retry on later polls. Without
+        # a missing or advancing broker tick, unknown age must never cancel.
         states = state.setdefault("order_states", set())
         for order in eligible:
             ticket = int(getattr(order, "ticket", 0) or 0)
@@ -232,7 +194,7 @@ def _run_scoped_pending(cfg_runtime, state):
                 runner.log_event({
                     "event": "PENDING_ORDER_TTL_SKIPPED",
                     "version": cfg.VERSION, "symbol": symbol, "order": ticket,
-                    "reason": "SERVER_OFFSET_UNAVAILABLE",
+                    "reason": "ORDER_CLOCK_UNAVAILABLE",
                     "detail": f"{type(exc).__name__}: {exc}",
                     "canonical": False,
                 })
@@ -422,66 +384,76 @@ runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
 runner.monitor_position_lifecycle=trail_positions
 runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
 
-def _v3_main():
-    # V3 forward-session boundary: only newly formed triggers after startup
-    # are eligible for execution. Recent M1 history is context, not backlog.
-    original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
-    original_find = runner.find_latest_candidate
-    # Candidate trigger_time is stamped in MT5 broker/server epoch, not host UTC epoch.
-    # Convert the process-start boundary into the same clock before filtering,
-    # otherwise a broker +3h offset makes pre-start candidates look future-dated.
-    # MT5 is only initialized inside _original_main(), and the strict offset query
-    # needs live ticks, so resolve the cutoff lazily on first use instead of here.
-    cutoff_cache: dict = {}
+def _make_forward_session_find(original_find):
+    """Suppress pre-start candidates using MT5 rate timestamps, not host/server offsets.
 
-    def _session_cutoff_epoch() -> int:
-        if "epoch" not in cutoff_cache:
-            server_offset = runner.mt5_server_offset_strict()
-            cutoff_cache["epoch"] = int(_RUN_STARTED_UTC.timestamp() + server_offset.total_seconds())
-        return int(cutoff_cache["epoch"])
-
-    # A closed market can leave MT5 without a fresh tick, so the shared
-    # server-clock helper may temporarily fail at startup. Do not crash the
-    # forward runner or guess an offset: defer candidate detection until the
-    # clock helper succeeds on a later poll. Other read-only/lifecycle polling
-    # in the base loop continues; no new candidate can reach execution here.
-    session_clock_error_log_at = -300.0  # Ensure the first unavailable-clock event is always logged.
+    The latest rate timestamp on the first poll is the per-symbol baseline.
+    It is in the same timestamp domain as candidate.trigger_time, so no
+    server-offset helper or guessed UTC conversion is required. Candidates
+    must be newer than that baseline before they can reach execution.
+    """
+    startup_bar_by_symbol: dict[str, int] = {}
+    error_log_at: dict[str, float] = {}
 
     def _forward_session_find(data, symbol):
-        nonlocal session_clock_error_log_at
-        try:
-            session_cutoff_epoch = _session_cutoff_epoch()
-        except RuntimeError as exc:
-            now_mono = time.monotonic()
-            if now_mono - session_clock_error_log_at >= 300.0:
-                runner.log_event({
-                    "event": "SESSION_CUTOFF_DEFERRED",
-                    "symbol": symbol,
-                    "reason": "SERVER_OFFSET_UNAVAILABLE",
-                    "detail": str(exc),
-                    "retry_interval_seconds": 300,
-                    "canonical": False,
-                })
-                session_clock_error_log_at = now_mono
+        if symbol not in startup_bar_by_symbol:
+            try:
+                if data is None or len(data) == 0:
+                    raise ValueError("no MT5 rate rows available")
+                baseline = int(data[-1]["time"])
+                if baseline <= 0:
+                    raise ValueError("latest MT5 rate timestamp is invalid")
+            except Exception as exc:
+                now_mono = time.monotonic()
+                last = error_log_at.get(symbol, -300.0)
+                if now_mono - last >= 300.0:
+                    runner.log_event({
+                        "event": "FORWARD_SESSION_BASELINE_DEFERRED",
+                        "symbol": symbol,
+                        "reason": "MT5_RATE_TIMESTAMP_UNAVAILABLE",
+                        "detail": f"{type(exc).__name__}: {exc}",
+                        "retry_interval_seconds": 300,
+                        "canonical": False,
+                    })
+                    error_log_at[symbol] = now_mono
+                return None
+
+            startup_bar_by_symbol[symbol] = baseline
+            runner.log_event({
+                "event": "FORWARD_SESSION_BASELINE_ESTABLISHED",
+                "symbol": symbol,
+                "baseline_bar_time": baseline,
+                "clock_basis": "MT5_RATE_TIMESTAMP",
+                "canonical": False,
+            })
+            # First poll establishes the no-backlog boundary; it never executes.
             return None
 
         candidate = original_find(data, symbol)
         if candidate is None:
             return None
         trigger_time = int(candidate.get("trigger_time", 0) or 0)
-        if trigger_time <= session_cutoff_epoch:
+        if trigger_time <= startup_bar_by_symbol[symbol]:
             return None
         return candidate
 
+    return _forward_session_find
+
+
+def _v3_main():
+    # V3 forward-session boundary: only triggers newer than the first observed
+    # MT5 rate timestamp may reach execution. This avoids converting between
+    # host UTC and broker timestamps and avoids replaying pre-start candidates.
+    original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
+    original_find = runner.find_latest_candidate
     runner.load_state = lambda: _fresh_v3_state()
     runner.reconcile_state_from_events = lambda state: None
-    runner.find_latest_candidate = _forward_session_find
+    runner.find_latest_candidate = _make_forward_session_find(original_find)
     try:
         _original_main()
     finally:
         runner.load_state, runner.reconcile_state_from_events = original_load, original_reconcile
         runner.find_latest_candidate = original_find
-
 
 runner.main=_v3_main
 
