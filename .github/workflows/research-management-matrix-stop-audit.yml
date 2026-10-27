@@ -1,0 +1,26 @@
+name: Research - Management Matrix Stop Floor Audit
+on:
+  push:
+    branches:
+      - research/management-matrix-stop-floor-forensic-audit-20261027
+    paths:
+      - 'scripts/audit_sp2l_v3_management_matrix_stops.py'
+      - 'tests/test_management_matrix_stop_audit.py'
+      - '.github/workflows/research-management-matrix-stop-audit.yml'
+  pull_request:
+    paths:
+      - 'scripts/audit_sp2l_v3_management_matrix_stops.py'
+      - 'tests/test_management_matrix_stop_audit.py'
+      - '.github/workflows/research-management-matrix-stop-audit.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m py_compile scripts/audit_sp2l_v3_management_matrix_stops.py tests/test_management_matrix_stop_audit.py
+      - run: python -m unittest tests.test_management_matrix_stop_audit -v
