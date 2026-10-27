@@ -444,7 +444,8 @@ def main():
             "research_only": True,
         }, indent=2))
     finally:
-        mt5.shutdown()
+        if mt5_initialized:
+            mt5.shutdown()
 
 
 if __name__ == "__main__":
