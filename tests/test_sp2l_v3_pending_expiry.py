@@ -101,10 +101,6 @@ def test_failed_expiry_attempt_is_retried(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     pending = order(ticket=131, age_minutes=90)
     m.orders_get = lambda symbol=None: [pending]
-    broker_time = int(time.time() + 3 * 3600)
-    tick_times = iter([broker_time, broker_time + 1])
-    m.symbol_info_tick = lambda symbol: SimpleNamespace(time=next(tick_times))
-    monkeypatch.setattr(mod, "_PENDING_CLOCK_LAST_TICK_TIME", broker_time - 1)
     monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     attempts = []
 
