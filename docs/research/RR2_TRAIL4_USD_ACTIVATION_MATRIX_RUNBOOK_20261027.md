@@ -23,7 +23,7 @@ Default matrix: 66 scenarios (no-trailing baseline, current-runner-equivalent sc
 - TP remains fixed at the initial RR2 level.
 - Same-bar SL and TP touches are ambiguous and excluded from decisive metrics.
 - USD threshold conversion is gross linear XAUUSD: price move = threshold USD / (contract size × volume). It is not broker-calculated floating profit and excludes spread, commission, swap, slippage and currency-conversion effects.
-- MFE/MAE use gross OHLC excursions. Theoretical entry and price-level fills are used; pending-order fills, broker constraints, gaps and stop slippage are not modeled.
+- MFE is conservative: prior eligible-bar favorable movement plus the guaranteed entry-to-TP movement on TP exits; OHLC cannot establish favorable overshoot or intrabar order on the exit bar. MAE uses the full adverse OHLC range through the exit bar and can be an upper bound. Theoretical entry and price-level fills are used; pending-order fills, broker constraints, gaps and stop slippage are not modeled.
 - Drawdown is gross USD trade-sequence drawdown ordered by exit time, not portfolio/account drawdown. Independent trades may overlap.
 
 ## Local run (MT5 history required)
