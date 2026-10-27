@@ -113,70 +113,16 @@ def _fresh_v3_state():
             "positions": set(), "order_states": set(), "position_orders": {},
             "signal_orders": {}, "pending_signal_notifications": {}}
 
-# Pending-expiry clock freshness is deliberately stricter than the shared
-# session clock helper: after process start, require the broker tick timestamp
-# to advance before using a server offset for cancellation. This prevents a
-# cached offset (or an unchanged stale tick) from being treated as fresh after
-# a restart. If the market supplies no advancing tick, expiry fails closed.
-_PENDING_CLOCK_LAST_TICK_TIME: int | None = None
-
-
-def _pending_server_offset_strict(symbol: str):
-    global _PENDING_CLOCK_LAST_TICK_TIME
-    tick = mt5.symbol_info_tick(symbol)
-    tick_time = int(getattr(tick, "time", 0) or 0) if tick else 0
-    if tick_time <= 0:
-        raise RuntimeError("pending expiry clock unavailable: missing tick timestamp")
-    previous = _PENDING_CLOCK_LAST_TICK_TIME
-    _PENDING_CLOCK_LAST_TICK_TIME = tick_time
-    if previous is None:
-        raise RuntimeError("pending expiry clock not yet proven fresh since process start")
-    if tick_time <= previous:
-        raise RuntimeError("pending expiry clock tick has not advanced since previous observation")
-    # A tick can advance while remaining exactly one hour stale, which is
-    # indistinguishable from a legitimate broker DST offset using tick.time
-    # alone. Require an operator-pinned offset and compare the observed value
-    # against it. Missing/mismatched configuration must never cancel orders.
-    configured = os.getenv("SP2L_PENDING_SERVER_OFFSET_HOURS", "").strip()
-    if not configured:
-        raise RuntimeError("SP2L_PENDING_SERVER_OFFSET_HOURS is required for pending expiry")
-    try:
-        configured_hours = float(configured)
-    except (TypeError, ValueError) as exc:
-        raise RuntimeError("invalid SP2L_PENDING_SERVER_OFFSET_HOURS") from exc
-    if not configured_hours.is_integer() or not -12 <= configured_hours <= 14:
-        raise RuntimeError("SP2L_PENDING_SERVER_OFFSET_HOURS must be an integer from -12 to +14")
-    expected = timedelta(hours=int(configured_hours))
-    # A monotonically advancing tick is not necessarily a fresh tick: a
-    # delayed feed can advance while remaining minutes/hours behind. Compare
-    # its broker timestamp to host UTC shifted by the operator-pinned offset.
-    # If the host clock or feed is outside this bounded tolerance, expiry is
-    # disabled; this is a safety gate, not a strategy or execution rule.
-    expected_tick_epoch = time.time() + expected.total_seconds()
-    tick_age_seconds = expected_tick_epoch - tick_time
-    if abs(tick_age_seconds) > 120:
-        raise RuntimeError(
-            "pending expiry tick timestamp outside freshness tolerance: "
-            f"age_seconds={tick_age_seconds:.1f} tolerance=120"
-        )
-    # Compare the shared helper's offset with the independently pinned
-    # expectation to catch unreviewed server-clock/DST changes.
-    observed = runner.mt5_server_offset_strict()
-    if observed != expected:
-        raise RuntimeError(
-            f"broker offset mismatch: configured={int(configured_hours)}h observed={observed}"
-        )
-    return observed
-
-
+# MT5 order.time_setup and tick.time are Unix-epoch timestamps. Their elapsed
+# age must be measured against UTC epoch time, not broker wall-clock time.
+# Broker UTC offsets/DST and a quiet/stale tick must not disable TTL expiry.
 def _run_scoped_pending(cfg_runtime, state):
-    """Expire only this runner's XAUUSD limit orders using broker-clock age.
+    """Expire only this runner's XAUUSD limit orders by elapsed UTC epoch age.
 
-    MT5 order.time_setup is expressed on the broker/server clock. Compare it
-    with the current time on that same clock, using the strict tick-derived
-    server offset. If the offset cannot be established, fail closed and do
-    not cancel anything. Matching symbol + this runner's magic scopes ownership
-    independently of the intentionally fresh signal state after startup.
+    MT5's time_setup is an epoch timestamp. It is independent of the broker's
+    displayed wall-clock offset, so calculate age directly against time.time().
+    Never infer an expiry from a missing/invalid/future timestamp. Ownership is
+    restricted to this configured symbol + magic and limit-order types.
     """
     ttl_minutes = float(cfg_runtime.get("pending_ttl_minutes", os.getenv("SP2L_PENDING_TTL_MINUTES", "30")))
     if ttl_minutes <= 0:
@@ -194,44 +140,47 @@ def _run_scoped_pending(cfg_runtime, state):
             continue
         if int(getattr(order, "type", -1)) not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
             continue
-        # Only a confirmed cancellation completes expiry. A failure or
-        # dry-run notification must not suppress subsequent cancellation tries.
         if f"{ticket}:EXPIRY_NOTIFIED:CANCELLED" in state.get("order_states", set()):
             continue
         eligible.append(order)
     if not eligible:
         return
-    try:
-        server_offset = _pending_server_offset_strict(symbol)
-        now_server_epoch = time.time() + server_offset.total_seconds()
-    except Exception as exc:
-        # One diagnostic per ticket per process; a later poll may retry when
-        # fresh broker ticks become available. Unknown age must never cancel.
-        states = state.setdefault("order_states", set())
-        for order in eligible:
-            ticket = int(getattr(order, "ticket", 0) or 0)
-            diagnostic = f"{ticket}:EXPIRY_CLOCK_UNAVAILABLE"
-            if diagnostic not in states:
-                states.add(diagnostic)
-                runner.log_event({
-                    "event": "PENDING_ORDER_TTL_SKIPPED",
-                    "version": cfg.VERSION, "symbol": symbol, "order": ticket,
-                    "reason": "SERVER_OFFSET_UNAVAILABLE",
-                    "detail": f"{type(exc).__name__}: {exc}",
-                    "canonical": False,
-                })
-        return
+
+    now_epoch = time.time()
     for order in eligible:
-        ticket = int(getattr(order, "ticket", 0) or 0)
         setup_epoch = int(getattr(order, "time_setup", 0) or 0)
         if setup_epoch <= 0:
+            _log_pending_expiry_skip(order, state, "INVALID_ORDER_SETUP_TIMESTAMP",
+                                     "MT5 order.time_setup is missing or invalid")
             continue
-        age_minutes = (now_server_epoch - setup_epoch) / 60.0
-        # A negative age indicates an invalid/unavailable clock basis; fail
-        # closed rather than treating a future timestamp as an expired order.
-        if age_minutes < ttl_minutes:
+        age_seconds = now_epoch - setup_epoch
+        if age_seconds < -2:
+            _log_pending_expiry_skip(order, state, "ORDER_SETUP_TIMESTAMP_IN_FUTURE",
+                                     f"age_seconds={age_seconds:.1f}")
             continue
+        if age_seconds / 60.0 < ttl_minutes:
+            continue
+        # Only a confirmed cancellation completes expiry; failures are retried.
         runner._cancel_pending_order(order, state)
+
+
+def _log_pending_expiry_skip(order, state, reason, detail):
+    ticket = int(getattr(order, "ticket", 0) or 0)
+    states = state.setdefault("order_states", set())
+    diagnostic = f"{ticket}:EXPIRY_CLOCK_UNAVAILABLE:{reason}"
+    if diagnostic in states:
+        return
+    states.add(diagnostic)
+    runner.log_event({
+        "event": "PENDING_ORDER_TTL_SKIPPED",
+        "version": cfg.VERSION,
+        "symbol": str(getattr(order, "symbol", "") or ""),
+        "order": ticket,
+        "reason": reason,
+        "detail": detail,
+        "canonical": False,
+    })
+
 
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
