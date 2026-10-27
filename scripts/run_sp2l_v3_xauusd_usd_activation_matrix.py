@@ -66,7 +66,8 @@ def summarize_usd(rows, usd_per_price_unit):
     wins = [r for r in ordered if r["realized_usd_gross"] > 0]
     losses = [r for r in ordered if r["realized_usd_gross"] < 0]
     values = [r["realized_usd_gross"] for r in ordered]
-    gross_win = sum(r["realized_usd_gross"] for r in wins)\n    gross_loss = abs(sum(r["realized_usd_gross"] for r in losses))
+    gross_win = sum(r["realized_usd_gross"] for r in wins)
+    gross_loss = abs(sum(r["realized_usd_gross"] for r in losses))
     equity = peak = max_dd = 0.0
     for r in ordered:
         equity += r["realized_usd_gross"]
