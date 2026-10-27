@@ -208,13 +208,27 @@ def main():
             continue
         entry_bar, exit_bar = bars[by_time[entry_ts]], bars[by_time[exit_ts]]
         spread_entry, spread_exit = entry_bar["spread_points"], exit_bar["spread_points"]
-        # M1 spread is a proxy, not tick-exact fill evidence. For bid-based OHLC:
-        # BUY pays spread entering at ask; SELL pays spread exiting at ask.
-        if spread_entry is None or spread_exit is None:
-            spread_cost_usd = None
-        else:
-            spread_points = spread_entry if row["direction"] == "BUY" else spread_exit
-            spread_cost_usd = spread_points * args.point_price * args.volume_lots * args.contract_size
+        # M1 spread is a proxy, not tick-exact fill evidence. For bid-based OHLC,
+        # BUY pays spread on entry; SELL pays spread on exit. If a SELL partially
+        # closes 50% at target, weight the spread at that partial bar and final exit.
+        spread_cost_usd = None
+        if spread_entry is not None and spread_exit is not None:
+            if row["direction"] == "BUY":
+                spread_price_points = spread_entry
+            else:
+                partial_spread = None
+                partial_r = num(row, "partial_tp_R")
+                if truth(row.get("partial_done")) and partial_r is not None:
+                    target = num(row, "entry") - partial_r * num(row, "risk_price")
+                    for b in bars[by_time[entry_ts] + 1:by_time[exit_ts] + 1]:
+                        if b["low"] <= target:
+                            partial_spread = b["spread_points"]
+                            break
+                if partial_spread is not None:
+                    spread_price_points = 0.5 * partial_spread + 0.5 * spread_exit
+                else:
+                    spread_price_points = spread_exit
+            spread_cost_usd = spread_price_points * args.point_price * args.volume_lots * args.contract_size
         risk = num(row, "risk_price")
         gross_usd = num(row, "realized_R") * risk * args.volume_lots * args.contract_size
         commission_results = {}
@@ -273,7 +287,7 @@ def main():
         },
         "cost_model": {
             "point_price": args.point_price, "volume_lots": args.volume_lots, "contract_size": args.contract_size,
-            "spread_proxy": "MT5 M1 spread points; BUY charges entry-bar spread, SELL charges exit-bar spread, multiplied by point*lots*contract size",
+            "spread_proxy": "MT5 M1 spread points; BUY charges entry-bar spread; SELL charges exit-bar spread, or 50/50 partial-target/final-exit spreads for a partial close; multiplied by point*lots*contract size",
             "commission_sensitivity_usd_per_lot_round_turn": args.commission_per_lot_round_turn,
             "commission_is_not_broker_confirmed": True,
             "excludes": ["swap", "slippage", "latency", "spread widening between M1 sampling points"],
