@@ -7,6 +7,7 @@ as observed facts; no canonical production decision is made here.
 from __future__ import annotations
 import os
 import time
+from datetime import timedelta
 import MetaTrader5 as mt5
 import sp2l_v3_rr2_trail4_config as cfg
 
@@ -112,44 +113,92 @@ def _fresh_v3_state():
             "positions": set(), "order_states": set(), "position_orders": {},
             "signal_orders": {}, "pending_signal_notifications": {}}
 
+# MT5 order.time_setup and tick.time are Unix-epoch timestamps. Their elapsed
+# age must be measured against UTC epoch time, not broker wall-clock time.
+# Broker UTC offsets/DST and a quiet/stale tick must not disable TTL expiry.
 def _run_scoped_pending(cfg_runtime, state):
-    """Expire this run's pending limits using local monotonic age.
+    """Expire only this runner's XAUUSD limit orders by elapsed UTC epoch age.
 
-    MT5 order.time_setup is a broker/server timestamp and can be offset from
-    the Python host clock. Comparing it with time.time() can make a fresh
-    order appear hours old and cause immediate cancellation. This V3 runner
-    records time.monotonic() when the order is created and uses that same
-    clock for TTL. Orders without a creation marker are left untouched.
+    MT5's time_setup is an epoch timestamp. It is independent of the broker's
+    displayed wall-clock offset, so calculate age directly against time.time().
+    Never infer an expiry from a missing/invalid/future timestamp. Ownership is
+    restricted to this configured symbol + magic and limit-order types.
     """
     ttl_minutes = float(cfg_runtime.get("pending_ttl_minutes", os.getenv("SP2L_PENDING_TTL_MINUTES", "30")))
     if ttl_minutes <= 0:
         return
-    symbol, magic = cfg_runtime["symbol"], cfg_runtime["magic"]
-    now = time.monotonic()
-    created = state.setdefault("order_created_monotonic", {})
-    for order in (mt5.orders_get(symbol=symbol) or []):
+    symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
+    active_orders = mt5.orders_get(symbol=symbol)
+    if active_orders is None:
+        return
+    eligible = []
+    for order in active_orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
-        if ticket not in state["orders"] or int(getattr(order, "magic", 0) or 0) != magic:
+        if ticket <= 0 or str(getattr(order, "symbol", "") or "") != symbol:
             continue
-        order_type = int(getattr(order, "type", -1))
-        if order_type not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
+        if int(getattr(order, "magic", 0) or 0) != magic:
             continue
-        created_at = created.get(str(ticket))
-        if created_at is None:
+        if int(getattr(order, "type", -1)) not in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT):
             continue
-        age_minutes = max(0.0, (now - float(created_at)) / 60.0)
-        if age_minutes < ttl_minutes:
+        if f"{ticket}:EXPIRY_NOTIFIED:CANCELLED" in state.get("order_states", set()):
             continue
-        marker = f"{ticket}:EXPIRY_NOTIFIED:"
-        if any(s.startswith(marker) for s in state["order_states"]):
+        eligible.append(order)
+    if not eligible:
+        return
+
+    now_epoch = time.time()
+    for order in eligible:
+        setup_epoch = int(getattr(order, "time_setup", 0) or 0)
+        if setup_epoch <= 0:
+            _log_pending_expiry_skip(order, state, "INVALID_ORDER_SETUP_TIMESTAMP",
+                                     "MT5 order.time_setup is missing or invalid")
             continue
+        age_seconds = now_epoch - setup_epoch
+        if age_seconds < -2:
+            _log_pending_expiry_skip(order, state, "ORDER_SETUP_TIMESTAMP_IN_FUTURE",
+                                     f"age_seconds={age_seconds:.1f}")
+            continue
+        if age_seconds / 60.0 < ttl_minutes:
+            continue
+        # Only a confirmed cancellation completes expiry; failures are retried.
         runner._cancel_pending_order(order, state)
 
+
+def _log_pending_expiry_skip(order, state, reason, detail):
+    ticket = int(getattr(order, "ticket", 0) or 0)
+    states = state.setdefault("order_states", set())
+    diagnostic = f"{ticket}:EXPIRY_CLOCK_UNAVAILABLE:{reason}"
+    if diagnostic in states:
+        return
+    states.add(diagnostic)
+    runner.log_event({
+        "event": "PENDING_ORDER_TTL_SKIPPED",
+        "version": cfg.VERSION,
+        "symbol": str(getattr(order, "symbol", "") or ""),
+        "order": ticket,
+        "reason": reason,
+        "detail": detail,
+        "canonical": False,
+    })
+
+
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
-    symbol = cfg_runtime["symbol"]
+    symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
     tracked = set(state["orders"])
+    active_orders = list(mt5.orders_get(symbol=symbol) or [])
+    # Reconcile only currently active limit orders carrying this runner's
+    # symbol + magic. This restores lifecycle ownership after a restart without
+    # replaying old signals, candidates, positions, or historical deals.
+    for active in active_orders:
+        ticket = int(getattr(active, "ticket", 0) or 0)
+        if (ticket > 0
+                and str(getattr(active, "symbol", "") or "") == symbol
+                and int(getattr(active, "magic", 0) or 0) == magic
+                and int(getattr(active, "type", -1)) in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT)):
+            state["orders"].add(ticket)
+            tracked.add(ticket)
     orders = list(mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
-    orders.extend(list(mt5.orders_get(symbol=symbol) or []))
+    orders.extend(active_orders)
     for order in orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
         if ticket not in tracked:
@@ -177,10 +226,30 @@ def _run_scoped_pending_lifecycle(cfg_runtime, state):
             "canonical":False})
 
 def _run_scoped_position_lifecycle(cfg_runtime, state):
-    symbol, magic = cfg_runtime["symbol"], cfg_runtime["magic"]
-    for position in (mt5.positions_get(symbol=symbol) or []):
-        position_id = int(getattr(position,"ticket",0) or 0)
-        if position_id not in state["positions"] or int(getattr(position,"magic",0) or 0) != magic:
+    symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
+    positions = mt5.positions_get(symbol=symbol)
+    if positions is None:
+        runner.log_event({
+            "event": "POSITION_SNAPSHOT_QUERY_FAILED",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "reason": "MT5_POSITIONS_GET_RETURNED_NONE",
+            "mt5_error": str(mt5.last_error()),
+            "diagnostic_only": True,
+            "canonical": False,
+        })
+        return
+    for position in positions:
+        position_id = int(
+            getattr(position, "identifier", 0)
+            or getattr(position, "ticket", 0)
+            or 0
+        )
+        if (
+            position_id not in state["positions"]
+            or str(getattr(position, "symbol", "") or "") != symbol
+            or int(getattr(position, "magic", 0) or 0) != magic
+        ):
             continue
         marker=f"POSITION:{position_id}:{float(getattr(position,'sl',0.0) or 0.0)}:{float(getattr(position,'tp',0.0) or 0.0)}"
         if marker in state["order_states"]:
@@ -199,11 +268,62 @@ def _run_scoped_position_lifecycle(cfg_runtime, state):
             "canonical":False})
 
 def _run_scoped_symbol_lifecycle(cfg_runtime, state):
-    symbol, magic, pip = cfg_runtime["symbol"], cfg_runtime["magic"], cfg_runtime["pip_size"]
+    symbol, magic, pip = cfg_runtime["symbol"], int(cfg_runtime["magic"]), cfg_runtime["pip_size"]
+
+    # Adopt only currently open positions owned by this exact symbol + magic.
+    # V3 intentionally starts with fresh in-memory state to avoid replaying old
+    # signals; without this narrow reconciliation, a position opened before a
+    # runner restart would be invisible to the CLOSED-result watcher.
+    active_positions = mt5.positions_get(symbol=symbol)
+    if active_positions is None:
+        runner.log_event({
+            "event": "POSITION_SNAPSHOT_QUERY_FAILED",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "reason": "MT5_POSITIONS_GET_RETURNED_NONE",
+            "mt5_error": str(mt5.last_error()),
+            "diagnostic_only": True,
+            "canonical": False,
+        })
+        runner.save_state(state)
+        return
+
+    for active_position in active_positions:
+        # Deal.position_id corresponds to the stable MT5 position identifier,
+        # not necessarily the mutable/current position ticket.
+        position_id = int(
+            getattr(active_position, "identifier", 0)
+            or getattr(active_position, "ticket", 0)
+            or 0
+        )
+        if (
+            position_id > 0
+            and str(getattr(active_position, "symbol", "") or "") == symbol
+            and int(getattr(active_position, "magic", 0) or 0) == magic
+        ):
+            state["positions"].add(position_id)
+
     tracked_orders, tracked_positions = set(state["orders"]), set(state["positions"])
     if not tracked_orders and not tracked_positions:
         return
-    deals = mt5.history_deals_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or []
+    deals_result = mt5.history_deals_get(
+        _RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol
+    )
+    if deals_result is None:
+        runner.log_event({
+            "event": "POSITION_HISTORY_QUERY_FAILED",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "reason": "MT5_HISTORY_DEALS_GET_RETURNED_NONE",
+            "mt5_error": str(mt5.last_error()),
+            "history_start_utc": _RUN_STARTED_UTC.isoformat(),
+            "history_end_utc": datetime.now(timezone.utc).isoformat(),
+            "diagnostic_only": True,
+            "canonical": False,
+        })
+        runner.save_state(state)
+        return
+    deals = list(deals_result)
     for deal in sorted(deals, key=lambda x:(int(x.time), int(x.ticket))):
         ticket=int(deal.ticket)
         if ticket in state["deals"]:
@@ -216,6 +336,8 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
         is_entry = int(getattr(deal,"entry",-1)) == mt5.DEAL_ENTRY_IN
         entry_price=float(deal.price) if is_entry else runner.position_entry_price(deal, magic)
         if not is_entry and entry_price is None:
+            # Do not send a close before its actual entry can be linked.
+            # Keep polling history; the broker record may become available later.
             continue
         execution_meta={}
         for linked_order in state.get("position_orders",{}).get(str(position),set()):
@@ -223,6 +345,7 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             if execution_meta: break
         tg=runner.gateway.send_telegram_message(
             runner.lifecycle_message(deal,symbol,pip,magic), parse_mode="HTML")
+        delivered=bool(getattr(tg,"success",False))
         profit=float(getattr(deal,"profit",0.0) or 0.0)
         commission=float(getattr(deal,"commission",0.0) or 0.0)
         swap=float(getattr(deal,"swap",0.0) or 0.0)
@@ -238,10 +361,65 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
             "theoretical_tp":execution_meta.get("tp"),
             "exit_price":float(deal.price),"profit":profit,
             "commission":commission,"swap":swap,"net":profit+commission+swap,
-            "telegram":{"success":bool(getattr(tg,"success",False)),"detail":getattr(tg,"detail",None)},
+            "telegram":{"success":delivered,"detail":getattr(tg,"detail",None)},
             "canonical":False})
-        if getattr(tg,"success",False):
+        if delivered:
+            # Persist each acknowledged deal immediately. Otherwise a later
+            # empty-rate poll or process crash could cause a successful post
+            # to be sent again after restart.
             state["deals"].add(ticket)
+            runner.save_state(state)
+        else:
+            # Preserve chronological OPENED -> CLOSED delivery. A failed
+            # earlier deal remains eligible for retry; do not leapfrog it
+            # with a later close message for the same history poll.
+            runner.save_state(state)
+            break
+
+    # Reconcile disappearance separately from a close. A missing position
+    # is not proof of an exit: only a broker history deal can establish P/L.
+    # Emit one diagnostic per tracked position per process if it is absent
+    # from the current position snapshot and no exit deal is present in history.
+    active_position_ids = {
+        int(
+            getattr(position, "identifier", 0)
+            or getattr(position, "ticket", 0)
+            or 0
+        )
+        for position in active_positions
+        if str(getattr(position, "symbol", "") or "") == symbol
+        and int(getattr(position, "magic", 0) or 0) == magic
+        and int(
+            getattr(position, "identifier", 0)
+            or getattr(position, "ticket", 0)
+            or 0
+        ) > 0
+    }
+    observed_exit_positions = {
+        int(getattr(deal, "position_id", 0) or 0)
+        for deal in deals
+        if int(getattr(deal, "entry", -1)) != mt5.DEAL_ENTRY_IN
+        and int(getattr(deal, "position_id", 0) or 0) > 0
+    }
+    for position_id in sorted(tracked_positions - active_position_ids - observed_exit_positions):
+        marker = f"POSITION_RECONCILIATION_GAP:{position_id}"
+        if marker in state["order_states"]:
+            continue
+        state["order_states"].add(marker)
+        runner.log_event({
+            "event": "POSITION_RECONCILIATION_GAP",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "position": position_id,
+            "reason": "POSITION_ABSENT_WITHOUT_BROKER_EXIT_DEAL",
+            "history_start_utc": _RUN_STARTED_UTC.isoformat(),
+            "history_end_utc": datetime.now(timezone.utc).isoformat(),
+            "diagnostic_only": True,
+            "closed": False,
+            "pnl": None,
+            "canonical": False,
+        })
+        runner.save_state(state)
 
 runner.enforce_pending_order_expiry=_run_scoped_pending
 runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
@@ -266,8 +444,31 @@ def _v3_main():
             cutoff_cache["epoch"] = int(_RUN_STARTED_UTC.timestamp() + server_offset.total_seconds())
         return int(cutoff_cache["epoch"])
 
+    # A closed market can leave MT5 without a fresh tick, so the shared
+    # server-clock helper may temporarily fail at startup. Do not crash the
+    # forward runner or guess an offset: defer candidate detection until the
+    # clock helper succeeds on a later poll. Other read-only/lifecycle polling
+    # in the base loop continues; no new candidate can reach execution here.
+    session_clock_error_log_at = -300.0  # Ensure the first unavailable-clock event is always logged.
+
     def _forward_session_find(data, symbol):
-        session_cutoff_epoch = _session_cutoff_epoch()
+        nonlocal session_clock_error_log_at
+        try:
+            session_cutoff_epoch = _session_cutoff_epoch()
+        except RuntimeError as exc:
+            now_mono = time.monotonic()
+            if now_mono - session_clock_error_log_at >= 300.0:
+                runner.log_event({
+                    "event": "SESSION_CUTOFF_DEFERRED",
+                    "symbol": symbol,
+                    "reason": "SERVER_OFFSET_UNAVAILABLE",
+                    "detail": str(exc),
+                    "retry_interval_seconds": 300,
+                    "canonical": False,
+                })
+                session_clock_error_log_at = now_mono
+            return None
+
         candidate = original_find(data, symbol)
         if candidate is None:
             return None

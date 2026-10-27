@@ -162,6 +162,25 @@ def test_expiry_is_idempotent(monkeypatch, tmp_path):
     assert not sent
 
 
+
+def test_failed_cancel_is_retried_without_duplicate_notification(monkeypatch, tmp_path):
+    fake = scenario(monkeypatch, tmp_path, live="true", allow="true")
+    calls = []
+    fake.order_send = lambda request: (
+        calls.append(request),
+        SimpleNamespace(retcode=10006, comment="rejected"),
+    )[1]
+    fake.orders_get = lambda symbol=None: [pending_limit(120, age_minutes=60)]
+    mod, sent = load_runner(monkeypatch, tmp_path, fake)
+    state = fresh_state()
+
+    mod.enforce_pending_order_expiry({"symbol": SYMBOL, "magic": MAGIC}, state)
+    mod.enforce_pending_order_expiry({"symbol": SYMBOL, "magic": MAGIC}, state)
+
+    assert len(calls) == 2, "failed cancellation must be retried while order remains active"
+    assert len(sent) == 1, "repeated identical failures must not spam Telegram"
+
+
 def test_disabled_ttl_is_noop(monkeypatch, tmp_path):
     fake = scenario(monkeypatch, tmp_path, live="true", allow="true")
     fake.orders_get = lambda symbol=None: [pending_limit(118, age_minutes=999)]
@@ -182,4 +201,6 @@ def test_expiry_event_logged(monkeypatch, tmp_path):
     events = [json.loads(l) for l in lines]
     expired = [e for e in events if e["event"] == "PENDING_ORDER_EXPIRED"]
     assert expired and expired[0]["order"] == 119 and expired[0]["canonical"] is False
-    assert expired[0]["outcome"] == "CANCELLED" and expired[0]["cancel"]["dry_run"] is True
+    assert expired[0]["outcome"] == "CANCEL_SKIPPED_DRY_RUN"
+    assert expired[0]["cancel"]["dry_run"] is True
+    assert expired[0]["cancel"]["ok"] is False
