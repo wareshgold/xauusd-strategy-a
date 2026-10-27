@@ -57,6 +57,9 @@ def load_v3(monkeypatch, tmp_path):
     mod = importlib.import_module(V3)
     monkeypatch.setattr(mod.runner, "EVENTS", tmp_path / "events.jsonl")
     monkeypatch.setattr(mod.runner, "STATE_FILE", tmp_path / "state.json")
+    # Shared session-clock tests may use this mocked broker-time tick; TTL tests do not.
+    broker_tick_time = int(time.time() + 3 * 3600)
+    m.symbol_info_tick = lambda symbol: SimpleNamespace(time=broker_tick_time)
     return mod, m
 
 
@@ -69,10 +72,10 @@ def state():
 
 
 def order(ticket=123, *, magic=MAGIC, age_minutes=31, order_type=2):
-    # MT5 time_setup is a Unix-epoch timestamp; broker display offset is irrelevant.
+    # Tests model a broker clock that is UTC+3; time_setup is on that clock.
     return SimpleNamespace(
         ticket=ticket, symbol=SYMBOL, magic=magic, type=order_type,
-        time_setup=int(time.time() - age_minutes * 60),
+        time_setup=int(time.time() + 3 * 3600 - age_minutes * 60),
         time_done=0, state=1, position_id=0,
         volume_initial=0.01, volume_current=0.01,
         price_open=2300.0, price_current=2300.0, sl=2298.0, tp=2304.0,
@@ -83,7 +86,6 @@ def test_expired_owned_order_is_cancelled_once(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     pending = order(ticket=123, age_minutes=31)
     m.orders_get = lambda symbol=None: [pending]
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     cancelled = []
     def cancel(o, s):
         cancelled.append(o.ticket)
@@ -96,31 +98,25 @@ def test_expired_owned_order_is_cancelled_once(monkeypatch, tmp_path):
     assert cancelled == [123]
 
 
-
 def test_failed_expiry_attempt_is_retried(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     pending = order(ticket=131, age_minutes=90)
     m.orders_get = lambda symbol=None: [pending]
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     attempts = []
-
     def failed_cancel(o, s):
         attempts.append(o.ticket)
         s["order_states"].add(f"{o.ticket}:EXPIRY_NOTIFIED:CANCEL_FAILED(10006)")
-
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", failed_cancel)
     s = state()
     config = {"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}
     mod._run_scoped_pending(config, s)
     mod._run_scoped_pending(config, s)
-
     assert attempts == [131, 131], "failed cancellation must remain retryable"
 
 
 def test_recent_owned_order_is_not_cancelled(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     m.orders_get = lambda symbol=None: [order(ticket=124, age_minutes=5)]
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
@@ -130,7 +126,6 @@ def test_recent_owned_order_is_not_cancelled(monkeypatch, tmp_path):
 def test_foreign_magic_order_is_never_cancelled(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     m.orders_get = lambda symbol=None: [order(ticket=125, magic=MAGIC + 1, age_minutes=90)]
-    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: timedelta(hours=3))
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
@@ -142,43 +137,12 @@ def test_expiry_does_not_depend_on_tick_or_server_offset(monkeypatch, tmp_path):
     pending = order(ticket=126, age_minutes=120)
     m.orders_get = lambda symbol=None: [pending]
     m.symbol_info_tick = lambda symbol: None
+    monkeypatch.setattr(mod.runner, "mt5_server_offset_strict", lambda: (_ for _ in ()).throw(RuntimeError("offset unavailable")))
     cancelled = []
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
     assert cancelled == [126]
 
-def test_invalid_setup_timestamp_fails_closed(monkeypatch, tmp_path):
-    mod, m = load_v3(monkeypatch, tmp_path)
-    pending = order(ticket=129, age_minutes=120)
-    pending.time_setup = 0
-    m.orders_get = lambda symbol=None: [pending]
-    cancelled = []
-    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
-    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
-    assert cancelled == []
-
-def test_future_setup_timestamp_fails_closed(monkeypatch, tmp_path):
-    mod, m = load_v3(monkeypatch, tmp_path)
-    pending = order(ticket=130, age_minutes=0)
-    pending.time_setup = int(time.time() + 60)
-    m.orders_get = lambda symbol=None: [pending]
-    cancelled = []
-    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
-    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
-    assert cancelled == []
-
-def test_expiry_only_cancels_owned_limit_orders(monkeypatch, tmp_path):
-    mod, m = load_v3(monkeypatch, tmp_path)
-    wrong_symbol = order(ticket=131, age_minutes=120)
-    wrong_symbol.symbol = "OTHER"
-    wrong_magic = order(ticket=132, magic=MAGIC + 1, age_minutes=120)
-    stop_order = order(ticket=133, age_minutes=120, order_type=m.ORDER_TYPE_BUY_STOP)
-    owned = order(ticket=134, age_minutes=120)
-    m.orders_get = lambda symbol=None: [wrong_symbol, wrong_magic, stop_order, owned]
-    cancelled = []
-    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
-    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
-    assert cancelled == [134]
 
 def test_ttl_boundary_does_not_cancel_before_expiry(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
@@ -188,6 +152,89 @@ def test_ttl_boundary_does_not_cancel_before_expiry(monkeypatch, tmp_path):
     monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
     mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
     assert cancelled == []
+
+
+def test_active_owned_order_is_reconciled_for_lifecycle_without_signal_replay(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    pending = order(ticket=127, age_minutes=5)
+    m.orders_get = lambda symbol=None: [pending]
+    m.history_orders_get = lambda *args, **kwargs: []
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    s = state()
+    assert not s["orders"]
+    mod._run_scoped_pending_lifecycle({"symbol": SYMBOL, "magic": MAGIC}, s)
+    assert 127 in s["orders"]
+    lifecycle = [e for e in events if e["event"] == "PENDING_ORDER_LIFECYCLE"]
+    assert len(lifecycle) == 1 and lifecycle[0]["order"] == 127
+    assert lifecycle[0]["canonical"] is False
+
+def test_foreign_active_order_is_not_adopted_by_lifecycle(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    m.orders_get = lambda symbol=None: [order(ticket=128, magic=MAGIC + 1, age_minutes=5)]
+    m.history_orders_get = lambda *args, **kwargs: []
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    s = state()
+    mod._run_scoped_pending_lifecycle({"symbol": SYMBOL, "magic": MAGIC}, s)
+    assert 128 not in s["orders"]
+    assert not [e for e in events if e["event"] == "PENDING_ORDER_LIFECYCLE"]
+
+def test_zero_setup_timestamp_is_never_cancelled(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    pending = order(ticket=129, age_minutes=120)
+    pending.time_setup = 0
+    m.orders_get = lambda symbol=None: [pending]
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_future_setup_timestamp_is_never_cancelled(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    pending = order(ticket=130, age_minutes=0)
+    pending.time_setup = int(time.time() + 60)
+    m.orders_get = lambda symbol=None: [pending]
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_mt5_order_query_failure_fails_closed(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    m.orders_get = lambda symbol=None: None
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_wrong_symbol_and_non_limit_orders_are_never_cancelled(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    wrong_symbol = order(ticket=131, age_minutes=120)
+    wrong_symbol.symbol = "EURUSD"
+    wrong_magic = order(ticket=132, magic=MAGIC + 1, age_minutes=120)
+    stop_order = order(ticket=133, age_minutes=120, order_type=m.ORDER_TYPE_BUY_STOP)
+    m.orders_get = lambda symbol=None: [wrong_symbol, wrong_magic, stop_order]
+    cancelled = []
+    monkeypatch.setattr(mod.runner, "_cancel_pending_order", lambda o, s: cancelled.append(o.ticket))
+    mod._run_scoped_pending({"symbol": SYMBOL, "magic": MAGIC, "pending_ttl_minutes": 30}, state())
+    assert cancelled == []
+
+
+def test_lifecycle_does_not_adopt_active_stop_orders(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    stop_order = order(ticket=133, age_minutes=5, order_type=m.ORDER_TYPE_BUY_STOP)
+    m.orders_get = lambda symbol=None: [stop_order]
+    m.history_orders_get = lambda *args, **kwargs: []
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    s = state()
+    mod._run_scoped_pending_lifecycle({"symbol": SYMBOL, "magic": MAGIC}, s)
+    assert 133 not in s["orders"]
+    assert not [e for e in events if e["event"] == "PENDING_ORDER_LIFECYCLE"]
 
 def test_closed_market_session_clock_defers_candidate_and_retries(monkeypatch, tmp_path):
     mod, _ = load_v3(monkeypatch, tmp_path)
@@ -225,7 +272,6 @@ def test_closed_market_session_clock_defers_candidate_and_retries(monkeypatch, t
     assert len(deferred) == 1
     assert deferred[0]["canonical"] is False
 
-
 def test_deal_lifecycle_timestamp_uses_utc_then_iran_time(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
     from datetime import datetime, timezone
@@ -240,7 +286,6 @@ def test_deal_lifecycle_timestamp_uses_utc_then_iran_time(monkeypatch, tmp_path)
     monkeypatch.setattr(mod.runner, "mt5_server_offset", lambda: timedelta(hours=3))
     message = mod.runner.lifecycle_message(deal, SYMBOL, 0.01, MAGIC)
     assert "07:32:08 (UTC+3:30) · 2026-10-13" in message
-
 
 def test_lifecycle_retries_failed_open_before_sending_close(monkeypatch, tmp_path):
     mod, m = load_v3(monkeypatch, tmp_path)
@@ -308,7 +353,6 @@ def test_pending_signal_message_explicitly_says_not_filled(monkeypatch, tmp_path
     assert "PENDING ORDER ACCEPTED (NOT FILLED)" in sent[0]
     assert "Pending Limit ACCEPTED" in sent[0]
 
-
 def test_execution_blocked_message_reports_no_order(monkeypatch, tmp_path):
     mod, _ = load_v3(monkeypatch, tmp_path)
     sent = []
@@ -324,4 +368,130 @@ def test_execution_blocked_message_reports_no_order(monkeypatch, tmp_path):
     assert "ORDER NOT PLACED" in sent[0]
     assert "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET" in sent[0]
     assert "No pending order accepted" in sent[0]
+    assert "\\n" not in sent[0], "message must not contain literal backslash-n sequences"
+    assert sent[0].count("\n") >= 4, "message fields should be separated by actual newlines"
+
+def test_blocked_execution_notification_is_queued_when_telegram_fails(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    candidate = {"symbol": SYMBOL, "direction": "BUY", "signal_id": "blocked-1"}
+    result = {"reason": "VOLUME_BELOW_MIN", "comment": "requested_volume=0.01"}
+    sent = []
+    events = []
+    monkeypatch.setattr(mod.runner, "send_execution_blocked", lambda c, r: sent.append((c, r)) or SimpleNamespace(success=False, detail="HTTP timeout"))
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    s = state()
+
+    assert mod.runner.notify_execution_blocked(candidate, result, "blocked-1", s) is False
+    assert len(sent) == 1
+    assert s["pending_execution_notifications"]["blocked-1"] == {"candidate": candidate, "result": result}
+    assert events[-1]["event"] == "TELEGRAM_EXECUTION_BLOCKED"
+    assert events[-1]["success"] is False
+
+def test_blocked_execution_notification_success_clears_retry_queue(monkeypatch, tmp_path):
+    mod, _ = load_v3(monkeypatch, tmp_path)
+    candidate = {"symbol": SYMBOL, "direction": "SELL", "signal_id": "blocked-2"}
+    result = {"reason": "ORDER_REJECTED"}
+    events = []
+    monkeypatch.setattr(mod.runner, "send_execution_blocked", lambda c, r: SimpleNamespace(success=True, detail="HTTP_200"))
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    s = state()
+    s["pending_execution_notifications"] = {"blocked-2": {"candidate": candidate, "result": result}}
+
+    assert mod.runner.notify_execution_blocked(candidate, result, "blocked-2", s) is True
+    assert "blocked-2" not in s["pending_execution_notifications"]
+    assert events[-1]["event"] == "TELEGRAM_EXECUTION_BLOCKED"
+    assert events[-1]["success"] is True
+
+def test_existing_owned_position_is_adopted_and_close_result_is_not_lost_after_restart(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    # MT5 position ticket may differ from the stable identifier referenced by deals.
+    active = SimpleNamespace(ticket=9991, identifier=9001, symbol=SYMBOL, magic=MAGIC)
+    close_deal = SimpleNamespace(
+        ticket=9101, time=int(time.time()), order=9201, position_id=9001,
+        entry=1, reason=0, price=2297.0, profit=-3.0, commission=0.0, swap=0.0,
+        volume=0.01,
+    )
+    m.positions_get = lambda symbol=None: [active]
+    m.history_deals_get = lambda *args, **kwargs: []
+    s = state()
+    cfg = {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}
+
+    # First poll after restart: adopt the exact owned open position.
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+    assert 9001 in s["positions"]
+
+    # Later the position has closed. Its exit deal must still be eligible.
+    m.positions_get = lambda symbol=None: []
+    m.history_deals_get = lambda *args, **kwargs: [close_deal]
+    monkeypatch.setattr(mod.runner, "position_entry_price", lambda deal, magic: 2300.0)
+    monkeypatch.setattr(mod.runner, "lifecycle_message", lambda *args, **kwargs: "CLOSED result")
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda message, **kwargs: sent.append(message) or SimpleNamespace(success=True, detail="HTTP_200"),
+    )
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: None)
+    monkeypatch.setattr(mod.runner, "save_state", lambda state: None)
+
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+    assert sent == ["CLOSED result"]
+    assert 9101 in s["deals"]
+
+def test_missing_tracked_position_emits_one_diagnostic_without_fabricating_close(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    cfg = {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}
+    s = state()
+    s["orders"].add(9301)
+    s["positions"].add(9401)
+    m.positions_get = lambda symbol=None: []
+    m.history_deals_get = lambda *args, **kwargs: []
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    monkeypatch.setattr(mod.runner, "save_state", lambda state: None)
+    sent = []
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda *args, **kwargs: sent.append(args) or SimpleNamespace(success=True, detail="HTTP_200"),
+    )
+
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+
+    gaps = [event for event in events if event.get("event") == "POSITION_RECONCILIATION_GAP"]
+    assert len(gaps) == 1
+    assert gaps[0]["position"] == 9401
+    assert gaps[0]["reason"] == "POSITION_ABSENT_WITHOUT_BROKER_EXIT_DEAL"
+    assert gaps[0]["diagnostic_only"] is True
+    assert gaps[0]["closed"] is False
+    assert gaps[0]["pnl"] is None
+    assert sent == []
+    assert "POSITION_RECONCILIATION_GAP:9401" in s["order_states"]
+
+def test_broker_exit_deal_prevents_missing_position_gap(monkeypatch, tmp_path):
+    mod, m = load_v3(monkeypatch, tmp_path)
+    cfg = {"symbol": SYMBOL, "magic": MAGIC, "pip_size": 0.01}
+    s = state()
+    s["orders"].add(9501)
+    s["positions"].add(9402)
+    exit_deal = SimpleNamespace(
+        ticket=9601, time=int(time.time()), order=9501, position_id=9402,
+        entry=1, reason=0, price=2297.0, profit=-3.0, commission=0.0, swap=0.0,
+        volume=0.01,
+    )
+    m.positions_get = lambda symbol=None: []
+    m.history_deals_get = lambda *args, **kwargs: [exit_deal]
+    monkeypatch.setattr(mod.runner, "position_entry_price", lambda deal, magic: 2300.0)
+    monkeypatch.setattr(mod.runner, "lifecycle_message", lambda *args, **kwargs: "CLOSED result")
+    monkeypatch.setattr(
+        mod.runner.gateway, "send_telegram_message",
+        lambda *args, **kwargs: SimpleNamespace(success=True, detail="HTTP_200"),
+    )
+    events = []
+    monkeypatch.setattr(mod.runner, "log_event", lambda event: events.append(event))
+    monkeypatch.setattr(mod.runner, "save_state", lambda state: None)
+
+    mod._run_scoped_symbol_lifecycle(cfg, s)
+
+    assert any(event.get("event") == "TELEGRAM_DEAL_LIFECYCLE" for event in events)
+    assert not any(event.get("event") == "POSITION_RECONCILIATION_GAP" for event in events)
 
