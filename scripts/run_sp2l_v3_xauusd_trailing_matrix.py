@@ -50,6 +50,9 @@ def load_m1_csv(path, start, end):
         if not reader.fieldnames:
             raise RuntimeError("CSV has no header")
         names = {name.strip().lower(): name for name in reader.fieldnames}
+        # MT5 exports in this repository use "timestamp"; native rate dumps use "time".
+        if "time" not in names and "timestamp" in names:
+            names["time"] = names["timestamp"]
         required = {"time", "open", "high", "low", "close"}
         missing = required - set(names)
         if missing:
