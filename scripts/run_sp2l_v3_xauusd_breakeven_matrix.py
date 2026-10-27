@@ -193,7 +193,7 @@ def main():
         "matrix_csv": str(root.with_name(root.name + "_matrix.csv")),
         "trades_csv": str(root.with_name(root.name + "_trades.csv")),
         "snapshot": str(snap), "bars": len(bars), "candidates": len(candidates),
-        "matrix_rows": len(matrix), "research_only": True, "canonical": False}, indent=2))
+        "matrix_rows": len(matrix), "matrix": matrix, "research_only": True, "canonical": False}, indent=2))
 
 
 if __name__ == "__main__":
