@@ -288,7 +288,8 @@ def max_consecutive_losses(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mt5-path", default=None)\n    ap.add_argument("--csv-path", default=None, help="Use an existing M1 CSV offline; MT5 is not initialized or shut down")
+    ap.add_argument("--mt5-path", default=None)
+    ap.add_argument("--csv-path", default=None, help="Use an existing M1 CSV offline; MT5 is not initialized or shut down")
     ap.add_argument("--symbol", default="XAUUSD.ecn")
     ap.add_argument("--start", default="2026-07-13T00:00:00+00:00")
     ap.add_argument("--end", default="2026-10-13T00:00:00+00:00")
