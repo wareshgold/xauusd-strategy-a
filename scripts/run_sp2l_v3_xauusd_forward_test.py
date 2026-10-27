@@ -384,66 +384,76 @@ runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
 runner.monitor_position_lifecycle=trail_positions
 runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
 
-def _v3_main():
-    # V3 forward-session boundary: only newly formed triggers after startup
-    # are eligible for execution. Recent M1 history is context, not backlog.
-    original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
-    original_find = runner.find_latest_candidate
-    # Candidate trigger_time is stamped in MT5 broker/server epoch, not host UTC epoch.
-    # Convert the process-start boundary into the same clock before filtering,
-    # otherwise a broker +3h offset makes pre-start candidates look future-dated.
-    # MT5 is only initialized inside _original_main(), and the strict offset query
-    # needs live ticks, so resolve the cutoff lazily on first use instead of here.
-    cutoff_cache: dict = {}
+def _make_forward_session_find(original_find):
+    """Suppress pre-start candidates using MT5 rate timestamps, not host/server offsets.
 
-    def _session_cutoff_epoch() -> int:
-        if "epoch" not in cutoff_cache:
-            server_offset = runner.mt5_server_offset_strict()
-            cutoff_cache["epoch"] = int(_RUN_STARTED_UTC.timestamp() + server_offset.total_seconds())
-        return int(cutoff_cache["epoch"])
-
-    # A closed market can leave MT5 without a fresh tick, so the shared
-    # server-clock helper may temporarily fail at startup. Do not crash the
-    # forward runner or guess an offset: defer candidate detection until the
-    # clock helper succeeds on a later poll. Other read-only/lifecycle polling
-    # in the base loop continues; no new candidate can reach execution here.
-    session_clock_error_log_at = -300.0  # Ensure the first unavailable-clock event is always logged.
+    The latest rate timestamp on the first poll is the per-symbol baseline.
+    It is in the same timestamp domain as candidate.trigger_time, so no
+    server-offset helper or guessed UTC conversion is required. Candidates
+    must be newer than that baseline before they can reach execution.
+    """
+    startup_bar_by_symbol: dict[str, int] = {}
+    error_log_at: dict[str, float] = {}
 
     def _forward_session_find(data, symbol):
-        nonlocal session_clock_error_log_at
-        try:
-            session_cutoff_epoch = _session_cutoff_epoch()
-        except RuntimeError as exc:
-            now_mono = time.monotonic()
-            if now_mono - session_clock_error_log_at >= 300.0:
-                runner.log_event({
-                    "event": "SESSION_CUTOFF_DEFERRED",
-                    "symbol": symbol,
-                    "reason": "SERVER_OFFSET_UNAVAILABLE",
-                    "detail": str(exc),
-                    "retry_interval_seconds": 300,
-                    "canonical": False,
-                })
-                session_clock_error_log_at = now_mono
+        if symbol not in startup_bar_by_symbol:
+            try:
+                if data is None or len(data) == 0:
+                    raise ValueError("no MT5 rate rows available")
+                baseline = int(data[-1]["time"])
+                if baseline <= 0:
+                    raise ValueError("latest MT5 rate timestamp is invalid")
+            except Exception as exc:
+                now_mono = time.monotonic()
+                last = error_log_at.get(symbol, -300.0)
+                if now_mono - last >= 300.0:
+                    runner.log_event({
+                        "event": "FORWARD_SESSION_BASELINE_DEFERRED",
+                        "symbol": symbol,
+                        "reason": "MT5_RATE_TIMESTAMP_UNAVAILABLE",
+                        "detail": f"{type(exc).__name__}: {exc}",
+                        "retry_interval_seconds": 300,
+                        "canonical": False,
+                    })
+                    error_log_at[symbol] = now_mono
+                return None
+
+            startup_bar_by_symbol[symbol] = baseline
+            runner.log_event({
+                "event": "FORWARD_SESSION_BASELINE_ESTABLISHED",
+                "symbol": symbol,
+                "baseline_bar_time": baseline,
+                "clock_basis": "MT5_RATE_TIMESTAMP",
+                "canonical": False,
+            })
+            # First poll establishes the no-backlog boundary; it never executes.
             return None
 
         candidate = original_find(data, symbol)
         if candidate is None:
             return None
         trigger_time = int(candidate.get("trigger_time", 0) or 0)
-        if trigger_time <= session_cutoff_epoch:
+        if trigger_time <= startup_bar_by_symbol[symbol]:
             return None
         return candidate
 
+    return _forward_session_find
+
+
+def _v3_main():
+    # V3 forward-session boundary: only triggers newer than the first observed
+    # MT5 rate timestamp may reach execution. This avoids converting between
+    # host UTC and broker timestamps and avoids replaying pre-start candidates.
+    original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
+    original_find = runner.find_latest_candidate
     runner.load_state = lambda: _fresh_v3_state()
     runner.reconcile_state_from_events = lambda state: None
-    runner.find_latest_candidate = _forward_session_find
+    runner.find_latest_candidate = _make_forward_session_find(original_find)
     try:
         _original_main()
     finally:
         runner.load_state, runner.reconcile_state_from_events = original_load, original_reconcile
         runner.find_latest_candidate = original_find
-
 
 runner.main=_v3_main
 

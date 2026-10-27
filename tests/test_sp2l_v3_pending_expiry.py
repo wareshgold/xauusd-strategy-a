@@ -501,3 +501,37 @@ def test_lifecycle_suppresses_stale_deal_returned_outside_query_window(monkeypat
     assert 987 in s["deals"]
     assert any(e.get("event") == "TELEGRAM_STALE_DEAL_SUPPRESSED" for e in events)
     assert not any(e.get("event") == "TELEGRAM_DEAL_LIFECYCLE" for e in events)
+
+
+def test_forward_session_baseline_uses_mt5_rate_clock_without_server_offset(monkeypatch, tmp_path):
+    mod, _m = load_v3(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        mod.runner, "mt5_server_offset_strict",
+        lambda: (_ for _ in ()).throw(AssertionError("server offset must not gate V3 candidate detection")),
+        raising=False,
+    )
+    candidate = {"trigger_time": 100, "direction": "SELL"}
+    finder = mod._make_forward_session_find(lambda data, symbol: dict(candidate))
+
+    # First poll establishes the startup boundary and never executes a candidate.
+    assert finder([{"time": 100}], SYMBOL) is None
+    # Existing trigger at or before the baseline remains suppressed.
+    assert finder([{"time": 101}], SYMBOL) is None
+    # A genuinely newer trigger is allowed without consulting the server offset.
+    candidate["trigger_time"] = 101
+    assert finder([{"time": 102}], SYMBOL) == candidate
+
+    events = (tmp_path / "events.jsonl").read_text(encoding="utf-8").splitlines()
+    assert any('"FORWARD_SESSION_BASELINE_ESTABLISHED"' in line for line in events)
+    assert not any('"SERVER_OFFSET_UNAVAILABLE"' in line for line in events)
+
+
+def test_forward_session_baseline_retries_if_rate_timestamp_unavailable(monkeypatch, tmp_path):
+    mod, _m = load_v3(monkeypatch, tmp_path)
+    candidate = {"trigger_time": 200, "direction": "BUY"}
+    finder = mod._make_forward_session_find(lambda data, symbol: dict(candidate))
+
+    assert finder([], SYMBOL) is None
+    assert finder([{"time": 200}], SYMBOL) is None
+    candidate["trigger_time"] = 201
+    assert finder([{"time": 202}], SYMBOL) == candidate
