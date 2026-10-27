@@ -33,7 +33,10 @@ def simulate(bars, candidate, entry_idx, mode, activation_r=None, distance_r=Non
             if direction=="BUY" and op < sl: fill=op
             if direction=="SELL" and op > sl: fill=op
             stop_r=(fill-entry)/risk if direction=="BUY" else (entry-fill)/risk
-            out.update(exit_price=fill, realized_R=partial_contribution+runner_fraction*stop_r,
+            # Before the partial target fills, the full position remains exposed.
+            # Only after a confirmed partial fill is the stop applied to the remaining fraction.
+            remaining_fraction = runner_fraction if partial else 1.0
+            out.update(exit_price=fill, realized_R=partial_contribution+remaining_fraction*stop_r,
                        exit_time=int(b["time"]), reason="TRAIL_SL" if activated and sl!=initial_sl else "SL"); break
         if hit_tp:
             out.update(exit_price=tp, realized_R=((tp-entry)/risk if direction=="BUY" else (entry-tp)/risk),
