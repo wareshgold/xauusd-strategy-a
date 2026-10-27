@@ -41,6 +41,56 @@ def fetch_m1_rates(symbol, start, end):
     return bars[np.sort(idx)]
 
 
+
+def load_m1_csv(path, start, end):
+    """Load existing M1 CSV without connecting to or shutting down any MT5 terminal."""
+    rows = []
+    with Path(path).open("r", newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames:
+            raise RuntimeError("CSV has no header")
+        names = {name.strip().lower(): name for name in reader.fieldnames}
+        required = {"time", "open", "high", "low", "close"}
+        missing = required - set(names)
+        if missing:
+            raise RuntimeError(f"CSV missing required columns: {sorted(missing)}")
+        start_ts, end_ts = int(start.timestamp()), int(end.timestamp())
+        for line_no, row in enumerate(reader, 2):
+            raw_time = (row.get(names["time"]) or "").strip()
+            try:
+                if raw_time.isdigit():
+                    ts = int(raw_time)
+                else:
+                    parsed = datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
+                    if parsed.tzinfo is None:
+                        raise ValueError("timestamp lacks timezone")
+                    ts = int(parsed.astimezone(timezone.utc).timestamp())
+                if not start_ts <= ts < end_ts:
+                    continue
+                vals = [float(row[names[k]]) for k in ("open", "high", "low", "close")]
+                if not all(np.isfinite(v) for v in vals):
+                    raise ValueError("non-finite OHLC")
+                op, hi, lo, cl = vals
+                if hi < max(op, cl, lo) or lo > min(op, cl, hi):
+                    raise ValueError("invalid OHLC ordering")
+                def integer_field(name, default=0):
+                    raw = row.get(names.get(name, ""), "")
+                    return int(float(raw)) if raw not in (None, "") else default
+                rows.append((ts, op, hi, lo, cl, integer_field("tick_volume"),
+                             integer_field("spread"), integer_field("real_volume")))
+            except Exception as exc:
+                raise RuntimeError(f"Invalid CSV row {line_no}: {exc}") from exc
+    dtype = [("time", "<i8"), ("open", "<f8"), ("high", "<f8"),
+             ("low", "<f8"), ("close", "<f8"), ("tick_volume", "<u8"),
+             ("spread", "<i4"), ("real_volume", "<u8")]
+    bars = np.array(rows, dtype=dtype)
+    if len(bars) == 0:
+        raise RuntimeError("CSV contains no bars in requested UTC interval")
+    bars.sort(order="time")
+    _, idx = np.unique(bars["time"], return_index=True)
+    bars = bars[np.sort(idx)]
+    return bars
+
 def parse_prices(raw: str, name: str, allow_zero: bool = False) -> list[float]:
     try:
         values = [float(part.strip()) for part in raw.split(",") if part.strip()]
@@ -238,7 +288,7 @@ def max_consecutive_losses(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mt5-path", required=True)
+    ap.add_argument("--mt5-path", default=None)\n    ap.add_argument("--csv-path", default=None, help="Use an existing M1 CSV offline; MT5 is not initialized or shut down")
     ap.add_argument("--symbol", default="XAUUSD.ecn")
     ap.add_argument("--start", default="2026-07-13T00:00:00+00:00")
     ap.add_argument("--end", default="2026-10-13T00:00:00+00:00")
@@ -255,12 +305,19 @@ def main():
         raise RuntimeError("--start and --end must be timezone-aware and start < end")
 
     cfg = importlib.import_module(args.config_module)
-    if not mt5.initialize(path=args.mt5_path):
-        raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+    if not args.csv_path and not args.mt5_path:
+        raise RuntimeError("Provide --csv-path for offline mode or --mt5-path for MT5 acquisition")
+    mt5_initialized = False
     try:
-        bars = fetch_m1_rates(args.symbol, start, end)
+        if args.csv_path:
+            bars = load_m1_csv(args.csv_path, start, end)
+        else:
+            if not mt5.initialize(path=args.mt5_path):
+                raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+            mt5_initialized = True
+            bars = fetch_m1_rates(args.symbol, start, end)
         if len(bars) < 10:
-            raise RuntimeError(f"Insufficient M1 data: {mt5.last_error()}")
+            raise RuntimeError(f"Insufficient M1 data: {len(bars)} bars")
         bars_sha = hashlib.sha256(bars.tobytes()).hexdigest()
         candidates = collect_candidates(bars, cfg, args.symbol)
         matrix = []
