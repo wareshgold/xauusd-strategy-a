@@ -1,6 +1,9 @@
+import sys
 import unittest
+from pathlib import Path
 
-from scripts.run_sp2l_v3_xauusd_breakeven_matrix import simulate
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from run_sp2l_v3_xauusd_breakeven_matrix import simulate
 
 
 class BreakEvenMatrixTests(unittest.TestCase):
@@ -17,8 +20,6 @@ class BreakEvenMatrixTests(unittest.TestCase):
     def test_lock_five_cents_is_hit_on_next_bar_not_activation_bar(self):
         bars = [
             {"time": 100, "open": 100.0, "high": 100.2, "low": 99.8, "close": 100.0},
-            # Low crosses the proposed 100.05 stop, but this stop did not exist
-            # before this bar; it must not be used retroactively.
             {"time": 160, "open": 100.0, "high": 100.6, "low": 100.0, "close": 100.4},
             {"time": 220, "open": 100.3, "high": 100.4, "low": 100.04, "close": 100.1},
         ]
