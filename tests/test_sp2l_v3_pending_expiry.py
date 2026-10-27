@@ -72,10 +72,10 @@ def state():
 
 
 def order(ticket=123, *, magic=MAGIC, age_minutes=31, order_type=2):
-    # Tests model a broker clock that is UTC+3; time_setup is on that clock.
+    # MT5 time_setup is a Unix-epoch timestamp; broker display offset is irrelevant.
     return SimpleNamespace(
         ticket=ticket, symbol=SYMBOL, magic=magic, type=order_type,
-        time_setup=int(time.time() + 3 * 3600 - age_minutes * 60),
+        time_setup=int(time.time() - age_minutes * 60),
         time_done=0, state=1, position_id=0,
         volume_initial=0.01, volume_current=0.01,
         price_open=2300.0, price_current=2300.0, sl=2298.0, tp=2304.0,
