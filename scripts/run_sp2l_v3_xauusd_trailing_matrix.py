@@ -112,6 +112,11 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
             reason = "TRAIL_SL" if trailing_activated and current_sl != initial_sl else "SL"
             break
         if hit_tp:
+            # TP reach is known, but OHLC cannot establish any further
+            # favorable excursion's order within this exit bar. Record only
+            # the guaranteed entry-to-TP movement as the MFE floor.
+            tp_favorable = tp - entry if direction == "BUY" else entry - tp
+            max_favorable = max(max_favorable, max(0.0, tp_favorable))
             exit_price, reason = tp, "TP"
             exit_time = int(bar["time"])
             break
