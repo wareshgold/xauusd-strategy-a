@@ -129,8 +129,12 @@ def collect_candidates(bars, cfg, symbol):
     return trades
 
 
-def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_price):
-    """Simulate one candidate; activation_price=None is the fixed-SL/TP baseline."""
+def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_price, gap_fill_policy="at_stop"):
+    """Simulate one candidate; activation_price=None is the fixed-SL/TP baseline.
+
+    gap_fill_policy="adverse_open" fills a stop at the bar open when that open
+    has already crossed the active stop, as a conservative gap diagnostic.
+    """
     direction = candidate["direction"]
     entry = float(candidate["theoretical_entry"])
     initial_sl = float(candidate["sl"])
@@ -160,7 +164,16 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
             exit_time = int(bar["time"])
             break
         if hit_sl:
+            # A stop crossed by the bar open cannot realistically be assumed
+            # filled at the stale stop price. Keep the original model as the
+            # default and expose an adverse-open sensitivity run.
+            bar_open = float(bar["open"])
             exit_price = current_sl
+            if gap_fill_policy == "adverse_open":
+                if direction == "BUY" and bar_open < current_sl:
+                    exit_price = bar_open
+                elif direction == "SELL" and bar_open > current_sl:
+                    exit_price = bar_open
             exit_time = int(bar["time"])
             reason = "TRAIL_SL" if trailing_activated and current_sl != initial_sl else "SL"
             break
@@ -297,6 +310,8 @@ def main():
     ap.add_argument("--start", default="2026-07-13T00:00:00+00:00")
     ap.add_argument("--end", default="2026-10-13T00:00:00+00:00")
     ap.add_argument("--config-module", default="sp2l_v3_rr2_trail4_config")
+    ap.add_argument("--gap-fill-policy", choices=("at_stop", "adverse_open"), default="at_stop",
+                    help="at_stop preserves the original idealized stop fill; adverse_open fills at bar open if it gaps through the active stop")
     ap.add_argument("--activation-prices", default="0.00,0.05,0.10,0.20,0.40",
                     help="independent favorable-move thresholds in XAUUSD price units; 0.00 starts at the first eligible completed-bar check")
     ap.add_argument("--trail-distances", default="0.02,0.04,0.10,0.20,0.40",
@@ -328,7 +343,7 @@ def main():
         trade_rows = []
 
         # Same candidates, entries, initial SL and TP; the baseline disables all stop updates.
-        baseline_rows = [simulate_one(bars, c, idx, None, None) for c, idx in candidates]
+        baseline_rows = [simulate_one(bars, c, idx, None, None, args.gap_fill_policy) for c, idx in candidates]
         matrix.append({
             "scenario": "NO_TRAIL_FIXED_SL_TP",
             "activation_price": None,
@@ -346,7 +361,7 @@ def main():
         for activation in activations:
             for distance in distances:
                 rows = [
-                    simulate_one(bars, c, idx, activation, distance)
+                    simulate_one(bars, c, idx, activation, distance, args.gap_fill_policy)
                     for c, idx in candidates
                 ]
                 summary = summarize(rows, dataset_end_time=int(bars[-1]["time"]))
@@ -393,7 +408,8 @@ def main():
                 "same_bar_policy": "SL and TP both touched under pre-bar levels => ambiguous",
                 "costs": "spread, commission, swap, and slippage not included",
                 "entries": "one primary entry only; 2X secondary entries excluded to isolate trailing parameters",
-                "gap_fills": "assumes fill at modeled SL/TP level; broker gap/slippage behavior not modeled",
+                "gap_fill_policy": args.gap_fill_policy,
+                "gap_fills": ("active stop exits at bar open when open has crossed the stop; TP remains idealized and spread/commission/slippage remain excluded" if args.gap_fill_policy == "adverse_open" else "assumes fill at modeled SL/TP level; broker gap/slippage behavior not modeled"),
                 "drawdown": "decisive trade R ordered by exit time; independent trades and no portfolio sizing, so not account/portfolio drawdown",
                 "overlap": "maximum concurrent independent simulated trades reported; no capital, margin, or execution-capacity constraint",
             },
