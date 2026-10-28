@@ -36,7 +36,7 @@ def _base_context(holdout_record, holdout_event, handoff):
 
 def _ledger_evidence(events):
     serialized = "".join(
-        json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+        json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
         for event in events
     ).encode("utf-8")
     return {
