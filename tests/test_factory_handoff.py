@@ -154,3 +154,39 @@ def test_handoff_blocks_conflicting_terminal_history():
     else:
         raise AssertionError("conflicting terminal history must block handoff")
 
+
+
+def test_handoff_rejects_completed_artifact_that_conflicts_with_research_record():
+    from test_research_record import chain
+
+    from strategy_factory.research_record import ResearchRecord
+
+    run, evidence, snapshot, audit, provenance = chain()
+    record = ResearchRecord.from_components(
+        run, evidence, snapshot, audit, provenance
+    )
+    events = FactoryJobEventLedger(path=None)
+    events.append(
+        event_type="COMPLETED",
+        job_id=record.run_id,
+        job_fingerprint="a" * 64,
+        station="discovery",
+        phase="DISCOVERY",
+        output_artifact="DIFFERENT-EVIDENCE-ID",
+        research_run_fingerprint=record.run_fingerprint,
+    )
+
+    try:
+        build_research_handoff(
+            events=events,
+            job_id=record.run_id,
+            source_station="discovery",
+            destination_station="stability",
+            record=record,
+        )
+    except ResearchHandoffError as exc:
+        assert "source event artifact does not match research record" in str(exc)
+    else:
+        raise AssertionError(
+            "handoff must reject a completed artifact that conflicts with the research record"
+        )
