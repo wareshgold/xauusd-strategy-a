@@ -185,7 +185,7 @@ def test_handoff_rejects_completed_artifact_that_conflicts_with_research_record(
             record=record,
         )
     except ResearchHandoffError as exc:
-        assert "source event artifact does not match research record" in str(exc)
+        assert "handoff artifact does not match research evidence_id" in str(exc)
     else:
         raise AssertionError(
             "handoff must reject a completed artifact that conflicts with the research record"
