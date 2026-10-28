@@ -15,7 +15,7 @@ It is not a generic dataset importer, a strategy engine, or a canonical-rule aut
 - Interval: [2026-08-21T00:00:00Z, 2026-09-19T00:00:00Z)
 - Required schema: time_msc,time_utc,bid,ask,last,volume,flags
 
-The tool refuses unexpected filenames, manifest identity/interval/purpose mismatches, hash/size/row-count mismatches, invalid numeric/timestamp data, observed timestamps outside the declared half-open UTC interval, nonpositive or missing Bid/Ask, crossed quotes, and out-of-order rows. Duplicate millisecond timestamps are reported, not removed. Gaps are reported, not filled or automatically attributed to a cause.
+The tool refuses unexpected filenames, manifest identity/interval/purpose mismatches, hash/size/row-count mismatches, CSV rows with missing or extra cells, invalid numeric/timestamp data, observed timestamps outside the declared half-open UTC interval, nonpositive or missing Bid/Ask, crossed quotes, and out-of-order rows. Duplicate millisecond timestamps are reported, not removed. Gaps are reported, not filled or automatically attributed to a cause.
 
 The tool computes the compressed file SHA-256, manifest SHA-256, row count, timestamp consistency, quote checks, duplicate groups, large gaps, and basic spread summaries. It refuses to overwrite an existing receipt or either input path. The receipt output is created exclusively at the requested path.
 
