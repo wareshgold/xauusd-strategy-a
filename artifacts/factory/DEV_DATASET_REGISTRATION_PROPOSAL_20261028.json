@@ -1,8 +1,8 @@
 {
   "record_schema_version": 1,
   "record_type": "DEVELOPMENT_DATASET_REGISTRATION_PROPOSAL",
-  "status": "PENDING_HUMAN_REVIEW_NOT_REGISTERED",
-  "decision_authority": "HUMAN_REVIEW_REQUIRED",
+  "status": "HUMAN_APPROVED_LIMITED_DEVELOPMENT_ONLY_PROVENANCE_UNANCHORED",
+  "decision_authority": "HUMAN_DECISION_RECORDED",
   "dataset": {
     "dataset_id": "xauusd-ecn-tick-bidask-20260821-20260919",
     "role": "DEVELOPMENT",
@@ -76,7 +76,8 @@
     "authorized_for_strategy_backtests": false,
     "authorizes_canonical_geometry": false,
     "authorizes_execution_or_fill_semantics": false,
-    "authorizes_production_or_buy_sell_decisions": false
+    "authorizes_production_or_buy_sell_decisions": false,
+    "authorized_for_limited_development_tooling": true
   },
   "review_checklist": [
     "Verify artifact SHA-256, byte size, and row count against the local source artifact.",
@@ -84,10 +85,10 @@
     "Review provenance trace: manifest is intentionally ignored and has no Git history; producer script is plausible but exact execution linkage is not authenticated.",
     "Independently anchor manifest provenance or explicitly accept it as unanchored acquisition metadata.",
     "Review duplicate timestamp groups, gaps, and zero Last/Volume semantics.",
-    "Approve or reject DEVELOPMENT registration explicitly; this proposal itself is not registration."
+    "Human decision recorded: approve limited DEVELOPMENT tooling use only; provenance remains unanchored; strategy backtests and Fresh Holdout remain prohibited."
   ],
   "gate_status": {
-    "gate_a": "PENDING_HUMAN_REGISTRATION_REVIEW",
+    "gate_a": "LIMITED_DEVELOPMENT_TOOLING_ONLY_APPROVED_PROVENANCE_UNANCHORED",
     "gate_b": "BLOCKED_SOURCE_GEOMETRY_UNRESOLVED",
     "gate_c": "BLOCKED_ADAPTER_AND_EXECUTION_CONTRACT_REVIEW_REQUIRED",
     "gate_d": "BLOCKED"
@@ -125,11 +126,28 @@
       "local_manifest_retrieved_at_utc": "2026-10-26T06:16:05.726257+00:00",
       "interpretation": "The document may be historical/stale and does not conclusively contradict the later local manifest; neither item independently authenticates the exact acquisition run."
     },
-    "conclusion": "Keep manifest provenance UNANCHORED_OBSERVED_DIGEST. The producer is plausible, but exact script-version-to-run-to-manifest linkage is not established.",
+    "conclusion": "Human approved limited DEVELOPMENT tooling use only. Keep manifest provenance UNANCHORED_OBSERVED_DIGEST; the producer is plausible, but exact script-version-to-run-to-manifest linkage is not established. This approval does not authorize strategy backtests, Fresh Holdout, canonical geometry, execution/fill certification, or production.",
     "recommended_evidence_if_available": [
       "A contemporaneous acquisition command/session log identifying the script revision and output paths.",
       "A trusted, independently retained digest or signed receipt for the manifest and dataset.",
       "Confirmation that the local producer script working tree matches its recorded Git revision."
     ]
+  },
+  "human_decision": {
+    "decision": "APPROVED_WITH_RESTRICTIONS",
+    "decided_on": "2026-10-28",
+    "approved_scope": [
+      "Limited DEVELOPMENT use for research tooling, audit tooling, schema/fixture engineering, and data-quality diagnostics.",
+      "Keep acquisition manifest provenance explicitly UNANCHORED_OBSERVED_DIGEST."
+    ],
+    "prohibited_scope": [
+      "Strategy performance backtests or performance-based rule selection.",
+      "Fresh Holdout access or use.",
+      "Canonical SP2L geometry decisions.",
+      "Execution/fill-semantic certification.",
+      "Production use or BUY/SELL decisions."
+    ],
+    "rationale": "Human approval is limited to development/tooling use. It does not authenticate acquisition provenance or establish strategy validity.",
+    "pr_must_remain_draft_and_unmerged": true
   }
 }
