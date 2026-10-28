@@ -46,3 +46,16 @@ The JSON receipt carries input identities, observed counts/checks, limitations, 
 - Gate D remains blocked until all prerequisite gates pass.
 
 The tool only recognizes the fixed DEVELOPMENT interval [2026-08-21T00:00:00Z, 2026-09-19T00:00:00Z) and rejects every observed tick timestamp before the inclusive start or at/after the exclusive end, as well as a manifest interval extending beyond the Fresh Holdout boundary 2026-09-19T00:00:00Z. It does not open, hash, parse, or otherwise read holdout data. The current data source is not modified or transformed, and the tool does not authorize backtests, production, or BUY/SELL decisions.
+
+
+## Duplicate timestamp group diagnostics
+
+The receipt includes these deterministic, aggregate-only fields:
+
+- `duplicate_timestamp_groups_size_2`: consecutive timestamp groups containing exactly two rows.
+- `duplicate_timestamp_groups_size_3_plus`: consecutive timestamp groups containing three or more rows.
+- `max_rows_in_timestamp_group`: maximum number of consecutive rows sharing one millisecond timestamp, including singleton groups in the maximum calculation.
+- `duplicate_groups_with_different_bid_ask`: duplicate groups containing more than one distinct Bid/Ask pair.
+- `duplicate_groups_with_same_bid_ask`: duplicate groups containing exactly one distinct Bid/Ask pair.
+
+These are descriptive counts, not diagnoses of feed corruption, ordering semantics, quote validity, executable prices, or trade events. The audit preserves source row order and all duplicate rows; it does not sort, deduplicate, choose a preferred quote, or infer why repeated timestamps occur. The aggregate fields are intended to guide a later source-evidence review, not to authorize strategy-performance backtests or rule selection.
