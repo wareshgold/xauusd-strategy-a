@@ -1,0 +1,23 @@
+fixture_id,input,expected,actual,status,artifact_or_reason
+FX-HIST-VALID,order101->position501; deals 901 entry + 902 exit,deal tickets 901 then 902,901 then 902,PASS,tests/test_v4_research_fixtures.py::test_valid_order_position_deal_chain_and_close
+FX-UNKNOWN-ORDER,history_orders_get(ticket=101)->[],valid empty and no deal query,[],PASS,tests/test_v4_research_fixtures.py::test_unknown_order_and_position_are_valid_empty_results
+FX-UNKNOWN-POSITION,history_deals_get(position=501)->[],valid empty history,[],PASS,tests/test_v4_research_fixtures.py::test_unknown_order_and_position_are_valid_empty_results
+FX-NONE-ORDERS,history_orders_get returns None,DealHistoryQueryError with MT5 last_error,raises query failure,PASS,tests/test_v4_research_fixtures.py::test_none_is_query_failure_not_empty[orders]
+FX-NONE-DEALS,history_deals_get returns None,DealHistoryQueryError with MT5 last_error,raises query failure,PASS,tests/test_v4_research_fixtures.py::test_none_is_query_failure_not_empty[deals]
+FX-EXCEPTION-ORDERS,history_orders_get raises synthetic IPC OSError,query failure preserved,raises DealHistoryQueryError retaining IPC detail,PASS,tests/test_v4_research_fixtures.py::test_exception_is_preserved[orders]
+FX-EXCEPTION-DEALS,history_deals_get raises synthetic IPC OSError,query failure preserved,raises DealHistoryQueryError retaining IPC detail,PASS,tests/test_v4_research_fixtures.py::test_exception_is_preserved[deals]
+FX-SYMBOL-MISMATCH,EURUSD deal returned for XAUUSD position,foreign symbol excluded,no returned deal,PASS,tests/test_v4_research_fixtures.py::test_symbol_and_id_mismatches_filtered_and_ids_not_conflated
+FX-ID-MISMATCH,deal has other order but linked position,linked-position deal retained; unrelated position excluded,deal ticket 3 retained only,PASS,tests/test_v4_research_fixtures.py::test_symbol_and_id_mismatches_filtered_and_ids_not_conflated
+FX-DUPLICATE-DEAL,duplicate deal ticket returned by two position queries,one unique deal,one deal ticket 900,PASS,tests/test_v4_research_fixtures.py::test_duplicate_deal_ticket_deduplicated_across_positions
+FX-REORDERED-DEALS,API results time20 then time10,sorted time10 then time20,tickets 901 then 902,PASS,tests/test_v4_research_fixtures.py::test_reordered_deals_are_returned_chronologically
+FX-DELAYED-CLOSE,poll1 entry only; poll2 entry+close,close visible on second poll,close ticket 902 visible on second poll,PASS,tests/test_v4_research_fixtures.py::test_delayed_close_available_on_later_poll
+FX-DEAL-QUERY-ARGUMENTS,tracked order101 resolves position501,history_deals_get gets position=501 and never ticket=101,custom fake rejects every kwargs shape except position; exactly position=501 observed,PASS,tests/test_v4_research_fixtures.py::test_symbol_and_id_mismatches_filtered_and_ids_not_conflated
+FX-LOG-GATE,repeat identical failure then success then recurrence,first log only; reset after success,first allowed second suppressed after success allowed,PASS,tests/test_v4_research_fixtures.py::test_failed_query_log_gate_suppression
+FX-OHLC-AMBIGUOUS,same bar touches SL and TP and crosses trail activation,do not assign optimistic outcome,ambiguous true; gross_R null,PASS,tests/test_v4_research_fixtures.py::test_ohlc_same_bar_stop_tp_and_trail_path_are_ambiguous
+FX-GAP-CENSOR,timestamp gap while position remains unresolved,do not interpolate; censor trade,one censored trade,PASS,tests/test_v4_research_fixtures.py::test_timestamp_gap_censors_position_instead_of_interpolation
+FX-PENDING-EXPIRY,isolated state restart/pending TTL/cancel/retry fixture,deterministic without live MT5,NOT_TESTED,NOT_TESTED,No copied baseline pending expiry module/tests and no cancellation behavior was invoked in research worktree
+FX-ORDER-FILL-CANCEL-REJECT,full partial-fill/cancel/reject lifecycle fixture,broker state transition coverage,NOT_TESTED,NOT_TESTED,No live API; isolated full state-machine synthetic harness not implemented in this limited diagnostic
+FX-RESTART-RECOVERY,state plus event replay reconstruction,recover without duplicate processing,NOT_TESTED,NOT_TESTED,No synthetic snapshot/recovery contract executed
+FX-TELEGRAM-DUPLICATE,send success crash before state save,document exactly-once behavior,NOT_TESTED,NOT_TESTED,External delivery cannot be tested offline; source indicates retry may duplicate across crash
+FX-HISTORY-RETRY,lifecycle query failure then successful retry,process deal lifecycle after later recovery,NOT_TESTED,NOT_TESTED,helper unit covers delayed availability; wrapper retry/recovery integration not executed
+FX-CLOCK-BASIS,UTC/server timestamp with offset changes,expiry fail-closed under mismatch,NOT_TESTED,NOT_TESTED,No pending live clock API queried; only source inspection

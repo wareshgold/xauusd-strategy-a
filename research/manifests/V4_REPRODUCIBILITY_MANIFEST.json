@@ -1,0 +1,460 @@
+{
+  "schema": "v4-research-reproducibility-manifest-v1",
+  "test_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+  "generated_at_utc": "2026-10-28T07:10:17.211752+00:00",
+  "worktree": "D:\\Mirzaei\\Private\\1\\xauusd-strategy-v4-research-20261028",
+  "git": {
+    "branch": "research/strategy-v4-xauusd-20261028",
+    "head": "dac76b09da01f022d745f51328ee703f6fb59851",
+    "remote": "https://github.com/wareshgold/xauusd-strategy-a.git",
+    "status": "research deliverables/test untracked; no files staged or committed"
+  },
+  "run": {
+    "actual_replay_timestamp_utc": "2026-10-28T06:48:03.585069+00:00",
+    "nominal_id_timestamp": "20261028T120000Z",
+    "status": "BLOCKED",
+    "candidate": "TP1R/no-trailing hypothesis vs V3 RR2/TRAIL4 research proxy"
+  },
+  "runtime": {
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.22000-SP0",
+    "python_executable": "C:\\Users\\Mr.Mirzaei\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "seed": 20261028,
+    "bootstrap_resamples": 2000,
+    "mt5_terminal_build": "NOT_CAPTURED",
+    "dependency_lock_hash": "NOT_CAPTURED"
+  },
+  "runner_helper_hashes": {
+    "runner": "0fe5b67d33bc93d9a7244c79b951f91e9a00a616960c2ad6dfd4e292611dc873",
+    "helper": "86eda557b8982a5aa45a30159a20c1c44eeeb18f4889f0fe5e9870d8d51337725"
+  },
+  "data_integrity": [
+    {
+      "dataset": "development_month_2026-07",
+      "actual_sha256": "0215c22898ac5b867bd51096cbbe59e50d0623597eb64aa56d9937c9088f4936",
+      "declared_sha256": "482991df85c7143077ef3713c81f3c5ae14ae12311f6c03e3579f27f8048e34e",
+      "status": "FAIL"
+    },
+    {
+      "dataset": "validation_month_2026-08",
+      "actual_sha256": "c7bac957eba4e4c2b8606c19913b25dec7b6c71adcda7fbfac3992d362c8eac7",
+      "declared_sha256": "8d9f4d9a82ff2fcbedfc8221ef62da1b4c518d037a000f09b8ec888077ca4a87",
+      "status": "FAIL"
+    },
+    {
+      "dataset": "fresh_holdout_available_2026-09",
+      "actual_sha256": "1bb2dcdc163e13fa08487c5d7a68905325e9be50104a57aedbe0bbde7055f1d4",
+      "declared_sha256": "3b7212dc43f844807da120d89e6cbae9f63def4943fefdb003c54d630467cc2b",
+      "status": "FAIL"
+    }
+  ],
+  "verification": {
+    "pytest_command": "python -m pytest -q tests/test_v4_research_fixtures.py",
+    "pytest_exit_code": 0,
+    "pytest_passed": 13,
+    "pytest_failed": 0,
+    "matrix_rows": 8,
+    "matrix_status_counts": {
+      "PASS": 0,
+      "FAIL": 0,
+      "BLOCKED": 8,
+      "UNRESOLVED": 0,
+      "NOT_TESTED": 0
+    },
+    "fixture_inventory_rows": 22,
+    "fixture_inventory_pass": 16,
+    "fixture_inventory_fail": 0,
+    "fixture_inventory_not_executed": 6,
+    "coverage_rows": 9,
+    "coverage_status_counts": {
+      "PASS": 0,
+      "FAIL": 0,
+      "BLOCKED": 8,
+      "UNRESOLVED": 1,
+      "NOT_TESTED": 0
+    }
+  },
+  "commands": [
+    {
+      "command": "python -m pytest -q tests/test_v4_research_fixtures.py",
+      "exit_code": 0,
+      "result": "13 passed"
+    },
+    {
+      "command": "python research/tools/run_v4_research.py (initial attempt)",
+      "exit_code": 1,
+      "result": "dict-as-key error; corrected in research harness"
+    },
+    {
+      "command": "offline replay generation",
+      "exit_code": "NOT_CAPTURED",
+      "result": "artifacts exist; summary is BLOCKED; do not claim command exit success"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "research/backtests/SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z_run_summary.json",
+      "sha256": "36bcce7bb4eb181e0f4d7e602ea3710604d0d808e3b28b1ffd60e806193122bd",
+      "size_bytes": 18618,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:48:04.621792+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/backtests/SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z_trades.csv",
+      "sha256": "c3e5622af4aae480db7b36c8db7599ea9b91397cbb1408b0d6183da64bde3967",
+      "size_bytes": 1688272,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:48:04.621792+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/backtests/V4_BACKTEST_MATRIX.csv",
+      "sha256": "56f5341de5a5ca41c16193d4d106bd4e343513d82327ab57e1c9a349bc97b7a5",
+      "size_bytes": 16644,
+      "generated_or_observed_mtime_utc": "2026-10-28T07:04:55.975972+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/backtests/v4_parameter_sensitivity_NOT_TESTED.csv",
+      "sha256": "3b814c7c9d8d840994a4eb5dd14339bff11b879531140abe0d0cfbba5074cf52",
+      "size_bytes": 1816,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:51:19.619849+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/baseline/V4_BASELINE_MANIFEST.json",
+      "sha256": "a7db1600599a79981166c6a7a78d4e4dcd6d30064f22502af29f7cc8df921f3f",
+      "size_bytes": 6469,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:54:49.034175+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/design/V4_DESIGN_FREEZE.md",
+      "sha256": "f2ee132e1a30645e0da36a0f0c8ac95c444612af88b9bfc2de48938ad4ce9d74",
+      "size_bytes": 5093,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:45:54.634758+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/holdout/V4_HOLDOUT_REPORT.md",
+      "sha256": "ecc88aa648d5bee7a120fbae3195a8fbc991fa92932fab651c04480ed30c9aba",
+      "size_bytes": 1986,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:54:49.002454+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/manifests/original_history_snapshot_20261028_085035/forward_events.jsonl",
+      "sha256": "dc0b5ef20bfb61987095fc9f87095fbd85bbfe261705a2fbf64aa3533fac69a0",
+      "size_bytes": 11448573,
+      "generated_or_observed_mtime_utc": "2026-10-28T02:27:02.246297+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/manifests/original_history_snapshot_20261028_085035/forward_state.json",
+      "sha256": "c21fe21cf7d30b346ae75d41d28340f4ff0afb639854c343c9f3e8d624c1058c",
+      "size_bytes": 7341,
+      "generated_or_observed_mtime_utc": "2026-10-28T05:20:34.607274+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/manifests/original_history_snapshot_20261028_085035/manifest.json",
+      "sha256": "dfe9671d5e7005c837bd6b75796fbab97485d1dc0f8833d32b8009adaa7f7568",
+      "size_bytes": 8001,
+      "generated_or_observed_mtime_utc": "2026-10-28T05:20:36.485568+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/manifests/original_history_snapshot_20261028_085035/mt5_history_matrix_results.json",
+      "sha256": "28640173377a4fe32fddcc29cf0618a09e2470de2f9f129755d16aee9b4459ff",
+      "size_bytes": 7240,
+      "generated_or_observed_mtime_utc": "2026-10-28T05:28:38.642148+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/manifests/original_history_snapshot_20261028_085035/runner_worktree_diff.txt",
+      "sha256": "77ac0dcfff74f80d4df01c0f0a2ee8c1489df7275cc9779bc13bd1c3e9056af5",
+      "size_bytes": 17751,
+      "generated_or_observed_mtime_utc": "2026-10-28T05:20:36.534941+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/manifests/original_history_snapshot_20261028_085035/tracked_deals_helper_live_test.json",
+      "sha256": "c4a2e936d9fb4f2856325e6ebca8f2bbb8fb5e574d92112b22de8ac4395f435b",
+      "size_bytes": 2492,
+      "generated_or_observed_mtime_utc": "2026-10-28T05:33:37.042385+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/matrix/V4_BACKTEST_MATRIX.csv",
+      "sha256": "56f5341de5a5ca41c16193d4d106bd4e343513d82327ab57e1c9a349bc97b7a5",
+      "size_bytes": 16644,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:48:04.519151+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/matrix/V4_BACKTEST_MATRIX.xlsx",
+      "sha256": "d27f655a57c5b0b244b50ef911c605eabfb5329fe4b37d85cf40be4c77b6d427",
+      "size_bytes": 470121,
+      "generated_or_observed_mtime_utc": "2026-10-28T07:10:16.810054+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/matrix/V4_REQUIREMENT_COVERAGE_MATRIX.csv",
+      "sha256": "ba0a4b6207493792ef9815771224c8997d0029d1e11903aaa7c8e39f76916285",
+      "size_bytes": 4166,
+      "generated_or_observed_mtime_utc": "2026-10-28T07:06:22.889401+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/reports/V4_RESEARCH_EXECUTIVE_REPORT.md",
+      "sha256": "5ba66018e0af325357e14e19193c054cf530984c335e6be01a3b3a624590917e",
+      "size_bytes": 4534,
+      "generated_or_observed_mtime_utc": "2026-10-28T07:10:16.823652+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/runtime_audit/event_type_counts.csv",
+      "sha256": "9d9501ef656831ab11a07f74368660d1ec46fd7787b7c9572818f092c0157cd4",
+      "size_bytes": 493,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:53:40.850134+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/runtime_audit/raw_event_summary.json",
+      "sha256": "39c0ce383ecca100d8f999fabc0a4e153c5093d004be46dcc519036a3a27dfa9",
+      "size_bytes": 3302,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:45:54.674763+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/runtime_audit/V4_RUNTIME_AND_HISTORY_AUDIT.md",
+      "sha256": "fa799f3130ff7df3b72c494c243a86b4146f7462f05aab0083e767d9a7c2cc92",
+      "size_bytes": 10666,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:54:48.975382+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/observed_disk/artifacts/forward-test/SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl",
+      "sha256": "dc0b5ef20bfb61987095fc9f87095fbd85bbfe261705a2fbf64aa3533fac69a0",
+      "size_bytes": 11448573,
+      "generated_or_observed_mtime_utc": "2026-10-28T02:27:02.246297+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/observed_disk/runtime/sp2l_v3_xauusd_rr2_trail4_forward_state.json",
+      "sha256": "c21fe21cf7d30b346ae75d41d28340f4ff0afb639854c343c9f3e8d624c1058c",
+      "size_bytes": 7341,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:31:46.479892+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/observed_disk/scripts/run_sp2l_author_replica_multi_symbol_forward_test.py",
+      "sha256": "238ae453292ba4cdfea64e463a0bc93d76040721cd8709df5fba84da725ebdd5",
+      "size_bytes": 61796,
+      "generated_or_observed_mtime_utc": "2026-10-14T11:46:48.051780+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/observed_disk/scripts/run_sp2l_v3_xauusd_forward_test.py",
+      "sha256": "0fe5b67d33bc93d9a7244c79b951f91e9a00a616960c2ad6dfd4e292611dc873",
+      "size_bytes": 24469,
+      "generated_or_observed_mtime_utc": "2026-10-15T09:24:20.820469+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/observed_disk/scripts/sp2l_history_query_failure_log.py",
+      "sha256": "aace1f4b684b5613ff95534856882e28744c343cbaab5ce0995abe4d9dbe2bfd",
+      "size_bytes": 903,
+      "generated_or_observed_mtime_utc": "2026-10-15T09:10:30.450323+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/observed_disk/scripts/sp2l_tracked_deal_history.py",
+      "sha256": "86eda557b8982a5aa45a30159a20c1c44eeb18f4889f0fe5e9870d8d51337725",
+      "size_bytes": 3841,
+      "generated_or_observed_mtime_utc": "2026-10-15T09:10:30.356577+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/observed_disk/scripts/sp2l_v3_rr2_trail4_config.py",
+      "sha256": "f70b0dcc4c50e6d95ffac2e39afb1ca044830027feacfc1d1e21ecdad40e24e8",
+      "size_bytes": 4284,
+      "generated_or_observed_mtime_utc": "2026-10-08T05:14:06.444364+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/V4_SOURCE_RULE_REGISTER.csv",
+      "sha256": "0fc0fb18138a4b7277269d9560af985f1ac82d6254f4003e46ca8c55e0a1eab1",
+      "size_bytes": 7369,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:45:54.647655+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/source_audit/V4_SYNTHETIC_FIXTURE_RESULTS.csv",
+      "sha256": "227796a7c7f504aadc0709b836fa397c72e1934d688111311525c2045c008fe5",
+      "size_bytes": 4728,
+      "generated_or_observed_mtime_utc": "2026-10-28T07:06:22.889401+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/tools/finalize_v4_delivery.py",
+      "sha256": "871141209a0133efeca0e318a2820275fe804f22b21a77f7d28b4985ece9a71e",
+      "size_bytes": 15000,
+      "generated_or_observed_mtime_utc": "2026-10-28T07:04:12.694999+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/tools/run_v4_research.py",
+      "sha256": "1fd19473a0ea97d9e40addf244b79543e5f180c469e1af9e158b87461fd0927e",
+      "size_bytes": 27177,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:48:03.468056+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/validation/V4_BLOCKERS_AND_UNRESOLVED.md",
+      "sha256": "d5f4279f4de234d4845cea8ef5fc495fc14b20654495cc0e39938876191c68a8",
+      "size_bytes": 4671,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:54:49.002454+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    },
+    {
+      "path": "research/validation/V4_STATISTICAL_VALIDATION.md",
+      "sha256": "5b11d638b86dfb515c7a304e84ac8809f792def712c17057ca222dfa3705c52e",
+      "size_bytes": 6058,
+      "generated_or_observed_mtime_utc": "2026-10-28T06:54:48.992839+00:00",
+      "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z",
+      "inputs": [
+        "base commit dac76b09da01f022d745f51328ee703f6fb59851",
+        "captured source snapshot; acquired M1 CSVs/manifests for replay"
+      ]
+    }
+  ],
+  "self_hash_note": "Manifest and handoff excluded from embedded inventory to avoid recursive hash; final message supplies their SHA256."
+}
