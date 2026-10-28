@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import pytest
 
 from strategy_factory.forward_gate_factory import ForwardGateError
@@ -63,6 +64,26 @@ def test_holdout_to_forward_rejects_invalid_holdout_identity(tmp_path, mutation,
     with pytest.raises(ForwardPreparationError, match=message):
         prepare_holdout_to_forward(**kwargs)
 
+
+
+def test_persisted_journal_snapshot_hash_is_bound_to_exact_read_only_bytes(tmp_path):
+    holdout, context, _events = _prepared(tmp_path)
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+
+    details = result.gate.gate.details
+    assert details["source_event_ledger_source"] == "persisted_jsonl"
+    assert details["source_event_ledger_path"] == str(journal_path)
+    byte_size = details["source_event_ledger_byte_size"]
+    final_bytes = journal_path.read_bytes()
+    # The forward handoff event is appended after the gate. The exact prefix
+    # audited by the gate must still be byte-for-byte present in the journal.
+    audited_bytes = final_bytes[:byte_size]
+    assert hashlib.sha256(audited_bytes).hexdigest() == details["source_event_ledger_sha256"]
+    assert details["source_event_ledger_event_count"] == 1
+    assert b"\\n" in audited_bytes
 
 def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     holdout, context, events = _prepared(tmp_path)
