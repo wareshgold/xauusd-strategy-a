@@ -144,6 +144,11 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
                 raise AuditError("CSV header does not match the required schema")
             for line_number, row in enumerate(reader, start=2):
                 rows += 1
+                # DictReader stores surplus CSV cells under the None key and
+                # missing cells as None values. Reject either shape explicitly
+                # rather than silently auditing a partial/over-wide row.
+                if None in row or any(row.get(field) is None for field in EXPECTED_HEADER):
+                    raise AuditError(f"CSV row {line_number} does not match the required column count")
                 try:
                     timestamp_ms = int(row["time_msc"])
                     bid = float(row["bid"])
