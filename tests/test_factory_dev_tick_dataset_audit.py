@@ -164,3 +164,65 @@ def test_observed_tick_outside_half_open_interval_is_rejected(tmp_path, outside_
     with pytest.raises(AuditError, match="declared-interval"):
         audit_dataset(dataset, manifest)
 
+
+
+def rewrite_fixture(dataset: Path, manifest_path: Path, rows):
+    import csv
+
+    with gzip.open(dataset, "wt", encoding="utf-8", newline="") as stream:
+        writer = csv.writer(stream, lineterminator="\\n")
+        writer.writerow(["time_msc", "time_utc", "bid", "ask", "last", "volume", "flags"])
+        writer.writerows(rows)
+
+    compressed = dataset.read_bytes()
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    payload["artifact_sha256"] = hashlib.sha256(compressed).hexdigest()
+    payload["artifact_size_bytes"] = len(compressed)
+    payload["tick_count"] = len(rows)
+    manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def read_fixture_rows(dataset: Path):
+    import csv
+
+    with gzip.open(dataset, "rt", encoding="utf-8", newline="") as stream:
+        return list(csv.reader(stream))[1:]
+
+
+def test_timestamp_text_mismatch_is_rejected(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    rows = read_fixture_rows(dataset)
+    rows[0][1] = "2026-08-21T01:00:05.865Z"
+    rewrite_fixture(dataset, manifest, rows)
+
+    with pytest.raises(AuditError, match="timestamp consistency"):
+        audit_dataset(dataset, manifest)
+
+
+def test_out_of_order_source_rows_are_rejected(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    rows = read_fixture_rows(dataset)
+    rewrite_fixture(dataset, manifest, [rows[0], rows[2], rows[1]])
+
+    with pytest.raises(AuditError, match="nondecreasing timestamp order"):
+        audit_dataset(dataset, manifest)
+
+
+def test_non_finite_numeric_values_are_rejected(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    rows = read_fixture_rows(dataset)
+    rows[1][2] = "nan"
+    rewrite_fixture(dataset, manifest, rows)
+
+    with pytest.raises(AuditError, match="numeric, timestamp consistency"):
+        audit_dataset(dataset, manifest)
+
+
+def test_receipt_cannot_overwrite_dataset_input(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    original = dataset.read_bytes()
+
+    with pytest.raises(AuditError, match="cannot overwrite either input"):
+        write_receipt(dataset, manifest, dataset)
+
+    assert dataset.read_bytes() == original
