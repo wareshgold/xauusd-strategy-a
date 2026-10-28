@@ -129,3 +129,36 @@ def test_crossed_quote_is_rejected(tmp_path):
 
     with pytest.raises(AuditError, match="Bid/Ask"):
         audit_dataset(dataset, manifest)
+
+@pytest.mark.parametrize(
+    "outside_timestamp",
+    [
+        "2026-08-20T23:59:59.999Z",
+        "2026-09-19T00:00:00.000Z",
+    ],
+)
+def test_observed_tick_outside_half_open_interval_is_rejected(tmp_path, outside_timestamp):
+    from datetime import datetime
+
+    dataset, manifest = make_inputs(tmp_path)
+    with gzip.open(dataset, "rt", encoding="utf-8", newline="") as stream:
+        import csv
+        reader = csv.reader(stream)
+        rows = list(reader)
+    parsed = datetime.fromisoformat(outside_timestamp.replace("Z", "+00:00"))
+    rows[1][0] = str(int(parsed.timestamp() * 1000))
+    rows[1][1] = outside_timestamp
+    with gzip.open(dataset, "wt", encoding="utf-8", newline="") as stream:
+        import csv
+        writer = csv.writer(stream, lineterminator="\\n")
+        writer.writerows(rows)
+
+    compressed = dataset.read_bytes()
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    payload["artifact_sha256"] = hashlib.sha256(compressed).hexdigest()
+    payload["artifact_size_bytes"] = len(compressed)
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(AuditError, match="declared-interval"):
+        audit_dataset(dataset, manifest)
+\n
