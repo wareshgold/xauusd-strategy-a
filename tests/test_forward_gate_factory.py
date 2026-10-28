@@ -282,3 +282,37 @@ def test_forward_gate_rejects_non_hex_forward_dataset_sha(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "g" * 64,
             )
         )
+
+
+
+def test_handoff_rejects_duplicate_completed_events_for_source_station(tmp_path):
+    from strategy_factory.handoff import ResearchHandoffError, build_research_handoff
+
+    snapshot, record, original_event, _handoff = _fixture(tmp_path)
+    events = FactoryJobEventLedger(path=None)
+    for _ in range(2):
+        events.append(
+            event_type="COMPLETED",
+            job_id=record.run_id,
+            job_fingerprint=original_event.job_fingerprint,
+            worker_id="worker",
+            station="holdout",
+            phase="FRESH_HOLDOUT",
+            detail="synthetic duplicate completion",
+            output_artifact=record.evidence_id,
+            research_run_fingerprint=record.run_fingerprint,
+        )
+
+    before = events.entries()
+    with pytest.raises(ResearchHandoffError, match="duplicate completion events"):
+        build_research_handoff(
+            events=events,
+            job_id=record.run_id,
+            source_station="holdout",
+            destination_station="forward",
+            record=record,
+            dataset_content_sha256="a" * 64,
+            dataset_artifact_id="HOLDOUT-ARTIFACT-SYNTHETIC",
+        )
+
+    assert events.entries() == before
