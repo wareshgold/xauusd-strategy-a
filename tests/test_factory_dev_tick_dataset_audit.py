@@ -161,4 +161,4 @@ def test_observed_tick_outside_half_open_interval_is_rejected(tmp_path, outside_
 
     with pytest.raises(AuditError, match="declared-interval"):
         audit_dataset(dataset, manifest)
-\n
+
