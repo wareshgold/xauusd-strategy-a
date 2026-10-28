@@ -45,6 +45,7 @@ class ForwardGateContext:
     strategy_revision_frozen: bool = True
     post_holdout_tuning: bool = False
     holdout_result: HoldoutFactoryResult | None = None
+    source_event_ledger_snapshot: tuple[FactoryJobEvent, ...] | None = None
 
 
 @dataclass(frozen=True)
@@ -159,6 +160,40 @@ class ForwardGateFactory:
         ):
             raise ForwardGateError(
                 "Holdout source event does not bind to the completed Holdout run and evidence"
+            )
+
+        # A single event object cannot prove that no competing completion
+        # exists elsewhere in the lifecycle ledger. Require the immutable
+        # tuple snapshot and validate the entire sequence before trusting it.
+        ledger_snapshot = context.source_event_ledger_snapshot
+        if ledger_snapshot is None:
+            raise ForwardGateError(
+                "Forward gate requires a validated source event ledger snapshot"
+            )
+        try:
+            for expected_sequence, ledger_event in enumerate(ledger_snapshot, start=1):
+                ledger_event.validate()
+                if ledger_event.sequence != expected_sequence:
+                    raise ValueError("event sequence is not contiguous")
+        except (AttributeError, TypeError, ValueError) as exc:
+            raise ForwardGateError(
+                "source event ledger snapshot is invalid; manual reconciliation required"
+            ) from exc
+        matching_events = [
+            item for item in ledger_snapshot
+            if item.job_id == holdout_result.job.job_id
+            and item.station == "holdout"
+        ]
+        completed_events = [
+            item for item in matching_events if item.event_type == "COMPLETED"
+        ]
+        if len(completed_events) != 1 or completed_events[0] != context.source_event:
+            raise ForwardGateError(
+                "source event ledger snapshot does not prove exactly one matching Holdout completion"
+            )
+        if any(item.event_type == "FAILED" for item in matching_events):
+            raise ForwardGateError(
+                "source event ledger snapshot contains conflicting Holdout terminal events"
             )
 
         validate_evidence_bound_handoff(
