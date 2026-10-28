@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,7 @@ from strategy_factory.forward_gate_factory import (
 )
 from strategy_factory.job_events import FactoryJobEventLedger
 from strategy_factory.handoff import build_research_handoff
+from strategy_factory.holdout_factory import HoldoutFactoryResult
 from strategy_factory.test_contract import DatasetRole
 
 
@@ -161,7 +163,12 @@ def _fixture(tmp_path: Path):
         dataset_content_sha256=sha,
         dataset_artifact_id=artifact.artifact_id,
     )
-    return snapshot, record, event, handoff
+    holdout_result = HoldoutFactoryResult(
+        job=job,
+        result=result,
+        holdout_dataset_content_sha256=sha,
+    )
+    return snapshot, record, event, handoff, holdout_result
 
 
 def _resign_snapshot(snapshot, **changes):
@@ -180,7 +187,7 @@ def _resign_snapshot(snapshot, **changes):
 
 
 def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
-    snapshot, record, event, handoff = _fixture(tmp_path)
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
     context = ForwardGateContext(
         manifest_revision="MANIFEST",
         readiness_snapshot=snapshot,
@@ -191,6 +198,7 @@ def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
         forward_dataset_id="MT5-FORWARD-001",
         forward_dataset_artifact_id="MT5-FORWARD-ARTIFACT-001",
         forward_dataset_content_sha256="d" * 64,
+        holdout_result=holdout_result,
     )
     result = ForwardGateFactory().prepare(context)
     assert result.passed
@@ -198,7 +206,7 @@ def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
 
 
 def test_forward_gate_rejects_wrong_route(tmp_path):
-    snapshot, record, event, handoff = _fixture(tmp_path)
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
     bad = type(handoff)(
         **{**handoff.as_dict(include_fingerprint=False),
            "source_station": "robustness",
@@ -207,45 +215,48 @@ def test_forward_gate_rejects_wrong_route(tmp_path):
     with pytest.raises(Exception):
         ForwardGateFactory().prepare(
             ForwardGateContext("MANIFEST", snapshot, bad, record, event,
-                                "FWD", "FWD-DATA", "FWD-ART", "d" * 64)
+                                "FWD", "FWD-DATA", "FWD-ART", "d" * 64, holdout_result=holdout_result)
         )
 
 
 def test_forward_gate_rejects_post_holdout_tuning(tmp_path):
-    snapshot, record, event, handoff = _fixture(tmp_path)
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
     with pytest.raises(ForwardGateError, match="post-holdout"):
         ForwardGateFactory().prepare(
             ForwardGateContext("MANIFEST", snapshot, handoff, record, event,
                                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=holdout_result,
                                 post_holdout_tuning=True)
         )
 
 
 def test_forward_gate_rejects_reused_holdout_identity(tmp_path):
-    snapshot, record, event, handoff = _fixture(tmp_path)
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
     with pytest.raises(ForwardGateError, match="differ"):
         ForwardGateFactory().prepare(
             ForwardGateContext(
                 "MANIFEST", snapshot, handoff, record, event,
                 "FWD", record.dataset_id, "MT5-HOLDOUT-ARTIFACT-001", 
                 handoff.dataset_content_sha256,
+                holdout_result=holdout_result,
             )
         )
 
 
 def test_forward_gate_rejects_unfrozen_strategy(tmp_path):
-    snapshot, record, event, handoff = _fixture(tmp_path)
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
     with pytest.raises(ForwardGateError, match="frozen"):
         ForwardGateFactory().prepare(
             ForwardGateContext("MANIFEST", snapshot, handoff, record, event,
                                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=holdout_result,
                                 strategy_revision_frozen=False)
         )
 
 
 
 def test_forward_gate_rejects_snapshot_manifest_revision_drift(tmp_path):
-    snapshot, record, event, handoff = _fixture(tmp_path)
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
     drifted = _resign_snapshot(snapshot, manifest_revision="MANIFEST-DRIFT")
 
     with pytest.raises(ForwardGateError, match="manifest_revision.*snapshot"):
@@ -253,12 +264,13 @@ def test_forward_gate_rejects_snapshot_manifest_revision_drift(tmp_path):
             ForwardGateContext(
                 "MANIFEST", drifted, handoff, record, event,
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=holdout_result,
             )
         )
 
 
 def test_forward_gate_rejects_snapshot_not_bound_to_holdout_record(tmp_path):
-    snapshot, record, event, handoff = _fixture(tmp_path)
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
     altered = _resign_snapshot(
         snapshot, source_readiness={"status": "BLOCKED", "audit_probe": "changed"}
     )
@@ -268,27 +280,93 @@ def test_forward_gate_rejects_snapshot_not_bound_to_holdout_record(tmp_path):
             ForwardGateContext(
                 "MANIFEST", altered, handoff, record, event,
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=holdout_result,
             )
         )
 
 
 def test_forward_gate_rejects_non_hex_forward_dataset_sha(tmp_path):
-    snapshot, record, event, handoff = _fixture(tmp_path)
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
 
     with pytest.raises(ForwardGateError, match="lowercase hexadecimal SHA-256"):
         ForwardGateFactory().prepare(
             ForwardGateContext(
                 "MANIFEST", snapshot, handoff, record, event,
                 "FWD", "FWD-DATA", "FWD-ART", "g" * 64,
+                holdout_result=holdout_result,
             )
         )
 
 
 
+
+def test_forward_gate_requires_independent_holdout_result_binding(tmp_path):
+    snapshot, record, event, handoff, _holdout_result = _fixture(tmp_path)
+    with pytest.raises(ForwardGateError, match="HoldoutFactoryResult binding"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+            )
+        )
+
+
+def test_forward_gate_rejects_holdout_result_record_mismatch(tmp_path):
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
+    result_with_other_record = replace(
+        holdout_result.result, record=replace(record, run_id="OTHER-RUN")
+    )
+    mismatched_result = replace(holdout_result, result=result_with_other_record)
+    with pytest.raises(ForwardGateError, match="does not match the Forward source record"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=mismatched_result,
+            )
+        )
+
+
+def test_forward_gate_rejects_holdout_handoff_sha_mismatch(tmp_path):
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
+    payload = handoff.as_dict(include_fingerprint=False)
+    payload["dataset_content_sha256"] = "e" * 64
+    fingerprint = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    ).hexdigest()
+    altered = replace(handoff, dataset_content_sha256="e" * 64, fingerprint=fingerprint)
+    with pytest.raises(ForwardGateError, match="independently observed Holdout result SHA"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, altered, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=holdout_result,
+            )
+        )
+
+
+def test_forward_gate_rejects_holdout_handoff_artifact_mismatch(tmp_path):
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
+    payload = handoff.as_dict(include_fingerprint=False)
+    payload["dataset_artifact_id"] = "OTHER-ARTIFACT"
+    fingerprint = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    ).hexdigest()
+    altered = replace(handoff, dataset_artifact_id="OTHER-ARTIFACT", fingerprint=fingerprint)
+    with pytest.raises(ForwardGateError, match="artifact id does not match"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, altered, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=holdout_result,
+            )
+        )
+
+
 def test_handoff_rejects_duplicate_completed_events_for_source_station(tmp_path):
     from strategy_factory.handoff import ResearchHandoffError, build_research_handoff
 
-    snapshot, record, original_event, _handoff = _fixture(tmp_path)
+    snapshot, record, original_event, _handoff, _holdout_result = _fixture(tmp_path)
     events = FactoryJobEventLedger(path=None)
     for _ in range(2):
         events.append(
