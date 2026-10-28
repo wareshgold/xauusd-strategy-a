@@ -232,7 +232,7 @@ def test_forward_gate_rejects_wrong_route(tmp_path):
     with pytest.raises(Exception):
         ForwardGateFactory().prepare(
             ForwardGateContext("MANIFEST", snapshot, bad, record, event,
-                                "FWD", "FWD-DATA", "FWD-ART", "d" * 64, holdout_result=holdout_result, source_event_ledger_snapshot=ledger_snapshot)
+                                "FWD", "FWD-DATA", "FWD-ART", "d" * 64, holdout_result=holdout_result, source_event_ledger_snapshot=ledger_snapshot, **_ledger_evidence(ledger_snapshot))
         )
 
 
@@ -469,6 +469,23 @@ def test_forward_gate_requires_event_ledger_snapshot(tmp_path):
                 "MANIFEST", snapshot, handoff, record, event,
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
+            )
+        )
+
+
+
+def test_forward_gate_requires_valid_byte_level_ledger_evidence(tmp_path):
+    snapshot, record, event, handoff, holdout_result, ledger_snapshot = _fixture(tmp_path)
+    with pytest.raises(ForwardGateError, match="byte-level event-ledger snapshot evidence"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=holdout_result,
+                source_event_ledger_snapshot=ledger_snapshot,
+                source_event_ledger_sha256="not-a-sha",
+                source_event_ledger_byte_size=12,
+                source_event_ledger_source="in_memory",
             )
         )
 
