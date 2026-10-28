@@ -136,6 +136,7 @@ def prepare_holdout_to_forward(
             forward_dataset_artifact_id=forward_dataset_artifact_id,
             forward_dataset_content_sha256=forward_dataset_content_sha256,
             strategy_revision_frozen=strategy_revision_frozen,
+            holdout_result=holdout_result,
             post_holdout_tuning=post_holdout_tuning,
         )
     )
