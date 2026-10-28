@@ -1,0 +1,77 @@
+{
+  "record_schema_version": 1,
+  "record_type": "DEVELOPMENT_DATASET_REGISTRATION_PROPOSAL",
+  "status": "PENDING_HUMAN_REVIEW_NOT_REGISTERED",
+  "decision_authority": "HUMAN_REVIEW_REQUIRED",
+  "dataset": {
+    "dataset_id": "xauusd-ecn-tick-bidask-20260821-20260919",
+    "role": "DEVELOPMENT",
+    "symbol": "XAUUSD.ecn",
+    "timeframe": "TICK_BID_ASK",
+    "interval_utc": {
+      "start_inclusive": "2026-08-21T00:00:00Z",
+      "end_exclusive": "2026-09-19T00:00:00Z"
+    },
+    "artifact": {
+      "filename": "xauusd-ecn-ticks-20260821_20260919.csv.gz",
+      "sha256": "412a535b8d5f0413f329e5fde8a1f851591ee83c95fc25af38b287d6170a1347",
+      "size_bytes": 111124585,
+      "row_count": 10817858,
+      "schema": ["time_msc", "time_utc", "bid", "ask", "last", "volume", "flags"]
+    },
+    "acquisition_manifest": {
+      "filename": "xauusd-ecn-ticks-20260821_20260919.manifest.json",
+      "observed_sha256": "3a3fce2df05ddb8bd904ec63647c258aa04fe1e7fd423b05e06a8920f8473669",
+      "provenance_status": "UNANCHORED_OBSERVED_DIGEST",
+      "note": "Digest was recorded by the local audit receipt; it has not been compared with an independent trusted digest, signature, or separately approved registry."
+    },
+    "audit_receipt": {
+      "sha256": "537879AC2A2D49C048EB6CAC82FB887757A91936AF4ECF0698898998B630D9AF",
+      "size_bytes": 2576,
+      "reported_status": "INTEGRITY_AND_BASIC_QUOTE_CHECKS_PASS",
+      "scope": "Prior local receipt for the fixed DEVELOPMENT artifact; rerun the updated audit after the interval-boundary fix before relying on its pass status."
+    }
+  },
+  "observed_quality_evidence": {
+    "adjacent_duplicate_timestamps": 12389,
+    "duplicate_timestamp_groups": 7429,
+    "duplicate_groups_with_different_bid_ask": 6895,
+    "adjacent_out_of_order_timestamps": 0,
+    "timestamp_parse_errors": 0,
+    "time_msc_time_utc_mismatches": 0,
+    "invalid_numeric_rows": 0,
+    "missing_or_nonpositive_bid_ask_rows": 0,
+    "crossed_quotes": 0,
+    "gaps_over_60_seconds": 20,
+    "last_zero_rows": 10817858,
+    "volume_zero_rows": 10817858,
+    "limitations": [
+      "Duplicate rows are preserved; they are not deduplicated or sorted.",
+      "Gap causes are not inferred.",
+      "Zero Last/Volume values are not interpreted as trade prints or traded volume.",
+      "Observed counts originate from the prior local receipt and must be reconfirmed with a new receipt after the updated audit is run."
+    ]
+  },
+  "isolation_and_usage": {
+    "raw_dataset_committed": false,
+    "raw_manifest_committed": false,
+    "fresh_holdout_read": false,
+    "authorized_for_strategy_backtests": false,
+    "authorizes_canonical_geometry": false,
+    "authorizes_execution_or_fill_semantics": false,
+    "authorizes_production_or_buy_sell_decisions": false
+  },
+  "review_checklist": [
+    "Verify artifact SHA-256, byte size, and row count against the local source artifact.",
+    "Rerun the updated audit and attach the newly generated receipt hash without overwriting earlier evidence.",
+    "Independently establish manifest provenance or explicitly accept it as unanchored acquisition metadata.",
+    "Review duplicate timestamp groups, gaps, and zero Last/Volume semantics.",
+    "Approve or reject DEVELOPMENT registration explicitly; this proposal itself is not registration."
+  ],
+  "gate_status": {
+    "gate_a": "PENDING_HUMAN_REGISTRATION_REVIEW",
+    "gate_b": "BLOCKED_SOURCE_GEOMETRY_UNRESOLVED",
+    "gate_c": "BLOCKED_ADAPTER_AND_EXECUTION_CONTRACT_REVIEW_REQUIRED",
+    "gate_d": "BLOCKED"
+  }
+}
