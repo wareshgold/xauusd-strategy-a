@@ -9,12 +9,14 @@ strategy geometry, tune parameters, or authorize production decisions.
 """
 
 from dataclasses import dataclass
+import hashlib
+import json
 
 from .forward_gate_factory import ForwardGateContext, ForwardGateFactory, ForwardGateResult
 from .forward_session_factory import DemoForwardSession, DemoForwardSessionFactory
 from .handoff import ResearchHandoff, build_research_handoff
 from .holdout_factory import HoldoutFactoryResult
-from .job_events import FactoryJobEvent, FactoryJobEventLedger
+from .job_events import FactoryJobEvent, FactoryJobEventLedger, inspect_job_journal_snapshot
 from .forward_session_factory import DemoForwardSessionResult
 
 
@@ -124,6 +126,34 @@ def prepare_holdout_to_forward(
         dataset_artifact_id=holdout_dataset_artifact_id,
     )
 
+    # Bind the exact event tuple used by the gate to byte-level snapshot
+    # evidence. Persisted journals are read once by the audit helper; no
+    # repair, normalization, or write is performed here.
+    ledger_snapshot = events.entries()
+    if events.path is not None:
+        journal_report, journal_events = inspect_job_journal_snapshot(events.path)
+        if journal_report.get("status") != "VALID" or journal_events is None:
+            raise ForwardPreparationError(
+                "persisted event journal is not valid; manual reconciliation required"
+            )
+        if journal_events != ledger_snapshot:
+            raise ForwardPreparationError(
+                "persisted event journal differs from the in-memory ledger snapshot; manual reconciliation required"
+            )
+        ledger_sha256 = journal_report.get("sha256")
+        ledger_byte_size = journal_report.get("byte_size")
+        ledger_source = "persisted_jsonl"
+        ledger_path = str(events.path)
+    else:
+        serialized_snapshot = "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            for event in ledger_snapshot
+        ).encode("utf-8")
+        ledger_sha256 = hashlib.sha256(serialized_snapshot).hexdigest()
+        ledger_byte_size = len(serialized_snapshot)
+        ledger_source = "in_memory"
+        ledger_path = None
+
     gate = ForwardGateFactory().prepare(
         ForwardGateContext(
             manifest_revision=manifest_revision,
@@ -137,7 +167,11 @@ def prepare_holdout_to_forward(
             forward_dataset_content_sha256=forward_dataset_content_sha256,
             strategy_revision_frozen=strategy_revision_frozen,
             holdout_result=holdout_result,
-            source_event_ledger_snapshot=events.entries(),
+            source_event_ledger_snapshot=ledger_snapshot,
+            source_event_ledger_sha256=ledger_sha256,
+            source_event_ledger_byte_size=ledger_byte_size,
+            source_event_ledger_source=ledger_source,
+            source_event_ledger_path=ledger_path,
             post_holdout_tuning=post_holdout_tuning,
         )
     )
