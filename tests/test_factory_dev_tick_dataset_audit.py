@@ -348,3 +348,11 @@ def test_submillisecond_utc_timestamp_is_rejected(tmp_path):
 
     with pytest.raises(AuditError, match="timestamp consistency"):
         audit_dataset(dataset, manifest)
+
+
+def test_empty_tick_dataset_is_rejected(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    rewrite_fixture(dataset, manifest, [])
+
+    with pytest.raises(AuditError, match="contains no tick rows"):
+        audit_dataset(dataset, manifest)
