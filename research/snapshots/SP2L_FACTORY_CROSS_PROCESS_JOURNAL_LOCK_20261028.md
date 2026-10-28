@@ -20,6 +20,7 @@
    - Added a stale-ledger test: a second ledger instance cannot append after another instance has advanced the persisted journal; the journal bytes remain unchanged.
    - Added a spawned cross-process test proving the second cooperating process cannot enter the journal critical section until the first releases the lock.
    - Added injected `fsync` failure tests: a failed append flush rolls bytes back to the prior boundary and does not commit in-memory state; if rollback `fsync` also fails, the code raises a manual-reconciliation error rather than claiming durable recovery.
+   - Added a persisted-journal end-to-end test that follows a synthetic fresh holdout through Forward Gate preparation, bound-forward lifecycle, and reconciliation while checking the exact audited journal prefix hash remains bound and production authorization stays false.
    - The lock-sentinel assertion is platform-specific: Windows requires the one-byte sentinel; POSIX `flock` permits an empty sidecar.
 
 3. `.github/workflows/factory-journal-lock.yml`
@@ -38,6 +39,8 @@
 - Platform-specific sentinel expectation: `d38d4493392962b3f13ec0b925a450be3b5483e4`
 - Corrected Windows sentinel literal: `0425204e8adebf1cb7edbe7a1f1d9e9211818552`
 - Append/rollback `fsync` fault-injection tests: `70219df91a63def7085c048c47254d912d8f1e96`
+- Persisted-journal Forward Gate to reconciliation E2E test: `88337ca01aded1b569012dcd7c0bc6e6ec7d47e6`
+- E2E assertion correction using the public runtime result contract: `feb26e65704b3b3364b6da1d6cc4f1216e0f028e`
 
 ## Verification
 
@@ -48,6 +51,8 @@
 - After correcting the assertion, matrix run `40663809519`: `journal-lock-tests (ubuntu-latest)` PASS and `journal-lock-tests (windows-latest)` PASS.
 - At corrected test commit `0425204e8adebf1cb7edbe7a1f1d9e9211818552`: Factory Research Tests PASS (run `40663809638`).
 - At fault-injection test commit `70219df91a63def7085c048c47254d912d8f1e96`: Factory Research Tests PASS (run `40665077614`); journal-lock/preparation matrix PASS on Ubuntu and Windows (run `40665077637`).
+- The first persisted-journal E2E attempt exposed a test-only assumption that the runtime result exposed its session object. The assertion was corrected to check the prepared session, which is the public contract.
+- At corrected E2E test commit `feb26e65704b3b3364b6da1d6cc4f1216e0f028e`: Factory Research Tests PASS (run `40665486537`); journal-lock/preparation matrix PASS on Ubuntu and Windows (run `40665486446`).
 - Verification is CI-based; no local test execution is claimed.
 
 ## Boundaries and remaining risk
