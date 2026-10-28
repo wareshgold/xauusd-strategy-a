@@ -263,7 +263,7 @@ def test_file_audit_flags_semantic_duplicate_terminal_without_mutating_journal(
     append(ledger, "COMPLETED", job_id="JOB-DUPLICATE-COMPLETED", worker_id="W01")
     path.write_text(
         "".join(
-            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
             for event in ledger.entries()
         ),
         encoding="utf-8",
