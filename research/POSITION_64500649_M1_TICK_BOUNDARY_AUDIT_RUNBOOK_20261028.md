@@ -33,9 +33,9 @@ The follow-up replay is implemented by `scripts/audit_trailing_entry_bar_contami
 Run from the repository root:
 
 ```powershell
-$py = "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe"
-$out = "artifacts\\research-audits\\position_64500649_entry_bar_trailing_replay.json"
-& $py scripts\\audit_trailing_entry_bar_contamination.py --output $out 2>&1 | Tee-Object -Variable replayOutput
+$py = "D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe"
+$out = "artifacts\research-audits\position_64500649_entry_bar_trailing_replay.json"
+& $py scripts\audit_trailing_entry_bar_contamination.py --output $out 2>&1 | Tee-Object -Variable replayOutput
 $replayOutput | Out-String | Set-Clipboard
 $replayOutput
 ```
