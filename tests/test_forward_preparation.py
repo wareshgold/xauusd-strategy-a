@@ -182,7 +182,7 @@ def test_journal_append_writes_real_jsonl_terminator(tmp_path):
     lock_path = tmp_path / "factory_job_events.jsonl.lock"
     if os.name == "nt":
         # Windows byte-range locking requires a one-byte lockable file.
-        assert lock_path.read_bytes() == b"\\0"
+        assert lock_path.read_bytes() == b"\0"
     else:
         # POSIX flock can lock an empty persistent sidecar file.
         assert lock_path.read_bytes() == b""
