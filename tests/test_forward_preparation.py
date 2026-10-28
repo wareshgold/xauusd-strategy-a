@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import multiprocessing
+from pathlib import Path
 import pytest
 
 from strategy_factory.forward_gate_factory import ForwardGateError
@@ -8,9 +10,16 @@ from strategy_factory.forward_preparation import (
     ForwardPreparationError,
     prepare_holdout_to_forward,
 )
-from strategy_factory.job_events import FactoryJobEventLedger
+from strategy_factory.job_events import FactoryJobEventLedger, _journal_write_lock
 
 from test_holdout_factory import _context
+
+
+def _lock_and_signal(path, acquired, release):
+    with _journal_write_lock(Path(path)):
+        acquired.set()
+        release.wait(5)
+
 
 
 def _prepared(tmp_path):
@@ -151,6 +160,76 @@ def test_valid_but_divergent_journal_snapshot_is_rejected_before_append(tmp_path
 
     assert journal_path.read_bytes() == divergent_bytes
     assert events.entries() == baseline_events
+
+
+def test_stale_ledger_writer_fails_closed_after_another_writer_appends(tmp_path):
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    first = FactoryJobEventLedger(path=journal_path)
+    stale = FactoryJobEventLedger(path=journal_path)
+
+    first.append(
+        event_type="QUEUED",
+        job_id="FIRST-JOB",
+        job_fingerprint="a" * 64,
+        detail="first cooperative writer",
+    )
+    before_stale_attempt = journal_path.read_bytes()
+
+    with pytest.raises(OSError, match="no longer matches the in-memory ledger"):
+        stale.append(
+            event_type="QUEUED",
+            job_id="STALE-JOB",
+            job_fingerprint="b" * 64,
+            detail="stale writer must not append",
+        )
+
+    assert journal_path.read_bytes() == before_stale_attempt
+    assert len(FactoryJobEventLedger(path=journal_path).entries()) == 1
+    assert (tmp_path / "factory_job_events.jsonl.lock").exists()
+
+
+def test_persisted_journal_lock_serializes_processes(tmp_path):
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    context = multiprocessing.get_context("spawn")
+    first_acquired = context.Event()
+    first_release = context.Event()
+    second_acquired = context.Event()
+    second_release = context.Event()
+    first = context.Process(
+        target=_lock_and_signal,
+        args=(str(journal_path), first_acquired, first_release),
+    )
+    second = context.Process(
+        target=_lock_and_signal,
+        args=(str(journal_path), second_acquired, second_release),
+    )
+
+    try:
+        first.start()
+        assert first_acquired.wait(5), "first process failed to acquire journal lock"
+        second.start()
+        assert not second_acquired.wait(0.25), (
+            "second process entered the journal critical section before lock release"
+        )
+        first_release.set()
+        assert second_acquired.wait(5), "second process did not acquire released journal lock"
+        second_release.set()
+    finally:
+        first_release.set()
+        second_release.set()
+        if first.is_alive():
+            first.join(5)
+        if second.is_alive():
+            second.join(5)
+        if first.is_alive():
+            first.terminate()
+            first.join(2)
+        if second.is_alive():
+            second.terminate()
+            second.join(2)
+
+    assert first.exitcode == 0
+    assert second.exitcode == 0
 
 def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
     holdout, context, _events = _prepared(tmp_path)
