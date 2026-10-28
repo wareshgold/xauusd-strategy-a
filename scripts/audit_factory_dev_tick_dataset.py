@@ -224,7 +224,7 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
         },
         "checks": {
             "manifest_size_match": True,
-            "manifest_sha256_match": True,
+            "manifest_stable_during_audit": True,
             "manifest_row_count_match": True,
             "gzip_csv_read": True,
             "expected_header": True,
