@@ -86,6 +86,35 @@ def test_persisted_journal_snapshot_hash_is_bound_to_exact_read_only_bytes(tmp_p
     assert b"\n" in audited_bytes
 
 
+
+def test_external_journal_corruption_is_rejected_before_any_append(tmp_path):
+    holdout, context, _unused_events = _prepared(tmp_path)
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+    events.append(
+        event_type="QUEUED",
+        job_id="UNRELATED-JOB",
+        job_fingerprint="a" * 64,
+        station="holdout",
+        phase="HOLDOUT",
+        detail="synthetic baseline",
+    )
+    baseline_events = events.entries()
+
+    # Simulate another process corrupting the file after this ledger was loaded.
+    with journal_path.open("ab") as handle:
+        handle.write(b"{\n")
+    corrupted_bytes = journal_path.read_bytes()
+
+    with pytest.raises(
+        ForwardPreparationError,
+        match="failed pre-append integrity validation",
+    ):
+        prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+
+    assert journal_path.read_bytes() == corrupted_bytes
+    assert events.entries() == baseline_events
+
 def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
     holdout, context, _events = _prepared(tmp_path)
     journal_path = tmp_path / "factory_job_events.jsonl"
