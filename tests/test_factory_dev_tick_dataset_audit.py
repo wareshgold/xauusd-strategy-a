@@ -274,3 +274,40 @@ def test_receipt_cannot_overwrite_manifest_input(tmp_path):
         write_receipt(dataset, manifest, manifest)
 
     assert manifest.read_bytes() == original
+
+
+def test_duplicate_group_summary_distinguishes_quote_changes_and_same_quotes(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    rows = read_fixture_rows(dataset)
+    rewrite_fixture(dataset, manifest, [rows[0], rows[1], rows[2], rows[2]])
+
+    receipt = audit_dataset(dataset, manifest)
+    checks = receipt["checks"]
+
+    assert checks["duplicate_timestamp_groups"] == 2
+    assert checks["duplicate_timestamp_groups_size_2"] == 2
+    assert checks["duplicate_timestamp_groups_size_3_plus"] == 0
+    assert checks["max_rows_in_timestamp_group"] == 2
+    assert checks["duplicate_groups_with_different_bid_ask"] == 1
+    assert checks["duplicate_groups_with_same_bid_ask"] == 1
+
+
+def test_duplicate_group_summary_reports_three_or_more_rows(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    rows = read_fixture_rows(dataset)
+    repeated_timestamp = rows[0][0]
+    repeated_time_text = rows[0][1]
+    rows[1][0] = repeated_timestamp
+    rows[1][1] = repeated_time_text
+    rows[2][0] = repeated_timestamp
+    rows[2][1] = repeated_time_text
+    rewrite_fixture(dataset, manifest, rows)
+
+    receipt = audit_dataset(dataset, manifest)
+    checks = receipt["checks"]
+
+    assert checks["duplicate_timestamp_groups"] == 1
+    assert checks["duplicate_timestamp_groups_size_2"] == 0
+    assert checks["duplicate_timestamp_groups_size_3_plus"] == 1
+    assert checks["max_rows_in_timestamp_group"] == 3
+    assert checks["duplicate_groups_with_different_bid_ask"] == 1
