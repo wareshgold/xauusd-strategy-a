@@ -58,6 +58,8 @@ def test_audit_is_read_only_and_records_duplicate_quote_changes(tmp_path):
     receipt = audit_dataset(dataset, manifest)
 
     assert receipt["audit_status"] == "INTEGRITY_AND_BASIC_QUOTE_CHECKS_PASS"
+    assert receipt["checks"]["manifest_stable_during_audit"] is True
+    assert "manifest_sha256_match" not in receipt["checks"]
     assert receipt["dataset"]["tick_count"] == 3
     assert receipt["checks"]["adjacent_duplicate_timestamps"] == 1
     assert receipt["checks"]["duplicate_timestamp_groups"] == 1
