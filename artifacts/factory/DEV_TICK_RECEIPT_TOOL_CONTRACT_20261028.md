@@ -40,8 +40,8 @@ The receipt directory is only created if absent; if the chosen receipt filename 
 
 The JSON receipt carries input identities, observed counts/checks, limitations, and gate statuses. Its successful status means only that the fixed artifact passes the encoded integrity and basic quote checks.
 
-- Gate A remains subject to review/registration; the receipt is evidence, not automatic approval.
-- Gate B remains blocked until executable geometry and semantics are source-confirmed.
+- Gate A is approved for limited DEVELOPMENT tooling use only. The receipt must explicitly retain `UNANCHORED_OBSERVED_DIGEST` provenance; the approval does not authenticate acquisition provenance or permit strategy-performance backtests.
+- Gate B remains blocked until executable geometry and semantics are source-confirmed. Strategy-performance backtests and Fresh Holdout use remain prohibited under the limited approval.
 - Gate C remains blocked until the adapter/execution contract and required synthetic/reproducibility tests are approved.
 - Gate D remains blocked until all prerequisite gates pass.
 
