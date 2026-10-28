@@ -52,8 +52,8 @@ def audit_entry_bar(
 
     if not (bar_start <= entry_time < bar_end):
         raise ValueError("The supplied M1 bar does not contain the entry timestamp")
-    if low_time >= entry_time:
-        raise ValueError("The supplied bar-low timestamp is not before entry")
+    if not (bar_start <= low_time < bar_end):
+        raise ValueError("The supplied bar-low timestamp is outside the supplied M1 bar")
     if post_min_time < entry_time:
         raise ValueError("The supplied post-entry minimum is before entry")
 
@@ -101,11 +101,21 @@ def audit_entry_bar(
             rejected_by_ask_guard_throughout_following_minute
         ),
         "interpretation": (
-            "The full entry-bar low passes the activation threshold only because its low "
-            "occurred before entry. Post-entry ticks do not pass the threshold. The derived "
-            "candidate SL is below every observed Ask in the following minute, so the runner's "
-            "SELL Ask-distance guard would skip the request throughout that observed minute. "
-            "This replay does not prove the runner's exact polling instant or broker state."
+            (
+                "The full entry-bar low passes the activation threshold even though its low "
+                "occurred before entry; post-entry ticks do not pass the threshold. "
+                if low_time < entry_time and full_bar_favorable >= threshold and post_entry_favorable < threshold
+                else "This fixture does not demonstrate pre-entry-low contamination. "
+            )
+            + (
+                "The derived candidate SL is at or below the minimum observed Ask plus broker "
+                "distance, so the SELL Ask-distance guard would reject it throughout the observed "
+                "following minute. "
+                if rejected_by_ask_guard_throughout_following_minute
+                else "The supplied following-minute minimum Ask does not show continuous rejection "
+                "by the SELL Ask-distance guard. "
+            )
+            + "This replay does not prove the runner's exact polling instant or broker state."
         ),
         "limitations": [
             "Incident-specific deterministic replay, not a canonical rule.",
