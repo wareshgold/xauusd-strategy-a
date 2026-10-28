@@ -85,6 +85,33 @@ def test_persisted_journal_snapshot_hash_is_bound_to_exact_read_only_bytes(tmp_p
     assert details["source_event_ledger_event_count"] == 1
     assert b"\n" in audited_bytes
 
+
+def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
+    holdout, context, _events = _prepared(tmp_path)
+    journal_path = tmp_path / "factory_job_events.jsonl"
+
+    class ExternallyCorruptedLedger(FactoryJobEventLedger):
+        corrupted_bytes = None
+        injected = False
+
+        def entries(self):
+            if self.path is not None and not self.injected:
+                with self.path.open("ab") as handle:
+                    handle.write(b"{\\n")
+                self.injected = True
+                self.corrupted_bytes = self.path.read_bytes()
+            return super().entries()
+
+    events = ExternallyCorruptedLedger(path=journal_path)
+    with pytest.raises(ForwardPreparationError, match="persisted event journal is not valid"):
+        prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+
+    assert events.corrupted_bytes is not None
+    assert journal_path.read_bytes() == events.corrupted_bytes
+    assert events.entries() == tuple(
+        event for event in events.entries()
+    )  # in-memory lifecycle is unchanged by the read-only rejection
+
 def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     holdout, context, events = _prepared(tmp_path)
     kwargs = _kwargs(holdout, context, events)
