@@ -39,7 +39,7 @@ def _journal_write_lock(path: Path) -> Iterator[None]:
             # Windows byte-range locking requires the target byte to exist.
             lock_file.seek(0, os.SEEK_END)
             if lock_file.tell() == 0:
-                lock_file.write(b"\\0")
+                lock_file.write(b"\0")
                 lock_file.flush()
             lock_file.seek(0)
             msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
@@ -354,7 +354,7 @@ class FactoryJobEventLedger:
                 original_size = self.path.stat().st_size if originally_exists else 0
                 serialized = (
                     json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":"))
-                    + "\\n"
+                    + "\n"
                 )
                 try:
                     with self.path.open("a", encoding="utf-8") as handle:
