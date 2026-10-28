@@ -246,3 +246,40 @@ def test_file_audit_fails_closed_on_unreadable_journal(
     assert report["findings"][0]["code"] == "JOURNAL_INTEGRITY_REVIEW_REQUIRED"
     assert report["automatic_action_performed"] is False
     assert original_read_bytes(path) == before
+
+
+
+def test_file_audit_flags_semantic_duplicate_terminal_without_mutating_journal(
+    tmp_path: Path,
+):
+    """Valid JSON, sequence and hashes do not make duplicate terminal events valid."""
+    import json
+
+    path = tmp_path / "semantic-conflict-factory-journal.jsonl"
+    ledger = FactoryJobEventLedger(path=None)
+    append(ledger, "QUEUED", job_id="JOB-DUPLICATE-COMPLETED")
+    append(ledger, "DISPATCHED", job_id="JOB-DUPLICATE-COMPLETED", worker_id="W01")
+    append(ledger, "COMPLETED", job_id="JOB-DUPLICATE-COMPLETED", worker_id="W01")
+    append(ledger, "COMPLETED", job_id="JOB-DUPLICATE-COMPLETED", worker_id="W01")
+    path.write_text(
+        "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            for event in ledger.entries()
+        ),
+        encoding="utf-8",
+    )
+    before = path.read_bytes()
+
+    report = inspect_worker_journal_file_consistency([], path)
+    repeated = inspect_worker_journal_file_consistency([], path)
+
+    assert report == repeated
+    assert report["journal_integrity"]["status"] == "VALID"
+    assert report["status"] == "REVIEW_REQUIRED"
+    assert any(
+        finding["code"] == "JOB_LIFECYCLE_CONFLICT"
+        and finding["job_id"] == "JOB-DUPLICATE-COMPLETED"
+        for finding in report["findings"]
+    )
+    assert report["automatic_action_performed"] is False
+    assert path.read_bytes() == before
