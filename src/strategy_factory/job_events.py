@@ -7,15 +7,55 @@ Factory transitions so the visual world can later follow real queue movement
 without inventing activity.
 """
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_JOB_EVENTS_FILE = ROOT / "runtime" / "factory_job_events.jsonl"
+
+
+@contextmanager
+def _journal_write_lock(path: Path) -> Iterator[None]:
+    """Serialize cooperating writers using an OS-backed persistent sidecar lock.
+
+    The sidecar is deliberately not deleted: unlinking a lock file can split
+    cooperating writers across different inodes. All writers must use this
+    helper; processes that ignore the sidecar are outside the coordination
+    contract.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = path.with_name(path.name + ".lock")
+    with lock_path.open("a+b") as lock_file:
+        if os.name == "nt":
+            import msvcrt
+
+            # Windows byte-range locking requires the target byte to exist.
+            lock_file.seek(0, os.SEEK_END)
+            if lock_file.tell() == 0:
+                lock_file.write(b"\\0")
+                lock_file.flush()
+            lock_file.seek(0)
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                lock_file.seek(0)
+                msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
 
 def _utc_now() -> str:
@@ -288,58 +328,62 @@ class FactoryJobEventLedger:
         event = FactoryJobEvent(**event.as_dict(include_fingerprint=False), event_fingerprint=fingerprint)
         event.validate()
         if self.path is not None:
-            # Fail closed before the first write if the persisted journal has
-            # drifted since this ledger was loaded. Never append onto corrupt,
-            # truncated, replaced, or otherwise divergent evidence.
-            if self.path.exists():
-                journal_report, journal_events = inspect_job_journal_snapshot(self.path)
-                if (
-                    journal_report.get("status") != "VALID"
-                    or journal_events is None
-                    or journal_events != tuple(self._events)
-                ):
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            # The lock spans both integrity preflight and append/rollback, so
+            # cooperating writers cannot race between validation and write.
+            with _journal_write_lock(self.path):
+                # Fail closed before the first write if the persisted journal
+                # has drifted since this ledger was loaded. Never repair it.
+                if self.path.exists():
+                    journal_report, journal_events = inspect_job_journal_snapshot(self.path)
+                    if (
+                        journal_report.get("status") != "VALID"
+                        or journal_events is None
+                        or journal_events != tuple(self._events)
+                    ):
+                        raise OSError(
+                            "factory job journal no longer matches the in-memory ledger; "
+                            "append refused and manual reconciliation required"
+                        )
+                elif self._events:
                     raise OSError(
-                        "factory job journal no longer matches the in-memory ledger; "
+                        "factory job journal is missing while the in-memory ledger is non-empty; "
                         "append refused and manual reconciliation required"
                     )
-            elif self._events:
-                raise OSError(
-                    "factory job journal is missing while the in-memory ledger is non-empty; "
-                    "append refused and manual reconciliation required"
+                originally_exists = self.path.exists()
+                original_size = self.path.stat().st_size if originally_exists else 0
+                serialized = (
+                    json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":"))
+                    + "\\n"
                 )
-            self.path.parent.mkdir(parents=True, exist_ok=True)
-            originally_exists = self.path.exists()
-            original_size = self.path.stat().st_size if originally_exists else 0
-            serialized = (
-                json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":"))
-                + "\n"
-            )
-            try:
-                with self.path.open("a", encoding="utf-8") as handle:
-                    handle.write(serialized)
-                    handle.flush()
-            except Exception as write_error:
-                # A failed write can leave a partial JSONL tail. Roll back to
-                # the pre-append byte boundary before allowing a retry.
                 try:
-                    with self.path.open("r+b") as rollback:
-                        rollback.truncate(original_size)
-                        rollback.flush()
-                except OSError as rollback_error:
-                    if not originally_exists:
-                        try:
-                            self.path.unlink(missing_ok=True)
-                        except OSError as unlink_error:
+                    with self.path.open("a", encoding="utf-8") as handle:
+                        handle.write(serialized)
+                        handle.flush()
+                        os.fsync(handle.fileno())
+                except Exception as write_error:
+                    # A failed write can leave a partial JSONL tail. Roll back
+                    # to the pre-append byte boundary while still holding lock.
+                    try:
+                        with self.path.open("r+b") as rollback:
+                            rollback.truncate(original_size)
+                            rollback.flush()
+                            os.fsync(rollback.fileno())
+                    except OSError as rollback_error:
+                        if not originally_exists:
+                            try:
+                                self.path.unlink(missing_ok=True)
+                            except OSError as unlink_error:
+                                raise OSError(
+                                    "factory job journal append failed and rollback failed; "
+                                    "manual reconciliation required"
+                                ) from unlink_error
+                        else:
                             raise OSError(
                                 "factory job journal append failed and rollback failed; "
                                 "manual reconciliation required"
-                            ) from unlink_error
-                    else:
-                        raise OSError(
-                            "factory job journal append failed and rollback failed; "
-                            "manual reconciliation required"
-                        ) from rollback_error
-                raise write_error
+                            ) from rollback_error
+                    raise write_error
         # Commit to in-memory state only after persistence succeeds.
         self._events.append(event)
         return event
