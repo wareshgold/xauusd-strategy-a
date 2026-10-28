@@ -41,6 +41,59 @@ def fetch_m1_rates(symbol, start, end):
     return bars[np.sort(idx)]
 
 
+
+def load_m1_csv(path, start, end):
+    """Load existing M1 CSV without connecting to or shutting down any MT5 terminal."""
+    rows = []
+    with Path(path).open("r", newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames:
+            raise RuntimeError("CSV has no header")
+        names = {name.strip().lower(): name for name in reader.fieldnames}
+        # MT5 exports in this repository use "timestamp"; native rate dumps use "time".
+        if "time" not in names and "timestamp" in names:
+            names["time"] = names["timestamp"]
+        required = {"time", "open", "high", "low", "close"}
+        missing = required - set(names)
+        if missing:
+            raise RuntimeError(f"CSV missing required columns: {sorted(missing)}")
+        start_ts, end_ts = int(start.timestamp()), int(end.timestamp())
+        for line_no, row in enumerate(reader, 2):
+            raw_time = (row.get(names["time"]) or "").strip()
+            try:
+                if raw_time.isdigit():
+                    ts = int(raw_time)
+                else:
+                    parsed = datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
+                    if parsed.tzinfo is None:
+                        raise ValueError("timestamp lacks timezone")
+                    ts = int(parsed.astimezone(timezone.utc).timestamp())
+                if not start_ts <= ts < end_ts:
+                    continue
+                vals = [float(row[names[k]]) for k in ("open", "high", "low", "close")]
+                if not all(np.isfinite(v) for v in vals):
+                    raise ValueError("non-finite OHLC")
+                op, hi, lo, cl = vals
+                if hi < max(op, cl, lo) or lo > min(op, cl, hi):
+                    raise ValueError("invalid OHLC ordering")
+                def integer_field(name, default=0):
+                    raw = row.get(names.get(name, ""), "")
+                    return int(float(raw)) if raw not in (None, "") else default
+                rows.append((ts, op, hi, lo, cl, integer_field("tick_volume"),
+                             integer_field("spread"), integer_field("real_volume")))
+            except Exception as exc:
+                raise RuntimeError(f"Invalid CSV row {line_no}: {exc}") from exc
+    dtype = [("time", "<i8"), ("open", "<f8"), ("high", "<f8"),
+             ("low", "<f8"), ("close", "<f8"), ("tick_volume", "<u8"),
+             ("spread", "<i4"), ("real_volume", "<u8")]
+    bars = np.array(rows, dtype=dtype)
+    if len(bars) == 0:
+        raise RuntimeError("CSV contains no bars in requested UTC interval")
+    bars.sort(order="time")
+    _, idx = np.unique(bars["time"], return_index=True)
+    bars = bars[np.sort(idx)]
+    return bars
+
 def parse_prices(raw: str, name: str, allow_zero: bool = False) -> list[float]:
     try:
         values = [float(part.strip()) for part in raw.split(",") if part.strip()]
@@ -76,8 +129,12 @@ def collect_candidates(bars, cfg, symbol):
     return trades
 
 
-def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_price):
-    """Simulate one candidate; activation_price=None is the fixed-SL/TP baseline."""
+def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_price, gap_fill_policy="at_stop"):
+    """Simulate one candidate; activation_price=None is the fixed-SL/TP baseline.
+
+    gap_fill_policy="adverse_open" fills a stop at the bar open when that open
+    has already crossed the active stop, as a conservative gap diagnostic.
+    """
     direction = candidate["direction"]
     entry = float(candidate["theoretical_entry"])
     initial_sl = float(candidate["sl"])
@@ -107,11 +164,25 @@ def simulate_one(bars, candidate, entry_idx, activation_price, trail_distance_pr
             exit_time = int(bar["time"])
             break
         if hit_sl:
+            # A stop crossed by the bar open cannot realistically be assumed
+            # filled at the stale stop price. Keep the original model as the
+            # default and expose an adverse-open sensitivity run.
+            bar_open = float(bar["open"])
             exit_price = current_sl
+            if gap_fill_policy == "adverse_open":
+                if direction == "BUY" and bar_open < current_sl:
+                    exit_price = bar_open
+                elif direction == "SELL" and bar_open > current_sl:
+                    exit_price = bar_open
             exit_time = int(bar["time"])
             reason = "TRAIL_SL" if trailing_activated and current_sl != initial_sl else "SL"
             break
         if hit_tp:
+            # TP reach is known, but OHLC cannot establish any further
+            # favorable excursion's order within this exit bar. Record only
+            # the guaranteed entry-to-TP movement as the MFE floor.
+            tp_favorable = tp - entry if direction == "BUY" else entry - tp
+            max_favorable = max(max_favorable, max(0.0, tp_favorable))
             exit_price, reason = tp, "TP"
             exit_time = int(bar["time"])
             break
@@ -233,11 +304,14 @@ def max_consecutive_losses(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mt5-path", required=True)
+    ap.add_argument("--mt5-path", default=None)
+    ap.add_argument("--csv-path", default=None, help="Use an existing M1 CSV offline; MT5 is not initialized or shut down")
     ap.add_argument("--symbol", default="XAUUSD.ecn")
     ap.add_argument("--start", default="2026-07-13T00:00:00+00:00")
     ap.add_argument("--end", default="2026-10-13T00:00:00+00:00")
     ap.add_argument("--config-module", default="sp2l_v3_rr2_trail4_config")
+    ap.add_argument("--gap-fill-policy", choices=("at_stop", "adverse_open"), default="at_stop",
+                    help="at_stop preserves the original idealized stop fill; adverse_open fills at bar open if it gaps through the active stop")
     ap.add_argument("--activation-prices", default="0.00,0.05,0.10,0.20,0.40",
                     help="independent favorable-move thresholds in XAUUSD price units; 0.00 starts at the first eligible completed-bar check")
     ap.add_argument("--trail-distances", default="0.02,0.04,0.10,0.20,0.40",
@@ -250,19 +324,26 @@ def main():
         raise RuntimeError("--start and --end must be timezone-aware and start < end")
 
     cfg = importlib.import_module(args.config_module)
-    if not mt5.initialize(path=args.mt5_path):
-        raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+    if not args.csv_path and not args.mt5_path:
+        raise RuntimeError("Provide --csv-path for offline mode or --mt5-path for MT5 acquisition")
+    mt5_initialized = False
     try:
-        bars = fetch_m1_rates(args.symbol, start, end)
+        if args.csv_path:
+            bars = load_m1_csv(args.csv_path, start, end)
+        else:
+            if not mt5.initialize(path=args.mt5_path):
+                raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+            mt5_initialized = True
+            bars = fetch_m1_rates(args.symbol, start, end)
         if len(bars) < 10:
-            raise RuntimeError(f"Insufficient M1 data: {mt5.last_error()}")
+            raise RuntimeError(f"Insufficient M1 data: {len(bars)} bars")
         bars_sha = hashlib.sha256(bars.tobytes()).hexdigest()
         candidates = collect_candidates(bars, cfg, args.symbol)
         matrix = []
         trade_rows = []
 
         # Same candidates, entries, initial SL and TP; the baseline disables all stop updates.
-        baseline_rows = [simulate_one(bars, c, idx, None, None) for c, idx in candidates]
+        baseline_rows = [simulate_one(bars, c, idx, None, None, args.gap_fill_policy) for c, idx in candidates]
         matrix.append({
             "scenario": "NO_TRAIL_FIXED_SL_TP",
             "activation_price": None,
@@ -280,7 +361,7 @@ def main():
         for activation in activations:
             for distance in distances:
                 rows = [
-                    simulate_one(bars, c, idx, activation, distance)
+                    simulate_one(bars, c, idx, activation, distance, args.gap_fill_policy)
                     for c, idx in candidates
                 ]
                 summary = summarize(rows, dataset_end_time=int(bars[-1]["time"]))
@@ -327,7 +408,8 @@ def main():
                 "same_bar_policy": "SL and TP both touched under pre-bar levels => ambiguous",
                 "costs": "spread, commission, swap, and slippage not included",
                 "entries": "one primary entry only; 2X secondary entries excluded to isolate trailing parameters",
-                "gap_fills": "assumes fill at modeled SL/TP level; broker gap/slippage behavior not modeled",
+                "gap_fill_policy": args.gap_fill_policy,
+                "gap_fills": ("active stop exits at bar open when open has crossed the stop; TP remains idealized and spread/commission/slippage remain excluded" if args.gap_fill_policy == "adverse_open" else "assumes fill at modeled SL/TP level; broker gap/slippage behavior not modeled"),
                 "drawdown": "decisive trade R ordered by exit time; independent trades and no portfolio sizing, so not account/portfolio drawdown",
                 "overlap": "maximum concurrent independent simulated trades reported; no capital, margin, or execution-capacity constraint",
             },
@@ -382,7 +464,8 @@ def main():
             "research_only": True,
         }, indent=2))
     finally:
-        mt5.shutdown()
+        if mt5_initialized:
+            mt5.shutdown()
 
 
 if __name__ == "__main__":
