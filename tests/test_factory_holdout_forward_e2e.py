@@ -87,7 +87,7 @@ def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_p
     assert runtime.reconciliation.mismatched_positions == 0
     assert runtime.session_fingerprint == prepared.session.fingerprint
     assert runtime.handoff_fingerprint == prepared.handoff.fingerprint
-    assert runtime.session.production_decision is False
+    assert prepared.session.production_decision is False
     assert [event.event_type for event in events.entries()] == [
         "COMPLETED",
         "HANDOFF_ACCEPTED",
