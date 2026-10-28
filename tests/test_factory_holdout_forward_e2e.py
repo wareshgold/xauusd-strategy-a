@@ -39,6 +39,60 @@ def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path):
     ]
 
 
+
+def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_path):
+    import hashlib
+
+    runner, context = _context(tmp_path / "persisted-journal-e2e")
+    holdout = HoldoutFactory(runner).prepare_and_run(context)
+    journal_path = tmp_path / "persisted-journal-e2e" / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+    prepared = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+
+    gate_details = prepared.gate.gate.details
+    before_forward = journal_path.read_bytes()
+    audited_size = gate_details["source_event_ledger_byte_size"]
+    audited_prefix = before_forward[:audited_size]
+    assert hashlib.sha256(audited_prefix).hexdigest() == gate_details[
+        "source_event_ledger_sha256"
+    ]
+    assert gate_details["source_event_ledger_source"] == "persisted_jsonl"
+    assert gate_details["production_decision"] is False
+
+    observed = {"observed_positions": 2}
+
+    def reconcile(result):
+        assert result is observed
+        return {
+            "reconciliation_id": "RECON-PERSISTED-E2E",
+            "broker_server": "SYNTHETIC-MT5",
+            "symbol": "XAUUSD.ecn",
+            "observed_positions": 2,
+            "matched_positions": 2,
+            "mismatched_positions": 0,
+        }
+
+    runtime = run_bound_forward(
+        session=prepared.session,
+        run_forward=lambda: observed,
+        reconcile=reconcile,
+        started_utc="2026-10-28T01:00:00Z",
+        running_utc="2026-10-28T01:01:00Z",
+        completed_utc="2026-10-28T01:02:00Z",
+    )
+
+    final_bytes = journal_path.read_bytes()
+    assert final_bytes.startswith(audited_prefix)
+    assert runtime.reconciliation.reconciled is True
+    assert runtime.reconciliation.mismatched_positions == 0
+    assert runtime.session_fingerprint == prepared.session.fingerprint
+    assert runtime.handoff_fingerprint == prepared.handoff.fingerprint
+    assert runtime.session.production_decision is False
+    assert [event.event_type for event in events.entries()] == [
+        "COMPLETED",
+        "HANDOFF_ACCEPTED",
+    ]
+
 def test_factory_full_provenance_chain_reaches_reconciliation(tmp_path):
     runner, context = _context(tmp_path / "full-chain")
 
