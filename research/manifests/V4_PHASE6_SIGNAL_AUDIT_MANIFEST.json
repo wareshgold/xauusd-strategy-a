@@ -1,0 +1,64 @@
+{
+  "run_id": "SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z_PHASE6_20261028T000000Z",
+  "generated_at_utc": "2026-10-28T11:45:36+00:00",
+  "script": {
+    "path": "D:\\Mirzaei\\Private\\1\\xauusd-strategy-v4-research-20261028\\scripts\\research\\phase6_signal_identity_audit.py",
+    "sha256": "3944c8e119538a66ae7dfe3c28bfac2624b77f49063c5696dede732c17f13564",
+    "byte_size": 18315
+  },
+  "input": {
+    "file": "research\\backtests\\SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z_trades.csv",
+    "sha256": "c3e5622af4aae480db7b36c8db7599ea9b91397cbb1408b0d6183da64bde3967",
+    "byte_size": 1688272,
+    "total_rows": 4027,
+    "observed_variant_row_counts": {
+      "V3_RR2_TRAIL4_PROXY": 1407,
+      "V4_TP1R_NO_TRAIL_HYPOTHESIS": 1310,
+      "PAIRED": 1310
+    },
+    "observed_other_variants": {}
+  },
+  "output_csv": {
+    "file": "research\\backtests\\V4_PHASE6_SIGNAL_COUNTS_20261028T000000Z.csv",
+    "sha256": "6138937af3cf538afb7d7364d41017bf33150485b8d1a86897444e4a35209104",
+    "byte_size": 44123
+  },
+  "primary_key": {
+    "label": "signal_timestamp + direction",
+    "fields": [
+      "signal_timestamp",
+      "direction"
+    ]
+  },
+  "validation": {
+    "variant_V3_RR2_TRAIL4_PROXY_rows": {
+      "expected": 1407,
+      "actual": 1407,
+      "match": true
+    },
+    "variant_V4_TP1R_NO_TRAIL_HYPOTHESIS_rows": {
+      "expected": 1310,
+      "actual": 1310,
+      "match": true
+    },
+    "variant_PAIRED_rows": {
+      "expected": 1310,
+      "actual": 1310,
+      "match": true
+    },
+    "total_rows": {
+      "expected": 4027,
+      "actual": 4027,
+      "match": true
+    }
+  },
+  "command": "python scripts/research/phase6_signal_identity_audit.py --trades-csv research/backtests/SP2L_XAUUSD_STRATEGY_V4_RESEARCH_20261028T120000Z_trades.csv --output-csv research/backtests/V4_PHASE6_SIGNAL_COUNTS_20261028T000000Z.csv --manifest research/manifests/V4_PHASE6_SIGNAL_AUDIT_MANIFEST.json",
+  "exit_code": 0,
+  "deterministic_rerun_verified": true,
+  "notes": [
+    "Counts are derived only from the existing trade CSV columns.",
+    "This script does not import the project research harness.",
+    "Variant-only rows are distinguished from paired-comparison rows.",
+    "Row counts and distinct-key counts are reported separately."
+  ]
+}
