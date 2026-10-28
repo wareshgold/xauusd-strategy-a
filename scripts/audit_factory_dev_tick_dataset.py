@@ -93,6 +93,10 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
     out_of_order = 0
     duplicate_groups = 0
     duplicate_quote_change_groups = 0
+    duplicate_groups_size_2 = 0
+    duplicate_groups_size_3_plus = 0
+    max_timestamp_group_size = 0
+    duplicate_groups_same_bid_ask = 0
     missing_bidask = 0
     nonpositive_bidask = 0
     crossed = 0
@@ -119,10 +123,19 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
 
     def finish_group() -> None:
         nonlocal duplicate_groups, duplicate_quote_change_groups
+        nonlocal duplicate_groups_size_2, duplicate_groups_size_3_plus
+        nonlocal max_timestamp_group_size, duplicate_groups_same_bid_ask
+        max_timestamp_group_size = max(max_timestamp_group_size, group_size)
         if group_size > 1:
             duplicate_groups += 1
+            if group_size == 2:
+                duplicate_groups_size_2 += 1
+            else:
+                duplicate_groups_size_3_plus += 1
             if len(group_quotes) > 1:
                 duplicate_quote_change_groups += 1
+            else:
+                duplicate_groups_same_bid_ask += 1
 
     try:
         with gzip.open(dataset_path, "rt", encoding="utf-8", newline="") as stream:
@@ -245,7 +258,11 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
             "adjacent_duplicate_timestamps": duplicates,
             "adjacent_out_of_order_timestamps": out_of_order,
             "duplicate_timestamp_groups": duplicate_groups,
+            "duplicate_timestamp_groups_size_2": duplicate_groups_size_2,
+            "duplicate_timestamp_groups_size_3_plus": duplicate_groups_size_3_plus,
+            "max_rows_in_timestamp_group": max_timestamp_group_size,
             "duplicate_groups_with_different_bid_ask": duplicate_quote_change_groups,
+            "duplicate_groups_with_same_bid_ask": duplicate_groups_same_bid_ask,
             "gaps_over_60_seconds": gaps_over_60s,
             "max_positive_adjacent_gap_ms": max_positive_gap_ms,
             "zero_last_rows": zero_last,
