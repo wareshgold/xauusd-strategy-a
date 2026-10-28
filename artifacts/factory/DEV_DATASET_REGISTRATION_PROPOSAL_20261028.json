@@ -17,7 +17,15 @@
       "sha256": "412a535b8d5f0413f329e5fde8a1f851591ee83c95fc25af38b287d6170a1347",
       "size_bytes": 111124585,
       "row_count": 10817858,
-      "schema": ["time_msc", "time_utc", "bid", "ask", "last", "volume", "flags"]
+      "schema": [
+        "time_msc",
+        "time_utc",
+        "bid",
+        "ask",
+        "last",
+        "volume",
+        "flags"
+      ]
     },
     "acquisition_manifest": {
       "filename": "xauusd-ecn-ticks-20260821_20260919.manifest.json",
@@ -26,10 +34,12 @@
       "note": "Digest was recorded by the local audit receipt; it has not been compared with an independent trusted digest, signature, or separately approved registry."
     },
     "audit_receipt": {
-      "sha256": "537879AC2A2D49C048EB6CAC82FB887757A91936AF4ECF0698898998B630D9AF",
-      "size_bytes": 2576,
+      "sha256": "760ef49fb1d5e90d94bcddf28be2f2a8fc8d6a87b53c371413e28b37dc7c5629",
+      "size_bytes": 2639,
       "reported_status": "INTEGRITY_AND_BASIC_QUOTE_CHECKS_PASS",
-      "scope": "Prior local receipt for the fixed DEVELOPMENT artifact; rerun the updated audit after the interval-boundary fix before relying on its pass status."
+      "source_commit": "1768e20785c57d934287473db0a8b4b5018546d7",
+      "storage_status": "LOCAL_ONLY_NOT_COMMITTED",
+      "scope": "Updated local receipt generated with the interval-boundary audit. Receipt remains local; no raw dataset or manifest was committed."
     }
   },
   "observed_quality_evidence": {
@@ -49,8 +59,15 @@
       "Duplicate rows are preserved; they are not deduplicated or sorted.",
       "Gap causes are not inferred.",
       "Zero Last/Volume values are not interpreted as trade prints or traded volume.",
-      "Observed counts originate from the prior local receipt and must be reconfirmed with a new receipt after the updated audit is run."
-    ]
+      "Counts and interval-boundary result were reconfirmed by the updated local receipt; raw dataset, manifest, and receipt remain local."
+    ],
+    "observed_timestamps_outside_declared_interval": 0,
+    "max_positive_adjacent_gap_ms": 176527083,
+    "spread_min": 0.12999999999919964,
+    "spread_mean": 0.20556092434530426,
+    "spread_max": 1.2899999999999636,
+    "first_observed_tick": "2026-08-21T01:00:05.864Z",
+    "last_observed_tick": "2026-09-18T23:57:56.609Z"
   },
   "isolation_and_usage": {
     "raw_dataset_committed": false,
@@ -63,7 +80,7 @@
   },
   "review_checklist": [
     "Verify artifact SHA-256, byte size, and row count against the local source artifact.",
-    "Rerun the updated audit and attach the newly generated receipt hash without overwriting earlier evidence.",
+    "Updated local audit receipt reviewed: SHA-256 and byte size recorded; observed timestamps outside the fixed half-open interval = 0.",
     "Independently establish manifest provenance or explicitly accept it as unanchored acquisition metadata.",
     "Review duplicate timestamp groups, gaps, and zero Last/Volume semantics.",
     "Approve or reject DEVELOPMENT registration explicitly; this proposal itself is not registration."
