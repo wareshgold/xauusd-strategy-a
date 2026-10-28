@@ -83,7 +83,7 @@ def test_persisted_journal_snapshot_hash_is_bound_to_exact_read_only_bytes(tmp_p
     audited_bytes = final_bytes[:byte_size]
     assert hashlib.sha256(audited_bytes).hexdigest() == details["source_event_ledger_sha256"]
     assert details["source_event_ledger_event_count"] == 1
-    assert b"\\n" in audited_bytes
+    assert b"\n" in audited_bytes
 
 def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     holdout, context, events = _prepared(tmp_path)
