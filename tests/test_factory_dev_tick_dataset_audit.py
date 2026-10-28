@@ -337,3 +337,14 @@ def test_duplicate_groups_must_be_adjacent_in_source_order(tmp_path):
 
     with pytest.raises(AuditError, match="nondecreasing timestamp order"):
         audit_dataset(dataset, manifest)
+
+
+def test_submillisecond_utc_timestamp_is_rejected(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    rows = read_fixture_rows(dataset)
+    # time_msc is integer milliseconds; finer precision cannot be silently truncated.
+    rows[0][1] = "2026-08-21T01:00:05.864001Z"
+    rewrite_fixture(dataset, manifest, rows)
+
+    with pytest.raises(AuditError, match="timestamp consistency"):
+        audit_dataset(dataset, manifest)
