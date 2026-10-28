@@ -188,6 +188,74 @@ def test_journal_append_writes_real_jsonl_terminator(tmp_path):
         assert lock_path.read_bytes() == b""
 
 
+
+def test_journal_append_fsync_failure_rolls_back_without_memory_commit(tmp_path, monkeypatch):
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    ledger = FactoryJobEventLedger(path=journal_path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id="BASELINE-JOB",
+        job_fingerprint="a" * 64,
+    )
+    before_bytes = journal_path.read_bytes()
+    before_events = ledger.entries()
+    real_fsync = os.fsync
+    calls = 0
+
+    def fail_first_fsync(fd):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise OSError("injected fsync failure")
+        return real_fsync(fd)
+
+    monkeypatch.setattr(os, "fsync", fail_first_fsync)
+    with pytest.raises(OSError, match="injected fsync failure"):
+        ledger.append(
+            event_type="QUEUED",
+            job_id="ROLLBACK-JOB",
+            job_fingerprint="b" * 64,
+        )
+
+    assert calls == 2
+    assert journal_path.read_bytes() == before_bytes
+    assert ledger.entries() == before_events
+    report, parsed = __import__(
+        "strategy_factory.job_events", fromlist=["inspect_job_journal_snapshot"]
+    ).inspect_job_journal_snapshot(journal_path)
+    assert report["status"] == "VALID"
+    assert parsed == before_events
+
+
+def test_journal_append_reports_manual_review_if_rollback_fsync_fails(
+    tmp_path, monkeypatch
+):
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    ledger = FactoryJobEventLedger(path=journal_path)
+    ledger.append(
+        event_type="QUEUED",
+        job_id="BASELINE-JOB",
+        job_fingerprint="a" * 64,
+    )
+    before_bytes = journal_path.read_bytes()
+    before_events = ledger.entries()
+
+    def fail_every_fsync(_fd):
+        raise OSError("injected persistent fsync failure")
+
+    monkeypatch.setattr(os, "fsync", fail_every_fsync)
+    with pytest.raises(OSError, match="append failed and rollback failed"):
+        ledger.append(
+            event_type="QUEUED",
+            job_id="ROLLBACK-FAILURE-JOB",
+            job_fingerprint="c" * 64,
+        )
+
+    # Bytes are back at the prior boundary, but failed rollback fsync means
+    # durability cannot be asserted; the code must surface manual review.
+    assert journal_path.read_bytes() == before_bytes
+    assert ledger.entries() == before_events
+
 def test_stale_ledger_writer_fails_closed_after_another_writer_appends(tmp_path):
     journal_path = tmp_path / "factory_job_events.jsonl"
     first = FactoryJobEventLedger(path=journal_path)
