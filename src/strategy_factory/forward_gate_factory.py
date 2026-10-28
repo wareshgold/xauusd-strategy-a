@@ -11,6 +11,8 @@ from pathlib import Path
 import hashlib
 
 from .handoff import ResearchHandoff, validate_evidence_bound_handoff
+from .holdout_factory import HoldoutFactoryResult
+from .dataset_provenance import DatasetProvenanceStatus
 from .job_events import FactoryJobEvent
 from .models import GateResult, GateStatus
 from .research_record import ResearchRecord
@@ -42,6 +44,7 @@ class ForwardGateContext:
     forward_dataset_content_sha256: str
     strategy_revision_frozen: bool = True
     post_holdout_tuning: bool = False
+    holdout_result: HoldoutFactoryResult | None = None
 
 
 @dataclass(frozen=True)
@@ -98,19 +101,72 @@ class ForwardGateFactory:
                 "readiness snapshot fingerprint does not match the Holdout research record"
             )
 
+        # Require the completed Holdout result as independent evidence; the
+        # handoff's own identity fields cannot be used as their own proof.
+        holdout_result = context.holdout_result
+        if holdout_result is None:
+            raise ForwardGateError(
+                "Forward gate requires the completed HoldoutFactoryResult binding"
+            )
+        holdout_run = holdout_result.result
+        provenance = holdout_run.dataset_provenance
+        if not holdout_run.accepted or provenance.status is not DatasetProvenanceStatus.PASS:
+            raise ForwardGateError(
+                "Forward gate requires an accepted Holdout result with PASS dataset provenance"
+            )
+        if holdout_run.record != context.source_record:
+            raise ForwardGateError(
+                "Holdout result record does not match the Forward source record"
+            )
+        if (
+            holdout_result.job.job_id != holdout_run.job_id
+            or holdout_result.job.job_id != holdout_run.run.run_id
+            or holdout_result.job.dataset_fingerprint != holdout_run.run.dataset_fingerprint
+            or holdout_run.run.dataset_id != holdout_run.record.dataset_id
+            or holdout_run.run.dataset_role != DatasetRole.FRESH_HOLDOUT.value
+            or holdout_run.run.artifact_id != provenance.observed_artifact_id
+            or provenance.dataset_id != holdout_run.run.dataset_id
+            or provenance.registered_fingerprint != holdout_run.run.dataset_fingerprint
+            or provenance.observed_fingerprint != holdout_run.run.dataset_fingerprint
+            or provenance.registered_artifact_id != holdout_run.run.artifact_id
+            or provenance.observed_artifact_id != holdout_run.run.artifact_id
+        ):
+            raise ForwardGateError(
+                "Holdout run, dataset provenance, artifact, and record identities do not agree"
+            )
+
         holdout_sha = context.handoff.dataset_content_sha256
         holdout_artifact_id = context.handoff.dataset_artifact_id
         if not _is_sha256_digest(holdout_sha) or not holdout_artifact_id:
             raise ForwardGateError(
                 "Holdout handoff must carry a valid SHA-256 and complete dataset identity"
             )
+        if holdout_sha != holdout_result.holdout_dataset_content_sha256:
+            raise ForwardGateError(
+                "Holdout handoff SHA does not match the independently observed Holdout result SHA"
+            )
+        if holdout_artifact_id != holdout_run.run.artifact_id:
+            raise ForwardGateError(
+                "Holdout handoff artifact id does not match the independently observed Holdout result"
+            )
+        if (
+            context.source_event.research_run_fingerprint != holdout_run.run.fingerprint
+            or context.source_event.output_artifact != holdout_run.evidence.evidence_id
+            or context.source_event.job_id != holdout_result.job.job_id
+            or context.source_event.job_fingerprint != holdout_result.job.fingerprint
+            or context.source_event.station != "holdout"
+            or context.source_event.event_type != "COMPLETED"
+        ):
+            raise ForwardGateError(
+                "Holdout source event does not bind to the completed Holdout run and evidence"
+            )
 
         validate_evidence_bound_handoff(
             handoff=context.handoff,
             record=context.source_record,
             source_event=context.source_event,
-            dataset_content_sha256=holdout_sha,
-            dataset_artifact_id=holdout_artifact_id,
+            dataset_content_sha256=holdout_result.holdout_dataset_content_sha256,
+            dataset_artifact_id=holdout_run.run.artifact_id,
         )
 
         if not context.forward_session_id:
