@@ -288,6 +288,25 @@ class FactoryJobEventLedger:
         event = FactoryJobEvent(**event.as_dict(include_fingerprint=False), event_fingerprint=fingerprint)
         event.validate()
         if self.path is not None:
+            # Fail closed before the first write if the persisted journal has
+            # drifted since this ledger was loaded. Never append onto corrupt,
+            # truncated, replaced, or otherwise divergent evidence.
+            if self.path.exists():
+                journal_report, journal_events = inspect_job_journal_snapshot(self.path)
+                if (
+                    journal_report.get("status") != "VALID"
+                    or journal_events is None
+                    or journal_events != tuple(self._events)
+                ):
+                    raise OSError(
+                        "factory job journal no longer matches the in-memory ledger; "
+                        "append refused and manual reconciliation required"
+                    )
+            elif self._events:
+                raise OSError(
+                    "factory job journal is missing while the in-memory ledger is non-empty; "
+                    "append refused and manual reconciliation required"
+                )
             self.path.parent.mkdir(parents=True, exist_ok=True)
             originally_exists = self.path.exists()
             original_size = self.path.stat().st_size if originally_exists else 0
