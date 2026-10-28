@@ -40,7 +40,7 @@ def parse_m1(path):
     bars=[]
     with path.open("r",encoding="utf-8-sig",newline="") as f:
         sample=f.read(4096); f.seek(0)
-        try: dialect=csv.Sniffer().sniff(sample,delimiters=",;\\t|")
+        try: dialect=csv.Sniffer().sniff(sample,delimiters=",;\t|")
         except csv.Error: dialect=csv.excel
         reader=csv.DictReader(f,dialect=dialect)
         if not reader.fieldnames: raise ValueError("M1 CSV has no header")
