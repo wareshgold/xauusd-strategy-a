@@ -99,6 +99,9 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
     invalid_numeric = 0
     timestamp_errors = 0
     timestamp_mismatches = 0
+    out_of_interval_timestamps = 0
+    expected_start_ms = _parse_utc_ms(EXPECTED_START)
+    expected_end_ms = _parse_utc_ms(EXPECTED_END)
     gaps_over_60s = 0
     max_positive_gap_ms = 0
     zero_last = 0
@@ -140,6 +143,9 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
                 except (TypeError, ValueError):
                     invalid_numeric += 1
                     continue
+
+                if timestamp_ms < expected_start_ms or timestamp_ms >= expected_end_ms:
+                    out_of_interval_timestamps += 1
 
                 try:
                     text_ms = _parse_utc_ms(row["time_utc"])
@@ -197,8 +203,8 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
 
     if rows != manifest.get("tick_count"):
         raise AuditError("row count does not match manifest")
-    if invalid_numeric or timestamp_errors or timestamp_mismatches:
-        raise AuditError("numeric or timestamp consistency checks failed")
+    if invalid_numeric or timestamp_errors or timestamp_mismatches or out_of_interval_timestamps:
+        raise AuditError("numeric, timestamp consistency, or declared-interval checks failed")
     if missing_bidask or nonpositive_bidask or crossed:
         raise AuditError("basic Bid/Ask quality checks failed")
     if out_of_order:
@@ -230,6 +236,7 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
             "expected_header": True,
             "timestamp_parse_errors": timestamp_errors,
             "time_msc_time_utc_mismatches": timestamp_mismatches,
+            "observed_timestamps_outside_declared_interval": out_of_interval_timestamps,
             "invalid_numeric_rows": invalid_numeric,
             "missing_bid_or_ask_rows": missing_bidask,
             "nonpositive_bid_or_ask_rows": nonpositive_bidask,
