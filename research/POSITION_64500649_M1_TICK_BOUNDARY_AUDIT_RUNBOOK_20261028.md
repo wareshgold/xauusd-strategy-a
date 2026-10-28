@@ -15,7 +15,7 @@ $out = "artifacts\research-audits\position_64500649_m1_tick_boundary_audit.json"
 $auditOutput
 ```
 
-The command copies the concise console report to the clipboard while also displaying it. The JSON report is written to a new, separate output path. If that output file already exists, choose a new filename rather than overwriting prior evidence.
+The command copies the concise console report to the clipboard while also displaying it. The JSON report is written to a new, separate output path. If that output file already exists, choose a new filename rather than overwriting prior evidence. **Important:** the M1 CSV must actually contain bars for 2026-10-27 12:55–13:02 UTC. The previously identified acquisition folder dated 2026-10-24 may be stale; do not use it unless its timestamp coverage includes this incident. The script fails closed if no bars are found in the incident window.
 
 ## Interpretation rules
 
