@@ -55,3 +55,46 @@ def test_audit_rejects_a_claimed_post_entry_minimum_before_entry():
             post_entry_min_bid_time_utc="2026-10-27T12:56:05.000Z",
             following_minute_min_ask="4006.94",
         )
+
+
+def test_post_entry_low_at_exact_activation_boundary_is_not_contamination():
+    result = audit.audit_entry_bar(
+        entry_time_utc="2026-10-27T12:56:05.552Z",
+        entry_price="4006.11",
+        bar_start_utc="2026-10-27T12:56:00Z",
+        bar_low="4005.71",
+        bar_low_time_utc="2026-10-27T12:56:30.000Z",
+        activation_distance="0.40",
+        post_entry_min_bid="4005.71",
+        post_entry_min_bid_time_utc="2026-10-27T12:56:30.000Z",
+        following_minute_min_ask="4005.90",
+    )
+
+    assert result["entry_bar"]["low_occurred_before_entry"] is False
+    assert result["full_bar_favorable_move"] == "0.40"
+    assert result["full_bar_passes_activation_threshold"] is True
+    assert result["post_entry_favorable_move"] == "0.40"
+    assert result["post_entry_ticks_pass_activation_threshold"] is True
+    assert result["entry_bar_contamination_demonstrated"] is False
+    assert result["candidate_sl_from_full_bar_low"] == "4006.11"
+    assert result["candidate_rejected_by_ask_guard_throughout_following_minute"] is False
+
+
+def test_post_entry_move_below_activation_threshold_does_not_activate():
+    result = audit.audit_entry_bar(
+        entry_time_utc="2026-10-27T12:56:05.552Z",
+        entry_price="4006.11",
+        bar_start_utc="2026-10-27T12:56:00Z",
+        bar_low="4005.90",
+        bar_low_time_utc="2026-10-27T12:56:30.000Z",
+        activation_distance="0.40",
+        post_entry_min_bid="4005.90",
+        post_entry_min_bid_time_utc="2026-10-27T12:56:30.000Z",
+        following_minute_min_ask="4006.08",
+    )
+
+    assert result["full_bar_favorable_move"] == "0.21"
+    assert result["full_bar_passes_activation_threshold"] is False
+    assert result["post_entry_favorable_move"] == "0.21"
+    assert result["post_entry_ticks_pass_activation_threshold"] is False
+    assert result["entry_bar_contamination_demonstrated"] is False
