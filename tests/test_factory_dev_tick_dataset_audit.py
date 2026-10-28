@@ -152,7 +152,7 @@ def test_observed_tick_outside_half_open_interval_is_rejected(tmp_path, outside_
     rows[1][1] = outside_timestamp
     with gzip.open(dataset, "wt", encoding="utf-8", newline="") as stream:
         import csv
-        writer = csv.writer(stream, lineterminator="\\n")
+        writer = csv.writer(stream, lineterminator="\n")
         writer.writerows(rows)
 
     compressed = dataset.read_bytes()
@@ -170,7 +170,7 @@ def rewrite_fixture(dataset: Path, manifest_path: Path, rows):
     import csv
 
     with gzip.open(dataset, "wt", encoding="utf-8", newline="") as stream:
-        writer = csv.writer(stream, lineterminator="\\n")
+        writer = csv.writer(stream, lineterminator="\n")
         writer.writerow(["time_msc", "time_utc", "bid", "ask", "last", "volume", "flags"])
         writer.writerows(rows)
 
