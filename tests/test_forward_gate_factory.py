@@ -15,6 +15,7 @@ from strategy_factory.forward_gate_factory import (
 from strategy_factory.job_events import FactoryJobEventLedger
 from strategy_factory.handoff import build_research_handoff
 from strategy_factory.holdout_factory import HoldoutFactoryResult
+from strategy_factory.models import GateStatus
 from strategy_factory.test_contract import DatasetRole
 
 
@@ -359,6 +360,62 @@ def test_forward_gate_rejects_holdout_handoff_artifact_mismatch(tmp_path):
                 "MANIFEST", snapshot, altered, record, event,
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
+            )
+        )
+
+
+
+def test_forward_gate_rejects_unaccepted_holdout_result(tmp_path):
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
+    rejected_run = replace(
+        holdout_result.result,
+        gates=(replace(holdout_result.result.gates[0], status=GateStatus.FAIL),)
+        + holdout_result.result.gates[1:],
+    )
+    rejected_holdout = replace(holdout_result, result=rejected_run)
+    with pytest.raises(ForwardGateError, match="accepted Holdout result"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=rejected_holdout,
+            )
+        )
+
+
+def test_forward_gate_rejects_holdout_dataset_id_mismatch(tmp_path):
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
+    altered_run = replace(holdout_result.result.run, dataset_id="OTHER-DATASET")
+    altered_result = replace(
+        holdout_result,
+        result=replace(holdout_result.result, run=altered_run),
+    )
+    with pytest.raises(ForwardGateError, match="identities do not agree"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=altered_result,
+            )
+        )
+
+
+def test_forward_gate_rejects_holdout_composite_fingerprint_mismatch(tmp_path):
+    snapshot, record, event, handoff, holdout_result = _fixture(tmp_path)
+    altered_run = replace(
+        holdout_result.result.run,
+        dataset_fingerprint="f" * 64,
+    )
+    altered_result = replace(
+        holdout_result,
+        result=replace(holdout_result.result, run=altered_run),
+    )
+    with pytest.raises(ForwardGateError, match="identities do not agree"):
+        ForwardGateFactory().prepare(
+            ForwardGateContext(
+                "MANIFEST", snapshot, handoff, record, event,
+                "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
+                holdout_result=altered_result,
             )
         )
 
