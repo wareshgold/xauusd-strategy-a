@@ -102,17 +102,23 @@ def prepare_holdout_to_forward(
             "Holdout dataset SHA does not match the completed Holdout run"
         )
 
-    holdout_event = events.append(
-        event_type="COMPLETED",
-        job_id=job.job_id,
-        job_fingerprint=job.fingerprint,
-        worker_id=worker_id,
-        station="holdout",
-        phase="HOLDOUT",
-        detail="Fresh Holdout completed; eligible for Holdout-to-Forward preparation",
-        output_artifact=record.evidence_id,
-        research_run_fingerprint=record.run_fingerprint,
-    )
+    try:
+        holdout_event = events.append(
+            event_type="COMPLETED",
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id=worker_id,
+            station="holdout",
+            phase="HOLDOUT",
+            detail="Fresh Holdout completed; eligible for Holdout-to-Forward preparation",
+            output_artifact=record.evidence_id,
+            research_run_fingerprint=record.run_fingerprint,
+        )
+    except OSError as exc:
+        raise ForwardPreparationError(
+            "persisted event journal failed pre-append integrity validation; "
+            "journal preserved and manual reconciliation required"
+        ) from exc
 
     handoff = build_research_handoff(
         events=events,
