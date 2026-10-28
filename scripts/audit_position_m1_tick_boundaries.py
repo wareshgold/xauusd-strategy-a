@@ -70,6 +70,8 @@ def audit(ticks,bars,entry_text,exit_text):
     for t in ticks: tick_minutes[int(t["epoch"]//60)*60].append(t)
     start=int(entry_epoch//60)*60-60; end=int(exit_epoch//60)*60+60
     nearby=[b for b in bars if start<=b["epoch"]<=end]
+    if not nearby:
+        raise ValueError("No M1 bars in the incident window; the CSV may not cover 2026-10-27 UTC. Use an existing M1 export whose timestamps include the entry/exit window.")
     rows=[]
     for b in nearby:
         ts=tick_minutes.get(b["epoch"],[])
