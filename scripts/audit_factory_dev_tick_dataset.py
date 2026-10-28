@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import argparse
 import csv
-from datetime import datetime
+from datetime import datetime, timezone
 import gzip
 import hashlib
 import json
@@ -41,7 +41,14 @@ def _parse_utc_ms(value: str) -> int:
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise ValueError("timestamp must include a timezone")
-    return int(parsed.timestamp() * 1000)
+    epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+    delta = parsed.astimezone(timezone.utc) - epoch
+    total_microseconds = (
+        (delta.days * 86_400 + delta.seconds) * 1_000_000 + delta.microseconds
+    )
+    if total_microseconds % 1_000:
+        raise ValueError("timestamp must have millisecond precision")
+    return total_microseconds // 1_000
 
 
 def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
