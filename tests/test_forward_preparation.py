@@ -97,7 +97,7 @@ def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
         def entries(self):
             if self.path is not None and not self.injected:
                 with self.path.open("ab") as handle:
-                    handle.write(b"{\\n")
+                    handle.write(b"{\n")
                 self.injected = True
                 self.corrupted_bytes = self.path.read_bytes()
             return super().entries()
@@ -108,9 +108,7 @@ def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
 
     assert events.corrupted_bytes is not None
     assert journal_path.read_bytes() == events.corrupted_bytes
-    assert events.entries() == tuple(
-        event for event in events.entries()
-    )  # in-memory lifecycle is unchanged by the read-only rejection
+    assert [event.event_type for event in events.entries()] == ["COMPLETED"]
 
 def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     holdout, context, events = _prepared(tmp_path)
