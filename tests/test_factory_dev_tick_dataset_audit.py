@@ -311,3 +311,29 @@ def test_duplicate_group_summary_reports_three_or_more_rows(tmp_path):
     assert checks["duplicate_timestamp_groups_size_3_plus"] == 1
     assert checks["max_rows_in_timestamp_group"] == 3
     assert checks["duplicate_groups_with_different_bid_ask"] == 1
+
+
+@pytest.mark.parametrize(
+    "malformed_row",
+    [
+        ["1787274005864", "2026-08-21T01:00:05.864Z", "4518.99", "4519.20", "0.0", "0.0"],
+        ["1787274005864", "2026-08-21T01:00:05.864Z", "4518.99", "4519.20", "0.0", "0.0", "134", "EXTRA"],
+    ],
+)
+def test_csv_rows_with_missing_or_extra_cells_are_rejected(tmp_path, malformed_row):
+    dataset, manifest = make_inputs(tmp_path)
+    rewrite_fixture(dataset, manifest, [malformed_row])
+
+    with pytest.raises(AuditError, match="required column count"):
+        audit_dataset(dataset, manifest)
+
+
+def test_duplicate_groups_must_be_adjacent_in_source_order(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    rows = read_fixture_rows(dataset)
+    # A timestamp repeated after a later timestamp is out of order; the audit
+    # must reject rather than silently treating the repeated values as a group.
+    rewrite_fixture(dataset, manifest, [rows[0], rows[2], rows[1]])
+
+    with pytest.raises(AuditError, match="nondecreasing timestamp order"):
+        audit_dataset(dataset, manifest)
