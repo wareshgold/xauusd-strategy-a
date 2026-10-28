@@ -46,6 +46,10 @@ class ForwardGateContext:
     post_holdout_tuning: bool = False
     holdout_result: HoldoutFactoryResult | None = None
     source_event_ledger_snapshot: tuple[FactoryJobEvent, ...] | None = None
+    source_event_ledger_sha256: str | None = None
+    source_event_ledger_byte_size: int | None = None
+    source_event_ledger_source: str | None = None
+    source_event_ledger_path: str | None = None
 
 
 @dataclass(frozen=True)
@@ -170,6 +174,24 @@ class ForwardGateFactory:
             raise ForwardGateError(
                 "Forward gate requires a validated source event ledger snapshot"
             )
+        ledger_sha256 = context.source_event_ledger_sha256
+        ledger_byte_size = context.source_event_ledger_byte_size
+        ledger_source = context.source_event_ledger_source
+        if (
+            not _is_sha256_digest(ledger_sha256)
+            or not isinstance(ledger_byte_size, int)
+            or isinstance(ledger_byte_size, bool)
+            or ledger_byte_size < 0
+            or ledger_source not in {"persisted_jsonl", "in_memory"}
+            or (ledger_source == "persisted_jsonl" and not context.source_event_ledger_path)
+        ):
+            raise ForwardGateError(
+                "Forward gate requires valid byte-level event-ledger snapshot evidence"
+            )
+        if ledger_source == "in_memory" and context.source_event_ledger_path is not None:
+            raise ForwardGateError(
+                "in-memory event-ledger snapshot must not claim a persisted journal path"
+            )
         try:
             for expected_sequence, ledger_event in enumerate(ledger_snapshot, start=1):
                 ledger_event.validate()
@@ -253,6 +275,11 @@ class ForwardGateFactory:
                 "forward_dataset_id": context.forward_dataset_id,
                 "forward_dataset_sha256": context.forward_dataset_content_sha256,
                 "forward_artifact_id": context.forward_dataset_artifact_id,
+                "source_event_ledger_sha256": ledger_sha256,
+                "source_event_ledger_byte_size": ledger_byte_size,
+                "source_event_ledger_event_count": len(ledger_snapshot),
+                "source_event_ledger_source": ledger_source,
+                "source_event_ledger_path": context.source_event_ledger_path,
                 "production_decision": False,
             },
         )
