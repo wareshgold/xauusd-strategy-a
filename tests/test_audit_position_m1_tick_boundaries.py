@@ -34,3 +34,10 @@ def test_csv_parsers_accept_mt5_epoch_columns_and_iso_tick_text(tmp_path):
     bars = audit.parse_m1(m1_file)
     assert ticks[0]["bid"] == 4006.06
     assert bars[0]["epoch"] == 1793105760
+
+
+def test_audit_fails_closed_when_m1_csv_does_not_cover_incident_window():
+    ticks = [{"epoch": 1793105766.0, "time_utc": "2026-10-27T12:56:06.000Z", "bid": 4006.06, "ask": 4006.24, "line": 1}]
+    import pytest
+    with pytest.raises(ValueError, match="No M1 bars in the incident window"):
+        audit.audit(ticks, [], "2026-10-27T12:56:05.552Z", "2026-10-27T13:01:49Z")
