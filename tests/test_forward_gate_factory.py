@@ -217,7 +217,7 @@ def test_forward_gate_rejects_wrong_route(tmp_path):
     with pytest.raises(Exception):
         ForwardGateFactory().prepare(
             ForwardGateContext("MANIFEST", snapshot, bad, record, event,
-                                "FWD", "FWD-DATA", "FWD-ART", "d" * 64, holdout_result=holdout_result)
+                                "FWD", "FWD-DATA", "FWD-ART", "d" * 64, holdout_result=holdout_result, source_event_ledger_snapshot=ledger_snapshot)
         )
 
 
