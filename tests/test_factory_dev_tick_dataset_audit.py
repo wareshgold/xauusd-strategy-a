@@ -226,3 +226,51 @@ def test_receipt_cannot_overwrite_dataset_input(tmp_path):
         write_receipt(dataset, manifest, dataset)
 
     assert dataset.read_bytes() == original
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("dataset_id", "unexpected-id", "dataset_id"),
+        ("purpose", "LIVE_TRADING", "purpose"),
+        ("trading_actions_taken", True, "trading actions"),
+        ("artifact", "other.csv.gz", "artifact name"),
+    ],
+)
+def test_manifest_identity_and_scope_mismatches_are_rejected(tmp_path, field, value, message):
+    dataset, manifest = make_inputs(tmp_path)
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    payload[field] = value
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(AuditError, match=message):
+        audit_dataset(dataset, manifest)
+
+
+@pytest.mark.parametrize(
+    ("bid", "ask"),
+    [
+        ("0", "4519.20"),
+        ("4519.00", "0"),
+        ("-1", "4519.20"),
+    ],
+)
+def test_nonpositive_bid_or_ask_is_rejected(tmp_path, bid, ask):
+    dataset, manifest = make_inputs(tmp_path)
+    rows = read_fixture_rows(dataset)
+    rows[0][2] = bid
+    rows[0][3] = ask
+    rewrite_fixture(dataset, manifest, rows)
+
+    with pytest.raises(AuditError, match="Bid/Ask"):
+        audit_dataset(dataset, manifest)
+
+
+def test_receipt_cannot_overwrite_manifest_input(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    original = manifest.read_bytes()
+
+    with pytest.raises(AuditError, match="cannot overwrite either input"):
+        write_receipt(dataset, manifest, manifest)
+
+    assert manifest.read_bytes() == original
