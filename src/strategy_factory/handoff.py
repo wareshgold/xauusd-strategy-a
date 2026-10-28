@@ -135,12 +135,21 @@ def build_research_handoff(
             "source job has conflicting terminal events; manual reconciliation required"
         )
 
-    candidates = [
+    source_completions = [
         event
         for event in job_events
-        if event.event_type == "COMPLETED"
-        and event.station == source_station
-        and event.output_artifact
+        if event.event_type == "COMPLETED" and event.station == source_station
+    ]
+    if len(source_completions) > 1:
+        raise ResearchHandoffError(
+            "source job has duplicate completion events for the declared station; "
+            "manual reconciliation required"
+        )
+
+    candidates = [
+        event
+        for event in source_completions
+        if event.output_artifact
     ]
     if not candidates:
         raise ResearchHandoffError(
