@@ -43,8 +43,8 @@ def audit_bar_event_order(
     bar_end = bar_start + timedelta(minutes=1)
     low_time = utc(bar_low_time_utc)
     direction = direction.upper()
-    if direction not in {"BUY", "SELL"}:
-        raise ValueError("direction must be BUY or SELL")
+    if direction != "SELL":
+        raise ValueError("This fixture helper currently supports SELL only; BUY geometry is intentionally unresolved")
     if not (bar_start <= low_time < bar_end):
         raise ValueError("bar-low timestamp is outside the M1 bar")
     if decision_time < bar_end:
@@ -55,20 +55,11 @@ def audit_bar_event_order(
     entry, low = dec(entry_price), dec(bar_low)
     activation, trail = dec(activation_distance), dec(trail_distance)
     old_sl, bid, ask, broker = map(dec, (current_sl, current_bid, current_ask, min_broker_distance))
-    if direction == "SELL":
-        favorable = entry - low
-        candidate = low + trail
-        activation_pass = favorable >= activation
-        improves_existing_sl = old_sl <= 0 or candidate < old_sl
-        broker_guard_pass = candidate > ask + broker
-    else:
-        favorable = dec(current_bid) - entry
-        # BUY candidate uses a supplied bar high in the live implementation, but this
-        # diagnostic accepts bar_low only; deliberately do not synthesize BUY geometry.
-        candidate = None
-        activation_pass = favorable >= activation
-        improves_existing_sl = None
-        broker_guard_pass = None
+    favorable = entry - low
+    candidate = low + trail
+    activation_pass = favorable >= activation
+    improves_existing_sl = old_sl <= 0 or candidate < old_sl
+    broker_guard_pass = candidate > ask + broker
 
     if entry_time >= bar_end:
         bar_relation = "BAR_COMPLETED_BEFORE_ENTRY"
@@ -90,15 +81,14 @@ def audit_bar_event_order(
         "low_observed_before_entry": low_time < entry_time,
         "low_observed_before_decision": low_time <= decision_time,
         "bar_relation": bar_relation,
-        "sell_full_bar_favorable_move": str(favorable) if direction == "SELL" else None,
+        "sell_full_bar_favorable_move": str(favorable),
         "activation_pass_from_supplied_observation": activation_pass,
-        "candidate_sl_from_supplied_low": str(candidate) if candidate is not None else None,
+        "candidate_sl_from_supplied_low": str(candidate),
         "candidate_improves_existing_sl": improves_existing_sl,
         "sell_ask_distance_guard_pass": broker_guard_pass,
         "decision_time_after_entry": decision_time >= entry_time,
         "limitations": [
             "Timestamp/arithmetic diagnostic only; not a complete runner simulation.",
-            "For BUY, favorable movement uses current Bid and does not derive a stop candidate.",
             "No tick coverage, polling cadence, order_send result, or broker state is inferred.",
             "No canonical Strategy A geometry or execution rule is established.",
         ],
