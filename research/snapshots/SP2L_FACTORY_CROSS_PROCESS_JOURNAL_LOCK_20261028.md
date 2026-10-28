@@ -4,7 +4,7 @@
 - Branch: `research/factory-candidate-lab-20261010`
 - Parent research state: `SP2L_FACTORY_PREAPPEND_JOURNAL_INTEGRITY_GUARD_20261028`
 - Scope: serialize cooperating persisted-journal writers across the integrity preflight, append, and rollback window.
-- Status at snapshot creation: implementation and new tests committed; CI verification was in progress.
+- Status: implementation, tests, and snapshot committed; Factory Research Tests and SP2L forensic deterministic checks passed on the code/test commit and the initial snapshot commit.
 
 ## Changes
 
@@ -28,9 +28,9 @@
 
 ## Verification
 
-- `Factory Research Tests`: run started for test commit; final result to be confirmed.
-- `SP2L forensic deterministic checks`: run started for test commit; final result to be confirmed.
-- No local test execution is claimed in this snapshot.
+- At test commit `3e80f74c08a54c8e2f4343760a599877d4fa8b4f`: Factory Research Tests PASS (run 1161); SP2L forensic deterministic checks PASS (run 671).
+- At initial snapshot commit `8b894af07e3cdbf021a16be67e760ba1258302bf`: Factory Research Tests PASS (run 1163); SP2L forensic deterministic checks PASS (run 672).
+- Verification is CI-based; no local test execution is claimed.
 
 ## Boundaries and remaining risk
 
