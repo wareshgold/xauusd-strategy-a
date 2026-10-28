@@ -226,6 +226,8 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
     except (OSError, EOFError, csv.Error) as exc:
         raise AuditError(f"GZIP/CSV read failed: {type(exc).__name__}: {exc}") from exc
 
+    if rows == 0:
+        raise AuditError("dataset contains no tick rows")
     if rows != manifest.get("tick_count"):
         raise AuditError("row count does not match manifest")
     if invalid_numeric or timestamp_errors or timestamp_mismatches or out_of_interval_timestamps:
