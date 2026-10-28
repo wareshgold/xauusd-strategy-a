@@ -146,7 +146,7 @@ def prepare_holdout_to_forward(
         ledger_path = str(events.path)
     else:
         serialized_snapshot = "".join(
-            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
             for event in ledger_snapshot
         ).encode("utf-8")
         ledger_sha256 = hashlib.sha256(serialized_snapshot).hexdigest()
