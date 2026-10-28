@@ -172,14 +172,14 @@ def test_journal_append_writes_real_jsonl_terminator(tmp_path):
     )
 
     raw = journal_path.read_bytes()
-    assert raw.endswith(b"\\n")
+    assert raw.endswith(b"\n")
     report, parsed = __import__(
         "strategy_factory.job_events", fromlist=["inspect_job_journal_snapshot"]
     ).inspect_job_journal_snapshot(journal_path)
     assert report["status"] == "VALID"
     assert parsed is not None and len(parsed) == 1
     lock_path = tmp_path / "factory_job_events.jsonl.lock"
-    assert lock_path.read_bytes() == b"\\0"
+    assert lock_path.read_bytes() == b"\0"
 
 
 def test_stale_ledger_writer_fails_closed_after_another_writer_appends(tmp_path):
