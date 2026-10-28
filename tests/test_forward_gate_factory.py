@@ -33,6 +33,20 @@ def _base_context(holdout_record, holdout_event, handoff):
     )
 
 
+
+def _ledger_evidence(events):
+    serialized = "".join(
+        json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+        for event in events
+    ).encode("utf-8")
+    return {
+        "source_event_ledger_sha256": hashlib.sha256(serialized).hexdigest(),
+        "source_event_ledger_byte_size": len(serialized),
+        "source_event_ledger_source": "in_memory",
+        "source_event_ledger_path": None,
+    }
+
+
 def _fixture(tmp_path: Path):
     from strategy_factory.adapter import build_execution_receipt
     from strategy_factory.datasets import DatasetArtifact, DatasetRegistry
@@ -201,6 +215,7 @@ def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
         forward_dataset_content_sha256="d" * 64,
         holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
     )
     result = ForwardGateFactory().prepare(context)
     assert result.passed
@@ -229,6 +244,7 @@ def test_forward_gate_rejects_post_holdout_tuning(tmp_path):
                                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
                                 post_holdout_tuning=True)
         )
 
@@ -243,6 +259,7 @@ def test_forward_gate_rejects_reused_holdout_identity(tmp_path):
                 handoff.dataset_content_sha256,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -255,6 +272,7 @@ def test_forward_gate_rejects_unfrozen_strategy(tmp_path):
                                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
                                 strategy_revision_frozen=False)
         )
 
@@ -271,6 +289,7 @@ def test_forward_gate_rejects_snapshot_manifest_revision_drift(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -288,6 +307,7 @@ def test_forward_gate_rejects_snapshot_not_bound_to_holdout_record(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -302,6 +322,7 @@ def test_forward_gate_rejects_non_hex_forward_dataset_sha(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "g" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -332,6 +353,7 @@ def test_forward_gate_rejects_holdout_result_record_mismatch(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=mismatched_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -351,6 +373,7 @@ def test_forward_gate_rejects_holdout_handoff_sha_mismatch(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -370,6 +393,7 @@ def test_forward_gate_rejects_holdout_handoff_artifact_mismatch(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -390,6 +414,7 @@ def test_forward_gate_rejects_unaccepted_holdout_result(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=rejected_holdout,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -408,6 +433,7 @@ def test_forward_gate_rejects_holdout_dataset_id_mismatch(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=altered_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -429,6 +455,7 @@ def test_forward_gate_rejects_holdout_composite_fingerprint_mismatch(tmp_path):
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=altered_result,
                 source_event_ledger_snapshot=ledger_snapshot,
+                **_ledger_evidence(ledger_snapshot),
             )
         )
 
@@ -467,6 +494,7 @@ def test_forward_gate_rejects_duplicate_holdout_completions_in_snapshot(tmp_path
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot + (duplicate,),
+                **_ledger_evidence(ledger_snapshot + (duplicate,)),
             )
         )
 
@@ -481,6 +509,7 @@ def test_forward_gate_rejects_invalid_event_ledger_sequence_without_mutation(tmp
                 "FWD", "FWD-DATA", "FWD-ART", "d" * 64,
                 holdout_result=holdout_result,
                 source_event_ledger_snapshot=(replace(event, sequence=2),),
+                **_ledger_evidence((replace(event, sequence=2),)),
             )
         )
     assert ledger_snapshot == before
