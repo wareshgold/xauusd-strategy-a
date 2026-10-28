@@ -98,3 +98,43 @@ def test_post_entry_move_below_activation_threshold_does_not_activate():
     assert result["post_entry_favorable_move"] == "0.21"
     assert result["post_entry_ticks_pass_activation_threshold"] is False
     assert result["entry_bar_contamination_demonstrated"] is False
+
+
+def test_pre_entry_low_is_not_flagged_when_post_entry_move_also_reaches_threshold():
+    result = audit.audit_entry_bar(
+        entry_time_utc="2026-10-27T12:56:05.552Z",
+        entry_price="4006.11",
+        bar_start_utc="2026-10-27T12:56:00Z",
+        bar_low="4005.40",
+        bar_low_time_utc="2026-10-27T12:56:02.000Z",
+        activation_distance="0.40",
+        post_entry_min_bid="4005.70",
+        post_entry_min_bid_time_utc="2026-10-27T12:56:30.000Z",
+        following_minute_min_ask="4006.20",
+    )
+
+    assert result["entry_bar"]["low_occurred_before_entry"] is True
+    assert result["full_bar_passes_activation_threshold"] is True
+    assert result["post_entry_favorable_move"] == "0.41"
+    assert result["post_entry_ticks_pass_activation_threshold"] is True
+    assert result["entry_bar_contamination_demonstrated"] is False
+
+
+def test_ask_guard_rejects_candidate_at_exact_ask_plus_broker_distance_boundary():
+    result = audit.audit_entry_bar(
+        entry_time_utc="2026-10-27T12:56:05.552Z",
+        entry_price="4006.11",
+        bar_start_utc="2026-10-27T12:56:00Z",
+        bar_low="4005.71",
+        bar_low_time_utc="2026-10-27T12:56:30.000Z",
+        activation_distance="0.40",
+        post_entry_min_bid="4005.71",
+        post_entry_min_bid_time_utc="2026-10-27T12:56:30.000Z",
+        following_minute_min_ask="4005.91",
+        min_broker_distance="0.20",
+    )
+
+    assert result["candidate_sl_from_full_bar_low"] == "4006.11"
+    assert result["following_minute_min_ask"] == "4005.91"
+    assert result["min_broker_distance"] == "0.20"
+    assert result["candidate_rejected_by_ask_guard_throughout_following_minute"] is True
