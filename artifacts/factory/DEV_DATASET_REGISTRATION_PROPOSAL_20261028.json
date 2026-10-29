@@ -34,7 +34,7 @@
       "note": "The local manifest digest matches the digest observed by the updated audit, but the manifest is intentionally ignored under data/raw/ and has no Git history. A plausible producer script exists; this does not independently prove that the exact local manifest was emitted by the exact script version during the claimed MT5 acquisition."
     },
     "audit_receipt": {
-      "sha256": "760ef49fb1d5e90d94bcddf28be2f2a8fc8d6a87b53c371413e28b37dc7c5629",
+      "sha256": "760ef49fb1d5e90d94bcddf28be2f2a8fc8d6a87b53c37141328b37dc7c5629",
       "size_bytes": 2639,
       "reported_status": "INTEGRITY_AND_BASIC_QUOTE_CHECKS_PASS",
       "source_commit": "1768e20785c57d934287473db0a8b4b5018546d7",
