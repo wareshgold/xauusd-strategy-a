@@ -18,7 +18,7 @@ from strategy_factory.forward_preparation import (
     classify_holdout_to_forward_transition,
 )
 from strategy_factory.job_events import FactoryJobEventLedger, _journal_write_lock
-from strategy_factory import trust_anchor, trust_audit
+from strategy_factory import forward_preparation, trust_anchor, trust_audit
 
 from test_holdout_factory import _context
 
