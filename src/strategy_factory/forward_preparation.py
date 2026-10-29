@@ -111,7 +111,40 @@ def prepare_holdout_to_forward(
         raise ForwardPreparationError(
             "Holdout-to-Forward requires signed evidence and the actual Holdout artifact path"
         )
+    # Bind the signature to the exact source-journal prefix that exists before
+    # this handoff mutates the journal. This boundary is intentionally the
+    # pre-transition prefix; the later gate also records the post-Holdout-event
+    # snapshot separately.
+    boundary_events = events.entries()
+    if events.path is not None:
+        boundary_report, boundary_persisted = inspect_job_journal_snapshot(events.path)
+        if (
+            boundary_report.get("status") != "VALID"
+            or boundary_persisted is None
+            or boundary_persisted != boundary_events
+        ):
+            raise ForwardPreparationError(
+                "source event journal boundary is invalid or inconsistent before trust verification"
+            )
+        boundary_sha256 = boundary_report.get("sha256")
+        boundary_byte_size = boundary_report.get("byte_size")
+        boundary_source = "persisted_jsonl"
+    else:
+        boundary_bytes = "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            for event in boundary_events
+        ).encode("utf-8")
+        boundary_sha256 = hashlib.sha256(boundary_bytes).hexdigest()
+        boundary_byte_size = len(boundary_bytes)
+        boundary_source = "in_memory"
+    if not isinstance(boundary_sha256, str) or len(boundary_sha256) != 64:
+        raise ForwardPreparationError("source event journal boundary lacks a valid SHA-256")
+
     expected_bindings = {
+        "source_event_ledger_prefix_sha256": boundary_sha256,
+        "source_event_ledger_prefix_byte_size": boundary_byte_size,
+        "source_event_ledger_sequence_boundary": len(boundary_events),
+        "source_event_ledger_prefix_source": boundary_source,
         "strategy_id": record.strategy_id,
         "strategy_revision": record.strategy_revision,
         "manifest_revision": record.manifest_revision,
@@ -228,6 +261,10 @@ def prepare_holdout_to_forward(
             source_event_ledger_byte_size=ledger_byte_size,
             source_event_ledger_source=ledger_source,
             source_event_ledger_path=ledger_path,
+            source_event_ledger_prefix_sha256=boundary_sha256,
+            source_event_ledger_prefix_byte_size=boundary_byte_size,
+            source_event_ledger_sequence_boundary=len(boundary_events),
+            source_event_ledger_prefix_source=boundary_source,
             post_holdout_tuning=post_holdout_tuning,
         )
     )
