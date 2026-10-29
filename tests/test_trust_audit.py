@@ -27,7 +27,7 @@ def _fixture(tmp_path: Path):
     return envelope, artifact, verification, audit
 
 
-def _append(envelope, artifact, verification, audit, *, phase="holdout_to_forward", session="session-1", consume=False):
+def _append(envelope, artifact, verification, audit, *, phase="holdout_to_forward", session="session-1", consume=False, resume=False, boundary=None):
     return append_verification_audit(
         phase=phase,
         session_id=session,
@@ -35,6 +35,14 @@ def _append(envelope, artifact, verification, audit, *, phase="holdout_to_forwar
         artifact_path=artifact,
         verification=verification,
         consume_holdout_once=consume,
+        resume_holdout_once=resume,
+        source_event_ledger_boundary=boundary or ({
+            "source_event_ledger_prefix_sha256": hashlib.sha256(b"").hexdigest(),
+            "source_event_ledger_prefix_byte_size": 0,
+            "source_event_ledger_sequence_boundary": 0,
+            "source_event_ledger_prefix_source": "in_memory",
+            "source_event_ledger_path": None,
+        } if consume else None),
         audit_path=audit,
     )
 
@@ -60,6 +68,46 @@ def test_trust_audit_rejects_reconsumption_of_same_holdout_envelope(tmp_path):
     _append(envelope, artifact, verification, audit, consume=True)
     with pytest.raises(TrustAuditError, match="already been consumed"):
         _append(envelope, artifact, verification, audit, consume=True, session="session-2")
+
+
+
+def test_trust_audit_allows_recovery_only_for_same_session_and_boundary(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    boundary = {
+        "source_event_ledger_prefix_sha256": hashlib.sha256(b"").hexdigest(),
+        "source_event_ledger_prefix_byte_size": 0,
+        "source_event_ledger_sequence_boundary": 0,
+        "source_event_ledger_prefix_source": "in_memory",
+        "source_event_ledger_path": None,
+    }
+    first = _append(
+        envelope, artifact, verification, audit, consume=True, boundary=boundary
+    )
+    recovered = _append(
+        envelope, artifact, verification, audit,
+        phase="holdout_to_forward_recovery",
+        consume=True, resume=True, boundary=boundary,
+    )
+    assert first["phase"] == "holdout_to_forward"
+    assert recovered["phase"] == "holdout_to_forward_recovery"
+    assert recovered["session_id"] == first["session_id"]
+    assert recovered["source_event_ledger_prefix_sha256"] == boundary["source_event_ledger_prefix_sha256"]
+
+    with pytest.raises(TrustAuditError, match="same session and unchanged signed journal boundary"):
+        _append(
+            envelope, artifact, verification, audit,
+            phase="holdout_to_forward_recovery",
+            session="different-session",
+            consume=True, resume=True, boundary=boundary,
+        )
+
+    changed_boundary = dict(boundary, source_event_ledger_prefix_sha256="a" * 64)
+    with pytest.raises(TrustAuditError, match="same session and unchanged signed journal boundary"):
+        _append(
+            envelope, artifact, verification, audit,
+            phase="holdout_to_forward_recovery",
+            consume=True, resume=True, boundary=changed_boundary,
+        )
 
 
 def test_trust_audit_fails_closed_when_existing_chain_is_tampered(tmp_path):
