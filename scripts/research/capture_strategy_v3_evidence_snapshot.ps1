@@ -1,14 +1,14 @@
 # Read-only Strategy V3 evidence snapshot. Does not stop processes, edit runtime, or overwrite files.
 $ErrorActionPreference = "Stop"
 $repoRoot = (Get-Location).Path
-$expectedRunner = "scripts\\run_sp2l_v3_xauusd_forward_test.py"
-$events = Join-Path $repoRoot "artifacts\\forward-test\\SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl"
-$state = Join-Path $repoRoot "runtime\\sp2l_v3_xauusd_rr2_trail4_forward_state.json"
-$lock = Join-Path $repoRoot "runtime\\sp2l_multi_symbol_forward_runner.lock"
+$expectedRunner = "scripts\run_sp2l_v3_xauusd_forward_test.py"
+$events = Join-Path $repoRoot "artifacts\forward-test\SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl"
+$state = Join-Path $repoRoot "runtime\sp2l_v3_xauusd_rr2_trail4_forward_state.json"
+$lock = Join-Path $repoRoot "runtime\sp2l_multi_symbol_forward_runner.lock"
 $dashboardPort = 8790
 $v3DashboardPort = 8792
 $stamp = [DateTime]::UtcNow.ToString("yyyyMMddTHHmmssZ")
-$outDir = Join-Path $repoRoot "artifacts\\v3\\winner-snapshots"
+$outDir = Join-Path $repoRoot "artifacts\v3\winner-snapshots"
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 $outPath = Join-Path $outDir "STRATEGY_V3_EVIDENCE_$stamp.json"
 if (Test-Path $outPath) { throw "Refusing to overwrite existing snapshot: $outPath" }
@@ -64,7 +64,7 @@ $snapshot = [ordered]@{
     runner_process_matches = $runnerMatches
     process_count_is_not_duplicate_proof = $true
     dashboards_listeners = $dashboardListeners
-    generic_events = Get-FileEvidence (Join-Path $repoRoot "artifacts\\forward-test\\SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl")
+    generic_events = Get-FileEvidence (Join-Path $repoRoot "artifacts\forward-test\SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl")
     v3_events = Get-FileEvidence $events
     v3_state = Get-FileEvidence $state
   }
