@@ -269,6 +269,70 @@ def inspect_job_journal_snapshot(
     }, events)
 
 
+
+def verify_job_journal_prefix(
+    path: Path,
+    *,
+    expected_sha256: str,
+    expected_byte_size: int,
+    sequence_boundary: int,
+) -> dict[str, Any]:
+    """Verify a signed, byte-exact prefix remains present in a valid JSONL journal.
+
+    Later valid events are allowed: only the first sequence_boundary events and
+    their exact serialized bytes are compared to the signed pre-transition
+    boundary. This detects deletion, rewriting, reordering, and non-canonical
+    substitutions without requiring the post-transition journal to stay frozen.
+    """
+    path = Path(path)
+    if (
+        not isinstance(expected_sha256, str)
+        or len(expected_sha256) != 64
+        or any(char not in "0123456789abcdef" for char in expected_sha256)
+        or not isinstance(expected_byte_size, int)
+        or isinstance(expected_byte_size, bool)
+        or expected_byte_size < 0
+        or not isinstance(sequence_boundary, int)
+        or isinstance(sequence_boundary, bool)
+        or sequence_boundary < 0
+    ):
+        raise ValueError("signed source event-ledger prefix metadata is invalid")
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise ValueError("persisted source event journal is missing or unreadable") from exc
+    try:
+        all_events = _parse_journal_text(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise ValueError("persisted source event journal is invalid") from exc
+    if len(all_events) < sequence_boundary:
+        raise ValueError("persisted source event journal is shorter than the signed prefix boundary")
+    if len(raw) < expected_byte_size:
+        raise ValueError("persisted source event journal is shorter than the signed prefix byte size")
+    prefix = raw[:expected_byte_size]
+    if hashlib.sha256(prefix).hexdigest() != expected_sha256:
+        raise ValueError("persisted source event journal signed prefix SHA-256 mismatch")
+    if sequence_boundary == 0:
+        expected_prefix = b""
+    else:
+        expected_prefix = "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            for event in all_events[:sequence_boundary]
+        ).encode("utf-8")
+    if len(expected_prefix) != expected_byte_size or prefix != expected_prefix:
+        raise ValueError("persisted source event journal signed prefix bytes/sequence boundary mismatch")
+    return {
+        "verified": True,
+        "path": str(path),
+        "prefix_sha256": expected_sha256,
+        "prefix_byte_size": expected_byte_size,
+        "sequence_boundary": sequence_boundary,
+        "current_event_count": len(all_events),
+        "current_journal_sha256": hashlib.sha256(raw).hexdigest(),
+        "later_events_preserved": len(all_events) > sequence_boundary,
+    }
+
+
 def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, Any]:
     """Inspect a journal snapshot without repairing or rewriting the source file."""
     report, _events = inspect_job_journal_snapshot(path)
