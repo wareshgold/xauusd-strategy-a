@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+import base64
 import hashlib
+import json
 from types import SimpleNamespace
+from pathlib import Path
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from strategy_factory.dataset_provenance import DatasetProvenanceStatus
 
@@ -15,6 +21,7 @@ from strategy_factory.models import GateResult, GateStatus, StrategyPassport
 from strategy_factory.manifest import EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule
 from strategy_factory.snapshot import build_readiness_snapshot
 from strategy_factory.source_ledger import SourceResolutionLedger
+from strategy_factory import trust_anchor
 
 
 class SyntheticHoldoutRecord:
@@ -97,12 +104,49 @@ def _synthetic_holdout_result(record, snapshot, content_sha, artifact_id):
     )
 
 
-def _session():
+def _session(tmp_path, monkeypatch):
     record = SyntheticHoldoutRecord()
     readiness_snapshot, readiness_manifest, readiness_passport, readiness_ledger = _readiness_bundle(record)
-    holdout_sha = _sha(b"holdout-runtime")
+    artifact_path = tmp_path / "holdout-runtime.bin"
+    artifact_path.write_bytes(b"holdout-runtime")
+    holdout_sha = _sha(artifact_path.read_bytes())
     holdout_artifact = "HOLDOUT-RUNTIME-ART-1"
     holdout_result = _synthetic_holdout_result(record, readiness_snapshot, holdout_sha, holdout_artifact)
+
+    private_key = Ed25519PrivateKey.generate()
+    public_key_bytes = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    keyring_path = tmp_path / "test-keyring.json"
+    keyring_path.write_text(
+        json.dumps({"keys": {"runtime-test-key": base64.b64encode(public_key_bytes).decode("ascii")}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
+    envelope = {
+        "schema_version": "SP2L-SIGNED-EVIDENCE-1",
+        "key_id": "runtime-test-key",
+        "issued_at_utc": "2026-10-01T00:00:00Z",
+        "expires_at_utc": "2030-01-01T00:00:00Z",
+        "payload": {
+            "strategy_id": record.strategy_id,
+            "strategy_revision": record.strategy_revision,
+            "manifest_revision": record.manifest_revision,
+            "execution_semantics": record.execution_semantics,
+            "readiness_snapshot_fingerprint": readiness_snapshot.fingerprint,
+            "holdout_dataset_id": record.dataset_id,
+            "holdout_artifact_id": holdout_artifact,
+            "holdout_dataset_role": "FRESH_HOLDOUT",
+            "holdout_artifact_sha256": holdout_sha,
+        },
+    }
+    signed_bytes = json.dumps(
+        envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    ).encode("utf-8")
+    envelope["signature_b64"] = base64.b64encode(private_key.sign(signed_bytes)).decode("ascii")
+    envelope_path = tmp_path / "signed-evidence.json"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
     gate = ForwardGateResult(
         holdout_result=holdout_result,
         readiness_snapshot=readiness_snapshot,
@@ -137,6 +181,8 @@ def _session():
         forward_dataset_id="FORWARD-RUNTIME-DATA-1",
         forward_dataset_artifact_id="FORWARD-RUNTIME-ART-1",
         forward_dataset_content_sha256=_sha(b"forward-runtime"),
+        trust_envelope_path=str(envelope_path),
+        holdout_artifact_path=str(artifact_path),
     ).session
 
 
@@ -159,7 +205,7 @@ def test_bound_forward_runs_injected_runner_and_binds_observed_reconciliation():
         }
 
     result = run_bound_forward(
-        session=_session(),
+        session=_session(tmp_path, monkeypatch),
         run_forward=run_forward,
         reconcile=reconcile,
         started_utc="2026-10-07T01:00:00Z",
@@ -238,7 +284,7 @@ def test_bound_forward_rejects_session_without_holdout_result_before_runner():
     from dataclasses import replace
 
     calls = []
-    session = replace(_session(), holdout_result=None)
+    session = replace(_session(tmp_path, monkeypatch), holdout_result=None)
     try:
         run_bound_forward(
             session=session,
