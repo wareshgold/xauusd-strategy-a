@@ -275,3 +275,40 @@ def test_trust_audit_rejects_boolean_sequence_without_mutation(tmp_path):
         _append(envelope, artifact, verification, audit, phase="runtime_preflight")
 
     assert audit.read_bytes() == before
+
+
+
+def test_trust_audit_serializes_concurrent_appends_without_lost_records(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    workers = 6
+
+    def append_one(_index):
+        return _append(
+            envelope, artifact, verification, audit,
+            phase="runtime_preflight", session="concurrent-session",
+        )
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        returned = list(pool.map(append_one, range(workers)))
+
+    entries = [
+        json.loads(line)
+        for line in audit.read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(entries) == workers
+    assert sorted(entry["sequence"] for entry in returned) == list(range(1, workers + 1))
+    previous = "0" * 64
+    for sequence, entry in enumerate(entries, start=1):
+        assert entry["sequence"] == sequence
+        assert entry["previous_entry_sha256"] == previous
+        body = {key: value for key, value in entry.items() if key != "entry_sha256"}
+        expected = hashlib.sha256(
+            json.dumps(
+                body, sort_keys=True, separators=(",", ":"),
+                ensure_ascii=True, allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()
+        assert entry["entry_sha256"] == expected
+        previous = entry["entry_sha256"]
