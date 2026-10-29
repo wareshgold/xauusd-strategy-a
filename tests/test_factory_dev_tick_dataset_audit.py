@@ -455,7 +455,7 @@ def test_malformed_csv_quoting_is_rejected(tmp_path):
     "manifest_bytes",
     [
         b"{not-json",
-        b"\\xff",
+        b"\xff",
         b"[]",
         b"null",
     ],
