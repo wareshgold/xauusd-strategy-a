@@ -128,7 +128,7 @@ def test_trust_audit_fails_closed_when_existing_chain_is_tampered(tmp_path):
     _append(envelope, artifact, verification, audit, consume=True)
     entry = json.loads(audit.read_text(encoding="utf-8"))
     entry["session_id"] = "altered"
-    audit.write_text(json.dumps(entry, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False) + "\\n", encoding="utf-8")
+    audit.write_text(json.dumps(entry, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False) + "\n", encoding="utf-8")
 
     with pytest.raises(TrustAuditError, match="hash chain invalid"):
         _append(envelope, artifact, verification, audit, phase="runtime_preflight")
