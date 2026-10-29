@@ -93,6 +93,15 @@ def test_trust_audit_allows_recovery_only_for_same_session_and_boundary(tmp_path
     assert recovered["session_id"] == first["session_id"]
     assert recovered["source_event_ledger_prefix_sha256"] == boundary["source_event_ledger_prefix_sha256"]
 
+    # A recovery record is itself a one-time reconciliation action. A repeated
+    # call must not keep extending the audit chain as if each retry were new.
+    with pytest.raises(TrustAuditError, match="recovery has already been recorded"):
+        _append(
+            envelope, artifact, verification, audit,
+            phase="holdout_to_forward_recovery",
+            consume=True, resume=True, boundary=boundary,
+        )
+
     with pytest.raises(TrustAuditError, match="same session and unchanged signed journal boundary"):
         _append(
             envelope, artifact, verification, audit,
