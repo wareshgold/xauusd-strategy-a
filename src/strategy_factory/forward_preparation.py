@@ -20,6 +20,7 @@ from .holdout_factory import HoldoutFactoryResult
 from .job_events import FactoryJobEvent, FactoryJobEventLedger, inspect_job_journal_snapshot
 from .forward_session_factory import DemoForwardSessionResult
 from .trust_anchor import TrustAnchorError, verify_signed_evidence
+from .trust_audit import TrustAuditError, append_verification_audit
 
 
 class ForwardPreparationError(RuntimeError):
@@ -130,14 +131,22 @@ def prepare_holdout_to_forward(
         "holdout_artifact_byte_size": Path(holdout_artifact_path).stat().st_size,
     }
     try:
-        verify_signed_evidence(
+        verification = verify_signed_evidence(
             Path(trust_envelope_path),
             expected_bindings=expected_bindings,
             artifact_path=Path(holdout_artifact_path),
         )
-    except TrustAnchorError as exc:
+        append_verification_audit(
+            phase="holdout_to_forward",
+            session_id=forward_session_id,
+            envelope_path=Path(trust_envelope_path),
+            artifact_path=Path(holdout_artifact_path),
+            verification=verification,
+            consume_holdout_once=True,
+        )
+    except (TrustAnchorError, TrustAuditError) as exc:
         raise ForwardPreparationError(
-            f"Holdout-to-Forward signed evidence verification failed: {exc}"
+            f"Holdout-to-Forward signed evidence verification/audit failed: {exc}"
         ) from exc
 
     try:
