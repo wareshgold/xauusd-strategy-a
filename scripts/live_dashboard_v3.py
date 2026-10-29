@@ -1,6 +1,6 @@
 """Read-only live dashboard specifically wired to Strategy V3 RR2/TRAIL4 state and events.
 
-Serves one auto-refreshing page (default http://127.0.0.1:8790) so the
+Serves one auto-refreshing page (default http://127.0.0.1:8792) so the
 operator can SEE the session working without touching logs:
 
   - session heartbeat (state-file mtime, runner/watchdog pids alive)
