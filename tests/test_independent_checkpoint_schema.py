@@ -80,7 +80,7 @@ def test_valid_synthetic_contract_envelopes_pass(validator, factory):
         (valid_receipt, "request_sha256", "not-a-sha256"),
         (valid_receipt, "accepted_audit_sequence", 0),
         (valid_receipt, "acknowledged_at", "not-a-date"),
-        (valid_receipt, "acknowledged_at", "2026-99-99T99:99:99Z"),
+        (valid_receipt, "acknowledged_at", "2026-10-29T12:00:00"),
         (valid_receipt, "schema_version", "unknown.version"),
     ],
 )
