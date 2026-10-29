@@ -59,6 +59,10 @@ class DemoForwardSession:
     holdout_result: HoldoutFactoryResult | None = None
     trust_envelope_path: str | None = None
     holdout_artifact_path: str | None = None
+    source_event_ledger_prefix_sha256: str | None = None
+    source_event_ledger_prefix_byte_size: int | None = None
+    source_event_ledger_sequence_boundary: int | None = None
+    source_event_ledger_prefix_source: str | None = None
 
     def _payload(self) -> dict[str, object]:
         return {
@@ -83,6 +87,10 @@ class DemoForwardSession:
             "readiness_snapshot_fingerprint": self.readiness_snapshot_fingerprint,
             "trust_envelope_path": self.trust_envelope_path,
             "holdout_artifact_path": self.holdout_artifact_path,
+            "source_event_ledger_prefix_sha256": self.source_event_ledger_prefix_sha256,
+            "source_event_ledger_prefix_byte_size": self.source_event_ledger_prefix_byte_size,
+            "source_event_ledger_sequence_boundary": self.source_event_ledger_sequence_boundary,
+            "source_event_ledger_prefix_source": self.source_event_ledger_prefix_source,
         }
 
     def validate(self) -> None:
@@ -164,6 +172,10 @@ class DemoForwardSession:
                 "forward runtime requires a signed evidence envelope and the actual Holdout artifact path"
             )
         expected_bindings = {
+            "source_event_ledger_prefix_sha256": self.source_event_ledger_prefix_sha256,
+            "source_event_ledger_prefix_byte_size": self.source_event_ledger_prefix_byte_size,
+            "source_event_ledger_sequence_boundary": self.source_event_ledger_sequence_boundary,
+            "source_event_ledger_prefix_source": self.source_event_ledger_prefix_source,
             "strategy_id": self.strategy_id,
             "strategy_revision": self.strategy_revision,
             "manifest_revision": self.manifest_revision,
@@ -322,6 +334,22 @@ class DemoForwardSessionFactory:
         if details.get("holdout_dataset_id") != source_record.dataset_id:
             raise ForwardSessionError("Forward Gate Holdout dataset does not match source record")
 
+        ledger_prefix_sha = details.get("source_event_ledger_prefix_sha256")
+        ledger_prefix_size = details.get("source_event_ledger_prefix_byte_size")
+        ledger_sequence_boundary = details.get("source_event_ledger_sequence_boundary")
+        ledger_prefix_source = details.get("source_event_ledger_prefix_source")
+        if (
+            not isinstance(ledger_prefix_sha, str)
+            or len(ledger_prefix_sha) != 64
+            or any(char not in "0123456789abcdef" for char in ledger_prefix_sha)
+            or not isinstance(ledger_prefix_size, int)
+            or ledger_prefix_size < 0
+            or not isinstance(ledger_sequence_boundary, int)
+            or ledger_sequence_boundary < 0
+            or ledger_prefix_source not in {"persisted_jsonl", "in_memory"}
+        ):
+            raise ForwardSessionError("Forward Gate lacks a valid signed source event-ledger boundary")
+
         holdout_sha = str(details.get("holdout_dataset_sha256", ""))
         holdout_artifact_id = str(details.get("holdout_artifact_id", ""))
         if (
@@ -381,6 +409,10 @@ class DemoForwardSessionFactory:
             holdout_result=gate.holdout_result,
             trust_envelope_path=trust_envelope_path,
             holdout_artifact_path=holdout_artifact_path,
+            source_event_ledger_prefix_sha256=ledger_prefix_sha,
+            source_event_ledger_prefix_byte_size=ledger_prefix_size,
+            source_event_ledger_sequence_boundary=ledger_sequence_boundary,
+            source_event_ledger_prefix_source=ledger_prefix_source,
         )
         fingerprint = hashlib.sha256(
             json.dumps(draft._payload(), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
