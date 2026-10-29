@@ -549,3 +549,15 @@ def test_tampered_signed_evidence_blocks_holdout_to_forward_before_event_append(
         prepare_holdout_to_forward(**kwargs)
 
     assert events.entries() == before
+
+
+def test_signed_holdout_evidence_cannot_be_replayed_for_another_forward_session(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    kwargs["forward_session_id"] = "DIFFERENT-FORWARD-SESSION"
+    before = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="binding mismatch: forward_session_id"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert events.entries() == before
