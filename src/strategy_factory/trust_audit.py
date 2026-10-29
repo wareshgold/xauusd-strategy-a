@@ -80,15 +80,19 @@ def append_verification_audit(
     artifact_path: Path,
     verification: dict[str, Any],
     consume_holdout_once: bool = False,
+    resume_holdout_once: bool = False,
+    source_event_ledger_boundary: dict[str, Any] | None = None,
     audit_path: Path | None = None,
 ) -> dict[str, Any]:
     """Validate and durably append one successful verification record.
 
-    Holdout-to-Forward consumes a signed envelope once globally. Runtime phases
-    are repeatable for the same bound session, so preflight and dispatch can
-    both be audited without being mistaken for a replay.
+    Holdout-to-Forward consumes a signed envelope once globally. A recovery
+    record is allowed only for the same envelope, session, and exact signed
+    source-journal boundary; callers must independently verify that the journal
+    still equals that boundary before requesting recovery. Runtime phases are
+    repeatable for the same bound session.
     """
-    if phase not in {"holdout_to_forward", "runtime_preflight", "runtime_dispatch"}:
+    if phase not in {"holdout_to_forward", "holdout_to_forward_recovery", "runtime_preflight", "runtime_dispatch"}:
         raise TrustAuditError("unsupported trust verification audit phase")
     if not session_id:
         raise TrustAuditError("trust audit requires a forward session ID")
@@ -105,15 +109,65 @@ def append_verification_audit(
     try:
         with _journal_write_lock(path):
             entries = _read_valid_entries(path)
+            if resume_holdout_once and not consume_holdout_once:
+                raise TrustAuditError("Holdout recovery requires one-time consumption mode")
             if consume_holdout_once:
-                if phase != "holdout_to_forward":
+                if phase not in {"holdout_to_forward", "holdout_to_forward_recovery"}:
                     raise TrustAuditError("one-time Holdout consumption is valid only at Holdout-to-Forward")
-                if any(
-                    item.get("phase") == "holdout_to_forward"
-                    and item.get("envelope_sha256") == envelope_sha
-                    for item in entries
+                if source_event_ledger_boundary is None:
+                    raise TrustAuditError("Holdout consumption requires a signed source-journal boundary")
+                boundary_fields = {
+                    "source_event_ledger_prefix_sha256",
+                    "source_event_ledger_prefix_byte_size",
+                    "source_event_ledger_sequence_boundary",
+                    "source_event_ledger_prefix_source",
+                    "source_event_ledger_path",
+                }
+                if set(source_event_ledger_boundary) != boundary_fields:
+                    raise TrustAuditError("Holdout source-journal recovery boundary fields are invalid")
+                boundary_sha = source_event_ledger_boundary.get("source_event_ledger_prefix_sha256")
+                boundary_size = source_event_ledger_boundary.get("source_event_ledger_prefix_byte_size")
+                boundary_count = source_event_ledger_boundary.get("source_event_ledger_sequence_boundary")
+                boundary_source = source_event_ledger_boundary.get("source_event_ledger_prefix_source")
+                boundary_path = source_event_ledger_boundary.get("source_event_ledger_path")
+                if (
+                    not isinstance(boundary_sha, str)
+                    or len(boundary_sha) != 64
+                    or any(char not in "0123456789abcdef" for char in boundary_sha)
+                    or not isinstance(boundary_size, int)
+                    or isinstance(boundary_size, bool)
+                    or boundary_size < 0
+                    or not isinstance(boundary_count, int)
+                    or isinstance(boundary_count, bool)
+                    or boundary_count < 0
+                    or boundary_source not in {"persisted_jsonl", "in_memory"}
+                    or (boundary_source == "persisted_jsonl" and not isinstance(boundary_path, str))
+                    or (boundary_source == "in_memory" and boundary_path is not None)
                 ):
-                    raise TrustAuditError("signed Holdout evidence has already been consumed")
+                    raise TrustAuditError("Holdout source-journal recovery boundary values are invalid")
+                prior_consumption = next((
+                    item for item in entries
+                    if item.get("phase") == "holdout_to_forward"
+                    and item.get("envelope_sha256") == envelope_sha
+                ), None)
+                if prior_consumption is not None:
+                    if not resume_holdout_once:
+                        raise TrustAuditError("signed Holdout evidence has already been consumed")
+                    prior_boundary = {
+                        key: prior_consumption.get(key) for key in boundary_fields
+                    }
+                    if (
+                        prior_consumption.get("session_id") != session_id
+                        or prior_boundary != source_event_ledger_boundary
+                        or phase != "holdout_to_forward_recovery"
+                    ):
+                        raise TrustAuditError(
+                            "Holdout recovery requires the same session and unchanged signed journal boundary"
+                        )
+                elif resume_holdout_once or phase == "holdout_to_forward_recovery":
+                    raise TrustAuditError("Holdout recovery has no matching prior consumption record")
+            elif resume_holdout_once or phase == "holdout_to_forward_recovery":
+                raise TrustAuditError("Holdout recovery requires one-time consumption mode")
             body = {
                 "sequence": len(entries) + 1,
                 "phase": phase,
@@ -124,6 +178,7 @@ def append_verification_audit(
                 "issued_at_utc": verification.get("issued_at_utc"),
                 "expires_at_utc": verification.get("expires_at_utc"),
                 "recorded_at_utc": now,
+                **(source_event_ledger_boundary or {}),
                 "previous_entry_sha256": entries[-1]["entry_sha256"] if entries else "0" * 64,
             }
             entry = {**body, "entry_sha256": hashlib.sha256(_canonical(body)).hexdigest()}
