@@ -23,6 +23,7 @@ from .dataset_provenance import DatasetProvenanceStatus
 from .test_contract import DatasetRole
 from .holdout_factory import HoldoutFactoryResult
 from .trust_anchor import TrustAnchorError, verify_signed_evidence
+from .trust_audit import TrustAuditError, append_verification_audit
 
 
 class ForwardSessionError(ValueError):
@@ -154,7 +155,7 @@ class DemoForwardSession:
                 "carried Holdout result does not match the frozen forward session identity"
             )
 
-    def validate_for_runtime(self) -> None:
+    def validate_for_runtime(self, *, audit_phase: str | None = None) -> None:
         """Require independently recomputable source readiness and Holdout provenance."""
         self.validate()
         self._validate_holdout_binding()
@@ -182,14 +183,22 @@ class DemoForwardSession:
             "holdout_artifact_byte_size": Path(self.holdout_artifact_path).stat().st_size,
         }
         try:
-            verify_signed_evidence(
+            verification = verify_signed_evidence(
                 Path(self.trust_envelope_path),
                 expected_bindings=expected_bindings,
                 artifact_path=Path(self.holdout_artifact_path),
             )
-        except TrustAnchorError as exc:
+            if audit_phase is not None:
+                append_verification_audit(
+                    phase=audit_phase,
+                    session_id=self.session_id,
+                    envelope_path=Path(self.trust_envelope_path),
+                    artifact_path=Path(self.holdout_artifact_path),
+                    verification=verification,
+                )
+        except (TrustAnchorError, TrustAuditError) as exc:
             raise ForwardSessionError(
-                f"forward runtime signed evidence verification failed: {exc}"
+                f"forward runtime signed evidence verification/audit failed: {exc}"
             ) from exc
         if (
             self.readiness_snapshot is None
