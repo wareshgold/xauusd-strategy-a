@@ -51,6 +51,7 @@ def _signed_kwargs(holdout, context, events, tmp_path, monkeypatch):
             "holdout_dataset_id": record.dataset_id,
             "holdout_artifact_id": holdout.result.run.artifact_id,
             "holdout_dataset_role": "FRESH_HOLDOUT",
+            "forward_session_id": kwargs["forward_session_id"],
             "holdout_run_id": holdout.result.run.run_id,
             "holdout_run_fingerprint": record.run_fingerprint,
             "holdout_evidence_id": record.evidence_id,
