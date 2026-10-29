@@ -7,7 +7,7 @@ Factory transitions so the visual world can later follow real queue movement
 without inventing activity.
 """
 
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 from typing import Any, Iterator
+from threading import get_ident
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_JOB_EVENTS_FILE = ROOT / "runtime" / "factory_job_events.jsonl"
@@ -56,6 +57,16 @@ def _journal_write_lock(path: Path) -> Iterator[None]:
                 yield
             finally:
                 fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
+
+class _JournalTransitionLockToken:
+    """Thread-bound capability for appends made inside one journal transition lock."""
+
+    def __init__(self, path: Path | None) -> None:
+        self.path = Path(path) if path is not None else None
+        self.owner_thread = get_ident()
+        self.active = True
 
 
 def _utc_now() -> str:
@@ -349,6 +360,37 @@ class FactoryJobEventLedger:
                 self.path.read_text(encoding="utf-8")
             )
 
+    @contextmanager
+    def transition_lock(self) -> Iterator[_JournalTransitionLockToken]:
+        """Hold the journal lock across a multi-step transition.
+
+        Every cooperating writer must use the same sidecar lock. Appends made
+        by this thread can present the yielded token to avoid reacquiring the
+        OS lock; tokens are invalidated when the context exits.
+        """
+        token = _JournalTransitionLockToken(self.path)
+        if self.path is None:
+            try:
+                yield token
+            finally:
+                token.active = False
+            return
+        with _journal_write_lock(self.path):
+            try:
+                yield token
+            finally:
+                token.active = False
+
+    def _valid_transition_lock_token(
+        self, token: _JournalTransitionLockToken | None
+    ) -> bool:
+        return (
+            token is not None
+            and token.active
+            and token.owner_thread == get_ident()
+            and token.path == (Path(self.path) if self.path is not None else None)
+        )
+
     @classmethod
     def from_snapshot(
         cls, events: tuple[FactoryJobEvent, ...]
@@ -370,6 +412,7 @@ class FactoryJobEventLedger:
         detail: str | None = None,
         output_artifact: str | None = None,
         research_run_fingerprint: str | None = None,
+        _transition_lock_token: _JournalTransitionLockToken | None = None,
     ) -> FactoryJobEvent:
         event = FactoryJobEvent(
             sequence=len(self._events) + 1,
@@ -394,7 +437,12 @@ class FactoryJobEventLedger:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             # The lock spans both integrity preflight and append/rollback, so
             # cooperating writers cannot race between validation and write.
-            with _journal_write_lock(self.path):
+            lock_context = (
+                nullcontext()
+                if self._valid_transition_lock_token(_transition_lock_token)
+                else _journal_write_lock(self.path)
+            )
+            with lock_context:
                 # Fail closed before the first write if the persisted journal
                 # has drifted since this ledger was loaded. Never repair it.
                 if self.path.exists():
