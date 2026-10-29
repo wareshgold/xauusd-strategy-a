@@ -356,3 +356,22 @@ def test_empty_tick_dataset_is_rejected(tmp_path):
 
     with pytest.raises(AuditError, match="contains no tick rows"):
         audit_dataset(dataset, manifest)
+
+
+@pytest.mark.parametrize(
+    "broken_payload",
+    [
+        b"not a gzip stream",
+        b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xff",
+    ],
+)
+def test_corrupt_or_truncated_gzip_is_rejected(tmp_path, broken_payload):
+    dataset, manifest = make_inputs(tmp_path)
+    dataset.write_bytes(broken_payload)
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    payload["artifact_sha256"] = hashlib.sha256(broken_payload).hexdigest()
+    payload["artifact_size_bytes"] = len(broken_payload)
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(AuditError, match="GZIP/CSV read failed"):
+        audit_dataset(dataset, manifest)
