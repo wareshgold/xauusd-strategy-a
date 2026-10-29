@@ -131,3 +131,35 @@ No production-readiness claim follows from this review. Outstanding release gate
 - No merge or PR state change performed.
 - Keep PR #368 Draft while a maintainer reviews the full diff and the outstanding release gates.
 - Before any later snapshot update or code edit, re-read the live PR head and CI; any new commit requires its own CI verification.
+
+---
+
+## Follow-up checkpoint — verification/audit digest binding (2026-10-29)
+
+### Review finding and correction
+
+A final review found a time-of-check/time-of-use gap between signature verification and audit append: the verifier returned the artifact digest, but the audit writer independently re-read the envelope and artifact without requiring those bytes to match the exact bytes verified. A change in that interval could have caused the audit to record a digest different from the verified artifact.
+
+The correction is limited to evidence/audit integrity; it does not change SP2L geometry or trading behavior:
+
+- `src/strategy_factory/trust_anchor.py` now reads the signed envelope bytes once, parses those bytes, and returns their SHA-256 alongside the verified artifact SHA-256.
+- `src/strategy_factory/trust_audit.py` compares the envelope and artifact hashes read at audit time with both hashes returned by verification. A mismatch fails closed before creating/appending an audit record.
+- `tests/test_trust_audit.py` now binds fixture verification results to the exact envelope/artifact bytes and includes regression cases for envelope or artifact changes after verification. Both cases assert no audit file is created.
+
+Commits:
+- `da7b1ac9b946e18992ce296265299958e052bb57` — bind verification to exact envelope bytes.
+- `0e5c6544a6876cf7df25bd9e001a266c22c4a070` — reject changed evidence before audit append.
+- `746f2f43aaf60582f48583cfb6f0e264e60e2ed5` — regression tests.
+
+### CI evidence for code head `746f2f43aaf60582f48583cfb6f0e264e60e2ed5`
+
+- Factory Research Tests: run ID `40875089003`, success; log reports **109 passed in 1.67s**. The command includes `tests/test_trust_anchor.py` and `tests/test_trust_audit.py`.
+- SP2L forensic deterministic checks: run ID `40875089188`, success.
+- Factory Journal Lock Cross-Platform Tests: run ID `40875089330`, success; Ubuntu and Windows jobs both succeeded.
+
+### Remaining boundary
+
+This correction binds the audit record to the exact digests observed during verification, but it does **not** make the artifact path immutable and does not eliminate every race between the final runtime verification and the runner consuming its inputs. Before production authorization, use independently controlled immutable/read-only artifact storage or a design that pins the exact verified bytes through downstream use, and verify that the runner consumes that same artifact identity.
+
+The other release blockers remain: independent provisioning and access control for the keyring/trust root, independent control of the source journal, independently retained anti-truncation evidence, operational key custody/rotation/recovery, and maintainer review of the full PR. PR #368 remains Draft and unmerged. Fresh Holdout -> Forward -> Runtime remains research-only and blocked for production authorization.
+
