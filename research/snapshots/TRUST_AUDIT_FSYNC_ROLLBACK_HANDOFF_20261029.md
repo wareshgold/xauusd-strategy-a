@@ -163,3 +163,24 @@ This correction binds the audit record to the exact digests observed during veri
 
 The other release blockers remain: independent provisioning and access control for the keyring/trust root, independent control of the source journal, independently retained anti-truncation evidence, operational key custody/rotation/recovery, and maintainer review of the full PR. PR #368 remains Draft and unmerged. Fresh Holdout -> Forward -> Runtime remains research-only and blocked for production authorization.
 
+---
+
+## Follow-up checkpoint — invalid signature regression coverage (2026-10-29)
+
+### Change
+
+Added two focused cases to `tests/test_trust_anchor.py`:
+
+- `test_signed_evidence_rejects_invalid_signature`: flips one bit in a correctly sized Ed25519 signature while keeping the signed payload and trusted key intact. This exercises the cryptographic signature-verification failure path rather than relying only on a payload-binding mismatch.
+- `test_signed_evidence_rejects_malformed_signature_encoding`: supplies malformed Base64 signature data and expects a fail-closed `TrustAnchorError`.
+
+Commit: `5c400928dfd100cc9ecd951ddbd702670ad254d8`.
+
+### CI for code head `5c400928dfd100cc9ecd951ddbd702670ad254d8`
+
+- Factory Research Tests: run ID `40875770189`, success; job log reports **111 passed in 1.45s**.
+- SP2L forensic deterministic checks: run ID `40875770204`, success.
+- Factory Journal Lock Cross-Platform Tests: run ID `40875770215`; Ubuntu job succeeded, and the Windows test step succeeded. The workflow was still completing post-job cleanup at the time of this checkpoint; recheck the final workflow conclusion before relying on it as fully complete.
+
+PR #368 remains open, Draft, and unmerged. These tests improve signature failure-path coverage only; they do not establish independent trust-root provisioning, immutable artifact consumption, independent journal custody, or production authorization.
+
