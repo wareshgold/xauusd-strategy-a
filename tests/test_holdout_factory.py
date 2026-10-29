@@ -14,11 +14,14 @@ from strategy_factory.holdout_factory import (
 )
 from strategy_factory.job_events import FactoryJobEventLedger
 from strategy_factory.metrics import ResearchMetrics
+from strategy_factory.manifest import EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule
+from strategy_factory.models import StrategyPassport
 from strategy_factory.research_record import ResearchRecordLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner
-from strategy_factory.snapshot import ReadinessSnapshot
+from strategy_factory.snapshot import ReadinessSnapshot, build_readiness_snapshot
+from strategy_factory.source_ledger import SourceResolutionLedger
 from strategy_factory.test_contract import (
     DatasetRole,
     ExecutionSemantics,
@@ -28,7 +31,34 @@ from strategy_factory.test_contract import (
 from strategy_factory.usage import DatasetUsageLedger
 
 
+def _readiness_sources(spec):
+    manifest = StrategyManifest(
+        strategy_id=spec.strategy_id,
+        revision="MANIFEST",
+        rules=[StrategyRule(
+            rule_id="SYNTHETIC-TEST-RULE",
+            name="Synthetic test-only rule",
+            authority=RuleAuthority.CANONICAL,
+            evidence_status=EvidenceStatus.SOURCE_CONFIRMED,
+        )],
+    )
+    passport = StrategyPassport(
+        strategy_id=spec.strategy_id,
+        source_revision="MANIFEST",
+        geometry_revision="SYNTHETIC-TEST-GEOMETRY",
+        code_revision="SYNTHETIC-TEST-CODE",
+        data_revision="SYNTHETIC-TEST-DATA",
+        execution_model="BAR_CLOSE_RESEARCH_ONLY",
+        parameter_set={"synthetic_test_only": True},
+        canonical=True,
+    )
+    return manifest, passport, SourceResolutionLedger()
+
+
 def _snapshot(spec, *, status="PASS"):
+    if status == "PASS":
+        manifest, passport, ledger = _readiness_sources(spec)
+        return build_readiness_snapshot(manifest, passport, ledger)
     ledger = {"entries": [], "resolution_state": "SYNTHETIC_ONLY"}
     blocked = status != "PASS"
     readiness = {
@@ -218,6 +248,9 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         holdout_dataset_artifact_id=holdout_artifact_id,
         holdout_dataset_content_sha256=holdout_sha,
         adapter=FakeAdapter(),
+        readiness_manifest=_readiness_sources(holdout_spec)[0],
+        readiness_passport=_readiness_sources(holdout_spec)[1],
+        readiness_ledger=_readiness_sources(holdout_spec)[2],
         strategy_revision_frozen=frozen,
     )
 
