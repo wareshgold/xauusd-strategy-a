@@ -752,7 +752,7 @@ def test_external_journal_append_after_audit_consumption_fails_closed(tmp_path, 
         with journal_path.open("ab") as handle:
             handle.write(
                 json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-                + b"\\n"
+                + b"\n"
             )
             handle.flush()
             os.fsync(handle.fileno())
