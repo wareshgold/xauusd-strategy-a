@@ -233,3 +233,24 @@ def test_bound_forward_rejects_session_without_source_inputs_before_runner():
 
     assert calls == []
 
+
+def test_bound_forward_rejects_session_without_holdout_result_before_runner():
+    from dataclasses import replace
+
+    calls = []
+    session = replace(_session(), holdout_result=None)
+    try:
+        run_bound_forward(
+            session=session,
+            run_forward=lambda: calls.append("run"),
+            reconcile=lambda _result: {},
+            started_utc="2026-10-07T04:00:00Z",
+            running_utc="2026-10-07T04:01:00Z",
+            completed_utc="2026-10-07T04:02:00Z",
+        )
+    except Exception as exc:
+        assert "requires the completed HoldoutFactoryResult binding" in str(exc)
+    else:
+        raise AssertionError("forward runtime must reject sessions without a Holdout result")
+
+    assert calls == []
