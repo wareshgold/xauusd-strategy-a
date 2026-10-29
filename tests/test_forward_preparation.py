@@ -846,3 +846,82 @@ def test_holdout_forward_transition_holds_shared_journal_lock_until_return(tmp_p
     assert persisted_report["status"] == "VALID"
     assert persisted_events is not None
     assert [event.event_type for event in persisted_events] == ["COMPLETED", "HANDOFF_ACCEPTED"]
+
+
+@pytest.mark.parametrize("failure_stage", ["gate", "session"])
+def test_failure_after_holdout_completion_requires_manual_reconciliation(
+    tmp_path, monkeypatch, failure_stage
+):
+    """A durable COMPLETED event makes retry unsafe when later preparation fails."""
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+
+    def injected_failure(*_args, **_kwargs):
+        raise RuntimeError(f"injected {failure_stage} preparation failure")
+
+    if failure_stage == "gate":
+        monkeypatch.setattr(
+            forward_preparation.ForwardGateFactory, "prepare", injected_failure
+        )
+    else:
+        monkeypatch.setattr(
+            forward_preparation.DemoForwardSessionFactory, "prepare", injected_failure
+        )
+
+    with pytest.raises(RuntimeError, match=f"injected {failure_stage} preparation failure"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert [event.event_type for event in events.entries()] == ["COMPLETED"]
+    state = classify_holdout_to_forward_transition(
+        events=events,
+        job_id=holdout.job.job_id,
+        forward_session_id=kwargs["forward_session_id"],
+    )
+    assert state["status"] == (
+        "HOLDOUT_COMPLETED_FORWARD_TRANSITION_INCOMPLETE_REVIEW_REQUIRED"
+    )
+    assert state["automatic_recovery_allowed"] is False
+    assert state["manual_reconciliation_required"] is True
+    audit_entries = [
+        json.loads(line)
+        for line in (tmp_path / "verification-audit.jsonl").read_text(
+            encoding="utf-8"
+        ).splitlines()
+    ]
+    assert [entry["phase"] for entry in audit_entries] == ["holdout_to_forward"]
+
+
+def test_failure_after_durable_handoff_event_is_not_misread_as_runtime_success(
+    tmp_path,
+):
+    """Model a lost return/ack after HANDOFF_ACCEPTED reached the journal."""
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    original_append = events.append
+
+    def append_then_lose_ack(**event_kwargs):
+        event = original_append(**event_kwargs)
+        if event_kwargs.get("event_type") == "HANDOFF_ACCEPTED":
+            raise RuntimeError("injected lost acknowledgement after durable append")
+        return event
+
+    events.append = append_then_lose_ack
+    with pytest.raises(RuntimeError, match="lost acknowledgement"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert [event.event_type for event in events.entries()] == [
+        "COMPLETED",
+        "HANDOFF_ACCEPTED",
+    ]
+    state = classify_holdout_to_forward_transition(
+        events=events,
+        job_id=holdout.job.job_id,
+        forward_session_id=kwargs["forward_session_id"],
+    )
+    assert state["status"] == "HANDOFF_RECORDED_RUNTIME_NOT_PROVEN"
+    assert state["runtime_execution_proven"] is False
+    assert state["production_authorization"] is False
+    assert state["automatic_recovery_allowed"] is False
+    # Journal transition is complete; runtime execution and caller
+    # acknowledgement remain unproven.
+    assert state["manual_reconciliation_required"] is False
