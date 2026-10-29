@@ -330,3 +330,84 @@ def prepare_holdout_to_forward(
         gate=gate,
         session=session_result.session,
     )
+
+
+def classify_holdout_to_forward_transition(
+    *,
+    events: FactoryJobEventLedger,
+    job_id: str,
+    forward_session_id: str,
+) -> dict[str, object]:
+    """Read-only lifecycle classifier for interrupted Holdout -> Forward work.
+
+    It describes journal evidence only. It never retries a transition and does
+    not claim that a recorded handoff proves runtime execution or production
+    authorization.
+    """
+    if not job_id or not forward_session_id:
+        raise ForwardPreparationError(
+            "transition classification requires job_id and forward_session_id"
+        )
+
+    ledger_events = events.entries()
+    journal_report: dict[str, object] | None = None
+    if events.path is not None:
+        journal_report, persisted = inspect_job_journal_snapshot(events.path)
+        if journal_report.get("status") != "VALID" or persisted is None:
+            return {
+                "status": "JOURNAL_INVALID_OR_UNAVAILABLE_REVIEW_REQUIRED",
+                "automatic_recovery_allowed": False,
+                "manual_reconciliation_required": True,
+                "journal_report": journal_report,
+            }
+        if persisted != ledger_events:
+            return {
+                "status": "JOURNAL_MEMORY_MISMATCH_REVIEW_REQUIRED",
+                "automatic_recovery_allowed": False,
+                "manual_reconciliation_required": True,
+                "journal_report": journal_report,
+            }
+
+    job_events = [event for event in ledger_events if event.job_id == job_id]
+    holdout_completions = [
+        event for event in job_events
+        if event.event_type == "COMPLETED"
+        and event.station == "holdout"
+        and event.phase == "HOLDOUT"
+    ]
+    forward_handoffs = [
+        event for event in job_events
+        if event.event_type == "HANDOFF_ACCEPTED"
+        and event.station == "forward"
+        and event.phase == "FORWARD"
+    ]
+    matching_handoffs = [
+        event for event in forward_handoffs
+        if f"session={forward_session_id};" in (event.detail or "")
+    ]
+
+    if len(holdout_completions) > 1 or len(forward_handoffs) > 1:
+        status = "DUPLICATE_TRANSITION_EVENTS_REVIEW_REQUIRED"
+    elif forward_handoffs and not matching_handoffs:
+        status = "FORWARD_SESSION_MISMATCH_REVIEW_REQUIRED"
+    elif matching_handoffs and not holdout_completions:
+        status = "FORWARD_HANDOFF_WITHOUT_HOLDOUT_COMPLETION_REVIEW_REQUIRED"
+    elif matching_handoffs:
+        status = "HANDOFF_RECORDED_RUNTIME_NOT_PROVEN"
+    elif holdout_completions:
+        status = "HOLDOUT_COMPLETED_FORWARD_TRANSITION_INCOMPLETE_REVIEW_REQUIRED"
+    else:
+        status = "NO_HOLDOUT_TRANSITION_EVIDENCE_REVIEW_REQUIRED"
+
+    return {
+        "status": status,
+        "job_id": job_id,
+        "forward_session_id": forward_session_id,
+        "holdout_completion_sequences": [event.sequence for event in holdout_completions],
+        "forward_handoff_sequences": [event.sequence for event in forward_handoffs],
+        "automatic_recovery_allowed": False,
+        "manual_reconciliation_required": status != "HANDOFF_RECORDED_RUNTIME_NOT_PROVEN",
+        "runtime_execution_proven": False,
+        "production_authorization": False,
+        "journal_report": journal_report,
+    }
