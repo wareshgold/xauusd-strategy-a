@@ -15,7 +15,7 @@ if (Test-Path $outPath) { throw "Refusing to overwrite existing snapshot: $outPa
 
 function Get-FileEvidence([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
-    return [ordered]@{ exists = $false; path = $Path }
+    return [ordered]@{ exists = $false; path = $Path.Substring($repoRoot.Length).TrimStart('\\','/') }
   }
   $item = Get-Item -LiteralPath $Path
   $hash = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash
