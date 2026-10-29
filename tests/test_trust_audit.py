@@ -23,6 +23,8 @@ def _fixture(tmp_path: Path):
         "key_id": "synthetic-test-key",
         "issued_at_utc": "2026-10-29T09:00:00+00:00",
         "expires_at_utc": "2030-01-01T00:00:00+00:00",
+        "envelope_sha256": hashlib.sha256(envelope.read_bytes()).hexdigest(),
+        "artifact_sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
     }
     audit = tmp_path / "verification-audit.jsonl"
     return envelope, artifact, verification, audit
@@ -139,6 +141,18 @@ def test_trust_audit_rejects_unverified_evidence(tmp_path):
     verification["verified"] = False
     with pytest.raises(TrustAuditError, match="only successfully verified"):
         _append(envelope, artifact, verification, audit, consume=True)
+
+
+@pytest.mark.parametrize("changed_file", ["envelope", "artifact"])
+def test_trust_audit_rejects_evidence_changed_after_verification(tmp_path, changed_file):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    target = envelope if changed_file == "envelope" else artifact
+    target.write_bytes(target.read_bytes() + b" changed after verification")
+
+    with pytest.raises(TrustAuditError, match="changed between signature verification and audit append"):
+        _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+
+    assert not audit.exists()
 
 
 def test_trust_audit_rejects_unsupported_phase(tmp_path):
