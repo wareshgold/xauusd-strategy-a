@@ -136,4 +136,4 @@ def append_verification_audit(
     except TrustAuditError:
         raise
     except (OSError, ValueError, TypeError) as exc:
-        raise TrustAuditError("trust verification audit could not be durably appended") from exc
+        raise TrustAuditError(f"trust verification audit could not be durably appended: {exc!r}") from exc
