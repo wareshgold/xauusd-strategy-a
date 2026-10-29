@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import base64
 import hashlib
+import json
 import os
 import multiprocessing
 from pathlib import Path
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 import pytest
 
 from strategy_factory.forward_gate_factory import ForwardGateError
@@ -12,6 +17,7 @@ from strategy_factory.forward_preparation import (
     prepare_holdout_to_forward,
 )
 from strategy_factory.job_events import FactoryJobEventLedger, _journal_write_lock
+from strategy_factory import trust_anchor
 
 from test_holdout_factory import _context
 
@@ -32,8 +38,8 @@ def _prepared(tmp_path):
     return holdout, context, events
 
 
-def _kwargs(holdout, context, events):
-    return {
+def _kwargs(holdout, context, events, tmp_path):
+    kwargs = {
         "holdout_result": holdout,
         "events": events,
         "manifest_revision": "MANIFEST",
@@ -44,11 +50,52 @@ def _kwargs(holdout, context, events):
         "holdout_dataset_content_sha256": context.holdout_dataset_content_sha256,
         "holdout_dataset_artifact_id": context.holdout_dataset_artifact_id,
     }
+    artifact_path = Path(context.holdout_dataset_artifact_path)
+    actual_sha = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    record = holdout.result.record
+    private_key = Ed25519PrivateKey.generate()
+    public_key_bytes = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    keyring_path = tmp_path / "test-trust-keyring.json"
+    keyring_path.write_text(
+        json.dumps({"keys": {"preparation-test-key": base64.b64encode(public_key_bytes).decode("ascii")}}),
+        encoding="utf-8",
+    )
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
+    envelope = {
+        "schema_version": "SP2L-SIGNED-EVIDENCE-1",
+        "key_id": "preparation-test-key",
+        "issued_at_utc": "2026-10-01T00:00:00Z",
+        "expires_at_utc": "2030-01-01T00:00:00Z",
+        "payload": {
+            "strategy_id": record.strategy_id,
+            "strategy_revision": record.strategy_revision,
+            "manifest_revision": record.manifest_revision,
+            "execution_semantics": record.execution_semantics,
+            "readiness_snapshot_fingerprint": holdout.result.snapshot.fingerprint,
+            "holdout_dataset_id": record.dataset_id,
+            "holdout_artifact_id": holdout.result.run.artifact_id,
+            "holdout_dataset_role": "FRESH_HOLDOUT",
+            "holdout_artifact_sha256": actual_sha,
+        },
+    }
+    signed_bytes = json.dumps(
+        envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    ).encode("utf-8")
+    envelope["signature_b64"] = base64.b64encode(private_key.sign(signed_bytes)).decode("ascii")
+    envelope_path = tmp_path / "test-signed-evidence.json"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+    kwargs["trust_envelope_path"] = str(envelope_path)
+    kwargs["holdout_artifact_path"] = str(artifact_path)
+    return kwargs
 
 
 def test_holdout_to_forward_preparation_passes(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert result.ready is True
     assert result.gate.passed is True
@@ -68,7 +115,7 @@ def test_holdout_to_forward_preparation_passes(tmp_path):
 )
 def test_holdout_to_forward_rejects_invalid_holdout_identity(tmp_path, mutation, message):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     kwargs.update(mutation)
 
     with pytest.raises(ForwardPreparationError, match=message):
@@ -81,7 +128,7 @@ def test_persisted_journal_snapshot_hash_is_bound_to_exact_read_only_bytes(tmp_p
     journal_path = tmp_path / "factory_job_events.jsonl"
     events = FactoryJobEventLedger(path=journal_path)
 
-    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     details = result.gate.gate.details
     assert details["source_event_ledger_source"] == "persisted_jsonl"
@@ -120,7 +167,7 @@ def test_external_journal_corruption_is_rejected_before_any_append(tmp_path):
         ForwardPreparationError,
         match="failed pre-append integrity validation",
     ):
-        prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+        prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert journal_path.read_bytes() == corrupted_bytes
     assert events.entries() == baseline_events
@@ -157,7 +204,7 @@ def test_valid_but_divergent_journal_snapshot_is_rejected_before_append(tmp_path
         ForwardPreparationError,
         match="failed pre-append integrity validation",
     ):
-        prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+        prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert journal_path.read_bytes() == divergent_bytes
     assert events.entries() == baseline_events
@@ -343,7 +390,7 @@ def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
 
     events = ExternallyCorruptedLedger(path=journal_path)
     with pytest.raises(ForwardPreparationError, match="persisted event journal is not valid"):
-        prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+        prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert events.corrupted_bytes is not None
     assert journal_path.read_bytes() == events.corrupted_bytes
@@ -351,7 +398,7 @@ def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
 
 def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     kwargs["forward_dataset_id"] = holdout.result.record.dataset_id
 
     with pytest.raises(ForwardGateError, match="Forward dataset id must differ"):
@@ -369,7 +416,7 @@ def test_holdout_to_forward_rejects_frozen_boundary_breaks(
     tmp_path, field, value, message
 ):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     kwargs[field] = value
 
     with pytest.raises(ForwardPreparationError, match=message):
@@ -378,7 +425,7 @@ def test_holdout_to_forward_rejects_frozen_boundary_breaks(
 
 def test_holdout_to_forward_rejects_manifest_drift(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     kwargs["manifest_revision"] = "MANIFEST-DRIFT"
 
     with pytest.raises(ForwardPreparationError, match="manifest_revision"):
@@ -387,7 +434,7 @@ def test_holdout_to_forward_rejects_manifest_drift(tmp_path):
 
 def test_holdout_to_forward_preserves_handoff_identity_into_session(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert result.session.handoff_fingerprint == result.handoff.fingerprint
     assert result.session.strategy_id == holdout.result.record.strategy_id
@@ -425,7 +472,7 @@ def test_holdout_to_forward_rejects_forward_dataset_reuse(
     tmp_path, field, value, message
 ):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     if field == "forward_dataset_content_sha256":
         kwargs[field] = context.holdout_dataset_content_sha256
     else:
@@ -452,13 +499,13 @@ def test_holdout_to_forward_rejects_strategy_revision_drift_in_source_record(
 
     with pytest.raises(ValueError, match="record fingerprint mismatch"):
         prepare_holdout_to_forward(
-            **_kwargs(tampered_result, context, events)
+            **_kwargs(tampered_result, context, events, tmp_path)
         )
 
 
 def test_holdout_to_forward_never_authorizes_production(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert result.session.production_decision is False
     assert result.gate.gate.details["production_decision"] is False
