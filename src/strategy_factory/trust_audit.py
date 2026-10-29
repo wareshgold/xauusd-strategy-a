@@ -201,3 +201,79 @@ def append_verification_audit(
         raise
     except (OSError, ValueError, TypeError) as exc:
         raise TrustAuditError(f"trust verification audit could not be durably appended: {exc!r}") from exc
+
+
+def classify_holdout_recovery_state(
+    *,
+    envelope_path: Path,
+    session_id: str,
+    source_event_ledger_boundary: dict[str, Any],
+    audit_path: Path | None = None,
+) -> dict[str, Any]:
+    """Return a read-only recovery classification; never appends or repairs.
+
+    The caller must independently verify that the supplied boundary describes
+    the current journal snapshot. A recovery candidate is not permission to
+    execute a transition: the caller must still perform signed-evidence
+    verification and journal-prefix validation before any mutation.
+    """
+    if not session_id:
+        raise TrustAuditError("recovery classification requires a forward session ID")
+    boundary_fields = {
+        "source_event_ledger_prefix_sha256",
+        "source_event_ledger_prefix_byte_size",
+        "source_event_ledger_sequence_boundary",
+        "source_event_ledger_prefix_source",
+        "source_event_ledger_path",
+    }
+    if set(source_event_ledger_boundary) != boundary_fields:
+        raise TrustAuditError("Holdout source-journal recovery boundary fields are invalid")
+    path = Path(audit_path) if audit_path is not None else _default_audit_path()
+    try:
+        envelope_sha = hashlib.sha256(Path(envelope_path).read_bytes()).hexdigest()
+        entries = _read_valid_entries(path)
+    except TrustAuditError:
+        return {
+            "status": "AUDIT_INVALID_REVIEW_REQUIRED",
+            "automatic_recovery_allowed": False,
+            "manual_reconciliation_required": True,
+        }
+    except OSError as exc:
+        raise TrustAuditError("recovery classification evidence is unreadable") from exc
+
+    consumption = next((
+        item for item in entries
+        if item.get("phase") == "holdout_to_forward"
+        and item.get("envelope_sha256") == envelope_sha
+    ), None)
+    if consumption is None:
+        return {
+            "status": "NOT_CONSUMED",
+            "automatic_recovery_allowed": False,
+            "manual_reconciliation_required": False,
+        }
+    if consumption.get("session_id") != session_id:
+        status = "SESSION_MISMATCH_REVIEW_REQUIRED"
+    elif any(
+        item.get("phase") == "holdout_to_forward_recovery"
+        and item.get("envelope_sha256") == envelope_sha
+        for item in entries
+    ):
+        status = "RECOVERY_ALREADY_RECORDED_REVIEW_REQUIRED"
+    elif {
+        key: consumption.get(key) for key in boundary_fields
+    } != source_event_ledger_boundary:
+        status = "JOURNAL_BOUNDARY_CHANGED_REVIEW_REQUIRED"
+    else:
+        status = "RECOVERY_CANDIDATE_UNCHANGED_BOUNDARY"
+
+    candidate = status == "RECOVERY_CANDIDATE_UNCHANGED_BOUNDARY"
+    return {
+        "status": status,
+        "automatic_recovery_allowed": False,
+        "manual_reconciliation_required": not candidate,
+        "envelope_sha256": envelope_sha,
+        "session_id": session_id,
+        "consumption_sequence": consumption.get("sequence"),
+        "recovery_candidate_requires_fresh_signature_and_journal_verification": candidate,
+    }
