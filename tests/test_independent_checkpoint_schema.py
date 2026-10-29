@@ -102,3 +102,39 @@ def test_receipt_with_wrong_shape_cannot_pass_as_request_or_receipt(validator):
     value.pop("authentication")
     value["audit_identity"] = "not-a-receipt-field"
     assert list(validator.iter_errors(value))
+
+
+def _test_only_receipt_matches_request(request, receipt):
+    """Contract predicate for tests only; not runtime or service implementation."""
+    return (
+        receipt["request_id"] == request["request_id"]
+        and receipt["request_sha256"] == request["request_id"]
+        and receipt["accepted_audit_sequence"] == request["audit_sequence"]
+        and receipt["accepted_entry_sha256"] == request["entry_sha256"]
+        and receipt["accepted_audit_byte_size"] == request["audit_byte_size"]
+        and receipt["previous_checkpoint_digest"] == request["previous_checkpoint_digest"]
+    )
+
+
+def test_synthetic_receipt_must_match_request_identity_and_checkpoint_fields():
+    request = valid_request()
+    receipt = valid_receipt()
+    assert _test_only_receipt_matches_request(request, receipt)
+
+
+@pytest.mark.parametrize(
+    ("receipt_field", "bad_value"),
+    [
+        ("request_id", "b" * 64),
+        ("request_sha256", "b" * 64),
+        ("accepted_audit_sequence", 2),
+        ("accepted_entry_sha256", "b" * 64),
+        ("accepted_audit_byte_size", 257),
+        ("previous_checkpoint_digest", "b" * 64),
+    ],
+)
+def test_synthetic_receipt_mismatch_is_rejected(receipt_field, bad_value):
+    request = valid_request()
+    receipt = valid_receipt()
+    receipt[receipt_field] = bad_value
+    assert not _test_only_receipt_matches_request(request, receipt)
