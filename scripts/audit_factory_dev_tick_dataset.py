@@ -63,7 +63,12 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
         raise AuditError("dataset and manifest paths must differ")
 
     manifest_before = manifest_path.read_bytes()
-    manifest = json.loads(manifest_before.decode("utf-8"))
+    try:
+        manifest = json.loads(manifest_before.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise AuditError("manifest must be valid UTF-8 JSON") from exc
+    if not isinstance(manifest, dict):
+        raise AuditError("manifest root must be a JSON object")
     artifact_before = dataset_path.stat()
     actual_hash = sha256_file(dataset_path)
     manifest_after = manifest_path.read_bytes()
