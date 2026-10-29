@@ -35,6 +35,15 @@ def _canonical(value: dict[str, Any]) -> bytes:
     ).encode("utf-8")
 
 
+def _reject_duplicate_json_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise TrustAuditError(f"trust verification audit contains duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
 def _read_valid_entries(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -43,25 +52,41 @@ def _read_valid_entries(path: Path) -> list[dict[str, Any]]:
         text = raw.decode("utf-8")
     except (OSError, UnicodeError) as exc:
         raise TrustAuditError("trust verification audit is unreadable") from exc
+    if raw and not raw.endswith(b"\\n"):
+        raise TrustAuditError(
+            "trust verification audit has an incomplete final record; manual reconciliation required"
+        )
     entries: list[dict[str, Any]] = []
     previous = "0" * 64
     for line_number, line in enumerate(text.splitlines(), start=1):
         if not line:
             raise TrustAuditError(f"trust verification audit has an empty line at {line_number}")
         try:
-            entry = json.loads(line)
-        except json.JSONDecodeError as exc:
+            entry = json.loads(line, object_pairs_hook=_reject_duplicate_json_keys)
+        except TrustAuditError:
+            raise
+        except (json.JSONDecodeError, ValueError) as exc:
             raise TrustAuditError(
                 f"trust verification audit JSON invalid at line {line_number}"
             ) from exc
         if not isinstance(entry, dict):
             raise TrustAuditError(f"trust verification audit entry {line_number} is not an object")
+        # The writer emits canonical JSON. Reject alternate encodings and duplicate-key
+        # ambiguities so the bytes on disk have exactly one accepted representation.
+        if _canonical(entry) != line.encode("utf-8"):
+            raise TrustAuditError(
+                f"trust verification audit record is not canonical at line {line_number}"
+            )
         digest = entry.get("entry_sha256")
         body = {key: value for key, value in entry.items() if key != "entry_sha256"}
         expected = hashlib.sha256(_canonical(body)).hexdigest()
+        sequence = entry.get("sequence")
         if (
-            entry.get("sequence") != len(entries) + 1
+            not isinstance(sequence, int)
+            or isinstance(sequence, bool)
+            or sequence != len(entries) + 1
             or entry.get("previous_entry_sha256") != previous
+            or not isinstance(digest, str)
             or digest != expected
         ):
             raise TrustAuditError(
