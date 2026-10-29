@@ -56,8 +56,34 @@ def prepare_holdout_to_forward(
     worker_id: str = "factory-forward-preparation",
     trust_envelope_path: str | None = None,
     holdout_artifact_path: str | None = None,
+    _transition_lock_token: object | None = None,
 ) -> ForwardPreparationResult:
-    """Bind one completed Fresh Holdout to a frozen demo Forward session."""
+    """Bind one completed Fresh Holdout to a frozen demo Forward session.
+
+    The journal sidecar lock spans boundary capture, evidence consumption,
+    lifecycle appends, and gate/session preparation. This serializes cooperating
+    journal writers across the whole Holdout -> Forward transition.
+    """
+    if _transition_lock_token is None:
+        with events.transition_lock() as lock_token:
+            return prepare_holdout_to_forward(
+                holdout_result=holdout_result,
+                events=events,
+                manifest_revision=manifest_revision,
+                forward_session_id=forward_session_id,
+                forward_dataset_id=forward_dataset_id,
+                forward_dataset_artifact_id=forward_dataset_artifact_id,
+                forward_dataset_content_sha256=forward_dataset_content_sha256,
+                holdout_dataset_content_sha256=holdout_dataset_content_sha256,
+                holdout_dataset_artifact_id=holdout_dataset_artifact_id,
+                strategy_revision_frozen=strategy_revision_frozen,
+                post_holdout_tuning=post_holdout_tuning,
+                handoff_id=handoff_id,
+                worker_id=worker_id,
+                trust_envelope_path=trust_envelope_path,
+                holdout_artifact_path=holdout_artifact_path,
+                _transition_lock_token=lock_token,
+            )
 
     if not strategy_revision_frozen:
         raise ForwardPreparationError(
@@ -224,6 +250,7 @@ def prepare_holdout_to_forward(
             detail="Fresh Holdout completed; eligible for Holdout-to-Forward preparation",
             output_artifact=record.evidence_id,
             research_run_fingerprint=record.run_fingerprint,
+            _transition_lock_token=_transition_lock_token,
         )
     except OSError as exc:
         raise ForwardPreparationError(
@@ -322,6 +349,7 @@ def prepare_holdout_to_forward(
         detail=f"Holdout-to-Forward handoff accepted; session={session_result.session.session_id}; session_fingerprint={session_result.session.fingerprint}",
         output_artifact=session_result.session.fingerprint,
         research_run_fingerprint=record.run_fingerprint,
+        _transition_lock_token=_transition_lock_token,
     )
 
     return ForwardPreparationResult(
