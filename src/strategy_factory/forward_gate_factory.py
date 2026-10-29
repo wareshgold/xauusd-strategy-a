@@ -60,6 +60,10 @@ class ForwardGateContext:
 @dataclass(frozen=True)
 class ForwardGateResult:
     gate: GateResult
+    readiness_snapshot: ReadinessSnapshot | None = None
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
 
     @property
     def passed(self) -> bool:
@@ -341,4 +345,10 @@ class ForwardGateFactory:
                 "production_decision": False,
             },
         )
-        return ForwardGateResult(gate=gate)
+        return ForwardGateResult(
+            gate=gate,
+            readiness_snapshot=context.readiness_snapshot,
+            readiness_manifest=context.readiness_manifest,
+            readiness_passport=context.readiness_passport,
+            readiness_ledger=context.readiness_ledger,
+        )
