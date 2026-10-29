@@ -84,10 +84,10 @@ The test fixtures were corrected to test each intended condition in the correct 
 
 For commit `5f2cad558144593c7544f01d352dce22a6ec9788`:
 
-- **Factory Research Tests:** run #1452, run ID `40873702867`, completed `success`; job log reports **107 passed in 1.42s**. The executed command includes `tests/test_trust_audit.py`, so both rollback test cases were part of the successful suite.
+- **Factory Research Tests:** run #1453, run ID `40873702867`, completed `success`; job log reports **107 passed in 1.42s**. The executed command includes `tests/test_trust_audit.py`, so both rollback test cases were part of the successful suite.
 - **SP2L forensic deterministic checks:** run #886, run ID `40873702840`, completed `success`.
 - **Factory Journal Lock Cross-Platform Tests:** run ID `40873702893`, completed `success`; both Ubuntu and Windows jobs succeeded.
-- The earlier Factory run #1451 at commit `27918c2325c872d57ea2a55946b868c5ffd424bc` failed with **104 passed, 3 failed**; this failure is superseded by the successful run above, but remains part of the audit trail.
+- The Factory run #1451 at commit `27918c2325c872d57ea2a55946b868c5ffd424bc` failed with **104 passed, 3 failed**. Run #1452 at commit `62d9624dc85fabe50c7d3e2a7912940d39f1d323` also failed on the same three test-fixture/assertion mismatches. Both failures are superseded by successful run #1453, but remain part of the audit trail.
 
 ### Current disposition
 
