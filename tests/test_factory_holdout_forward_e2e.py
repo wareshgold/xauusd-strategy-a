@@ -19,7 +19,7 @@ from test_holdout_factory import _context
 
 
 def _signed_kwargs(holdout, context, events, tmp_path, monkeypatch):
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     artifact_path = Path(context.holdout_dataset_artifact_path)
     actual_sha = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
     record = holdout.result.record
@@ -65,7 +65,7 @@ def _signed_kwargs(holdout, context, events, tmp_path, monkeypatch):
     return kwargs
 
 
-def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path):
+def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path, monkeypatch):
     runner, context = _context(tmp_path / "holdout")
 
     holdout = HoldoutFactory(runner).prepare_and_run(context)
@@ -75,7 +75,7 @@ def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path):
 
     events = FactoryJobEventLedger(path=None)
     result = prepare_holdout_to_forward(
-        **_kwargs(holdout, context, events)
+        **_signed_kwargs(holdout, context, events, tmp_path, monkeypatch)
     )
 
     assert result.ready is True
