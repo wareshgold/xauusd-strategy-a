@@ -125,6 +125,11 @@ def verify_signed_evidence(
         raise TrustAnchorError("trusted public-key registry is missing or invalid") from exc
     if not isinstance(keyring, dict) or not isinstance(keyring.get("keys"), dict):
         raise TrustAnchorError("trusted public-key registry schema is invalid")
+    revoked_key_ids = keyring.get("revoked_key_ids", [])
+    if not isinstance(revoked_key_ids, list) or any(not isinstance(item, str) for item in revoked_key_ids):
+        raise TrustAnchorError("trusted public-key registry revocation list is invalid")
+    if key_id in revoked_key_ids:
+        raise TrustAnchorError("signing key has been revoked")
     encoded_key = keyring["keys"].get(key_id)
     if not isinstance(encoded_key, str) or not encoded_key:
         raise TrustAnchorError("signing key is unknown or not trusted")
