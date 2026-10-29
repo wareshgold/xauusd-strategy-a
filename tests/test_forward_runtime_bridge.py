@@ -8,7 +8,10 @@ from strategy_factory.forward_runtime_bridge import (
     run_bound_forward,
 )
 from strategy_factory.forward_session_factory import DemoForwardSessionFactory
-from strategy_factory.models import GateResult, GateStatus
+from strategy_factory.models import GateResult, GateStatus, StrategyPassport
+from strategy_factory.manifest import EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule
+from strategy_factory.snapshot import build_readiness_snapshot
+from strategy_factory.source_ledger import SourceResolutionLedger
 
 
 class SyntheticHoldoutRecord:
@@ -26,9 +29,42 @@ def _sha(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _readiness_bundle(record):
+    manifest = StrategyManifest(
+        strategy_id=record.strategy_id,
+        revision=record.manifest_revision,
+        rules=[
+            StrategyRule(
+                rule_id="SYNTHETIC-RUNTIME-RULE",
+                name="Synthetic test-only rule",
+                authority=RuleAuthority.CANONICAL,
+                evidence_status=EvidenceStatus.SOURCE_CONFIRMED,
+            )
+        ],
+    )
+    passport = StrategyPassport(
+        strategy_id=record.strategy_id,
+        source_revision=record.manifest_revision,
+        geometry_revision="SYNTHETIC-TEST-GEOMETRY",
+        code_revision="SYNTHETIC-TEST-CODE",
+        data_revision="SYNTHETIC-TEST-DATA",
+        execution_model="BAR_CLOSE_RESEARCH_ONLY",
+        parameter_set={"synthetic_test_only": True},
+        canonical=True,
+    )
+    ledger = SourceResolutionLedger()
+    snapshot = build_readiness_snapshot(manifest, passport, ledger)
+    return snapshot, manifest, passport, ledger
+
+
 def _session():
     record = SyntheticHoldoutRecord()
+    readiness_snapshot, readiness_manifest, readiness_passport, readiness_ledger = _readiness_bundle(record)
     gate = ForwardGateResult(
+        readiness_snapshot=readiness_snapshot,
+        readiness_manifest=readiness_manifest,
+        readiness_passport=readiness_passport,
+        readiness_ledger=readiness_ledger,
         gate=GateResult(
             name="FRESH_HOLDOUT_TO_FORWARD",
             status=GateStatus.PASS,
