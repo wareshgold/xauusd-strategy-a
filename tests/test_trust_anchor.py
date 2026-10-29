@@ -121,3 +121,14 @@ def test_signed_evidence_fails_closed_without_trusted_keyring(tmp_path, monkeypa
         verify_signed_evidence(
             envelope_path, expected_bindings=bindings, artifact_path=artifact, now_utc=NOW
         )
+
+
+def test_signed_evidence_rejects_revoked_key(tmp_path, monkeypatch):
+    envelope_path, artifact, keyring_path, bindings, _ = _fixture(tmp_path, monkeypatch)
+    keyring = json.loads(keyring_path.read_text(encoding="utf-8"))
+    keyring["revoked_key_ids"] = ["test-key-1"]
+    keyring_path.write_text(json.dumps(keyring), encoding="utf-8")
+    with pytest.raises(TrustAnchorError, match="has been revoked"):
+        verify_signed_evidence(
+            envelope_path, expected_bindings=bindings, artifact_path=artifact, now_utc=NOW
+        )
