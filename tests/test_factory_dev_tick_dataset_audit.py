@@ -111,14 +111,14 @@ def test_receipt_schema_and_serialization_are_deterministic(tmp_path):
     assert isinstance(first["limitations"], list) and first["limitations"]
     assert first == second
     assert first_path.read_bytes() == second_path.read_bytes()
-    assert first_path.read_bytes().endswith(b"\\n")
+    assert first_path.read_bytes().endswith(b"\n")
     assert json.loads(first_path.read_text(encoding="utf-8")) == first
 
 
 def test_receipt_output_collision_preserves_existing_evidence(tmp_path):
     dataset, manifest = make_inputs(tmp_path)
     output = tmp_path / "receipt.json"
-    original = b'{"pre-existing": "evidence"}\\n'
+    original = b'{"pre-existing": "evidence"}\n'
     output.write_bytes(original)
 
     with pytest.raises(AuditError, match="receipt output already exists"):
