@@ -467,3 +467,31 @@ def test_malformed_or_non_object_manifest_is_rejected_as_audit_error(tmp_path, m
     with pytest.raises(AuditError, match="manifest"):
         audit_dataset(dataset, manifest)
 
+ 
+
+def test_dataset_change_during_csv_parse_is_rejected(tmp_path, monkeypatch):
+    import scripts.audit_factory_dev_tick_dataset as audit_module
+
+    dataset, manifest = make_inputs(tmp_path)
+    original_bytes = dataset.read_bytes()
+    uncompressed = gzip.decompress(original_bytes)
+    replacement_bytes = gzip.compress(uncompressed, compresslevel=1, mtime=0)
+    assert replacement_bytes != original_bytes
+
+    original_open = audit_module.gzip.open
+    changed = False
+
+    def mutate_then_open(path, mode="rb", *args, **kwargs):
+        nonlocal changed
+        if Path(path) == dataset and mode == "rt" and not changed:
+            changed = True
+            dataset.write_bytes(replacement_bytes)
+        return original_open(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(audit_module.gzip, "open", mutate_then_open)
+
+    with pytest.raises(AuditError, match="dataset changed during audit"):
+        audit_dataset(dataset, manifest)
+
+    assert changed is True
+
