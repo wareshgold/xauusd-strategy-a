@@ -355,3 +355,39 @@ def test_bound_forward_rejects_tampered_signed_evidence_before_runner(tmp_path, 
         raise AssertionError("tampered signed evidence must block the forward runner")
 
     assert calls == []
+
+
+
+def test_bound_forward_rejects_artifact_changed_between_preflight_and_dispatch(tmp_path, monkeypatch):
+    """A changed Holdout artifact after preflight must block runner dispatch."""
+    session = _session(tmp_path, monkeypatch)
+    artifact_path = Path(session.holdout_artifact_path)
+    original_validate = type(session).validate_for_runtime
+    validation_calls = []
+    runner_calls = []
+
+    def validate_then_mutate(self, *, audit_phase=None):
+        result = original_validate(self, audit_phase=audit_phase)
+        validation_calls.append(audit_phase)
+        if len(validation_calls) == 1:
+            artifact_path.write_bytes(artifact_path.read_bytes() + b"-changed-after-preflight")
+        return result
+
+    monkeypatch.setattr(type(session), "validate_for_runtime", validate_then_mutate)
+
+    try:
+        run_bound_forward(
+            session=session,
+            run_forward=lambda: runner_calls.append("run"),
+            reconcile=lambda _result: {},
+            started_utc="2026-10-29T04:00:00Z",
+            running_utc="2026-10-29T04:01:00Z",
+            completed_utc="2026-10-29T04:02:00Z",
+        )
+    except Exception as exc:
+        assert "signed evidence verification failed" in str(exc)
+    else:
+        raise AssertionError("changed Holdout artifact must block runner dispatch")
+
+    assert validation_calls == ["runtime_preflight", "runtime_dispatch"]
+    assert runner_calls == []
