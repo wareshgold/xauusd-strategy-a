@@ -104,8 +104,19 @@ def _fixture(tmp_path: Path):
         manifest_fingerprint="1" * 64,
         passport_fingerprint="2" * 64,
         source_ledger={"entries": [], "resolution_state": "SYNTHETIC_ONLY"},
-        source_readiness={"status": "SYNTHETIC_ONLY"},
-        passport_eligibility={"status": "SYNTHETIC_ONLY"},
+        source_readiness={
+            "status": "PASS",
+            "frozen_geometry_blocked": False,
+            "canonical_strategy_eligible": True,
+            "production_eligible": False,
+        },
+        passport_eligibility={
+            "source_status": "PASS",
+            "frozen_geometry": "READY",
+            "canonical_strategy": "ELIGIBLE",
+            "production": "NOT_ELIGIBLE",
+            "blocking_reasons": [],
+        },
     )
     snapshot = ReadinessSnapshot(
         snapshot_revision="SYNTH",
@@ -114,8 +125,19 @@ def _fixture(tmp_path: Path):
         manifest_fingerprint="1" * 64,
         passport_fingerprint="2" * 64,
         source_ledger={"entries": [], "resolution_state": "SYNTHETIC_ONLY"},
-        source_readiness={"status": "SYNTHETIC_ONLY"},
-        passport_eligibility={"status": "SYNTHETIC_ONLY"},
+        source_readiness={
+            "status": "PASS",
+            "frozen_geometry_blocked": False,
+            "canonical_strategy_eligible": True,
+            "production_eligible": False,
+        },
+        passport_eligibility={
+            "source_status": "PASS",
+            "frozen_geometry": "READY",
+            "canonical_strategy": "ELIGIBLE",
+            "production": "NOT_ELIGIBLE",
+            "blocking_reasons": [],
+        },
         fingerprint=hashlib.sha256(payload).hexdigest(),
     )
 
@@ -220,6 +242,42 @@ def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
     result = ForwardGateFactory().prepare(context)
     assert result.passed
     assert result.gate.details["production_decision"] is False
+
+
+def test_forward_gate_rejects_correctly_fingerprinted_blocked_readiness(tmp_path):
+    snapshot, record, event, handoff, holdout_result, ledger_snapshot = _fixture(tmp_path)
+    blocked = _resign_snapshot(
+        snapshot,
+        source_readiness={
+            "status": "BLOCKED",
+            "frozen_geometry_blocked": True,
+            "canonical_strategy_eligible": False,
+            "production_eligible": False,
+        },
+        passport_eligibility={
+            "source_status": "BLOCKED",
+            "frozen_geometry": "BLOCKED",
+            "canonical_strategy": "NOT_ELIGIBLE",
+            "production": "NOT_ELIGIBLE",
+            "blocking_reasons": ["SOURCE_READINESS_BLOCKED"],
+        },
+    )
+    context = ForwardGateContext(
+        manifest_revision="MANIFEST",
+        readiness_snapshot=blocked,
+        handoff=handoff,
+        source_record=record,
+        source_event=event,
+        forward_session_id="FWD-20261007-001",
+        forward_dataset_id="MT5-FORWARD-001",
+        forward_dataset_artifact_id="MT5-FORWARD-ARTIFACT-001",
+        forward_dataset_content_sha256="d" * 64,
+        holdout_result=holdout_result,
+        source_event_ledger_snapshot=ledger_snapshot,
+        **_ledger_evidence(ledger_snapshot),
+    )
+    with pytest.raises(ForwardGateError, match="source readiness PASS"):
+        ForwardGateFactory().prepare(context)
 
 
 def test_forward_gate_rejects_wrong_route(tmp_path):
