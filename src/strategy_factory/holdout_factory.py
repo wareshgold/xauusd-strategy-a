@@ -68,6 +68,38 @@ class HoldoutFactory:
         context.source_record.validate()
         context.source_event.validate()
 
+        # Fresh Holdout is downstream of source resolution and frozen geometry.
+        # Fingerprint binding alone proves snapshot identity, not readiness.
+        readiness = context.readiness_snapshot.source_readiness
+        if readiness.get("status") != "PASS":
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires source readiness PASS; "
+                f"status={readiness.get('status', 'MISSING')}"
+            )
+        if readiness.get("frozen_geometry_blocked") is not False:
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires frozen geometry to be unblocked"
+            )
+        if readiness.get("canonical_strategy_eligible") is not True:
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires canonical strategy eligibility"
+            )
+
+        eligibility = context.readiness_snapshot.passport_eligibility
+        if eligibility.get("source_status") != "PASS":
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires passport source_status PASS; "
+                f"status={eligibility.get('source_status', 'MISSING')}"
+            )
+        if eligibility.get("frozen_geometry") != "READY":
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires passport frozen_geometry READY"
+            )
+        if eligibility.get("canonical_strategy") != "ELIGIBLE":
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires passport canonical_strategy ELIGIBLE"
+            )
+
         if context.spec.dataset.role is not DatasetRole.FRESH_HOLDOUT:
             raise HoldoutFactoryError("Holdout requires a FRESH_HOLDOUT dataset")
         if not context.spec.dataset.immutable:
