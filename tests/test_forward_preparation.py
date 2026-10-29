@@ -546,7 +546,7 @@ def test_tampered_signed_evidence_blocks_holdout_to_forward_before_event_append(
     envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
     before = events.entries()
 
-    with pytest.raises(ForwardPreparationError, match="signed evidence verification failed"):
+    with pytest.raises(ForwardPreparationError, match="signed evidence verification/audit failed"):
         prepare_holdout_to_forward(**kwargs)
 
     assert events.entries() == before
