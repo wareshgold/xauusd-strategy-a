@@ -186,7 +186,7 @@ def _session(tmp_path, monkeypatch):
     ).session
 
 
-def test_bound_forward_runs_injected_runner_and_binds_observed_reconciliation():
+def test_bound_forward_runs_injected_runner_and_binds_observed_reconciliation(tmp_path, monkeypatch):
     calls = []
 
     def run_forward():
@@ -224,7 +224,7 @@ def test_bound_forward_runs_injected_runner_and_binds_observed_reconciliation():
     assert result.reconciliation.matched_positions == 2
 
 
-def test_bound_forward_rejects_incomplete_reconciliation_without_execution_retry():
+def test_bound_forward_rejects_incomplete_reconciliation_without_execution_retry(tmp_path, monkeypatch):
     def run_forward():
         return {"observed": 0}
 
@@ -239,7 +239,7 @@ def test_bound_forward_rejects_incomplete_reconciliation_without_execution_retry
 
     try:
         run_bound_forward(
-            session=_session(),
+            session=_session(tmp_path, monkeypatch),
             run_forward=run_forward,
             reconcile=reconcile,
             started_utc="2026-10-07T02:00:00Z",
@@ -251,12 +251,12 @@ def test_bound_forward_rejects_incomplete_reconciliation_without_execution_retry
     else:
         raise AssertionError("expected incomplete reconciliation to fail closed")
 
-def test_bound_forward_rejects_session_without_source_inputs_before_runner():
+def test_bound_forward_rejects_session_without_source_inputs_before_runner(tmp_path, monkeypatch):
     from dataclasses import replace
 
     calls = []
     session = replace(
-        _session(),
+        _session(tmp_path, monkeypatch),
         readiness_snapshot=None,
         readiness_manifest=None,
         readiness_passport=None,
@@ -280,7 +280,7 @@ def test_bound_forward_rejects_session_without_source_inputs_before_runner():
     assert calls == []
 
 
-def test_bound_forward_rejects_session_without_holdout_result_before_runner():
+def test_bound_forward_rejects_session_without_holdout_result_before_runner(tmp_path, monkeypatch):
     from dataclasses import replace
 
     calls = []
