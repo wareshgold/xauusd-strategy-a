@@ -146,7 +146,7 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
 
     try:
         with gzip.open(dataset_path, "rt", encoding="utf-8", newline="") as stream:
-            reader = csv.DictReader(stream)
+            reader = csv.DictReader(stream, strict=True)
             if reader.fieldnames != EXPECTED_HEADER:
                 raise AuditError("CSV header does not match the required schema")
             for line_number, row in enumerate(reader, start=2):
