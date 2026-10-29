@@ -14,6 +14,10 @@ import json
 from .forward_gate_factory import ForwardGateResult
 from .models import GateStatus
 from .research_record import ResearchRecord
+from .manifest import StrategyManifest
+from .models import StrategyPassport
+from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
+from .source_ledger import SourceResolutionLedger
 
 
 class ForwardSessionError(ValueError):
@@ -41,6 +45,11 @@ class DemoForwardSession:
     post_holdout_tuning: bool
     production_decision: bool
     fingerprint: str
+    readiness_snapshot_fingerprint: str | None = None
+    readiness_snapshot: ReadinessSnapshot | None = None
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
 
     def _payload(self) -> dict[str, object]:
         return {
@@ -62,6 +71,7 @@ class DemoForwardSession:
             "forward_dataset_content_sha256": self.forward_dataset_content_sha256,
             "post_holdout_tuning": self.post_holdout_tuning,
             "production_decision": self.production_decision,
+            "readiness_snapshot_fingerprint": self.readiness_snapshot_fingerprint,
         }
 
     def validate(self) -> None:
@@ -94,6 +104,55 @@ class DemoForwardSession:
         ).hexdigest()
         if self.fingerprint != expected:
             raise ForwardSessionError("forward session fingerprint mismatch")
+
+    def validate_for_runtime(self) -> None:
+        """Require independently recomputable source readiness before runtime execution."""
+        self.validate()
+        if (
+            self.readiness_snapshot is None
+            or self.readiness_manifest is None
+            or self.readiness_passport is None
+            or self.readiness_ledger is None
+        ):
+            raise ForwardSessionError(
+                "forward runtime requires authoritative readiness snapshot, Manifest, Passport, and Source Ledger"
+            )
+        if self.readiness_snapshot.fingerprint != self.readiness_snapshot_fingerprint:
+            raise ForwardSessionError(
+                "forward session readiness snapshot fingerprint mismatch"
+            )
+        try:
+            validate_readiness_snapshot_against_sources(
+                self.readiness_snapshot,
+                self.readiness_manifest,
+                self.readiness_passport,
+                self.readiness_ledger,
+            )
+        except ValueError as exc:
+            raise ForwardSessionError(
+                "forward session readiness snapshot does not match source inputs"
+            ) from exc
+        readiness = self.readiness_snapshot.source_readiness
+        eligibility = self.readiness_snapshot.passport_eligibility
+        if (
+            readiness.get("status") != "PASS"
+            or readiness.get("frozen_geometry_blocked") is not False
+            or readiness.get("canonical_strategy_eligible") is not True
+            or eligibility.get("source_status") != "PASS"
+            or eligibility.get("frozen_geometry") != "READY"
+            or eligibility.get("canonical_strategy") != "ELIGIBLE"
+        ):
+            raise ForwardSessionError(
+                "forward runtime requires source PASS, unblocked frozen geometry, and canonical eligibility"
+            )
+        if (
+            self.readiness_manifest.strategy_id != self.strategy_id
+            or self.readiness_manifest.revision != self.manifest_revision
+            or self.readiness_passport.strategy_id != self.strategy_id
+        ):
+            raise ForwardSessionError(
+                "forward runtime readiness sources do not match the frozen session identity"
+            )
 
     def as_dict(self) -> dict[str, object]:
         self.validate()
@@ -212,11 +271,29 @@ class DemoForwardSessionFactory:
             post_holdout_tuning=False,
             production_decision=False,
             fingerprint="",
+            readiness_snapshot_fingerprint=(
+                gate.readiness_snapshot.fingerprint
+                if gate.readiness_snapshot is not None
+                else None
+            ),
+            readiness_snapshot=gate.readiness_snapshot,
+            readiness_manifest=gate.readiness_manifest,
+            readiness_passport=gate.readiness_passport,
+            readiness_ledger=gate.readiness_ledger,
         )
         fingerprint = hashlib.sha256(
             json.dumps(draft._payload(), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
         ).hexdigest()
-        session = DemoForwardSession(**{**draft._payload(), "fingerprint": fingerprint})
+        session = DemoForwardSession(
+            **{
+                **draft._payload(),
+                "fingerprint": fingerprint,
+                "readiness_snapshot": draft.readiness_snapshot,
+                "readiness_manifest": draft.readiness_manifest,
+                "readiness_passport": draft.readiness_passport,
+                "readiness_ledger": draft.readiness_ledger,
+            }
+        )
         session.validate()
         return DemoForwardSessionResult(session=session)
 
