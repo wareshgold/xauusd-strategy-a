@@ -30,6 +30,13 @@ def _lock_and_signal(path, acquired, release):
 
 
 
+def _lock_after_signal(path, started, acquired, release):
+    started.set()
+    with _journal_write_lock(Path(path)):
+        acquired.set()
+        release.wait(5)
+
+
 def _prepared(tmp_path):
     runner, context = _context(tmp_path / "holdout")
     from strategy_factory.holdout_factory import HoldoutFactory
@@ -787,3 +794,55 @@ def test_external_journal_append_after_audit_consumption_fails_closed(tmp_path, 
     assert audit_entries[0]["phase"] == "holdout_to_forward"
     # The envelope is consumed but no Holdout COMPLETED or Forward HANDOFF_ACCEPTED
     # event is written; recovery must remain manual because the journal boundary changed.
+
+
+def test_holdout_forward_transition_holds_shared_journal_lock_until_return(tmp_path, monkeypatch):
+    holdout, context, _unused_events = _prepared(tmp_path)
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    original_audit = forward_preparation.append_verification_audit
+    process_context = multiprocessing.get_context("spawn")
+    started = process_context.Event()
+    acquired = process_context.Event()
+    release = process_context.Event()
+    writer = process_context.Process(
+        target=_lock_after_signal,
+        args=(str(journal_path), started, acquired, release),
+    )
+
+    def start_competing_writer_after_consumption(*args, **audit_kwargs):
+        result = original_audit(*args, **audit_kwargs)
+        writer.start()
+        assert started.wait(5), "competing writer did not start"
+        assert not acquired.wait(0.25), (
+            "cooperating writer acquired the journal lock during Holdout -> Forward"
+        )
+        return result
+
+    monkeypatch.setattr(
+        forward_preparation,
+        "append_verification_audit",
+        start_competing_writer_after_consumption,
+    )
+    try:
+        result = prepare_holdout_to_forward(**kwargs)
+        assert result.ready is True
+        assert acquired.wait(5), "cooperating writer did not acquire lock after transition"
+    finally:
+        release.set()
+        if writer.is_alive():
+            writer.join(5)
+        if writer.is_alive():
+            writer.terminate()
+            writer.join(2)
+
+    assert writer.exitcode == 0
+    # A lock-only writer does not mutate the journal. The actual append tests
+    # separately verify that stale ledgers fail closed after acquiring it.
+    persisted_report, persisted_events = __import__(
+        "strategy_factory.job_events", fromlist=["inspect_job_journal_snapshot"]
+    ).inspect_job_journal_snapshot(journal_path)
+    assert persisted_report["status"] == "VALID"
+    assert persisted_events is not None
+    assert [event.event_type for event in persisted_events] == ["COMPLETED", "HANDOFF_ACCEPTED"]
