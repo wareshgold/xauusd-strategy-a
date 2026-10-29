@@ -15,11 +15,14 @@ import hashlib
 from .adapter import ExecutionAdapter
 from .datasets import DatasetArtifact
 from .handoff import ResearchHandoff, validate_evidence_bound_handoff
+from .manifest import StrategyManifest
+from .models import StrategyPassport
 from .job_events import FactoryJobEvent
 from .jobs import ResearchJobSpec
 from .research_record import ResearchRecord
 from .runner import ResearchJobRunner, ResearchJobRunResult
-from .snapshot import ReadinessSnapshot
+from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
+from .source_ledger import SourceResolutionLedger
 from .test_contract import DatasetRole, HistoricalTestSpec
 
 
@@ -33,6 +36,9 @@ class HoldoutFactoryContext:
     manifest_revision: str
     job_id: str
     readiness_snapshot: ReadinessSnapshot
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
     handoff: ResearchHandoff
     source_record: ResearchRecord
     source_event: FactoryJobEvent
@@ -167,6 +173,26 @@ class HoldoutFactory:
             dataset_content_sha256=source_sha,
             dataset_artifact_id=source_artifact_id,
         )
+
+        if (
+            context.readiness_manifest is None
+            or context.readiness_passport is None
+            or context.readiness_ledger is None
+        ):
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires authoritative Manifest, Passport, and Source Ledger inputs"
+            )
+        try:
+            validate_readiness_snapshot_against_sources(
+                context.readiness_snapshot,
+                context.readiness_manifest,
+                context.readiness_passport,
+                context.readiness_ledger,
+            )
+        except ValueError as exc:
+            raise HoldoutFactoryError(
+                "Fresh Holdout readiness snapshot does not match source inputs"
+            ) from exc
 
         artifact_path = Path(context.holdout_dataset_artifact_path)
         if not artifact_path.is_file():
