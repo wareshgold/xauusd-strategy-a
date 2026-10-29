@@ -11,7 +11,6 @@ import base64
 import hashlib
 import json
 import os
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -28,10 +27,9 @@ def _default_keyring_path() -> Path:
     # Deliberately not configurable through an environment variable: a caller
     # must not select the trust root alongside the evidence being verified.
     if os.name == "nt":
-        root = os.environ.get("PROGRAMDATA")
-        if not root:
-            raise TrustAnchorError("PROGRAMDATA unavailable; trusted keyring path cannot be resolved")
-        return Path(root) / "SP2L" / "trust" / "holdout-ed25519-keyring.json"
+        # Fixed system location; do not let the evidence caller select a
+        # user-writable directory through environment configuration.
+        return Path("C:/ProgramData/SP2L/trust/holdout-ed25519-keyring.json")
     return Path("/etc/sp2l/trust/holdout-ed25519-keyring.json")
 
 
