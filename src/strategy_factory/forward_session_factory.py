@@ -171,6 +171,14 @@ class DemoForwardSession:
             "holdout_dataset_id": self.holdout_dataset_id,
             "holdout_artifact_id": self.holdout_dataset_artifact_id,
             "holdout_dataset_role": "FRESH_HOLDOUT",
+            "holdout_run_id": self.holdout_result.result.run.run_id,
+            "holdout_run_fingerprint": self.holdout_result.result.record.run_fingerprint,
+            "holdout_evidence_id": self.holdout_result.result.record.evidence_id,
+            "holdout_evidence_fingerprint": self.holdout_result.result.record.evidence_fingerprint,
+            "holdout_audit_fingerprint": self.holdout_result.result.record.audit_fingerprint,
+            "holdout_record_fingerprint": self.holdout_result.result.record.fingerprint,
+            "holdout_dataset_fingerprint": self.holdout_result.result.run.dataset_fingerprint,
+            "holdout_artifact_byte_size": Path(self.holdout_artifact_path).stat().st_size,
         }
         try:
             verify_signed_evidence(
