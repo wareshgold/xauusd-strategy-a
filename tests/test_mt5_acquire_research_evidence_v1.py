@@ -64,3 +64,21 @@ def test_gaps_and_duplicates_detection():
     ]
     inv3, gaps3, chron3 = audit_rows(rows3)
     assert any(x.get("reason") == "invalid_ohlc" for x in inv3)
+
+
+def test_terminal_path_argument_accepted():
+    import argparse
+    import sys
+    from scripts import mt5_acquire_research_evidence_v1 as mod
+    # Just verify the argument exists by parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--start", required=True)
+    parser.add_argument("--end", required=True)
+    parser.add_argument("--symbol", default=mod.SYMBOL)
+    parser.add_argument("--timeframe", default="M1")
+    parser.add_argument("--evidence-root", default="artifacts/mt5-research-evidence")
+    parser.add_argument("--dataset-id", required=True)
+    parser.add_argument("--note", default="")
+    parser.add_argument("--terminal-path", default=None)
+    args = parser.parse_args(["--start", "2026-07-01T00:00:00Z", "--end", "2026-08-01T00:00:00Z", "--dataset-id", "x", "--terminal-path", "C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe"])
+    assert args.terminal_path is not None

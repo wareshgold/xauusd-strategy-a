@@ -89,6 +89,7 @@ def main() -> int:
     p.add_argument("--evidence-root", default="artifacts/mt5-research-evidence")
     p.add_argument("--dataset-id", required=True)
     p.add_argument("--note", default="")
+    p.add_argument("--terminal-path", default=None, help="Explicit path to terminal64.exe for mt5.initialize(path=...)")
     args = p.parse_args()
 
     start = utc_parse(args.start)
@@ -106,8 +107,12 @@ def main() -> int:
     raw_dir.mkdir(parents=True, exist_ok=False)
     derived_dir.mkdir(parents=True, exist_ok=False)
 
-    if not mt5.initialize():
-        raise SystemExit(f"MT5 initialize failed: {mt5.last_error()}")
+    if args.terminal_path:
+        if not mt5.initialize(path=args.terminal_path):
+            raise SystemExit(f"MT5 initialize failed with terminal-path: {mt5.last_error()}")
+    else:
+        if not mt5.initialize():
+            raise SystemExit(f"MT5 initialize failed: {mt5.last_error()}")
     try:
         terminal = mt5.terminal_info()
         account = mt5.account_info()
