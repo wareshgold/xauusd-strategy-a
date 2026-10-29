@@ -228,3 +228,50 @@ def test_trust_audit_rejects_incomplete_final_record_without_mutation(tmp_path):
         _append(envelope, artifact, verification, audit, phase="runtime_preflight")
 
     assert audit.read_bytes() == before
+
+
+
+def test_trust_audit_rejects_duplicate_json_keys_without_mutation(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    _append(envelope, artifact, verification, audit, consume=True)
+    audit.write_bytes(b'{"sequence":1,"sequence":1}' + bytes([10]))
+    before = audit.read_bytes()
+
+    with pytest.raises(TrustAuditError, match="duplicate JSON key"):
+        _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+
+    assert audit.read_bytes() == before
+
+
+def test_trust_audit_rejects_noncanonical_record_without_mutation(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    entry = _append(envelope, artifact, verification, audit, consume=True)
+    # Whitespace makes the record valid JSON but not the canonical encoding
+    # required by the audit writer. Keep a complete LF-terminated record.
+    audit.write_bytes(json.dumps(entry, indent=2).encode("utf-8") + bytes([10]))
+    before = audit.read_bytes()
+
+    with pytest.raises(TrustAuditError, match="not canonical"):
+        _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+
+    assert audit.read_bytes() == before
+
+
+def test_trust_audit_rejects_boolean_sequence_without_mutation(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    entry = _append(envelope, artifact, verification, audit, consume=True)
+    entry["sequence"] = True
+    body = {key: value for key, value in entry.items() if key != "entry_sha256"}
+    entry["entry_sha256"] = hashlib.sha256(
+        json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode("utf-8")
+    ).hexdigest()
+    audit.write_bytes(
+        json.dumps(entry, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode("utf-8")
+        + bytes([10])
+    )
+    before = audit.read_bytes()
+
+    with pytest.raises(TrustAuditError, match="hash chain invalid"):
+        _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+
+    assert audit.read_bytes() == before
