@@ -11,12 +11,14 @@ from pathlib import Path
 import hashlib
 
 from .handoff import ResearchHandoff, validate_evidence_bound_handoff
+from .manifest import StrategyManifest
 from .holdout_factory import HoldoutFactoryResult
 from .dataset_provenance import DatasetProvenanceStatus
 from .job_events import FactoryJobEvent
-from .models import GateResult, GateStatus
+from .models import GateResult, GateStatus, StrategyPassport
 from .research_record import ResearchRecord
-from .snapshot import ReadinessSnapshot
+from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
+from .source_ledger import SourceResolutionLedger
 from .test_contract import DatasetRole
 
 
@@ -42,6 +44,9 @@ class ForwardGateContext:
     forward_dataset_id: str
     forward_dataset_artifact_id: str
     forward_dataset_content_sha256: str
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
     strategy_revision_frozen: bool = True
     post_holdout_tuning: bool = False
     holdout_result: HoldoutFactoryResult | None = None
@@ -281,6 +286,26 @@ class ForwardGateFactory:
             raise ForwardGateError(
                 "Forward dataset id must differ from the Fresh Holdout dataset id"
             )
+
+        if (
+            context.readiness_manifest is None
+            or context.readiness_passport is None
+            or context.readiness_ledger is None
+        ):
+            raise ForwardGateError(
+                "Forward gate requires authoritative Manifest, Passport, and Source Ledger inputs"
+            )
+        try:
+            validate_readiness_snapshot_against_sources(
+                context.readiness_snapshot,
+                context.readiness_manifest,
+                context.readiness_passport,
+                context.readiness_ledger,
+            )
+        except ValueError as exc:
+            raise ForwardGateError(
+                "Forward readiness snapshot does not match source inputs"
+            ) from exc
 
         evidence = (
             f"holdout_record={context.source_record.run_id};"
