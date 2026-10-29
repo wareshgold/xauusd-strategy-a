@@ -68,6 +68,33 @@ class HoldoutFactory:
         context.source_record.validate()
         context.source_event.validate()
 
+        if context.spec.dataset.role is not DatasetRole.FRESH_HOLDOUT:
+            raise HoldoutFactoryError("Holdout requires a FRESH_HOLDOUT dataset")
+        if not context.spec.dataset.immutable:
+            raise HoldoutFactoryError("Fresh Holdout dataset must be immutable")
+        if not context.strategy_revision_frozen:
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires the Strategy revision to be frozen before entry"
+            )
+
+        if context.handoff.destination_station != "holdout":
+            raise HoldoutFactoryError("handoff destination must be holdout")
+        if context.handoff.source_station != "robustness":
+            raise HoldoutFactoryError("Holdout must consume a Robustness handoff")
+
+        if context.readiness_snapshot.strategy_id != context.spec.strategy_id:
+            raise HoldoutFactoryError(
+                "holdout strategy_id does not match the frozen readiness snapshot"
+            )
+        if context.readiness_snapshot.manifest_revision != context.manifest_revision:
+            raise HoldoutFactoryError(
+                "holdout manifest_revision does not match the frozen readiness snapshot"
+            )
+        if context.source_record.snapshot_fingerprint != context.readiness_snapshot.fingerprint:
+            raise HoldoutFactoryError(
+                "holdout readiness snapshot fingerprint does not match the upstream research record"
+            )
+
         # Fresh Holdout is downstream of source resolution and frozen geometry.
         # Fingerprint binding alone proves snapshot identity, not readiness.
         readiness = context.readiness_snapshot.source_readiness
@@ -100,32 +127,6 @@ class HoldoutFactory:
                 "Fresh Holdout requires passport canonical_strategy ELIGIBLE"
             )
 
-        if context.spec.dataset.role is not DatasetRole.FRESH_HOLDOUT:
-            raise HoldoutFactoryError("Holdout requires a FRESH_HOLDOUT dataset")
-        if not context.spec.dataset.immutable:
-            raise HoldoutFactoryError("Fresh Holdout dataset must be immutable")
-        if not context.strategy_revision_frozen:
-            raise HoldoutFactoryError(
-                "Fresh Holdout requires the Strategy revision to be frozen before entry"
-            )
-
-        if context.handoff.destination_station != "holdout":
-            raise HoldoutFactoryError("handoff destination must be holdout")
-        if context.handoff.source_station != "robustness":
-            raise HoldoutFactoryError("Holdout must consume a Robustness handoff")
-
-        if context.readiness_snapshot.strategy_id != context.spec.strategy_id:
-            raise HoldoutFactoryError(
-                "holdout strategy_id does not match the frozen readiness snapshot"
-            )
-        if context.readiness_snapshot.manifest_revision != context.manifest_revision:
-            raise HoldoutFactoryError(
-                "holdout manifest_revision does not match the frozen readiness snapshot"
-            )
-        if context.source_record.snapshot_fingerprint != context.readiness_snapshot.fingerprint:
-            raise HoldoutFactoryError(
-                "holdout readiness snapshot fingerprint does not match the upstream research record"
-            )
 
         if context.source_record.strategy_id != context.spec.strategy_id:
             raise HoldoutFactoryError(
