@@ -74,6 +74,36 @@ A future checkpoint adapter must be separately designed and reviewed. At minimum
 
 The checkpoint store must reject rollback/replay and provide a way to retrieve the latest independently retained checkpoint. A local copy of the checkpoint beside the audit file does not satisfy independence. Do not implement a home-grown signature or assume a timestamp alone prevents rollback.
 
+### Proposed adapter boundary and receipt contract — design only
+
+Keep provider-specific code outside the trust-audit writer. The future integration should depend on a narrow adapter contract with these semantic operations (names are illustrative, not an existing API):
+
+- `publish_checkpoint(request) -> acknowledged_receipt`: durably create or idempotently confirm one checkpoint.
+- `read_latest_checkpoint(audit_identity) -> checkpoint | unavailable`: return the authoritative latest checkpoint from the independent trust domain; never silently fall back to a local cache.
+- `verify_receipt(request, receipt) -> verified | reject`: validate service identity/authentication, request binding, revision, and acknowledgement.
+
+A request must be deterministic and include a schema version, stable request ID, audit identity, environment identity, audit sequence, entry digest, previous checkpoint digest/revision, local audit byte size, and writer build/version. The stable request ID must be derived from canonical serialization of the immutable request fields; timestamps or retry counters must not make a retry look like a new logical request. The authenticated receipt must bind the request ID and digest, accepted checkpoint revision, accepted tip sequence/digest, service identity, and server-side acknowledgement time. Exact serialization, authentication mechanism, retention guarantees, and service consistency model must be selected and reviewed for the chosen provider before implementation.
+
+Required state model:
+
+- **UNANCHORED:** local audit may exist, but no valid independent receipt confirms its current tip. It cannot authorize a lifecycle transition.
+- **PUBLISH_PENDING:** a local append has occurred and checkpoint publication is in progress. No downstream authorization is permitted.
+- **ANCHORED:** the independent service has acknowledged the exact current tip, and the receipt has been validated and retained.
+- **CONFLICT / UNKNOWN:** timeout, mismatched receipt, stale revision, divergent tip, or ambiguous service result. Block and require a read-after-write reconciliation; never infer success from a timeout.
+
+Do not collapse `PUBLISH_PENDING` or `CONFLICT / UNKNOWN` into success. The adapter must define how the caller learns that an operation committed despite a lost response, and how an idempotent retry retrieves the original receipt. If the selected service cannot provide a reliable authoritative read and conflict detection, it is unsuitable for this control.
+
+### Design review checklist before implementation
+
+- Select the independent trust domain and identify which operators can write/delete checkpoints versus administer the runtime host and local audit directory.
+- Document availability policy, consistency/read-after-write behavior, retention/immutability, backup, incident recovery, authentication, key rotation, and audit export.
+- Decide the transaction boundary between local append and remote acknowledgement; document crash recovery at every boundary without claiming atomicity across them.
+- Threat-model malicious rollback by a privileged local administrator, remote credential compromise, service outage, replay, duplicate request, lost response, clock skew, and disaster recovery.
+- Specify whether a checkpoint is required after every audit record or at a coarser cadence. Any batching creates a documented unanchored window and must not authorize protected transitions within that window.
+- Keep provider credentials out of source control, artifact payloads, and logs; use the platform's supported secret/identity mechanism only after the deployment model is chosen.
+
+This proposal intentionally does not choose a vendor, credential mechanism, endpoint, or retention product. No provider can be selected responsibly from the current code evidence alone.
+
 ### Required fail-closed behavior and recovery
 
 - Before trusting an existing audit, compare its validated sequence/tip with the latest independently retrieved checkpoint and verify the recorded byte-size/file-prefix binding.
