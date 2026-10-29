@@ -84,6 +84,24 @@ def test_trust_audit_allows_recovery_only_for_same_session_and_boundary(tmp_path
     first = _append(
         envelope, artifact, verification, audit, consume=True, boundary=boundary
     )
+
+    # Reject mismatched recovery attempts before a valid recovery record exists.
+    with pytest.raises(TrustAuditError, match="same session and unchanged signed journal boundary"):
+        _append(
+            envelope, artifact, verification, audit,
+            phase="holdout_to_forward_recovery",
+            session="different-session",
+            consume=True, resume=True, boundary=boundary,
+        )
+
+    changed_boundary = dict(boundary, source_event_ledger_prefix_sha256="a" * 64)
+    with pytest.raises(TrustAuditError, match="same session and unchanged signed journal boundary"):
+        _append(
+            envelope, artifact, verification, audit,
+            phase="holdout_to_forward_recovery",
+            consume=True, resume=True, boundary=changed_boundary,
+        )
+
     recovered = _append(
         envelope, artifact, verification, audit,
         phase="holdout_to_forward_recovery",
@@ -103,21 +121,6 @@ def test_trust_audit_allows_recovery_only_for_same_session_and_boundary(tmp_path
             consume=True, resume=True, boundary=boundary,
         )
 
-    with pytest.raises(TrustAuditError, match="same session and unchanged signed journal boundary"):
-        _append(
-            envelope, artifact, verification, audit,
-            phase="holdout_to_forward_recovery",
-            session="different-session",
-            consume=True, resume=True, boundary=boundary,
-        )
-
-    changed_boundary = dict(boundary, source_event_ledger_prefix_sha256="a" * 64)
-    with pytest.raises(TrustAuditError, match="same session and unchanged signed journal boundary"):
-        _append(
-            envelope, artifact, verification, audit,
-            phase="holdout_to_forward_recovery",
-            consume=True, resume=True, boundary=changed_boundary,
-        )
 
 
 def test_trust_audit_fails_closed_when_existing_chain_is_tampered(tmp_path):
@@ -125,7 +128,7 @@ def test_trust_audit_fails_closed_when_existing_chain_is_tampered(tmp_path):
     _append(envelope, artifact, verification, audit, consume=True)
     entry = json.loads(audit.read_text(encoding="utf-8"))
     entry["session_id"] = "altered"
-    audit.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+    audit.write_text(json.dumps(entry, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False) + "\\n", encoding="utf-8")
 
     with pytest.raises(TrustAuditError, match="hash chain invalid"):
         _append(envelope, artifact, verification, audit, phase="runtime_preflight")
@@ -248,7 +251,7 @@ def test_trust_audit_rejects_noncanonical_record_without_mutation(tmp_path):
     entry = _append(envelope, artifact, verification, audit, consume=True)
     # Whitespace makes the record valid JSON but not the canonical encoding
     # required by the audit writer. Keep a complete LF-terminated record.
-    audit.write_bytes(json.dumps(entry, indent=2).encode("utf-8") + bytes([10]))
+    audit.write_bytes(json.dumps(entry).encode("utf-8") + bytes([10]))
     before = audit.read_bytes()
 
     with pytest.raises(TrustAuditError, match="not canonical"):
