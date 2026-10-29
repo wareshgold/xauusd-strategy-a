@@ -59,6 +59,9 @@ class HoldoutFactoryResult:
     job: ResearchJobSpec
     result: ResearchJobRunResult
     holdout_dataset_content_sha256: str
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
 
 
 class HoldoutFactory:
@@ -246,4 +249,7 @@ class HoldoutFactory:
             job=job,
             result=result,
             holdout_dataset_content_sha256=context.holdout_dataset_content_sha256,
+            readiness_manifest=context.readiness_manifest,
+            readiness_passport=context.readiness_passport,
+            readiness_ledger=context.readiness_ledger,
         )
