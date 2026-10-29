@@ -52,6 +52,9 @@ def run_bound_forward(
     )
     lifecycle.run(occurred_utc=running_utc)
 
+    # Re-verify the signed envelope and re-hash the actual Holdout artifact
+    # immediately before handing control to the injected runner.
+    session.validate_for_runtime()
     try:
         runner_result = run_forward()
     except Exception as exc:
