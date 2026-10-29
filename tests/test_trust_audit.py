@@ -216,3 +216,15 @@ def test_recovery_classifier_fails_closed_on_corrupt_audit_without_mutation(tmp_
     assert audit.read_bytes() == before
 
 
+
+
+def test_trust_audit_rejects_incomplete_final_record_without_mutation(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    _append(envelope, artifact, verification, audit, consume=True)
+    audit.write_bytes(audit.read_bytes()[:-1])
+    before = audit.read_bytes()
+
+    with pytest.raises(TrustAuditError, match="incomplete final record"):
+        _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+
+    assert audit.read_bytes() == before
