@@ -263,3 +263,44 @@ def test_runner_never_requires_strategy_geometry():
     assert result.accepted
     assert result.run.strategy_id == "SP2L-A"
     assert result.run.parameters == {"tp_r": 2}
+
+def test_runner_rejects_direct_fresh_holdout_without_source_inputs_before_adapter():
+    dataset = TestDataset(
+        "HOLDOUT-DIRECT-1",
+        DatasetRole.FRESH_HOLDOUT,
+        "H1",
+        "2026-03-01",
+        "2026-04-01",
+        "SYNTHETIC-HOLDOUT",
+        immutable=True,
+    )
+    spec = HistoricalTestSpec(
+        "HOLDOUT-DIRECT-TEST",
+        "SP2L-A",
+        "S1",
+        dataset,
+        ExecutionSemantics.TICK_FEASIBLE,
+    )
+    job = ResearchJobSpec.from_test_spec(
+        spec,
+        manifest_revision="M1",
+        dataset_fingerprint=fingerprint_dataset(dataset, "a" * 64),
+        job_id="HOLDOUT-DIRECT-JOB",
+    )
+    runner = make_runner()
+    adapter = FakeAdapter()
+
+    with pytest.raises(
+        ResearchJobRunnerError,
+        match="requires authoritative Manifest, Passport, and Source Ledger",
+    ):
+        runner.run(
+            job=job,
+            spec=spec,
+            adapter=adapter,
+            snapshot=make_snapshot(spec),
+            observed_content_sha256="a" * 64,
+        )
+
+    assert adapter.calls == 0
+
