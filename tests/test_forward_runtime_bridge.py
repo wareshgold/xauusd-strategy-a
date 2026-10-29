@@ -21,7 +21,7 @@ from strategy_factory.models import GateResult, GateStatus, StrategyPassport
 from strategy_factory.manifest import EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule
 from strategy_factory.snapshot import build_readiness_snapshot
 from strategy_factory.source_ledger import SourceResolutionLedger
-from strategy_factory import trust_anchor
+from strategy_factory import trust_anchor, trust_audit
 
 
 class SyntheticHoldoutRecord:
@@ -129,6 +129,7 @@ def _session(tmp_path, monkeypatch):
         encoding="utf-8",
     )
     monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
+    monkeypatch.setattr(trust_audit, "_default_audit_path", lambda: tmp_path / "verification-audit.jsonl")
     envelope = {
         "schema_version": "SP2L-SIGNED-EVIDENCE-1",
         "key_id": "runtime-test-key",
