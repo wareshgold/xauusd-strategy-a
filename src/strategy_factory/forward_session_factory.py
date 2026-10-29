@@ -8,6 +8,7 @@ decisions, place orders, or modify the existing MT5 forward runner.
 """
 
 from dataclasses import dataclass
+from pathlib import Path
 import hashlib
 import json
 
@@ -21,6 +22,7 @@ from .source_ledger import SourceResolutionLedger
 from .dataset_provenance import DatasetProvenanceStatus
 from .test_contract import DatasetRole
 from .holdout_factory import HoldoutFactoryResult
+from .trust_anchor import TrustAnchorError, verify_signed_evidence
 
 
 class ForwardSessionError(ValueError):
@@ -54,6 +56,8 @@ class DemoForwardSession:
     readiness_passport: StrategyPassport | None = None
     readiness_ledger: SourceResolutionLedger | None = None
     holdout_result: HoldoutFactoryResult | None = None
+    trust_envelope_path: str | None = None
+    holdout_artifact_path: str | None = None
 
     def _payload(self) -> dict[str, object]:
         return {
@@ -76,6 +80,8 @@ class DemoForwardSession:
             "post_holdout_tuning": self.post_holdout_tuning,
             "production_decision": self.production_decision,
             "readiness_snapshot_fingerprint": self.readiness_snapshot_fingerprint,
+            "trust_envelope_path": self.trust_envelope_path,
+            "holdout_artifact_path": self.holdout_artifact_path,
         }
 
     def validate(self) -> None:
@@ -152,6 +158,30 @@ class DemoForwardSession:
         """Require independently recomputable source readiness and Holdout provenance."""
         self.validate()
         self._validate_holdout_binding()
+        if not self.trust_envelope_path or not self.holdout_artifact_path:
+            raise ForwardSessionError(
+                "forward runtime requires a signed evidence envelope and the actual Holdout artifact path"
+            )
+        expected_bindings = {
+            "strategy_id": self.strategy_id,
+            "strategy_revision": self.strategy_revision,
+            "manifest_revision": self.manifest_revision,
+            "execution_semantics": self.execution_semantics,
+            "readiness_snapshot_fingerprint": self.readiness_snapshot_fingerprint,
+            "holdout_dataset_id": self.holdout_dataset_id,
+            "holdout_artifact_id": self.holdout_dataset_artifact_id,
+            "holdout_dataset_role": "FRESH_HOLDOUT",
+        }
+        try:
+            verify_signed_evidence(
+                Path(self.trust_envelope_path),
+                expected_bindings=expected_bindings,
+                artifact_path=Path(self.holdout_artifact_path),
+            )
+        except TrustAnchorError as exc:
+            raise ForwardSessionError(
+                f"forward runtime signed evidence verification failed: {exc}"
+            ) from exc
         if (
             self.readiness_snapshot is None
             or self.readiness_manifest is None
@@ -329,6 +359,8 @@ class DemoForwardSessionFactory:
             readiness_passport=gate.readiness_passport,
             readiness_ledger=gate.readiness_ledger,
             holdout_result=gate.holdout_result,
+            trust_envelope_path=trust_envelope_path,
+            holdout_artifact_path=holdout_artifact_path,
         )
         fingerprint = hashlib.sha256(
             json.dumps(draft._payload(), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
@@ -342,6 +374,8 @@ class DemoForwardSessionFactory:
                 "readiness_passport": draft.readiness_passport,
                 "readiness_ledger": draft.readiness_ledger,
                 "holdout_result": draft.holdout_result,
+                "trust_envelope_path": draft.trust_envelope_path,
+                "holdout_artifact_path": draft.holdout_artifact_path,
             }
         )
         session.validate()
