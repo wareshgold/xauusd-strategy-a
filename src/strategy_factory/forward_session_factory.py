@@ -256,6 +256,8 @@ class DemoForwardSessionFactory:
         forward_dataset_content_sha256: str,
         post_holdout_tuning: bool = False,
         session_revision: str = "DEMO-FORWARD-SESSION-1",
+        trust_envelope_path: str | None = None,
+        holdout_artifact_path: str | None = None,
     ) -> DemoForwardSessionResult:
         source_record.validate()
 
