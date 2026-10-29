@@ -130,12 +130,18 @@ def _session(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
     monkeypatch.setattr(trust_audit, "_default_audit_path", lambda: tmp_path / "verification-audit.jsonl")
+    boundary_bytes = b""
+    boundary_sha = hashlib.sha256(boundary_bytes).hexdigest()
     envelope = {
         "schema_version": "SP2L-SIGNED-EVIDENCE-1",
         "key_id": "runtime-test-key",
         "issued_at_utc": "2026-10-01T00:00:00Z",
         "expires_at_utc": "2030-01-01T00:00:00Z",
         "payload": {
+            "source_event_ledger_prefix_sha256": boundary_sha,
+            "source_event_ledger_prefix_byte_size": len(boundary_bytes),
+            "source_event_ledger_sequence_boundary": 0,
+            "source_event_ledger_prefix_source": "in_memory",
             "strategy_id": record.strategy_id,
             "strategy_revision": record.strategy_revision,
             "manifest_revision": record.manifest_revision,
@@ -183,6 +189,10 @@ def _session(tmp_path, monkeypatch):
                 "manifest_revision": record.manifest_revision,
                 "holdout_dataset_id": record.dataset_id,
                 "holdout_dataset_sha256": holdout_sha,
+                "source_event_ledger_prefix_sha256": boundary_sha,
+                "source_event_ledger_prefix_byte_size": len(boundary_bytes),
+                "source_event_ledger_sequence_boundary": 0,
+                "source_event_ledger_prefix_source": "in_memory",
                 "holdout_artifact_id": holdout_artifact,
                 "handoff_fingerprint": _sha(b"synthetic-runtime-handoff"),
                 "production_decision": False,
