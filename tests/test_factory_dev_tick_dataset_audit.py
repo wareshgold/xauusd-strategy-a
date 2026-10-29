@@ -375,3 +375,22 @@ def test_corrupt_or_truncated_gzip_is_rejected(tmp_path, broken_payload):
 
     with pytest.raises(AuditError, match="GZIP/CSV read failed"):
         audit_dataset(dataset, manifest)
+
+
+def test_malformed_csv_quoting_is_rejected(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    malformed_csv = (
+        "time_msc,time_utc,bid,ask,last,volume,flags\\n"
+        '1787274005864,"2026-08-21T01:00:05.864Z,4518.99,4519.20,0,0,134\\n'
+    ).encode("utf-8")
+    with gzip.open(dataset, "wb") as stream:
+        stream.write(malformed_csv)
+    compressed = dataset.read_bytes()
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    payload["artifact_sha256"] = hashlib.sha256(compressed).hexdigest()
+    payload["artifact_size_bytes"] = len(compressed)
+    payload["tick_count"] = 1
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(AuditError, match="GZIP/CSV read failed"):
+        audit_dataset(dataset, manifest)
