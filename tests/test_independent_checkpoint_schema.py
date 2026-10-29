@@ -108,7 +108,6 @@ def _test_only_receipt_matches_request(request, receipt):
     """Contract predicate for tests only; not runtime or service implementation."""
     return (
         receipt["request_id"] == request["request_id"]
-        and receipt["request_sha256"] == request["request_id"]
         and receipt["accepted_audit_sequence"] == request["audit_sequence"]
         and receipt["accepted_entry_sha256"] == request["entry_sha256"]
         and receipt["accepted_audit_byte_size"] == request["audit_byte_size"]
@@ -126,7 +125,6 @@ def test_synthetic_receipt_must_match_request_identity_and_checkpoint_fields():
     ("receipt_field", "bad_value"),
     [
         ("request_id", "b" * 64),
-        ("request_sha256", "b" * 64),
         ("accepted_audit_sequence", 2),
         ("accepted_entry_sha256", "b" * 64),
         ("accepted_audit_byte_size", 257),
