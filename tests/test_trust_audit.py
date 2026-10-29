@@ -312,3 +312,51 @@ def test_trust_audit_serializes_concurrent_appends_without_lost_records(tmp_path
         ).hexdigest()
         assert entry["entry_sha256"] == expected
         previous = entry["entry_sha256"]
+
+
+
+def test_trust_audit_rolls_back_append_when_fsync_fails(tmp_path, monkeypatch):
+    import strategy_factory.trust_audit as trust_audit
+
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+    original = audit.read_bytes()
+    real_fsync = trust_audit.os.fsync
+    calls = 0
+
+    def fail_first_fsync(fd):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise OSError("injected append fsync failure")
+        return real_fsync(fd)
+
+    monkeypatch.setattr(trust_audit.os, "fsync", fail_first_fsync)
+    with pytest.raises(TrustAuditError, match="rolled back to its previous byte size"):
+        _append(envelope, artifact, verification, audit, phase="runtime_dispatch")
+
+    assert calls == 2
+    assert audit.read_bytes() == original
+
+
+def test_trust_audit_reports_manual_reconciliation_when_rollback_fails(tmp_path, monkeypatch):
+    import strategy_factory.trust_audit as trust_audit
+
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+    original = audit.read_bytes()
+    calls = 0
+
+    def fail_both_fsyncs(_fd):
+        nonlocal calls
+        calls += 1
+        raise OSError(f"injected fsync failure {calls}")
+
+    monkeypatch.setattr(trust_audit.os, "fsync", fail_both_fsyncs)
+    with pytest.raises(TrustAuditError, match="manual reconciliation required"):
+        _append(envelope, artifact, verification, audit, phase="runtime_dispatch")
+
+    assert calls == 2
+    # truncate may have restored the visible bytes even though its durability
+    # could not be confirmed; the caller must still treat this as uncertain.
+    assert audit.read_bytes() == original
