@@ -18,6 +18,9 @@ from .manifest import StrategyManifest
 from .models import StrategyPassport
 from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
 from .source_ledger import SourceResolutionLedger
+from .dataset_provenance import DatasetProvenanceStatus
+from .test_contract import DatasetRole
+from .holdout_factory import HoldoutFactoryResult
 
 
 class ForwardSessionError(ValueError):
@@ -50,6 +53,7 @@ class DemoForwardSession:
     readiness_manifest: StrategyManifest | None = None
     readiness_passport: StrategyPassport | None = None
     readiness_ledger: SourceResolutionLedger | None = None
+    holdout_result: HoldoutFactoryResult | None = None
 
     def _payload(self) -> dict[str, object]:
         return {
@@ -105,9 +109,49 @@ class DemoForwardSession:
         if self.fingerprint != expected:
             raise ForwardSessionError("forward session fingerprint mismatch")
 
+    def _validate_holdout_binding(self) -> None:
+        """Revalidate the accepted Holdout result carried through gate/session."""
+        holdout = self.holdout_result
+        if holdout is None:
+            raise ForwardSessionError(
+                "forward session requires the completed HoldoutFactoryResult binding"
+            )
+        run_result = holdout.result
+        run = run_result.run
+        record = run_result.record
+        provenance = run_result.dataset_provenance
+        if not run_result.accepted or provenance.status is not DatasetProvenanceStatus.PASS:
+            raise ForwardSessionError(
+                "forward session requires an accepted Holdout result with PASS dataset provenance"
+            )
+        if (
+            holdout.job.job_id != run_result.job_id
+            or holdout.job.job_id != run.run_id
+            or run.dataset_role != DatasetRole.FRESH_HOLDOUT.value
+            or run.dataset_id != record.dataset_id
+            or run.artifact_id != provenance.observed_artifact_id
+            or provenance.dataset_id != run.dataset_id
+            or provenance.registered_fingerprint != run.dataset_fingerprint
+            or provenance.observed_fingerprint != run.dataset_fingerprint
+            or provenance.registered_artifact_id != run.artifact_id
+            or provenance.observed_artifact_id != run.artifact_id
+            or record.snapshot_fingerprint != self.readiness_snapshot_fingerprint
+            or record.strategy_id != self.strategy_id
+            or record.strategy_revision != self.strategy_revision
+            or record.manifest_revision != self.manifest_revision
+            or record.execution_semantics != self.execution_semantics
+            or record.dataset_id != self.holdout_dataset_id
+            or run.artifact_id != self.holdout_dataset_artifact_id
+            or holdout.holdout_dataset_content_sha256 != self.holdout_dataset_content_sha256
+        ):
+            raise ForwardSessionError(
+                "carried Holdout result does not match the frozen forward session identity"
+            )
+
     def validate_for_runtime(self) -> None:
-        """Require independently recomputable source readiness before runtime execution."""
+        """Require independently recomputable source readiness and Holdout provenance."""
         self.validate()
+        self._validate_holdout_binding()
         if (
             self.readiness_snapshot is None
             or self.readiness_manifest is None
@@ -187,6 +231,10 @@ class DemoForwardSessionFactory:
 
         if gate.gate.status is not GateStatus.PASS:
             raise ForwardSessionError("Demo forward session requires Forward Gate PASS")
+        if gate.holdout_result is None:
+            raise ForwardSessionError(
+                "Demo forward session requires the completed HoldoutFactoryResult binding"
+            )
 
         if gate.gate.name != "FRESH_HOLDOUT_TO_FORWARD":
             raise ForwardSessionError("Demo forward session requires the Fresh Holdout-to-Forward gate")
@@ -280,6 +328,7 @@ class DemoForwardSessionFactory:
             readiness_manifest=gate.readiness_manifest,
             readiness_passport=gate.readiness_passport,
             readiness_ledger=gate.readiness_ledger,
+            holdout_result=gate.holdout_result,
         )
         fingerprint = hashlib.sha256(
             json.dumps(draft._payload(), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
@@ -292,6 +341,7 @@ class DemoForwardSessionFactory:
                 "readiness_manifest": draft.readiness_manifest,
                 "readiness_passport": draft.readiness_passport,
                 "readiness_ledger": draft.readiness_ledger,
+                "holdout_result": draft.holdout_result,
             }
         )
         session.validate()
