@@ -49,6 +49,7 @@ def _gate(session_id: str, dataset_id: str, artifact_id: str, dataset_sha256: st
                 "source_event_ledger_prefix_byte_size": 0,
                 "source_event_ledger_sequence_boundary": 0,
                 "source_event_ledger_prefix_source": "in_memory",
+                "source_event_ledger_path": None,
                 "holdout_dataset_sha256": _sha(b"holdout"),
                 "holdout_artifact_id": "HOLDOUT-ART-SYNTH-1",
                 "handoff_fingerprint": _sha(b"synthetic-handoff"),
