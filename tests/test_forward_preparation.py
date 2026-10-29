@@ -732,13 +732,16 @@ def test_external_journal_append_after_audit_consumption_fails_closed(tmp_path, 
     journal_path = tmp_path / "factory_job_events.jsonl"
     events = FactoryJobEventLedger(path=journal_path)
     kwargs = _kwargs(holdout, context, events, tmp_path)
-    competing_writer = FactoryJobEventLedger(path=journal_path)
+    # Model a writer that bypasses the shared-lock contract by modifying the
+    # journal file directly. Cooperating writers are serialized by the outer
+    # transition lock; this adversarial case must still fail closed on drift.
+    competing_writer = FactoryJobEventLedger(path=None)
     original_audit = forward_preparation.append_verification_audit
     competing_write = {"performed": False}
 
     def consume_then_competing_writer(*args, **audit_kwargs):
         result = original_audit(*args, **audit_kwargs)
-        competing_writer.append(
+        event = competing_writer.append(
             event_type="QUEUED",
             job_id="CONCURRENT-WRITER",
             job_fingerprint="d" * 64,
@@ -746,6 +749,13 @@ def test_external_journal_append_after_audit_consumption_fails_closed(tmp_path, 
             phase="HOLDOUT",
             detail="injected after one-time audit consumption",
         )
+        with journal_path.open("ab") as handle:
+            handle.write(
+                json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                + b"\\n"
+            )
+            handle.flush()
+            os.fsync(handle.fileno())
         competing_write["performed"] = True
         return result
 
