@@ -159,6 +159,17 @@ this new dashboard has been launched or validated on the operator's machine. Fir
 in a separate console. Never start a second runner to validate the dashboard. The 8790 dashboard and
 its process are intentionally left untouched.
 
+After reviewing the script, start it in a separate PowerShell window from the repository root:
+
+```powershell
+$py = (Resolve-Path ".\\.venv\\Scripts\\python.exe").Path
+& $py .\\scripts\\live_dashboard_v3.py
+```
+
+Then open `http://127.0.0.1:8792`. This is a separate page and process; it is not automatically running
+just because the existing dashboard is open. Stop only the dashboard process you explicitly launched,
+not the forward-test runner. Do not infer that a successful page render proves the runner is healthy.
+
 ## 8. Verify health and distinguish parent/child
 
 A process existing is not proof that the runner is healthy. Verify:
@@ -179,7 +190,23 @@ runner's documented shutdown behavior in the exact checked-out source and record
 If a restart is required, plan it explicitly, confirm no pending orders or positions would be mishandled,
 and preserve logs and snapshots before acting. Never assume stopping Python cancels broker orders.
 
-## 10. Evidence and promotion status
+## 10. Capture a privacy-safe evidence snapshot
+
+A non-destructive PowerShell collector is provided at `scripts/research/capture_strategy_v3_evidence_snapshot.ps1`.
+Run it from the repository root after reviewing the script:
+
+```powershell
+.\\scripts\\research\\capture_strategy_v3_evidence_snapshot.ps1
+```
+
+It creates a timestamped JSON file under `artifacts/v3/winner-snapshots` without overwriting an existing file.
+It records the current HEAD/branch, parent/child process IDs, dashboard listener PIDs, and SHA-256/size/mtime
+for the V3 event log and state file (plus the generic event log). It deliberately omits account login,
+full process command lines and environment values/secrets. It is read-only with respect to the runner, broker,
+orders and existing evidence. Review the generated JSON before sharing or committing it; this collector does
+not upload anything to GitHub. Keep the output path and `SNAPSHOT_SHA256` printed by the script.
+
+## 11. Evidence and promotion status
 
 For every run, record:
 - exact Git HEAD and branch/tag;
