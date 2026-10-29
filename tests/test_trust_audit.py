@@ -377,3 +377,75 @@ def test_trust_audit_reports_manual_reconciliation_when_rollback_fails(tmp_path,
     # truncate may have restored the visible bytes even though its durability
     # could not be confirmed; the caller must still treat this as uncertain.
     assert audit.read_bytes() == original
+
+
+
+def _multiprocess_append_audit(envelope_path, artifact_path, verification, audit_path, result_queue, worker_id):
+    """Spawn-safe worker for cross-process audit-lock coverage."""
+    try:
+        entry = append_verification_audit(
+            phase="runtime_preflight",
+            session_id=f"process-{worker_id}",
+            envelope_path=Path(envelope_path),
+            artifact_path=Path(artifact_path),
+            verification=verification,
+            audit_path=Path(audit_path),
+        )
+        result_queue.put(("ok", entry["sequence"]))
+    except Exception as exc:
+        result_queue.put(("error", repr(exc)))
+
+
+def test_trust_audit_serializes_independent_process_appends(tmp_path):
+    import multiprocessing
+
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    context = multiprocessing.get_context("spawn")
+    result_queue = context.Queue()
+    workers = 4
+    processes = [
+        context.Process(
+            target=_multiprocess_append_audit,
+            args=(
+                str(envelope), str(artifact), verification, str(audit),
+                result_queue, worker_id,
+            ),
+        )
+        for worker_id in range(workers)
+    ]
+
+    for process in processes:
+        process.start()
+    results = [result_queue.get(timeout=30) for _ in processes]
+    for process in processes:
+        process.join(timeout=30)
+    for process in processes:
+        if process.is_alive():
+            process.terminate()
+            process.join()
+            pytest.fail("audit append worker hung while waiting for cross-process lock")
+
+    assert all(process.exitcode == 0 for process in processes), [
+        process.exitcode for process in processes
+    ]
+    errors = [result for result in results if result[0] != "ok"]
+    assert errors == []
+    assert sorted(result[1] for result in results) == list(range(1, workers + 1))
+
+    entries = [
+        json.loads(line)
+        for line in audit.read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(entries) == workers
+    previous = "0" * 64
+    for sequence, entry in enumerate(entries, start=1):
+        assert entry["sequence"] == sequence
+        assert entry["previous_entry_sha256"] == previous
+        body = {key: value for key, value in entry.items() if key != "entry_sha256"}
+        assert entry["entry_sha256"] == hashlib.sha256(
+            json.dumps(
+                body, sort_keys=True, separators=(",", ":"),
+                ensure_ascii=True, allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()
+        previous = entry["entry_sha256"]
