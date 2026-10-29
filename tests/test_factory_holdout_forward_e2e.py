@@ -103,7 +103,7 @@ def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_p
     holdout = HoldoutFactory(runner).prepare_and_run(context)
     journal_path = tmp_path / "persisted-journal-e2e" / "factory_job_events.jsonl"
     events = FactoryJobEventLedger(path=journal_path)
-    prepared = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    prepared = prepare_holdout_to_forward(**_signed_kwargs(holdout, context, events, tmp_path, monkeypatch))
 
     gate_details = prepared.gate.gate.details
     before_forward = journal_path.read_bytes()
@@ -155,7 +155,7 @@ def test_factory_full_provenance_chain_reaches_reconciliation(tmp_path, monkeypa
     holdout = HoldoutFactory(runner).prepare_and_run(context)
     events = FactoryJobEventLedger(path=None)
     prepared = prepare_holdout_to_forward(
-        **_kwargs(holdout, context, events)
+        **_signed_kwargs(holdout, context, events, tmp_path, monkeypatch)
     )
 
     observed_runner_result = {"observed_positions": 3}
