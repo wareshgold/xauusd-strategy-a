@@ -17,7 +17,7 @@ from strategy_factory.forward_preparation import (
     prepare_holdout_to_forward,
 )
 from strategy_factory.job_events import FactoryJobEventLedger, _journal_write_lock
-from strategy_factory import trust_anchor
+from strategy_factory import trust_anchor, trust_audit
 
 from test_holdout_factory import _context
 
@@ -65,6 +65,7 @@ def _kwargs(holdout, context, events, tmp_path):
     )
     monkeypatch = pytest.MonkeyPatch()
     monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
+    monkeypatch.setattr(trust_audit, "_default_audit_path", lambda: tmp_path / "verification-audit.jsonl")
     envelope = {
         "schema_version": "SP2L-SIGNED-EVIDENCE-1",
         "key_id": "preparation-test-key",
