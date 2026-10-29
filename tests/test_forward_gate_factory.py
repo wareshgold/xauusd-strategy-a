@@ -52,11 +52,14 @@ def _fixture(tmp_path: Path):
     from strategy_factory.datasets import DatasetArtifact, DatasetRegistry
     from strategy_factory.evidence import EvidenceLedger
     from strategy_factory.metrics import ResearchMetrics
+    from strategy_factory.manifest import EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule
+    from strategy_factory.models import StrategyPassport
     from strategy_factory.jobs import ResearchJobSpec
     from strategy_factory.research_record import ResearchRecordLedger
     from strategy_factory.runner import ResearchJobRunner
     from strategy_factory.runs import ResearchRunLedger
-    from strategy_factory.snapshot import ReadinessSnapshot
+    from strategy_factory.snapshot import ReadinessSnapshot, build_readiness_snapshot
+    from strategy_factory.source_ledger import SourceResolutionLedger
     from strategy_factory.usage import DatasetUsageLedger
     from strategy_factory.test_contract import ExecutionSemantics, HistoricalTestSpec, TestDataset
 
@@ -97,50 +100,28 @@ def _fixture(tmp_path: Path):
     )
     registry.register(dataset, sha, lock=True, artifact=artifact)
 
-    payload = ReadinessSnapshot._fingerprint_payload(
-        snapshot_revision="SYNTH",
+    readiness_manifest = StrategyManifest(
         strategy_id="SP2L-A",
-        manifest_revision="MANIFEST",
-        manifest_fingerprint="1" * 64,
-        passport_fingerprint="2" * 64,
-        source_ledger={"entries": [], "resolution_state": "SYNTHETIC_ONLY"},
-        source_readiness={
-            "status": "PASS",
-            "frozen_geometry_blocked": False,
-            "canonical_strategy_eligible": True,
-            "production_eligible": False,
-        },
-        passport_eligibility={
-            "source_status": "PASS",
-            "frozen_geometry": "READY",
-            "canonical_strategy": "ELIGIBLE",
-            "production": "NOT_ELIGIBLE",
-            "blocking_reasons": [],
-        },
+        revision="MANIFEST",
+        rules=[StrategyRule(
+            rule_id="SYNTHETIC-TEST-RULE",
+            name="Synthetic test-only rule",
+            authority=RuleAuthority.CANONICAL,
+            evidence_status=EvidenceStatus.SOURCE_CONFIRMED,
+        )],
     )
-    snapshot = ReadinessSnapshot(
-        snapshot_revision="SYNTH",
+    readiness_passport = StrategyPassport(
         strategy_id="SP2L-A",
-        manifest_revision="MANIFEST",
-        manifest_fingerprint="1" * 64,
-        passport_fingerprint="2" * 64,
-        source_ledger={"entries": [], "resolution_state": "SYNTHETIC_ONLY"},
-        source_readiness={
-            "status": "PASS",
-            "frozen_geometry_blocked": False,
-            "canonical_strategy_eligible": True,
-            "production_eligible": False,
-        },
-        passport_eligibility={
-            "source_status": "PASS",
-            "frozen_geometry": "READY",
-            "canonical_strategy": "ELIGIBLE",
-            "production": "NOT_ELIGIBLE",
-            "blocking_reasons": [],
-        },
-        fingerprint=hashlib.sha256(payload).hexdigest(),
+        source_revision="MANIFEST",
+        geometry_revision="SYNTHETIC-TEST-GEOMETRY",
+        code_revision="SYNTHETIC-TEST-CODE",
+        data_revision="SYNTHETIC-TEST-DATA",
+        execution_model="BAR_CLOSE_RESEARCH_ONLY",
+        parameter_set={"synthetic_test_only": True},
+        canonical=True,
     )
-
+    readiness_ledger = SourceResolutionLedger()
+    snapshot = build_readiness_snapshot(readiness_manifest, readiness_passport, readiness_ledger)
     job = ResearchJobSpec.from_test_spec(
         spec,
         manifest_revision="MANIFEST",
@@ -178,6 +159,7 @@ def _fixture(tmp_path: Path):
     # context surface solely for this synthetic fixture.
     record = result.record
     object.__setattr__(record, "_test_snapshot", snapshot)
+    object.__setattr__(snapshot, "_test_readiness_sources", (readiness_manifest, readiness_passport, readiness_ledger))
 
     events = FactoryJobEventLedger(path=None)
     event = events.append(
@@ -235,6 +217,9 @@ def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
         forward_dataset_id="MT5-FORWARD-001",
         forward_dataset_artifact_id="MT5-FORWARD-ARTIFACT-001",
         forward_dataset_content_sha256="d" * 64,
+        readiness_manifest=readiness_manifest,
+        readiness_passport=readiness_passport,
+        readiness_ledger=readiness_ledger,
         holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
                 **_ledger_evidence(ledger_snapshot),
