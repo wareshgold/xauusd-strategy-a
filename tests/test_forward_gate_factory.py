@@ -606,3 +606,27 @@ def test_handoff_rejects_duplicate_completed_events_for_source_station(tmp_path)
         )
 
     assert events.entries() == before
+
+
+def test_forward_gate_rejects_readiness_snapshot_mismatched_to_source_inputs(tmp_path):
+    snapshot, record, event, handoff, holdout_result, ledger_snapshot = _fixture(tmp_path)
+    manifest, passport, ledger = snapshot._test_readiness_sources
+    context = ForwardGateContext(
+        manifest_revision="MANIFEST",
+        readiness_snapshot=snapshot,
+        handoff=handoff,
+        source_record=record,
+        source_event=event,
+        forward_session_id="FWD-20261007-001",
+        forward_dataset_id="MT5-FORWARD-001",
+        forward_dataset_artifact_id="MT5-FORWARD-ARTIFACT-001",
+        forward_dataset_content_sha256="d" * 64,
+        readiness_manifest=replace(manifest, revision="MANIFEST-DRIFT"),
+        readiness_passport=passport,
+        readiness_ledger=ledger,
+        holdout_result=holdout_result,
+        source_event_ledger_snapshot=ledger_snapshot,
+        **_ledger_evidence(ledger_snapshot),
+    )
+    with pytest.raises(ForwardGateError, match="does not match source inputs"):
+        ForwardGateFactory().prepare(context)
