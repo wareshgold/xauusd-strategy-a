@@ -129,6 +129,12 @@ def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_p
     holdout = HoldoutFactory(runner).prepare_and_run(context)
     journal_path = tmp_path / "persisted-journal-e2e" / "factory_job_events.jsonl"
     events = FactoryJobEventLedger(path=journal_path)
+    events.append(
+        event_type="QUEUED",
+        job_id="SIGNED-PREFIX-BASELINE",
+        job_fingerprint="a" * 64,
+        detail="signed prefix baseline",
+    )
     prepared = prepare_holdout_to_forward(**_signed_kwargs(holdout, context, events, tmp_path, monkeypatch))
 
     gate_details = prepared.gate.gate.details
@@ -174,6 +180,51 @@ def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_p
         "COMPLETED",
         "HANDOFF_ACCEPTED",
     ]
+
+
+def test_runtime_rejects_rewritten_signed_journal_prefix_before_runner(tmp_path, monkeypatch):
+    import pytest
+
+    from strategy_factory.forward_runtime_bridge import ForwardRuntimeBridgeError
+
+    runner, context = _context(tmp_path / "tampered-prefix")
+    holdout = HoldoutFactory(runner).prepare_and_run(context)
+    journal_path = tmp_path / "tampered-prefix" / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+    events.append(
+        event_type="QUEUED",
+        job_id="SIGNED-PREFIX-BASELINE",
+        job_fingerprint="a" * 64,
+        detail="signed prefix baseline",
+    )
+    prepared = prepare_holdout_to_forward(
+        **_signed_kwargs(holdout, context, events, tmp_path, monkeypatch)
+    )
+    assert prepared.session.source_event_ledger_sequence_boundary == 1
+
+    calls = []
+    before = journal_path.read_bytes()
+    assert b"signed prefix baseline" in before
+    journal_path.write_bytes(before.replace(b"signed prefix baseline", b"rewritten prefix baseline", 1))
+    mutated = journal_path.read_bytes()
+    assert mutated != before
+
+    with pytest.raises(
+        Exception,
+        match="persisted source event-journal prefix verification failed",
+    ):
+        run_bound_forward(
+            session=prepared.session,
+            run_forward=lambda: calls.append("run"),
+            reconcile=lambda _result: {},
+            started_utc="2026-10-29T02:00:00Z",
+            running_utc="2026-10-29T02:01:00Z",
+            completed_utc="2026-10-29T02:02:00Z",
+        )
+
+    assert calls == []
+    assert journal_path.read_bytes() == mutated
+
 
 def test_factory_full_provenance_chain_reaches_reconciliation(tmp_path, monkeypatch):
     runner, context = _context(tmp_path / "full-chain")
