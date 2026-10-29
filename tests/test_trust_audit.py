@@ -9,6 +9,7 @@ import pytest
 from strategy_factory.trust_audit import (
     TrustAuditError,
     append_verification_audit,
+    classify_holdout_recovery_state,
 )
 
 
@@ -141,3 +142,75 @@ def test_trust_audit_rejects_unsupported_phase(tmp_path):
     envelope, artifact, verification, audit = _fixture(tmp_path)
     with pytest.raises(TrustAuditError, match="unsupported"):
         _append(envelope, artifact, verification, audit, phase="unknown")
+
+
+def test_recovery_classifier_is_read_only_and_distinguishes_recovery_states(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    boundary = {
+        "source_event_ledger_prefix_sha256": hashlib.sha256(b"").hexdigest(),
+        "source_event_ledger_prefix_byte_size": 0,
+        "source_event_ledger_sequence_boundary": 0,
+        "source_event_ledger_prefix_source": "in_memory",
+        "source_event_ledger_path": None,
+    }
+    before = classify_holdout_recovery_state(
+        envelope_path=envelope, session_id="session-1",
+        source_event_ledger_boundary=boundary, audit_path=audit,
+    )
+    assert before["status"] == "NOT_CONSUMED"
+    assert not audit.exists()
+
+    _append(envelope, artifact, verification, audit, consume=True, boundary=boundary)
+    unchanged = classify_holdout_recovery_state(
+        envelope_path=envelope, session_id="session-1",
+        source_event_ledger_boundary=boundary, audit_path=audit,
+    )
+    assert unchanged["status"] == "RECOVERY_CANDIDATE_UNCHANGED_BOUNDARY"
+    assert unchanged["automatic_recovery_allowed"] is False
+
+    changed = dict(boundary, source_event_ledger_prefix_sha256="a" * 64)
+    drift = classify_holdout_recovery_state(
+        envelope_path=envelope, session_id="session-1",
+        source_event_ledger_boundary=changed, audit_path=audit,
+    )
+    assert drift["status"] == "JOURNAL_BOUNDARY_CHANGED_REVIEW_REQUIRED"
+    assert drift["manual_reconciliation_required"] is True
+
+    wrong_session = classify_holdout_recovery_state(
+        envelope_path=envelope, session_id="session-2",
+        source_event_ledger_boundary=boundary, audit_path=audit,
+    )
+    assert wrong_session["status"] == "SESSION_MISMATCH_REVIEW_REQUIRED"
+    assert len(audit.read_text(encoding="utf-8").splitlines()) == 1
+
+    _append(
+        envelope, artifact, verification, audit,
+        phase="holdout_to_forward_recovery",
+        consume=True, resume=True, boundary=boundary,
+    )
+    repeated = classify_holdout_recovery_state(
+        envelope_path=envelope, session_id="session-1",
+        source_event_ledger_boundary=boundary, audit_path=audit,
+    )
+    assert repeated["status"] == "RECOVERY_ALREADY_RECORDED_REVIEW_REQUIRED"
+    assert len(audit.read_text(encoding="utf-8").splitlines()) == 2
+
+
+def test_recovery_classifier_fails_closed_on_corrupt_audit_without_mutation(tmp_path):
+    envelope, _artifact, _verification, audit = _fixture(tmp_path)
+    audit.write_text('{"sequence":1}\\n', encoding="utf-8")
+    before = audit.read_bytes()
+    boundary = {
+        "source_event_ledger_prefix_sha256": hashlib.sha256(b"").hexdigest(),
+        "source_event_ledger_prefix_byte_size": 0,
+        "source_event_ledger_sequence_boundary": 0,
+        "source_event_ledger_prefix_source": "in_memory",
+        "source_event_ledger_path": None,
+    }
+    result = classify_holdout_recovery_state(
+        envelope_path=envelope, session_id="session-1",
+        source_event_ledger_boundary=boundary, audit_path=audit,
+    )
+    assert result["status"] == "AUDIT_INVALID_REVIEW_REQUIRED"
+    assert result["automatic_recovery_allowed"] is False
+    assert audit.read_bytes() == before
