@@ -116,7 +116,6 @@ def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path, 
     assert result.handoff.dataset_artifact_id == context.holdout_dataset_artifact_id
 
     assert [event.event_type for event in events.entries()] == [
-        "QUEUED",
         "COMPLETED",
         "HANDOFF_ACCEPTED",
     ]
@@ -178,6 +177,7 @@ def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_p
     assert runtime.handoff_fingerprint == prepared.handoff.fingerprint
     assert prepared.session.production_decision is False
     assert [event.event_type for event in events.entries()] == [
+        "QUEUED",
         "COMPLETED",
         "HANDOFF_ACCEPTED",
     ]
