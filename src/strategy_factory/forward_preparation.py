@@ -51,6 +51,8 @@ def prepare_holdout_to_forward(
     post_holdout_tuning: bool = False,
     handoff_id: str | None = None,
     worker_id: str = "factory-forward-preparation",
+    trust_envelope_path: str | None = None,
+    holdout_artifact_path: str | None = None,
 ) -> ForwardPreparationResult:
     """Bind one completed Fresh Holdout to a frozen demo Forward session."""
 
@@ -193,6 +195,8 @@ def prepare_holdout_to_forward(
         forward_dataset_artifact_id=forward_dataset_artifact_id,
         forward_dataset_content_sha256=forward_dataset_content_sha256,
         post_holdout_tuning=post_holdout_tuning,
+        trust_envelope_path=trust_envelope_path,
+        holdout_artifact_path=holdout_artifact_path,
     )
 
     forward_event = events.append(
