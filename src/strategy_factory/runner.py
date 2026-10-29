@@ -10,12 +10,14 @@ from .datasets import fingerprint_dataset
 from .evidence import EvidenceBundle, EvidenceLedger
 from .execution import ExecutionReceipt, execution_gate
 from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
-from .models import GateResult, GateStatus
+from .models import GateResult, GateStatus, StrategyPassport
+from .manifest import StrategyManifest
 from .research_provenance import ResearchProvenanceResult, evaluate_research_provenance
 from .research_record import ResearchRecord, ResearchRecordLedger
 from .runs import ResearchRunError, ResearchRunIdentity, ResearchRunLedger
-from .snapshot import ReadinessSnapshot
-from .test_contract import HistoricalTestSpec
+from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
+from .source_ledger import SourceResolutionLedger
+from .test_contract import DatasetRole, HistoricalTestSpec
 
 
 class ResearchJobRunnerError(ValueError):
@@ -75,6 +77,9 @@ class ResearchJobRunner:
         evidence_id: str | None = None,
         result_revision: str = "RECEIPT_METRICS_V1",
         purpose: str = "HISTORICAL_TEST",
+        readiness_manifest: StrategyManifest | None = None,
+        readiness_passport: StrategyPassport | None = None,
+        readiness_ledger: SourceResolutionLedger | None = None,
     ) -> ResearchJobRunResult:
         """Execute and accept one job under its already-declared semantics.
 
@@ -111,6 +116,52 @@ class ResearchJobRunner:
             snapshot.validate()
         except Exception as exc:
             raise ResearchJobRunnerError("readiness snapshot is invalid") from exc
+
+        # Defense in depth: the generic runner is also a trust boundary. A
+        # caller must not bypass HoldoutFactory by invoking the adapter directly
+        # for a FRESH_HOLDOUT spec with only a self-consistent snapshot hash.
+        if spec.dataset.role is DatasetRole.FRESH_HOLDOUT:
+            if (
+                readiness_manifest is None
+                or readiness_passport is None
+                or readiness_ledger is None
+            ):
+                raise ResearchJobRunnerError(
+                    "FRESH_HOLDOUT execution requires authoritative Manifest, Passport, and Source Ledger inputs"
+                )
+            try:
+                validate_readiness_snapshot_against_sources(
+                    snapshot,
+                    readiness_manifest,
+                    readiness_passport,
+                    readiness_ledger,
+                )
+            except ValueError as exc:
+                raise ResearchJobRunnerError(
+                    "FRESH_HOLDOUT readiness snapshot does not match source inputs"
+                ) from exc
+
+            readiness = snapshot.source_readiness
+            eligibility = snapshot.passport_eligibility
+            if (
+                readiness.get("status") != "PASS"
+                or readiness.get("frozen_geometry_blocked") is not False
+                or readiness.get("canonical_strategy_eligible") is not True
+                or eligibility.get("source_status") != "PASS"
+                or eligibility.get("frozen_geometry") != "READY"
+                or eligibility.get("canonical_strategy") != "ELIGIBLE"
+            ):
+                raise ResearchJobRunnerError(
+                    "FRESH_HOLDOUT execution requires source PASS, unblocked frozen geometry, and canonical eligibility"
+                )
+            if (
+                readiness_manifest.strategy_id != spec.strategy_id
+                or readiness_manifest.revision != job.manifest_revision
+                or readiness_passport.strategy_id != spec.strategy_id
+            ):
+                raise ResearchJobRunnerError(
+                    "FRESH_HOLDOUT source inputs do not match the frozen job identity"
+                )
 
         dataset_provenance = evaluate_dataset_provenance(
             spec,
