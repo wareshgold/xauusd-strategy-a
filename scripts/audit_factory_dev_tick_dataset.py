@@ -242,6 +242,23 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
     if out_of_order:
         raise AuditError("source rows are not in nondecreasing timestamp order")
 
+    # Recheck both inputs after the full parse, not only around the initial hash.
+    # This detects a source file or manifest changed while the CSV was being read.
+    manifest_final = manifest_path.read_bytes()
+    dataset_final_stat = dataset_path.stat()
+    dataset_final_hash = sha256_file(dataset_path)
+    dataset_post_hash_stat = dataset_path.stat()
+    if manifest_final != manifest_before:
+        raise AuditError("manifest changed during audit")
+    if (
+        (artifact_before.st_size, artifact_before.st_mtime_ns)
+        != (dataset_final_stat.st_size, dataset_final_stat.st_mtime_ns)
+        or (dataset_final_stat.st_size, dataset_final_stat.st_mtime_ns)
+        != (dataset_post_hash_stat.st_size, dataset_post_hash_stat.st_mtime_ns)
+        or dataset_final_hash != actual_hash
+    ):
+        raise AuditError("dataset changed during audit")
+
     return {
         "schema_version": 1,
         "audit_kind": "FIXED_DEVELOPMENT_TICK_BIDASK_INTEGRITY",
@@ -264,6 +281,7 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
         "checks": {
             "manifest_size_match": True,
             "manifest_stable_during_audit": True,
+            "dataset_stable_during_audit": True,
             "manifest_row_count_match": True,
             "gzip_csv_read": True,
             "expected_header": True,
