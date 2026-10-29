@@ -122,13 +122,14 @@ def prepare_holdout_to_forward(
             boundary_byte_size = 0
         else:
             boundary_report, boundary_persisted = inspect_job_journal_snapshot(events.path)
-            if (
-                boundary_report.get("status") != "VALID"
-                or boundary_persisted is None
-                or boundary_persisted != boundary_events
-            ):
+            if boundary_report.get("status") != "VALID" or boundary_persisted is None:
                 raise ForwardPreparationError(
-                    "source event journal boundary is invalid or inconsistent before trust verification"
+                    "persisted event journal is not valid; manual reconciliation required"
+                )
+            if boundary_persisted != boundary_events:
+                raise ForwardPreparationError(
+                    "persisted event journal failed pre-append integrity validation; "
+                    "journal preserved and manual reconciliation required"
                 )
             boundary_sha256 = boundary_report.get("sha256")
             boundary_byte_size = boundary_report.get("byte_size")
