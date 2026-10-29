@@ -724,3 +724,56 @@ def test_holdout_forward_transition_classifier_flags_session_mismatch_and_duplic
     )
     assert duplicate["status"] == "DUPLICATE_TRANSITION_EVENTS_REVIEW_REQUIRED"
     assert duplicate["manual_reconciliation_required"] is True
+
+
+def test_external_journal_append_after_audit_consumption_fails_closed(tmp_path, monkeypatch):
+    """Expose the non-atomic audit/journal boundary without permitting unsafe recovery."""
+    holdout, context, _unused_events = _prepared(tmp_path)
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    competing_writer = FactoryJobEventLedger(path=journal_path)
+    original_audit = forward_preparation.append_verification_audit
+    competing_write = {"performed": False}
+
+    def consume_then_competing_writer(*args, **audit_kwargs):
+        result = original_audit(*args, **audit_kwargs)
+        competing_writer.append(
+            event_type="QUEUED",
+            job_id="CONCURRENT-WRITER",
+            job_fingerprint="d" * 64,
+            station="holdout",
+            phase="HOLDOUT",
+            detail="injected after one-time audit consumption",
+        )
+        competing_write["performed"] = True
+        return result
+
+    monkeypatch.setattr(
+        forward_preparation,
+        "append_verification_audit",
+        consume_then_competing_writer,
+    )
+
+    with pytest.raises(
+        ForwardPreparationError,
+        match="manual reconciliation required",
+    ):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert competing_write["performed"] is True
+    persisted_report, persisted_events = __import__(
+        "strategy_factory.job_events", fromlist=["inspect_job_journal_snapshot"]
+    ).inspect_job_journal_snapshot(journal_path)
+    assert persisted_report["status"] == "VALID"
+    assert persisted_events is not None
+    assert [event.job_id for event in persisted_events] == ["CONCURRENT-WRITER"]
+    assert events.entries() == ()
+    audit_entries = [
+        json.loads(line)
+        for line in (tmp_path / "verification-audit.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(audit_entries) == 1
+    assert audit_entries[0]["phase"] == "holdout_to_forward"
+    # The envelope is consumed but no Holdout COMPLETED or Forward HANDOFF_ACCEPTED
+    # event is written; recovery must remain manual because the journal boundary changed.
