@@ -119,6 +119,14 @@ def prepare_holdout_to_forward(
         "holdout_dataset_id": record.dataset_id,
         "holdout_artifact_id": result.run.artifact_id,
         "holdout_dataset_role": "FRESH_HOLDOUT",
+        "holdout_run_id": result.run.run_id,
+        "holdout_run_fingerprint": record.run_fingerprint,
+        "holdout_evidence_id": record.evidence_id,
+        "holdout_evidence_fingerprint": record.evidence_fingerprint,
+        "holdout_audit_fingerprint": record.audit_fingerprint,
+        "holdout_record_fingerprint": record.fingerprint,
+        "holdout_dataset_fingerprint": result.run.dataset_fingerprint,
+        "holdout_artifact_byte_size": Path(holdout_artifact_path).stat().st_size,
     }
     try:
         verify_signed_evidence(
