@@ -136,7 +136,7 @@ def test_receipt_write_preserves_inputs_and_creates_missing_parent(tmp_path):
     receipt = write_receipt(dataset, manifest, output)
 
     assert output.is_file()
-    assert output.read_bytes().endswith(b"\\n")
+    assert output.read_bytes().endswith(b"\n")
     assert json.loads(output.read_text(encoding="utf-8")) == receipt
     assert dataset.read_bytes() == dataset_before
     assert manifest.read_bytes() == manifest_before
