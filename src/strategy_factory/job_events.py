@@ -312,7 +312,7 @@ def verify_job_journal_prefix(
     prefix = raw[:expected_byte_size]
     if hashlib.sha256(prefix).hexdigest() != expected_sha256:
         raise ValueError("persisted source event journal signed prefix SHA-256 mismatch")
-    if sequence_boundary > 0 and not prefix.endswith(b"\\n"):
+    if sequence_boundary > 0 and not prefix.endswith(b"\n"):
         raise ValueError("persisted source event journal signed prefix does not end on an event boundary")
     try:
         prefix_events = _parse_journal_text(prefix.decode("utf-8"))
