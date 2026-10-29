@@ -8,7 +8,7 @@ from pathlib import Path
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from strategy_factory import trust_anchor
+from strategy_factory import trust_anchor, trust_audit
 from strategy_factory.forward_preparation import prepare_holdout_to_forward
 from strategy_factory.forward_runtime_bridge import run_bound_forward
 from strategy_factory.holdout_factory import HoldoutFactory
@@ -36,6 +36,7 @@ def _signed_kwargs(holdout, context, events, tmp_path, monkeypatch):
         encoding="utf-8",
     )
     monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
+    monkeypatch.setattr(trust_audit, "_default_audit_path", lambda: tmp_path / "verification-audit.jsonl")
 
     envelope = {
         "schema_version": "SP2L-SIGNED-EVIDENCE-1",
