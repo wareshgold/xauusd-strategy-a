@@ -3,7 +3,7 @@ from dataclasses import replace
 import pytest
 
 from strategy_factory.models import StrategyPassport
-from strategy_factory.snapshot import build_readiness_snapshot, manifest_fingerprint
+from strategy_factory.snapshot import ReadinessSnapshot, build_readiness_snapshot, manifest_fingerprint
 from strategy_factory.sp2l_manifest import build_sp2l_research_manifest
 from strategy_factory.source_ledger import SourceResolutionLedger
 
