@@ -117,17 +117,21 @@ def prepare_holdout_to_forward(
     # snapshot separately.
     boundary_events = events.entries()
     if events.path is not None:
-        boundary_report, boundary_persisted = inspect_job_journal_snapshot(events.path)
-        if (
-            boundary_report.get("status") != "VALID"
-            or boundary_persisted is None
-            or boundary_persisted != boundary_events
-        ):
-            raise ForwardPreparationError(
-                "source event journal boundary is invalid or inconsistent before trust verification"
-            )
-        boundary_sha256 = boundary_report.get("sha256")
-        boundary_byte_size = boundary_report.get("byte_size")
+        if not events.path.exists() and not boundary_events:
+            boundary_sha256 = hashlib.sha256(b"").hexdigest()
+            boundary_byte_size = 0
+        else:
+            boundary_report, boundary_persisted = inspect_job_journal_snapshot(events.path)
+            if (
+                boundary_report.get("status") != "VALID"
+                or boundary_persisted is None
+                or boundary_persisted != boundary_events
+            ):
+                raise ForwardPreparationError(
+                    "source event journal boundary is invalid or inconsistent before trust verification"
+                )
+            boundary_sha256 = boundary_report.get("sha256")
+            boundary_byte_size = boundary_report.get("byte_size")
         boundary_source = "persisted_jsonl"
     else:
         boundary_bytes = "".join(
