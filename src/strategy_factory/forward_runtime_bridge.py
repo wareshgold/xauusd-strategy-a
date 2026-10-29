@@ -42,7 +42,7 @@ def run_bound_forward(
     observed MT5 facts only; this bridge does not inspect trades or decide
     whether the strategy is profitable.
     """
-    session.validate()
+    session.validate_for_runtime()
     lifecycle = DemoForwardSessionLifecycle(session)
     lifecycle.start(occurred_utc=started_utc)
     lifecycle.assert_frozen_identity(
