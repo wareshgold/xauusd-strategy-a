@@ -300,3 +300,31 @@ def test_bound_forward_rejects_session_without_holdout_result_before_runner(tmp_
         raise AssertionError("forward runtime must reject sessions without a Holdout result")
 
     assert calls == []
+
+
+def test_bound_forward_rejects_tampered_signed_evidence_before_runner(tmp_path, monkeypatch):
+    import json
+    from dataclasses import replace
+
+    calls = []
+    session = _session(tmp_path, monkeypatch)
+    envelope_path = Path(session.trust_envelope_path)
+    envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
+    envelope["payload"]["strategy_revision"] = "TAMPERED-REVISION"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+
+    try:
+        run_bound_forward(
+            session=session,
+            run_forward=lambda: calls.append("run"),
+            reconcile=lambda _result: {},
+            started_utc="2026-10-07T05:00:00Z",
+            running_utc="2026-10-07T05:01:00Z",
+            completed_utc="2026-10-07T05:02:00Z",
+        )
+    except Exception as exc:
+        assert "signed evidence verification failed" in str(exc)
+    else:
+        raise AssertionError("tampered signed evidence must block the forward runner")
+
+    assert calls == []
