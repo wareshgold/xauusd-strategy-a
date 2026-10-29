@@ -175,14 +175,39 @@ def prepare_holdout_to_forward(
             expected_bindings=expected_bindings,
             artifact_path=Path(holdout_artifact_path),
         )
-        append_verification_audit(
-            phase="holdout_to_forward",
-            session_id=forward_session_id,
-            envelope_path=Path(trust_envelope_path),
-            artifact_path=Path(holdout_artifact_path),
-            verification=verification,
-            consume_holdout_once=True,
-        )
+        source_event_ledger_boundary = {
+            "source_event_ledger_prefix_sha256": boundary_sha256,
+            "source_event_ledger_prefix_byte_size": boundary_byte_size,
+            "source_event_ledger_sequence_boundary": len(boundary_events),
+            "source_event_ledger_prefix_source": boundary_source,
+            "source_event_ledger_path": str(events.path) if boundary_source == "persisted_jsonl" else None,
+        }
+        try:
+            append_verification_audit(
+                phase="holdout_to_forward",
+                session_id=forward_session_id,
+                envelope_path=Path(trust_envelope_path),
+                artifact_path=Path(holdout_artifact_path),
+                verification=verification,
+                consume_holdout_once=True,
+                source_event_ledger_boundary=source_event_ledger_boundary,
+            )
+        except TrustAuditError as audit_exc:
+            if "signed Holdout evidence has already been consumed" not in str(audit_exc):
+                raise
+            # Recovery is deliberately narrow: the signature was just checked
+            # against the current pre-transition boundary. The audit helper
+            # permits resume only for the same envelope, session, and boundary.
+            append_verification_audit(
+                phase="holdout_to_forward_recovery",
+                session_id=forward_session_id,
+                envelope_path=Path(trust_envelope_path),
+                artifact_path=Path(holdout_artifact_path),
+                verification=verification,
+                consume_holdout_once=True,
+                resume_holdout_once=True,
+                source_event_ledger_boundary=source_event_ledger_boundary,
+            )
     except (TrustAnchorError, TrustAuditError) as exc:
         raise ForwardPreparationError(
             f"Holdout-to-Forward signed evidence verification/audit failed: {exc}"
