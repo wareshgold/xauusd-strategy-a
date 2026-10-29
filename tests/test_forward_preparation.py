@@ -72,7 +72,7 @@ def _kwargs(holdout, context, events, tmp_path):
         boundary_source = "persisted_jsonl"
     else:
         boundary_bytes = "".join(
-            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
             for event in boundary_events
         ).encode("utf-8")
         boundary_source = "persisted_jsonl" if events.path is not None else "in_memory"
