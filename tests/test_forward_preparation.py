@@ -118,6 +118,27 @@ def _kwargs(holdout, context, events, tmp_path):
     return kwargs
 
 
+
+def test_signed_source_journal_boundary_mismatch_blocks_before_transition_append(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    events.append(
+        event_type="QUEUED",
+        job_id="JOURNAL-CHANGED-AFTER-SIGNING",
+        job_fingerprint="a" * 64,
+        station="holdout",
+        phase="HOLDOUT",
+        detail="synthetic boundary mutation",
+    )
+    before = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="source_event_ledger_prefix_sha256"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert events.entries() == before
+    assert all(event.event_type != "COMPLETED" for event in events.entries())
+
+
 def test_holdout_to_forward_preparation_passes(tmp_path):
     holdout, context, events = _prepared(tmp_path)
     result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
