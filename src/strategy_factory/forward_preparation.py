@@ -131,7 +131,7 @@ def prepare_holdout_to_forward(
         boundary_source = "persisted_jsonl"
     else:
         boundary_bytes = "".join(
-            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
             for event in boundary_events
         ).encode("utf-8")
         boundary_sha256 = hashlib.sha256(boundary_bytes).hexdigest()
