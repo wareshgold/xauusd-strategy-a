@@ -84,6 +84,30 @@ def test_signed_evidence_rejects_tampered_payload(tmp_path, monkeypatch):
         )
 
 
+def test_signed_evidence_rejects_invalid_signature(tmp_path, monkeypatch):
+    envelope_path, artifact, _, bindings, envelope = _fixture(tmp_path, monkeypatch)
+    signature = bytearray(base64.b64decode(envelope["signature_b64"]))
+    signature[0] ^= 0x01
+    envelope["signature_b64"] = base64.b64encode(signature).decode("ascii")
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+
+    with pytest.raises(TrustAnchorError, match="signature is invalid"):
+        verify_signed_evidence(
+            envelope_path, expected_bindings=bindings, artifact_path=artifact, now_utc=NOW
+        )
+
+
+def test_signed_evidence_rejects_malformed_signature_encoding(tmp_path, monkeypatch):
+    envelope_path, artifact, _, bindings, envelope = _fixture(tmp_path, monkeypatch)
+    envelope["signature_b64"] = "not-valid-base64!"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+
+    with pytest.raises(TrustAnchorError, match="signature is invalid"):
+        verify_signed_evidence(
+            envelope_path, expected_bindings=bindings, artifact_path=artifact, now_utc=NOW
+        )
+
+
 def test_signed_evidence_rejects_unknown_key(tmp_path, monkeypatch):
     envelope_path, artifact, keyring_path, bindings, _ = _fixture(tmp_path, monkeypatch)
     keyring_path.write_text(json.dumps({"keys": {}}), encoding="utf-8")
