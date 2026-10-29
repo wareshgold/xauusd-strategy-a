@@ -10,7 +10,7 @@ The Factory recomputes readiness snapshots from supplied Manifest, Passport, and
 
 A first cryptographic primitive now exists in `src/strategy_factory/trust_anchor.py`. It verifies Ed25519 signatures over canonical JSON, checks expiry and a key-revocation list, compares independently assembled expected identity bindings, re-hashes the artifact at verification time, and resolves public keys only from a fixed system keyring path (Linux: `/etc/sp2l/trust/holdout-ed25519-keyring.json`; Windows: `C:/ProgramData/SP2L/trust/holdout-ed25519-keyring.json`). The verifier fails closed if the envelope, artifact, keyring, or trusted key is missing or invalid. The repository contains no private signing key.
 
-**Important limitation:** this primitive is not yet wired into the Holdout-to-Forward transition or runtime preflight. The verifier now runs at the Holdout-to-Forward boundary before the event journal is appended, and again at runtime immediately before the injected runner is invoked. It still does not implement replay protection, create an append-only verification audit, or bind every provenance field listed below. Therefore the existing Factory chain must not be considered cryptographically authenticated.
+**Important limitation:** this primitive is not yet wired into the Holdout-to-Forward transition or runtime preflight. The verifier now runs at the Holdout-to-Forward boundary before the event journal is appended, and again at runtime preflight and immediately before the injected runner is invoked. The signature binds run/evidence/audit/record fingerprints, artifact byte size, and the target forward-session ID, reducing cross-session replay risk. It still does not enforce a durable one-time-use/replay ledger, create an append-only verification audit, or bind every provenance field listed below (notably the complete source event-ledger digest and sequence boundary). Therefore the existing Factory chain must not be considered cryptographically authenticated.
 
 SHA-256 fingerprints are integrity identifiers, not digital signatures. Frozen dataclasses and self-consistent fingerprints do not establish who created evidence or prove that it came from an independently controlled source.
 
@@ -21,12 +21,12 @@ SHA-256 fingerprints are integrity identifiers, not digital signatures. Frozen d
    - strategy ID and frozen strategy revision;
    - Manifest revision, readiness snapshot fingerprint, and Source Ledger fingerprint/evidence identifiers;
    - Fresh Holdout dataset ID, role, content SHA-256, artifact ID, and byte size;
-   - research run, execution receipt, evidence, audit and accepted-record fingerprints;
+   - research run ID/fingerprint, evidence ID/fingerprint, audit fingerprint, accepted-record fingerprint, and a single forward-session ID;
    - source event-ledger digest, byte size, and event sequence boundary;
    - issuer/key ID, creation time, expiry/revocation metadata, and schema version.
 3. **Independent verification:** the verifier is now called at Holdout-to-Forward and twice along the runtime path (session preflight and immediately before runner invocation). Expected bindings are assembled from the source record/session objects, not copied from the signed envelope. Caller injection of a permissive verifier or alternate trust root is prohibited.
 4. **Key lifecycle and revocation:** revoked-key rejection is implemented and tested through the system keyring's `revoked_key_ids` list. Still define operational key custody, rotation, recovery, and incident response. Never place a private signing key in source control or a caller-controlled payload.
-5. **Replay protection:** bind a unique evidence ID and event-sequence boundary and enforce a durable replay policy.
+5. **Replay protection:** the signature is bound to a specific forward-session ID, but a durable one-time-use/replay ledger and event-sequence boundary enforcement remain outstanding.
 6. **Auditability:** retain the verified envelope, signer/key ID, verifier version, trust-root revision, verification result, and artifact digest in an append-only evidence record.
 7. **Adversarial tests:** cover absent/malformed/altered signatures, expired and not-yet-valid envelopes, unknown/revoked keys, wrong artifact bytes, replay, unsupported schema, and mismatched strategy/revision. Each must be rejected before downstream adapter/runner invocation.
 
