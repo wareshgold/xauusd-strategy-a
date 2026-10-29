@@ -24,6 +24,7 @@ from .test_contract import DatasetRole
 from .holdout_factory import HoldoutFactoryResult
 from .trust_anchor import TrustAnchorError, verify_signed_evidence
 from .trust_audit import TrustAuditError, append_verification_audit
+from .job_events import verify_job_journal_prefix
 
 
 class ForwardSessionError(ValueError):
@@ -63,6 +64,7 @@ class DemoForwardSession:
     source_event_ledger_prefix_byte_size: int | None = None
     source_event_ledger_sequence_boundary: int | None = None
     source_event_ledger_prefix_source: str | None = None
+    source_event_ledger_path: str | None = None
 
     def _payload(self) -> dict[str, object]:
         return {
@@ -91,6 +93,7 @@ class DemoForwardSession:
             "source_event_ledger_prefix_byte_size": self.source_event_ledger_prefix_byte_size,
             "source_event_ledger_sequence_boundary": self.source_event_ledger_sequence_boundary,
             "source_event_ledger_prefix_source": self.source_event_ledger_prefix_source,
+            "source_event_ledger_path": self.source_event_ledger_path,
         }
 
     def validate(self) -> None:
@@ -176,6 +179,7 @@ class DemoForwardSession:
             "source_event_ledger_prefix_byte_size": self.source_event_ledger_prefix_byte_size,
             "source_event_ledger_sequence_boundary": self.source_event_ledger_sequence_boundary,
             "source_event_ledger_prefix_source": self.source_event_ledger_prefix_source,
+            "source_event_ledger_path": self.source_event_ledger_path,
             "strategy_id": self.strategy_id,
             "strategy_revision": self.strategy_revision,
             "manifest_revision": self.manifest_revision,
@@ -194,6 +198,13 @@ class DemoForwardSession:
             "holdout_dataset_fingerprint": self.holdout_result.result.run.dataset_fingerprint,
             "holdout_artifact_byte_size": Path(self.holdout_artifact_path).stat().st_size,
         }
+        if self.source_event_ledger_prefix_source == "persisted_jsonl":
+            if not self.source_event_ledger_path:
+                raise ForwardSessionError(
+                    "forward runtime requires the persisted source event-journal path"
+                )
+        elif self.source_event_ledger_prefix_source != "in_memory":
+            raise ForwardSessionError("forward runtime source event-journal type is invalid")
         try:
             verification = verify_signed_evidence(
                 Path(self.trust_envelope_path),
@@ -212,6 +223,18 @@ class DemoForwardSession:
             raise ForwardSessionError(
                 f"forward runtime signed evidence verification/audit failed: {exc}"
             ) from exc
+        if self.source_event_ledger_prefix_source == "persisted_jsonl":
+            try:
+                verify_job_journal_prefix(
+                    Path(self.source_event_ledger_path),
+                    expected_sha256=self.source_event_ledger_prefix_sha256 or "",
+                    expected_byte_size=self.source_event_ledger_prefix_byte_size if self.source_event_ledger_prefix_byte_size is not None else -1,
+                    sequence_boundary=self.source_event_ledger_sequence_boundary if self.source_event_ledger_sequence_boundary is not None else -1,
+                )
+            except (OSError, ValueError) as exc:
+                raise ForwardSessionError(
+                    f"forward runtime persisted source event-journal prefix verification failed: {exc}"
+                ) from exc
         if (
             self.readiness_snapshot is None
             or self.readiness_manifest is None
@@ -413,6 +436,7 @@ class DemoForwardSessionFactory:
             source_event_ledger_prefix_byte_size=ledger_prefix_size,
             source_event_ledger_sequence_boundary=ledger_sequence_boundary,
             source_event_ledger_prefix_source=ledger_prefix_source,
+            source_event_ledger_path=details.get("source_event_ledger_path"),
         )
         fingerprint = hashlib.sha256(
             json.dumps(draft._payload(), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
