@@ -74,7 +74,8 @@ def verify_signed_evidence(
     choose a trust root through the public API.
     """
     try:
-        envelope = json.loads(Path(envelope_path).read_text(encoding="utf-8"))
+        envelope_bytes = Path(envelope_path).read_bytes()
+        envelope = json.loads(envelope_bytes.decode("utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise TrustAnchorError("signed evidence envelope is missing or unreadable") from exc
     if not isinstance(envelope, dict):
@@ -152,5 +153,6 @@ def verify_signed_evidence(
         "issued_at_utc": issued.isoformat(),
         "expires_at_utc": expires.isoformat(),
         "payload": payload,
+        "envelope_sha256": hashlib.sha256(envelope_bytes).hexdigest(),
         "artifact_sha256": actual_sha,
     }
