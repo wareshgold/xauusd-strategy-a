@@ -450,3 +450,20 @@ def test_malformed_csv_quoting_is_rejected(tmp_path):
 
     with pytest.raises(AuditError, match="GZIP/CSV read failed"):
         audit_dataset(dataset, manifest)
+
+@pytest.mark.parametrize(
+    "manifest_bytes",
+    [
+        b"{not-json",
+        b"\\xff",
+        b"[]",
+        b"null",
+    ],
+)
+def test_malformed_or_non_object_manifest_is_rejected_as_audit_error(tmp_path, manifest_bytes):
+    dataset, manifest = make_inputs(tmp_path)
+    manifest.write_bytes(manifest_bytes)
+
+    with pytest.raises(AuditError, match="manifest"):
+        audit_dataset(dataset, manifest)
+
