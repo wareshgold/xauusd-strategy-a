@@ -469,6 +469,16 @@ def test_malformed_or_non_object_manifest_is_rejected_as_audit_error(tmp_path, m
 
  
 
+def test_non_object_manifest_interval_is_rejected_as_audit_error(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    payload["interval_utc"] = []
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(AuditError, match="interval_utc must be a JSON object"):
+        audit_dataset(dataset, manifest)
+
+
 def test_dataset_change_during_csv_parse_is_rejected(tmp_path, monkeypatch):
     import scripts.audit_factory_dev_tick_dataset as audit_module
 
