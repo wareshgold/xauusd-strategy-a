@@ -116,6 +116,7 @@ def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path, 
     assert result.handoff.dataset_artifact_id == context.holdout_dataset_artifact_id
 
     assert [event.event_type for event in events.entries()] == [
+        "QUEUED",
         "COMPLETED",
         "HANDOFF_ACCEPTED",
     ]
