@@ -66,6 +66,39 @@ class ForwardGateFactory:
 
     def prepare(self, context: ForwardGateContext) -> ForwardGateResult:
         context.readiness_snapshot.validate()
+
+        # Do not rely solely on a prior HoldoutFactory result: this is an
+        # independent boundary and must fail closed on blocked readiness.
+        readiness = context.readiness_snapshot.source_readiness
+        if readiness.get("status") != "PASS":
+            raise ForwardGateError(
+                "Forward gate requires source readiness PASS; "
+                f"status={readiness.get('status', 'MISSING')}"
+            )
+        if readiness.get("frozen_geometry_blocked") is not False:
+            raise ForwardGateError(
+                "Forward gate requires frozen geometry to be unblocked"
+            )
+        if readiness.get("canonical_strategy_eligible") is not True:
+            raise ForwardGateError(
+                "Forward gate requires canonical strategy eligibility"
+            )
+
+        eligibility = context.readiness_snapshot.passport_eligibility
+        if eligibility.get("source_status") != "PASS":
+            raise ForwardGateError(
+                "Forward gate requires passport source_status PASS; "
+                f"status={eligibility.get('source_status', 'MISSING')}"
+            )
+        if eligibility.get("frozen_geometry") != "READY":
+            raise ForwardGateError(
+                "Forward gate requires passport frozen_geometry READY"
+            )
+        if eligibility.get("canonical_strategy") != "ELIGIBLE":
+            raise ForwardGateError(
+                "Forward gate requires passport canonical_strategy ELIGIBLE"
+            )
+
         context.handoff.validate()
         context.source_record.validate()
         context.source_event.validate()
