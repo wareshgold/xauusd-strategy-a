@@ -211,17 +211,9 @@ class DemoForwardSession:
                 expected_bindings=expected_bindings,
                 artifact_path=Path(self.holdout_artifact_path),
             )
-            if audit_phase is not None:
-                append_verification_audit(
-                    phase=audit_phase,
-                    session_id=self.session_id,
-                    envelope_path=Path(self.trust_envelope_path),
-                    artifact_path=Path(self.holdout_artifact_path),
-                    verification=verification,
-                )
-        except (TrustAnchorError, TrustAuditError) as exc:
+        except TrustAnchorError as exc:
             raise ForwardSessionError(
-                f"forward runtime signed evidence verification/audit failed: {exc}"
+                f"forward runtime signed evidence verification failed: {exc}"
             ) from exc
         if self.source_event_ledger_prefix_source == "persisted_jsonl":
             try:
@@ -234,6 +226,19 @@ class DemoForwardSession:
             except (OSError, ValueError) as exc:
                 raise ForwardSessionError(
                     f"forward runtime persisted source event-journal prefix verification failed: {exc}"
+                ) from exc
+        if audit_phase is not None:
+            try:
+                append_verification_audit(
+                    phase=audit_phase,
+                    session_id=self.session_id,
+                    envelope_path=Path(self.trust_envelope_path),
+                    artifact_path=Path(self.holdout_artifact_path),
+                    verification=verification,
+                )
+            except TrustAuditError as exc:
+                raise ForwardSessionError(
+                    f"forward runtime verification audit failed: {exc}"
                 ) from exc
         if (
             self.readiness_snapshot is None
