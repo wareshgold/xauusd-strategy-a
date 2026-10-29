@@ -8,9 +8,9 @@
 
 The Factory recomputes readiness snapshots from supplied Manifest, Passport, and Source Ledger objects; binds the accepted Holdout result through ForwardGateResult and DemoForwardSession; and checks internal identities/fingerprints before the runtime runner is called.
 
-A first cryptographic primitive now exists in `src/strategy_factory/trust_anchor.py`. It verifies Ed25519 signatures over canonical JSON, checks expiry, compares caller-supplied expected identity bindings, re-hashes the artifact at verification time, and resolves public keys only from a fixed system keyring path (Linux: `/etc/sp2l/trust/holdout-ed25519-keyring.json`; Windows: `C:/ProgramData/SP2L/trust/holdout-ed25519-keyring.json`). The verifier fails closed if the envelope, artifact, keyring, or trusted key is missing or invalid. The repository contains no private signing key.
+A first cryptographic primitive now exists in `src/strategy_factory/trust_anchor.py`. It verifies Ed25519 signatures over canonical JSON, checks expiry and a key-revocation list, compares independently assembled expected identity bindings, re-hashes the artifact at verification time, and resolves public keys only from a fixed system keyring path (Linux: `/etc/sp2l/trust/holdout-ed25519-keyring.json`; Windows: `C:/ProgramData/SP2L/trust/holdout-ed25519-keyring.json`). The verifier fails closed if the envelope, artifact, keyring, or trusted key is missing or invalid. The repository contains no private signing key.
 
-**Important limitation:** this primitive is not yet wired into the Holdout-to-Forward transition or runtime preflight. It does not yet implement key revocation, replay protection, append-only verification audit, or complete binding of every provenance field listed below. Therefore the existing Factory chain must not be considered cryptographically authenticated.
+**Important limitation:** this primitive is not yet wired into the Holdout-to-Forward transition or runtime preflight. It does not yet run at the Holdout-to-Forward boundary, implement replay protection, create an append-only verification audit, or bind every provenance field listed below. Therefore the existing Factory chain must not be considered cryptographically authenticated.
 
 SHA-256 fingerprints are integrity identifiers, not digital signatures. Frozen dataclasses and self-consistent fingerprints do not establish who created evidence or prove that it came from an independently controlled source.
 
@@ -25,7 +25,7 @@ SHA-256 fingerprints are integrity identifiers, not digital signatures. Frozen d
    - source event-ledger digest, byte size, and event sequence boundary;
    - issuer/key ID, creation time, expiry/revocation metadata, and schema version.
 3. **Independent verification:** call the verifier at the Holdout-to-Forward boundary and again before runtime execution. Expected bindings must be assembled from the independently checked session/source objects, not copied from the signed envelope. Caller injection of a permissive verifier or alternate trust root is prohibited.
-4. **Key lifecycle and revocation:** define key custody, rotation, revocation, recovery, and incident response. Implement and test revoked-key rejection. Never place a private signing key in source control or a caller-controlled payload.
+4. **Key lifecycle and revocation:** revoked-key rejection is implemented and tested through the system keyring's `revoked_key_ids` list. Still define operational key custody, rotation, recovery, and incident response. Never place a private signing key in source control or a caller-controlled payload.
 5. **Replay protection:** bind a unique evidence ID and event-sequence boundary and enforce a durable replay policy.
 6. **Auditability:** retain the verified envelope, signer/key ID, verifier version, trust-root revision, verification result, and artifact digest in an append-only evidence record.
 7. **Adversarial tests:** cover absent/malformed/altered signatures, expired and not-yet-valid envelopes, unknown/revoked keys, wrong artifact bytes, replay, unsupported schema, and mismatched strategy/revision. Each must be rejected before downstream adapter/runner invocation.
