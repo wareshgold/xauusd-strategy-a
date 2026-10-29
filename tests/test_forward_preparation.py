@@ -564,6 +564,61 @@ def test_holdout_to_forward_never_authorizes_production(tmp_path):
     )
 
 
+
+def test_consumed_holdout_envelope_recovers_when_first_journal_append_did_not_mutate(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    original_append = events.append
+    calls = {"count": 0}
+
+    def fail_first_append_without_mutation(**event_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise OSError("synthetic transient append failure before mutation")
+        return original_append(**event_kwargs)
+
+    events.append = fail_first_append_without_mutation
+    before = events.entries()
+    with pytest.raises(ForwardPreparationError, match="manual reconciliation required"):
+        prepare_holdout_to_forward(**kwargs)
+    assert events.entries() == before
+
+    recovered = prepare_holdout_to_forward(**kwargs)
+    assert recovered.session.session_id == kwargs["forward_session_id"]
+    assert [event.event_type for event in events.entries()] == [
+        "COMPLETED",
+        "HANDOFF_ACCEPTED",
+    ]
+    audit = json.loads((tmp_path / "verification-audit.jsonl").read_text(encoding="utf-8").splitlines()[1])
+    assert audit["phase"] == "holdout_to_forward_recovery"
+    assert audit["session_id"] == kwargs["forward_session_id"]
+
+
+def test_consumed_holdout_envelope_does_not_recover_after_journal_boundary_changes(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    original_append = events.append
+
+    def fail_first_append_without_mutation(**event_kwargs):
+        raise OSError("synthetic transient append failure before mutation")
+
+    events.append = fail_first_append_without_mutation
+    with pytest.raises(ForwardPreparationError, match="manual reconciliation required"):
+        prepare_holdout_to_forward(**kwargs)
+    events.append = original_append
+    events.append(
+        event_type="QUEUED",
+        job_id="unexpected-after-consumption",
+        job_fingerprint="b" * 64,
+        detail="journal changed after consumption",
+    )
+    changed = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="binding mismatch: source_event_ledger_prefix_sha256|binding mismatch: source_event_ledger_prefix_byte_size|binding mismatch: source_event_ledger_sequence_boundary"):
+        prepare_holdout_to_forward(**kwargs)
+    assert events.entries() == changed
+
+
 def test_missing_signed_evidence_blocks_holdout_to_forward_before_event_append(tmp_path):
     holdout, context, events = _prepared(tmp_path)
     kwargs = _kwargs(holdout, context, events, tmp_path)
