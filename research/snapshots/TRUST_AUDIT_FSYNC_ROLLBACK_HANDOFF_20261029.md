@@ -102,3 +102,32 @@ For commit `5f2cad558144593c7544f01d352dce22a6ec9788`:
 1. Verify live PR head and rerun status after this snapshot update creates a new commit.
 2. Review the diff for the Trust Audit implementation, the corrected fixtures, and CI inclusion.
 3. Keep the PR Draft until review is complete. Do not merge or enable production on the basis of CI alone.
+
+
+---
+
+## Final follow-up — latest PR-head verification (2026-10-29)
+
+### Verified current head and CI
+
+The PR head at the start of this check was `1ba4565952a667d62ffddc04cf7432a7318ba97a`. PR #368 remains **open, Draft, and unmerged**, based on `research/factory-candidate-lab-20261010`.
+
+All three GitHub Actions workflows completed successfully for that exact head:
+
+- **Factory Research Tests** — run #1455, ID `40873925932`, success. Job log: **107 passed in 1.59s**.
+- **SP2L forensic deterministic checks** — run #890, ID `40873925915`, success.
+- **Factory Journal Lock Cross-Platform Tests** — run #282, ID `40873925896`, success; both Ubuntu and Windows jobs succeeded.
+
+The Factory workflow command explicitly includes `tests/test_trust_audit.py`; the two rollback tests are part of the successful 107-test suite. The log's compact summary does not print individual test names, so the evidence is suite-level inclusion plus successful suite result, not a separate per-test line report.
+
+### Review checkpoint
+
+Reviewed the current Trust Audit append/rollback implementation, the test module, the Factory workflow inclusion, and the PR changed-file list. The code path catches write/flush/fsync `OSError`, attempts truncation to the pre-append byte size, flushes and fsyncs the rollback, and requires manual reconciliation if rollback cannot be confirmed. Tests assert both the successful rollback path and the uncertain rollback path.
+
+No production-readiness claim follows from this review. Outstanding release gates documented above remain material: independent system trust-root/keyring provisioning and control, independent journal-source control, complete provenance binding, operational key lifecycle, and the lack of a cross-file atomic transaction between the audit ledger and event journal. Successful `fsync` is not an absolute hardware/filesystem durability guarantee.
+
+### Disposition / next step
+
+- No merge or PR state change performed.
+- Keep PR #368 Draft while a maintainer reviews the full diff and the outstanding release gates.
+- Before any later snapshot update or code edit, re-read the live PR head and CI; any new commit requires its own CI verification.
