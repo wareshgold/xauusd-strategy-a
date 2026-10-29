@@ -171,6 +171,7 @@ class DemoForwardSession:
             "holdout_dataset_id": self.holdout_dataset_id,
             "holdout_artifact_id": self.holdout_dataset_artifact_id,
             "holdout_dataset_role": "FRESH_HOLDOUT",
+            "forward_session_id": self.session_id,
             "holdout_run_id": self.holdout_result.result.run.run_id,
             "holdout_run_fingerprint": self.holdout_result.result.record.run_fingerprint,
             "holdout_evidence_id": self.holdout_result.result.record.evidence_id,
