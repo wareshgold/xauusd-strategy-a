@@ -33,6 +33,11 @@ class SyntheticHoldoutRecord:
     dataset_role = "FRESH_HOLDOUT"
     run_id = "SYNTHETIC-HOLDOUT-RUN"
     evidence_id = "SYNTHETIC-HOLDOUT-EVIDENCE"
+    run_fingerprint = "a" * 64
+    evidence_fingerprint = "b" * 64
+    audit_fingerprint = "c" * 64
+    fingerprint = "d" * 64
+    dataset_fingerprint = hashlib.sha256(b"synthetic-holdout-dataset-fingerprint").hexdigest()
     snapshot_fingerprint = ""
 
     def validate(self):
@@ -138,6 +143,14 @@ def _session(tmp_path, monkeypatch):
             "holdout_dataset_id": record.dataset_id,
             "holdout_artifact_id": holdout_artifact,
             "holdout_dataset_role": "FRESH_HOLDOUT",
+            "holdout_run_id": record.run_id,
+            "holdout_run_fingerprint": record.run_fingerprint,
+            "holdout_evidence_id": record.evidence_id,
+            "holdout_evidence_fingerprint": record.evidence_fingerprint,
+            "holdout_audit_fingerprint": record.audit_fingerprint,
+            "holdout_record_fingerprint": record.fingerprint,
+            "holdout_dataset_fingerprint": record.dataset_fingerprint,
+            "holdout_artifact_byte_size": artifact_path.stat().st_size,
             "holdout_artifact_sha256": holdout_sha,
         },
     }
