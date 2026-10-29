@@ -513,3 +513,30 @@ def test_holdout_to_forward_never_authorizes_production(tmp_path):
         event.station != "production"
         for event in events.entries()
     )
+
+
+def test_missing_signed_evidence_blocks_holdout_to_forward_before_event_append(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    kwargs.pop("trust_envelope_path")
+    before = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="requires signed evidence"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert events.entries() == before
+
+
+def test_tampered_signed_evidence_blocks_holdout_to_forward_before_event_append(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    envelope_path = Path(kwargs["trust_envelope_path"])
+    envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
+    envelope["payload"]["strategy_revision"] = "TAMPERED-REVISION"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+    before = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="signed evidence verification failed"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert events.entries() == before
