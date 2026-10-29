@@ -17,7 +17,7 @@ It is not a generic dataset importer, a strategy engine, or a canonical-rule aut
 
 The tool refuses unexpected filenames, manifest identity/interval/purpose mismatches, hash/size/row-count mismatches, empty tick datasets, corrupt or truncated GZIP streams, malformed CSV quoting, CSV rows with missing or extra cells, invalid numeric data, timestamps with precision finer than one millisecond, observed timestamps outside the declared half-open UTC interval, nonpositive or missing Bid/Ask, crossed quotes, and out-of-order rows. Duplicate millisecond timestamps are reported, not removed. Gaps are reported, not filled or automatically attributed to a cause.
 
-The tool computes the compressed file SHA-256, manifest SHA-256, row count, timestamp consistency, quote checks, duplicate groups, large gaps, and basic spread summaries. It refuses to overwrite an existing receipt or either input path. The receipt output is created exclusively at the requested path.
+The tool computes the compressed file SHA-256, manifest SHA-256, row count, timestamp consistency, quote checks, duplicate groups, large gaps, and basic spread summaries. It checks that the dataset metadata and digest remain stable through the complete parse and that the manifest bytes remain unchanged through the audit; input mutation during processing fails closed. It refuses to overwrite an existing receipt or either input path. The receipt output is created exclusively at the requested path.
 
 ## Example PowerShell invocation
 
@@ -38,7 +38,7 @@ The receipt directory is only created if absent; if the chosen receipt filename 
 
 ## Output and gate meaning
 
-The JSON receipt carries input identities, observed counts/checks, limitations, and gate statuses. Its successful status means only that the fixed artifact passes the encoded integrity and basic quote checks. Receipt serialization is deterministic for identical inputs: UTF-8 JSON, two-space indentation, sorted keys, and one trailing newline. The schema version and required top-level fields, development role, unanchored provenance label, limitations, and all four gate statuses are covered by synthetic-fixture tests. Tests also verify that a pre-existing output path is rejected without changing its bytes.
+The JSON receipt carries input identities, observed counts/checks, limitations, and gate statuses. Its successful status means only that the fixed artifact passes the encoded integrity and basic quote checks. Receipt serialization is deterministic for identical inputs: UTF-8 JSON, two-space indentation, sorted keys, and one trailing newline. The schema version and required top-level fields, development role, unanchored provenance label, limitations, and all four gate statuses are covered by synthetic-fixture tests. Tests also verify that malformed/non-object manifests are rejected as controlled audit errors, mutation of the dataset during parsing is detected, and a pre-existing output path is rejected without changing its bytes.
 
 - Gate A is approved for limited DEVELOPMENT tooling use only. The receipt must explicitly retain `UNANCHORED_OBSERVED_DIGEST` provenance; the approval does not authenticate acquisition provenance or permit strategy-performance backtests.
 - Gate B remains blocked until executable geometry and semantics are source-confirmed. Strategy-performance backtests and Fresh Holdout use remain prohibited under the limited approval.
