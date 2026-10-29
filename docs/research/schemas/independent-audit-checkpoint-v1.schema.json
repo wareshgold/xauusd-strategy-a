@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sp2l/independent-audit-checkpoint-v1.schema.json",
+  "title": "SP2L Independent Audit Checkpoint Protocol v1 — design schema only",
+  "description": "Provider-neutral draft contract. Not consumed by production code and not evidence of an implemented external checkpoint service.",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "audit_identity",
+        "environment_identity",
+        "audit_sequence",
+        "entry_sha256",
+        "previous_checkpoint_digest",
+        "previous_checkpoint_revision",
+        "audit_file_identity",
+        "audit_byte_size",
+        "writer_build"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "sp2l.audit-checkpoint.request.v1"
+        },
+        "request_id": {
+          "$ref": "#/$defs/sha256",
+          "description": "SHA-256 over a canonical serialization of the immutable request fields excluding request_id itself; exact canonicalization remains a prerequisite for implementation."
+        },
+        "audit_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "environment_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "audit_sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "entry_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "previous_checkpoint_digest": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previous_checkpoint_revision": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "audit_file_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Stable identity defined by the selected storage/deployment design; a pathname alone is not proof of immutable file identity."
+        },
+        "audit_byte_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "writer_build": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "request_sha256",
+        "service_identity",
+        "checkpoint_revision",
+        "accepted_audit_sequence",
+        "accepted_entry_sha256",
+        "accepted_audit_byte_size",
+        "previous_checkpoint_digest",
+        "acknowledged_at",
+        "authentication"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "sp2l.audit-checkpoint.receipt.v1"
+        },
+        "request_id": {
+          "$ref": "#/$defs/sha256"
+        },
+        "request_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "service_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "checkpoint_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "accepted_audit_sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "accepted_entry_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "accepted_audit_byte_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "previous_checkpoint_digest": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "acknowledged_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "authentication": {
+          "type": "object",
+          "description": "Provider-specific authenticated receipt evidence. Exact fields and validation must be defined only after provider selection.",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/request"
+    },
+    {
+      "$ref": "#/$defs/receipt"
+    }
+  ]
+}
