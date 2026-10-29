@@ -86,6 +86,47 @@ def test_receipt_creation_is_deterministic_and_refuses_overwrite(tmp_path):
     assert output.read_bytes() == saved
 
 
+def test_receipt_schema_and_serialization_are_deterministic(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    first_path = tmp_path / "receipts" / "first.json"
+    second_path = tmp_path / "receipts" / "second.json"
+
+    first = write_receipt(dataset, manifest, first_path)
+    second = write_receipt(dataset, manifest, second_path)
+
+    required_top_level = {
+        "schema_version", "audit_kind", "audit_status", "dataset",
+        "checks", "limitations", "gate_a", "gate_b", "gate_c", "gate_d",
+    }
+    assert required_top_level <= first.keys()
+    assert first["schema_version"] == 1
+    assert first["audit_kind"] == "FIXED_DEVELOPMENT_TICK_BIDASK_INTEGRITY"
+    assert first["audit_status"] == "INTEGRITY_AND_BASIC_QUOTE_CHECKS_PASS"
+    assert first["dataset"]["provenance_status"] == "UNANCHORED_OBSERVED_DIGEST"
+    assert first["dataset"]["role"] == "DEVELOPMENT"
+    assert first["gate_a"] == "LIMITED_DEVELOPMENT_TOOLING_ONLY_APPROVED_PROVENANCE_UNANCHORED"
+    assert first["gate_b"] == "BLOCKED_SOURCE_GEOMETRY_UNRESOLVED"
+    assert first["gate_c"] == "BLOCKED_ADAPTER_AND_EXECUTION_CONTRACT_REVIEW_REQUIRED"
+    assert first["gate_d"] == "BLOCKED"
+    assert isinstance(first["limitations"], list) and first["limitations"]
+    assert first == second
+    assert first_path.read_bytes() == second_path.read_bytes()
+    assert first_path.read_bytes().endswith(b"\\n")
+    assert json.loads(first_path.read_text(encoding="utf-8")) == first
+
+
+def test_receipt_output_collision_preserves_existing_evidence(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    output = tmp_path / "receipt.json"
+    original = b'{"pre-existing": "evidence"}\\n'
+    output.write_bytes(original)
+
+    with pytest.raises(AuditError, match="receipt output already exists"):
+        write_receipt(dataset, manifest, output)
+
+    assert output.read_bytes() == original
+
+
 def test_wrong_artifact_name_is_rejected(tmp_path):
     dataset, manifest = make_inputs(tmp_path)
     renamed = tmp_path / "different.csv.gz"
