@@ -127,6 +127,21 @@ def test_receipt_output_collision_preserves_existing_evidence(tmp_path):
     assert output.read_bytes() == original
 
 
+def test_receipt_write_preserves_inputs_and_creates_missing_parent(tmp_path):
+    dataset, manifest = make_inputs(tmp_path)
+    dataset_before = dataset.read_bytes()
+    manifest_before = manifest.read_bytes()
+    output = tmp_path / "new" / "nested" / "receipt.json"
+
+    receipt = write_receipt(dataset, manifest, output)
+
+    assert output.is_file()
+    assert output.read_bytes().endswith(b"\\n")
+    assert json.loads(output.read_text(encoding="utf-8")) == receipt
+    assert dataset.read_bytes() == dataset_before
+    assert manifest.read_bytes() == manifest_before
+
+
 def test_wrong_artifact_name_is_rejected(tmp_path):
     dataset, manifest = make_inputs(tmp_path)
     renamed = tmp_path / "different.csv.gz"
