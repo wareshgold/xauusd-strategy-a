@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from types import SimpleNamespace
 
 from strategy_factory.forward_gate_factory import ForwardGateResult
 from strategy_factory.forward_session_factory import DemoForwardSessionFactory
@@ -29,6 +30,7 @@ def _sha(payload: bytes) -> str:
 
 def _gate(session_id: str, dataset_id: str, artifact_id: str, dataset_sha256: str) -> ForwardGateResult:
     return ForwardGateResult(
+        holdout_result=SimpleNamespace(),  # synthetic lifecycle-only fixture; not runtime evidence
         gate=GateResult(
             name="FRESH_HOLDOUT_TO_FORWARD",
             status=GateStatus.PASS,
