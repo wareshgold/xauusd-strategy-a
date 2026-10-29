@@ -60,6 +60,7 @@ class ForwardGateContext:
 @dataclass(frozen=True)
 class ForwardGateResult:
     gate: GateResult
+    holdout_result: HoldoutFactoryResult | None = None
     readiness_snapshot: ReadinessSnapshot | None = None
     readiness_manifest: StrategyManifest | None = None
     readiness_passport: StrategyPassport | None = None
@@ -347,6 +348,7 @@ class ForwardGateFactory:
         )
         return ForwardGateResult(
             gate=gate,
+            holdout_result=holdout_result,
             readiness_snapshot=context.readiness_snapshot,
             readiness_manifest=context.readiness_manifest,
             readiness_passport=context.readiness_passport,
