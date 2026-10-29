@@ -244,6 +244,9 @@ class HoldoutFactory:
             observed_artifact=artifact,
             evidence_id=context.evidence_id,
             purpose=context.purpose,
+            readiness_manifest=context.readiness_manifest,
+            readiness_passport=context.readiness_passport,
+            readiness_ledger=context.readiness_ledger,
         )
         return HoldoutFactoryResult(
             job=job,
