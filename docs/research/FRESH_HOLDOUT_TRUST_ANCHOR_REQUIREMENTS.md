@@ -54,6 +54,45 @@ The receipt must contain evidence/results, not only checkboxes or a statement th
 
 A successful verification hashes the artifact at verification time, but the current bridge still passes control to an injected runner after a path-based check. This review has **not** established that the runner consumes the same immutable bytes if the path changes immediately after verification. Before production authorization, either pass a pinned/read-only artifact handle or immutable content-addressed artifact identity through to the consumer, or demonstrate an equivalent enforced storage/locking design with a race-injection test. A second hash check narrows but does not mathematically eliminate a path replacement race.
 
+## Anti-truncation checkpoint design review — proposal only (2026-10-29)
+
+### Finding
+
+The local JSONL audit validates a contiguous sequence and hash chain starting from the all-zero genesis digest. This detects edits, deletion, or reordering when a later retained entry still commits to the missing history. It cannot independently detect whole-file deletion, rollback to an older valid prefix, or replacement with a newly constructed valid chain, because the verifier has no independently retained expected tip. The local file is therefore not an anti-truncation trust anchor.
+
+### Minimum external checkpoint contract — not implemented
+
+A future checkpoint adapter must be separately designed and reviewed. At minimum, after each successful audit append it must publish a signed or service-authenticated checkpoint to a trust domain whose write/delete permissions are independent from the runtime identity and local audit-directory administrators. The checkpoint record should bind:
+
+- schema/version and checkpoint sequence;
+- audit identity and environment/host identity;
+- latest audit entry sequence and entry_sha256 chain tip;
+- exact audit file identity and byte size at checkpoint time;
+- UTC checkpoint time and verifier/writer build identity;
+- previous checkpoint digest or monotonic service-side revision;
+- authenticated publisher identity and remote receipt/acknowledgement.
+
+The checkpoint store must reject rollback/replay and provide a way to retrieve the latest independently retained checkpoint. A local copy of the checkpoint beside the audit file does not satisfy independence. Do not implement a home-grown signature or assume a timestamp alone prevents rollback.
+
+### Required fail-closed behavior and recovery
+
+- Before trusting an existing audit, compare its validated sequence/tip with the latest independently retrieved checkpoint and verify the recorded byte-size/file-prefix binding.
+- If the audit is shorter than the checkpoint, its tip differs, the remote checkpoint is unavailable when policy requires it, or checkpoint history is stale/ambiguous, block Fresh Holdout -> Forward -> Runtime and require manual reconciliation.
+- If audit append succeeds locally but external checkpoint publication fails, report an explicit uncertain state. Do not silently treat the event as fully anchored, retry a non-idempotent lifecycle transition, or delete the local record to “roll back.”
+- Define idempotency by a stable checkpoint request ID derived from the audit identity, sequence, and entry digest. A retry may confirm the same checkpoint, but must not create a conflicting checkpoint for the same sequence.
+- Recovery must compare independently retained checkpoints and local audit history; it must never rebuild a missing historical prefix from the current file alone.
+
+### Acceptance tests required before claiming anti-truncation protection
+
+1. Delete the whole local audit after at least one externally acknowledged checkpoint: startup/append must fail closed.
+2. Restore an older, internally valid audit prefix: checkpoint comparison must fail closed.
+3. Replace the audit with a different, internally valid chain at the same or lower sequence: checkpoint comparison must fail closed.
+4. Simulate checkpoint service timeout after local append: surface an uncertain/unanchored state and prevent downstream authorization.
+5. Replay a prior checkpoint request and attempt a conflicting digest at the same sequence: service/adapter must reject the conflict and remain idempotent for the exact same request.
+6. Verify the runtime identity and local audit administrator cannot alter or delete remote checkpoint history; retain independent test evidence.
+
+No external checkpoint adapter, service integration, remote retention policy, or deployment evidence is present in this PR at this checkpoint. These requirements are a design gate, not a claim of implemented protection.
+
 ## Explicit non-goals
 
 - This implementation does not resolve SP2L source questions or define canonical P-Gap, AB=CD, fill, or execution rules.
