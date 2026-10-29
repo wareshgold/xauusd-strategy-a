@@ -211,7 +211,7 @@ def test_external_journal_corruption_is_rejected_before_any_append(tmp_path):
 
     with pytest.raises(
         ForwardPreparationError,
-        match="failed pre-append integrity validation",
+        match="persisted event journal is not valid",
     ):
         prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
