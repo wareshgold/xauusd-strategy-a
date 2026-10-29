@@ -55,6 +55,10 @@ class ForwardGateContext:
     source_event_ledger_byte_size: int | None = None
     source_event_ledger_source: str | None = None
     source_event_ledger_path: str | None = None
+    source_event_ledger_prefix_sha256: str | None = None
+    source_event_ledger_prefix_byte_size: int | None = None
+    source_event_ledger_sequence_boundary: int | None = None
+    source_event_ledger_prefix_source: str | None = None
 
 
 @dataclass(frozen=True)
@@ -343,6 +347,10 @@ class ForwardGateFactory:
                 "source_event_ledger_event_count": len(ledger_snapshot),
                 "source_event_ledger_source": ledger_source,
                 "source_event_ledger_path": context.source_event_ledger_path,
+                "source_event_ledger_prefix_sha256": context.source_event_ledger_prefix_sha256,
+                "source_event_ledger_prefix_byte_size": context.source_event_ledger_prefix_byte_size,
+                "source_event_ledger_sequence_boundary": context.source_event_ledger_sequence_boundary,
+                "source_event_ledger_prefix_source": context.source_event_ledger_prefix_source,
                 "production_decision": False,
             },
         )
