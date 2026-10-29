@@ -142,20 +142,22 @@ Get-FileHash .\artifacts\forward-test\SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.j
 
 The wrapper has run-scoped state and pending-order TTL logic to avoid replaying pre-existing broker history into Telegram/statistics and to avoid cancelling orders whose creation time is not known to this run. Orders without a local creation marker are intentionally left untouched. Treat event logs as evidence; do not overwrite or truncate them.
 
-## 7. Dashboard (read-only) — important path caveat
+## 7. Dashboard (read-only)
 
-The existing `scripts/live_dashboard.py` describes a read-only dashboard at
-`http://127.0.0.1:8790` with a 5-second refresh. It is safe for observation by design, but at this
-reference commit its configured files are the **generic** paths:
-- `runtime/sp2l_multi_symbol_forward_state.json`
-- `runtime/sp2l_multi_symbol_forward_runner.lock`
-- `artifacts/forward-test/SP2L_MULTI_SYMBOL_FORWARD_EVENTS.jsonl`
+The existing generic `scripts/live_dashboard.py` remains unchanged and may already be running at
+`http://127.0.0.1:8790`. Do not stop, replace, or restart it as part of this change.
 
-Those are not the V3-specific event/state paths listed in section 6. Therefore do not assume that
-the generic dashboard is showing this V3 run's own event stream. If it is already running, leave it
-running; do not start a second copy on the same port. A V3-specific dashboard/path integration is
-not claimed by this runbook and must be implemented and tested separately before relying on the page
-as the V3 health monitor.
+A separate V3-specific dashboard was added at `scripts/live_dashboard_v3.py`. It reads:
+- State: `runtime/sp2l_v3_xauusd_rr2_trail4_forward_state.json`
+- Events: `artifacts/forward-test/SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl`
+- Shared runner lock: `runtime/sp2l_multi_symbol_forward_runner.lock`
+- Default URL: `http://127.0.0.1:8792` (override with `SP2L_V3_DASHBOARD_PORT`)
+
+It binds to loopback and is read-only; it does not place orders or write runner state. It still probes MT5
+read-only for account mode/ticks, and the shared lock is used to inspect runner mode. Do not assume that
+this new dashboard has been launched or validated on the operator's machine. First review and test it
+in a separate console. Never start a second runner to validate the dashboard. The 8790 dashboard and
+its process are intentionally left untouched.
 
 ## 8. Verify health and distinguish parent/child
 
