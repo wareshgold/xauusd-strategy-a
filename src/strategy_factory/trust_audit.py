@@ -52,7 +52,7 @@ def _read_valid_entries(path: Path) -> list[dict[str, Any]]:
         text = raw.decode("utf-8")
     except (OSError, UnicodeError) as exc:
         raise TrustAuditError("trust verification audit is unreadable") from exc
-    if raw and not raw.endswith(b"\\n"):
+    if raw and raw[-1:] != bytes([10]):
         raise TrustAuditError(
             "trust verification audit has an incomplete final record; manual reconciliation required"
         )
