@@ -143,6 +143,7 @@ def _session(tmp_path, monkeypatch):
             "holdout_dataset_id": record.dataset_id,
             "holdout_artifact_id": holdout_artifact,
             "holdout_dataset_role": "FRESH_HOLDOUT",
+            "forward_session_id": "FORWARD-RUNTIME-SESSION-1",
             "holdout_run_id": record.run_id,
             "holdout_run_fingerprint": record.run_fingerprint,
             "holdout_evidence_id": record.evidence_id,
