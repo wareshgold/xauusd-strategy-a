@@ -28,10 +28,32 @@ from strategy_factory.test_contract import (
 from strategy_factory.usage import DatasetUsageLedger
 
 
-def _snapshot(spec):
+def _snapshot(spec, *, status="PASS"):
     ledger = {"entries": [], "resolution_state": "SYNTHETIC_ONLY"}
-    readiness = {"status": "SYNTHETIC_ONLY"}
-    eligibility = {"status": "SYNTHETIC_ONLY"}
+    blocked = status != "PASS"
+    readiness = {
+        "status": status,
+        "gate": {
+            "status": status,
+            "blocking_questions": ["Q-REQUIRED"] if blocked else [],
+            "unresolved_questions": [],
+            "missing_questions": ["Q-REQUIRED"] if blocked else [],
+        },
+        "total_questions": 1,
+        "confirmed_questions": 0 if blocked else 1,
+        "unresolved_questions": 0,
+        "missing_questions": 1 if blocked else 0,
+        "frozen_geometry_blocked": blocked,
+        "canonical_strategy_eligible": not blocked,
+        "production_eligible": False,
+    }
+    eligibility = {
+        "source_status": status,
+        "frozen_geometry": "BLOCKED" if blocked else "READY",
+        "canonical_strategy": "NOT_ELIGIBLE" if blocked else "ELIGIBLE",
+        "production": "NOT_ELIGIBLE",
+        "blocking_reasons": ["SOURCE_READINESS_BLOCKED"] if blocked else [],
+    }
     payload = ReadinessSnapshot._fingerprint_payload(
         snapshot_revision="SYNTH",
         strategy_id=spec.strategy_id,
@@ -72,7 +94,7 @@ class FakeAdapter:
         )
 
 
-def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="REV-TEST"):
+def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="REV-TEST", readiness_status="PASS"):
     tmp_path.mkdir(parents=True, exist_ok=True)
     raw_source = b'{"schema_version":1,"research_only":true,"bars":[1]}'
     raw_holdout = b'{"schema_version":1,"research_only":true,"bars":[2]}'
@@ -148,7 +170,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         job=upstream_job,
         spec=source_spec,
         adapter=FakeAdapter(),
-        snapshot=_snapshot(source_spec),
+        snapshot=_snapshot(source_spec, status=readiness_status),
         observed_content_sha256=source_sha,
         observed_artifact=registry.get(source_dataset.dataset_id).artifact,
         evidence_id="ROBUSTNESS-EVIDENCE-001",
@@ -188,7 +210,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         spec=holdout_spec,
         manifest_revision="MANIFEST",
         job_id="HOLDOUT-001",
-        readiness_snapshot=_snapshot(holdout_spec),
+        readiness_snapshot=_snapshot(holdout_spec, status=readiness_status),
         handoff=handoff,
         source_record=upstream_result.record,
         source_event=event,
@@ -205,6 +227,27 @@ def test_holdout_factory_accepts_fresh_immutable_dataset(tmp_path):
     result = HoldoutFactory(runner).prepare_and_run(context)
     assert result.result.accepted is True
     assert result.result.dataset_provenance.status.value == "PASS"
+
+
+def test_holdout_factory_rejects_correctly_bound_blocked_readiness(tmp_path):
+    runner, context = _context(tmp_path, readiness_status="BLOCKED")
+
+    class NeverExecuteAdapter:
+        engine_revision = "MUST-NOT-RUN"
+
+        def execute(self, spec):
+            raise AssertionError("blocked Fresh Holdout must not execute the adapter")
+
+    context = replace(context, adapter=NeverExecuteAdapter())
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "source readiness PASS" in str(exc)
+        assert "BLOCKED" in str(exc)
+    else:
+        raise AssertionError(
+            "correctly fingerprinted BLOCKED readiness must be rejected"
+        )
 
 
 def test_holdout_factory_rejects_reused_dataset(tmp_path):
