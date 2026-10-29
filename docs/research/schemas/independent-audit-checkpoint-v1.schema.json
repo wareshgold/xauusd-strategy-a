@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/sp2l/independent-audit-checkpoint-v1.schema.json",
+  "$id": "urn:sp2l:independent-audit-checkpoint-v1",
   "title": "SP2L Independent Audit Checkpoint Protocol v1 — design schema only",
   "description": "Provider-neutral draft contract. Not consumed by production code and not evidence of an implemented external checkpoint service.",
   "$defs": {
