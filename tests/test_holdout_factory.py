@@ -430,3 +430,15 @@ def test_holdout_factory_is_deterministic(tmp_path):
 
     assert result1.job.as_dict() == result2.job.as_dict()
     assert result1.job.fingerprint == result2.job.fingerprint
+
+
+def test_holdout_factory_rejects_readiness_snapshot_mismatched_to_source_inputs(tmp_path):
+    runner, context = _context(tmp_path)
+    drifted_manifest = replace(context.readiness_manifest, revision="MANIFEST-DRIFT")
+    context = replace(context, readiness_manifest=drifted_manifest)
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "does not match source inputs" in str(exc)
+    else:
+        raise AssertionError("Holdout must recompute readiness against supplied source inputs")
