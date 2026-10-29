@@ -119,6 +119,7 @@ def prepare_holdout_to_forward(
         "holdout_dataset_id": record.dataset_id,
         "holdout_artifact_id": result.run.artifact_id,
         "holdout_dataset_role": "FRESH_HOLDOUT",
+        "forward_session_id": forward_session_id,
         "holdout_run_id": result.run.run_id,
         "holdout_run_fingerprint": record.run_fingerprint,
         "holdout_evidence_id": record.evidence_id,
