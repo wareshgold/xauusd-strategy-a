@@ -66,12 +66,27 @@ def _kwargs(holdout, context, events, tmp_path):
     monkeypatch = pytest.MonkeyPatch()
     monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
     monkeypatch.setattr(trust_audit, "_default_audit_path", lambda: tmp_path / "verification-audit.jsonl")
+    boundary_events = events.entries()
+    if events.path is not None and events.path.exists():
+        boundary_bytes = events.path.read_bytes()
+        boundary_source = "persisted_jsonl"
+    else:
+        boundary_bytes = "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
+            for event in boundary_events
+        ).encode("utf-8")
+        boundary_source = "persisted_jsonl" if events.path is not None else "in_memory"
+    boundary_sha = hashlib.sha256(boundary_bytes).hexdigest()
     envelope = {
         "schema_version": "SP2L-SIGNED-EVIDENCE-1",
         "key_id": "preparation-test-key",
         "issued_at_utc": "2026-10-01T00:00:00Z",
         "expires_at_utc": "2030-01-01T00:00:00Z",
         "payload": {
+            "source_event_ledger_prefix_sha256": boundary_sha,
+            "source_event_ledger_prefix_byte_size": len(boundary_bytes),
+            "source_event_ledger_sequence_boundary": len(boundary_events),
+            "source_event_ledger_prefix_source": boundary_source,
             "strategy_id": record.strategy_id,
             "strategy_revision": record.strategy_revision,
             "manifest_revision": record.manifest_revision,
