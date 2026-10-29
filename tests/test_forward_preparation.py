@@ -15,6 +15,7 @@ from strategy_factory.forward_gate_factory import ForwardGateError
 from strategy_factory.forward_preparation import (
     ForwardPreparationError,
     prepare_holdout_to_forward,
+    classify_holdout_to_forward_transition,
 )
 from strategy_factory.job_events import FactoryJobEventLedger, _journal_write_lock
 from strategy_factory import trust_anchor, trust_audit
@@ -656,3 +657,70 @@ def test_signed_holdout_evidence_cannot_be_replayed_for_another_forward_session(
         prepare_holdout_to_forward(**kwargs)
 
     assert events.entries() == before
+
+
+def test_holdout_forward_transition_classifier_is_read_only_and_distinguishes_states(tmp_path):
+    job_fingerprint = "a" * 64
+    events = FactoryJobEventLedger(path=None)
+
+    empty = classify_holdout_to_forward_transition(
+        events=events, job_id="job-1", forward_session_id="session-1",
+    )
+    assert empty["status"] == "NO_HOLDOUT_TRANSITION_EVIDENCE_REVIEW_REQUIRED"
+    assert empty["automatic_recovery_allowed"] is False
+    assert events.entries() == ()
+
+    events.append(
+        event_type="COMPLETED", job_id="job-1",
+        job_fingerprint=job_fingerprint, station="holdout", phase="HOLDOUT",
+        detail="Holdout completed",
+    )
+    incomplete = classify_holdout_to_forward_transition(
+        events=events, job_id="job-1", forward_session_id="session-1",
+    )
+    assert incomplete["status"] == "HOLDOUT_COMPLETED_FORWARD_TRANSITION_INCOMPLETE_REVIEW_REQUIRED"
+    assert incomplete["manual_reconciliation_required"] is True
+
+    events.append(
+        event_type="HANDOFF_ACCEPTED", job_id="job-1",
+        job_fingerprint=job_fingerprint, station="forward", phase="FORWARD",
+        detail="handoff accepted; session=session-1; session_fingerprint=" + "b" * 64,
+    )
+    recorded = classify_holdout_to_forward_transition(
+        events=events, job_id="job-1", forward_session_id="session-1",
+    )
+    assert recorded["status"] == "HANDOFF_RECORDED_RUNTIME_NOT_PROVEN"
+    assert recorded["runtime_execution_proven"] is False
+    assert recorded["production_authorization"] is False
+    assert len(events.entries()) == 2
+
+
+def test_holdout_forward_transition_classifier_flags_session_mismatch_and_duplicates(tmp_path):
+    job_fingerprint = "a" * 64
+    events = FactoryJobEventLedger(path=None)
+    events.append(
+        event_type="COMPLETED", job_id="job-2",
+        job_fingerprint=job_fingerprint, station="holdout", phase="HOLDOUT",
+        detail="Holdout completed",
+    )
+    events.append(
+        event_type="HANDOFF_ACCEPTED", job_id="job-2",
+        job_fingerprint=job_fingerprint, station="forward", phase="FORWARD",
+        detail="handoff accepted; session=other-session; session_fingerprint=" + "b" * 64,
+    )
+    mismatch = classify_holdout_to_forward_transition(
+        events=events, job_id="job-2", forward_session_id="session-2",
+    )
+    assert mismatch["status"] == "FORWARD_SESSION_MISMATCH_REVIEW_REQUIRED"
+    assert mismatch["automatic_recovery_allowed"] is False
+
+    events.append(
+        event_type="HANDOFF_ACCEPTED", job_id="job-2",
+        job_fingerprint=job_fingerprint, station="forward", phase="FORWARD",
+        detail="handoff accepted; session=session-2; session_fingerprint=" + "c" * 64,
+    )
+    duplicate = classify_holdout_to_forward_transition(
+        events=events, job_id="job-2", forward_session_id="session-2",
+    )
+    assert duplicate["status"] == "DUPLICATE_TRANSITION_EVENTS_REVIEW_REQUIRED"
+    assert duplicate["manual_reconciliation_required"] is True
