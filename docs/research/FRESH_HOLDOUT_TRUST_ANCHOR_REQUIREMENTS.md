@@ -74,6 +74,10 @@ A future checkpoint adapter must be separately designed and reviewed. At minimum
 
 The checkpoint store must reject rollback/replay and provide a way to retrieve the latest independently retained checkpoint. A local copy of the checkpoint beside the audit file does not satisfy independence. Do not implement a home-grown signature or assume a timestamp alone prevents rollback.
 
+### Draft machine-readable contract — not wired into runtime
+
+A provider-neutral JSON Schema draft is stored at `docs/research/schemas/independent-audit-checkpoint-v1.schema.json`. It describes the proposed request and receipt envelopes and rejects undeclared top-level fields. It is a design artifact only: the runtime does not load it, no adapter validates receipts against it, and the provider-specific authentication payload is intentionally unresolved. The canonical serialization used to derive request IDs, receipt authentication/verification, revision semantics, and service consistency must be specified and tested before this schema can be considered an implementation contract.
+
 ### Proposed adapter boundary and receipt contract — design only
 
 Keep provider-specific code outside the trust-audit writer. The future integration should depend on a narrow adapter contract with these semantic operations (names are illustrative, not an existing API):
