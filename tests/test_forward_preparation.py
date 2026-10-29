@@ -440,7 +440,9 @@ def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
 
     assert events.corrupted_bytes is not None
     assert journal_path.read_bytes() == events.corrupted_bytes
-    assert [event.event_type for event in events.entries()] == ["COMPLETED"]
+    # Boundary validation now rejects corruption before appending the
+    # Holdout COMPLETED event; the corrupted journal is left untouched.
+    assert [event.event_type for event in events.entries()] == []
 
 def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     holdout, context, events = _prepared(tmp_path)
