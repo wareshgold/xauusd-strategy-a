@@ -214,3 +214,51 @@ def test_recovery_classifier_fails_closed_on_corrupt_audit_without_mutation(tmp_
     assert result["status"] == "AUDIT_INVALID_REVIEW_REQUIRED"
     assert result["automatic_recovery_allowed"] is False
     assert audit.read_bytes() == before
+
+
+def test_trust_audit_rejects_incomplete_final_record_without_mutation(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    _append(envelope, artifact, verification, audit, consume=True)
+    audit.write_bytes(audit.read_bytes().rstrip(b"\\n"))
+    before = audit.read_bytes()
+
+    with pytest.raises(TrustAuditError, match="incomplete final record"):
+        _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+
+    assert audit.read_bytes() == before
+
+
+def test_trust_audit_rejects_duplicate_json_keys_without_mutation(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    audit.write_text('{"sequence":1,"sequence":1}\\n', encoding="utf-8")
+    before = audit.read_bytes()
+
+    with pytest.raises(TrustAuditError, match="duplicate JSON key"):
+        _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+
+    assert audit.read_bytes() == before
+
+
+def test_trust_audit_rejects_boolean_sequence_even_if_json_record_is_self_consistent(tmp_path):
+    envelope, artifact, verification, audit = _fixture(tmp_path)
+    body = {
+        "sequence": True,
+        "phase": "runtime_preflight",
+        "session_id": "session-1",
+        "envelope_sha256": hashlib.sha256(envelope.read_bytes()).hexdigest(),
+        "key_id": "synthetic-test-key",
+        "artifact_sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
+        "issued_at_utc": verification["issued_at_utc"],
+        "expires_at_utc": verification["expires_at_utc"],
+        "recorded_at_utc": "2026-10-29T09:00:00+00:00",
+        "previous_entry_sha256": "0" * 64,
+    }
+    from strategy_factory.trust_audit import _canonical
+    entry = {**body, "entry_sha256": hashlib.sha256(_canonical(body)).hexdigest()}
+    audit.write_bytes(_canonical(entry) + b"\\n")
+    before = audit.read_bytes()
+
+    with pytest.raises(TrustAuditError, match="hash chain invalid"):
+        _append(envelope, artifact, verification, audit, phase="runtime_preflight")
+
+    assert audit.read_bytes() == before
