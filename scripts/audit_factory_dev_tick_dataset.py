@@ -84,7 +84,9 @@ def audit_dataset(dataset_path: Path, manifest_path: Path) -> dict[str, Any]:
         raise AuditError("manifest artifact name mismatch")
     if manifest.get("dataset_id") != EXPECTED_DATASET_ID:
         raise AuditError("manifest dataset_id mismatch")
-    interval = manifest.get("interval_utc", {})
+    interval = manifest.get("interval_utc")
+    if not isinstance(interval, dict):
+        raise AuditError("manifest interval_utc must be a JSON object")
     if interval.get("start_inclusive") != EXPECTED_START or interval.get("end_exclusive") != EXPECTED_END:
         raise AuditError("manifest interval does not match fixed DEVELOPMENT interval")
     if interval.get("end_exclusive") > HOLDOUT_START:
