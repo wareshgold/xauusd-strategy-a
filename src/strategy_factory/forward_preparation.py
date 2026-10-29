@@ -9,6 +9,7 @@ strategy geometry, tune parameters, or authorize production decisions.
 """
 
 from dataclasses import dataclass
+from pathlib import Path
 import hashlib
 import json
 
@@ -18,6 +19,7 @@ from .handoff import ResearchHandoff, build_research_handoff
 from .holdout_factory import HoldoutFactoryResult
 from .job_events import FactoryJobEvent, FactoryJobEventLedger, inspect_job_journal_snapshot
 from .forward_session_factory import DemoForwardSessionResult
+from .trust_anchor import TrustAnchorError, verify_signed_evidence
 
 
 class ForwardPreparationError(RuntimeError):
@@ -103,6 +105,31 @@ def prepare_holdout_to_forward(
         raise ForwardPreparationError(
             "Holdout dataset SHA does not match the completed Holdout run"
         )
+
+    if not trust_envelope_path or not holdout_artifact_path:
+        raise ForwardPreparationError(
+            "Holdout-to-Forward requires signed evidence and the actual Holdout artifact path"
+        )
+    expected_bindings = {
+        "strategy_id": record.strategy_id,
+        "strategy_revision": record.strategy_revision,
+        "manifest_revision": record.manifest_revision,
+        "execution_semantics": record.execution_semantics,
+        "readiness_snapshot_fingerprint": result.snapshot.fingerprint,
+        "holdout_dataset_id": record.dataset_id,
+        "holdout_artifact_id": result.run.artifact_id,
+        "holdout_dataset_role": "FRESH_HOLDOUT",
+    }
+    try:
+        verify_signed_evidence(
+            Path(trust_envelope_path),
+            expected_bindings=expected_bindings,
+            artifact_path=Path(holdout_artifact_path),
+        )
+    except TrustAnchorError as exc:
+        raise ForwardPreparationError(
+            f"Holdout-to-Forward signed evidence verification failed: {exc}"
+        ) from exc
 
     try:
         holdout_event = events.append(
