@@ -216,11 +216,31 @@ def append_verification_audit(
                 "previous_entry_sha256": entries[-1]["entry_sha256"] if entries else "0" * 64,
             }
             entry = {**body, "entry_sha256": hashlib.sha256(_canonical(body)).hexdigest()}
+            payload = _canonical(entry) + b"\n"
             path.parent.mkdir(parents=True, exist_ok=True)
-            with path.open("ab") as handle:
-                handle.write(_canonical(entry) + b"\n")
-                handle.flush()
-                os.fsync(handle.fileno())
+            with path.open("a+b") as handle:
+                handle.seek(0, os.SEEK_END)
+                original_size = handle.tell()
+                try:
+                    handle.write(payload)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                except OSError as append_error:
+                    try:
+                        handle.truncate(original_size)
+                        handle.flush()
+                        os.fsync(handle.fileno())
+                    except OSError as rollback_error:
+                        raise TrustAuditError(
+                            "trust verification audit append failed and rollback could not be "
+                            "confirmed; manual reconciliation required "
+                            f"(append error: {append_error!r}; rollback error: {rollback_error!r})"
+                        ) from rollback_error
+                    raise TrustAuditError(
+                        "trust verification audit append failed; file was rolled back to its "
+                        f"previous byte size ({original_size}) and rollback fsync succeeded "
+                        f"(original error: {append_error!r})"
+                    ) from append_error
             return entry
     except TrustAuditError:
         raise
