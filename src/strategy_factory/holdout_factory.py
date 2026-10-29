@@ -36,9 +36,6 @@ class HoldoutFactoryContext:
     manifest_revision: str
     job_id: str
     readiness_snapshot: ReadinessSnapshot
-    readiness_manifest: StrategyManifest | None = None
-    readiness_passport: StrategyPassport | None = None
-    readiness_ledger: SourceResolutionLedger | None = None
     handoff: ResearchHandoff
     source_record: ResearchRecord
     source_event: FactoryJobEvent
@@ -46,6 +43,9 @@ class HoldoutFactoryContext:
     holdout_dataset_artifact_id: str
     holdout_dataset_content_sha256: str
     adapter: ExecutionAdapter
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
     # Explicit caller assertion that the Strategy revision is frozen before
     # this holdout run. The factory only verifies its identity against the
     # upstream immutable research record; it never chooses the revision.
