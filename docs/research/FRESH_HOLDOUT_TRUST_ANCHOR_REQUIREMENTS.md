@@ -30,6 +30,30 @@ SHA-256 fingerprints are integrity identifiers, not digital signatures. Frozen d
 6. **Auditability:** retain the verified envelope, signer/key ID, verifier version, trust-root revision, verification result, and artifact digest in an append-only evidence record.
 7. **Adversarial tests:** cover absent/malformed/altered signatures, expired and not-yet-valid envelopes, unknown/revoked keys, wrong artifact bytes, replay, unsupported schema, and mismatched strategy/revision. Each must be rejected before downstream adapter/runner invocation.
 
+## Deployment review checkpoint — independent trust root (2026-10-29)
+
+### Code-review result
+
+The verifier does not accept a public key or keyring path through its public function arguments, and it resolves a fixed OS-specific path. This prevents the evidence caller from selecting an alternate trust root through the verifier API. **It does not prove that the configured keyring is independently controlled on a deployed host.** The current implementation reads the fixed path as an ordinary file; it does not itself attest owner identity, write ACLs/mode, symlink/reparse-point status, service-account separation, or change-monitoring coverage. Those properties must be established by host provisioning and independently reviewed evidence, not inferred from a passing unit test.
+
+### Required provisioning evidence — not yet supplied
+
+Do not authorize Fresh Holdout -> Forward -> Runtime until an operator who is independent of the evidence producer records and a reviewer verifies all of the following:
+
+- [ ] The production public keyring is provisioned at the documented OS path by a separately authorized deployment identity; no private signing key is present on the runtime host or in source control.
+- [ ] The runtime service identity has read-only access to the keyring and cannot replace, rename, delete, or change its parent directory; the evidence-producing identity cannot change the trust root.
+- [ ] Owner, ACL/mode, parent-directory permissions, symlink/reparse-point handling, and the actual resolved file identity are inspected using platform-appropriate controls. Any policy for these properties is enforced by deployment controls or a reviewed verifier change; a fixed pathname alone is not proof.
+- [ ] Keyring version/revision and SHA-256 are recorded in an independently retained deployment receipt, with operator, reviewer, timestamp, host identity, and provisioning procedure/version.
+- [ ] Key addition, revocation, rotation, emergency replacement, backup/recovery, and incident response are rehearsed. Revocation data is protected at the same trust level as the keys.
+- [ ] A negative test on the provisioned host demonstrates that the runtime identity cannot modify the keyring or its parent directory, and an unauthorized keyring replacement causes verification to fail closed.
+- [ ] The journal source and audit directory are separately controlled, and anti-truncation evidence is retained outside the same administrative boundary.
+
+The receipt must contain evidence/results, not only checkboxes or a statement that provisioning was completed. Do not include private key material or sensitive credentials in the receipt.
+
+### Artifact-consumption boundary
+
+A successful verification hashes the artifact at verification time, but the current bridge still passes control to an injected runner after a path-based check. This review has **not** established that the runner consumes the same immutable bytes if the path changes immediately after verification. Before production authorization, either pass a pinned/read-only artifact handle or immutable content-addressed artifact identity through to the consumer, or demonstrate an equivalent enforced storage/locking design with a race-injection test. A second hash check narrows but does not mathematically eliminate a path replacement race.
+
 ## Explicit non-goals
 
 - This implementation does not resolve SP2L source questions or define canonical P-Gap, AB=CD, fill, or execution rules.
