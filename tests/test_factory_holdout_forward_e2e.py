@@ -59,6 +59,7 @@ def _signed_kwargs(holdout, context, events, tmp_path, monkeypatch):
             "source_event_ledger_prefix_byte_size": len(boundary_bytes),
             "source_event_ledger_sequence_boundary": len(boundary_events),
             "source_event_ledger_prefix_source": boundary_source,
+            "source_event_ledger_path": str(events.path) if boundary_source == "persisted_jsonl" else None,
             "strategy_id": record.strategy_id,
             "strategy_revision": record.strategy_revision,
             "manifest_revision": record.manifest_revision,
