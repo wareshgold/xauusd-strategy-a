@@ -156,6 +156,15 @@ def append_verification_audit(
                     prior_boundary = {
                         key: prior_consumption.get(key) for key in boundary_fields
                     }
+                    prior_recovery = next((
+                        item for item in entries
+                        if item.get("phase") == "holdout_to_forward_recovery"
+                        and item.get("envelope_sha256") == envelope_sha
+                    ), None)
+                    if prior_recovery is not None:
+                        raise TrustAuditError(
+                            "Holdout recovery has already been recorded; manual reconciliation required"
+                        )
                     if (
                         prior_consumption.get("session_id") != session_id
                         or prior_boundary != source_event_ledger_boundary
