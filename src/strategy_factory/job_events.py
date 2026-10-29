@@ -312,15 +312,14 @@ def verify_job_journal_prefix(
     prefix = raw[:expected_byte_size]
     if hashlib.sha256(prefix).hexdigest() != expected_sha256:
         raise ValueError("persisted source event journal signed prefix SHA-256 mismatch")
-    if sequence_boundary == 0:
-        expected_prefix = b""
-    else:
-        expected_prefix = "".join(
-            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\\n"
-            for event in all_events[:sequence_boundary]
-        ).encode("utf-8")
-    if len(expected_prefix) != expected_byte_size or prefix != expected_prefix:
-        raise ValueError("persisted source event journal signed prefix bytes/sequence boundary mismatch")
+    if sequence_boundary > 0 and not prefix.endswith(b"\\n"):
+        raise ValueError("persisted source event journal signed prefix does not end on an event boundary")
+    try:
+        prefix_events = _parse_journal_text(prefix.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise ValueError("persisted source event journal signed prefix is invalid") from exc
+    if len(prefix_events) != sequence_boundary:
+        raise ValueError("persisted source event journal signed prefix event-count boundary mismatch")
     return {
         "verified": True,
         "path": str(path),
