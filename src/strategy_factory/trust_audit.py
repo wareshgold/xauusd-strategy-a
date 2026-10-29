@@ -129,6 +129,17 @@ def append_verification_audit(
         artifact_sha = hashlib.sha256(Path(artifact_path).read_bytes()).hexdigest()
     except OSError as exc:
         raise TrustAuditError("verified evidence or artifact became unreadable before audit") from exc
+    verified_envelope_sha = verification.get("envelope_sha256")
+    verified_artifact_sha = verification.get("artifact_sha256")
+    if (
+        not isinstance(verified_envelope_sha, str)
+        or verified_envelope_sha != envelope_sha
+        or not isinstance(verified_artifact_sha, str)
+        or verified_artifact_sha != artifact_sha
+    ):
+        raise TrustAuditError(
+            "verified evidence or artifact changed between signature verification and audit append"
+        )
     now = datetime.now(timezone.utc).isoformat()
 
     try:
