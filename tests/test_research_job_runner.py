@@ -19,6 +19,9 @@ from strategy_factory.test_contract import (
 from strategy_factory.usage import DatasetUsageLedger
 
 
+DATASET_BYTES = b"controlled dataset bytes for receipt contract tests"
+DATASET_SHA256 = hashlib.sha256(DATASET_BYTES).hexdigest()
+
 METRICS = ResearchMetrics(
     10, 10, 6, 4, 0, 0.6, 2.5, 1.4, 1.2, 6.0, -3.5
 )
@@ -44,7 +47,7 @@ def make_spec_and_job():
     job = ResearchJobSpec.from_test_spec(
         spec,
         manifest_revision="M1",
-        dataset_fingerprint=fingerprint_dataset(dataset, "a" * 64),
+        dataset_fingerprint=fingerprint_dataset(dataset, DATASET_SHA256),
         job_id="JOB-1",
     )
     return spec, job
@@ -53,7 +56,7 @@ def make_spec_and_job():
 def make_runner():
     registry = DatasetRegistry()
     spec, _ = make_spec_and_job()
-    registry.register(spec.dataset, content_fingerprint="a" * 64)
+    registry.register(spec.dataset, content_fingerprint=DATASET_SHA256)
     usage = DatasetUsageLedger(registry)
     runs = ResearchRunLedger(registry, usage)
     evidence = EvidenceLedger(runs)
@@ -91,7 +94,7 @@ def run_job(runner, job, spec, adapter):
         spec=spec,
         adapter=adapter,
         snapshot=make_snapshot(spec),
-        observed_content_sha256="a" * 64,
+        observed_content_sha256=DATASET_SHA256,
     )
 
 
@@ -109,10 +112,10 @@ class FakeAdapter:
             execution_id=self.execution_id,
             spec=spec,
             engine_revision=self.engine_revision,
-            input_fingerprint="b" * 64,
+            input_fingerprint=hashlib.sha256(f"FAKE-ENGINE:{spec.test_id}:{DATASET_SHA256}".encode()).hexdigest(),
             metrics=self.metrics,
             receipt_schema_version=2,
-            dataset_content_sha256="a" * 64,
+            dataset_content_sha256=hashlib.sha256(DATASET_BYTES).hexdigest(),
         )
 
 
