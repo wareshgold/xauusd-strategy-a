@@ -50,9 +50,11 @@ def test_exact_evidence_acceptance_passes():
     validate_evidence_acceptance(
         spec=spec, run=run, receipt=receipt, evidence=evidence
     )
-    assert evidence_acceptance_gate(
+    result = evidence_acceptance_gate(
         spec=spec, run=run, receipt=receipt, evidence=evidence
-    ).status is GateStatus.PASS
+    )
+    assert result.status is GateStatus.PASS
+    assert result.details["dataset_verified"] is False
 
 
 def test_missing_inputs_are_blocked():
@@ -129,8 +131,6 @@ def test_acceptance_does_not_compare_performance_values():
 
 def _schema_v2_case(dataset_digest):
     from strategy_factory.dataset_provenance import evaluate_dataset_provenance
-    from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
-
     spec, run, _, _ = setup()
     registry = DatasetRegistry()
     registry.register(spec.dataset, "a" * 64)
