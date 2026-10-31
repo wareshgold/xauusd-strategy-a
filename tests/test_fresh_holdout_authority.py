@@ -22,6 +22,7 @@ def _inputs():
         data_revision="DATA-REV",
         execution_model="RESEARCH_ONLY",
         parameter_set={},
+        canonical=True,
     )
     return manifest, passport, SourceResolutionLedger()
 
