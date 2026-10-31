@@ -150,18 +150,88 @@ try {
 
     # B2 Native API v4 represents bucket restrictions as allowed.buckets[].
     # The pre-v4 allowed.bucketId / allowed.bucketName fields are not present.
-    $allowedBuckets = @($allowed.buckets)
-    $allowedBucketIds = @($allowedBuckets | ForEach-Object { [string]$_.id })
-    $matchingBuckets = @($allowedBuckets | Where-Object { [string]$_.id -eq $ExpectedBucketId })
-    $allowedPrefix = [string]$allowed.namePrefix
-    $capabilities = @($allowed.capabilities)
-
-    if ($matchingBuckets.Count -ne 1) {
-        $safeIds = ($allowedBucketIds -join ',')
-        throw "Bucket scope mismatch. Expected bucket ID was not present in allowed.buckets[]. Returned bucket count=$($allowedBuckets.Count); IDs='$safeIds'."
+    # Normalize the v4 allowed-buckets value defensively. PowerShell may
+    # deserialize a single object, an array, or a null value differently.
+    $rawBuckets = $allowed.buckets
+    $allowedBuckets = @()
+    if ($null -ne $rawBuckets) {
+        if ($rawBuckets -is [System.Array]) {
+            $allowedBuckets = @($rawBuckets)
+        }
+        else {
+            $allowedBuckets = @($rawBuckets)
+        }
     }
-    $allowedBucketId = [string]$matchingBuckets[0].id
-    $allowedBucketName = [string]$matchingBuckets[0].name
+
+    $bucketDiagnostics = @(
+        foreach ($bucket in $allowedBuckets) {
+            if ($null -eq $bucket) {
+                [pscustomobject]@{ type = '<null>'; properties = ''; id = ''; name = '' }
+            }
+            else {
+                $props = @($bucket.PSObject.Properties | ForEach-Object { $_.Name })
+                $idValue = ''
+                $nameValue = ''
+                if ($bucket -is [System.Collections.IDictionary]) {
+                    if ($bucket.Contains('id')) { $idValue = [string]$bucket['id'] }
+                    if ($bucket.Contains('name')) { $nameValue = [string]$bucket['name'] }
+                }
+                else {
+                    $idProperty = $bucket.PSObject.Properties['id']
+                    $nameProperty = $bucket.PSObject.Properties['name']
+                    if ($null -ne $idProperty) { $idValue = [string]$idProperty.Value }
+                    if ($null -ne $nameProperty) { $nameValue = [string]$nameProperty.Value }
+                }
+                [pscustomobject]@{
+                    type = $bucket.GetType().FullName
+                    properties = ($props -join ',')
+                    id = $idValue
+                    name = $nameValue
+                }
+            }
+        }
+    )
+
+    $allowedBucketIds = @($bucketDiagnostics | ForEach-Object { $_.id })
+    $matchingBuckets = @($allowedBuckets | Where-Object {
+        $candidateId = ''
+        if ($null -ne $_) {
+            if ($_ -is [System.Collections.IDictionary]) {
+                if ($_.Contains('id')) { $candidateId = [string]$_['id'] }
+            }
+            else {
+                $candidateProperty = $_.PSObject.Properties['id']
+                if ($null -ne $candidateProperty) { $candidateId = [string]$candidateProperty.Value }
+            }
+        }
+        $candidateId -eq $ExpectedBucketId
+    })
+    $allowedPrefix = ''
+    if ($null -ne $allowed.PSObject.Properties['namePrefix']) {
+        $allowedPrefix = [string]$allowed.namePrefix
+    }
+    $capabilities = @()
+    if ($null -ne $allowed.PSObject.Properties['capabilities']) {
+        $capabilities = @($allowed.capabilities)
+    }
+    if ($matchingBuckets.Count -ne 1) {
+        $safeShape = ConvertTo-Json -InputObject $bucketDiagnostics -Depth 6 -Compress
+        Write-Host "ALLOWED_BUCKETS_DIAGNOSTIC=$safeShape"
+        Write-Host "ALLOWED_PREFIX=$allowedPrefix"
+        Write-Host "ALLOWED_CAPABILITIES=$($capabilities -join ',')"
+        throw "Bucket scope mismatch. Expected bucket ID was not present in allowed.buckets[]. Returned bucket count=$($allowedBuckets.Count); IDs='$($allowedBucketIds -join ',')'."
+    }
+    $matchedBucket = $matchingBuckets[0]
+    $allowedBucketId = ''
+    $allowedBucketName = ''
+    if ($matchedBucket -is [System.Collections.IDictionary]) {
+        if ($matchedBucket.Contains('id')) { $allowedBucketId = [string]$matchedBucket['id'] }
+        if ($matchedBucket.Contains('name')) { $allowedBucketName = [string]$matchedBucket['name'] }
+    }
+    else {
+        if ($null -ne $matchedBucket.PSObject.Properties['id']) { $allowedBucketId = [string]$matchedBucket.id }
+        if ($null -ne $matchedBucket.PSObject.Properties['name']) { $allowedBucketName = [string]$matchedBucket.name }
+    }
     if ($allowedBucketName -and $allowedBucketName -ne $ExpectedBucketName) {
         throw "Bucket name mismatch: '$allowedBucketName'."
     }
