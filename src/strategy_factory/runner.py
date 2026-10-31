@@ -15,7 +15,7 @@ from .research_provenance import ResearchProvenanceResult, evaluate_research_pro
 from .research_record import ResearchRecord, ResearchRecordLedger
 from .runs import ResearchRunError, ResearchRunIdentity, ResearchRunLedger
 from .snapshot import ReadinessSnapshot
-from .test_contract import HistoricalTestSpec
+from .test_contract import DatasetRole, HistoricalTestSpec
 
 
 class ResearchJobRunnerError(ValueError):
@@ -121,6 +121,15 @@ class ResearchJobRunner:
         if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
             raise ResearchJobRunnerError(
                 "dataset provenance gate rejected the research job"
+            )
+
+        from .synthetic import SyntheticExecutionAdapter
+        if type(adapter) is SyntheticExecutionAdapter and (
+            purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
+            or spec.dataset.role is not DatasetRole.DEVELOPMENT
+        ):
+            raise ResearchJobRunnerError(
+                "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
             )
 
         try:
