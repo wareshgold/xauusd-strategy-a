@@ -188,6 +188,10 @@ def _fixture(tmp_path: Path):
         readiness_passport=readiness_passport,
         readiness_ledger=readiness_ledger,
     )
+    assert result.evidence.result["fresh_holdout_authority"] == {
+        "source": "test-only:source-authority",
+        "frozen_geometry": "test-only:geometry-freeze",
+    }
     # Keep the snapshot available without expanding the public production
     # context surface solely for this synthetic fixture.
     record = result.record
