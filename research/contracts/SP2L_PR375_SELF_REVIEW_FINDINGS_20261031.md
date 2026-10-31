@@ -82,3 +82,17 @@ An earlier run at an intermediate head exposed two Validation Factory fixture fa
 - Human review and explicit user authorization are still required before merge.
 
 This follow-up does not establish statistical edge, canonical SP2L geometry, untouched validation, Fresh Holdout completion, or production readiness.
+
+
+### Final trust-boundary tightening — registered purpose binding
+
+A further review verified that the synthetic exception must be tied not only to the supplied purpose argument, but to the immutable run identity. The shared gate policy now requires `run.purpose == purpose`. This prevents a caller from passing `SYNTHETIC_INFRASTRUCTURE_TEST` for a run registered under another purpose. A direct negative Acceptance test covers the spoofed-purpose case.
+
+Final corrected head: `9f02552d30e4869c47daac0e59060b82c6d6348a`.
+
+Final CI:
+- Factory Research Tests: **160 passed in 1.82s** — run 41195675387.
+- SP2L forensic deterministic checks: success — run 41195675404.
+- Factory Journal Lock Cross-Platform Tests: success on Ubuntu and Windows — run 41195675419.
+
+The standalone-gate finding is now corrected and focused CI is green at the final PR head. The full repository suite remains unrun; PR #375 remains open and unmerged pending independent human review and explicit user authorization.
