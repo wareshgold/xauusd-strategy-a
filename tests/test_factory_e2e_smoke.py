@@ -134,6 +134,7 @@ def test_synthetic_factory_brain_runs_adapter_to_evidence_record_and_handoff():
         snapshot=snapshot,
         observed_content_sha256=content_sha256,
         evidence_id="SYNTH-EVIDENCE-001",
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
     )
     result = orchestrator.run_next(
         worker_id="W01",
