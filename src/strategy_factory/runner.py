@@ -125,6 +125,15 @@ class ResearchJobRunner:
         except Exception as exc:
             raise ResearchJobRunnerError("readiness snapshot is invalid") from exc
 
+        from .synthetic import SyntheticExecutionAdapter
+        if type(adapter) is SyntheticExecutionAdapter and (
+            purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
+            or spec.dataset.role is not DatasetRole.DEVELOPMENT
+        ):
+            raise ResearchJobRunnerError(
+                "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
+            )
+
         if spec.dataset.role is DatasetRole.FRESH_HOLDOUT:
             try:
                 if (
@@ -176,15 +185,6 @@ class ResearchJobRunner:
         if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
             raise ResearchJobRunnerError(
                 "dataset provenance gate rejected the research job"
-            )
-
-        from .synthetic import SyntheticExecutionAdapter
-        if type(adapter) is SyntheticExecutionAdapter and (
-            purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
-            or spec.dataset.role is not DatasetRole.DEVELOPMENT
-        ):
-            raise ResearchJobRunnerError(
-                "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
             )
 
         try:
