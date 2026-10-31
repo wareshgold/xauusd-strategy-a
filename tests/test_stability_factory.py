@@ -112,12 +112,15 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
     class FakeAdapter:
         engine_revision = "DISCOVERY-TEST"
         def execute(self, declared_spec):
+            dataset_sha = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+            input_fingerprint = hashlib.sha256(
+                f"FAKE-DISCOVERY:{declared_spec.test_id}:{dataset_sha}".encode()
+            ).hexdigest()
             return build_execution_receipt(
                 execution_id="DISCOVERY-EXEC",
                 spec=declared_spec,
                 engine_revision=self.engine_revision,
-                dataset_sha = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
-                input_fingerprint = hashlib.sha256(f"FAKE-DISCOVERY:{declared_spec.test_id}:{dataset_sha}".encode()).hexdigest()
+                input_fingerprint=input_fingerprint,
                 metrics=ResearchMetrics(
                     trades=1, decisive_trades=1, wins=1, losses=0, ambiguous=0,
                     win_rate=1.0, net_r=1.0, profit_factor=None,
