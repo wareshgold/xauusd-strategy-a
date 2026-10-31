@@ -30,7 +30,7 @@ TICK_METRICS = ResearchMetrics(5, 4, 2, 2, 1, 0.5, 1.25, 2.0, 1.0, 3.0, -1.75)
 def make_spec_and_job(semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH, role=DatasetRole.DEVELOPMENT):
     dataset = TestDataset(
         "SYNTH-DATA-1", role, "SYNTH-R1",
-        "2026-01-01", "2026-02-01", "SYNTHETIC",
+        "2026-01-01", "2026-02-01", "SYNTHETIC", immutable=True,
     )
     spec = HistoricalTestSpec(
         "SYNTH-TEST-1", "SYNTH-STRATEGY", "SYNTH-STRATEGY-R1",
@@ -198,6 +198,7 @@ def test_synthetic_runner_failure_is_isolated_at_adapter_boundary():
             adapter=adapter,
             snapshot=make_snapshot(spec),
             observed_content_sha256="a" * 64,
+            purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
         )
 
 
