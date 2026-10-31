@@ -177,3 +177,41 @@ def test_same_sequence_in_different_audit_identity_is_not_a_collision():
         ("another-audit", request["audit_sequence"]): request["entry_sha256"]
     }
     assert _test_only_classify_checkpoint_replay(checkpoints, request) == "NEW"
+
+
+def _test_only_checkpoint_authorization_allowed(observation):
+    """Negative authorization predicate for synthetic tests; not runtime logic."""
+    return (
+        observation.get("publication_state") == "ACKNOWLEDGED"
+        and observation.get("receipt_verified") is True
+        and observation.get("request_binding_matches") is True
+    )
+
+
+@pytest.mark.parametrize(
+    "observation",
+    [
+        {"publication_state": "PUBLISH_PENDING", "receipt_verified": False,
+         "request_binding_matches": False},
+        {"publication_state": "TIMEOUT_UNKNOWN", "receipt_verified": False,
+         "request_binding_matches": False},
+        {"publication_state": "ACKNOWLEDGED", "receipt_verified": False,
+         "request_binding_matches": True},
+        {"publication_state": "ACKNOWLEDGED", "receipt_verified": True,
+         "request_binding_matches": False},
+        {"publication_state": "CONFLICT", "receipt_verified": False,
+         "request_binding_matches": False},
+    ],
+)
+def test_synthetic_pending_timeout_or_unverified_receipt_never_authorizes(observation):
+    assert not _test_only_checkpoint_authorization_allowed(observation)
+
+
+def test_synthetic_verified_exact_acknowledgement_is_only_positive_case():
+    observation = {
+        "publication_state": "ACKNOWLEDGED",
+        "receipt_verified": True,
+        "request_binding_matches": True,
+    }
+    assert _test_only_checkpoint_authorization_allowed(observation)
+
