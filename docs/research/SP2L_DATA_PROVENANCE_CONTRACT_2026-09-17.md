@@ -104,3 +104,39 @@ coverage using observed timestamps and an independently established,
 source-authorized market calendar, if one becomes available. The field is
 retained for schema-v1 compatibility; consumers must not interpret its name
 literally as an expected trading-bar count.
+
+
+## Research acceptance gate for MT5 evidence manifest v1
+
+The standalone validator `scripts/validate_mt5_research_manifest_v1.py`
+implements a fail-closed acceptance check for the exact
+`sp2l.mt5-research-evidence@1.0.0` schema. It requires the caller to supply
+both the manifest and its raw CSV; it verifies the raw SHA-256, CSV columns,
+row count, first/last timestamps, strict timestamp order, and recomputes
+adjacent timestamp discontinuities from the raw rows before comparing them
+with the manifest.
+
+The validator emits one of three outcomes:
+
+- `ACCEPTED`: the raw artifact and manifest pass the structural/integrity
+  checks and the acquisition audit is `AUDITED_PASS`. This permits a
+  research replay only; it does not prove that the requested interval is
+  complete under the broker's historical trading sessions.
+- `ACCEPTED_WITH_UNCLASSIFIED_COVERAGE`: raw artifact identity and internal
+  consistency pass, but one or more observed positive timestamp intervals
+  remain unclassified. This outcome is **not eligible for research replay**.
+- `REJECTED`: unsupported schema, failed acquisition audit, missing or
+  mismatched artifact, inconsistent counts/timestamps, invalid rows, or
+  inconsistent discontinuity evidence.
+
+The output always sets `confirmatory_validation_eligible=false` and
+`production_eligible=false`. Those decisions require independent gates and
+cannot be granted by a manifest-only validator. A return code of zero for an
+unclassified acquisition status from the acquisition script is not an
+acceptance decision; consumers must use this validator's explicit
+`research_replay_eligible` field.
+
+This validator is intentionally separate from the legacy M1 acquisition
+scripts and the MT5 matrix `gap_intervals` quality gate. It does not adapt,
+rewrite, or reinterpret those schemas. It also does not change any backtest
+runner or make existing July–September datasets eligible.
