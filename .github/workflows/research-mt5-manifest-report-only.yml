@@ -1,4 +1,5 @@
 name: Research - MT5 Manifest Report Only
+# Report-only migration and validation; generated artifacts remain non-canonical.
 
 on:
   push:
