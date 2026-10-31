@@ -94,4 +94,6 @@ class SyntheticExecutionAdapter:
             engine_revision=self.engine_revision,
             input_fingerprint=digest,
             metrics=self.fixture.metrics,
+            receipt_schema_version=2,
+            dataset_content_sha256=None,
         )
