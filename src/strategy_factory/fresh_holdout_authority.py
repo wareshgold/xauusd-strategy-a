@@ -79,7 +79,11 @@ def require_verified_authority(
             raise FreshHoldoutAuthorityError(
                 f"trusted {label} verifier returned an invalid verification result"
             )
-        if result.verified is not True or not result.authority_reference.strip():
+        if (
+            result.verified is not True
+            or not isinstance(result.authority_reference, str)
+            or not result.authority_reference.strip()
+        ):
             raise FreshHoldoutAuthorityError(
                 f"trusted {label} authority is not verified"
             )
