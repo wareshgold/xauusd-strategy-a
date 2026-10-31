@@ -98,6 +98,27 @@ def evaluate_manifest(manifest: dict[str, Any], raw_csv: Path) -> dict[str, Any]
         errors.append("ORDERING_ANOMALIES_INCONSISTENT")
     if manifest.get("unclassified_gaps") != gaps:
         errors.append("UNCLASSIFIED_GAPS_INCONSISTENT")
+    # Recompute adjacent timestamp discontinuities from the raw CSV; do not
+    # trust internally consistent but fabricated manifest lists.
+    observed = []
+    if rows:
+        for left, right in zip(rows, rows[1:]):
+            left_dt, right_dt = parse_utc(left["timestamp"]), parse_utc(right["timestamp"])
+            delta = (right_dt - left_dt).total_seconds() / 60.0
+            if delta <= 0:
+                observed.append({
+                    "from": left["timestamp"], "to": right["timestamp"],
+                    "interval_minutes": delta,
+                    "kind": "duplicate_timestamp" if delta == 0 else "non_chronological",
+                })
+            elif delta > 1:
+                observed.append({
+                    "from": left["timestamp"], "to": right["timestamp"],
+                    "interval_minutes": delta, "kind": "unclassified_gap",
+                })
+    if observed != discontinuities:
+        errors.append("RAW_DISCONTINUITIES_DO_NOT_MATCH_MANIFEST")
+
     if audit == "AUDITED_PASS" and discontinuities:
         errors.append("PASS_STATUS_CONTRADICTS_DISCONTINUITIES")
     if audit == "AUDITED_UNCLASSIFIED_COVERAGE":
