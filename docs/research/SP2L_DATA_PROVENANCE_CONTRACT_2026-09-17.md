@@ -56,3 +56,51 @@ Changing any of these creates a different research condition and must not be sil
 Provenance completeness does not establish strategy validity. It only establishes traceability of the data used for a research result.
 
 Source-resolution, Frozen Geometry, untouched validation, robustness/stability, and fresh-holdout gates remain independent.
+
+
+## Versioned MT5 acquisition manifest
+
+The research-only script `scripts/mt5_acquire_research_evidence_v1.py` emits the
+versioned manifest schema identified by:
+
+- `schema.id = sp2l.mt5-research-evidence`
+- `schema.version = 1.0.0`
+
+In this schema, `timestamp_discontinuities` records observed adjacent-row
+timestamp intervals. Its `unclassified_gap` entries are positive intervals
+longer than one minute; they do not assert that trading bars were missing.
+`ordering_anomalies` records duplicate or reverse timestamps, while
+`unclassified_gaps` is the corresponding filtered list. The
+`chronological` flag describes strict timestamp ordering only; it does not
+certify coverage completeness.
+
+The audit statuses have distinct meanings:
+
+- `AUDITED_PASS`: valid rows, strictly increasing timestamps, and no observed
+  interval longer than one minute.
+- `AUDITED_UNCLASSIFIED_COVERAGE`: valid rows and strictly increasing
+  timestamps, but one or more positive intervals longer than one minute whose
+  market-calendar meaning has not been established.
+- `AUDITED_FAIL`: invalid rows, duplicate timestamps, or reverse timestamp
+  order.
+
+This schema is **not** the legacy template structure above. In particular,
+legacy `observed.gap_count` / `observed.gap_ranges` fields are not aliases
+for `discontinuity_count` / `timestamp_discontinuities`. Consumers must
+select the schema by its explicit `schema.id` and `schema.version`; any
+cross-schema conversion requires a separately specified and tested adapter.
+No existing manifest is migrated or rewritten by this change.
+
+### Requested minute-slot count is not expected market-bar coverage
+
+For this manifest schema, `requested_bar_count` is a legacy field name whose
+value is calculated as the inclusive number of calendar-minute slots between
+the normalized requested start and end timestamps. It is request-window
+arithmetic only. It is **not** an expected count of tradable M1 bars, does not
+account for weekends, holidays, broker sessions, or market closures, and must
+not be used to infer missing bars or coverage completeness. Compare
+`actual_bar_count` with this value only as a descriptive difference; classify
+coverage using observed timestamps and an independently established,
+source-authorized market calendar, if one becomes available. The field is
+retained for schema-v1 compatibility; consumers must not interpret its name
+literally as an expected trading-bar count.
