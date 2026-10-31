@@ -63,14 +63,17 @@ class FakeAdapter:
 
 
 def _context(tmp_path: Path, *, same_dataset: bool = False):
-    discovery_sha = "1" * 64
+    discovery_bytes = b"{\\"schema_version\\":1,\\"research_only\\":true,\\"bars\\":[1]}"
+    discovery_path = tmp_path / "discovery.json"
+    discovery_path.write_bytes(discovery_bytes)
+    discovery_sha = hashlib.sha256(discovery_bytes).hexdigest()
     validation_bytes = b"validation-dataset"
     validation_sha = hashlib.sha256(validation_bytes).hexdigest()
     source_artifact = DatasetArtifact(
         artifact_id="MT5-M1-" + discovery_sha[:16],
-        location="discovery.json",
+        location=str(discovery_path),
         content_sha256=discovery_sha,
-        byte_size=1,
+        byte_size=len(discovery_bytes),
         format="json",
     )
     validation_artifact_id = (
@@ -158,7 +161,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         execution_id="STABILITY-1",
         spec=source_spec,
         engine_revision="TEST-STABILITY-1",
-        input_fingerprint="b" * 64,
+        input_fingerprint=hashlib.sha256(f"TEST-STABILITY:{discovery_sha}".encode()).hexdigest(),
         metrics=metrics,
         receipt_schema_version=2,
         dataset_content_sha256=discovery_sha,
