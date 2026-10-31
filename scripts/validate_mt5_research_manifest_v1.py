@@ -5,7 +5,7 @@ Verifies manifest/schema consistency and the exact raw CSV. It does not infer
 broker sessions, prove market-calendar completeness, or authorize production.
 """
 from __future__ import annotations
-import argparse, csv, hashlib, json
+import argparse, csv, hashlib, json, math
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -81,6 +81,15 @@ def evaluate_manifest(manifest: dict[str, Any], raw_csv: Path) -> dict[str, Any]
                     errors.append("RAW_TIMESTAMP_ORDER_INVALID")
                     break
                 previous = current
+                try:
+                    numbers = [float(row[key]) for key in ("open", "high", "low", "close", "tick_volume")]
+                    if any(not math.isfinite(value) for value in numbers):
+                        errors.append("RAW_NUMERIC_VALUE_INVALID")
+                    open_, high, low, close, _volume = numbers
+                    if not (high >= max(open_, close) and low <= min(open_, close) and high >= low):
+                        errors.append("RAW_OHLC_INVALID")
+                except (TypeError, ValueError):
+                    errors.append("RAW_NUMERIC_VALUE_INVALID")
     except (OSError, UnicodeError, csv.Error, KeyError, TypeError, ValueError):
         errors.append("RAW_CSV_UNREADABLE_OR_TIMESTAMP_INVALID")
 
