@@ -1,11 +1,53 @@
 from __future__ import annotations
 
+from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus
 from .evidence import EvidenceBundle
 from .execution import ExecutionReceipt, validate_execution_binding
 from .models import GateResult, GateStatus
 from .provenance import metrics_gate, provenance_gate
 from .runs import ResearchRunError, ResearchRunIdentity
-from .test_contract import HistoricalTestSpec
+from .test_contract import DatasetRole, HistoricalTestSpec
+
+
+def _validate_receipt_dataset_identity(
+    *,
+    spec: HistoricalTestSpec,
+    receipt: ExecutionReceipt,
+    dataset_provenance: DatasetProvenanceResult | None,
+    adapter: object | None,
+    purpose: str | None,
+) -> None:
+    if receipt.receipt_schema_version != 2:
+        return
+
+    if dataset_provenance is None or adapter is None or purpose is None:
+        raise ResearchRunError(
+            "schema-v2 acceptance requires independent dataset provenance, adapter identity, and purpose"
+        )
+    if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
+        raise ResearchRunError("dataset provenance is not PASS")
+    if dataset_provenance.dataset_id != spec.dataset.dataset_id:
+        raise ResearchRunError("dataset provenance dataset_id does not match test specification")
+
+    from .synthetic import SyntheticExecutionAdapter
+
+    if type(adapter) is SyntheticExecutionAdapter:
+        if purpose != "SYNTHETIC_INFRASTRUCTURE_TEST":
+            raise ResearchRunError("synthetic adapter requires SYNTHETIC_INFRASTRUCTURE_TEST purpose")
+        if spec.dataset.role is not DatasetRole.DEVELOPMENT:
+            raise ResearchRunError("synthetic adapter is restricted to DEVELOPMENT datasets")
+        if receipt.dataset_content_sha256 is not None:
+            raise ResearchRunError("trusted synthetic receipt must declare dataset_content_sha256 as null")
+        return
+
+    registered = dataset_provenance.registered_content_sha256
+    observed = dataset_provenance.observed_content_sha256
+    if not registered or not observed:
+        raise ResearchRunError("dataset provenance is missing independent raw content SHA-256 values")
+    if receipt.dataset_content_sha256 is None:
+        raise ResearchRunError("dataset-backed schema-v2 receipt cannot have a null dataset_content_sha256")
+    if receipt.dataset_content_sha256 != registered or receipt.dataset_content_sha256 != observed:
+        raise ResearchRunError("execution receipt dataset_content_sha256 does not match registered and observed dataset bytes")
 
 
 def validate_evidence_acceptance(
@@ -14,6 +56,9 @@ def validate_evidence_acceptance(
     run: ResearchRunIdentity,
     receipt: ExecutionReceipt,
     evidence: EvidenceBundle,
+    dataset_provenance: DatasetProvenanceResult | None = None,
+    adapter: object | None = None,
+    purpose: str | None = None,
 ) -> None:
     """Require one evidence bundle to match its test, run, execution, and metrics."""
     spec.validate()
@@ -22,6 +67,13 @@ def validate_evidence_acceptance(
     evidence.validate()
 
     validate_execution_binding(spec=spec, run=run, receipt=receipt)
+    _validate_receipt_dataset_identity(
+        spec=spec,
+        receipt=receipt,
+        dataset_provenance=dataset_provenance,
+        adapter=adapter,
+        purpose=purpose,
+    )
 
     if evidence.run_id != run.run_id:
         raise ResearchRunError("evidence run_id does not match registered research run")
@@ -46,6 +98,9 @@ def evidence_acceptance_gate(
     run: ResearchRunIdentity | None,
     receipt: ExecutionReceipt | None,
     evidence: EvidenceBundle | None,
+    dataset_provenance: DatasetProvenanceResult | None = None,
+    adapter: object | None = None,
+    purpose: str | None = None,
 ) -> GateResult:
     """Accept evidence only when provenance, execution, and metrics all agree.
 
@@ -89,6 +144,9 @@ def evidence_acceptance_gate(
             run=run,
             receipt=receipt,
             evidence=evidence,
+            dataset_provenance=dataset_provenance,
+            adapter=adapter,
+            purpose=purpose,
         )
     except (ResearchRunError, ValueError) as exc:
         return GateResult(
@@ -108,5 +166,6 @@ def evidence_acceptance_gate(
             "execution_id": receipt.execution_id,
             "evidence_id": evidence.evidence_id,
             "execution_semantics": receipt.execution_semantics.value,
+            "dataset_verified": receipt.receipt_schema_version == 2 and receipt.dataset_content_sha256 is not None,
         },
     )
