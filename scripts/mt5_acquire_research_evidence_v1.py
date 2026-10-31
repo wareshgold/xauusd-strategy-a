@@ -8,6 +8,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +23,8 @@ SYMBOL = "XAUUSD.ecn"
 TIMEFRAME = mt5.TIMEFRAME_M1
 PROVIDER = "MetaTrader5 terminal API"
 SERVER_EXPECTED = "OtetGroup-MT5"
+MANIFEST_SCHEMA_ID = "sp2l.mt5-research-evidence"
+MANIFEST_SCHEMA_VERSION = "1.0.0"
 
 
 def utc_parse(value: str) -> datetime:
@@ -58,7 +61,7 @@ def audit_rows(rows: list[dict]) -> tuple[list[dict], list[dict], bool]:
         try:
             ts = datetime.fromisoformat(row["timestamp"].replace("Z", "+00:00"))
             nums = [float(row[k]) for k in ("open", "high", "low", "close", "tick_volume")]
-            if ts.tzinfo is None or any(not __import__("math").isfinite(x) for x in nums):
+            if ts.tzinfo is None or any(not math.isfinite(x) for x in nums):
                 invalid.append({"index": i, "reason": "invalid_timestamp_or_number"})
             h = float(row["high"])
             l = float(row["low"])
@@ -168,7 +171,7 @@ def main() -> int:
                 }
             )
 
-        invalid, gaps, chronological = audit_rows(rows)
+        invalid, discontinuities, chronological = audit_rows(rows)
         first = rows[0]["timestamp"]
         last = rows[-1]["timestamp"]
 
@@ -188,6 +191,7 @@ def main() -> int:
 
         retrieval_time = utc_iso(datetime.now(timezone.utc))
         manifest = {
+            "schema": {"id": MANIFEST_SCHEMA_ID, "version": MANIFEST_SCHEMA_VERSION},
             "evidence_type": "research_only_mt5_acquisition",
             "dataset_id": args.dataset_id,
             "note": args.note,
@@ -201,14 +205,13 @@ def main() -> int:
             "actual_last_utc": last,
             "requested_bar_count": int((end - start).total_seconds() // 60) + 1,
             "actual_bar_count": len(rows),
-            "timestamp_discontinuities": gaps,
-            "discontinuity_count": len(gaps),
+            "timestamp_discontinuities": discontinuities,
+            "discontinuity_count": len(discontinuities),
             "invalid_rows": invalid,
             "invalid_row_count": len(invalid),
             "chronological": chronological,
-            "ordering_anomalies": [g for g in gaps if g.get("kind") in {"duplicate_timestamp", "non_chronological"}],
-            "unclassified_gaps": [g for g in gaps if g.get("kind") == "unclassified_gap"],
-            "duplicates": [],
+            "ordering_anomalies": [g for g in discontinuities if g.get("kind") in {"duplicate_timestamp", "non_chronological"}],
+            "unclassified_gaps": [g for g in discontinuities if g.get("kind") == "unclassified_gap"],
             "retrieval_timestamp_utc": retrieval_time,
             "raw": {"path": str(raw_csv), "sha256": raw_hash},
             "derived": {"path": str(derived_csv), "sha256": derived_hash, "transform": "identity_copy_with_documentation"},
@@ -218,7 +221,7 @@ def main() -> int:
                 "no_overwrite_enforced",
                 "session_calendar_applicability_not_asserted",
             ],
-            "audit_status": determine_audit_status(invalid, gaps),
+            "audit_status": determine_audit_status(invalid, discontinuities),
         }
         manifest_path = evidence_dir / "manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
