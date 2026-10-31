@@ -39,6 +39,11 @@ def utc_iso(dt: datetime) -> str:
     return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def requested_calendar_minute_slots(start: datetime, end: datetime) -> int:
+    """Inclusive calendar-minute slots in the request window, not expected market bars."""
+    return int((end - start).total_seconds() // 60) + 1
+
+
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -203,7 +208,8 @@ def main() -> int:
             "requested_interval_utc": {"start": utc_iso(start), "end": utc_iso(end)},
             "actual_first_utc": first,
             "actual_last_utc": last,
-            "requested_bar_count": int((end - start).total_seconds() // 60) + 1,
+            # Retained schema-v1 key; this is calendar-minute arithmetic, not expected market coverage.
+            "requested_bar_count": requested_calendar_minute_slots(start, end),
             "actual_bar_count": len(rows),
             "timestamp_discontinuities": discontinuities,
             "discontinuity_count": len(discontinuities),
