@@ -136,3 +136,44 @@ def test_synthetic_receipt_mismatch_is_rejected(receipt_field, bad_value):
     receipt = valid_receipt()
     receipt[receipt_field] = bad_value
     assert not _test_only_receipt_matches_request(request, receipt)
+
+
+def _test_only_classify_checkpoint_replay(checkpoints, request):
+    """Minimal test model of the documented idempotency boundary only."""
+    key = (request["audit_identity"], request["audit_sequence"])
+    prior_digest = checkpoints.get(key)
+    if prior_digest is None:
+        return "NEW"
+    if prior_digest == request["entry_sha256"]:
+        return "EXACT_REPLAY"
+    return "CONFLICT"
+
+
+def test_same_audit_sequence_and_entry_digest_is_exact_replay():
+    request = valid_request()
+    checkpoints = {
+        (request["audit_identity"], request["audit_sequence"]): request["entry_sha256"]
+    }
+    assert _test_only_classify_checkpoint_replay(checkpoints, request) == "EXACT_REPLAY"
+
+
+def test_same_audit_sequence_with_different_entry_digest_is_conflict():
+    request = valid_request()
+    checkpoints = {
+        (request["audit_identity"], request["audit_sequence"]): request["entry_sha256"]
+    }
+    conflicting = dict(request, entry_sha256="b" * 64)
+    assert _test_only_classify_checkpoint_replay(checkpoints, conflicting) == "CONFLICT"
+
+
+def test_unseen_audit_sequence_is_not_misclassified_as_replay():
+    request = valid_request()
+    assert _test_only_classify_checkpoint_replay({}, request) == "NEW"
+
+
+def test_same_sequence_in_different_audit_identity_is_not_a_collision():
+    request = valid_request()
+    checkpoints = {
+        ("another-audit", request["audit_sequence"]): request["entry_sha256"]
+    }
+    assert _test_only_classify_checkpoint_replay(checkpoints, request) == "NEW"
