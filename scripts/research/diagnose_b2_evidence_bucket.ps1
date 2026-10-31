@@ -156,10 +156,10 @@ try {
     $listBody = @{ accountId = $accountId; bucketId = $BucketId } | ConvertTo-Json -Depth 5
     $bucketResponse = Invoke-B2JsonRequest -Method POST -Uri ($apiUrl.TrimEnd('/') + '/b2api/v4/b2_list_buckets') -Headers @{ Authorization = $authToken } -JsonBody $listBody
 
-    $matches = @($bucketResponse.buckets | Where-Object { $_.bucketId -eq $BucketId })
-    if ($matches.Count -ne 1) { throw "Expected exactly one bucket with the configured ID; found $($matches.Count)." }
+    $bucketMatches = @($bucketResponse.buckets | Where-Object { $_.bucketId -eq $BucketId })
+    if ($bucketMatches.Count -ne 1) { throw "Expected exactly one bucket with the configured ID; found $($bucketMatches.Count)." }
 
-    $bucket = $matches[0]
+    $bucket = $bucketMatches[0]
     if ($bucket.bucketName -ne $ExpectedBucketName) { throw "Bucket ID resolved to an unexpected bucket name: '$($bucket.bucketName)'." }
 
     Write-Host 'BUCKET_ACCESS=PASS' -ForegroundColor Green
