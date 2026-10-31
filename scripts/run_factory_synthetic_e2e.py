@@ -187,6 +187,7 @@ def run_synthetic_e2e(
         snapshot=snapshot,
         observed_content_sha256=content_sha256,
         evidence_id=f"SYNTH-EVIDENCE-{run_id}",
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
     )
     result = orchestrator.run_next(
         worker_id=worker.worker_id,
