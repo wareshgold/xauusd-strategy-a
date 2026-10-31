@@ -60,8 +60,10 @@ class FakeAdapter:
 
     def __init__(self, artifact_path):
         self.artifact_path = artifact_path
+        self.calls = 0
 
     def execute(self, spec):
+        self.calls += 1
         return build_execution_receipt(
             execution_id="HOLDOUT-EXEC",
             spec=spec,
@@ -205,11 +207,15 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
     )
 
 
-def test_holdout_factory_accepts_fresh_immutable_dataset(tmp_path):
+def test_holdout_factory_blocks_without_trusted_authority_verifier(tmp_path):
     runner, context = _context(tmp_path)
-    result = HoldoutFactory(runner).prepare_and_run(context)
-    assert result.result.accepted is True
-    assert result.result.dataset_provenance.status.value == "PASS"
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "authority gate rejected" in str(exc)
+    else:
+        raise AssertionError("Fresh Holdout must require trusted source and geometry verification")
+    assert context.adapter.calls == 0
 
 
 def test_holdout_factory_rejects_reused_dataset(tmp_path):
@@ -350,12 +356,18 @@ def test_holdout_factory_rejects_snapshot_not_bound_to_upstream_record(tmp_path)
         raise AssertionError("holdout must consume the exact frozen upstream snapshot")
 
 
-def test_holdout_factory_is_deterministic(tmp_path):
-    runner1, context1 = _context(tmp_path / "one")
-    result1 = HoldoutFactory(runner1).prepare_and_run(context1)
-
-    runner2, context2 = _context(tmp_path / "two")
-    result2 = HoldoutFactory(runner2).prepare_and_run(context2)
-
-    assert result1.job.as_dict() == result2.job.as_dict()
-    assert result1.job.fingerprint == result2.job.fingerprint
+def test_holdout_factory_does_not_register_or_execute_without_authority(tmp_path):
+    runner, context = _context(tmp_path)
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError:
+        pass
+    else:
+        raise AssertionError("missing authority must block before holdout registration")
+    assert context.adapter.calls == 0
+    try:
+        runner.runs.registry.get(context.spec.dataset.dataset_id)
+    except Exception:
+        pass
+    else:
+        raise AssertionError("blocked Fresh Holdout must not register its dataset")
