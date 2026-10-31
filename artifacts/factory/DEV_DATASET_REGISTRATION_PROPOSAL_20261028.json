@@ -1,0 +1,153 @@
+{
+  "record_schema_version": 1,
+  "record_type": "DEVELOPMENT_DATASET_REGISTRATION_PROPOSAL",
+  "status": "HUMAN_APPROVED_LIMITED_DEVELOPMENT_ONLY_PROVENANCE_UNANCHORED",
+  "decision_authority": "HUMAN_DECISION_RECORDED",
+  "dataset": {
+    "dataset_id": "xauusd-ecn-tick-bidask-20260821-20260919",
+    "role": "DEVELOPMENT",
+    "symbol": "XAUUSD.ecn",
+    "timeframe": "TICK_BID_ASK",
+    "interval_utc": {
+      "start_inclusive": "2026-08-21T00:00:00Z",
+      "end_exclusive": "2026-09-19T00:00:00Z"
+    },
+    "artifact": {
+      "filename": "xauusd-ecn-ticks-20260821_20260919.csv.gz",
+      "sha256": "412a535b8d5f0413f329e5fde8a1f851591ee83c95fc25af38b287d6170a1347",
+      "size_bytes": 111124585,
+      "row_count": 10817858,
+      "schema": [
+        "time_msc",
+        "time_utc",
+        "bid",
+        "ask",
+        "last",
+        "volume",
+        "flags"
+      ]
+    },
+    "acquisition_manifest": {
+      "filename": "xauusd-ecn-ticks-20260821_20260919.manifest.json",
+      "observed_sha256": "3a3fce2df05ddb8bd904ec63647c258aa04fe1e7fd423b05e06a8920f8473669",
+      "provenance_status": "UNANCHORED_OBSERVED_DIGEST",
+      "note": "The local manifest digest matches the digest observed by the updated audit, but the manifest is intentionally ignored under data/raw/ and has no Git history. A plausible producer script exists; this does not independently prove that the exact local manifest was emitted by the exact script version during the claimed MT5 acquisition."
+    },
+    "audit_receipt": {
+      "sha256": "760ef49fb1d5e90d94bcddf28be2f2a8fc8d6a87b53c37141328b37dc7c5629",
+      "size_bytes": 2639,
+      "reported_status": "INTEGRITY_AND_BASIC_QUOTE_CHECKS_PASS",
+      "source_commit": "1768e20785c57d934287473db0a8b4b5018546d7",
+      "storage_status": "LOCAL_ONLY_NOT_COMMITTED",
+      "scope": "Updated local receipt generated with the interval-boundary audit. Receipt remains local; no raw dataset or manifest was committed."
+    }
+  },
+  "observed_quality_evidence": {
+    "adjacent_duplicate_timestamps": 12389,
+    "duplicate_timestamp_groups": 7429,
+    "duplicate_groups_with_different_bid_ask": 6895,
+    "adjacent_out_of_order_timestamps": 0,
+    "timestamp_parse_errors": 0,
+    "time_msc_time_utc_mismatches": 0,
+    "invalid_numeric_rows": 0,
+    "missing_or_nonpositive_bid_ask_rows": 0,
+    "crossed_quotes": 0,
+    "gaps_over_60_seconds": 20,
+    "last_zero_rows": 10817858,
+    "volume_zero_rows": 10817858,
+    "limitations": [
+      "Duplicate rows are preserved; they are not deduplicated or sorted.",
+      "Gap causes are not inferred.",
+      "Zero Last/Volume values are not interpreted as trade prints or traded volume.",
+      "Counts and interval-boundary result were reconfirmed by the updated local receipt; raw dataset, manifest, and receipt remain local."
+    ],
+    "observed_timestamps_outside_declared_interval": 0,
+    "max_positive_adjacent_gap_ms": 176527083,
+    "spread_min": 0.12999999999919964,
+    "spread_mean": 0.20556092434530426,
+    "spread_max": 1.2899999999999636,
+    "first_observed_tick": "2026-08-21T01:00:05.864Z",
+    "last_observed_tick": "2026-09-18T23:57:56.609Z"
+  },
+  "isolation_and_usage": {
+    "raw_dataset_committed": false,
+    "raw_manifest_committed": false,
+    "fresh_holdout_read": false,
+    "authorized_for_strategy_backtests": false,
+    "authorizes_canonical_geometry": false,
+    "authorizes_execution_or_fill_semantics": false,
+    "authorizes_production_or_buy_sell_decisions": false,
+    "authorized_for_limited_development_tooling": true
+  },
+  "review_checklist": [
+    "Verify artifact SHA-256, byte size, and row count against the local source artifact.",
+    "Updated local audit receipt reviewed: SHA-256 and byte size recorded; observed timestamps outside the fixed half-open interval = 0.",
+    "Review provenance trace: manifest is intentionally ignored and has no Git history; producer script is plausible but exact execution linkage is not authenticated.",
+    "Independently anchor manifest provenance or explicitly accept it as unanchored acquisition metadata.",
+    "Review duplicate timestamp groups, gaps, and zero Last/Volume semantics.",
+    "Human decision recorded: approve limited DEVELOPMENT tooling use only; provenance remains unanchored; strategy backtests and Fresh Holdout remain prohibited."
+  ],
+  "gate_status": {
+    "gate_a": "LIMITED_DEVELOPMENT_TOOLING_ONLY_APPROVED_PROVENANCE_UNANCHORED",
+    "gate_b": "BLOCKED_SOURCE_GEOMETRY_UNRESOLVED",
+    "gate_c": "BLOCKED_ADAPTER_AND_EXECUTION_CONTRACT_REVIEW_REQUIRED",
+    "gate_d": "BLOCKED"
+  },
+  "acquisition_provenance_review": {
+    "review_status": "PARTIAL_SOURCE_TRACE_ONLY_NOT_INDEPENDENTLY_AUTHENTICATED",
+    "manifest_git_tracking": {
+      "tracked": false,
+      "ignore_rule": ".gitignore:12:data/raw/",
+      "git_history_for_manifest_found": false,
+      "interpretation": "Expected local-only storage policy; absence from Git is not evidence of tampering, but also supplies no versioned provenance."
+    },
+    "candidate_producer": {
+      "path": "scripts/acquire_xauusd_tick_bidask.py",
+      "observed_local_sha256": "aa91b543c92fca7feedb6cde866fd1c33533c01f081d714330565ba0d24f33d4",
+      "observed_local_size_bytes": 11079,
+      "tracked_history_observed": [
+        {
+          "commit": "0dcb73f7b6a8aa8d7953e1f74a3f419cc39b3761",
+          "date": "2026-10-10T08:35:08+03:30",
+          "subject": "feat(factory): add hashed MT5 tick bid ask acquisition"
+        },
+        {
+          "commit": "4cced7ce291f885f31c8e88c6e52da35a5b00b2a",
+          "date": "2026-10-10T09:56:36+03:30",
+          "subject": "fix(factory): raise value error for naive tick acquisition timestamps"
+        }
+      ],
+      "code_behavior_observed": "The script writes a compressed tick stream and sidecar manifest with artifact SHA-256, size, acquisition interval, terminal/server metadata, and quality counts.",
+      "exact_execution_link_proven": false
+    },
+    "documentation_conflict": {
+      "document": "artifacts/factory/FACTORY_TICK_BIDASK_ACQUISITION_20261010.md",
+      "observed_statement": "The document says this environment cannot access the local MT5 terminal/history and that acquisition must be run on the MT5 host.",
+      "local_manifest_retrieved_at_utc": "2026-10-26T06:16:05.726257+00:00",
+      "interpretation": "The document may be historical/stale and does not conclusively contradict the later local manifest; neither item independently authenticates the exact acquisition run."
+    },
+    "conclusion": "Human approved limited DEVELOPMENT tooling use only. Keep manifest provenance UNANCHORED_OBSERVED_DIGEST; the producer is plausible, but exact script-version-to-run-to-manifest linkage is not established. This approval does not authorize strategy backtests, Fresh Holdout, canonical geometry, execution/fill certification, or production.",
+    "recommended_evidence_if_available": [
+      "A contemporaneous acquisition command/session log identifying the script revision and output paths.",
+      "A trusted, independently retained digest or signed receipt for the manifest and dataset.",
+      "Confirmation that the local producer script working tree matches its recorded Git revision."
+    ]
+  },
+  "human_decision": {
+    "decision": "APPROVED_WITH_RESTRICTIONS",
+    "decided_on": "2026-10-28",
+    "approved_scope": [
+      "Limited DEVELOPMENT use for research tooling, audit tooling, schema/fixture engineering, and data-quality diagnostics.",
+      "Keep acquisition manifest provenance explicitly UNANCHORED_OBSERVED_DIGEST."
+    ],
+    "prohibited_scope": [
+      "Strategy performance backtests or performance-based rule selection.",
+      "Fresh Holdout access or use.",
+      "Canonical SP2L geometry decisions.",
+      "Execution/fill-semantic certification.",
+      "Production use or BUY/SELL decisions."
+    ],
+    "rationale": "Human approval is limited to development/tooling use. It does not authenticate acquisition provenance or establish strategy validity.",
+    "pr_must_remain_draft_and_unmerged": true
+  }
+}
