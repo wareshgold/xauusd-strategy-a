@@ -15,7 +15,7 @@ def fixture(tmp_path: Path, *, audit: str = "AUDITED_PASS"):
         {"timestamp": second_timestamp, "open": "1.5", "high": "2", "low": "1", "close": "1.8", "tick_volume": "11", "spread": "2", "real_volume": "0"},
     ]
     with raw.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\\n")
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     digest = hashlib.sha256(raw.read_bytes()).hexdigest()
