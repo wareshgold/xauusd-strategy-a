@@ -229,3 +229,41 @@ def test_receipt_semantics_mismatch_fails():
 
     assert result.status is ResearchProvenanceStatus.FAIL
     assert any(reason.startswith("EXECUTION_BINDING:") for reason in result.reasons)
+
+
+def test_schema_v2_research_provenance_rejects_mirrored_null_digest():
+    chain = make_chain()
+    chain["receipt"] = replace(
+        chain["receipt"], receipt_schema_version=2, dataset_content_sha256=None
+    )
+    chain["evidence"] = replace(
+        chain["evidence"],
+        result_revision="RECEIPT_METRICS_V2",
+        result={"receipt_schema_version": 2, "dataset_content_sha256": None},
+    )
+    chain["adapter"] = object()
+    chain["purpose"] = "HISTORICAL_TEST"
+
+    result = evaluate_research_provenance(**chain)
+
+    assert result.status is ResearchProvenanceStatus.FAIL
+    assert any(reason.startswith("RECEIPT_DATASET_IDENTITY:") for reason in result.reasons)
+
+
+def test_schema_v2_research_provenance_rejects_mirrored_wrong_digest():
+    chain = make_chain()
+    chain["receipt"] = replace(
+        chain["receipt"], receipt_schema_version=2, dataset_content_sha256="b" * 64
+    )
+    chain["evidence"] = replace(
+        chain["evidence"],
+        result_revision="RECEIPT_METRICS_V2",
+        result={"receipt_schema_version": 2, "dataset_content_sha256": "b" * 64},
+    )
+    chain["adapter"] = object()
+    chain["purpose"] = "HISTORICAL_TEST"
+
+    result = evaluate_research_provenance(**chain)
+
+    assert result.status is ResearchProvenanceStatus.FAIL
+    assert any(reason.startswith("RECEIPT_DATASET_IDENTITY:") for reason in result.reasons)
