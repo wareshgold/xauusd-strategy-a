@@ -134,6 +134,7 @@ class ResearchJobRunner:
                 "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
             )
 
+        fresh_holdout_authority = None
         if spec.dataset.role is DatasetRole.FRESH_HOLDOUT:
             try:
                 if (
@@ -163,7 +164,7 @@ class ResearchJobRunner:
                     raise FreshHoldoutAuthorityError(
                         "Fresh Holdout requires recomputed source PASS, frozen geometry READY, and canonical eligibility"
                     )
-                require_verified_authority(
+                fresh_holdout_authority = require_verified_authority(
                     verifier=self.fresh_holdout_authority_verifier,
                     manifest=readiness_manifest,
                     passport=readiness_passport,
@@ -251,6 +252,14 @@ class ResearchJobRunner:
                 "dataset_content_sha256": receipt.dataset_content_sha256,
                 "execution_semantics": receipt.execution_semantics.value,
                 "metrics": receipt.metrics.as_dict(),
+                "fresh_holdout_authority": (
+                    {
+                        "source": fresh_holdout_authority[0].authority_reference,
+                        "frozen_geometry": fresh_holdout_authority[1].authority_reference,
+                    }
+                    if fresh_holdout_authority is not None
+                    else None
+                ),
             },
         )
 
