@@ -63,7 +63,7 @@ class FakeAdapter:
 
 
 def _context(tmp_path: Path, *, same_dataset: bool = False):
-    discovery_bytes = b"{\\"schema_version\\":1,\\"research_only\\":true,\\"bars\\":[1]}"
+    discovery_bytes = b'{"schema_version":1,"research_only":true,"bars":[1]}'
     discovery_path = tmp_path / "discovery.json"
     discovery_path.write_bytes(discovery_bytes)
     discovery_sha = hashlib.sha256(discovery_bytes).hexdigest()
