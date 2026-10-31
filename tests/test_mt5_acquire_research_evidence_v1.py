@@ -130,3 +130,9 @@ def test_contiguous_valid_rows_pass():
     invalid, discontinuities, chronological = audit_rows(rows)
     assert invalid == [] and discontinuities == [] and chronological is True
     assert determine_audit_status(invalid, discontinuities) == "AUDITED_PASS"
+
+
+def test_manifest_schema_is_versioned_and_distinct_from_legacy_template():
+    from scripts.mt5_acquire_research_evidence_v1 import MANIFEST_SCHEMA_ID, MANIFEST_SCHEMA_VERSION
+    assert MANIFEST_SCHEMA_ID == "sp2l.mt5-research-evidence"
+    assert MANIFEST_SCHEMA_VERSION == "1.0.0"
