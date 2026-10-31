@@ -137,3 +137,10 @@ No external checkpoint adapter, service integration, remote retention policy, or
 ## Release gate
 
 Although signature verification, one-time envelope consumption, and hash-chained verification audit are now wired and covered by tests, the system trust store/audit directory have not been provisioned or independently reviewed here; independent journal-source control and recovery after a mutated or partially completed transition remain incomplete; and the complete provenance envelope is not yet bound. Fresh Holdout -> Forward -> Runtime remains **research-only / BLOCKED for production authorization**. These controls are defense-in-depth groundwork, not production authorization.
+
+
+### Synthetic idempotency contract tests — not an adapter
+
+The schema test suite now includes a deliberately small in-memory model for the documented replay boundary: within one audit identity, the same sequence and same entry digest is classified as an exact replay; the same identity and sequence with a different entry digest is classified as a conflict. It also checks that a different audit identity does not collide solely because its sequence matches.
+
+These are synthetic contract tests only. They do not define canonical request serialization, derive or verify `request_id`, establish remote uniqueness/transaction guarantees, resolve lost-response behavior, or implement a checkpoint service. Those remain open design and integration requirements. No Fresh Holdout authorization may rely on this test model.
