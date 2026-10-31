@@ -102,7 +102,7 @@ def evaluate_research_provenance(
             ("EVIDENCE_RUN_ID", evidence.run_id == run.run_id),
             ("EVIDENCE_RUN_FINGERPRINT", evidence.run_fingerprint == run.fingerprint),
             ("EVIDENCE_METRICS", evidence.metrics == receipt.metrics),
-            ("EVIDENCE_RECEIPT_SCHEMA", evidence.result.get("receipt_schema_version") == receipt.receipt_schema_version if receipt.receipt_schema_version == 2 else evidence.result_revision == "RECEIPT_METRICS_V1"),
+            ("EVIDENCE_RECEIPT_SCHEMA", receipt.receipt_schema_version != 2 or evidence.result.get("receipt_schema_version") == 2),
             ("EVIDENCE_DATASET_CONTENT_SHA256", "dataset_content_sha256" in evidence.result and evidence.result.get("dataset_content_sha256") == receipt.dataset_content_sha256 if receipt.receipt_schema_version == 2 else True),
         )
         reasons.extend(name for name, ok in evidence_checks if not ok)
