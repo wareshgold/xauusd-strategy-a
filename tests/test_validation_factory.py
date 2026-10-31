@@ -54,6 +54,8 @@ class FakeAdapter:
             engine_revision=self.engine_revision,
             input_fingerprint="a" * 64,
             metrics=metrics,
+            receipt_schema_version=2,
+            dataset_content_sha256=discovery_sha,
         )
 
 
@@ -161,9 +163,13 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
             evidence_id="EVIDENCE-DISCOVERY-1",
             run_id=source_run.run_id,
             run_fingerprint=source_run.fingerprint,
-            result_revision="TEST",
+            result_revision="RECEIPT_METRICS_V2",
             metrics=metrics,
-            result={"execution_id": receipt.execution_id},
+            result={
+                "execution_id": receipt.execution_id,
+                "receipt_schema_version": 2,
+                "dataset_content_sha256": discovery_sha,
+            },
         )
     )
     from strategy_factory.audit import bind_research_audit
