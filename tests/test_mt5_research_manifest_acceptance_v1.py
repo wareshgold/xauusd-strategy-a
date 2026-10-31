@@ -9,9 +9,10 @@ from scripts.validate_mt5_research_manifest_v1 import evaluate_manifest
 
 def fixture(tmp_path: Path, *, audit: str = "AUDITED_PASS"):
     raw = tmp_path / "raw.csv"
+    second_timestamp = "2026-07-01T01:03:00Z" if audit == "AUDITED_UNCLASSIFIED_COVERAGE" else "2026-07-01T01:01:00Z"
     rows = [
         {"timestamp": "2026-07-01T01:00:00Z", "open": "1", "high": "2", "low": "0.5", "close": "1.5", "tick_volume": "10", "spread": "2", "real_volume": "0"},
-        {"timestamp": "2026-07-01T01:03:00Z", "open": "1.5", "high": "2", "low": "1", "close": "1.8", "tick_volume": "11", "spread": "2", "real_volume": "0"},
+        {"timestamp": second_timestamp, "open": "1.5", "high": "2", "low": "1", "close": "1.8", "tick_volume": "11", "spread": "2", "real_volume": "0"},
     ]
     with raw.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\\n")
