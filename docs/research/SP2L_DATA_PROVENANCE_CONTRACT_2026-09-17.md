@@ -90,3 +90,17 @@ for `discontinuity_count` / `timestamp_discontinuities`. Consumers must
 select the schema by its explicit `schema.id` and `schema.version`; any
 cross-schema conversion requires a separately specified and tested adapter.
 No existing manifest is migrated or rewritten by this change.
+
+### Requested minute-slot count is not expected market-bar coverage
+
+For this manifest schema, `requested_bar_count` is a legacy field name whose
+value is calculated as the inclusive number of calendar-minute slots between
+the normalized requested start and end timestamps. It is request-window
+arithmetic only. It is **not** an expected count of tradable M1 bars, does not
+account for weekends, holidays, broker sessions, or market closures, and must
+not be used to infer missing bars or coverage completeness. Compare
+`actual_bar_count` with this value only as a descriptive difference; classify
+coverage using observed timestamps and an independently established,
+source-authorized market calendar, if one becomes available. The field is
+retained for schema-v1 compatibility; consumers must not interpret its name
+literally as an expected trading-bar count.
