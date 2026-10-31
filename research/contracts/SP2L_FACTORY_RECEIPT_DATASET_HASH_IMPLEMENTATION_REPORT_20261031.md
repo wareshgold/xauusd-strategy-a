@@ -17,7 +17,7 @@
 3. Schema v2 serialization always includes `dataset_content_sha256`; dataset-backed receipts require lowercase 64-character SHA-256, while trusted synthetic receipts use explicit JSON null.
 4. Historical `input_fingerprint` semantics remain unchanged. It is not reinterpreted as a raw dataset digest.
 5. Dataset-backed Discovery and Stability adapters attach the exact SHA-256 they compute from the dataset artifact bytes.
-6. The built-in exact-type `SyntheticExecutionAdapter` emits schema v2 with explicit null. Subclasses and wrappers do not inherit the synthetic exception.
+6. The built-in exact-type `SyntheticExecutionAdapter` emits schema v2 with explicit null. Subclasses and wrappers do not inherit the synthetic exception. The runner permits this non-observation exception only with explicit `purpose="SYNTHETIC_INFRASTRUCTURE_TEST"` and `DatasetRole.DEVELOPMENT`; it rejects default research purpose and both protected roles (`UNTOUCHED_VALIDATION`, `FRESH_HOLDOUT`) before creating a run or usage entry.
 7. `ResearchJobRunner` rejects schema-v1 receipts for new dataset-verified evidence with `LEGACY_UNVERIFIED`; it compares schema-v2 dataset hashes to the runner-observed hash. Only the exact built-in synthetic adapter may use null.
 8. New evidence stores `receipt_schema_version` and `dataset_content_sha256` in `EvidenceBundle.result`; its summary revision is `RECEIPT_METRICS_V2`.
 9. The runner derives the new summary revision from the receipt schema. An explicit incompatible revision override fails closed. The Orchestrator no longer defaults to a hard-coded V1 summary revision.
@@ -31,10 +31,14 @@
 - Added malformed digest rejection.
 - Added synthetic explicit-null assertions.
 - Added runner tests for legacy-v1 rejection and dataset-hash mismatch.
+- Added negative synthetic-policy tests for default-purpose rejection and Validation/Fresh Holdout role rejection, including assertions that rejection occurs before usage-ledger mutation.
+- Updated synthetic-only E2E callers to declare the explicit infrastructure purpose.
 - Updated dataset-backed fake adapters in Discovery, Stability, Validation, and Holdout tests to provide the exact dataset hash.
 - Added receipt-focused tests to `.github/workflows/factory-tests.yml`.
 
 ## CI evidence
+
+The synthetic-policy guard and negative tests were added after the initial CI run. Their latest workflow results are tracked against the final PR head and must be green before review completion.
 
 At commit `80edbe4f4293a57bec048e92b3dfa095b3ed16b5`:
 - Factory Research Tests: **PASS — 151 passed in 1.73s**
@@ -54,6 +58,6 @@ The focused Factory suite and the listed cross-platform/deterministic workflows 
 
 ## Remaining review items
 
-- Review the exact-type synthetic trust boundary and the V1 rejection policy before merge.
+- Review the exact-type synthetic trust boundary, explicit infrastructure purpose + DEVELOPMENT-only restriction, and the V1 rejection policy before merge.
 - Run the complete repository test suite in the normal local development environment if required by the project’s release process.
 - Do not merge this PR solely on the basis of the focused CI run.
