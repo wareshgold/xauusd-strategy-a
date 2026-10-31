@@ -57,6 +57,7 @@ def evaluate_manifest(manifest: dict[str, Any], raw_csv: Path) -> dict[str, Any]
         errors.append("ACTUAL_BAR_COUNT_INVALID")
         expected_rows = None
 
+    rows = []
     try:
         with raw_csv.open("r", newline="", encoding="utf-8") as stream:
             reader = csv.DictReader(stream)
