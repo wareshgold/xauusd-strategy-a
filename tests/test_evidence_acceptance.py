@@ -125,3 +125,81 @@ def test_acceptance_does_not_compare_performance_values():
         spec=spec, run=run, receipt=different_receipt, evidence=different
     )
     assert result.status is GateStatus.PASS
+
+
+def _schema_v2_case(dataset_digest):
+    from strategy_factory.dataset_provenance import evaluate_dataset_provenance
+    from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
+
+    spec, run, _, _ = setup()
+    registry = DatasetRegistry()
+    registry.register(spec.dataset, "a" * 64)
+    dataset_provenance = evaluate_dataset_provenance(spec, registry, "a" * 64)
+    receipt = ExecutionReceipt(
+        "EX2", "T1", "S1", ExecutionSemantics.TICK_FEASIBLE,
+        "ENGINE2", "b" * 64, True, METRICS,
+        receipt_schema_version=2,
+        dataset_content_sha256=dataset_digest,
+    )
+    evidence = EvidenceBundle(
+        "E2", run.run_id, run.fingerprint, "RECEIPT_METRICS_V2", METRICS,
+        {
+            "trades": 10,
+            "receipt_schema_version": 2,
+            "dataset_content_sha256": dataset_digest,
+        },
+    )
+    adapter = object()
+    return spec, run, receipt, evidence, dataset_provenance, adapter
+
+
+def test_schema_v2_acceptance_rejects_null_dataset_digest_even_when_evidence_mirrors_it():
+    spec, run, receipt, evidence, dataset_provenance, adapter = _schema_v2_case(None)
+    result = evidence_acceptance_gate(
+        spec=spec, run=run, receipt=receipt, evidence=evidence,
+        dataset_provenance=dataset_provenance, adapter=adapter, purpose="HISTORICAL_TEST",
+    )
+    assert result.status is GateStatus.FAIL
+
+
+def test_schema_v2_acceptance_rejects_digest_mismatch_even_when_evidence_mirrors_it():
+    spec, run, receipt, evidence, dataset_provenance, adapter = _schema_v2_case("b" * 64)
+    result = evidence_acceptance_gate(
+        spec=spec, run=run, receipt=receipt, evidence=evidence,
+        dataset_provenance=dataset_provenance, adapter=adapter, purpose="HISTORICAL_TEST",
+    )
+    assert result.status is GateStatus.FAIL
+
+
+def test_schema_v2_acceptance_allows_exact_builtin_synthetic_adapter_only():
+    from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
+
+    spec, run, receipt, evidence, dataset_provenance, _ = _schema_v2_case(None)
+    adapter = SyntheticExecutionAdapter(
+        SyntheticExecutionFixture("FIXTURE-1", ExecutionSemantics.TICK_FEASIBLE, METRICS)
+    )
+    result = evidence_acceptance_gate(
+        spec=spec, run=run, receipt=receipt, evidence=evidence,
+        dataset_provenance=dataset_provenance, adapter=adapter,
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
+    )
+    assert result.status is GateStatus.PASS
+
+
+def test_schema_v2_acceptance_rejects_synthetic_adapter_subclass_null_exception():
+    from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
+
+    spec, run, receipt, evidence, dataset_provenance, _ = _schema_v2_case(None)
+
+    class WrappedSyntheticAdapter(SyntheticExecutionAdapter):
+        pass
+
+    adapter = WrappedSyntheticAdapter(
+        SyntheticExecutionFixture("FIXTURE-1", ExecutionSemantics.TICK_FEASIBLE, METRICS)
+    )
+    result = evidence_acceptance_gate(
+        spec=spec, run=run, receipt=receipt, evidence=evidence,
+        dataset_provenance=dataset_provenance, adapter=adapter,
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
+    )
+    assert result.status is GateStatus.FAIL
