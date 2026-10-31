@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+from types import SimpleNamespace
+
+from strategy_factory.dataset_provenance import DatasetProvenanceStatus
 from pathlib import Path
 
 from strategy_factory.forward_gate_factory import ForwardGateResult
@@ -12,7 +15,10 @@ from strategy_factory.forward_runtime_adapter import (
     runner_process_reconciliation,
 )
 from strategy_factory.forward_session_factory import DemoForwardSessionFactory
-from strategy_factory.models import GateResult, GateStatus
+from strategy_factory.models import GateResult, GateStatus, StrategyPassport
+from strategy_factory.manifest import EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule
+from strategy_factory.snapshot import build_readiness_snapshot
+from strategy_factory.source_ledger import SourceResolutionLedger
 
 
 class SyntheticHoldoutRecord:
@@ -30,9 +36,79 @@ def _sha(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _readiness_bundle(record):
+    manifest = StrategyManifest(
+        strategy_id=record.strategy_id,
+        revision=record.manifest_revision,
+        rules=[
+            StrategyRule(
+                rule_id="SYNTHETIC-RUNTIME-RULE",
+                name="Synthetic test-only rule",
+                authority=RuleAuthority.CANONICAL,
+                evidence_status=EvidenceStatus.SOURCE_CONFIRMED,
+            )
+        ],
+    )
+    passport = StrategyPassport(
+        strategy_id=record.strategy_id,
+        source_revision=record.manifest_revision,
+        geometry_revision="SYNTHETIC-TEST-GEOMETRY",
+        code_revision="SYNTHETIC-TEST-CODE",
+        data_revision="SYNTHETIC-TEST-DATA",
+        execution_model="BAR_CLOSE_RESEARCH_ONLY",
+        parameter_set={"synthetic_test_only": True},
+        canonical=True,
+    )
+    ledger = SourceResolutionLedger()
+    snapshot = build_readiness_snapshot(manifest, passport, ledger)
+    return snapshot, manifest, passport, ledger
+
+
+def _synthetic_holdout_result(record, snapshot, content_sha, artifact_id):
+    record.snapshot_fingerprint = snapshot.fingerprint
+    dataset_fingerprint = _sha(b"synthetic-holdout-dataset-fingerprint")
+    run = SimpleNamespace(
+        run_id=record.run_id,
+        dataset_role="FRESH_HOLDOUT",
+        dataset_id=record.dataset_id,
+        artifact_id=artifact_id,
+        dataset_fingerprint=dataset_fingerprint,
+    )
+    provenance = SimpleNamespace(
+        status=DatasetProvenanceStatus.PASS,
+        observed_artifact_id=artifact_id,
+        registered_artifact_id=artifact_id,
+        dataset_id=record.dataset_id,
+        registered_fingerprint=dataset_fingerprint,
+        observed_fingerprint=dataset_fingerprint,
+    )
+    result = SimpleNamespace(
+        accepted=True,
+        job_id=record.run_id,
+        run=run,
+        record=record,
+        dataset_provenance=provenance,
+    )
+    job = SimpleNamespace(job_id=record.run_id)
+    return SimpleNamespace(
+        job=job,
+        result=result,
+        holdout_dataset_content_sha256=content_sha,
+    )
+
+
 def _session():
     record = SyntheticHoldoutRecord()
+    readiness_snapshot, readiness_manifest, readiness_passport, readiness_ledger = _readiness_bundle(record)
+    holdout_sha = _sha(b"dry-run-holdout")
+    holdout_artifact = "HOLDOUT-DRY-RUN-ART-1"
+    holdout_result = _synthetic_holdout_result(record, readiness_snapshot, holdout_sha, holdout_artifact)
     gate = ForwardGateResult(
+        holdout_result=holdout_result,
+        readiness_snapshot=readiness_snapshot,
+        readiness_manifest=readiness_manifest,
+        readiness_passport=readiness_passport,
+        readiness_ledger=readiness_ledger,
         gate=GateResult(
             name="FRESH_HOLDOUT_TO_FORWARD",
             status=GateStatus.PASS,
@@ -47,8 +123,8 @@ def _session():
                 "strategy_revision": record.strategy_revision,
                 "manifest_revision": record.manifest_revision,
                 "holdout_dataset_id": record.dataset_id,
-                "holdout_dataset_sha256": _sha(b"dry-run-holdout"),
-                "holdout_artifact_id": "HOLDOUT-DRY-RUN-ART-1",
+                "holdout_dataset_sha256": holdout_sha,
+                "holdout_artifact_id": holdout_artifact,
                 "handoff_fingerprint": _sha(b"dry-run-handoff"),
                 "production_decision": False,
             },

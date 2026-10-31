@@ -152,3 +152,28 @@ def build_readiness_snapshot(
     )
     snapshot.validate()
     return snapshot
+
+
+def validate_readiness_snapshot_against_sources(
+    snapshot: ReadinessSnapshot,
+    manifest: StrategyManifest,
+    passport: StrategyPassport,
+    ledger: SourceResolutionLedger,
+) -> None:
+    """Recompute readiness from supplied source inputs and reject forged summaries.
+
+    A snapshot hash proves internal consistency only. Callers at a trust boundary
+    must supply the authoritative manifest, passport, and source ledger and use
+    this function to verify the result against those inputs.
+    """
+    snapshot.validate()
+    expected = build_readiness_snapshot(
+        manifest,
+        passport,
+        ledger,
+        snapshot_revision=snapshot.snapshot_revision,
+    )
+    if snapshot.as_dict() != expected.as_dict():
+        raise ValueError(
+            "readiness snapshot does not match independently recomputed source readiness"
+        )

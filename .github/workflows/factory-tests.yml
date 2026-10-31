@@ -20,12 +20,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install test dependency
-        run: python -m pip install pytest
+      - name: Install test dependencies
+        run: python -m pip install pytest "cryptography>=44,<47"
 
       - name: Run Factory focused suite
         run: |
-          python -m pytest             tests/test_factory_e2e_smoke.py             tests/test_discovery_adapter.py             tests/test_mt5_dataset.py             tests/test_discovery_factory.py             tests/test_handoff_dataset_binding.py             tests/test_stability_factory.py             tests/test_validation_factory.py \
+          python -m pytest tests/test_factory_e2e_smoke.py tests/test_discovery_adapter.py tests/test_mt5_dataset.py tests/test_discovery_factory.py tests/test_handoff_dataset_binding.py tests/test_stability_factory.py tests/test_validation_factory.py \
           tests/test_forward_observed_evidence.py \
           tests/test_forward_observed_statistics.py \
           tests/test_forward_statistical_boundary.py \
@@ -35,4 +35,6 @@ jobs:
           tests/test_factory_job_events.py \
           tests/test_factory_worker_journal_audit.py \
           tests/test_factory_test_journal_isolation.py \
-          tests/test_factory_orchestrator_default_journal_isolation.py -q
+          tests/test_factory_orchestrator_default_journal_isolation.py \
+          tests/test_trust_anchor.py \
+          tests/test_trust_audit.py -q

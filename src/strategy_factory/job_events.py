@@ -7,7 +7,7 @@ Factory transitions so the visual world can later follow real queue movement
 without inventing activity.
 """
 
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 from typing import Any, Iterator
+from threading import get_ident
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_JOB_EVENTS_FILE = ROOT / "runtime" / "factory_job_events.jsonl"
@@ -56,6 +57,16 @@ def _journal_write_lock(path: Path) -> Iterator[None]:
                 yield
             finally:
                 fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
+
+class _JournalTransitionLockToken:
+    """Thread-bound capability for appends made inside one journal transition lock."""
+
+    def __init__(self, path: Path | None) -> None:
+        self.path = Path(path) if path is not None else None
+        self.owner_thread = get_ident()
+        self.active = True
 
 
 def _utc_now() -> str:
@@ -269,6 +280,69 @@ def inspect_job_journal_snapshot(
     }, events)
 
 
+
+def verify_job_journal_prefix(
+    path: Path,
+    *,
+    expected_sha256: str,
+    expected_byte_size: int,
+    sequence_boundary: int,
+) -> dict[str, Any]:
+    """Verify a signed, byte-exact prefix remains present in a valid JSONL journal.
+
+    Later valid events are allowed: only the first sequence_boundary events and
+    their exact serialized bytes are compared to the signed pre-transition
+    boundary. This detects deletion, rewriting, reordering, and non-canonical
+    substitutions without requiring the post-transition journal to stay frozen.
+    """
+    path = Path(path)
+    if (
+        not isinstance(expected_sha256, str)
+        or len(expected_sha256) != 64
+        or any(char not in "0123456789abcdef" for char in expected_sha256)
+        or not isinstance(expected_byte_size, int)
+        or isinstance(expected_byte_size, bool)
+        or expected_byte_size < 0
+        or not isinstance(sequence_boundary, int)
+        or isinstance(sequence_boundary, bool)
+        or sequence_boundary < 0
+    ):
+        raise ValueError("signed source event-ledger prefix metadata is invalid")
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise ValueError("persisted source event journal is missing or unreadable") from exc
+    try:
+        all_events = _parse_journal_text(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise ValueError("persisted source event journal is invalid") from exc
+    if len(all_events) < sequence_boundary:
+        raise ValueError("persisted source event journal is shorter than the signed prefix boundary")
+    if len(raw) < expected_byte_size:
+        raise ValueError("persisted source event journal is shorter than the signed prefix byte size")
+    prefix = raw[:expected_byte_size]
+    if hashlib.sha256(prefix).hexdigest() != expected_sha256:
+        raise ValueError("persisted source event journal signed prefix SHA-256 mismatch")
+    if sequence_boundary > 0 and not prefix.endswith(b"\n"):
+        raise ValueError("persisted source event journal signed prefix does not end on an event boundary")
+    try:
+        prefix_events = _parse_journal_text(prefix.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise ValueError("persisted source event journal signed prefix is invalid") from exc
+    if len(prefix_events) != sequence_boundary:
+        raise ValueError("persisted source event journal signed prefix event-count boundary mismatch")
+    return {
+        "verified": True,
+        "path": str(path),
+        "prefix_sha256": expected_sha256,
+        "prefix_byte_size": expected_byte_size,
+        "sequence_boundary": sequence_boundary,
+        "current_event_count": len(all_events),
+        "current_journal_sha256": hashlib.sha256(raw).hexdigest(),
+        "later_events_preserved": len(all_events) > sequence_boundary,
+    }
+
+
 def inspect_job_journal_file(path: Path = DEFAULT_JOB_EVENTS_FILE) -> dict[str, Any]:
     """Inspect a journal snapshot without repairing or rewriting the source file."""
     report, _events = inspect_job_journal_snapshot(path)
@@ -285,6 +359,37 @@ class FactoryJobEventLedger:
             self._events = _parse_journal_text(
                 self.path.read_text(encoding="utf-8")
             )
+
+    @contextmanager
+    def transition_lock(self) -> Iterator[_JournalTransitionLockToken]:
+        """Hold the journal lock across a multi-step transition.
+
+        Every cooperating writer must use the same sidecar lock. Appends made
+        by this thread can present the yielded token to avoid reacquiring the
+        OS lock; tokens are invalidated when the context exits.
+        """
+        token = _JournalTransitionLockToken(self.path)
+        if self.path is None:
+            try:
+                yield token
+            finally:
+                token.active = False
+            return
+        with _journal_write_lock(self.path):
+            try:
+                yield token
+            finally:
+                token.active = False
+
+    def _valid_transition_lock_token(
+        self, token: _JournalTransitionLockToken | None
+    ) -> bool:
+        return (
+            token is not None
+            and token.active
+            and token.owner_thread == get_ident()
+            and token.path == (Path(self.path) if self.path is not None else None)
+        )
 
     @classmethod
     def from_snapshot(
@@ -307,6 +412,7 @@ class FactoryJobEventLedger:
         detail: str | None = None,
         output_artifact: str | None = None,
         research_run_fingerprint: str | None = None,
+        _transition_lock_token: _JournalTransitionLockToken | None = None,
     ) -> FactoryJobEvent:
         event = FactoryJobEvent(
             sequence=len(self._events) + 1,
@@ -331,7 +437,12 @@ class FactoryJobEventLedger:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             # The lock spans both integrity preflight and append/rollback, so
             # cooperating writers cannot race between validation and write.
-            with _journal_write_lock(self.path):
+            lock_context = (
+                nullcontext()
+                if self._valid_transition_lock_token(_transition_lock_token)
+                else _journal_write_lock(self.path)
+            )
+            with lock_context:
                 # Fail closed before the first write if the persisted journal
                 # has drifted since this ledger was loaded. Never repair it.
                 if self.path.exists():

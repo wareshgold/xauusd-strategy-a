@@ -3,7 +3,7 @@ from dataclasses import replace
 import pytest
 
 from strategy_factory.models import StrategyPassport
-from strategy_factory.snapshot import build_readiness_snapshot, manifest_fingerprint
+from strategy_factory.snapshot import ReadinessSnapshot, build_readiness_snapshot, manifest_fingerprint
 from strategy_factory.sp2l_manifest import build_sp2l_research_manifest
 from strategy_factory.source_ledger import SourceResolutionLedger
 
@@ -93,3 +93,24 @@ def test_snapshot_rejects_malformed_identity_and_digest_fields(field, value, mes
 
     with pytest.raises(ValueError, match=message):
         tampered.validate()
+
+
+def test_ready_claim_must_match_recomputed_source_inputs():
+    import hashlib
+    from strategy_factory.snapshot import validate_readiness_snapshot_against_sources
+    manifest = build_sp2l_research_manifest()
+    p = passport(manifest)
+    ledger = SourceResolutionLedger()
+    snapshot = build_readiness_snapshot(manifest, p, ledger)
+    readiness = dict(snapshot.source_readiness)
+    readiness.update(status="PASS", frozen_geometry_blocked=False, canonical_strategy_eligible=True)
+    gate = dict(readiness["gate"])
+    gate.update(status="PASS", blocking_questions=[], missing_questions=[])
+    readiness["gate"] = gate
+    eligibility = dict(snapshot.passport_eligibility)
+    eligibility.update(source_status="PASS", frozen_geometry="READY", canonical_strategy="ELIGIBLE", blocking_reasons=[])
+    payload = ReadinessSnapshot._fingerprint_payload(snapshot_revision=snapshot.snapshot_revision, strategy_id=snapshot.strategy_id, manifest_revision=snapshot.manifest_revision, manifest_fingerprint=snapshot.manifest_fingerprint, passport_fingerprint=snapshot.passport_fingerprint, source_ledger=snapshot.source_ledger, source_readiness=readiness, passport_eligibility=eligibility)
+    forged = replace(snapshot, source_readiness=readiness, passport_eligibility=eligibility, fingerprint=hashlib.sha256(payload).hexdigest())
+    forged.validate()
+    with pytest.raises(ValueError, match="independently recomputed source readiness"):
+        validate_readiness_snapshot_against_sources(forged, manifest, p, ledger)

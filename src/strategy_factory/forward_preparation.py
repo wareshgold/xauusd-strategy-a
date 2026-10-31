@@ -9,6 +9,7 @@ strategy geometry, tune parameters, or authorize production decisions.
 """
 
 from dataclasses import dataclass
+from pathlib import Path
 import hashlib
 import json
 
@@ -18,6 +19,8 @@ from .handoff import ResearchHandoff, build_research_handoff
 from .holdout_factory import HoldoutFactoryResult
 from .job_events import FactoryJobEvent, FactoryJobEventLedger, inspect_job_journal_snapshot
 from .forward_session_factory import DemoForwardSessionResult
+from .trust_anchor import TrustAnchorError, verify_signed_evidence
+from .trust_audit import TrustAuditError, append_verification_audit
 
 
 class ForwardPreparationError(RuntimeError):
@@ -51,8 +54,36 @@ def prepare_holdout_to_forward(
     post_holdout_tuning: bool = False,
     handoff_id: str | None = None,
     worker_id: str = "factory-forward-preparation",
+    trust_envelope_path: str | None = None,
+    holdout_artifact_path: str | None = None,
+    _transition_lock_token: object | None = None,
 ) -> ForwardPreparationResult:
-    """Bind one completed Fresh Holdout to a frozen demo Forward session."""
+    """Bind one completed Fresh Holdout to a frozen demo Forward session.
+
+    The journal sidecar lock spans boundary capture, evidence consumption,
+    lifecycle appends, and gate/session preparation. This serializes cooperating
+    journal writers across the whole Holdout -> Forward transition.
+    """
+    if _transition_lock_token is None:
+        with events.transition_lock() as lock_token:
+            return prepare_holdout_to_forward(
+                holdout_result=holdout_result,
+                events=events,
+                manifest_revision=manifest_revision,
+                forward_session_id=forward_session_id,
+                forward_dataset_id=forward_dataset_id,
+                forward_dataset_artifact_id=forward_dataset_artifact_id,
+                forward_dataset_content_sha256=forward_dataset_content_sha256,
+                holdout_dataset_content_sha256=holdout_dataset_content_sha256,
+                holdout_dataset_artifact_id=holdout_dataset_artifact_id,
+                strategy_revision_frozen=strategy_revision_frozen,
+                post_holdout_tuning=post_holdout_tuning,
+                handoff_id=handoff_id,
+                worker_id=worker_id,
+                trust_envelope_path=trust_envelope_path,
+                holdout_artifact_path=holdout_artifact_path,
+                _transition_lock_token=lock_token,
+            )
 
     if not strategy_revision_frozen:
         raise ForwardPreparationError(
@@ -102,6 +133,112 @@ def prepare_holdout_to_forward(
             "Holdout dataset SHA does not match the completed Holdout run"
         )
 
+    if not trust_envelope_path or not holdout_artifact_path:
+        raise ForwardPreparationError(
+            "Holdout-to-Forward requires signed evidence and the actual Holdout artifact path"
+        )
+    # Bind the signature to the exact source-journal prefix that exists before
+    # this handoff mutates the journal. This boundary is intentionally the
+    # pre-transition prefix; the later gate also records the post-Holdout-event
+    # snapshot separately.
+    boundary_events = events.entries()
+    if events.path is not None:
+        if not events.path.exists() and not boundary_events:
+            boundary_sha256 = hashlib.sha256(b"").hexdigest()
+            boundary_byte_size = 0
+        else:
+            boundary_report, boundary_persisted = inspect_job_journal_snapshot(events.path)
+            if boundary_report.get("status") != "VALID" or boundary_persisted is None:
+                raise ForwardPreparationError(
+                    "persisted event journal is not valid; manual reconciliation required"
+                )
+            if boundary_persisted != boundary_events:
+                raise ForwardPreparationError(
+                    "persisted event journal failed pre-append integrity validation; "
+                    "journal preserved and manual reconciliation required"
+                )
+            boundary_sha256 = boundary_report.get("sha256")
+            boundary_byte_size = boundary_report.get("byte_size")
+        boundary_source = "persisted_jsonl"
+    else:
+        boundary_bytes = "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
+            for event in boundary_events
+        ).encode("utf-8")
+        boundary_sha256 = hashlib.sha256(boundary_bytes).hexdigest()
+        boundary_byte_size = len(boundary_bytes)
+        boundary_source = "in_memory"
+    if not isinstance(boundary_sha256, str) or len(boundary_sha256) != 64:
+        raise ForwardPreparationError("source event journal boundary lacks a valid SHA-256")
+
+    expected_bindings = {
+        "source_event_ledger_prefix_sha256": boundary_sha256,
+        "source_event_ledger_prefix_byte_size": boundary_byte_size,
+        "source_event_ledger_sequence_boundary": len(boundary_events),
+        "source_event_ledger_prefix_source": boundary_source,
+        "source_event_ledger_path": str(events.path) if boundary_source == "persisted_jsonl" else None,
+        "strategy_id": record.strategy_id,
+        "strategy_revision": record.strategy_revision,
+        "manifest_revision": record.manifest_revision,
+        "execution_semantics": record.execution_semantics,
+        "readiness_snapshot_fingerprint": result.snapshot.fingerprint,
+        "holdout_dataset_id": record.dataset_id,
+        "holdout_artifact_id": result.run.artifact_id,
+        "holdout_dataset_role": "FRESH_HOLDOUT",
+        "forward_session_id": forward_session_id,
+        "holdout_run_id": result.run.run_id,
+        "holdout_run_fingerprint": record.run_fingerprint,
+        "holdout_evidence_id": record.evidence_id,
+        "holdout_evidence_fingerprint": record.evidence_fingerprint,
+        "holdout_audit_fingerprint": record.audit_fingerprint,
+        "holdout_record_fingerprint": record.fingerprint,
+        "holdout_dataset_fingerprint": result.run.dataset_fingerprint,
+        "holdout_artifact_byte_size": Path(holdout_artifact_path).stat().st_size,
+    }
+    try:
+        verification = verify_signed_evidence(
+            Path(trust_envelope_path),
+            expected_bindings=expected_bindings,
+            artifact_path=Path(holdout_artifact_path),
+        )
+        source_event_ledger_boundary = {
+            "source_event_ledger_prefix_sha256": boundary_sha256,
+            "source_event_ledger_prefix_byte_size": boundary_byte_size,
+            "source_event_ledger_sequence_boundary": len(boundary_events),
+            "source_event_ledger_prefix_source": boundary_source,
+            "source_event_ledger_path": str(events.path) if boundary_source == "persisted_jsonl" else None,
+        }
+        try:
+            append_verification_audit(
+                phase="holdout_to_forward",
+                session_id=forward_session_id,
+                envelope_path=Path(trust_envelope_path),
+                artifact_path=Path(holdout_artifact_path),
+                verification=verification,
+                consume_holdout_once=True,
+                source_event_ledger_boundary=source_event_ledger_boundary,
+            )
+        except TrustAuditError as audit_exc:
+            if "signed Holdout evidence has already been consumed" not in str(audit_exc):
+                raise
+            # Recovery is deliberately narrow: the signature was just checked
+            # against the current pre-transition boundary. The audit helper
+            # permits resume only for the same envelope, session, and boundary.
+            append_verification_audit(
+                phase="holdout_to_forward_recovery",
+                session_id=forward_session_id,
+                envelope_path=Path(trust_envelope_path),
+                artifact_path=Path(holdout_artifact_path),
+                verification=verification,
+                consume_holdout_once=True,
+                resume_holdout_once=True,
+                source_event_ledger_boundary=source_event_ledger_boundary,
+            )
+    except (TrustAnchorError, TrustAuditError) as exc:
+        raise ForwardPreparationError(
+            f"Holdout-to-Forward signed evidence verification/audit failed: {exc}"
+        ) from exc
+
     try:
         holdout_event = events.append(
             event_type="COMPLETED",
@@ -113,6 +250,7 @@ def prepare_holdout_to_forward(
             detail="Fresh Holdout completed; eligible for Holdout-to-Forward preparation",
             output_artifact=record.evidence_id,
             research_run_fingerprint=record.run_fingerprint,
+            _transition_lock_token=_transition_lock_token,
         )
     except OSError as exc:
         raise ForwardPreparationError(
@@ -171,6 +309,9 @@ def prepare_holdout_to_forward(
             forward_dataset_id=forward_dataset_id,
             forward_dataset_artifact_id=forward_dataset_artifact_id,
             forward_dataset_content_sha256=forward_dataset_content_sha256,
+            readiness_manifest=holdout_result.readiness_manifest,
+            readiness_passport=holdout_result.readiness_passport,
+            readiness_ledger=holdout_result.readiness_ledger,
             strategy_revision_frozen=strategy_revision_frozen,
             holdout_result=holdout_result,
             source_event_ledger_snapshot=ledger_snapshot,
@@ -178,6 +319,10 @@ def prepare_holdout_to_forward(
             source_event_ledger_byte_size=ledger_byte_size,
             source_event_ledger_source=ledger_source,
             source_event_ledger_path=ledger_path,
+            source_event_ledger_prefix_sha256=boundary_sha256,
+            source_event_ledger_prefix_byte_size=boundary_byte_size,
+            source_event_ledger_sequence_boundary=len(boundary_events),
+            source_event_ledger_prefix_source=boundary_source,
             post_holdout_tuning=post_holdout_tuning,
         )
     )
@@ -190,6 +335,8 @@ def prepare_holdout_to_forward(
         forward_dataset_artifact_id=forward_dataset_artifact_id,
         forward_dataset_content_sha256=forward_dataset_content_sha256,
         post_holdout_tuning=post_holdout_tuning,
+        trust_envelope_path=trust_envelope_path,
+        holdout_artifact_path=holdout_artifact_path,
     )
 
     forward_event = events.append(
@@ -202,6 +349,7 @@ def prepare_holdout_to_forward(
         detail=f"Holdout-to-Forward handoff accepted; session={session_result.session.session_id}; session_fingerprint={session_result.session.fingerprint}",
         output_artifact=session_result.session.fingerprint,
         research_run_fingerprint=record.run_fingerprint,
+        _transition_lock_token=_transition_lock_token,
     )
 
     return ForwardPreparationResult(
@@ -210,3 +358,84 @@ def prepare_holdout_to_forward(
         gate=gate,
         session=session_result.session,
     )
+
+
+def classify_holdout_to_forward_transition(
+    *,
+    events: FactoryJobEventLedger,
+    job_id: str,
+    forward_session_id: str,
+) -> dict[str, object]:
+    """Read-only lifecycle classifier for interrupted Holdout -> Forward work.
+
+    It describes journal evidence only. It never retries a transition and does
+    not claim that a recorded handoff proves runtime execution or production
+    authorization.
+    """
+    if not job_id or not forward_session_id:
+        raise ForwardPreparationError(
+            "transition classification requires job_id and forward_session_id"
+        )
+
+    ledger_events = events.entries()
+    journal_report: dict[str, object] | None = None
+    if events.path is not None:
+        journal_report, persisted = inspect_job_journal_snapshot(events.path)
+        if journal_report.get("status") != "VALID" or persisted is None:
+            return {
+                "status": "JOURNAL_INVALID_OR_UNAVAILABLE_REVIEW_REQUIRED",
+                "automatic_recovery_allowed": False,
+                "manual_reconciliation_required": True,
+                "journal_report": journal_report,
+            }
+        if persisted != ledger_events:
+            return {
+                "status": "JOURNAL_MEMORY_MISMATCH_REVIEW_REQUIRED",
+                "automatic_recovery_allowed": False,
+                "manual_reconciliation_required": True,
+                "journal_report": journal_report,
+            }
+
+    job_events = [event for event in ledger_events if event.job_id == job_id]
+    holdout_completions = [
+        event for event in job_events
+        if event.event_type == "COMPLETED"
+        and event.station == "holdout"
+        and event.phase == "HOLDOUT"
+    ]
+    forward_handoffs = [
+        event for event in job_events
+        if event.event_type == "HANDOFF_ACCEPTED"
+        and event.station == "forward"
+        and event.phase == "FORWARD"
+    ]
+    matching_handoffs = [
+        event for event in forward_handoffs
+        if f"session={forward_session_id};" in (event.detail or "")
+    ]
+
+    if len(holdout_completions) > 1 or len(forward_handoffs) > 1:
+        status = "DUPLICATE_TRANSITION_EVENTS_REVIEW_REQUIRED"
+    elif forward_handoffs and not matching_handoffs:
+        status = "FORWARD_SESSION_MISMATCH_REVIEW_REQUIRED"
+    elif matching_handoffs and not holdout_completions:
+        status = "FORWARD_HANDOFF_WITHOUT_HOLDOUT_COMPLETION_REVIEW_REQUIRED"
+    elif matching_handoffs:
+        status = "HANDOFF_RECORDED_RUNTIME_NOT_PROVEN"
+    elif holdout_completions:
+        status = "HOLDOUT_COMPLETED_FORWARD_TRANSITION_INCOMPLETE_REVIEW_REQUIRED"
+    else:
+        status = "NO_HOLDOUT_TRANSITION_EVIDENCE_REVIEW_REQUIRED"
+
+    return {
+        "status": status,
+        "job_id": job_id,
+        "forward_session_id": forward_session_id,
+        "holdout_completion_sequences": [event.sequence for event in holdout_completions],
+        "forward_handoff_sequences": [event.sequence for event in forward_handoffs],
+        "automatic_recovery_allowed": False,
+        "manual_reconciliation_required": status != "HANDOFF_RECORDED_RUNTIME_NOT_PROVEN",
+        "runtime_execution_proven": False,
+        "production_authorization": False,
+        "journal_report": journal_report,
+    }

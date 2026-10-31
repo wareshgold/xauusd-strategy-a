@@ -25,7 +25,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install test dependency
-        run: python -m pip install pytest
+        run: python -m pip install pytest 'cryptography>=44,<47' 'jsonschema>=4.23,<5'
 
-      - name: Run journal locking and forward preparation tests
-        run: python -m pytest -q tests/test_forward_preparation.py
+      - name: Run journal locking, trust audit, and forward preparation tests
+        run: python -m pytest -q tests/test_forward_preparation.py tests/test_trust_audit.py tests/test_independent_checkpoint_schema.py

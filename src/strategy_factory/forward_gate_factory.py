@@ -11,12 +11,14 @@ from pathlib import Path
 import hashlib
 
 from .handoff import ResearchHandoff, validate_evidence_bound_handoff
+from .manifest import StrategyManifest
 from .holdout_factory import HoldoutFactoryResult
 from .dataset_provenance import DatasetProvenanceStatus
 from .job_events import FactoryJobEvent
-from .models import GateResult, GateStatus
+from .models import GateResult, GateStatus, StrategyPassport
 from .research_record import ResearchRecord
-from .snapshot import ReadinessSnapshot
+from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
+from .source_ledger import SourceResolutionLedger
 from .test_contract import DatasetRole
 
 
@@ -42,6 +44,9 @@ class ForwardGateContext:
     forward_dataset_id: str
     forward_dataset_artifact_id: str
     forward_dataset_content_sha256: str
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
     strategy_revision_frozen: bool = True
     post_holdout_tuning: bool = False
     holdout_result: HoldoutFactoryResult | None = None
@@ -50,11 +55,20 @@ class ForwardGateContext:
     source_event_ledger_byte_size: int | None = None
     source_event_ledger_source: str | None = None
     source_event_ledger_path: str | None = None
+    source_event_ledger_prefix_sha256: str | None = None
+    source_event_ledger_prefix_byte_size: int | None = None
+    source_event_ledger_sequence_boundary: int | None = None
+    source_event_ledger_prefix_source: str | None = None
 
 
 @dataclass(frozen=True)
 class ForwardGateResult:
     gate: GateResult
+    holdout_result: HoldoutFactoryResult | None = None
+    readiness_snapshot: ReadinessSnapshot | None = None
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
 
     @property
     def passed(self) -> bool:
@@ -66,6 +80,39 @@ class ForwardGateFactory:
 
     def prepare(self, context: ForwardGateContext) -> ForwardGateResult:
         context.readiness_snapshot.validate()
+
+        # Do not rely solely on a prior HoldoutFactory result: this is an
+        # independent boundary and must fail closed on blocked readiness.
+        readiness = context.readiness_snapshot.source_readiness
+        if readiness.get("status") != "PASS":
+            raise ForwardGateError(
+                "Forward gate requires source readiness PASS; "
+                f"status={readiness.get('status', 'MISSING')}"
+            )
+        if readiness.get("frozen_geometry_blocked") is not False:
+            raise ForwardGateError(
+                "Forward gate requires frozen geometry to be unblocked"
+            )
+        if readiness.get("canonical_strategy_eligible") is not True:
+            raise ForwardGateError(
+                "Forward gate requires canonical strategy eligibility"
+            )
+
+        eligibility = context.readiness_snapshot.passport_eligibility
+        if eligibility.get("source_status") != "PASS":
+            raise ForwardGateError(
+                "Forward gate requires passport source_status PASS; "
+                f"status={eligibility.get('source_status', 'MISSING')}"
+            )
+        if eligibility.get("frozen_geometry") != "READY":
+            raise ForwardGateError(
+                "Forward gate requires passport frozen_geometry READY"
+            )
+        if eligibility.get("canonical_strategy") != "ELIGIBLE":
+            raise ForwardGateError(
+                "Forward gate requires passport canonical_strategy ELIGIBLE"
+            )
+
         context.handoff.validate()
         context.source_record.validate()
         context.source_event.validate()
@@ -249,6 +296,26 @@ class ForwardGateFactory:
                 "Forward dataset id must differ from the Fresh Holdout dataset id"
             )
 
+        if (
+            context.readiness_manifest is None
+            or context.readiness_passport is None
+            or context.readiness_ledger is None
+        ):
+            raise ForwardGateError(
+                "Forward gate requires authoritative Manifest, Passport, and Source Ledger inputs"
+            )
+        try:
+            validate_readiness_snapshot_against_sources(
+                context.readiness_snapshot,
+                context.readiness_manifest,
+                context.readiness_passport,
+                context.readiness_ledger,
+            )
+        except ValueError as exc:
+            raise ForwardGateError(
+                "Forward readiness snapshot does not match source inputs"
+            ) from exc
+
         evidence = (
             f"holdout_record={context.source_record.run_id};"
             f"holdout_evidence={context.source_record.evidence_id};"
@@ -280,7 +347,18 @@ class ForwardGateFactory:
                 "source_event_ledger_event_count": len(ledger_snapshot),
                 "source_event_ledger_source": ledger_source,
                 "source_event_ledger_path": context.source_event_ledger_path,
+                "source_event_ledger_prefix_sha256": context.source_event_ledger_prefix_sha256,
+                "source_event_ledger_prefix_byte_size": context.source_event_ledger_prefix_byte_size,
+                "source_event_ledger_sequence_boundary": context.source_event_ledger_sequence_boundary,
+                "source_event_ledger_prefix_source": context.source_event_ledger_prefix_source,
                 "production_decision": False,
             },
         )
-        return ForwardGateResult(gate=gate)
+        return ForwardGateResult(
+            gate=gate,
+            holdout_result=holdout_result,
+            readiness_snapshot=context.readiness_snapshot,
+            readiness_manifest=context.readiness_manifest,
+            readiness_passport=context.readiness_passport,
+            readiness_ledger=context.readiness_ledger,
+        )

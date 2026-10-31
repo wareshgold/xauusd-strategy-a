@@ -15,11 +15,14 @@ import hashlib
 from .adapter import ExecutionAdapter
 from .datasets import DatasetArtifact
 from .handoff import ResearchHandoff, validate_evidence_bound_handoff
+from .manifest import StrategyManifest
+from .models import StrategyPassport
 from .job_events import FactoryJobEvent
 from .jobs import ResearchJobSpec
 from .research_record import ResearchRecord
 from .runner import ResearchJobRunner, ResearchJobRunResult
-from .snapshot import ReadinessSnapshot
+from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
+from .source_ledger import SourceResolutionLedger
 from .test_contract import DatasetRole, HistoricalTestSpec
 
 
@@ -40,6 +43,9 @@ class HoldoutFactoryContext:
     holdout_dataset_artifact_id: str
     holdout_dataset_content_sha256: str
     adapter: ExecutionAdapter
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
     # Explicit caller assertion that the Strategy revision is frozen before
     # this holdout run. The factory only verifies its identity against the
     # upstream immutable research record; it never chooses the revision.
@@ -53,6 +59,9 @@ class HoldoutFactoryResult:
     job: ResearchJobSpec
     result: ResearchJobRunResult
     holdout_dataset_content_sha256: str
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
 
 
 class HoldoutFactory:
@@ -95,6 +104,39 @@ class HoldoutFactory:
                 "holdout readiness snapshot fingerprint does not match the upstream research record"
             )
 
+        # Fresh Holdout is downstream of source resolution and frozen geometry.
+        # Fingerprint binding alone proves snapshot identity, not readiness.
+        readiness = context.readiness_snapshot.source_readiness
+        if readiness.get("status") != "PASS":
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires source readiness PASS; "
+                f"status={readiness.get('status', 'MISSING')}"
+            )
+        if readiness.get("frozen_geometry_blocked") is not False:
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires frozen geometry to be unblocked"
+            )
+        if readiness.get("canonical_strategy_eligible") is not True:
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires canonical strategy eligibility"
+            )
+
+        eligibility = context.readiness_snapshot.passport_eligibility
+        if eligibility.get("source_status") != "PASS":
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires passport source_status PASS; "
+                f"status={eligibility.get('source_status', 'MISSING')}"
+            )
+        if eligibility.get("frozen_geometry") != "READY":
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires passport frozen_geometry READY"
+            )
+        if eligibility.get("canonical_strategy") != "ELIGIBLE":
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires passport canonical_strategy ELIGIBLE"
+            )
+
+
         if context.source_record.strategy_id != context.spec.strategy_id:
             raise HoldoutFactoryError(
                 "holdout strategy_id does not match the upstream research record"
@@ -134,6 +176,26 @@ class HoldoutFactory:
             dataset_content_sha256=source_sha,
             dataset_artifact_id=source_artifact_id,
         )
+
+        if (
+            context.readiness_manifest is None
+            or context.readiness_passport is None
+            or context.readiness_ledger is None
+        ):
+            raise HoldoutFactoryError(
+                "Fresh Holdout requires authoritative Manifest, Passport, and Source Ledger inputs"
+            )
+        try:
+            validate_readiness_snapshot_against_sources(
+                context.readiness_snapshot,
+                context.readiness_manifest,
+                context.readiness_passport,
+                context.readiness_ledger,
+            )
+        except ValueError as exc:
+            raise HoldoutFactoryError(
+                "Fresh Holdout readiness snapshot does not match source inputs"
+            ) from exc
 
         artifact_path = Path(context.holdout_dataset_artifact_path)
         if not artifact_path.is_file():
@@ -182,9 +244,15 @@ class HoldoutFactory:
             observed_artifact=artifact,
             evidence_id=context.evidence_id,
             purpose=context.purpose,
+            readiness_manifest=context.readiness_manifest,
+            readiness_passport=context.readiness_passport,
+            readiness_ledger=context.readiness_ledger,
         )
         return HoldoutFactoryResult(
             job=job,
             result=result,
             holdout_dataset_content_sha256=context.holdout_dataset_content_sha256,
+            readiness_manifest=context.readiness_manifest,
+            readiness_passport=context.readiness_passport,
+            readiness_ledger=context.readiness_ledger,
         )

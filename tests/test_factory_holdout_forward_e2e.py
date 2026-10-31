@@ -1,5 +1,14 @@
 from __future__ import annotations
 
+import base64
+import hashlib
+import json
+from pathlib import Path
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
+from strategy_factory import trust_anchor, trust_audit
 from strategy_factory.forward_preparation import prepare_holdout_to_forward
 from strategy_factory.forward_runtime_bridge import run_bound_forward
 from strategy_factory.holdout_factory import HoldoutFactory
@@ -9,7 +18,80 @@ from test_forward_preparation import _kwargs
 from test_holdout_factory import _context
 
 
-def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path):
+def _signed_kwargs(holdout, context, events, tmp_path, monkeypatch):
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    artifact_path = Path(context.holdout_dataset_artifact_path)
+    actual_sha = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    record = holdout.result.record
+    snapshot = holdout.result.snapshot
+
+    private_key = Ed25519PrivateKey.generate()
+    public_key_bytes = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    keyring_path = tmp_path / "runtime-test-keyring.json"
+    keyring_path.write_text(
+        json.dumps({"keys": {"e2e-test-key": base64.b64encode(public_key_bytes).decode("ascii")}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
+    monkeypatch.setattr(trust_audit, "_default_audit_path", lambda: tmp_path / "verification-audit.jsonl")
+
+    boundary_events = events.entries()
+    if events.path is not None and events.path.exists():
+        boundary_bytes = events.path.read_bytes()
+        boundary_source = "persisted_jsonl"
+    else:
+        boundary_bytes = "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
+            for event in boundary_events
+        ).encode("utf-8")
+        boundary_source = "persisted_jsonl" if events.path is not None else "in_memory"
+    boundary_sha = hashlib.sha256(boundary_bytes).hexdigest()
+    envelope = {
+        "schema_version": "SP2L-SIGNED-EVIDENCE-1",
+        "key_id": "e2e-test-key",
+        "issued_at_utc": "2026-10-01T00:00:00Z",
+        "expires_at_utc": "2030-01-01T00:00:00Z",
+        "payload": {
+            "source_event_ledger_prefix_sha256": boundary_sha,
+            "source_event_ledger_prefix_byte_size": len(boundary_bytes),
+            "source_event_ledger_sequence_boundary": len(boundary_events),
+            "source_event_ledger_prefix_source": boundary_source,
+            "source_event_ledger_path": str(events.path) if boundary_source == "persisted_jsonl" else None,
+            "strategy_id": record.strategy_id,
+            "strategy_revision": record.strategy_revision,
+            "manifest_revision": record.manifest_revision,
+            "execution_semantics": record.execution_semantics,
+            "readiness_snapshot_fingerprint": snapshot.fingerprint,
+            "holdout_dataset_id": record.dataset_id,
+            "holdout_artifact_id": holdout.result.run.artifact_id,
+            "holdout_dataset_role": "FRESH_HOLDOUT",
+            "forward_session_id": kwargs["forward_session_id"],
+            "holdout_run_id": holdout.result.run.run_id,
+            "holdout_run_fingerprint": record.run_fingerprint,
+            "holdout_evidence_id": record.evidence_id,
+            "holdout_evidence_fingerprint": record.evidence_fingerprint,
+            "holdout_audit_fingerprint": record.audit_fingerprint,
+            "holdout_record_fingerprint": record.fingerprint,
+            "holdout_dataset_fingerprint": holdout.result.run.dataset_fingerprint,
+            "holdout_artifact_byte_size": artifact_path.stat().st_size,
+            "holdout_artifact_sha256": actual_sha,
+        },
+    }
+    signed_bytes = json.dumps(
+        envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    ).encode("utf-8")
+    envelope["signature_b64"] = base64.b64encode(private_key.sign(signed_bytes)).decode("ascii")
+    envelope_path = tmp_path / "signed-holdout-evidence.json"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+    kwargs["trust_envelope_path"] = str(envelope_path)
+    kwargs["holdout_artifact_path"] = str(artifact_path)
+    return kwargs
+
+
+def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path, monkeypatch):
     runner, context = _context(tmp_path / "holdout")
 
     holdout = HoldoutFactory(runner).prepare_and_run(context)
@@ -19,7 +101,7 @@ def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path):
 
     events = FactoryJobEventLedger(path=None)
     result = prepare_holdout_to_forward(
-        **_kwargs(holdout, context, events)
+        **_signed_kwargs(holdout, context, events, tmp_path, monkeypatch)
     )
 
     assert result.ready is True
@@ -40,14 +122,20 @@ def test_factory_fresh_holdout_to_forward_e2e_preserves_research_lock(tmp_path):
 
 
 
-def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_path):
+def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_path, monkeypatch):
     import hashlib
 
     runner, context = _context(tmp_path / "persisted-journal-e2e")
     holdout = HoldoutFactory(runner).prepare_and_run(context)
     journal_path = tmp_path / "persisted-journal-e2e" / "factory_job_events.jsonl"
     events = FactoryJobEventLedger(path=journal_path)
-    prepared = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    events.append(
+        event_type="QUEUED",
+        job_id="SIGNED-PREFIX-BASELINE",
+        job_fingerprint="a" * 64,
+        detail="signed prefix baseline",
+    )
+    prepared = prepare_holdout_to_forward(**_signed_kwargs(holdout, context, events, tmp_path, monkeypatch))
 
     gate_details = prepared.gate.gate.details
     before_forward = journal_path.read_bytes()
@@ -89,17 +177,63 @@ def test_persisted_journal_forward_e2e_binds_gate_prefix_to_reconciliation(tmp_p
     assert runtime.handoff_fingerprint == prepared.handoff.fingerprint
     assert prepared.session.production_decision is False
     assert [event.event_type for event in events.entries()] == [
+        "QUEUED",
         "COMPLETED",
         "HANDOFF_ACCEPTED",
     ]
 
-def test_factory_full_provenance_chain_reaches_reconciliation(tmp_path):
+
+def test_runtime_rejects_rewritten_signed_journal_prefix_before_runner(tmp_path, monkeypatch):
+    import pytest
+
+    from strategy_factory.forward_runtime_bridge import ForwardRuntimeBridgeError
+
+    runner, context = _context(tmp_path / "tampered-prefix")
+    holdout = HoldoutFactory(runner).prepare_and_run(context)
+    journal_path = tmp_path / "tampered-prefix" / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+    events.append(
+        event_type="QUEUED",
+        job_id="SIGNED-PREFIX-BASELINE",
+        job_fingerprint="a" * 64,
+        detail="signed prefix baseline",
+    )
+    prepared = prepare_holdout_to_forward(
+        **_signed_kwargs(holdout, context, events, tmp_path, monkeypatch)
+    )
+    assert prepared.session.source_event_ledger_sequence_boundary == 1
+
+    calls = []
+    before = journal_path.read_bytes()
+    assert b"signed prefix baseline" in before
+    journal_path.write_bytes(before.replace(b"signed prefix baseline", b"rewritten prefix baseline", 1))
+    mutated = journal_path.read_bytes()
+    assert mutated != before
+
+    with pytest.raises(
+        Exception,
+        match="persisted source event-journal prefix verification failed",
+    ):
+        run_bound_forward(
+            session=prepared.session,
+            run_forward=lambda: calls.append("run"),
+            reconcile=lambda _result: {},
+            started_utc="2026-10-29T02:00:00Z",
+            running_utc="2026-10-29T02:01:00Z",
+            completed_utc="2026-10-29T02:02:00Z",
+        )
+
+    assert calls == []
+    assert journal_path.read_bytes() == mutated
+
+
+def test_factory_full_provenance_chain_reaches_reconciliation(tmp_path, monkeypatch):
     runner, context = _context(tmp_path / "full-chain")
 
     holdout = HoldoutFactory(runner).prepare_and_run(context)
     events = FactoryJobEventLedger(path=None)
     prepared = prepare_holdout_to_forward(
-        **_kwargs(holdout, context, events)
+        **_signed_kwargs(holdout, context, events, tmp_path, monkeypatch)
     )
 
     observed_runner_result = {"observed_positions": 3}
@@ -162,14 +296,14 @@ def test_factory_full_provenance_chain_reaches_reconciliation(tmp_path):
     assert runtime.runner_result is observed_runner_result
 
 
-def test_factory_forward_runtime_stops_before_reconciliation_when_runner_fails(tmp_path):
+def test_factory_forward_runtime_stops_before_reconciliation_when_runner_fails(tmp_path, monkeypatch):
     import pytest
     from strategy_factory.forward_runtime_bridge import ForwardRuntimeBridgeError
 
     runner, context = _context(tmp_path / "runner-failure")
     holdout = HoldoutFactory(runner).prepare_and_run(context)
     events = FactoryJobEventLedger(path=None)
-    prepared = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    prepared = prepare_holdout_to_forward(**_signed_kwargs(holdout, context, events, tmp_path, monkeypatch))
 
     reconciled = False
 
@@ -195,7 +329,7 @@ def test_factory_forward_runtime_stops_before_reconciliation_when_runner_fails(t
 
 
 def test_factory_forward_runtime_rejects_incomplete_reconciliation_without_fabrication(
-    tmp_path,
+    tmp_path, monkeypatch,
 ):
     import pytest
     from strategy_factory.forward_runtime_bridge import ForwardRuntimeBridgeError
@@ -203,7 +337,7 @@ def test_factory_forward_runtime_rejects_incomplete_reconciliation_without_fabri
     runner, context = _context(tmp_path / "reconciliation-failure")
     holdout = HoldoutFactory(runner).prepare_and_run(context)
     events = FactoryJobEventLedger(path=None)
-    prepared = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    prepared = prepare_holdout_to_forward(**_signed_kwargs(holdout, context, events, tmp_path, monkeypatch))
 
     observed_runner_result = {"observed_positions": 2}
 

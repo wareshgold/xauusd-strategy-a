@@ -42,7 +42,7 @@ def run_bound_forward(
     observed MT5 facts only; this bridge does not inspect trades or decide
     whether the strategy is profitable.
     """
-    session.validate()
+    session.validate_for_runtime(audit_phase="runtime_preflight")
     lifecycle = DemoForwardSessionLifecycle(session)
     lifecycle.start(occurred_utc=started_utc)
     lifecycle.assert_frozen_identity(
@@ -52,6 +52,9 @@ def run_bound_forward(
     )
     lifecycle.run(occurred_utc=running_utc)
 
+    # Re-verify the signed envelope and re-hash the actual Holdout artifact
+    # immediately before handing control to the injected runner.
+    session.validate_for_runtime(audit_phase="runtime_dispatch")
     try:
         runner_result = run_forward()
     except Exception as exc:

@@ -1,17 +1,24 @@
 from __future__ import annotations
 
+import base64
 import hashlib
+import json
 import os
 import multiprocessing
 from pathlib import Path
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 import pytest
 
 from strategy_factory.forward_gate_factory import ForwardGateError
 from strategy_factory.forward_preparation import (
     ForwardPreparationError,
     prepare_holdout_to_forward,
+    classify_holdout_to_forward_transition,
 )
 from strategy_factory.job_events import FactoryJobEventLedger, _journal_write_lock
+from strategy_factory import forward_preparation, trust_anchor, trust_audit
 
 from test_holdout_factory import _context
 
@@ -23,6 +30,13 @@ def _lock_and_signal(path, acquired, release):
 
 
 
+def _lock_after_signal(path, started, acquired, release):
+    started.set()
+    with _journal_write_lock(Path(path)):
+        acquired.set()
+        release.wait(5)
+
+
 def _prepared(tmp_path):
     runner, context = _context(tmp_path / "holdout")
     from strategy_factory.holdout_factory import HoldoutFactory
@@ -32,8 +46,8 @@ def _prepared(tmp_path):
     return holdout, context, events
 
 
-def _kwargs(holdout, context, events):
-    return {
+def _kwargs(holdout, context, events, tmp_path):
+    kwargs = {
         "holdout_result": holdout,
         "events": events,
         "manifest_revision": "MANIFEST",
@@ -44,11 +58,99 @@ def _kwargs(holdout, context, events):
         "holdout_dataset_content_sha256": context.holdout_dataset_content_sha256,
         "holdout_dataset_artifact_id": context.holdout_dataset_artifact_id,
     }
+    artifact_path = Path(context.holdout_dataset_artifact_path)
+    actual_sha = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    record = holdout.result.record
+    private_key = Ed25519PrivateKey.generate()
+    public_key_bytes = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+    keyring_path = tmp_path / "test-trust-keyring.json"
+    keyring_path.write_text(
+        json.dumps({"keys": {"preparation-test-key": base64.b64encode(public_key_bytes).decode("ascii")}}),
+        encoding="utf-8",
+    )
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(trust_anchor, "_default_keyring_path", lambda: keyring_path)
+    monkeypatch.setattr(trust_audit, "_default_audit_path", lambda: tmp_path / "verification-audit.jsonl")
+    boundary_events = events.entries()
+    if events.path is not None and events.path.exists():
+        boundary_bytes = events.path.read_bytes()
+        boundary_source = "persisted_jsonl"
+    else:
+        boundary_bytes = "".join(
+            json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")) + "\n"
+            for event in boundary_events
+        ).encode("utf-8")
+        boundary_source = "persisted_jsonl" if events.path is not None else "in_memory"
+    boundary_sha = hashlib.sha256(boundary_bytes).hexdigest()
+    envelope = {
+        "schema_version": "SP2L-SIGNED-EVIDENCE-1",
+        "key_id": "preparation-test-key",
+        "issued_at_utc": "2026-10-01T00:00:00Z",
+        "expires_at_utc": "2030-01-01T00:00:00Z",
+        "payload": {
+            "source_event_ledger_prefix_sha256": boundary_sha,
+            "source_event_ledger_prefix_byte_size": len(boundary_bytes),
+            "source_event_ledger_sequence_boundary": len(boundary_events),
+            "source_event_ledger_prefix_source": boundary_source,
+            "source_event_ledger_path": str(events.path) if boundary_source == "persisted_jsonl" else None,
+            "strategy_id": record.strategy_id,
+            "strategy_revision": record.strategy_revision,
+            "manifest_revision": record.manifest_revision,
+            "execution_semantics": record.execution_semantics,
+            "readiness_snapshot_fingerprint": holdout.result.snapshot.fingerprint,
+            "holdout_dataset_id": record.dataset_id,
+            "holdout_artifact_id": holdout.result.run.artifact_id,
+            "holdout_dataset_role": "FRESH_HOLDOUT",
+            "forward_session_id": kwargs["forward_session_id"],
+            "holdout_run_id": holdout.result.run.run_id,
+            "holdout_run_fingerprint": record.run_fingerprint,
+            "holdout_evidence_id": record.evidence_id,
+            "holdout_evidence_fingerprint": record.evidence_fingerprint,
+            "holdout_audit_fingerprint": record.audit_fingerprint,
+            "holdout_record_fingerprint": record.fingerprint,
+            "holdout_dataset_fingerprint": holdout.result.run.dataset_fingerprint,
+            "holdout_artifact_byte_size": artifact_path.stat().st_size,
+            "holdout_artifact_sha256": actual_sha,
+        },
+    }
+    signed_bytes = json.dumps(
+        envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    ).encode("utf-8")
+    envelope["signature_b64"] = base64.b64encode(private_key.sign(signed_bytes)).decode("ascii")
+    envelope_path = tmp_path / "test-signed-evidence.json"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+    kwargs["trust_envelope_path"] = str(envelope_path)
+    kwargs["holdout_artifact_path"] = str(artifact_path)
+    return kwargs
+
+
+
+def test_signed_source_journal_boundary_mismatch_blocks_before_transition_append(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    events.append(
+        event_type="QUEUED",
+        job_id="JOURNAL-CHANGED-AFTER-SIGNING",
+        job_fingerprint="a" * 64,
+        station="holdout",
+        phase="HOLDOUT",
+        detail="synthetic boundary mutation",
+    )
+    before = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="source_event_ledger_prefix_sha256"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert events.entries() == before
+    assert all(event.event_type != "COMPLETED" for event in events.entries())
 
 
 def test_holdout_to_forward_preparation_passes(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert result.ready is True
     assert result.gate.passed is True
@@ -68,7 +170,7 @@ def test_holdout_to_forward_preparation_passes(tmp_path):
 )
 def test_holdout_to_forward_rejects_invalid_holdout_identity(tmp_path, mutation, message):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     kwargs.update(mutation)
 
     with pytest.raises(ForwardPreparationError, match=message):
@@ -81,7 +183,7 @@ def test_persisted_journal_snapshot_hash_is_bound_to_exact_read_only_bytes(tmp_p
     journal_path = tmp_path / "factory_job_events.jsonl"
     events = FactoryJobEventLedger(path=journal_path)
 
-    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     details = result.gate.gate.details
     assert details["source_event_ledger_source"] == "persisted_jsonl"
@@ -118,9 +220,9 @@ def test_external_journal_corruption_is_rejected_before_any_append(tmp_path):
 
     with pytest.raises(
         ForwardPreparationError,
-        match="failed pre-append integrity validation",
+        match="persisted event journal is not valid",
     ):
-        prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+        prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert journal_path.read_bytes() == corrupted_bytes
     assert events.entries() == baseline_events
@@ -157,7 +259,7 @@ def test_valid_but_divergent_journal_snapshot_is_rejected_before_append(tmp_path
         ForwardPreparationError,
         match="failed pre-append integrity validation",
     ):
-        prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+        prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert journal_path.read_bytes() == divergent_bytes
     assert events.entries() == baseline_events
@@ -343,15 +445,17 @@ def test_corrupt_persisted_journal_fails_closed_without_repair(tmp_path):
 
     events = ExternallyCorruptedLedger(path=journal_path)
     with pytest.raises(ForwardPreparationError, match="persisted event journal is not valid"):
-        prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+        prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert events.corrupted_bytes is not None
     assert journal_path.read_bytes() == events.corrupted_bytes
-    assert [event.event_type for event in events.entries()] == ["COMPLETED"]
+    # Boundary validation now rejects corruption before appending the
+    # Holdout COMPLETED event; the corrupted journal is left untouched.
+    assert [event.event_type for event in events.entries()] == []
 
 def test_holdout_to_forward_rejects_same_forward_dataset(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     kwargs["forward_dataset_id"] = holdout.result.record.dataset_id
 
     with pytest.raises(ForwardGateError, match="Forward dataset id must differ"):
@@ -369,7 +473,7 @@ def test_holdout_to_forward_rejects_frozen_boundary_breaks(
     tmp_path, field, value, message
 ):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     kwargs[field] = value
 
     with pytest.raises(ForwardPreparationError, match=message):
@@ -378,7 +482,7 @@ def test_holdout_to_forward_rejects_frozen_boundary_breaks(
 
 def test_holdout_to_forward_rejects_manifest_drift(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     kwargs["manifest_revision"] = "MANIFEST-DRIFT"
 
     with pytest.raises(ForwardPreparationError, match="manifest_revision"):
@@ -387,7 +491,7 @@ def test_holdout_to_forward_rejects_manifest_drift(tmp_path):
 
 def test_holdout_to_forward_preserves_handoff_identity_into_session(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert result.session.handoff_fingerprint == result.handoff.fingerprint
     assert result.session.strategy_id == holdout.result.record.strategy_id
@@ -425,7 +529,7 @@ def test_holdout_to_forward_rejects_forward_dataset_reuse(
     tmp_path, field, value, message
 ):
     holdout, context, events = _prepared(tmp_path)
-    kwargs = _kwargs(holdout, context, events)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
     if field == "forward_dataset_content_sha256":
         kwargs[field] = context.holdout_dataset_content_sha256
     else:
@@ -452,13 +556,13 @@ def test_holdout_to_forward_rejects_strategy_revision_drift_in_source_record(
 
     with pytest.raises(ValueError, match="record fingerprint mismatch"):
         prepare_holdout_to_forward(
-            **_kwargs(tampered_result, context, events)
+            **_kwargs(tampered_result, context, events, tmp_path)
         )
 
 
 def test_holdout_to_forward_never_authorizes_production(tmp_path):
     holdout, context, events = _prepared(tmp_path)
-    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events))
+    result = prepare_holdout_to_forward(**_kwargs(holdout, context, events, tmp_path))
 
     assert result.session.production_decision is False
     assert result.gate.gate.details["production_decision"] is False
@@ -466,3 +570,358 @@ def test_holdout_to_forward_never_authorizes_production(tmp_path):
         event.station != "production"
         for event in events.entries()
     )
+
+
+
+def test_consumed_holdout_envelope_recovers_when_first_journal_append_did_not_mutate(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    original_append = events.append
+    calls = {"count": 0}
+
+    def fail_first_append_without_mutation(**event_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise OSError("synthetic transient append failure before mutation")
+        return original_append(**event_kwargs)
+
+    events.append = fail_first_append_without_mutation
+    before = events.entries()
+    with pytest.raises(ForwardPreparationError, match="manual reconciliation required"):
+        prepare_holdout_to_forward(**kwargs)
+    assert events.entries() == before
+
+    recovered = prepare_holdout_to_forward(**kwargs)
+    assert recovered.session.session_id == kwargs["forward_session_id"]
+    assert [event.event_type for event in events.entries()] == [
+        "COMPLETED",
+        "HANDOFF_ACCEPTED",
+    ]
+    audit = json.loads((tmp_path / "verification-audit.jsonl").read_text(encoding="utf-8").splitlines()[1])
+    assert audit["phase"] == "holdout_to_forward_recovery"
+    assert audit["session_id"] == kwargs["forward_session_id"]
+
+
+def test_consumed_holdout_envelope_does_not_recover_after_journal_boundary_changes(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    original_append = events.append
+
+    def fail_first_append_without_mutation(**event_kwargs):
+        raise OSError("synthetic transient append failure before mutation")
+
+    events.append = fail_first_append_without_mutation
+    with pytest.raises(ForwardPreparationError, match="manual reconciliation required"):
+        prepare_holdout_to_forward(**kwargs)
+    events.append = original_append
+    events.append(
+        event_type="QUEUED",
+        job_id="unexpected-after-consumption",
+        job_fingerprint="b" * 64,
+        detail="journal changed after consumption",
+    )
+    changed = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="binding mismatch: source_event_ledger_prefix_sha256|binding mismatch: source_event_ledger_prefix_byte_size|binding mismatch: source_event_ledger_sequence_boundary"):
+        prepare_holdout_to_forward(**kwargs)
+    assert events.entries() == changed
+
+
+def test_missing_signed_evidence_blocks_holdout_to_forward_before_event_append(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    kwargs.pop("trust_envelope_path")
+    before = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="requires signed evidence"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert events.entries() == before
+
+
+def test_tampered_signed_evidence_blocks_holdout_to_forward_before_event_append(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    envelope_path = Path(kwargs["trust_envelope_path"])
+    envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
+    envelope["payload"]["strategy_revision"] = "TAMPERED-REVISION"
+    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+    before = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="signed evidence verification/audit failed"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert events.entries() == before
+
+
+def test_signed_holdout_evidence_cannot_be_replayed_for_another_forward_session(tmp_path):
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    kwargs["forward_session_id"] = "DIFFERENT-FORWARD-SESSION"
+    before = events.entries()
+
+    with pytest.raises(ForwardPreparationError, match="binding mismatch: forward_session_id"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert events.entries() == before
+
+
+def test_holdout_forward_transition_classifier_is_read_only_and_distinguishes_states(tmp_path):
+    job_fingerprint = "a" * 64
+    events = FactoryJobEventLedger(path=None)
+
+    empty = classify_holdout_to_forward_transition(
+        events=events, job_id="job-1", forward_session_id="session-1",
+    )
+    assert empty["status"] == "NO_HOLDOUT_TRANSITION_EVIDENCE_REVIEW_REQUIRED"
+    assert empty["automatic_recovery_allowed"] is False
+    assert events.entries() == ()
+
+    events.append(
+        event_type="COMPLETED", job_id="job-1",
+        job_fingerprint=job_fingerprint, station="holdout", phase="HOLDOUT",
+        detail="Holdout completed",
+    )
+    incomplete = classify_holdout_to_forward_transition(
+        events=events, job_id="job-1", forward_session_id="session-1",
+    )
+    assert incomplete["status"] == "HOLDOUT_COMPLETED_FORWARD_TRANSITION_INCOMPLETE_REVIEW_REQUIRED"
+    assert incomplete["manual_reconciliation_required"] is True
+
+    events.append(
+        event_type="HANDOFF_ACCEPTED", job_id="job-1",
+        job_fingerprint=job_fingerprint, station="forward", phase="FORWARD",
+        detail="handoff accepted; session=session-1; session_fingerprint=" + "b" * 64,
+    )
+    recorded = classify_holdout_to_forward_transition(
+        events=events, job_id="job-1", forward_session_id="session-1",
+    )
+    assert recorded["status"] == "HANDOFF_RECORDED_RUNTIME_NOT_PROVEN"
+    assert recorded["runtime_execution_proven"] is False
+    assert recorded["production_authorization"] is False
+    assert len(events.entries()) == 2
+
+
+def test_holdout_forward_transition_classifier_flags_session_mismatch_and_duplicates(tmp_path):
+    job_fingerprint = "a" * 64
+    events = FactoryJobEventLedger(path=None)
+    events.append(
+        event_type="COMPLETED", job_id="job-2",
+        job_fingerprint=job_fingerprint, station="holdout", phase="HOLDOUT",
+        detail="Holdout completed",
+    )
+    events.append(
+        event_type="HANDOFF_ACCEPTED", job_id="job-2",
+        job_fingerprint=job_fingerprint, station="forward", phase="FORWARD",
+        detail="handoff accepted; session=other-session; session_fingerprint=" + "b" * 64,
+    )
+    mismatch = classify_holdout_to_forward_transition(
+        events=events, job_id="job-2", forward_session_id="session-2",
+    )
+    assert mismatch["status"] == "FORWARD_SESSION_MISMATCH_REVIEW_REQUIRED"
+    assert mismatch["automatic_recovery_allowed"] is False
+
+    events.append(
+        event_type="HANDOFF_ACCEPTED", job_id="job-2",
+        job_fingerprint=job_fingerprint, station="forward", phase="FORWARD",
+        detail="handoff accepted; session=session-2; session_fingerprint=" + "c" * 64,
+    )
+    duplicate = classify_holdout_to_forward_transition(
+        events=events, job_id="job-2", forward_session_id="session-2",
+    )
+    assert duplicate["status"] == "DUPLICATE_TRANSITION_EVENTS_REVIEW_REQUIRED"
+    assert duplicate["manual_reconciliation_required"] is True
+
+
+def test_external_journal_append_after_audit_consumption_fails_closed(tmp_path, monkeypatch):
+    """Expose the non-atomic audit/journal boundary without permitting unsafe recovery."""
+    holdout, context, _unused_events = _prepared(tmp_path)
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    # Model a writer that bypasses the shared-lock contract by modifying the
+    # journal file directly. Cooperating writers are serialized by the outer
+    # transition lock; this adversarial case must still fail closed on drift.
+    competing_writer = FactoryJobEventLedger(path=None)
+    original_audit = forward_preparation.append_verification_audit
+    competing_write = {"performed": False}
+
+    def consume_then_competing_writer(*args, **audit_kwargs):
+        result = original_audit(*args, **audit_kwargs)
+        event = competing_writer.append(
+            event_type="QUEUED",
+            job_id="CONCURRENT-WRITER",
+            job_fingerprint="d" * 64,
+            station="holdout",
+            phase="HOLDOUT",
+            detail="injected after one-time audit consumption",
+        )
+        with journal_path.open("ab") as handle:
+            handle.write(
+                json.dumps(event.as_dict(), ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                + b"\n"
+            )
+            handle.flush()
+            os.fsync(handle.fileno())
+        competing_write["performed"] = True
+        return result
+
+    monkeypatch.setattr(
+        forward_preparation,
+        "append_verification_audit",
+        consume_then_competing_writer,
+    )
+
+    with pytest.raises(
+        ForwardPreparationError,
+        match="manual reconciliation required",
+    ):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert competing_write["performed"] is True
+    persisted_report, persisted_events = __import__(
+        "strategy_factory.job_events", fromlist=["inspect_job_journal_snapshot"]
+    ).inspect_job_journal_snapshot(journal_path)
+    assert persisted_report["status"] == "VALID"
+    assert persisted_events is not None
+    assert [event.job_id for event in persisted_events] == ["CONCURRENT-WRITER"]
+    assert events.entries() == ()
+    audit_entries = [
+        json.loads(line)
+        for line in (tmp_path / "verification-audit.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(audit_entries) == 1
+    assert audit_entries[0]["phase"] == "holdout_to_forward"
+    # The envelope is consumed but no Holdout COMPLETED or Forward HANDOFF_ACCEPTED
+    # event is written; recovery must remain manual because the journal boundary changed.
+
+
+def test_holdout_forward_transition_holds_shared_journal_lock_until_return(tmp_path, monkeypatch):
+    holdout, context, _unused_events = _prepared(tmp_path)
+    journal_path = tmp_path / "factory_job_events.jsonl"
+    events = FactoryJobEventLedger(path=journal_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    original_audit = forward_preparation.append_verification_audit
+    process_context = multiprocessing.get_context("spawn")
+    started = process_context.Event()
+    acquired = process_context.Event()
+    release = process_context.Event()
+    writer = process_context.Process(
+        target=_lock_after_signal,
+        args=(str(journal_path), started, acquired, release),
+    )
+
+    def start_competing_writer_after_consumption(*args, **audit_kwargs):
+        result = original_audit(*args, **audit_kwargs)
+        writer.start()
+        assert started.wait(5), "competing writer did not start"
+        assert not acquired.wait(0.25), (
+            "cooperating writer acquired the journal lock during Holdout -> Forward"
+        )
+        return result
+
+    monkeypatch.setattr(
+        forward_preparation,
+        "append_verification_audit",
+        start_competing_writer_after_consumption,
+    )
+    try:
+        result = prepare_holdout_to_forward(**kwargs)
+        assert result.ready is True
+        assert acquired.wait(5), "cooperating writer did not acquire lock after transition"
+    finally:
+        release.set()
+        if writer.is_alive():
+            writer.join(5)
+        if writer.is_alive():
+            writer.terminate()
+            writer.join(2)
+
+    assert writer.exitcode == 0
+    # A lock-only writer does not mutate the journal. The actual append tests
+    # separately verify that stale ledgers fail closed after acquiring it.
+    persisted_report, persisted_events = __import__(
+        "strategy_factory.job_events", fromlist=["inspect_job_journal_snapshot"]
+    ).inspect_job_journal_snapshot(journal_path)
+    assert persisted_report["status"] == "VALID"
+    assert persisted_events is not None
+    assert [event.event_type for event in persisted_events] == ["COMPLETED", "HANDOFF_ACCEPTED"]
+
+
+@pytest.mark.parametrize("failure_stage", ["gate", "session"])
+def test_failure_after_holdout_completion_requires_manual_reconciliation(
+    tmp_path, monkeypatch, failure_stage
+):
+    """A durable COMPLETED event makes retry unsafe when later preparation fails."""
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+
+    def injected_failure(*_args, **_kwargs):
+        raise RuntimeError(f"injected {failure_stage} preparation failure")
+
+    if failure_stage == "gate":
+        monkeypatch.setattr(
+            forward_preparation.ForwardGateFactory, "prepare", injected_failure
+        )
+    else:
+        monkeypatch.setattr(
+            forward_preparation.DemoForwardSessionFactory, "prepare", injected_failure
+        )
+
+    with pytest.raises(RuntimeError, match=f"injected {failure_stage} preparation failure"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert [event.event_type for event in events.entries()] == ["COMPLETED"]
+    state = classify_holdout_to_forward_transition(
+        events=events,
+        job_id=holdout.job.job_id,
+        forward_session_id=kwargs["forward_session_id"],
+    )
+    assert state["status"] == (
+        "HOLDOUT_COMPLETED_FORWARD_TRANSITION_INCOMPLETE_REVIEW_REQUIRED"
+    )
+    assert state["automatic_recovery_allowed"] is False
+    assert state["manual_reconciliation_required"] is True
+    audit_entries = [
+        json.loads(line)
+        for line in (tmp_path / "verification-audit.jsonl").read_text(
+            encoding="utf-8"
+        ).splitlines()
+    ]
+    assert [entry["phase"] for entry in audit_entries] == ["holdout_to_forward"]
+
+
+def test_failure_after_durable_handoff_event_is_not_misread_as_runtime_success(
+    tmp_path,
+):
+    """Model a lost return/ack after HANDOFF_ACCEPTED reached the journal."""
+    holdout, context, events = _prepared(tmp_path)
+    kwargs = _kwargs(holdout, context, events, tmp_path)
+    original_append = events.append
+
+    def append_then_lose_ack(**event_kwargs):
+        event = original_append(**event_kwargs)
+        if event_kwargs.get("event_type") == "HANDOFF_ACCEPTED":
+            raise RuntimeError("injected lost acknowledgement after durable append")
+        return event
+
+    events.append = append_then_lose_ack
+    with pytest.raises(RuntimeError, match="lost acknowledgement"):
+        prepare_holdout_to_forward(**kwargs)
+
+    assert [event.event_type for event in events.entries()] == [
+        "COMPLETED",
+        "HANDOFF_ACCEPTED",
+    ]
+    state = classify_holdout_to_forward_transition(
+        events=events,
+        job_id=holdout.job.job_id,
+        forward_session_id=kwargs["forward_session_id"],
+    )
+    assert state["status"] == "HANDOFF_RECORDED_RUNTIME_NOT_PROVEN"
+    assert state["runtime_execution_proven"] is False
+    assert state["production_authorization"] is False
+    assert state["automatic_recovery_allowed"] is False
+    # Journal transition is complete; runtime execution and caller
+    # acknowledgement remain unproven.
+    assert state["manual_reconciliation_required"] is False

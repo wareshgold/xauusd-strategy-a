@@ -52,11 +52,14 @@ def _fixture(tmp_path: Path):
     from strategy_factory.datasets import DatasetArtifact, DatasetRegistry
     from strategy_factory.evidence import EvidenceLedger
     from strategy_factory.metrics import ResearchMetrics
+    from strategy_factory.manifest import EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule
+    from strategy_factory.models import StrategyPassport
     from strategy_factory.jobs import ResearchJobSpec
     from strategy_factory.research_record import ResearchRecordLedger
     from strategy_factory.runner import ResearchJobRunner
     from strategy_factory.runs import ResearchRunLedger
-    from strategy_factory.snapshot import ReadinessSnapshot
+    from strategy_factory.snapshot import ReadinessSnapshot, build_readiness_snapshot
+    from strategy_factory.source_ledger import SourceResolutionLedger
     from strategy_factory.usage import DatasetUsageLedger
     from strategy_factory.test_contract import ExecutionSemantics, HistoricalTestSpec, TestDataset
 
@@ -97,28 +100,28 @@ def _fixture(tmp_path: Path):
     )
     registry.register(dataset, sha, lock=True, artifact=artifact)
 
-    payload = ReadinessSnapshot._fingerprint_payload(
-        snapshot_revision="SYNTH",
+    readiness_manifest = StrategyManifest(
         strategy_id="SP2L-A",
-        manifest_revision="MANIFEST",
-        manifest_fingerprint="1" * 64,
-        passport_fingerprint="2" * 64,
-        source_ledger={"entries": [], "resolution_state": "SYNTHETIC_ONLY"},
-        source_readiness={"status": "SYNTHETIC_ONLY"},
-        passport_eligibility={"status": "SYNTHETIC_ONLY"},
+        revision="MANIFEST",
+        rules=[StrategyRule(
+            rule_id="SYNTHETIC-TEST-RULE",
+            name="Synthetic test-only rule",
+            authority=RuleAuthority.CANONICAL,
+            evidence_status=EvidenceStatus.SOURCE_CONFIRMED,
+        )],
     )
-    snapshot = ReadinessSnapshot(
-        snapshot_revision="SYNTH",
+    readiness_passport = StrategyPassport(
         strategy_id="SP2L-A",
-        manifest_revision="MANIFEST",
-        manifest_fingerprint="1" * 64,
-        passport_fingerprint="2" * 64,
-        source_ledger={"entries": [], "resolution_state": "SYNTHETIC_ONLY"},
-        source_readiness={"status": "SYNTHETIC_ONLY"},
-        passport_eligibility={"status": "SYNTHETIC_ONLY"},
-        fingerprint=hashlib.sha256(payload).hexdigest(),
+        source_revision="MANIFEST",
+        geometry_revision="SYNTHETIC-TEST-GEOMETRY",
+        code_revision="SYNTHETIC-TEST-CODE",
+        data_revision="SYNTHETIC-TEST-DATA",
+        execution_model="BAR_CLOSE_RESEARCH_ONLY",
+        parameter_set={"synthetic_test_only": True},
+        canonical=True,
     )
-
+    readiness_ledger = SourceResolutionLedger()
+    snapshot = build_readiness_snapshot(readiness_manifest, readiness_passport, readiness_ledger)
     job = ResearchJobSpec.from_test_spec(
         spec,
         manifest_revision="MANIFEST",
@@ -156,6 +159,7 @@ def _fixture(tmp_path: Path):
     # context surface solely for this synthetic fixture.
     record = result.record
     object.__setattr__(record, "_test_snapshot", snapshot)
+    object.__setattr__(snapshot, "_test_readiness_sources", (readiness_manifest, readiness_passport, readiness_ledger))
 
     events = FactoryJobEventLedger(path=None)
     event = events.append(
@@ -213,6 +217,9 @@ def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
         forward_dataset_id="MT5-FORWARD-001",
         forward_dataset_artifact_id="MT5-FORWARD-ARTIFACT-001",
         forward_dataset_content_sha256="d" * 64,
+        readiness_manifest=readiness_manifest,
+        readiness_passport=readiness_passport,
+        readiness_ledger=readiness_ledger,
         holdout_result=holdout_result,
                 source_event_ledger_snapshot=ledger_snapshot,
                 **_ledger_evidence(ledger_snapshot),
@@ -220,6 +227,42 @@ def test_forward_gate_accepts_frozen_fresh_holdout(tmp_path):
     result = ForwardGateFactory().prepare(context)
     assert result.passed
     assert result.gate.details["production_decision"] is False
+
+
+def test_forward_gate_rejects_correctly_fingerprinted_blocked_readiness(tmp_path):
+    snapshot, record, event, handoff, holdout_result, ledger_snapshot = _fixture(tmp_path)
+    blocked = _resign_snapshot(
+        snapshot,
+        source_readiness={
+            "status": "BLOCKED",
+            "frozen_geometry_blocked": True,
+            "canonical_strategy_eligible": False,
+            "production_eligible": False,
+        },
+        passport_eligibility={
+            "source_status": "BLOCKED",
+            "frozen_geometry": "BLOCKED",
+            "canonical_strategy": "NOT_ELIGIBLE",
+            "production": "NOT_ELIGIBLE",
+            "blocking_reasons": ["SOURCE_READINESS_BLOCKED"],
+        },
+    )
+    context = ForwardGateContext(
+        manifest_revision="MANIFEST",
+        readiness_snapshot=blocked,
+        handoff=handoff,
+        source_record=record,
+        source_event=event,
+        forward_session_id="FWD-20261007-001",
+        forward_dataset_id="MT5-FORWARD-001",
+        forward_dataset_artifact_id="MT5-FORWARD-ARTIFACT-001",
+        forward_dataset_content_sha256="d" * 64,
+        holdout_result=holdout_result,
+        source_event_ledger_snapshot=ledger_snapshot,
+        **_ledger_evidence(ledger_snapshot),
+    )
+    with pytest.raises(ForwardGateError, match="source readiness PASS"):
+        ForwardGateFactory().prepare(context)
 
 
 def test_forward_gate_rejects_wrong_route(tmp_path):
@@ -563,3 +606,27 @@ def test_handoff_rejects_duplicate_completed_events_for_source_station(tmp_path)
         )
 
     assert events.entries() == before
+
+
+def test_forward_gate_rejects_readiness_snapshot_mismatched_to_source_inputs(tmp_path):
+    snapshot, record, event, handoff, holdout_result, ledger_snapshot = _fixture(tmp_path)
+    manifest, passport, ledger = snapshot._test_readiness_sources
+    context = ForwardGateContext(
+        manifest_revision="MANIFEST",
+        readiness_snapshot=snapshot,
+        handoff=handoff,
+        source_record=record,
+        source_event=event,
+        forward_session_id="FWD-20261007-001",
+        forward_dataset_id="MT5-FORWARD-001",
+        forward_dataset_artifact_id="MT5-FORWARD-ARTIFACT-001",
+        forward_dataset_content_sha256="d" * 64,
+        readiness_manifest=replace(manifest, revision="MANIFEST-DRIFT"),
+        readiness_passport=passport,
+        readiness_ledger=ledger,
+        holdout_result=holdout_result,
+        source_event_ledger_snapshot=ledger_snapshot,
+        **_ledger_evidence(ledger_snapshot),
+    )
+    with pytest.raises(ForwardGateError, match="does not match source inputs"):
+        ForwardGateFactory().prepare(context)

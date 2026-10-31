@@ -14,11 +14,14 @@ from strategy_factory.holdout_factory import (
 )
 from strategy_factory.job_events import FactoryJobEventLedger
 from strategy_factory.metrics import ResearchMetrics
+from strategy_factory.manifest import EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule
+from strategy_factory.models import StrategyPassport
 from strategy_factory.research_record import ResearchRecordLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner
-from strategy_factory.snapshot import ReadinessSnapshot
+from strategy_factory.snapshot import ReadinessSnapshot, build_readiness_snapshot
+from strategy_factory.source_ledger import SourceResolutionLedger
 from strategy_factory.test_contract import (
     DatasetRole,
     ExecutionSemantics,
@@ -28,10 +31,59 @@ from strategy_factory.test_contract import (
 from strategy_factory.usage import DatasetUsageLedger
 
 
-def _snapshot(spec):
+def _readiness_sources(spec):
+    manifest = StrategyManifest(
+        strategy_id=spec.strategy_id,
+        revision="MANIFEST",
+        rules=[StrategyRule(
+            rule_id="SYNTHETIC-TEST-RULE",
+            name="Synthetic test-only rule",
+            authority=RuleAuthority.CANONICAL,
+            evidence_status=EvidenceStatus.SOURCE_CONFIRMED,
+        )],
+    )
+    passport = StrategyPassport(
+        strategy_id=spec.strategy_id,
+        source_revision="MANIFEST",
+        geometry_revision="SYNTHETIC-TEST-GEOMETRY",
+        code_revision="SYNTHETIC-TEST-CODE",
+        data_revision="SYNTHETIC-TEST-DATA",
+        execution_model="BAR_CLOSE_RESEARCH_ONLY",
+        parameter_set={"synthetic_test_only": True},
+        canonical=True,
+    )
+    return manifest, passport, SourceResolutionLedger()
+
+
+def _snapshot(spec, *, status="PASS"):
+    if status == "PASS":
+        manifest, passport, ledger = _readiness_sources(spec)
+        return build_readiness_snapshot(manifest, passport, ledger)
     ledger = {"entries": [], "resolution_state": "SYNTHETIC_ONLY"}
-    readiness = {"status": "SYNTHETIC_ONLY"}
-    eligibility = {"status": "SYNTHETIC_ONLY"}
+    blocked = status != "PASS"
+    readiness = {
+        "status": status,
+        "gate": {
+            "status": status,
+            "blocking_questions": ["Q-REQUIRED"] if blocked else [],
+            "unresolved_questions": [],
+            "missing_questions": ["Q-REQUIRED"] if blocked else [],
+        },
+        "total_questions": 1,
+        "confirmed_questions": 0 if blocked else 1,
+        "unresolved_questions": 0,
+        "missing_questions": 1 if blocked else 0,
+        "frozen_geometry_blocked": blocked,
+        "canonical_strategy_eligible": not blocked,
+        "production_eligible": False,
+    }
+    eligibility = {
+        "source_status": status,
+        "frozen_geometry": "BLOCKED" if blocked else "READY",
+        "canonical_strategy": "NOT_ELIGIBLE" if blocked else "ELIGIBLE",
+        "production": "NOT_ELIGIBLE",
+        "blocking_reasons": ["SOURCE_READINESS_BLOCKED"] if blocked else [],
+    }
     payload = ReadinessSnapshot._fingerprint_payload(
         snapshot_revision="SYNTH",
         strategy_id=spec.strategy_id,
@@ -72,7 +124,7 @@ class FakeAdapter:
         )
 
 
-def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="REV-TEST"):
+def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="REV-TEST", readiness_status="PASS"):
     tmp_path.mkdir(parents=True, exist_ok=True)
     raw_source = b'{"schema_version":1,"research_only":true,"bars":[1]}'
     raw_holdout = b'{"schema_version":1,"research_only":true,"bars":[2]}'
@@ -148,7 +200,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         job=upstream_job,
         spec=source_spec,
         adapter=FakeAdapter(),
-        snapshot=_snapshot(source_spec),
+        snapshot=_snapshot(source_spec, status=readiness_status),
         observed_content_sha256=source_sha,
         observed_artifact=registry.get(source_dataset.dataset_id).artifact,
         evidence_id="ROBUSTNESS-EVIDENCE-001",
@@ -188,7 +240,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         spec=holdout_spec,
         manifest_revision="MANIFEST",
         job_id="HOLDOUT-001",
-        readiness_snapshot=_snapshot(holdout_spec),
+        readiness_snapshot=_snapshot(holdout_spec, status=readiness_status),
         handoff=handoff,
         source_record=upstream_result.record,
         source_event=event,
@@ -196,6 +248,9 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         holdout_dataset_artifact_id=holdout_artifact_id,
         holdout_dataset_content_sha256=holdout_sha,
         adapter=FakeAdapter(),
+        readiness_manifest=_readiness_sources(holdout_spec)[0],
+        readiness_passport=_readiness_sources(holdout_spec)[1],
+        readiness_ledger=_readiness_sources(holdout_spec)[2],
         strategy_revision_frozen=frozen,
     )
 
@@ -205,6 +260,27 @@ def test_holdout_factory_accepts_fresh_immutable_dataset(tmp_path):
     result = HoldoutFactory(runner).prepare_and_run(context)
     assert result.result.accepted is True
     assert result.result.dataset_provenance.status.value == "PASS"
+
+
+def test_holdout_factory_rejects_correctly_bound_blocked_readiness(tmp_path):
+    runner, context = _context(tmp_path, readiness_status="BLOCKED")
+
+    class NeverExecuteAdapter:
+        engine_revision = "MUST-NOT-RUN"
+
+        def execute(self, spec):
+            raise AssertionError("blocked Fresh Holdout must not execute the adapter")
+
+    context = replace(context, adapter=NeverExecuteAdapter())
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "source readiness PASS" in str(exc)
+        assert "BLOCKED" in str(exc)
+    else:
+        raise AssertionError(
+            "correctly fingerprinted BLOCKED readiness must be rejected"
+        )
 
 
 def test_holdout_factory_rejects_reused_dataset(tmp_path):
@@ -354,3 +430,15 @@ def test_holdout_factory_is_deterministic(tmp_path):
 
     assert result1.job.as_dict() == result2.job.as_dict()
     assert result1.job.fingerprint == result2.job.fingerprint
+
+
+def test_holdout_factory_rejects_readiness_snapshot_mismatched_to_source_inputs(tmp_path):
+    runner, context = _context(tmp_path)
+    drifted_manifest = replace(context.readiness_manifest, revision="MANIFEST-DRIFT")
+    context = replace(context, readiness_manifest=drifted_manifest)
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "does not match source inputs" in str(exc)
+    else:
+        raise AssertionError("Holdout must recompute readiness against supplied source inputs")
