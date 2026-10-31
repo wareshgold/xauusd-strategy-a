@@ -38,8 +38,6 @@ def validate_evidence_acceptance(
             raise ResearchRunError("schema-v2 evidence is missing dataset_content_sha256")
         if evidence.result.get("dataset_content_sha256") != receipt.dataset_content_sha256:
             raise ResearchRunError("evidence dataset_content_sha256 does not match execution receipt")
-    elif evidence.result_revision != "RECEIPT_METRICS_V1":
-        raise ResearchRunError("schema-v1 receipt requires RECEIPT_METRICS_V1 evidence")
 
 
 def evidence_acceptance_gate(
