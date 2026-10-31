@@ -5,6 +5,11 @@ import hashlib
 
 from strategy_factory.adapter import build_execution_receipt
 from strategy_factory.datasets import DatasetArtifact, DatasetRegistry
+from strategy_factory.fresh_holdout_authority import AuthorityVerification
+from strategy_factory.manifest import (
+    EvidenceRecord, EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule,
+)
+from strategy_factory.models import StrategyPassport
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.handoff import build_research_handoff
 from strategy_factory.holdout_factory import (
@@ -18,7 +23,8 @@ from strategy_factory.research_record import ResearchRecordLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner
-from strategy_factory.snapshot import ReadinessSnapshot
+from strategy_factory.snapshot import ReadinessSnapshot, build_readiness_snapshot
+from strategy_factory.source_ledger import SourceResolutionLedger
 from strategy_factory.test_contract import (
     DatasetRole,
     ExecutionSemantics,
@@ -53,6 +59,16 @@ def _snapshot(spec):
         passport_eligibility=eligibility,
         fingerprint=hashlib.sha256(payload).hexdigest(),
     )
+
+
+class TestOnlyAuthorityVerifier:
+    """Synthetic-only verifier for orchestration tests; never production authority."""
+
+    def verify_source_authority(self, manifest, ledger):
+        return AuthorityVerification(True, "test-only:source-authority")
+
+    def verify_frozen_geometry(self, passport, manifest):
+        return AuthorityVerification(True, "test-only:geometry-freeze")
 
 
 class FakeAdapter:
@@ -127,6 +143,39 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         parameters={"research_only": True},
     )
 
+    readiness_manifest = StrategyManifest(
+        strategy_id="SP2L-A",
+        revision="MANIFEST",
+        rules=[StrategyRule(
+            rule_id="TEST-RULE",
+            name="Synthetic orchestration fixture",
+            authority=RuleAuthority.CANONICAL,
+            evidence_status=EvidenceStatus.SOURCE_CONFIRMED,
+            evidence_ids=("TEST-EVIDENCE",),
+        )],
+        evidence=[EvidenceRecord(
+            evidence_id="TEST-EVIDENCE",
+            rule_id="TEST-RULE",
+            status=EvidenceStatus.SOURCE_CONFIRMED,
+            statement="Synthetic test fixture only",
+            source_reference="TEST-ONLY",
+        )],
+    )
+    readiness_passport = StrategyPassport(
+        strategy_id="SP2L-A",
+        source_revision="MANIFEST",
+        geometry_revision="TEST-GEOMETRY-REVISION",
+        code_revision="TEST-CODE-REVISION",
+        data_revision="TEST-DATA-REVISION",
+        execution_model="TEST_ONLY",
+        parameter_set={"test_only": True},
+        canonical=True,
+    )
+    readiness_ledger = SourceResolutionLedger()
+    readiness_snapshot = build_readiness_snapshot(
+        readiness_manifest, readiness_passport, readiness_ledger
+    )
+
     registry = DatasetRegistry()
     usage = DatasetUsageLedger(registry)
     runs = ResearchRunLedger(registry, usage)
@@ -155,7 +204,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         job=upstream_job,
         spec=source_spec,
         adapter=FakeAdapter(source_path),
-        snapshot=_snapshot(source_spec),
+        snapshot=readiness_snapshot,
         observed_content_sha256=source_sha,
         observed_artifact=registry.get(source_dataset.dataset_id).artifact,
         evidence_id="ROBUSTNESS-EVIDENCE-001",
@@ -189,13 +238,18 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
     runs2 = ResearchRunLedger(registry2, usage2)
     evidence2 = EvidenceLedger(runs2)
     records2 = ResearchRecordLedger()
-    runner = ResearchJobRunner(runs=runs2, evidence=evidence2, records=records2)
+    runner = ResearchJobRunner(
+        runs=runs2,
+        evidence=evidence2,
+        records=records2,
+        fresh_holdout_authority_verifier=TestOnlyAuthorityVerifier(),
+    )
 
     return runner, HoldoutFactoryContext(
         spec=holdout_spec,
         manifest_revision="MANIFEST",
         job_id="HOLDOUT-001",
-        readiness_snapshot=_snapshot(holdout_spec),
+        readiness_snapshot=readiness_snapshot,
         handoff=handoff,
         source_record=upstream_result.record,
         source_event=event,
@@ -203,12 +257,16 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         holdout_dataset_artifact_id=holdout_artifact_id,
         holdout_dataset_content_sha256=holdout_sha,
         adapter=FakeAdapter(holdout_path),
+        readiness_manifest=readiness_manifest,
+        readiness_passport=readiness_passport,
+        readiness_ledger=readiness_ledger,
         strategy_revision_frozen=frozen,
     )
 
 
 def test_holdout_factory_blocks_without_trusted_authority_verifier(tmp_path):
     runner, context = _context(tmp_path)
+    runner.fresh_holdout_authority_verifier = None
     try:
         HoldoutFactory(runner).prepare_and_run(context)
     except HoldoutFactoryError as exc:
@@ -358,6 +416,7 @@ def test_holdout_factory_rejects_snapshot_not_bound_to_upstream_record(tmp_path)
 
 def test_holdout_factory_does_not_register_or_execute_without_authority(tmp_path):
     runner, context = _context(tmp_path)
+    runner.fresh_holdout_authority_verifier = None
     try:
         HoldoutFactory(runner).prepare_and_run(context)
     except HoldoutFactoryError:
