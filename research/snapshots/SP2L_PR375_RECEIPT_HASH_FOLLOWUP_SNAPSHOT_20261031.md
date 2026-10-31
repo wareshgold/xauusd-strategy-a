@@ -49,3 +49,18 @@ An intermediate CI run identified two Validation Factory fixture failures after 
 The identified standalone-gate dataset identity gap is corrected in code and covered by focused tests/CI. This is not merge approval. Human review and explicit user authorization remain required before merge.
 
 This snapshot does not establish statistical edge, canonical SP2L geometry, untouched validation, Fresh Holdout completion, or production readiness.
+
+
+## Final follow-up verification — corrected run-purpose binding
+
+A final trust-boundary review identified that a caller-supplied synthetic purpose also needed to match the immutable `ResearchRunIdentity.purpose`. The shared Acceptance/Provenance policy now enforces this binding; a synthetic adapter cannot obtain the null exception merely by passing a purpose string that differs from the registered run. A dedicated negative Acceptance test covers this case.
+
+- Final PR head: `9f02552d30e4869c47daac0e59060b82c6d6348a`
+- Factory Research Tests: **PASS — 160 passed in 1.82s** (run 41195675387)
+- SP2L forensic deterministic checks: **PASS** (run 41195675404)
+- Factory Journal Lock Cross-Platform Tests: **PASS — Ubuntu + Windows** (run 41195675419)
+- Final PR state: OPEN, Ready for review, mergeable, not merged
+- Final PR size: 66 commits, 30 changed files, +1083/-115
+- Full repository suite remains unrun; independent human approval remains outstanding.
+
+This final verification supersedes the earlier `e1fe340...` / 159-test values above.
