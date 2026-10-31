@@ -65,6 +65,10 @@ def require_verified_authority(
         raise FreshHoldoutAuthorityError(
             "Fresh Holdout authority inputs do not match the frozen manifest revision"
         )
+    if passport.canonical is not True:
+        raise FreshHoldoutAuthorityError(
+            "Fresh Holdout requires a canonical passport explicitly approved by the trusted authority"
+        )
 
     try:
         source = verifier.verify_source_authority(manifest, ledger)
