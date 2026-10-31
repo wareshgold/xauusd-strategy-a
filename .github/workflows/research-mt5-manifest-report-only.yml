@@ -87,23 +87,15 @@ jobs:
 
       - name: Audit July-August-September legacy monthly datasets (read-only)
         run: |
-          set +e
           mkdir -p artifacts/reports
-          overall=0
           for month in 07 08 09; do
-            python scripts/audit_legacy_mt5_manifest_inventory.py \\
-              --manifest "data/mt5-acquisition/xauusd-ecn-m1-2026-${month}.manifest.json" \\
-              --raw-csv "data/mt5-acquisition/xauusd-ecn-m1-2026-${month}.csv" \\
-              --output "artifacts/reports/mt5-legacy-monthly-2026-${month}-audit.json"
-            rc=$?
-            if [ "$rc" -ne 0 ]; then overall=1; fi
+            python scripts/audit_legacy_mt5_manifest_inventory.py --manifest "data/mt5-acquisition/xauusd-ecn-m1-2026-${month}.manifest.json" --raw-csv "data/mt5-acquisition/xauusd-ecn-m1-2026-${month}.csv" --output "artifacts/reports/mt5-legacy-monthly-2026-${month}-audit.json"
           done
-          echo "MONTHLY_LEGACY_AUDIT_LOOP_EXIT=$overall"
 
       - name: Upload acceptance report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mt5-manifest-acceptance-report
-          path: artifacts/reports/mt5-manifest-*.json
+          path: artifacts/reports/*.json
           if-no-files-found: warn
