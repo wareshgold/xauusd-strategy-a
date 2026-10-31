@@ -29,6 +29,17 @@ def validate_evidence_acceptance(
         raise ResearchRunError("evidence run fingerprint does not match research run")
     if receipt.metrics != evidence.metrics:
         raise ResearchRunError("execution receipt metrics do not match evidence metrics")
+    if receipt.receipt_schema_version == 2:
+        if evidence.result_revision != "RECEIPT_METRICS_V2":
+            raise ResearchRunError("schema-v2 receipt requires RECEIPT_METRICS_V2 evidence")
+        if evidence.result.get("receipt_schema_version") != 2:
+            raise ResearchRunError("evidence receipt_schema_version does not match execution receipt")
+        if "dataset_content_sha256" not in evidence.result:
+            raise ResearchRunError("schema-v2 evidence is missing dataset_content_sha256")
+        if evidence.result.get("dataset_content_sha256") != receipt.dataset_content_sha256:
+            raise ResearchRunError("evidence dataset_content_sha256 does not match execution receipt")
+    elif evidence.result_revision != "RECEIPT_METRICS_V1":
+        raise ResearchRunError("schema-v1 receipt requires RECEIPT_METRICS_V1 evidence")
 
 
 def evidence_acceptance_gate(
