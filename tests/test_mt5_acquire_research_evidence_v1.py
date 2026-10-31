@@ -136,3 +136,13 @@ def test_manifest_schema_is_versioned_and_distinct_from_legacy_template():
     from scripts.mt5_acquire_research_evidence_v1 import MANIFEST_SCHEMA_ID, MANIFEST_SCHEMA_VERSION
     assert MANIFEST_SCHEMA_ID == "sp2l.mt5-research-evidence"
     assert MANIFEST_SCHEMA_VERSION == "1.0.0"
+
+def test_requested_bar_count_is_inclusive_calendar_minutes_not_market_bars():
+    from datetime import datetime, timezone
+    from scripts.mt5_acquire_research_evidence_v1 import requested_calendar_minute_slots
+
+    start = datetime(2026, 7, 3, 20, 59, tzinfo=timezone.utc)
+    end = datetime(2026, 7, 6, 0, 1, tzinfo=timezone.utc)
+    # This is only the inclusive number of calendar-minute slots; no market
+    # session calendar is consulted and no expected trading-bar count is inferred.
+    assert requested_calendar_minute_slots(start, end) == 3063
