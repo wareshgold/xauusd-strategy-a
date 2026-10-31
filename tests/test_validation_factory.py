@@ -34,6 +34,9 @@ from strategy_factory.validation_factory import (
 class FakeAdapter:
     engine_revision = "TEST-VALIDATION-1"
 
+    def __init__(self, dataset_sha: str):
+        self.dataset_sha = dataset_sha
+
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
         metrics = ResearchMetrics(
             trades=2,
@@ -55,7 +58,7 @@ class FakeAdapter:
             input_fingerprint="a" * 64,
             metrics=metrics,
             receipt_schema_version=2,
-            dataset_content_sha256=discovery_sha,
+            dataset_content_sha256=self.dataset_sha,
         )
 
 
@@ -273,7 +276,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         validation_dataset_artifact_path=dataset_path,
         validation_dataset_artifact_id=validation_artifact_id,
         validation_dataset_content_sha256=validation_sha,
-        adapter=FakeAdapter(),
+        adapter=FakeAdapter(validation_sha),
     )
     return runner, context
 
