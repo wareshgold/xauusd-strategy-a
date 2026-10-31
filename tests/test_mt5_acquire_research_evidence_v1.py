@@ -56,9 +56,8 @@ def test_gaps_and_duplicates_detection():
         {"timestamp": "2026-07-01T01:03:00Z", "open": "1.5", "high": "2", "low": "1", "close": "1.8", "tick_volume": "10"},
     ]
     inv2, gaps2, chron2 = audit_rows(rows2)
-    assert chron2 is False
-    assert any(g.get("kind") == "unclassified_gap" for g in gaps2)
-    assert chron2 is True  # a positive time interval is chronological even when >1 minute
+    assert chron2 is True
+    assert any(g.get("kind") == "unclassified_gap" for g in gaps2)  # a positive time interval is chronological even when >1 minute
     # bad ohlc
     rows3 = [
         {"timestamp": "2026-07-01T01:00:00Z", "open": "1", "high": "0.5", "low": "0.5", "close": "1.5", "tick_volume": "10"},
