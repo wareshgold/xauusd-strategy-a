@@ -157,6 +157,8 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         engine_revision="TEST-STABILITY-1",
         input_fingerprint="b" * 64,
         metrics=metrics,
+        receipt_schema_version=2,
+        dataset_content_sha256=discovery_sha,
     )
     evidence_bundle = evidence.record(
         __import__("strategy_factory.evidence", fromlist=["EvidenceBundle"]).EvidenceBundle(
