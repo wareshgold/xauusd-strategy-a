@@ -58,12 +58,15 @@ def _snapshot(spec):
 class FakeAdapter:
     engine_revision = "HOLDOUT-TEST"
 
+    def __init__(self, input_fingerprint):
+        self.input_fingerprint = input_fingerprint
+
     def execute(self, spec):
         return build_execution_receipt(
             execution_id="HOLDOUT-EXEC",
             spec=spec,
             engine_revision=self.engine_revision,
-            input_fingerprint="a" * 64,
+            input_fingerprint=self.input_fingerprint,
             metrics=ResearchMetrics(
                 trades=2, decisive_trades=2, wins=1, losses=1, ambiguous=0,
                 win_rate=0.5, net_r=0.0, profit_factor=1.0,
@@ -147,7 +150,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
     upstream_result = upstream_runner.run(
         job=upstream_job,
         spec=source_spec,
-        adapter=FakeAdapter(),
+        adapter=FakeAdapter(source_sha),
         snapshot=_snapshot(source_spec),
         observed_content_sha256=source_sha,
         observed_artifact=registry.get(source_dataset.dataset_id).artifact,
@@ -195,7 +198,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         holdout_dataset_artifact_path=holdout_path,
         holdout_dataset_artifact_id=holdout_artifact_id,
         holdout_dataset_content_sha256=holdout_sha,
-        adapter=FakeAdapter(),
+        adapter=FakeAdapter(holdout_sha),
         strategy_revision_frozen=frozen,
     )
 
