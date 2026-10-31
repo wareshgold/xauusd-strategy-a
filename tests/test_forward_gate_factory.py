@@ -129,6 +129,7 @@ def _fixture(tmp_path: Path):
     class Adapter:
         engine_revision = "HOLDOUT-TEST"
         def execute(self, spec):
+            observed_sha = hashlib.sha256(path.read_bytes()).hexdigest()
             return build_execution_receipt(
                 execution_id="EXEC-001",
                 spec=spec,
@@ -139,6 +140,8 @@ def _fixture(tmp_path: Path):
                     win_rate=0.5, net_r=0.0, profit_factor=1.0,
                     max_drawdown_r=1.0, gross_profit_r=1.0, gross_loss_r=-1.0,
                 ),
+                receipt_schema_version=2,
+                dataset_content_sha256=observed_sha,
             )
 
     runner = ResearchJobRunner(runs=runs, evidence=evidence, records=records)
