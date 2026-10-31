@@ -69,3 +69,30 @@ def test_execution_gate_fails_semantics_mismatch():
     spec,run,receipt=setup()
     bad=ExecutionReceipt("EX1","T1","S1",ExecutionSemantics.BAR_CLOSE_RESEARCH,"ENGINE1","a"*64,True,metric())
     assert execution_gate(spec=spec,run=run,receipt=bad).status is GateStatus.FAIL
+
+
+def test_schema_v1_serialization_is_explicit_and_omits_dataset_digest():
+    _spec, _run, receipt = setup()
+    payload = receipt.as_dict()
+    assert payload["receipt_schema_version"] == 1
+    assert "dataset_content_sha256" not in payload
+
+
+def test_schema_v2_synthetic_serialization_keeps_explicit_null():
+    _spec, _run, receipt = setup()
+    v2 = __import__("dataclasses").replace(
+        receipt, receipt_schema_version=2, dataset_content_sha256=None
+    )
+    payload = v2.as_dict()
+    assert payload["receipt_schema_version"] == 2
+    assert "dataset_content_sha256" in payload
+    assert payload["dataset_content_sha256"] is None
+
+
+def test_schema_v2_rejects_malformed_dataset_digest():
+    _spec, _run, receipt = setup()
+    bad = __import__("dataclasses").replace(
+        receipt, receipt_schema_version=2, dataset_content_sha256="A" * 64
+    )
+    with pytest.raises(ExecutionContractError, match="lowercase SHA-256"):
+        bad.validate()
