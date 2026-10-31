@@ -98,9 +98,12 @@ def run_job(runner, job, spec, adapter):
 class FakeAdapter:
     engine_revision = "ENGINE-1"
 
-    def __init__(self, *, metrics=METRICS, execution_id="EX-1"):
+    def __init__(
+        self, *, metrics=METRICS, execution_id="EX-1", input_fingerprint="a" * 64
+    ):
         self.metrics = metrics
         self.execution_id = execution_id
+        self.input_fingerprint = input_fingerprint
         self.calls = 0
 
     def execute(self, spec):
@@ -109,7 +112,7 @@ class FakeAdapter:
             execution_id=self.execution_id,
             spec=spec,
             engine_revision=self.engine_revision,
-            input_fingerprint="b" * 64,
+            input_fingerprint=self.input_fingerprint,
             metrics=self.metrics,
         )
 
@@ -180,6 +183,20 @@ def test_runner_rejects_dataset_fingerprint_mismatch():
 
     with pytest.raises(ResearchJobRunnerError):
         run_job(runner, bad_job, spec, FakeAdapter())
+
+
+def test_runner_rejects_adapter_input_fingerprint_mismatch():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+    adapter = FakeAdapter(input_fingerprint="b" * 64)
+
+    with pytest.raises(
+        ResearchJobRunnerError,
+        match="execution adapter failed",
+    ):
+        run_job(runner, job, spec, adapter)
+
+    assert adapter.calls == 1
 
 
 def test_runner_rejects_adapter_identity_mismatch():

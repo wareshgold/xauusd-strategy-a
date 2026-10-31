@@ -143,6 +143,10 @@ class ResearchJobRunner:
         try:
             receipt = adapter.execute(spec)
             validate_adapter_output(spec=spec, receipt=receipt)
+            if receipt.input_fingerprint.lower() != observed_content_sha256.lower():
+                raise ResearchJobRunnerError(
+                    "adapter input fingerprint does not match observed dataset content SHA-256"
+                )
         except Exception as exc:
             raise ResearchJobRunnerError("execution adapter failed") from exc
 
