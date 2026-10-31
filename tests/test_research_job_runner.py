@@ -111,6 +111,8 @@ class FakeAdapter:
             engine_revision=self.engine_revision,
             input_fingerprint="b" * 64,
             metrics=self.metrics,
+            receipt_schema_version=2,
+            dataset_content_sha256="a" * 64,
         )
 
 
