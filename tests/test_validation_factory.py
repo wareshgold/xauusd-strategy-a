@@ -213,6 +213,8 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         ).evaluate_dataset_provenance(
             source_spec, dataset_registry, discovery_sha, observed_artifact=source_artifact
         ),
+        adapter=object(),
+        purpose="STABILITY",
     )
     source_record = __import__(
         "strategy_factory.research_record",
