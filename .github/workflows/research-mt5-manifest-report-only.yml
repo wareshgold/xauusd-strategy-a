@@ -1,0 +1,71 @@
+name: Research - MT5 Manifest Report Only
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: Repository-relative path to the v1 evidence manifest
+        required: true
+        type: string
+      raw_csv_path:
+        description: Repository-relative path to the exact raw CSV named by the manifest
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  report-only:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate paths and generate report (no replay or trading)
+        env:
+          MANIFEST_PATH: ${{ inputs.manifest_path }}
+          RAW_CSV_PATH: ${{ inputs.raw_csv_path }}
+        run: |
+          python - <<'PY'
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          root = Path.cwd().resolve()
+          manifest = (root / os.environ["MANIFEST_PATH"]).resolve()
+          raw_csv = (root / os.environ["RAW_CSV_PATH"]).resolve()
+          for label, path in (("manifest", manifest), ("raw CSV", raw_csv)):
+              if root not in path.parents or not path.is_file():
+                  raise SystemExit(f"{label} path must be an existing repository file")
+          report = root / "artifacts" / "reports" / "mt5-manifest-acceptance-report.json"
+          report.parent.mkdir(parents=True, exist_ok=True)
+          command = [
+              sys.executable,
+              "scripts/validate_mt5_research_manifest_v1.py",
+              "--manifest", str(manifest),
+              "--raw-csv", str(raw_csv),
+              "--output", str(report),
+          ]
+          completed = subprocess.run(command, check=False)
+          if not report.is_file():
+              raise SystemExit("validator did not produce the required report")
+          if completed.returncode not in (0, 2):
+              raise SystemExit(f"unexpected validator exit code: {completed.returncode}")
+          print(f"REPORT_ONLY_COMPLETE={report.relative_to(root)}")
+          print(f"VALIDATOR_EXIT_CODE={completed.returncode}")
+          PY
+
+      - name: Upload acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mt5-manifest-acceptance-report
+          path: artifacts/reports/mt5-manifest-acceptance-report.json
+          if-no-files-found: warn
