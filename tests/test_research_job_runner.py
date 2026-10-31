@@ -265,3 +265,41 @@ def test_runner_never_requires_strategy_geometry():
     assert result.accepted
     assert result.run.strategy_id == "SP2L-A"
     assert result.run.parameters == {"tp_r": 2}
+
+
+def test_runner_rejects_legacy_v1_receipt_as_unverified():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+    class LegacyAdapter(FakeAdapter):
+        def execute(self, source_spec):
+            return build_execution_receipt(
+                execution_id=self.execution_id,
+                spec=source_spec,
+                engine_revision=self.engine_revision,
+                input_fingerprint="b" * 64,
+                metrics=self.metrics,
+            )
+    with pytest.raises(ResearchJobRunnerError, match="LEGACY_UNVERIFIED"):
+        run_job(runner, job, spec, LegacyAdapter())
+
+
+def test_runner_rejects_dataset_digest_mismatch():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+    class MismatchedAdapter(FakeAdapter):
+        def execute(self, source_spec):
+            receipt = super().execute(source_spec)
+            return receipt.__class__(
+                receipt.execution_id,
+                receipt.test_id,
+                receipt.strategy_revision,
+                receipt.execution_semantics,
+                receipt.engine_revision,
+                receipt.input_fingerprint,
+                receipt.completed,
+                receipt.metrics,
+                receipt_schema_version=2,
+                dataset_content_sha256="b" * 64,
+            )
+    with pytest.raises(ResearchJobRunnerError, match="dataset_content_sha256"):
+        run_job(runner, job, spec, MismatchedAdapter())
