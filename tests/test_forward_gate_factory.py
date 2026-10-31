@@ -51,12 +51,18 @@ def _fixture(tmp_path: Path):
     from strategy_factory.adapter import build_execution_receipt
     from strategy_factory.datasets import DatasetArtifact, DatasetRegistry
     from strategy_factory.evidence import EvidenceLedger
+    from strategy_factory.fresh_holdout_authority import AuthorityVerification
+    from strategy_factory.manifest import (
+        EvidenceRecord, EvidenceStatus, RuleAuthority, StrategyManifest, StrategyRule,
+    )
+    from strategy_factory.models import StrategyPassport
     from strategy_factory.metrics import ResearchMetrics
     from strategy_factory.jobs import ResearchJobSpec
     from strategy_factory.research_record import ResearchRecordLedger
     from strategy_factory.runner import ResearchJobRunner
     from strategy_factory.runs import ResearchRunLedger
-    from strategy_factory.snapshot import ReadinessSnapshot
+    from strategy_factory.snapshot import build_readiness_snapshot
+    from strategy_factory.source_ledger import SourceResolutionLedger
     from strategy_factory.usage import DatasetUsageLedger
     from strategy_factory.test_contract import ExecutionSemantics, HistoricalTestSpec, TestDataset
 
@@ -97,27 +103,46 @@ def _fixture(tmp_path: Path):
     )
     registry.register(dataset, sha, lock=True, artifact=artifact)
 
-    payload = ReadinessSnapshot._fingerprint_payload(
-        snapshot_revision="SYNTH",
+    readiness_manifest = StrategyManifest(
         strategy_id="SP2L-A",
-        manifest_revision="MANIFEST",
-        manifest_fingerprint="1" * 64,
-        passport_fingerprint="2" * 64,
-        source_ledger={"entries": [], "resolution_state": "SYNTHETIC_ONLY"},
-        source_readiness={"status": "SYNTHETIC_ONLY"},
-        passport_eligibility={"status": "SYNTHETIC_ONLY"},
+        revision="MANIFEST",
+        rules=[StrategyRule(
+            rule_id="TEST-RULE",
+            name="Synthetic forward-gate fixture",
+            authority=RuleAuthority.CANONICAL,
+            evidence_status=EvidenceStatus.SOURCE_CONFIRMED,
+            evidence_ids=("TEST-EVIDENCE",),
+        )],
+        evidence=[EvidenceRecord(
+            evidence_id="TEST-EVIDENCE",
+            rule_id="TEST-RULE",
+            status=EvidenceStatus.SOURCE_CONFIRMED,
+            statement="Synthetic test fixture only",
+            source_reference="TEST-ONLY",
+        )],
     )
-    snapshot = ReadinessSnapshot(
-        snapshot_revision="SYNTH",
+    readiness_passport = StrategyPassport(
         strategy_id="SP2L-A",
-        manifest_revision="MANIFEST",
-        manifest_fingerprint="1" * 64,
-        passport_fingerprint="2" * 64,
-        source_ledger={"entries": [], "resolution_state": "SYNTHETIC_ONLY"},
-        source_readiness={"status": "SYNTHETIC_ONLY"},
-        passport_eligibility={"status": "SYNTHETIC_ONLY"},
-        fingerprint=hashlib.sha256(payload).hexdigest(),
+        source_revision="MANIFEST",
+        geometry_revision="TEST-GEOMETRY-REVISION",
+        code_revision="TEST-CODE-REVISION",
+        data_revision="TEST-DATA-REVISION",
+        execution_model="TEST_ONLY",
+        parameter_set={"test_only": True},
+        canonical=True,
     )
+    readiness_ledger = SourceResolutionLedger()
+    snapshot = build_readiness_snapshot(
+        readiness_manifest, readiness_passport, readiness_ledger
+    )
+
+    class TestOnlyAuthorityVerifier:
+        def verify_source_authority(self, manifest, ledger):
+            return AuthorityVerification(True, "test-only:source-authority")
+
+        def verify_frozen_geometry(self, passport, manifest):
+            return AuthorityVerification(True, "test-only:geometry-freeze")
+
 
     job = ResearchJobSpec.from_test_spec(
         spec,
@@ -144,7 +169,12 @@ def _fixture(tmp_path: Path):
                 dataset_content_sha256=observed_sha,
             )
 
-    runner = ResearchJobRunner(runs=runs, evidence=evidence, records=records)
+    runner = ResearchJobRunner(
+        runs=runs,
+        evidence=evidence,
+        records=records,
+        fresh_holdout_authority_verifier=TestOnlyAuthorityVerifier(),
+    )
     result = runner.run(
         job=job,
         spec=spec,
@@ -154,6 +184,9 @@ def _fixture(tmp_path: Path):
         observed_artifact=artifact,
         evidence_id="HOLDOUT-EVIDENCE-001",
         purpose="FRESH_HOLDOUT",
+        readiness_manifest=readiness_manifest,
+        readiness_passport=readiness_passport,
+        readiness_ledger=readiness_ledger,
     )
     # Keep the snapshot available without expanding the public production
     # context surface solely for this synthetic fixture.
