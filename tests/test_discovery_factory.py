@@ -116,6 +116,8 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
                     gross_profit_r=1.0,
                     gross_loss_r=-1.0,
                 ),
+                receipt_schema_version=2,
+                dataset_content_sha256=sha,
             )
 
     monkeypatch.setattr(module, "MT5M1ArtifactExporter", FakeExporter)
