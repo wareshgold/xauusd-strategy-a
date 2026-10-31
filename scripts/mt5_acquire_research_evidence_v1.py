@@ -45,39 +45,61 @@ def sha256_file(path: Path) -> str:
 
 
 def audit_rows(rows: list[dict]) -> tuple[list[dict], list[dict], bool]:
+    """Audit row validity and timestamp order without assuming a trading calendar.
+
+    Positive intervals longer than one minute are observed discontinuities, not
+    proven missing trading bars: weekends, holidays and session breaks are not
+    classified here.
+    """
     invalid = []
-    gaps = []
+    discontinuities = []
     chronological = True
     for i, row in enumerate(rows):
         try:
             ts = datetime.fromisoformat(row["timestamp"].replace("Z", "+00:00"))
             nums = [float(row[k]) for k in ("open", "high", "low", "close", "tick_volume")]
-            if ts.tzinfo is None or any(x != x for x in nums):
+            if ts.tzinfo is None or any(not __import__("math").isfinite(x) for x in nums):
                 invalid.append({"index": i, "reason": "invalid_timestamp_or_number"})
             h = float(row["high"])
             l = float(row["low"])
             o = float(row["open"])
-            c = float(row["close"])
-            if not (h >= max(o, c) and l <= min(o, c) and h >= l):
+            close = float(row["close"])
+            if not (h >= max(o, close) and l <= min(o, close) and h >= l):
                 invalid.append({"index": i, "reason": "invalid_ohlc"})
         except Exception:
             invalid.append({"index": i, "reason": "malformed_row"})
         if i > 0:
-            prev = datetime.fromisoformat(rows[i - 1]["timestamp"].replace("Z", "+00:00"))
-            cur = datetime.fromisoformat(rows[i]["timestamp"].replace("Z", "+00:00"))
-            diff_m = (cur - prev).total_seconds() / 60.0
-            if diff_m != 1.0:
+            try:
+                prev = datetime.fromisoformat(rows[i - 1]["timestamp"].replace("Z", "+00:00"))
+                cur = datetime.fromisoformat(rows[i]["timestamp"].replace("Z", "+00:00"))
+                diff_m = (cur - prev).total_seconds() / 60.0
+            except Exception:
+                continue
+            if diff_m <= 0:
                 chronological = False
-                gaps.append(
-                    {
-                        "from": rows[i - 1]["timestamp"],
-                        "to": rows[i]["timestamp"],
-                        "minutes": diff_m,
-                        "missing_bars": max(0, int(round(diff_m)) - 1) if diff_m > 1 else 0,
-                        "kind": "gap" if diff_m > 1 else "non_chronological",
-                    }
-                )
-    return invalid, gaps, chronological
+                discontinuities.append({
+                    "from": rows[i - 1]["timestamp"],
+                    "to": rows[i]["timestamp"],
+                    "interval_minutes": diff_m,
+                    "kind": "duplicate_timestamp" if diff_m == 0 else "non_chronological",
+                })
+            elif diff_m > 1:
+                discontinuities.append({
+                    "from": rows[i - 1]["timestamp"],
+                    "to": rows[i]["timestamp"],
+                    "interval_minutes": diff_m,
+                    "kind": "unclassified_gap",
+                })
+    return invalid, discontinuities, chronological
+
+
+def determine_audit_status(invalid: list[dict], discontinuities: list[dict]) -> str:
+    """Do not pass data with unresolved gaps or fail it merely for calendar breaks."""
+    if invalid or any(x["kind"] in {"duplicate_timestamp", "non_chronological"} for x in discontinuities):
+        return "AUDITED_FAIL"
+    if discontinuities:
+        return "AUDITED_UNCLASSIFIED_COVERAGE"
+    return "AUDITED_PASS"
 
 
 def main() -> int:
@@ -179,13 +201,13 @@ def main() -> int:
             "actual_last_utc": last,
             "requested_bar_count": int((end - start).total_seconds() // 60) + 1,
             "actual_bar_count": len(rows),
-            "gaps": gaps,
-            "gap_count": len(gaps),
+            "timestamp_discontinuities": gaps,
+            "discontinuity_count": len(gaps),
             "invalid_rows": invalid,
             "invalid_row_count": len(invalid),
             "chronological": chronological,
-            "ordering_anomalies": [g for g in gaps if g.get("kind") == "non_chronological"],
-            "missing_periods": [g for g in gaps if g.get("kind") == "gap"],
+            "ordering_anomalies": [g for g in gaps if g.get("kind") in {"duplicate_timestamp", "non_chronological"}],
+            "unclassified_gaps": [g for g in gaps if g.get("kind") == "unclassified_gap"],
             "duplicates": [],
             "retrieval_timestamp_utc": retrieval_time,
             "raw": {"path": str(raw_csv), "sha256": raw_hash},
@@ -196,12 +218,12 @@ def main() -> int:
                 "no_overwrite_enforced",
                 "session_calendar_applicability_not_asserted",
             ],
-            "audit_status": "AUDITED_PASS" if (len(invalid) == 0 and chronological and len(gaps) == 0) else "AUDITED_FAIL",
+            "audit_status": determine_audit_status(invalid, gaps),
         }
         manifest_path = evidence_dir / "manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({"evidence_dir": str(evidence_dir), "manifest": manifest}, indent=2))
-        return 0 if manifest["audit_status"] == "AUDITED_PASS" else 2
+        return 0 if manifest["audit_status"] in {"AUDITED_PASS", "AUDITED_UNCLASSIFIED_COVERAGE"} else 2
     finally:
         mt5.shutdown()
 
