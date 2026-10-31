@@ -1,4 +1,5 @@
 import hashlib
+from pathlib import Path
 
 import strategy_factory.discovery_factory as module
 from strategy_factory.adapter import build_execution_receipt
@@ -102,7 +103,8 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
                 execution_id="DISCOVERY-TEST-EXEC",
                 spec=declared_spec,
                 engine_revision=self.engine_revision,
-                input_fingerprint=sha,
+                dataset_sha = hashlib.sha256(Path(self.kwargs["bars_artifact_path"]).read_bytes()).hexdigest()
+                input_fingerprint = hashlib.sha256(f"FAKE-DISCOVERY:{declared_spec.test_id}:{dataset_sha}".encode()).hexdigest()
                 metrics=ResearchMetrics(
                     trades=2,
                     decisive_trades=2,
@@ -117,7 +119,7 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
                     gross_loss_r=-1.0,
                 ),
                 receipt_schema_version=2,
-                dataset_content_sha256=sha,
+                dataset_content_sha256=dataset_sha,
             )
 
     monkeypatch.setattr(module, "MT5M1ArtifactExporter", FakeExporter)
