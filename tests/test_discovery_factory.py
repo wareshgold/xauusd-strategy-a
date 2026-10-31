@@ -99,12 +99,17 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
             self.kwargs = kwargs
 
         def execute(self, declared_spec):
+            dataset_sha = hashlib.sha256(
+                Path(self.kwargs["bars_artifact_path"]).read_bytes()
+            ).hexdigest()
+            input_fingerprint = hashlib.sha256(
+                f"FAKE-DISCOVERY:{declared_spec.test_id}:{dataset_sha}".encode()
+            ).hexdigest()
             return build_execution_receipt(
                 execution_id="DISCOVERY-TEST-EXEC",
                 spec=declared_spec,
                 engine_revision=self.engine_revision,
-                dataset_sha = hashlib.sha256(Path(self.kwargs["bars_artifact_path"]).read_bytes()).hexdigest()
-                input_fingerprint = hashlib.sha256(f"FAKE-DISCOVERY:{declared_spec.test_id}:{dataset_sha}".encode()).hexdigest()
+                input_fingerprint=input_fingerprint,
                 metrics=ResearchMetrics(
                     trades=2,
                     decisive_trades=2,
