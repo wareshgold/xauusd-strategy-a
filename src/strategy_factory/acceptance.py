@@ -12,6 +12,7 @@ from .test_contract import DatasetRole, HistoricalTestSpec
 def _validate_receipt_dataset_identity(
     *,
     spec: HistoricalTestSpec,
+    run: ResearchRunIdentity,
     receipt: ExecutionReceipt,
     dataset_provenance: DatasetProvenanceResult | None,
     adapter: object | None,
@@ -28,6 +29,8 @@ def _validate_receipt_dataset_identity(
         raise ResearchRunError("dataset provenance is not PASS")
     if dataset_provenance.dataset_id != spec.dataset.dataset_id:
         raise ResearchRunError("dataset provenance dataset_id does not match test specification")
+    if run.purpose != purpose:
+        raise ResearchRunError("adapter purpose does not match registered research run purpose")
 
     from .synthetic import SyntheticExecutionAdapter
 
@@ -69,6 +72,7 @@ def validate_evidence_acceptance(
     validate_execution_binding(spec=spec, run=run, receipt=receipt)
     _validate_receipt_dataset_identity(
         spec=spec,
+        run=run,
         receipt=receipt,
         dataset_provenance=dataset_provenance,
         adapter=adapter,
