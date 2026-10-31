@@ -11,7 +11,7 @@ a dependency for order placement or runner availability.
 
 ## Initial namespace
 
-- Bucket: \`sp2l-factory-evidence\`
+- Bucket: \`sp2l-forward-evidence\`
 - Prefix: \`forward-test/\`
 - Proposed object layout: \`forward-test/<run_id>/<UTC timestamp>_<filename>\`
 - Each run should carry a manifest with SHA-256, byte length, source-relative path,
