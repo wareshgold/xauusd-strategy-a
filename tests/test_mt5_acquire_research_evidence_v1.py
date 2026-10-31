@@ -57,7 +57,8 @@ def test_gaps_and_duplicates_detection():
     ]
     inv2, gaps2, chron2 = audit_rows(rows2)
     assert chron2 is False
-    assert any(g.get("kind") == "gap" for g in gaps2)
+    assert any(g.get("kind") == "unclassified_gap" for g in gaps2)
+    assert chron2 is True  # a positive time interval is chronological even when >1 minute
     # bad ohlc
     rows3 = [
         {"timestamp": "2026-07-01T01:00:00Z", "open": "1", "high": "0.5", "low": "0.5", "close": "1.5", "tick_volume": "10"},
@@ -82,3 +83,51 @@ def test_terminal_path_argument_accepted():
     parser.add_argument("--terminal-path", default=None)
     args = parser.parse_args(["--start", "2026-07-01T00:00:00Z", "--end", "2026-08-01T00:00:00Z", "--dataset-id", "x", "--terminal-path", "C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe"])
     assert args.terminal_path is not None
+
+
+
+def test_unclassified_gap_does_not_claim_missing_trading_bars():
+    from scripts.mt5_acquire_research_evidence_v1 import audit_rows, determine_audit_status
+    rows = [
+        {"timestamp": "2026-07-03T20:59:00Z", "open": "1", "high": "2", "low": "0.5", "close": "1.5", "tick_volume": "10"},
+        {"timestamp": "2026-07-06T00:01:00Z", "open": "1.5", "high": "2", "low": "1", "close": "1.8", "tick_volume": "10"},
+    ]
+    invalid, discontinuities, chronological = audit_rows(rows)
+    assert invalid == []
+    assert chronological is True
+    assert discontinuities[0]["kind"] == "unclassified_gap"
+    assert "missing_bars" not in discontinuities[0]
+    assert determine_audit_status(invalid, discontinuities) == "AUDITED_UNCLASSIFIED_COVERAGE"
+
+
+def test_duplicate_and_reverse_timestamps_fail_order_gate():
+    from scripts.mt5_acquire_research_evidence_v1 import audit_rows, determine_audit_status
+    base = {"open": "1", "high": "2", "low": "0.5", "close": "1.5", "tick_volume": "10"}
+    duplicate = [
+        {"timestamp": "2026-07-01T01:00:00Z", **base},
+        {"timestamp": "2026-07-01T01:00:00Z", **base},
+    ]
+    invalid, discontinuities, chronological = audit_rows(duplicate)
+    assert chronological is False
+    assert discontinuities[0]["kind"] == "duplicate_timestamp"
+    assert determine_audit_status(invalid, discontinuities) == "AUDITED_FAIL"
+    reversed_rows = [
+        {"timestamp": "2026-07-01T01:01:00Z", **base},
+        {"timestamp": "2026-07-01T01:00:00Z", **base},
+    ]
+    invalid2, discontinuities2, chronological2 = audit_rows(reversed_rows)
+    assert chronological2 is False
+    assert discontinuities2[0]["kind"] == "non_chronological"
+    assert determine_audit_status(invalid2, discontinuities2) == "AUDITED_FAIL"
+
+
+def test_contiguous_valid_rows_pass():
+    from scripts.mt5_acquire_research_evidence_v1 import audit_rows, determine_audit_status
+    base = {"open": "1", "high": "2", "low": "0.5", "close": "1.5", "tick_volume": "10"}
+    rows = [
+        {"timestamp": "2026-07-01T01:00:00Z", **base},
+        {"timestamp": "2026-07-01T01:01:00Z", **base},
+    ]
+    invalid, discontinuities, chronological = audit_rows(rows)
+    assert invalid == [] and discontinuities == [] and chronological is True
+    assert determine_audit_status(invalid, discontinuities) == "AUDITED_PASS"
