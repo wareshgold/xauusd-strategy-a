@@ -148,14 +148,20 @@ try {
     Write-Host ''
     Write-Host '[2/3] Verifying the authorized scope...' -ForegroundColor Yellow
 
-    $allowedBucketId = [string]$allowed.bucketId
-    $allowedBucketName = [string]$allowed.bucketName
+    # B2 Native API v4 represents bucket restrictions as allowed.buckets[].
+    # The pre-v4 allowed.bucketId / allowed.bucketName fields are not present.
+    $allowedBuckets = @($allowed.buckets)
+    $allowedBucketIds = @($allowedBuckets | ForEach-Object { [string]$_.id })
+    $matchingBuckets = @($allowedBuckets | Where-Object { [string]$_.id -eq $ExpectedBucketId })
     $allowedPrefix = [string]$allowed.namePrefix
     $capabilities = @($allowed.capabilities)
 
-    if ($allowedBucketId -ne $ExpectedBucketId) {
-        throw "Bucket scope mismatch. Expected configured bucket ID; received '$allowedBucketId'."
+    if ($matchingBuckets.Count -ne 1) {
+        $safeIds = ($allowedBucketIds -join ',')
+        throw "Bucket scope mismatch. Expected bucket ID was not present in allowed.buckets[]. Returned bucket count=$($allowedBuckets.Count); IDs='$safeIds'."
     }
+    $allowedBucketId = [string]$matchingBuckets[0].id
+    $allowedBucketName = [string]$matchingBuckets[0].name
     if ($allowedBucketName -and $allowedBucketName -ne $ExpectedBucketName) {
         throw "Bucket name mismatch: '$allowedBucketName'."
     }
