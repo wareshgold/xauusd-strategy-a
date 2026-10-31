@@ -51,12 +51,25 @@ jobs:
           for label, path in (("manifest", manifest), ("raw CSV", raw_csv)):
               if root not in path.parents or not path.is_file():
                   raise SystemExit(f"{label} path must be an existing repository file")
-          report = root / "artifacts" / "reports" / "mt5-manifest-acceptance-report.json"
-          report.parent.mkdir(parents=True, exist_ok=True)
+          report_dir = root / "artifacts" / "reports"
+          report_dir.mkdir(parents=True, exist_ok=True)
+          migrated = report_dir / "mt5-manifest-v1-migrated.json"
+          migration = subprocess.run([
+              sys.executable,
+              "scripts/migrate_legacy_mt5_manifest_to_v1.py",
+              "--legacy-manifest", str(manifest),
+              "--raw-csv", str(raw_csv),
+              "--output", str(migrated),
+          ], check=False)
+          if not migrated.is_file():
+              raise SystemExit("migration did not produce the required v1 manifest")
+          if migration.returncode not in (0, 2):
+              raise SystemExit(f"unexpected migration exit code: {migration.returncode}")
+          report = report_dir / "mt5-manifest-acceptance-report.json"
           command = [
               sys.executable,
               "scripts/validate_mt5_research_manifest_v1.py",
-              "--manifest", str(manifest),
+              "--manifest", str(migrated),
               "--raw-csv", str(raw_csv),
               "--output", str(report),
           ]
@@ -65,6 +78,8 @@ jobs:
               raise SystemExit("validator did not produce the required report")
           if completed.returncode not in (0, 2):
               raise SystemExit(f"unexpected validator exit code: {completed.returncode}")
+          print(f"MIGRATED_MANIFEST={migrated.relative_to(root)}")
+          print(f"MIGRATION_EXIT_CODE={migration.returncode}")
           print(f"REPORT_ONLY_COMPLETE={report.relative_to(root)}")
           print(f"VALIDATOR_EXIT_CODE={completed.returncode}")
           PY
@@ -74,5 +89,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mt5-manifest-acceptance-report
-          path: artifacts/reports/mt5-manifest-acceptance-report.json
+          path: artifacts/reports/mt5-manifest-*.json
           if-no-files-found: warn
