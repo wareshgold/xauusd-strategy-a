@@ -269,4 +269,4 @@ def test_synthetic_runner_rejects_validation_and_holdout_roles():
                 observed_content_sha256="a" * 64,
                 purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
             )
-        assert runner.runs.usage_ledger.entries() == []
+        assert runner.runs.usage_ledger.entries() == ()
