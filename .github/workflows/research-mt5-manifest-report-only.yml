@@ -1,0 +1,101 @@
+name: Research - MT5 Manifest Report Only
+# Report-only migration and validation; generated artifacts remain non-canonical.
+
+on:
+  push:
+    branches:
+      - research/v4-mt5-manifest-report-only-20261031
+    paths:
+      - ".github/workflows/research-mt5-manifest-report-only.yml"
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: Repository-relative path to the evidence manifest
+        required: false
+        default: data/mt5-acquisition/xauusd_ecn_m1_2026-08-21_2026-09-18.manifest.json
+        type: string
+      raw_csv_path:
+        description: Repository-relative path to the exact raw CSV
+        required: false
+        default: data/mt5-acquisition/xauusd_ecn_m1_2026-08-21_2026-09-18.csv
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  report-only:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate paths and generate report (no replay or trading)
+        env:
+          MANIFEST_PATH: ${{ inputs.manifest_path || 'data/mt5-acquisition/xauusd_ecn_m1_2026-08-21_2026-09-18.manifest.json' }}
+          RAW_CSV_PATH: ${{ inputs.raw_csv_path || 'data/mt5-acquisition/xauusd_ecn_m1_2026-08-21_2026-09-18.csv' }}
+        run: |
+          python - <<'PY'
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          root = Path.cwd().resolve()
+          manifest = (root / os.environ["MANIFEST_PATH"]).resolve()
+          raw_csv = (root / os.environ["RAW_CSV_PATH"]).resolve()
+          for label, path in (("manifest", manifest), ("raw CSV", raw_csv)):
+              if root not in path.parents or not path.is_file():
+                  raise SystemExit(f"{label} path must be an existing repository file")
+          report_dir = root / "artifacts" / "reports"
+          report_dir.mkdir(parents=True, exist_ok=True)
+          migrated = report_dir / "mt5-manifest-v1-migrated.json"
+          migration = subprocess.run([
+              sys.executable,
+              "scripts/migrate_legacy_mt5_manifest_to_v1.py",
+              "--legacy-manifest", str(manifest),
+              "--raw-csv", str(raw_csv),
+              "--output", str(migrated),
+          ], check=False)
+          if not migrated.is_file():
+              raise SystemExit("migration did not produce the required v1 manifest")
+          if migration.returncode not in (0, 2):
+              raise SystemExit(f"unexpected migration exit code: {migration.returncode}")
+          report = report_dir / "mt5-manifest-acceptance-report.json"
+          command = [
+              sys.executable,
+              "scripts/validate_mt5_research_manifest_v1.py",
+              "--manifest", str(migrated),
+              "--raw-csv", str(raw_csv),
+              "--output", str(report),
+          ]
+          completed = subprocess.run(command, check=False)
+          if not report.is_file():
+              raise SystemExit("validator did not produce the required report")
+          if completed.returncode not in (0, 2):
+              raise SystemExit(f"unexpected validator exit code: {completed.returncode}")
+          print(f"MIGRATED_MANIFEST={migrated.relative_to(root)}")
+          print(f"MIGRATION_EXIT_CODE={migration.returncode}")
+          print(f"REPORT_ONLY_COMPLETE={report.relative_to(root)}")
+          print(f"VALIDATOR_EXIT_CODE={completed.returncode}")
+          PY
+
+      - name: Audit July-August-September legacy monthly datasets (read-only)
+        run: |
+          mkdir -p artifacts/reports
+          for month in 07 08 09; do
+            python scripts/audit_legacy_mt5_manifest_inventory.py --manifest "data/mt5-acquisition/xauusd-ecn-m1-2026-${month}.manifest.json" --raw-csv "data/mt5-acquisition/xauusd-ecn-m1-2026-${month}.csv" --output "artifacts/reports/mt5-legacy-monthly-2026-${month}-audit.json"
+          done
+
+      - name: Upload acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mt5-manifest-acceptance-report
+          path: artifacts/reports/*.json
+          if-no-files-found: warn
