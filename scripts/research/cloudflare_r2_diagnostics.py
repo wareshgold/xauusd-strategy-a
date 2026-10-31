@@ -14,7 +14,7 @@ from typing import Mapping
 from urllib.parse import urlparse
 
 
-DEFAULT_BUCKET = "sp2l-factory-evidence"
+DEFAULT_BUCKET = "sp2l-forward-evidence"
 DEFAULT_PREFIX = "forward-test/"
 REQUIRED_ENV = (
     "CF_R2_ACCOUNT_ID",
