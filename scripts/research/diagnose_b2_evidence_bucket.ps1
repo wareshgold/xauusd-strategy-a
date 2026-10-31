@@ -1,16 +1,18 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-  Read-only diagnostics for the SP2L Backblaze B2 evidence bucket.
+  Read-only diagnostics for a bucket-scoped Backblaze B2 Application Key.
 
 .DESCRIPTION
-  Authenticates with a locally-entered Master Application Key, inspects the
-  v4 authorization capability envelope, and reads one known bucket.
-  This script does NOT create/delete keys, upload files, or modify buckets.
+  Authenticates with a locally-entered restricted Application Key, reads the
+  v4 authorization envelope from apiInfo.storageApi.allowed, verifies the
+  configured bucket and factory/test/ prefix, then calls b2_list_file_names.
+  This script does NOT list buckets, upload/download files, create/delete keys,
+  delete files, or modify bucket settings.
 
 .SECURITY
-  Never send the Master Application Key secret, authorization token, or this
-  script's terminal session containing secrets to anyone.
+  Never share the Application Key secret, authorization token, or terminal
+  session containing secrets. The secret is entered as a SecureString.
 #>
 
 [CmdletBinding()]
@@ -19,15 +21,15 @@ param()
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$BucketId = '0bd958e97ddd990eae1f0a1c'
+$ExpectedBucketId = '0bd958e97ddd990eae1f0a1c'
 $ExpectedBucketName = 'sp2l-factory-evidence'
+$ExpectedPrefixWithoutLeadingSlash = 'factory/test/'
 
 function Get-B2ErrorSummary {
     param([Parameter(Mandatory = $true)][System.Management.Automation.ErrorRecord]$ErrorRecord)
 
     $exception = $ErrorRecord.Exception
     $response = $exception.Response
-
     if ($null -eq $response) {
         $status = $null
         if ($exception -is [System.Net.WebException]) { $status = [string]$exception.Status }
@@ -89,102 +91,111 @@ function Invoke-B2JsonRequest {
         $response = Invoke-WebRequest @requestParams
         if ([string]::IsNullOrWhiteSpace($response.Content)) { throw 'B2 returned an empty response body.' }
         return ($response.Content | ConvertFrom-Json)
-    } catch {
+    }
+    catch {
         $summary = Get-B2ErrorSummary -ErrorRecord $_
         throw "B2 request failed: $summary"
     }
 }
 
 $secretPtr = [IntPtr]::Zero
-$masterSecret = $null
-$basicAuth = $null
+$secretText = $null
 $rawCredentials = $null
+$basicAuth = $null
 $authResponse = $null
-$bucketResponse = $null
+$listResponse = $null
 $secureSecret = $null
+$authToken = $null
 
 try {
     Write-Host ''
-    Write-Host 'SP2L B2 READ-ONLY DIAGNOSTICS' -ForegroundColor Cyan
-    Write-Host "Target bucket: $ExpectedBucketName"
-    Write-Host "Target bucket ID: $BucketId"
-    Write-Host 'Actions: authorize + read bucket only'
-    Write-Host 'No key creation, upload, delete, or bucket mutation.'
+    Write-Host 'SP2L B2 SCOPED-KEY READ-ONLY DIAGNOSTICS' -ForegroundColor Cyan
+    Write-Host "Expected bucket: $ExpectedBucketName"
+    Write-Host "Expected prefix: $ExpectedPrefixWithoutLeadingSlash (leading slash is tolerated)"
+    Write-Host 'Actions: authorize + inspect key scope + list file names only'
+    Write-Host 'No bucket listing, upload, download, delete, key mutation, or bucket mutation.'
 
-    $masterKeyId = Read-Host 'Master Application Key ID'
-    if ([string]::IsNullOrWhiteSpace($masterKeyId)) { throw 'Master Application Key ID is required.' }
+    $keyId = Read-Host 'Restricted Application Key ID'
+    if ([string]::IsNullOrWhiteSpace($keyId)) { throw 'Application Key ID is required.' }
 
-    $secureSecret = Read-Host 'Master Application Key SECRET (hidden)' -AsSecureString
-    if ($secureSecret.Length -eq 0) { throw 'Master Application Key secret is required.' }
+    $secureSecret = Read-Host 'Restricted Application Key SECRET (hidden)' -AsSecureString
+    if ($secureSecret.Length -eq 0) { throw 'Application Key secret is required.' }
 
     $secretPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureSecret)
-    $masterSecret = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($secretPtr)
-    $rawCredentials = '{0}:{1}' -f $masterKeyId, $masterSecret
+    $secretText = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($secretPtr)
+    $rawCredentials = '{0}:{1}' -f $keyId, $secretText
     $basicAuth = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($rawCredentials))
 
     Write-Host ''
-    Write-Host '[1/3] Authorizing with Backblaze...' -ForegroundColor Yellow
-
+    Write-Host '[1/3] Authorizing...' -ForegroundColor Yellow
     $authResponse = Invoke-B2JsonRequest -Method GET -Uri 'https://api.backblazeb2.com/b2api/v4/b2_authorize_account' -Headers @{ Authorization = "Basic $basicAuth" }
 
-    $apiUrl = [string]$authResponse.apiInfo.storageApi.apiUrl
+    $storageApi = $authResponse.apiInfo.storageApi
+    $apiUrl = [string]$storageApi.apiUrl
     $authToken = [string]$authResponse.authorizationToken
-    $accountId = [string]$authResponse.accountId
-    $allowedCapabilities = @($authResponse.apiInfo.storageApi.allowed.capabilities)
+    $allowed = $storageApi.allowed
 
-    if ([string]::IsNullOrWhiteSpace($apiUrl) -or [string]::IsNullOrWhiteSpace($authToken) -or [string]::IsNullOrWhiteSpace($accountId)) {
-        throw 'Authorization response did not contain the required v4 fields.'
+    if ([string]::IsNullOrWhiteSpace($apiUrl) -or [string]::IsNullOrWhiteSpace($authToken)) {
+        throw 'Authorization response is missing apiInfo.storageApi.apiUrl or authorizationToken.'
+    }
+    if ($null -eq $allowed) {
+        throw 'Authorization response is missing apiInfo.storageApi.allowed; refusing to continue.'
     }
 
     Write-Host 'AUTHORIZATION=PASS' -ForegroundColor Green
     Write-Host "API_HOST=$(([uri]$apiUrl).Host)"
 
     Write-Host ''
-    Write-Host '[2/3] Inspecting authorization capabilities...' -ForegroundColor Yellow
-    foreach ($capability in @('writeKeys', 'listBuckets', 'readBucketRetentions')) {
-        $present = $allowedCapabilities -contains $capability
-        Write-Host ("{0}={1}" -f $capability.ToUpperInvariant(), $present)
+    Write-Host '[2/3] Verifying the authorized scope...' -ForegroundColor Yellow
+
+    $allowedBucketId = [string]$allowed.bucketId
+    $allowedBucketName = [string]$allowed.bucketName
+    $allowedPrefix = [string]$allowed.namePrefix
+    $capabilities = @($allowed.capabilities)
+
+    if ($allowedBucketId -ne $ExpectedBucketId) {
+        throw "Bucket scope mismatch. Expected configured bucket ID; received '$allowedBucketId'."
     }
-    if ($allowedCapabilities.Count -eq 0) { Write-Host 'CAPABILITY_ENVELOPE=NOT_RETURNED' -ForegroundColor Yellow }
-    if ($allowedCapabilities -notcontains 'listBuckets') { throw 'The authorized key does not expose listBuckets; cannot perform the read-only bucket check.' }
+    if ($allowedBucketName -and $allowedBucketName -ne $ExpectedBucketName) {
+        throw "Bucket name mismatch: '$allowedBucketName'."
+    }
+    if ([string]::IsNullOrWhiteSpace($allowedPrefix)) {
+        throw 'The key did not return a namePrefix; refusing to list outside a confirmed prefix.'
+    }
+
+    $normalizedPrefix = $allowedPrefix.TrimStart('/')
+    if (-not $normalizedPrefix.StartsWith($ExpectedPrefixWithoutLeadingSlash, [StringComparison]::Ordinal)) {
+        throw "Prefix scope mismatch. Returned prefix '$allowedPrefix' is not the expected factory/test/ prefix."
+    }
+    if ($capabilities -notcontains 'listFiles') {
+        throw 'The key lacks listFiles; cannot perform the read-only file listing.'
+    }
+
+    Write-Host 'BUCKET_SCOPE=PASS' -ForegroundColor Green
+    Write-Host 'PREFIX_SCOPE=PASS' -ForegroundColor Green
+    Write-Host "ALLOWED_PREFIX=$allowedPrefix"
+    Write-Host "LIST_FILES=$($capabilities -contains 'listFiles')"
+    Write-Host "READ_FILES=$($capabilities -contains 'readFiles')"
+    Write-Host "WRITE_FILES=$($capabilities -contains 'writeFiles')"
 
     Write-Host ''
-    Write-Host '[3/3] Reading the target bucket...' -ForegroundColor Yellow
+    Write-Host '[3/3] Listing file names inside the authorized prefix...' -ForegroundColor Yellow
 
-    # b2_list_buckets uses bucketId (singular) as a filter.
-    # b2_create_key v4 uses bucketIds (plural array); these schemas differ.
-    $listBody = @{ accountId = $accountId; bucketId = $BucketId } | ConvertTo-Json -Depth 5
-    $bucketResponse = Invoke-B2JsonRequest -Method POST -Uri ($apiUrl.TrimEnd('/') + '/b2api/v4/b2_list_buckets') -Headers @{ Authorization = $authToken } -JsonBody $listBody
+    $listBody = @{
+        bucketId = $allowedBucketId
+        prefix = $allowedPrefix
+        maxFileCount = 10
+    } | ConvertTo-Json -Depth 5
 
-    $bucketMatches = @($bucketResponse.buckets | Where-Object { $_.bucketId -eq $BucketId })
-    if ($bucketMatches.Count -ne 1) { throw "Expected exactly one bucket with the configured ID; found $($bucketMatches.Count)." }
+    $listResponse = Invoke-B2JsonRequest -Method POST -Uri ($apiUrl.TrimEnd('/') + '/b2api/v4/b2_list_file_names') -Headers @{ Authorization = $authToken } -JsonBody $listBody
 
-    $bucket = $bucketMatches[0]
-    if ($bucket.bucketName -ne $ExpectedBucketName) { throw "Bucket ID resolved to an unexpected bucket name: '$($bucket.bucketName)'." }
-
-    Write-Host 'BUCKET_ACCESS=PASS' -ForegroundColor Green
-    Write-Host "BUCKET_NAME=$($bucket.bucketName)"
-    Write-Host "BUCKET_TYPE=$($bucket.bucketType)"
-
-    $lockConfig = $bucket.fileLockConfiguration
-    if ($null -ne $lockConfig) {
-        Write-Host "OBJECT_LOCK_ENABLED=$($lockConfig.isFileLockEnabled)"
-        if ($lockConfig.isClientAuthorizedToRead -eq $false) {
-            Write-Host 'RETENTION_READBACK=NOT_AUTHORIZED' -ForegroundColor Yellow
-        } elseif ($null -ne $lockConfig.value.defaultRetention) {
-            Write-Host "DEFAULT_RETENTION_MODE=$($lockConfig.value.defaultRetention.mode)"
-            Write-Host "DEFAULT_RETENTION_PERIOD=$($lockConfig.value.defaultRetention.period)"
-        } else {
-            Write-Host 'DEFAULT_RETENTION=NOT_CONFIGURED_OR_NOT_RETURNED'
-        }
-    } else {
-        Write-Host 'OBJECT_LOCK_CONFIGURATION=NOT_RETURNED' -ForegroundColor Yellow
-    }
-
+    $filesReturned = @($listResponse.files).Count
+    Write-Host 'LIST_FILES_REQUEST=PASS' -ForegroundColor Green
+    Write-Host "FILES_RETURNED=$filesReturned"
     Write-Host ''
     Write-Host 'DIAGNOSTIC_RESULT=PASS' -ForegroundColor Green
-    Write-Host 'NO_KEYS_CREATED_OR_DELETED'
-    Write-Host 'NO_FILES_UPLOADED_OR_DELETED'
+    Write-Host 'NO_FILES_UPLOADED_OR_DOWNLOADED'
+    Write-Host 'NO_FILES_OR_KEYS_DELETED'
     Write-Host 'NO_BUCKET_SETTINGS_CHANGED'
 }
 catch {
@@ -195,13 +206,11 @@ catch {
 }
 finally {
     if ($secretPtr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($secretPtr) }
-    $masterSecret = $null
-    $basicAuth = $null
+    $secretText = $null
     $rawCredentials = $null
+    $basicAuth = $null
     $authResponse = $null
-    $bucketResponse = $null
+    $listResponse = $null
     $secureSecret = $null
     $authToken = $null
-    $apiUrl = $null
-    $accountId = $null
 }
