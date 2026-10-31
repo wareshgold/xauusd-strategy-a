@@ -84,3 +84,17 @@ def test_holdout_revision_change_fails():
     result = evaluate_dataset_provenance(changed, registry, HASH_A, observed_artifact=artifact())
     assert result.status is DatasetProvenanceStatus.FAIL
     assert "DATA_REVISION_MISMATCH" in result.reasons
+
+
+def test_provenance_exposes_independent_registered_and_observed_content_hashes():
+    spec = make_spec()
+    registry = DatasetRegistry()
+    registry.register(spec.dataset, HASH_A)
+
+    result = evaluate_dataset_provenance(spec, registry, HASH_A)
+
+    assert result.status is DatasetProvenanceStatus.PASS
+    assert result.registered_content_sha256 == HASH_A
+    assert result.observed_content_sha256 == HASH_A
+    assert result.as_dict()["registered_content_sha256"] == HASH_A
+    assert result.as_dict()["observed_content_sha256"] == HASH_A

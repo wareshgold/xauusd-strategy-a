@@ -27,12 +27,12 @@ from strategy_factory.usage import DatasetUsageLedger
 from strategy_factory.runner import ResearchJobRunner
 
 
-def _snapshot(spec):
+def _snapshot(spec, *, snapshot_revision="SYNTH"):
     ledger = {"entries": [], "resolution_state": "SYNTHETIC_ONLY"}
     readiness = {"status": "SYNTHETIC_ONLY"}
     eligibility = {"status": "SYNTHETIC_ONLY"}
     payload = ReadinessSnapshot._fingerprint_payload(
-        snapshot_revision="SYNTH",
+        snapshot_revision=snapshot_revision,
         strategy_id=spec.strategy_id,
         manifest_revision="MANIFEST",
         manifest_fingerprint="1" * 64,
@@ -42,7 +42,7 @@ def _snapshot(spec):
         passport_eligibility=eligibility,
     )
     return ReadinessSnapshot(
-        snapshot_revision="SYNTH",
+        snapshot_revision=snapshot_revision,
         strategy_id=spec.strategy_id,
         manifest_revision="MANIFEST",
         manifest_fingerprint="1" * 64,
@@ -57,7 +57,11 @@ def _snapshot(spec):
 class FakeAdapter:
     engine_revision = "ROBUSTNESS-TEST"
 
+    def __init__(self, dataset_path):
+        self.dataset_path = dataset_path
+
     def execute(self, spec):
+        observed_sha = hashlib.sha256(self.dataset_path.read_bytes()).hexdigest()
         return build_execution_receipt(
             execution_id="ROBUSTNESS-EXEC",
             spec=spec,
@@ -68,6 +72,8 @@ class FakeAdapter:
                 win_rate=0.5, net_r=0.0, profit_factor=1.0,
                 max_drawdown_r=1.0, gross_profit_r=1.0, gross_loss_r=-1.0,
             ),
+            receipt_schema_version=2,
+            dataset_content_sha256=observed_sha,
         )
 
 
@@ -111,7 +117,7 @@ def _context(tmp_path, *, wrong_sha=False):
     )
     upstream = ResearchJobRunner(runs=runs, evidence=evidence, records=records)
     upstream_result = upstream.run(
-        job=job, spec=spec, adapter=FakeAdapter(), snapshot=_snapshot(spec),
+        job=job, spec=spec, adapter=FakeAdapter(path), snapshot=_snapshot(spec),
         observed_content_sha256=sha,
         observed_artifact=registry.get(dataset.dataset_id).artifact,
         evidence_id="STABILITY-EVIDENCE-001",
@@ -145,7 +151,7 @@ def _context(tmp_path, *, wrong_sha=False):
         readiness_snapshot=_snapshot(spec), handoff=handoff,
         source_record=upstream_result.record, source_event=event,
         dataset_artifact_path=path, dataset_artifact_id=artifact_id,
-        dataset_content_sha256=sha, adapter=FakeAdapter(),
+        dataset_content_sha256=sha, adapter=FakeAdapter(path),
     )
 
 
@@ -164,3 +170,18 @@ def test_robustness_factory_blocks_dataset_mismatch(tmp_path):
         assert "dataset SHA" in str(exc)
     else:
         raise AssertionError("dataset mismatch must be rejected")
+
+def test_robustness_factory_rejects_readiness_snapshot_drift(tmp_path):
+    from dataclasses import replace
+
+    runner, context = _context(tmp_path)
+    drifted = replace(
+        context,
+        readiness_snapshot=_snapshot(context.spec, snapshot_revision="DRIFTED"),
+    )
+    try:
+        RobustnessFactory(runner).prepare_and_run(drifted)
+    except RobustnessFactoryError as exc:
+        assert "snapshot fingerprint" in str(exc)
+    else:
+        raise AssertionError("snapshot drift must be rejected")

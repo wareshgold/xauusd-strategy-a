@@ -128,7 +128,13 @@ def resolve_fixture_set(
     fixtures: tuple[DiscriminationFixture, ...],
     evidence: tuple[SourceEvidence, ...] = (),
 ) -> tuple[SourceResolutionResult, ...]:
-    evidence_by_question = {item.question_id: item for item in evidence}
+    evidence_by_question: dict[str, SourceEvidence] = {}
+    for item in evidence:
+        if item.question_id in evidence_by_question:
+            raise SourceResolutionError(
+                f"multiple source evidence records supplied for question {item.question_id!r}"
+            )
+        evidence_by_question[item.question_id] = item
 
     results = []
     for fixture in fixtures:

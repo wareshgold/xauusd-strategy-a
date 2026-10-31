@@ -175,4 +175,6 @@ class DiscoveryMatrixAdapter:
             engine_revision=self.engine_revision,
             input_fingerprint=input_fingerprint,
             metrics=metrics,
+            receipt_schema_version=2,
+            dataset_content_sha256=expected_dataset_sha256,
         )

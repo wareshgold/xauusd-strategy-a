@@ -3,7 +3,7 @@ import hashlib
 import pytest
 
 from strategy_factory.adapter import build_execution_receipt
-from strategy_factory.datasets import DatasetRegistry
+from strategy_factory.datasets import DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
@@ -18,6 +18,9 @@ from strategy_factory.test_contract import (
 )
 from strategy_factory.usage import DatasetUsageLedger
 
+
+DATASET_BYTES = b"controlled dataset bytes for receipt contract tests"
+DATASET_SHA256 = hashlib.sha256(DATASET_BYTES).hexdigest()
 
 METRICS = ResearchMetrics(
     10, 10, 6, 4, 0, 0.6, 2.5, 1.4, 1.2, 6.0, -3.5
@@ -44,7 +47,7 @@ def make_spec_and_job():
     job = ResearchJobSpec.from_test_spec(
         spec,
         manifest_revision="M1",
-        dataset_fingerprint="a" * 64,
+        dataset_fingerprint=fingerprint_dataset(dataset, DATASET_SHA256),
         job_id="JOB-1",
     )
     return spec, job
@@ -53,7 +56,7 @@ def make_spec_and_job():
 def make_runner():
     registry = DatasetRegistry()
     spec, _ = make_spec_and_job()
-    registry.register(spec.dataset, content_fingerprint="a" * 64)
+    registry.register(spec.dataset, content_fingerprint=DATASET_SHA256)
     usage = DatasetUsageLedger(registry)
     runs = ResearchRunLedger(registry, usage)
     evidence = EvidenceLedger(runs)
@@ -65,8 +68,8 @@ def make_snapshot(spec):
         snapshot_revision="READINESS-SNAPSHOT-TEST",
         strategy_id=spec.strategy_id,
         manifest_revision="M1",
-        manifest_fingerprint="m" * 64,
-        passport_fingerprint="p" * 64,
+        manifest_fingerprint="c" * 64,
+        passport_fingerprint="d" * 64,
         source_ledger={},
         source_readiness={},
         passport_eligibility={},
@@ -76,8 +79,8 @@ def make_snapshot(spec):
         snapshot_revision="READINESS-SNAPSHOT-TEST",
         strategy_id=spec.strategy_id,
         manifest_revision="M1",
-        manifest_fingerprint="m" * 64,
-        passport_fingerprint="p" * 64,
+        manifest_fingerprint="c" * 64,
+        passport_fingerprint="d" * 64,
         source_ledger={},
         source_readiness={},
         passport_eligibility={},
@@ -91,7 +94,7 @@ def run_job(runner, job, spec, adapter):
         spec=spec,
         adapter=adapter,
         snapshot=make_snapshot(spec),
-        observed_content_sha256="a" * 64,
+        observed_content_sha256=DATASET_SHA256,
     )
 
 
@@ -109,8 +112,10 @@ class FakeAdapter:
             execution_id=self.execution_id,
             spec=spec,
             engine_revision=self.engine_revision,
-            input_fingerprint="b" * 64,
+            input_fingerprint=hashlib.sha256(f"FAKE-ENGINE:{spec.test_id}:{DATASET_SHA256}".encode()).hexdigest(),
             metrics=self.metrics,
+            receipt_schema_version=2,
+            dataset_content_sha256=hashlib.sha256(DATASET_BYTES).hexdigest(),
         )
 
 
@@ -263,3 +268,41 @@ def test_runner_never_requires_strategy_geometry():
     assert result.accepted
     assert result.run.strategy_id == "SP2L-A"
     assert result.run.parameters == {"tp_r": 2}
+
+
+def test_runner_rejects_legacy_v1_receipt_as_unverified():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+    class LegacyAdapter(FakeAdapter):
+        def execute(self, source_spec):
+            return build_execution_receipt(
+                execution_id=self.execution_id,
+                spec=source_spec,
+                engine_revision=self.engine_revision,
+                input_fingerprint="b" * 64,
+                metrics=self.metrics,
+            )
+    with pytest.raises(ResearchJobRunnerError, match="LEGACY_UNVERIFIED"):
+        run_job(runner, job, spec, LegacyAdapter())
+
+
+def test_runner_rejects_dataset_digest_mismatch():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+    class MismatchedAdapter(FakeAdapter):
+        def execute(self, source_spec):
+            receipt = super().execute(source_spec)
+            return receipt.__class__(
+                receipt.execution_id,
+                receipt.test_id,
+                receipt.strategy_revision,
+                receipt.execution_semantics,
+                receipt.engine_revision,
+                receipt.input_fingerprint,
+                receipt.completed,
+                receipt.metrics,
+                receipt_schema_version=2,
+                dataset_content_sha256="b" * 64,
+            )
+    with pytest.raises(ResearchJobRunnerError, match="dataset_content_sha256"):
+        run_job(runner, job, spec, MismatchedAdapter())

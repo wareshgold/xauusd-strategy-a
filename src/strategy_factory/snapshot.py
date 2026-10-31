@@ -53,6 +53,15 @@ class ReadinessSnapshot:
         ).encode("utf-8")
 
     def validate(self) -> None:
+        if not self.snapshot_revision or not self.strategy_id or not self.manifest_revision:
+            raise ValueError("readiness snapshot identity is incomplete")
+        for name, value in (
+            ("manifest_fingerprint", self.manifest_fingerprint),
+            ("passport_fingerprint", self.passport_fingerprint),
+            ("fingerprint", self.fingerprint),
+        ):
+            if not isinstance(value, str) or len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
+                raise ValueError(f"readiness snapshot {name} must be a lowercase SHA-256 digest")
         expected = hashlib.sha256(
             self._fingerprint_payload(
                 snapshot_revision=self.snapshot_revision,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 
 from strategy_factory.adapter import build_execution_receipt
@@ -57,17 +58,22 @@ def _snapshot(spec):
 class FakeAdapter:
     engine_revision = "HOLDOUT-TEST"
 
+    def __init__(self, artifact_path):
+        self.artifact_path = artifact_path
+
     def execute(self, spec):
         return build_execution_receipt(
             execution_id="HOLDOUT-EXEC",
             spec=spec,
             engine_revision=self.engine_revision,
-            input_fingerprint="a" * 64,
+            input_fingerprint=hashlib.sha256(f"FAKE-HOLDOUT:{spec.test_id}:{hashlib.sha256(self.artifact_path.read_bytes()).hexdigest()}".encode()).hexdigest(),
             metrics=ResearchMetrics(
                 trades=2, decisive_trades=2, wins=1, losses=1, ambiguous=0,
                 win_rate=0.5, net_r=0.0, profit_factor=1.0,
                 max_drawdown_r=1.0, gross_profit_r=1.0, gross_loss_r=-1.0,
             ),
+            receipt_schema_version=2,
+            dataset_content_sha256=hashlib.sha256(self.artifact_path.read_bytes()).hexdigest(),
         )
 
 
@@ -146,7 +152,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
     upstream_result = upstream_runner.run(
         job=upstream_job,
         spec=source_spec,
-        adapter=FakeAdapter(),
+        adapter=FakeAdapter(source_path),
         snapshot=_snapshot(source_spec),
         observed_content_sha256=source_sha,
         observed_artifact=registry.get(source_dataset.dataset_id).artifact,
@@ -194,7 +200,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         holdout_dataset_artifact_path=holdout_path,
         holdout_dataset_artifact_id=holdout_artifact_id,
         holdout_dataset_content_sha256=holdout_sha,
-        adapter=FakeAdapter(),
+        adapter=FakeAdapter(holdout_path),
         strategy_revision_frozen=frozen,
     )
 
@@ -271,6 +277,21 @@ def test_holdout_factory_rejects_execution_semantics_drift(tmp_path):
         raise AssertionError("holdout must preserve upstream execution semantics")
 
 
+def _resign_snapshot(snapshot, **changes):
+    updated = replace(snapshot, **changes)
+    payload = type(updated)._fingerprint_payload(
+        snapshot_revision=updated.snapshot_revision,
+        strategy_id=updated.strategy_id,
+        manifest_revision=updated.manifest_revision,
+        manifest_fingerprint=updated.manifest_fingerprint,
+        passport_fingerprint=updated.passport_fingerprint,
+        source_ledger=updated.source_ledger,
+        source_readiness=updated.source_readiness,
+        passport_eligibility=updated.passport_eligibility,
+    )
+    return replace(updated, fingerprint=hashlib.sha256(payload).hexdigest())
+
+
 def test_holdout_factory_rejects_manifest_drift(tmp_path):
     runner, context = _context(tmp_path)
     context = HoldoutFactoryContext(
@@ -295,6 +316,38 @@ def test_holdout_factory_rejects_manifest_drift(tmp_path):
         assert "manifest_revision" in str(exc)
     else:
         raise AssertionError("holdout must use the upstream manifest revision")
+
+
+def test_holdout_factory_rejects_snapshot_manifest_drift(tmp_path):
+    runner, context = _context(tmp_path)
+    drifted_snapshot = _resign_snapshot(
+        context.readiness_snapshot, manifest_revision="DRIFTED-MANIFEST"
+    )
+    context = replace(context, readiness_snapshot=drifted_snapshot)
+
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "manifest_revision" in str(exc)
+        assert "snapshot" in str(exc)
+    else:
+        raise AssertionError("holdout must reject readiness snapshot manifest drift")
+
+
+def test_holdout_factory_rejects_snapshot_not_bound_to_upstream_record(tmp_path):
+    runner, context = _context(tmp_path)
+    altered_snapshot = _resign_snapshot(
+        context.readiness_snapshot,
+        source_readiness={"status": "BLOCKED", "audit_probe": "changed"},
+    )
+    context = replace(context, readiness_snapshot=altered_snapshot)
+
+    try:
+        HoldoutFactory(runner).prepare_and_run(context)
+    except HoldoutFactoryError as exc:
+        assert "snapshot fingerprint" in str(exc)
+    else:
+        raise AssertionError("holdout must consume the exact frozen upstream snapshot")
 
 
 def test_holdout_factory_is_deterministic(tmp_path):

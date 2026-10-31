@@ -38,11 +38,18 @@ def _session():
             status=GateStatus.PASS,
             evidence="dry-run-evidence",
             details={
+                "source_station": "holdout",
+                "destination_station": "forward",
+                "forward_session_id": "FORWARD-DRY-RUN-SESSION-1",
+                "forward_dataset_id": "FORWARD-DRY-RUN-DATA-1",
+                "forward_artifact_id": "FORWARD-DRY-RUN-ART-1",
+                "forward_dataset_sha256": _sha(b"dry-run-forward"),
                 "strategy_revision": record.strategy_revision,
                 "manifest_revision": record.manifest_revision,
                 "holdout_dataset_id": record.dataset_id,
                 "holdout_dataset_sha256": _sha(b"dry-run-holdout"),
                 "holdout_artifact_id": "HOLDOUT-DRY-RUN-ART-1",
+                "handoff_fingerprint": _sha(b"dry-run-handoff"),
                 "production_decision": False,
             },
         )

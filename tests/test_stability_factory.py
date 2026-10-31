@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 import json
 
+import pytest
 import strategy_factory.stability_factory as module
 from strategy_factory.adapter import build_execution_receipt
 from strategy_factory.datasets import DatasetArtifact, DatasetRegistry
@@ -20,15 +22,15 @@ from strategy_factory.test_contract import (
 )
 from strategy_factory.usage import DatasetUsageLedger
 from strategy_factory.handoff import build_research_handoff
-from strategy_factory.stability_factory import StabilityFactory, StabilityFactoryContext
+from strategy_factory.stability_factory import StabilityFactory, StabilityFactoryContext, StabilityFactoryError
 
 
-def _snapshot(spec):
+def _snapshot(spec, *, snapshot_revision="SYNTH"):
     ledger = {"entries": [], "resolution_state": "SYNTHETIC_ONLY"}
     readiness = {"status": "SYNTHETIC_ONLY"}
     eligibility = {"status": "SYNTHETIC_ONLY"}
     payload = ReadinessSnapshot._fingerprint_payload(
-        snapshot_revision="SYNTH",
+        snapshot_revision=snapshot_revision,
         strategy_id=spec.strategy_id,
         manifest_revision="MANIFEST",
         manifest_fingerprint="1" * 64,
@@ -38,7 +40,7 @@ def _snapshot(spec):
         passport_eligibility=eligibility,
     )
     return ReadinessSnapshot(
-        snapshot_revision="SYNTH",
+        snapshot_revision=snapshot_revision,
         strategy_id=spec.strategy_id,
         manifest_revision="MANIFEST",
         manifest_fingerprint="1" * 64,
@@ -110,16 +112,22 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
     class FakeAdapter:
         engine_revision = "DISCOVERY-TEST"
         def execute(self, declared_spec):
+            dataset_sha = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+            input_fingerprint = hashlib.sha256(
+                f"FAKE-DISCOVERY:{declared_spec.test_id}:{dataset_sha}".encode()
+            ).hexdigest()
             return build_execution_receipt(
                 execution_id="DISCOVERY-EXEC",
                 spec=declared_spec,
                 engine_revision=self.engine_revision,
-                input_fingerprint=sha,
+                input_fingerprint=input_fingerprint,
                 metrics=ResearchMetrics(
                     trades=1, decisive_trades=1, wins=1, losses=0, ambiguous=0,
                     win_rate=1.0, net_r=1.0, profit_factor=None,
                     max_drawdown_r=0.0, gross_profit_r=1.0, gross_loss_r=0.0,
                 ),
+                receipt_schema_version=2,
+                dataset_content_sha256=dataset_sha,
             )
 
     upstream = ResearchJobRunner(runs=runs, evidence=evidence, records=records)
@@ -150,12 +158,15 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
         def execute(self, declared_spec):
             return build_execution_receipt(
                 execution_id="STABILITY-EXEC", spec=declared_spec,
-                engine_revision="STABILITY-TEST", input_fingerprint=sha,
+                engine_revision="STABILITY-TEST",
+                input_fingerprint=hashlib.sha256(f"FAKE-STABILITY:{declared_spec.test_id}:{hashlib.sha256(dataset_path.read_bytes()).hexdigest()}".encode()).hexdigest(),
                 metrics=ResearchMetrics(
                     trades=1, decisive_trades=1, wins=1, losses=0, ambiguous=0,
                     win_rate=1.0, net_r=1.0, profit_factor=None,
                     max_drawdown_r=0.0, gross_profit_r=1.0, gross_loss_r=0.0,
                 ),
+                receipt_schema_version=2,
+                dataset_content_sha256=hashlib.sha256(dataset_path.read_bytes()).hexdigest(),
             )
     monkeypatch.setattr(module, "StabilityMatrixAdapter", FakeStabilityAdapter)
 
@@ -169,25 +180,31 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
         runs=stability_runs, evidence=stability_evidence, records=stability_records
     )
 
-    result = StabilityFactory(stability_runner).prepare_and_run(
-        StabilityFactoryContext(
-            spec=spec,
-            manifest_revision="MANIFEST",
-            job_id="STABILITY-001",
-            readiness_snapshot=_snapshot(spec),
-            handoff=handoff,
-            source_record=upstream_result.record,
-            source_event=events.for_job(job.job_id)[0],
-            discovery_json_path=discovery_path,
-            dataset_artifact_path=dataset_path,
-            dataset_artifact_id="MT5-M1-TEST",
-            dataset_content_sha256=sha,
-            stability_script=tmp_path / "stability.py",
-            variant_name="RR2_ACT10_D2",
-        )
+    context = StabilityFactoryContext(
+        spec=spec,
+        manifest_revision="MANIFEST",
+        job_id="STABILITY-001",
+        readiness_snapshot=_snapshot(spec),
+        handoff=handoff,
+        source_record=upstream_result.record,
+        source_event=events.for_job(job.job_id)[0],
+        discovery_json_path=discovery_path,
+        dataset_artifact_path=dataset_path,
+        dataset_artifact_id="MT5-M1-TEST",
+        dataset_content_sha256=sha,
+        stability_script=tmp_path / "stability.py",
+        variant_name="RR2_ACT10_D2",
     )
+    result = StabilityFactory(stability_runner).prepare_and_run(context)
     assert result.result.accepted is True
     assert result.result.dataset_provenance.status.value == "PASS"
+
+    drifted = replace(
+        context,
+        readiness_snapshot=_snapshot(spec, snapshot_revision="DRIFTED"),
+    )
+    with pytest.raises(StabilityFactoryError, match="snapshot fingerprint"):
+        StabilityFactory(stability_runner).prepare_and_run(drifted)
 
 
 def test_stability_factory_blocks_dataset_mismatch(tmp_path):

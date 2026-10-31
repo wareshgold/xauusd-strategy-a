@@ -67,9 +67,24 @@ class ResearchRecord:
             data["fingerprint"] = self.fingerprint
         return data
 
+    @classmethod
+    def from_dict(cls, values: dict[str, Any]) -> "ResearchRecord":
+        """Reconstruct and validate a record from its serialized representation."""
+        try:
+            data = dict(values)
+            data["provenance_status"] = ResearchProvenanceStatus(data["provenance_status"])
+            data["provenance_reasons"] = tuple(data["provenance_reasons"])
+            record = cls(**data)
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ResearchRecordError("invalid serialized research record") from exc
+        record.validate()
+        return record
+
     def validate(self) -> None:
         if not self.run_id or not self.strategy_id or not self.strategy_revision:
             raise ResearchRecordError("research record identity is incomplete")
+        if not isinstance(self.provenance_status, ResearchProvenanceStatus):
+            raise ResearchRecordError("research record provenance status must be explicit")
         if self.provenance_status.value != ResearchProvenanceStatus.PASS.value:
             raise ResearchRecordError("research record requires PASS provenance status")
         expected = hashlib.sha256(self._payload(self.as_dict(include_fingerprint=False))).hexdigest()

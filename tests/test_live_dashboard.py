@@ -27,6 +27,8 @@ def load_dashboard(monkeypatch, tmp_path, fake_mt5, runner_flags=None):
     monkeypatch.setattr(mod, "RUNNER_LOCK", tmp_path / "runner.lock")
     monkeypatch.setattr(mod, "WATCHDOG_PID", tmp_path / "watchdog.pid")
     monkeypatch.setattr(mod, "EVENTS", tmp_path / "events.jsonl")
+    monkeypatch.setattr(mod, "ARTIFACTS", tmp_path)
+    monkeypatch.setattr(mod, "RUNTIME", tmp_path)
     # freeze "today" so the seeded 2099 events count as today
     import datetime as _dt
     real_dt = __import__("datetime").datetime

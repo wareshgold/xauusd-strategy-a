@@ -6,6 +6,7 @@ from .acceptance import evidence_acceptance_gate
 from .audit import AuditBindingError, ResearchAuditRecord, bind_research_audit
 from .adapter import ExecutionAdapter, validate_adapter_output
 from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus, evaluate_dataset_provenance
+from .datasets import fingerprint_dataset
 from .evidence import EvidenceBundle, EvidenceLedger
 from .execution import ExecutionReceipt, execution_gate
 from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
@@ -14,7 +15,7 @@ from .research_provenance import ResearchProvenanceResult, evaluate_research_pro
 from .research_record import ResearchRecord, ResearchRecordLedger
 from .runs import ResearchRunError, ResearchRunIdentity, ResearchRunLedger
 from .snapshot import ReadinessSnapshot
-from .test_contract import HistoricalTestSpec
+from .test_contract import DatasetRole, HistoricalTestSpec
 
 
 class ResearchJobRunnerError(ValueError):
@@ -72,7 +73,7 @@ class ResearchJobRunner:
         observed_content_sha256: str,
         observed_artifact=None,
         evidence_id: str | None = None,
-        result_revision: str = "RECEIPT_METRICS_V1",
+        result_revision: str | None = None,
         purpose: str = "HISTORICAL_TEST",
     ) -> ResearchJobRunResult:
         """Execute and accept one job under its already-declared semantics.
@@ -84,10 +85,17 @@ class ResearchJobRunner:
         """
         try:
             job.validate()
+            expected_dataset_fingerprint = fingerprint_dataset(
+                spec.dataset, observed_content_sha256
+            )
+            if job.dataset_fingerprint != expected_dataset_fingerprint:
+                raise ResearchJobRunnerError(
+                    "research job dataset fingerprint does not match observed dataset identity"
+                )
             validate_job_matches_test_spec(
                 job,
                 spec,
-                dataset_fingerprint=job.dataset_fingerprint,
+                dataset_fingerprint=expected_dataset_fingerprint,
             )
         except (ResearchJobError, ValueError) as exc:
             raise ResearchJobRunnerError(
@@ -115,6 +123,15 @@ class ResearchJobRunner:
                 "dataset provenance gate rejected the research job"
             )
 
+        from .synthetic import SyntheticExecutionAdapter
+        if type(adapter) is SyntheticExecutionAdapter and (
+            purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
+            or spec.dataset.role is not DatasetRole.DEVELOPMENT
+        ):
+            raise ResearchJobRunnerError(
+                "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
+            )
+
         try:
             run = self.runs.create(
                 spec,
@@ -135,6 +152,27 @@ class ResearchJobRunner:
         try:
             receipt = adapter.execute(spec)
             validate_adapter_output(spec=spec, receipt=receipt)
+            from .synthetic import SyntheticExecutionAdapter
+            if receipt.receipt_schema_version != 2:
+                raise ResearchJobRunnerError(
+                    "LEGACY_UNVERIFIED: schema-v1 receipts cannot be promoted to dataset-verified evidence"
+                )
+            if type(adapter) is SyntheticExecutionAdapter:
+                if receipt.dataset_content_sha256 is not None:
+                    raise ResearchJobRunnerError(
+                        "trusted synthetic adapter must declare dataset_content_sha256 as null"
+                    )
+            elif receipt.dataset_content_sha256 != observed_content_sha256:
+                raise ResearchJobRunnerError(
+                    "execution receipt dataset_content_sha256 does not match runner-observed dataset bytes"
+                )
+            expected_result_revision = "RECEIPT_METRICS_V2"
+            if result_revision is not None and result_revision != expected_result_revision:
+                raise ResearchJobRunnerError(
+                    "result_revision does not match the execution receipt schema"
+                )
+        except ResearchJobRunnerError:
+            raise
         except Exception as exc:
             raise ResearchJobRunnerError("execution adapter failed") from exc
 
@@ -148,12 +186,14 @@ class ResearchJobRunner:
             evidence_id=evidence_id or f"EVIDENCE-{job.job_id}",
             run_id=run.run_id,
             run_fingerprint=run.fingerprint,
-            result_revision=result_revision,
+            result_revision=expected_result_revision,
             metrics=receipt.metrics,
             result={
                 "execution_id": receipt.execution_id,
                 "engine_revision": receipt.engine_revision,
                 "input_fingerprint": receipt.input_fingerprint,
+                "receipt_schema_version": receipt.receipt_schema_version,
+                "dataset_content_sha256": receipt.dataset_content_sha256,
                 "execution_semantics": receipt.execution_semantics.value,
                 "metrics": receipt.metrics.as_dict(),
             },
@@ -171,6 +211,9 @@ class ResearchJobRunner:
             run=run,
             receipt=receipt,
             evidence=evidence,
+            dataset_provenance=dataset_provenance,
+            adapter=adapter,
+            purpose=purpose,
         )
         if acceptance.status is not GateStatus.PASS:
             raise ResearchJobRunnerError(
@@ -193,6 +236,8 @@ class ResearchJobRunner:
             audit=audit,
             snapshot=snapshot,
             dataset_provenance=dataset_provenance,
+            adapter=adapter,
+            purpose=purpose,
         )
         provenance_gate = GateResult(
             name="RESEARCH_PROVENANCE",

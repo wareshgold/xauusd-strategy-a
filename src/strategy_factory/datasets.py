@@ -46,6 +46,7 @@ class DatasetIdentity:
     dataset_id: str
     data_revision: str
     fingerprint: str
+    content_fingerprint: str
     role: DatasetRole
     immutable: bool
     locked: bool = False
@@ -56,6 +57,7 @@ class DatasetIdentity:
             "dataset_id": self.dataset_id,
             "data_revision": self.data_revision,
             "fingerprint": self.fingerprint,
+            "content_fingerprint": self.content_fingerprint,
             "role": self.role.value,
             "immutable": self.immutable,
             "locked": self.locked,
@@ -138,6 +140,7 @@ class DatasetRegistry:
             dataset_id=dataset.dataset_id,
             data_revision=dataset.data_revision,
             fingerprint=fingerprint,
+            content_fingerprint=content_fingerprint.lower(),
             role=dataset.role,
             immutable=dataset.immutable,
             locked=lock or dataset.role is not DatasetRole.DEVELOPMENT,
@@ -167,9 +170,12 @@ class DatasetRegistry:
 
     def assert_no_holdout_reuse(self, dataset: TestDataset, content_fingerprint: str) -> None:
         fingerprint = fingerprint_dataset(dataset, content_fingerprint)
+        normalized_content = content_fingerprint.lower()
         for record in self._records.values():
             if record.role in (DatasetRole.UNTOUCHED_VALIDATION, DatasetRole.FRESH_HOLDOUT):
-                if record.fingerprint == fingerprint and record.dataset_id != dataset.dataset_id:
+                same_content = record.content_fingerprint == normalized_content
+                same_identity = record.fingerprint == fingerprint
+                if (same_content or same_identity) and record.dataset_id != dataset.dataset_id:
                     raise DatasetRegistryError("holdout identity cannot be reused under another dataset_id")
 
     def as_dict(self) -> dict[str, dict[str, Any]]:

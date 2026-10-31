@@ -23,6 +23,8 @@ class DatasetProvenanceResult:
     registered_artifact_id: str | None
     observed_artifact_id: str | None
     reasons: tuple[str, ...]
+    registered_content_sha256: str | None = None
+    observed_content_sha256: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -32,6 +34,8 @@ class DatasetProvenanceResult:
             "observed_fingerprint": self.observed_fingerprint,
             "registered_artifact_id": self.registered_artifact_id,
             "observed_artifact_id": self.observed_artifact_id,
+            "registered_content_sha256": self.registered_content_sha256,
+            "observed_content_sha256": self.observed_content_sha256,
             "reasons": list(self.reasons),
         }
 
@@ -60,6 +64,8 @@ def evaluate_dataset_provenance(
             None,
             None if observed_artifact is None else observed_artifact.artifact_id,
             (str(exc),),
+            None,
+            observed_content_sha256.lower(),
         )
 
     observed = observed_content_sha256.lower()
@@ -74,6 +80,8 @@ def evaluate_dataset_provenance(
             None if identity.artifact is None else identity.artifact.artifact_id,
             None if observed_artifact is None else observed_artifact.artifact_id,
             (str(exc),),
+            identity.content_fingerprint,
+            observed,
         )
 
     reasons: list[str] = []
@@ -99,23 +107,15 @@ def evaluate_dataset_provenance(
     elif identity.artifact is not None:
         reasons.append("OBSERVED_ARTIFACT_REQUIRED")
 
-    if reasons:
-        return DatasetProvenanceResult(
-            DatasetProvenanceStatus.FAIL,
-            identity.dataset_id,
-            identity.fingerprint,
-            computed,
-            None if identity.artifact is None else identity.artifact.artifact_id,
-            None if observed_artifact is None else observed_artifact.artifact_id,
-            tuple(reasons),
-        )
-
+    status = DatasetProvenanceStatus.FAIL if reasons else DatasetProvenanceStatus.PASS
     return DatasetProvenanceResult(
-        DatasetProvenanceStatus.PASS,
+        status,
         identity.dataset_id,
         identity.fingerprint,
         computed,
         None if identity.artifact is None else identity.artifact.artifact_id,
         None if observed_artifact is None else observed_artifact.artifact_id,
-        (),
+        tuple(reasons),
+        identity.content_fingerprint,
+        observed,
     )

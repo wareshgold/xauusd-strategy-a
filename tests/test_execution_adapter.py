@@ -116,3 +116,18 @@ def test_receipt_requires_input_identity():
             execution_id="EX1", spec=s, engine_revision="ENGINE1",
             input_fingerprint="", metrics=METRICS,
         )
+
+
+def test_builder_emits_dataset_bound_schema_v2_receipt():
+    s = spec()
+    receipt = build_execution_receipt(
+        execution_id="EX2",
+        spec=s,
+        engine_revision="ENGINE2",
+        input_fingerprint="b" * 64,
+        metrics=METRICS,
+        receipt_schema_version=2,
+        dataset_content_sha256="c" * 64,
+    )
+    assert receipt.receipt_schema_version == 2
+    assert receipt.dataset_content_sha256 == "c" * 64
