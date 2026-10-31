@@ -21,12 +21,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from strategy_factory.adapter import build_execution_receipt  # noqa: E402
 from strategy_factory.datasets import DatasetRegistry, fingerprint_dataset  # noqa: E402
 from strategy_factory.evidence import EvidenceLedger  # noqa: E402
 from strategy_factory.job_events import FactoryJobEventLedger  # noqa: E402
 from strategy_factory.jobs import ResearchJobSpec  # noqa: E402
 from strategy_factory.metrics import ResearchMetrics  # noqa: E402
+from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture  # noqa: E402
 from strategy_factory.orchestrator import (  # noqa: E402
     FactoryOrchestrator,
     RunnerExecutionContext,
@@ -50,36 +50,6 @@ DEFAULT_JOURNAL = ROOT / "runtime" / "factory_synthetic_e2e_job_events.jsonl"
 LIVE_STATUS = ROOT / "runtime" / "factory_worker_status.json"
 LIVE_JOURNAL = ROOT / "runtime" / "factory_job_events.jsonl"
 PRESERVED_DEMO_STATUS = ROOT / "runtime" / "factory_demo_status.json"
-
-
-class DeterministicSyntheticAdapter:
-    """Return a fixed receipt for wiring validation; never defines SP2L rules."""
-
-    engine_revision = "SYNTHETIC-ENGINE-1"
-
-    def __init__(self, input_fingerprint: str) -> None:
-        self.input_fingerprint = input_fingerprint
-
-    def execute(self, spec: HistoricalTestSpec):
-        return build_execution_receipt(
-            execution_id=f"EXEC-{spec.test_id}",
-            spec=spec,
-            engine_revision=self.engine_revision,
-            input_fingerprint=self.input_fingerprint,
-            metrics=ResearchMetrics(
-                trades=4,
-                decisive_trades=4,
-                wins=3,
-                losses=1,
-                ambiguous=0,
-                win_rate=0.75,
-                net_r=2.0,
-                profit_factor=3.0,
-                max_drawdown_r=1.0,
-                gross_profit_r=3.0,
-                gross_loss_r=-1.0,
-            ),
-        )
 
 
 def _readiness_snapshot(spec: HistoricalTestSpec) -> ReadinessSnapshot:
@@ -179,7 +149,26 @@ def run_synthetic_e2e(
     from strategy_factory.runner import ResearchJobRunner
 
     runner = ResearchJobRunner(runs=runs, evidence=evidence, records=records)
-    adapter = DeterministicSyntheticAdapter(content_sha256)
+    adapter = SyntheticExecutionAdapter(
+        SyntheticExecutionFixture(
+            fixture_id="FACTORY-SYNTHETIC-E2E-FIXTURE-V1",
+            execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH,
+            metrics=ResearchMetrics(
+                trades=4,
+                decisive_trades=4,
+                wins=3,
+                losses=1,
+                ambiguous=0,
+                win_rate=0.75,
+                net_r=2.0,
+                profit_factor=3.0,
+                max_drawdown_r=1.0,
+                gross_profit_r=3.0,
+                gross_loss_r=-1.0,
+            ),
+        ),
+        engine_revision="SYNTHETIC-ENGINE-1",
+    )
     snapshot = _readiness_snapshot(spec)
     worker = FactoryWorker("SYNTH-W01")
     fleet = FactoryWorkerFleet([worker], status_path=status_path)
