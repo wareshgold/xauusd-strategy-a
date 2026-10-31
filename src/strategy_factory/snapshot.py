@@ -152,3 +152,26 @@ def build_readiness_snapshot(
     )
     snapshot.validate()
     return snapshot
+
+def validate_readiness_snapshot_against_sources(
+    snapshot: ReadinessSnapshot,
+    manifest: StrategyManifest,
+    passport: StrategyPassport,
+    ledger: SourceResolutionLedger,
+) -> None:
+    """Recompute readiness from supplied source inputs; reject self-asserted summaries.
+
+    The fingerprint establishes integrity, not authority. Fresh Holdout must
+    additionally pass the independently configured authority verifier.
+    """
+    snapshot.validate()
+    expected = build_readiness_snapshot(
+        manifest,
+        passport,
+        ledger,
+        snapshot_revision=snapshot.snapshot_revision,
+    )
+    if snapshot.as_dict() != expected.as_dict():
+        raise ValueError(
+            "readiness snapshot does not match independently recomputed source inputs"
+        )

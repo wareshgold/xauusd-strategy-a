@@ -9,12 +9,19 @@ from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus
 from .datasets import fingerprint_dataset
 from .evidence import EvidenceBundle, EvidenceLedger
 from .execution import ExecutionReceipt, execution_gate
+from .fresh_holdout_authority import (
+    FreshHoldoutAuthorityError,
+    FreshHoldoutAuthorityVerifier,
+    require_verified_authority,
+)
+from .manifest import StrategyManifest
+from .models import GateResult, GateStatus, StrategyPassport
 from .jobs import ResearchJobError, ResearchJobSpec, validate_job_matches_test_spec
-from .models import GateResult, GateStatus
 from .research_provenance import ResearchProvenanceResult, evaluate_research_provenance
 from .research_record import ResearchRecord, ResearchRecordLedger
 from .runs import ResearchRunError, ResearchRunIdentity, ResearchRunLedger
-from .snapshot import ReadinessSnapshot
+from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
+from .source_ledger import SourceResolutionLedger
 from .test_contract import DatasetRole, HistoricalTestSpec
 
 
@@ -57,10 +64,13 @@ class ResearchJobRunner:
         runs: ResearchRunLedger,
         evidence: EvidenceLedger,
         records: ResearchRecordLedger | None = None,
+        fresh_holdout_authority_verifier: FreshHoldoutAuthorityVerifier | None = None,
     ) -> None:
         self.runs = runs
         self.evidence = evidence
         self.records = records or ResearchRecordLedger()
+        # Configured by the trusted application composition root, never per job.
+        self.fresh_holdout_authority_verifier = fresh_holdout_authority_verifier
         self._completed_jobs: set[str] = set()
 
     def run(
@@ -75,6 +85,9 @@ class ResearchJobRunner:
         evidence_id: str | None = None,
         result_revision: str | None = None,
         purpose: str = "HISTORICAL_TEST",
+        readiness_manifest: StrategyManifest | None = None,
+        readiness_passport: StrategyPassport | None = None,
+        readiness_ledger: SourceResolutionLedger | None = None,
     ) -> ResearchJobRunResult:
         """Execute and accept one job under its already-declared semantics.
 
@@ -112,6 +125,58 @@ class ResearchJobRunner:
         except Exception as exc:
             raise ResearchJobRunnerError("readiness snapshot is invalid") from exc
 
+        from .synthetic import SyntheticExecutionAdapter
+        if type(adapter) is SyntheticExecutionAdapter and (
+            purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
+            or spec.dataset.role is not DatasetRole.DEVELOPMENT
+        ):
+            raise ResearchJobRunnerError(
+                "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
+            )
+
+        fresh_holdout_authority = None
+        if spec.dataset.role is DatasetRole.FRESH_HOLDOUT:
+            try:
+                if (
+                    readiness_manifest is None
+                    or readiness_passport is None
+                    or readiness_ledger is None
+                ):
+                    raise FreshHoldoutAuthorityError(
+                        "Fresh Holdout requires Manifest, Passport, and Source Ledger inputs"
+                    )
+                validate_readiness_snapshot_against_sources(
+                    snapshot,
+                    readiness_manifest,
+                    readiness_passport,
+                    readiness_ledger,
+                )
+                readiness = snapshot.source_readiness
+                eligibility = snapshot.passport_eligibility
+                if (
+                    readiness.get("status") != "PASS"
+                    or readiness.get("frozen_geometry_blocked") is not False
+                    or readiness.get("canonical_strategy_eligible") is not True
+                    or eligibility.get("source_status") != "PASS"
+                    or eligibility.get("frozen_geometry") != "READY"
+                    or eligibility.get("canonical_strategy") != "ELIGIBLE"
+                ):
+                    raise FreshHoldoutAuthorityError(
+                        "Fresh Holdout requires recomputed source PASS, frozen geometry READY, and canonical eligibility"
+                    )
+                fresh_holdout_authority = require_verified_authority(
+                    verifier=self.fresh_holdout_authority_verifier,
+                    manifest=readiness_manifest,
+                    passport=readiness_passport,
+                    ledger=readiness_ledger,
+                    strategy_id=spec.strategy_id,
+                    manifest_revision=job.manifest_revision,
+                )
+            except (FreshHoldoutAuthorityError, ValueError) as exc:
+                raise ResearchJobRunnerError(
+                    "Fresh Holdout authority gate rejected the job"
+                ) from exc
+
         dataset_provenance = evaluate_dataset_provenance(
             spec,
             self.runs.registry,
@@ -121,15 +186,6 @@ class ResearchJobRunner:
         if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
             raise ResearchJobRunnerError(
                 "dataset provenance gate rejected the research job"
-            )
-
-        from .synthetic import SyntheticExecutionAdapter
-        if type(adapter) is SyntheticExecutionAdapter and (
-            purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
-            or spec.dataset.role is not DatasetRole.DEVELOPMENT
-        ):
-            raise ResearchJobRunnerError(
-                "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
             )
 
         try:
@@ -196,6 +252,14 @@ class ResearchJobRunner:
                 "dataset_content_sha256": receipt.dataset_content_sha256,
                 "execution_semantics": receipt.execution_semantics.value,
                 "metrics": receipt.metrics.as_dict(),
+                "fresh_holdout_authority": (
+                    {
+                        "source": fresh_holdout_authority[0].authority_reference,
+                        "frozen_geometry": fresh_holdout_authority[1].authority_reference,
+                    }
+                    if fresh_holdout_authority is not None
+                    else None
+                ),
             },
         )
 

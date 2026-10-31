@@ -14,12 +14,19 @@ import hashlib
 
 from .adapter import ExecutionAdapter
 from .datasets import DatasetArtifact
+from .fresh_holdout_authority import (
+    FreshHoldoutAuthorityError,
+    require_verified_authority,
+)
+from .manifest import StrategyManifest
+from .models import StrategyPassport
 from .handoff import ResearchHandoff, validate_evidence_bound_handoff
 from .job_events import FactoryJobEvent
 from .jobs import ResearchJobSpec
 from .research_record import ResearchRecord
 from .runner import ResearchJobRunner, ResearchJobRunResult
-from .snapshot import ReadinessSnapshot
+from .snapshot import ReadinessSnapshot, validate_readiness_snapshot_against_sources
+from .source_ledger import SourceResolutionLedger
 from .test_contract import DatasetRole, HistoricalTestSpec
 
 
@@ -40,6 +47,9 @@ class HoldoutFactoryContext:
     holdout_dataset_artifact_id: str
     holdout_dataset_content_sha256: str
     adapter: ExecutionAdapter
+    readiness_manifest: StrategyManifest | None = None
+    readiness_passport: StrategyPassport | None = None
+    readiness_ledger: SourceResolutionLedger | None = None
     # Explicit caller assertion that the Strategy revision is frozen before
     # this holdout run. The factory only verifies its identity against the
     # upstream immutable research record; it never chooses the revision.
@@ -135,6 +145,39 @@ class HoldoutFactory:
             dataset_artifact_id=source_artifact_id,
         )
 
+        try:
+            validate_readiness_snapshot_against_sources(
+                context.readiness_snapshot,
+                context.readiness_manifest,
+                context.readiness_passport,
+                context.readiness_ledger,
+            )
+            readiness = context.readiness_snapshot.source_readiness
+            eligibility = context.readiness_snapshot.passport_eligibility
+            if (
+                readiness.get("status") != "PASS"
+                or readiness.get("frozen_geometry_blocked") is not False
+                or readiness.get("canonical_strategy_eligible") is not True
+                or eligibility.get("source_status") != "PASS"
+                or eligibility.get("frozen_geometry") != "READY"
+                or eligibility.get("canonical_strategy") != "ELIGIBLE"
+            ):
+                raise FreshHoldoutAuthorityError(
+                    "Fresh Holdout requires source PASS, frozen geometry READY, and canonical eligibility"
+                )
+            require_verified_authority(
+                verifier=self.runner.fresh_holdout_authority_verifier,
+                manifest=context.readiness_manifest,
+                passport=context.readiness_passport,
+                ledger=context.readiness_ledger,
+                strategy_id=context.spec.strategy_id,
+                manifest_revision=context.manifest_revision,
+            )
+        except (FreshHoldoutAuthorityError, ValueError, AttributeError) as exc:
+            raise HoldoutFactoryError(
+                "Fresh Holdout authority gate rejected the job"
+            ) from exc
+
         artifact_path = Path(context.holdout_dataset_artifact_path)
         if not artifact_path.is_file():
             raise HoldoutFactoryError(
@@ -182,6 +225,9 @@ class HoldoutFactory:
             observed_artifact=artifact,
             evidence_id=context.evidence_id,
             purpose=context.purpose,
+            readiness_manifest=context.readiness_manifest,
+            readiness_passport=context.readiness_passport,
+            readiness_ledger=context.readiness_ledger,
         )
         return HoldoutFactoryResult(
             job=job,

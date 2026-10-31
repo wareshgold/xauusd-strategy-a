@@ -306,3 +306,43 @@ def test_runner_rejects_dataset_digest_mismatch():
             )
     with pytest.raises(ResearchJobRunnerError, match="dataset_content_sha256"):
         run_job(runner, job, spec, MismatchedAdapter())
+
+def test_runner_blocks_direct_fresh_holdout_without_trusted_authority_verifier():
+    dataset = TestDataset(
+        "HOLDOUT-AUTHORITY-REQUIRED",
+        DatasetRole.FRESH_HOLDOUT,
+        "H1",
+        "2026-03-01",
+        "2026-04-01",
+        "SYNTHETIC-HOLDOUT",
+        immutable=True,
+    )
+    spec = HistoricalTestSpec(
+        "HOLDOUT-AUTHORITY-TEST",
+        "SP2L-A",
+        "S1",
+        dataset,
+        ExecutionSemantics.TICK_FEASIBLE,
+    )
+    job = ResearchJobSpec.from_test_spec(
+        spec,
+        manifest_revision="M1",
+        dataset_fingerprint=fingerprint_dataset(dataset, DATASET_SHA256),
+        job_id="HOLDOUT-AUTHORITY-JOB",
+    )
+    runner = make_runner()
+    adapter = FakeAdapter()
+
+    with pytest.raises(
+        ResearchJobRunnerError,
+        match="authority gate rejected",
+    ):
+        runner.run(
+            job=job,
+            spec=spec,
+            adapter=adapter,
+            snapshot=make_snapshot(spec),
+            observed_content_sha256=DATASET_SHA256,
+        )
+
+    assert adapter.calls == 0
