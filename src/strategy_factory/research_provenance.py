@@ -66,6 +66,7 @@ def evaluate_research_provenance(
     try:
         _validate_receipt_dataset_identity(
             spec=spec,
+            run=run,
             receipt=receipt,
             dataset_provenance=dataset_provenance,
             adapter=adapter,
