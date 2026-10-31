@@ -219,3 +219,15 @@ def test_synthetic_runner_repeat_is_reproducible():
     assert first.run.fingerprint == second.run.fingerprint
     assert first.receipt.input_fingerprint == second.receipt.input_fingerprint
     assert first.evidence.fingerprint == second.evidence.fingerprint
+
+
+def test_synthetic_adapter_emits_explicit_v2_null_dataset_digest():
+    spec, _ = make_spec_and_job()
+    adapter = SyntheticExecutionAdapter(
+        SyntheticExecutionFixture("FIXTURE-V2", ExecutionSemantics.BAR_CLOSE_RESEARCH, BAR_METRICS)
+    )
+    receipt = adapter.execute(spec)
+    payload = receipt.as_dict()
+    assert receipt.receipt_schema_version == 2
+    assert receipt.dataset_content_sha256 is None
+    assert payload["dataset_content_sha256"] is None
