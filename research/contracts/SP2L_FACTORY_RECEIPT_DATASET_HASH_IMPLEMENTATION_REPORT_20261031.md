@@ -36,11 +36,12 @@
 
 ## CI evidence
 
-At commit `e8a3def1ebc103a01f0924c6760a3baff3e57f11`:
+At commit `80edbe4f4293a57bec048e92b3dfa095b3ed16b5`:
 - Factory Research Tests: **PASS — 151 passed in 1.73s**
-- Factory Journal Lock Cross-Platform Tests: **PASS**
+- Factory Journal Lock Cross-Platform Tests (Ubuntu + Windows): **PASS**
+- SP2L forensic deterministic checks: **PASS**
 
-The focused Factory suite is green. The entire repository test suite was not run, so this is not a claim of full-repository validation.
+The focused Factory suite and the listed cross-platform/deterministic workflows are green. The entire repository test suite was not run, so this is not a claim of full-repository validation.
 
 ## Compatibility and safety boundaries
 
