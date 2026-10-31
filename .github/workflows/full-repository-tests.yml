@@ -9,8 +9,8 @@ permissions:
 
 jobs:
   full-repository-tests:
-    name: Full pytest suite (Python 3.12)
-    runs-on: ubuntu-latest
+    name: Full pytest suite (Windows / Python 3.12)
+    runs-on: windows-latest
     timeout-minutes: 30
     env:
       PYTHONPATH: src
@@ -25,10 +25,10 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install test and collection dependencies
+      - name: Install full test dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest Flask openpyxl tzdata
+          python -m pip install pytest Flask openpyxl tzdata numpy MetaTrader5
 
       - name: Run every repository test
         run: python -m pytest -q
