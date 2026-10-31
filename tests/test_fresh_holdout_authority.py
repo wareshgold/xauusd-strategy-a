@@ -89,3 +89,25 @@ def test_fresh_holdout_rejects_authority_identity_mismatch():
             strategy_id="SP2L-A",
             manifest_revision="M2",
         )
+
+def test_fresh_holdout_rejects_noncanonical_passport_before_verifier():
+    manifest, passport, ledger = _inputs()
+    passport = StrategyPassport(
+        strategy_id=passport.strategy_id,
+        source_revision=passport.source_revision,
+        geometry_revision=passport.geometry_revision,
+        code_revision=passport.code_revision,
+        data_revision=passport.data_revision,
+        execution_model=passport.execution_model,
+        parameter_set=passport.parameter_set,
+        canonical=False,
+    )
+    with pytest.raises(FreshHoldoutAuthorityError, match="canonical passport"):
+        require_verified_authority(
+            verifier=VerifiedStub(),
+            manifest=manifest,
+            passport=passport,
+            ledger=ledger,
+            strategy_id="SP2L-A",
+            manifest_revision="M1",
+        )
