@@ -2,7 +2,6 @@ import hashlib
 
 import pytest
 
-from strategy_factory.adapter import build_execution_receipt
 from strategy_factory.datasets import DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.job_events import FactoryJobEventLedger
@@ -26,41 +25,27 @@ from strategy_factory.test_contract import (
 from strategy_factory.usage import DatasetUsageLedger
 from strategy_factory.worker import FactoryWorker, FactoryWorkerFleet
 from strategy_factory.metrics import ResearchMetrics
+from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
 
 
-class DeterministicSyntheticAdapter:
-    """Synthetic execution engine used only to prove Factory wiring.
-
-    It returns a fixed receipt and never defines Strategy A geometry.
-    """
-
-    engine_revision = "SYNTHETIC-ENGINE-1"
-
-    def __init__(self, input_fingerprint: str) -> None:
-        self.input_fingerprint = input_fingerprint
-
-    def execute(self, spec: HistoricalTestSpec):
-        return build_execution_receipt(
-            execution_id=f"EXEC-{spec.test_id}",
-            spec=spec,
-            engine_revision=self.engine_revision,
-            input_fingerprint=self.input_fingerprint,
-            metrics=ResearchMetrics(
-                trades=4,
-                decisive_trades=4,
-                wins=3,
-                losses=1,
-                ambiguous=0,
-                win_rate=0.75,
-                net_r=2.0,
-                profit_factor=3.0,
-                max_drawdown_r=1.0,
-                gross_profit_r=3.0,
-                gross_loss_r=-1.0,
-            ),
-        )
-
-
+def synthetic_fixture():
+    return SyntheticExecutionFixture(
+        fixture_id="FACTORY-E2E-SYNTHETIC-FIXTURE-1",
+        execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH,
+        metrics=ResearchMetrics(
+            trades=4,
+            decisive_trades=4,
+            wins=3,
+            losses=1,
+            ambiguous=0,
+            win_rate=0.75,
+            net_r=2.0,
+            profit_factor=3.0,
+            max_drawdown_r=1.0,
+            gross_profit_r=3.0,
+            gross_loss_r=-1.0,
+        ),
+    )
 def make_spec_and_job():
     payload = b"SP2L-FACTORY-SYNTHETIC-FIXTURE-V1\\n"
     content_sha256 = hashlib.sha256(payload).hexdigest()
@@ -129,7 +114,7 @@ def build_runner(spec, content_sha256):
     from strategy_factory.runner import ResearchJobRunner
 
     runner = ResearchJobRunner(runs=runs, evidence=evidence, records=records)
-    adapter = DeterministicSyntheticAdapter(content_sha256)
+    adapter = SyntheticExecutionAdapter(synthetic_fixture(), engine_revision="SYNTHETIC-ENGINE-1")
     return runner, adapter, make_snapshot(spec), records
 
 
@@ -208,7 +193,7 @@ def test_synthetic_factory_brain_runs_adapter_to_evidence_record_and_handoff():
 def test_synthetic_factory_brain_rejects_adapter_semantics_drift():
     _payload, content_sha256, spec, job = make_spec_and_job()
 
-    class DriftedAdapter(DeterministicSyntheticAdapter):
+    class DriftedAdapter(SyntheticExecutionAdapter):
         def execute(self, declared_spec):
             receipt = super().execute(declared_spec)
             return type(receipt)(
@@ -220,6 +205,8 @@ def test_synthetic_factory_brain_rejects_adapter_semantics_drift():
                 input_fingerprint=receipt.input_fingerprint,
                 completed=receipt.completed,
                 metrics=receipt.metrics,
+                receipt_schema_version=receipt.receipt_schema_version,
+                dataset_content_sha256=receipt.dataset_content_sha256,
             )
 
     runner, _adapter, snapshot, _records = build_runner(spec, content_sha256)
@@ -230,7 +217,7 @@ def test_synthetic_factory_brain_rejects_adapter_semantics_drift():
 
     context = RunnerExecutionContext(
         spec=spec,
-        adapter=DriftedAdapter(content_sha256),
+        adapter=DriftedAdapter(synthetic_fixture(), engine_revision="SYNTHETIC-ENGINE-1"),
         snapshot=snapshot,
         observed_content_sha256=content_sha256,
         evidence_id="SYNTH-EVIDENCE-DRIFT",
