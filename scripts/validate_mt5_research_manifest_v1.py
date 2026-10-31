@@ -165,7 +165,7 @@ def main() -> int:
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     result = evaluate_manifest(manifest, args.raw_csv)
-    rendered = json.dumps(result, indent=2, ensure_ascii=False) + "\\n"
+    rendered = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
     if args.output:
         args.output.write_text(rendered, encoding="utf-8")
     print(rendered, end="")
