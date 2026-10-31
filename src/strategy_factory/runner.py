@@ -162,6 +162,8 @@ class ResearchJobRunner:
                 raise ResearchJobRunnerError(
                     "result_revision does not match the execution receipt schema"
                 )
+        except ResearchJobRunnerError:
+            raise
         except Exception as exc:
             raise ResearchJobRunnerError("execution adapter failed") from exc
 
