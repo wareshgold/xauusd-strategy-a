@@ -151,3 +151,33 @@ The schema test suite now includes a negative authorization predicate for synthe
 
 This is deliberately not a publication state machine, retry algorithm, read-after-write implementation, or production authorization hook. It does not decide how an authoritative service lookup resolves a lost response, what consistency guarantees are sufficient, how receipt authentication is performed, or whether a remote acknowledgement is durable under a provider's failure model. Those decisions remain blocked on provider selection and an independently reviewed adapter contract. The positive fixture is a logical contract example only; it is not evidence that any real service has acknowledged or retained a checkpoint.
 
+### Provider recovery acceptance matrix — proposal only
+
+This matrix defines evidence to collect when a concrete checkpoint provider and adapter have been selected. It is not a provider-independent implementation specification: exact retry, lookup, consistency, and revision semantics must be mapped to the selected provider's documented guarantees before these cases become executable integration tests.
+
+| Case | Injected condition | Required safety observation | Provider-specific question / evidence |
+|---|---|---|---|
+| R1 — timeout before remote commit | Publish request times out and authoritative lookup finds no checkpoint | State remains unanchored/unknown; protected transition is blocked | How is absence distinguished from delayed visibility or lookup failure? |
+| R2 — commit with lost response | Service commits, but acknowledgement is dropped | No success is inferred from timeout; protected transition stays blocked until authoritative reconciliation verifies the exact request and tip | Can lookup prove the committed request identity and return its original authenticated receipt? |
+| R3 — exact retry | Retry the immutable logical request after R2 | No second logical checkpoint is created; only the exact original checkpoint may be confirmed | What is the provider's idempotency-key scope, retention window, and duplicate-request response? |
+| R4 — conflicting same sequence | Same audit identity and sequence are submitted with a different entry digest | Conflict is surfaced; neither payload is silently accepted as equivalent | Is uniqueness enforced atomically by the service, and what durable conflict evidence is returned? |
+| R5 — lookup unavailable | Publish result is ambiguous and authoritative lookup is unavailable | Remain unknown/unanchored; no local cache or timeout heuristic can authorize | What outage policy and retry/backoff limits apply without weakening the gate? |
+| R6 — stale or divergent lookup | Lookup returns a checkpoint behind the local tip, or a different tip/revision | Block; preserve both local and remote evidence for reconciliation | What consistency guarantee, monotonic revision, and anti-rollback property does the service provide? |
+| R7 — acknowledgement/receipt mismatch | Receipt has wrong request binding, sequence, digest, byte size, service identity, or authentication | Reject receipt and block | How is service identity and receipt authenticity independently verified? |
+| R8 — crash after acknowledgement | Service acknowledges, process crashes before persisting receipt locally | Restart must not assume success from local absence; reconcile with authoritative service before any protected action | Can the service retrieve the original receipt by stable request identity after restart and across retention boundaries? |
+
+#### Required test evidence for each case
+
+- Immutable input request bytes/fields and their independently computed test-fixture digest; do not treat the current draft `request_id` field as canonically derived.
+- Provider, service/API version, environment, adapter build, test timestamp, and authenticated service identity.
+- Fault-injection point and whether the remote service committed, did not commit, or left the result indeterminate, established from provider-side evidence rather than inferred from the client exception.
+- Raw response/receipt or sanitized provider-side lookup evidence, plus verification outcome. Secrets and credentials must never enter test artifacts.
+- Local audit sequence/tip/byte-size before and after the case, and explicit record of whether any downstream transition or runner invocation was attempted.
+- Independent reviewer sign-off that the provider's documented consistency, idempotency, retention, authentication, and conflict semantics actually cover the tested case.
+
+#### Promotion rule
+
+Do not convert this matrix into passing integration tests by mocking the provider's desired answer. First select a provider and document its guarantees; then implement a narrow adapter; then run fault-injection tests against a controlled provider environment and retain independent evidence. A mocked adapter may test caller handling, but cannot prove remote uniqueness, durability, read-after-write consistency, receipt authenticity, or independent administrative control.
+
+Until R1–R8 are demonstrated against the selected service, timeout/lost-response recovery remains unresolved. In particular, no test-only `ACKNOWLEDGED` fixture is evidence of a real checkpoint, and no Fresh Holdout, Forward, Runtime, or production authorization may rely on this proposal.
+
