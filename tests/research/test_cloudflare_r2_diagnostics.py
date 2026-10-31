@@ -13,7 +13,7 @@ BASE = {
 class CloudflareR2ConfigTests(unittest.TestCase):
     def test_defaults_are_bucket_and_prefix_scoped(self):
         cfg = validate_config(BASE)
-        self.assertEqual(cfg["bucket"], "sp2l-factory-evidence")
+        self.assertEqual(cfg["bucket"], "sp2l-forward-evidence")
         self.assertEqual(cfg["prefix"], "forward-test/")
         self.assertTrue(cfg["endpoint"].startswith("https://"))
 
