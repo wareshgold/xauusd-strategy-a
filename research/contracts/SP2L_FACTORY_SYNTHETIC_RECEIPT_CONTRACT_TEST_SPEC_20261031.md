@@ -14,9 +14,11 @@ The current `ExecutionReceipt` has eight positional fields and an `as_dict()` me
 
 ## 2. Trust boundary decision for synthetic mode
 
-**Decision proposed for implementation:** synthetic non-observation is granted by the Factory orchestration boundary only to the exact built-in `SyntheticExecutionAdapter` type, not by a receipt field, adapter-provided string, or freely overridable capability flag.
+**Implemented boundary:** synthetic non-observation is granted by the Factory orchestration boundary only to the exact built-in `SyntheticExecutionAdapter` type, and only when the caller explicitly marks `purpose="SYNTHETIC_INFRASTRUCTURE_TEST"` on a `DEVELOPMENT` dataset. It is not granted by a receipt field, adapter-provided string, or freely overridable capability flag.
 
-- Exact built-in adapter type: synthetic infrastructure mode; its v2 receipt must carry explicit `dataset_content_sha256: null`.
+- Exact built-in adapter type + exact infrastructure purpose + `DEVELOPMENT` dataset role: synthetic infrastructure mode; its v2 receipt must carry explicit `dataset_content_sha256: null`.
+- The runner rejects the built-in synthetic adapter before creating a research run or usage-ledger entry if the purpose is not exactly `SYNTHETIC_INFRASTRUCTURE_TEST` or the dataset role is not `DEVELOPMENT`.
+- `UNTOUCHED_VALIDATION` and `FRESH_HOLDOUT` are therefore ineligible for synthetic non-observation, even if a caller supplies the infrastructure purpose.
 - Every other adapter type, including subclasses/wrappers of the synthetic adapter: dataset-backed mode by default; its v2 receipt must carry a valid digest matching runner observation and registry evidence.
 - A future need for another synthetic adapter requires an explicit trusted registration mechanism in a separate reviewed change. No self-declaration or caller-controlled boolean may silently bypass dataset binding.
 - The runner's pre-execution Dataset Registry/provenance validation remains mandatory in both modes. Synthetic mode means only “adapter did not observe dataset bytes”; it does not waive runner validation or authorize research/holdout acceptance as dataset-verified.
@@ -55,6 +57,8 @@ Test helper requirements:
 | S14 | Dataset digest does not identify execution configuration | Keep SHA(A), change engine revision or parameters | Dataset status remains VERIFIED; execution identity remains independently distinguishable |
 | S15 | Registry/artifact mismatch | Adapter and runner agree on A, registered artifact evidence binds B | MISMATCH; reject |
 | S16 | No side effects on rejection | For S04-S12 and S15, compare registry/ledger/journal state before and after | No new accepted evidence or mutation beyond explicitly documented failed-run behavior |
+| S17 | Synthetic purpose is explicit | Exact built-in adapter on DEVELOPMENT with default `HISTORICAL_TEST` purpose | Reject before run/usage creation |
+| S18 | Synthetic cannot enter protected roles | Exact built-in adapter with `SYNTHETIC_INFRASTRUCTURE_TEST` purpose on UNTOUCHED_VALIDATION or FRESH_HOLDOUT | Reject before run/usage creation |
 
 ## 5. Cross-cutting invariants
 
@@ -73,7 +77,7 @@ Test helper requirements:
 
 1. Resolve receipt schema version placement against persisted result consumers; do not invent a universal deserializer.
 2. Add the independent receipt field while preserving eight-argument positional construction.
-3. Add a trusted runner-side adapter classification using exact built-in synthetic type; default all other adapter types to dataset-backed.
+3. Add a trusted runner-side adapter classification using exact built-in synthetic type; require explicit infrastructure purpose and DEVELOPMENT role; default all other adapter types to dataset-backed.
 4. Populate dataset digest only where the adapter actually reads/verifies the artifact bytes.
 5. Add the focused tests above in small groups, beginning S01-S08.
 6. Add runner/acceptance/provenance outcomes and legacy inspection behavior.
