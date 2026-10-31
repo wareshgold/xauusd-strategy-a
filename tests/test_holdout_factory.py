@@ -58,22 +58,22 @@ def _snapshot(spec):
 class FakeAdapter:
     engine_revision = "HOLDOUT-TEST"
 
-    def __init__(self, dataset_sha):
-        self.dataset_sha = dataset_sha
+    def __init__(self, artifact_path):
+        self.artifact_path = artifact_path
 
     def execute(self, spec):
         return build_execution_receipt(
             execution_id="HOLDOUT-EXEC",
             spec=spec,
             engine_revision=self.engine_revision,
-            input_fingerprint=self.dataset_sha,
+            input_fingerprint=hashlib.sha256(f"FAKE-HOLDOUT:{spec.test_id}:{hashlib.sha256(self.artifact_path.read_bytes()).hexdigest()}".encode()).hexdigest(),
             metrics=ResearchMetrics(
                 trades=2, decisive_trades=2, wins=1, losses=1, ambiguous=0,
                 win_rate=0.5, net_r=0.0, profit_factor=1.0,
                 max_drawdown_r=1.0, gross_profit_r=1.0, gross_loss_r=-1.0,
             ),
             receipt_schema_version=2,
-            dataset_content_sha256=self.dataset_sha,
+            dataset_content_sha256=hashlib.sha256(self.artifact_path.read_bytes()).hexdigest(),
         )
 
 
@@ -152,7 +152,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
     upstream_result = upstream_runner.run(
         job=upstream_job,
         spec=source_spec,
-        adapter=FakeAdapter(source_sha),
+        adapter=FakeAdapter(source_path),
         snapshot=_snapshot(source_spec),
         observed_content_sha256=source_sha,
         observed_artifact=registry.get(source_dataset.dataset_id).artifact,
@@ -200,7 +200,7 @@ def _context(tmp_path, *, same_dataset=False, frozen=True, strategy_revision="RE
         holdout_dataset_artifact_path=holdout_path,
         holdout_dataset_artifact_id=holdout_artifact_id,
         holdout_dataset_content_sha256=holdout_sha,
-        adapter=FakeAdapter(holdout_sha),
+        adapter=FakeAdapter(holdout_path),
         strategy_revision_frozen=frozen,
     )
 
