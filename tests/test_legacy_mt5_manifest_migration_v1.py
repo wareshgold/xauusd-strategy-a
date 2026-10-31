@@ -53,7 +53,7 @@ def test_migration_recomputes_gap_from_raw_and_does_not_copy_legacy_gap_fields(t
     assert migrated["unclassified_gaps"][0]["interval_minutes"] == 3.0
     assert migrated["unclassified_gaps"][0]["kind"] == "unclassified_gap"
     assert "gap_ranges" not in migrated
-    assert "missing_bars" not in str(migrated)
+    assert "missing_bars" not in migrated
     assert migrated["raw"]["sha256"] == legacy["artifact_sha256"]
 
 
