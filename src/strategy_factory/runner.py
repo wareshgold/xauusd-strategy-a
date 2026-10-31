@@ -211,6 +211,9 @@ class ResearchJobRunner:
             run=run,
             receipt=receipt,
             evidence=evidence,
+            dataset_provenance=dataset_provenance,
+            adapter=adapter,
+            purpose=purpose,
         )
         if acceptance.status is not GateStatus.PASS:
             raise ResearchJobRunnerError(
@@ -233,6 +236,8 @@ class ResearchJobRunner:
             audit=audit,
             snapshot=snapshot,
             dataset_provenance=dataset_provenance,
+            adapter=adapter,
+            purpose=purpose,
         )
         provenance_gate = GateResult(
             name="RESEARCH_PROVENANCE",
