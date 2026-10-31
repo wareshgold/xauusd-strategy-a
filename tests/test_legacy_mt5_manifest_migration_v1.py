@@ -17,7 +17,7 @@ def make_pair(tmp_path: Path):
         {"timestamp": "2026-08-21T01:03:00Z", "open": "1.5", "high": "2", "low": "1", "close": "1.8", "tick_volume": "11", "spread": "2", "real_volume": "0"},
     ]
     with raw.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(rows[0]), lineterminator="\\n")
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]), lineterminator=chr(10))
         writer.writeheader()
         writer.writerows(rows)
     legacy = {
@@ -59,7 +59,7 @@ def test_migration_recomputes_gap_from_raw_and_does_not_copy_legacy_gap_fields(t
 
 def test_migration_fails_closed_on_raw_hash_mismatch(tmp_path):
     legacy, raw = make_pair(tmp_path)
-    raw.write_text(raw.read_text(encoding="utf-8") + "\\n", encoding="utf-8")
+    raw.write_text(raw.read_text(encoding="utf-8") + chr(10), encoding="utf-8")
     with pytest.raises(ValueError, match="LEGACY_RAW_SHA256_MISMATCH"):
         migrate_legacy_manifest(legacy, raw)
 
