@@ -84,3 +84,23 @@ def test_manifest_count_mismatch_is_rejected(tmp_path):
     result = evaluate_manifest(manifest, raw)
     assert result["status"] == "REJECTED"
     assert "RAW_ROW_COUNT_MISMATCH" in result["errors"]
+
+
+def test_manifest_cannot_hide_gap_present_in_raw_csv(tmp_path):
+    manifest, raw = fixture(tmp_path, audit="AUDITED_UNCLASSIFIED_COVERAGE")
+    manifest["timestamp_discontinuities"] = []
+    manifest["discontinuity_count"] = 0
+    manifest["unclassified_gaps"] = []
+    result = evaluate_manifest(manifest, raw)
+    assert result["status"] == "REJECTED"
+    assert "RAW_DISCONTINUITIES_DO_NOT_MATCH_MANIFEST" in result["errors"]
+
+
+def test_invalid_ohlc_in_raw_csv_is_rejected(tmp_path):
+    manifest, raw = fixture(tmp_path)
+    text = raw.read_text(encoding="utf-8")
+    raw.write_text(text.replace(",2,0.5,1.5,", ",0.5,0.5,1.5,", 1), encoding="utf-8")
+    manifest["raw"]["sha256"] = hashlib.sha256(raw.read_bytes()).hexdigest()
+    result = evaluate_manifest(manifest, raw)
+    assert result["status"] == "REJECTED"
+    assert "RAW_OHLC_INVALID" in result["errors"]
