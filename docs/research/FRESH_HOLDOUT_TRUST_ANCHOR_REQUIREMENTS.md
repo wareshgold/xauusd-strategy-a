@@ -144,3 +144,10 @@ Although signature verification, one-time envelope consumption, and hash-chained
 The schema test suite now includes a deliberately small in-memory model for the documented replay boundary: within one audit identity, the same sequence and same entry digest is classified as an exact replay; the same identity and sequence with a different entry digest is classified as a conflict. It also checks that a different audit identity does not collide solely because its sequence matches.
 
 These are synthetic contract tests only. They do not define canonical request serialization, derive or verify `request_id`, establish remote uniqueness/transaction guarantees, resolve lost-response behavior, or implement a checkpoint service. Those remain open design and integration requirements. No Fresh Holdout authorization may rely on this test model.
+
+### Synthetic timeout and acknowledgement boundary tests — not recovery logic
+
+The schema test suite now includes a negative authorization predicate for synthetic observations. It asserts that a pending publication, timeout/unknown result, conflict, unverified receipt, or receipt whose request binding does not match cannot pass the test-only authorization predicate. The sole positive fixture requires an acknowledged publication together with a verified receipt and matching request binding.
+
+This is deliberately not a publication state machine, retry algorithm, read-after-write implementation, or production authorization hook. It does not decide how an authoritative service lookup resolves a lost response, what consistency guarantees are sufficient, how receipt authentication is performed, or whether a remote acknowledgement is durable under a provider's failure model. Those decisions remain blocked on provider selection and an independently reviewed adapter contract. The positive fixture is a logical contract example only; it is not evidence that any real service has acknowledged or retained a checkpoint.
+
