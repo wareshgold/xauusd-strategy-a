@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from .acceptance import _validate_receipt_dataset_identity
 from .audit import ResearchAuditRecord
 from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus
 from .evidence import EvidenceBundle
@@ -44,6 +45,8 @@ def evaluate_research_provenance(
     audit: ResearchAuditRecord,
     snapshot: ReadinessSnapshot,
     dataset_provenance: DatasetProvenanceResult,
+    adapter: object | None = None,
+    purpose: str | None = None,
 ) -> ResearchProvenanceResult:
     """Require one exact provenance chain from TestSpec through Audit.
 
@@ -59,6 +62,17 @@ def evaluate_research_provenance(
         reasons.append("DATASET_PROVENANCE_BLOCKED")
     elif dataset_provenance.status is DatasetProvenanceStatus.FAIL:
         reasons.append("DATASET_PROVENANCE_FAIL")
+
+    try:
+        _validate_receipt_dataset_identity(
+            spec=spec,
+            receipt=receipt,
+            dataset_provenance=dataset_provenance,
+            adapter=adapter,
+            purpose=purpose,
+        )
+    except Exception as exc:
+        reasons.append(f"RECEIPT_DATASET_IDENTITY:{exc}")
 
     try:
         spec.validate()
