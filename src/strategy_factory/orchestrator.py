@@ -338,7 +338,7 @@ class RunnerExecutionContext:
     snapshot: Any
     observed_content_sha256: str
     evidence_id: str | None = None
-    result_revision: str = "RECEIPT_METRICS_V1"
+    result_revision: str | None = None
     purpose: str = "HISTORICAL_TEST"
 
 

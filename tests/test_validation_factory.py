@@ -34,6 +34,9 @@ from strategy_factory.validation_factory import (
 class FakeAdapter:
     engine_revision = "TEST-VALIDATION-1"
 
+    def __init__(self, dataset_path: Path):
+        self.dataset_path = dataset_path
+
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
         metrics = ResearchMetrics(
             trades=2,
@@ -52,20 +55,25 @@ class FakeAdapter:
             execution_id="VALIDATION-EXEC-1",
             spec=spec,
             engine_revision=self.engine_revision,
-            input_fingerprint="a" * 64,
+            input_fingerprint=hashlib.sha256(f"FAKE-VALIDATION:{spec.test_id}:{hashlib.sha256(self.dataset_path.read_bytes()).hexdigest()}".encode()).hexdigest(),
             metrics=metrics,
+            receipt_schema_version=2,
+            dataset_content_sha256=hashlib.sha256(self.dataset_path.read_bytes()).hexdigest(),
         )
 
 
 def _context(tmp_path: Path, *, same_dataset: bool = False):
-    discovery_sha = "1" * 64
+    discovery_bytes = b'{"schema_version":1,"research_only":true,"bars":[1]}'
+    discovery_path = tmp_path / "discovery.json"
+    discovery_path.write_bytes(discovery_bytes)
+    discovery_sha = hashlib.sha256(discovery_bytes).hexdigest()
     validation_bytes = b"validation-dataset"
     validation_sha = hashlib.sha256(validation_bytes).hexdigest()
     source_artifact = DatasetArtifact(
         artifact_id="MT5-M1-" + discovery_sha[:16],
-        location="discovery.json",
+        location=str(discovery_path),
         content_sha256=discovery_sha,
-        byte_size=1,
+        byte_size=len(discovery_bytes),
         format="json",
     )
     validation_artifact_id = (
@@ -153,17 +161,23 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         execution_id="STABILITY-1",
         spec=source_spec,
         engine_revision="TEST-STABILITY-1",
-        input_fingerprint="b" * 64,
+        input_fingerprint=hashlib.sha256(f"TEST-STABILITY:{discovery_sha}".encode()).hexdigest(),
         metrics=metrics,
+        receipt_schema_version=2,
+        dataset_content_sha256=discovery_sha,
     )
     evidence_bundle = evidence.record(
         __import__("strategy_factory.evidence", fromlist=["EvidenceBundle"]).EvidenceBundle(
             evidence_id="EVIDENCE-DISCOVERY-1",
             run_id=source_run.run_id,
             run_fingerprint=source_run.fingerprint,
-            result_revision="TEST",
+            result_revision="RECEIPT_METRICS_V2",
             metrics=metrics,
-            result={"execution_id": receipt.execution_id},
+            result={
+                "execution_id": receipt.execution_id,
+                "receipt_schema_version": 2,
+                "dataset_content_sha256": discovery_sha,
+            },
         )
     )
     from strategy_factory.audit import bind_research_audit
@@ -199,6 +213,8 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         ).evaluate_dataset_provenance(
             source_spec, dataset_registry, discovery_sha, observed_artifact=source_artifact
         ),
+        adapter=object(),
+        purpose="STABILITY",
     )
     source_record = __import__(
         "strategy_factory.research_record",
@@ -265,7 +281,7 @@ def _context(tmp_path: Path, *, same_dataset: bool = False):
         validation_dataset_artifact_path=dataset_path,
         validation_dataset_artifact_id=validation_artifact_id,
         validation_dataset_content_sha256=validation_sha,
-        adapter=FakeAdapter(),
+        adapter=FakeAdapter(dataset_path),
     )
     return runner, context
 

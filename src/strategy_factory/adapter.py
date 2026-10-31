@@ -32,6 +32,8 @@ def build_execution_receipt(
     input_fingerprint: str,
     metrics: ResearchMetrics,
     completed: bool = True,
+    receipt_schema_version: int = 1,
+    dataset_content_sha256: str | None = None,
 ) -> ExecutionReceipt:
     """Convert a completed engine result into the canonical Factory receipt."""
     spec.validate()
@@ -44,6 +46,8 @@ def build_execution_receipt(
         input_fingerprint=input_fingerprint,
         completed=completed,
         metrics=metrics,
+        receipt_schema_version=receipt_schema_version,
+        dataset_content_sha256=dataset_content_sha256,
     )
     receipt.validate()
     return receipt

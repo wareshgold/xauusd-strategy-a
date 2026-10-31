@@ -27,10 +27,10 @@ BAR_METRICS = ResearchMetrics(4, 4, 3, 1, 0, 0.75, 2.0, 3.0, 0.75, 3.0, -1.0)
 TICK_METRICS = ResearchMetrics(5, 4, 2, 2, 1, 0.5, 1.25, 2.0, 1.0, 3.0, -1.75)
 
 
-def make_spec_and_job(semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH):
+def make_spec_and_job(semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH, role=DatasetRole.DEVELOPMENT):
     dataset = TestDataset(
-        "SYNTH-DATA-1", DatasetRole.DEVELOPMENT, "SYNTH-R1",
-        "2026-01-01", "2026-02-01", "SYNTHETIC",
+        "SYNTH-DATA-1", role, "SYNTH-R1",
+        "2026-01-01", "2026-02-01", "SYNTHETIC", immutable=True,
     )
     spec = HistoricalTestSpec(
         "SYNTH-TEST-1", "SYNTH-STRATEGY", "SYNTH-STRATEGY-R1",
@@ -159,6 +159,7 @@ def test_synthetic_runner_completes_end_to_end_for_bar_close():
         job=job, spec=spec,
         snapshot=make_snapshot(spec),
         observed_content_sha256="a" * 64,
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
         adapter=SyntheticExecutionAdapter(
             SyntheticExecutionFixture("FIXTURE-BAR", ExecutionSemantics.BAR_CLOSE_RESEARCH, BAR_METRICS)
         ),
@@ -178,6 +179,7 @@ def test_synthetic_runner_completes_end_to_end_for_tick_feasible():
         ),
         snapshot=make_snapshot(spec),
         observed_content_sha256="a" * 64,
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
     )
     assert result.accepted
     assert result.receipt.execution_semantics is ExecutionSemantics.TICK_FEASIBLE
@@ -196,6 +198,7 @@ def test_synthetic_runner_failure_is_isolated_at_adapter_boundary():
             adapter=adapter,
             snapshot=make_snapshot(spec),
             observed_content_sha256="a" * 64,
+            purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
         )
 
 
@@ -208,6 +211,7 @@ def test_synthetic_runner_repeat_is_reproducible():
         adapter=SyntheticExecutionAdapter(fixture),
         snapshot=make_snapshot(spec),
         observed_content_sha256="a" * 64,
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
     )
     second = make_runner(spec).run(
         job=job,
@@ -215,7 +219,54 @@ def test_synthetic_runner_repeat_is_reproducible():
         adapter=SyntheticExecutionAdapter(fixture),
         snapshot=make_snapshot(spec),
         observed_content_sha256="a" * 64,
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
     )
     assert first.run.fingerprint == second.run.fingerprint
     assert first.receipt.input_fingerprint == second.receipt.input_fingerprint
     assert first.evidence.fingerprint == second.evidence.fingerprint
+
+
+def test_synthetic_adapter_emits_explicit_v2_null_dataset_digest():
+    spec, _ = make_spec_and_job()
+    adapter = SyntheticExecutionAdapter(
+        SyntheticExecutionFixture("FIXTURE-V2", ExecutionSemantics.BAR_CLOSE_RESEARCH, BAR_METRICS)
+    )
+    receipt = adapter.execute(spec)
+    payload = receipt.as_dict()
+    assert receipt.receipt_schema_version == 2
+    assert receipt.dataset_content_sha256 is None
+    assert payload["dataset_content_sha256"] is None
+
+
+def test_synthetic_runner_rejects_default_research_purpose_before_run_creation():
+    spec, job = make_spec_and_job()
+    runner = make_runner(spec)
+    with pytest.raises(ResearchJobRunnerError, match="restricted to SYNTHETIC_INFRASTRUCTURE_TEST"):
+        runner.run(
+            job=job,
+            spec=spec,
+            adapter=SyntheticExecutionAdapter(
+                SyntheticExecutionFixture("FIXTURE-BAR", ExecutionSemantics.BAR_CLOSE_RESEARCH, BAR_METRICS)
+            ),
+            snapshot=make_snapshot(spec),
+            observed_content_sha256="a" * 64,
+        )
+    assert runner.runs.usage_ledger.entries() == ()
+
+
+def test_synthetic_runner_rejects_validation_and_holdout_roles():
+    for role in (DatasetRole.UNTOUCHED_VALIDATION, DatasetRole.FRESH_HOLDOUT):
+        spec, job = make_spec_and_job(role=role)
+        runner = make_runner(spec)
+        with pytest.raises(ResearchJobRunnerError, match="restricted to SYNTHETIC_INFRASTRUCTURE_TEST"):
+            runner.run(
+                job=job,
+                spec=spec,
+                adapter=SyntheticExecutionAdapter(
+                    SyntheticExecutionFixture("FIXTURE-BAR", ExecutionSemantics.BAR_CLOSE_RESEARCH, BAR_METRICS)
+                ),
+                snapshot=make_snapshot(spec),
+                observed_content_sha256="a" * 64,
+                purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
+            )
+        assert runner.runs.usage_ledger.entries() == ()

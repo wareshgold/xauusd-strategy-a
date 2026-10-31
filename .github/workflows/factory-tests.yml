@@ -35,4 +35,11 @@ jobs:
           tests/test_factory_job_events.py \
           tests/test_factory_worker_journal_audit.py \
           tests/test_factory_test_journal_isolation.py \
-          tests/test_factory_orchestrator_default_journal_isolation.py -q
+          tests/test_factory_orchestrator_default_journal_isolation.py \
+          tests/test_execution_contract.py \
+          tests/test_execution_adapter.py \
+          tests/test_synthetic_execution.py \
+          tests/test_research_job_runner.py \
+          tests/test_research_provenance.py \
+          tests/test_evidence_acceptance.py \
+          tests/test_factory_synthetic_e2e_run.py -q

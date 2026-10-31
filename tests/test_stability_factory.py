@@ -112,16 +112,22 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
     class FakeAdapter:
         engine_revision = "DISCOVERY-TEST"
         def execute(self, declared_spec):
+            dataset_sha = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+            input_fingerprint = hashlib.sha256(
+                f"FAKE-DISCOVERY:{declared_spec.test_id}:{dataset_sha}".encode()
+            ).hexdigest()
             return build_execution_receipt(
                 execution_id="DISCOVERY-EXEC",
                 spec=declared_spec,
                 engine_revision=self.engine_revision,
-                input_fingerprint=sha,
+                input_fingerprint=input_fingerprint,
                 metrics=ResearchMetrics(
                     trades=1, decisive_trades=1, wins=1, losses=0, ambiguous=0,
                     win_rate=1.0, net_r=1.0, profit_factor=None,
                     max_drawdown_r=0.0, gross_profit_r=1.0, gross_loss_r=0.0,
                 ),
+                receipt_schema_version=2,
+                dataset_content_sha256=dataset_sha,
             )
 
     upstream = ResearchJobRunner(runs=runs, evidence=evidence, records=records)
@@ -152,12 +158,15 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
         def execute(self, declared_spec):
             return build_execution_receipt(
                 execution_id="STABILITY-EXEC", spec=declared_spec,
-                engine_revision="STABILITY-TEST", input_fingerprint=sha,
+                engine_revision="STABILITY-TEST",
+                input_fingerprint=hashlib.sha256(f"FAKE-STABILITY:{declared_spec.test_id}:{hashlib.sha256(dataset_path.read_bytes()).hexdigest()}".encode()).hexdigest(),
                 metrics=ResearchMetrics(
                     trades=1, decisive_trades=1, wins=1, losses=0, ambiguous=0,
                     win_rate=1.0, net_r=1.0, profit_factor=None,
                     max_drawdown_r=0.0, gross_profit_r=1.0, gross_loss_r=0.0,
                 ),
+                receipt_schema_version=2,
+                dataset_content_sha256=hashlib.sha256(dataset_path.read_bytes()).hexdigest(),
             )
     monkeypatch.setattr(module, "StabilityMatrixAdapter", FakeStabilityAdapter)
 

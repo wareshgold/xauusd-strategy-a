@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from .acceptance import _validate_receipt_dataset_identity
 from .audit import ResearchAuditRecord
 from .dataset_provenance import DatasetProvenanceResult, DatasetProvenanceStatus
 from .evidence import EvidenceBundle
@@ -44,6 +45,8 @@ def evaluate_research_provenance(
     audit: ResearchAuditRecord,
     snapshot: ReadinessSnapshot,
     dataset_provenance: DatasetProvenanceResult,
+    adapter: object | None = None,
+    purpose: str | None = None,
 ) -> ResearchProvenanceResult:
     """Require one exact provenance chain from TestSpec through Audit.
 
@@ -59,6 +62,18 @@ def evaluate_research_provenance(
         reasons.append("DATASET_PROVENANCE_BLOCKED")
     elif dataset_provenance.status is DatasetProvenanceStatus.FAIL:
         reasons.append("DATASET_PROVENANCE_FAIL")
+
+    try:
+        _validate_receipt_dataset_identity(
+            spec=spec,
+            run=run,
+            receipt=receipt,
+            dataset_provenance=dataset_provenance,
+            adapter=adapter,
+            purpose=purpose,
+        )
+    except Exception as exc:
+        reasons.append(f"RECEIPT_DATASET_IDENTITY:{exc}")
 
     try:
         spec.validate()
@@ -102,6 +117,8 @@ def evaluate_research_provenance(
             ("EVIDENCE_RUN_ID", evidence.run_id == run.run_id),
             ("EVIDENCE_RUN_FINGERPRINT", evidence.run_fingerprint == run.fingerprint),
             ("EVIDENCE_METRICS", evidence.metrics == receipt.metrics),
+            ("EVIDENCE_RECEIPT_SCHEMA", receipt.receipt_schema_version != 2 or evidence.result.get("receipt_schema_version") == 2),
+            ("EVIDENCE_DATASET_CONTENT_SHA256", "dataset_content_sha256" in evidence.result and evidence.result.get("dataset_content_sha256") == receipt.dataset_content_sha256 if receipt.receipt_schema_version == 2 else True),
         )
         reasons.extend(name for name, ok in evidence_checks if not ok)
     except Exception as exc:
