@@ -157,4 +157,6 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
     assert output.result.run.artifact_id == artifact.artifact_id
     assert output.result.record.provenance_status.value == "PASS"
     assert output.job.dataset_fingerprint == fingerprint_dataset(dataset, sha)
-    assert output.result.receipt.input_fingerprint == sha
+    assert output.result.receipt.input_fingerprint == hashlib.sha256(
+        f"FAKE-DISCOVERY:{spec.test_id}:{sha}".encode()
+    ).hexdigest()
