@@ -14,7 +14,7 @@ from strategy_factory.usage import DatasetUsageLedger
 METRICS = ResearchMetrics(10, 10, 6, 4, 0, 0.6, 2.5, 1.4, 1.2, 6.0, -3.5)
 
 
-def setup():
+def setup(purpose="DEVELOPMENT"):
     dataset = TestDataset(
         "D1", DatasetRole.DEVELOPMENT, "R1",
         "2026-01-01", "2026-02-01", "FIXTURE"
@@ -32,7 +32,7 @@ def setup():
         manifest_revision="M1",
         run_id="RUN1",
         observed_fingerprint="a" * 64,
-        purpose="DEVELOPMENT",
+        purpose=purpose,
     )
     receipt = ExecutionReceipt(
         "EX1", "T1", "S1", ExecutionSemantics.TICK_FEASIBLE,
@@ -129,9 +129,9 @@ def test_acceptance_does_not_compare_performance_values():
     assert result.status is GateStatus.PASS
 
 
-def _schema_v2_case(dataset_digest):
+def _schema_v2_case(dataset_digest, purpose="HISTORICAL_TEST"):
     from strategy_factory.dataset_provenance import evaluate_dataset_provenance
-    spec, run, _, _ = setup()
+    spec, run, _, _ = setup(purpose=purpose)
     registry = DatasetRegistry()
     registry.register(spec.dataset, "a" * 64)
     dataset_provenance = evaluate_dataset_provenance(spec, registry, "a" * 64)
@@ -174,7 +174,9 @@ def test_schema_v2_acceptance_rejects_digest_mismatch_even_when_evidence_mirrors
 def test_schema_v2_acceptance_allows_exact_builtin_synthetic_adapter_only():
     from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
 
-    spec, run, receipt, evidence, dataset_provenance, _ = _schema_v2_case(None)
+    spec, run, receipt, evidence, dataset_provenance, _ = _schema_v2_case(
+        None, purpose="SYNTHETIC_INFRASTRUCTURE_TEST"
+    )
     adapter = SyntheticExecutionAdapter(
         SyntheticExecutionFixture("FIXTURE-1", ExecutionSemantics.TICK_FEASIBLE, METRICS)
     )
@@ -189,12 +191,29 @@ def test_schema_v2_acceptance_allows_exact_builtin_synthetic_adapter_only():
 def test_schema_v2_acceptance_rejects_synthetic_adapter_subclass_null_exception():
     from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
 
-    spec, run, receipt, evidence, dataset_provenance, _ = _schema_v2_case(None)
+    spec, run, receipt, evidence, dataset_provenance, _ = _schema_v2_case(
+        None, purpose="SYNTHETIC_INFRASTRUCTURE_TEST"
+    )
 
     class WrappedSyntheticAdapter(SyntheticExecutionAdapter):
         pass
 
     adapter = WrappedSyntheticAdapter(
+        SyntheticExecutionFixture("FIXTURE-1", ExecutionSemantics.TICK_FEASIBLE, METRICS)
+    )
+    result = evidence_acceptance_gate(
+        spec=spec, run=run, receipt=receipt, evidence=evidence,
+        dataset_provenance=dataset_provenance, adapter=adapter,
+        purpose="SYNTHETIC_INFRASTRUCTURE_TEST",
+    )
+    assert result.status is GateStatus.FAIL
+
+
+def test_schema_v2_acceptance_rejects_synthetic_purpose_not_bound_to_run():
+    from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
+
+    spec, run, receipt, evidence, dataset_provenance, _ = _schema_v2_case(None)
+    adapter = SyntheticExecutionAdapter(
         SyntheticExecutionFixture("FIXTURE-1", ExecutionSemantics.TICK_FEASIBLE, METRICS)
     )
     result = evidence_acceptance_gate(
