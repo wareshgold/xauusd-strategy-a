@@ -29,6 +29,8 @@ class ExecutionReceipt:
     input_fingerprint: str
     completed: bool
     metrics: ResearchMetrics
+    receipt_schema_version: int = 1
+    dataset_content_sha256: str | None = None
 
     def validate(self) -> None:
         required = (
@@ -42,13 +44,21 @@ class ExecutionReceipt:
             raise ExecutionContractError("execution receipt identity is incomplete")
         if not isinstance(self.execution_semantics, ExecutionSemantics):
             raise ExecutionContractError("execution_semantics must be explicit")
+        if self.receipt_schema_version not in {1, 2}:
+            raise ExecutionContractError("receipt_schema_version must be 1 or 2")
+        if self.receipt_schema_version == 1 and self.dataset_content_sha256 is not None:
+            raise ExecutionContractError("legacy receipt schema v1 cannot carry dataset_content_sha256")
+        if self.receipt_schema_version == 2 and self.dataset_content_sha256 is not None:
+            digest = self.dataset_content_sha256
+            if len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
+                raise ExecutionContractError("dataset_content_sha256 must be a lowercase SHA-256 hex digest or null")
         if not self.completed:
             raise ExecutionContractError("incomplete execution cannot produce accepted evidence")
         self.metrics.validate()
 
     def as_dict(self) -> dict[str, Any]:
         self.validate()
-        return {
+        payload = {
             "execution_id": self.execution_id,
             "test_id": self.test_id,
             "strategy_revision": self.strategy_revision,
@@ -57,7 +67,11 @@ class ExecutionReceipt:
             "input_fingerprint": self.input_fingerprint,
             "completed": self.completed,
             "metrics": self.metrics.as_dict(),
+            "receipt_schema_version": self.receipt_schema_version,
         }
+        if self.receipt_schema_version == 2:
+            payload["dataset_content_sha256"] = self.dataset_content_sha256
+        return payload
 
 
 def validate_execution_binding(
