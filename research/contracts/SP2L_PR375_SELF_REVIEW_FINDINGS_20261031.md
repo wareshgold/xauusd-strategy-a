@@ -47,3 +47,38 @@ This means a caller invoking these gates outside the normal Runner path can rece
 ## Decision
 
 PR #375 must remain unmerged until the Acceptance/Provenance independent-verification gap is corrected and the targeted tests/CI pass at the new head.
+
+
+## Follow-up verification — 2026-10-31
+
+The blocking finding above was corrected on PR #375. The original finding remains preserved as the reason for the follow-up.
+
+- Corrected PR head: `e1fe34078b87b8e6d2a41eb38dfa8910c5206808`
+- `DatasetProvenanceResult` now carries `registered_content_sha256` and `observed_content_sha256` independently of the composite fingerprint.
+- Acceptance and Research Provenance both call the same strict receipt/dataset identity policy:
+  - Dataset-backed V2: receipt digest must be non-null and equal both raw registered and observed SHA-256 values.
+  - Synthetic null: exact built-in adapter type, exact `SYNTHETIC_INFRASTRUCTURE_TEST` purpose, DEVELOPMENT role, and explicit null receipt digest.
+  - Subclasses/wrappers do not inherit the null exception.
+  - V1 remains readable but acceptance reports `dataset_verified=false`; the new Runner path rejects V1.
+- Direct negative tests cover mirrored null and mirrored mismatching digest at both standalone gates; Acceptance tests also cover exact synthetic allowance and subclass rejection.
+- Validation Factory fixtures now pass the required adapter/purpose context.
+
+### CI at corrected head
+
+| Workflow | Run ID | Result |
+|---|---:|---|
+| Factory Research Tests | 41195484996 | success — 159 passed in 1.93s |
+| SP2L forensic deterministic checks | 41195484997 | success |
+| Factory Journal Lock Cross-Platform Tests | 41195485002 | success — Ubuntu and Windows |
+
+An earlier run at an intermediate head exposed two Validation Factory fixture failures because the standalone Provenance gate now requires explicit adapter/purpose context. The fixtures were corrected, and all three workflows passed at the corrected head.
+
+### Current decision
+
+- The specific standalone-gate gap is **corrected in code and covered by focused tests/CI**.
+- The full repository test suite remains unrun.
+- PR #375 remains OPEN, Ready for review, mergeable, and **not merged**.
+- No independent human approval has been recorded. The connected GitHub identity is the PR author, so a formal self-authored REQUEST_CHANGES review is unavailable.
+- Human review and explicit user authorization are still required before merge.
+
+This follow-up does not establish statistical edge, canonical SP2L geometry, untouched validation, Fresh Holdout completion, or production readiness.
