@@ -104,3 +104,81 @@ def test_invalid_ohlc_in_raw_csv_is_rejected(tmp_path):
     result = evaluate_manifest(manifest, raw)
     assert result["status"] == "REJECTED"
     assert "RAW_OHLC_INVALID" in result["errors"]
+
+
+def _run_cli_fixture(tmp_path: Path, *, audit: str):
+    import json
+    import subprocess
+    import sys
+
+    manifest, raw = fixture(tmp_path, audit=audit)
+    manifest_path = tmp_path / "manifest.json"
+    report_path = tmp_path / "report.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/validate_mt5_research_manifest_v1.py",
+            "--manifest", str(manifest_path),
+            "--raw-csv", str(raw),
+            "--output", str(report_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert report_path.is_file()
+    return completed, json.loads(report_path.read_text(encoding="utf-8"))
+
+
+def test_cli_report_only_accepts_contiguous_fixture_without_authorizing_confirmatory_use(tmp_path):
+    completed, report = _run_cli_fixture(tmp_path, audit="AUDITED_PASS")
+    assert completed.returncode == 0
+    assert report["status"] == "ACCEPTED"
+    assert report["research_replay_eligible"] is True
+    assert report["confirmatory_validation_eligible"] is False
+    assert report["production_eligible"] is False
+
+
+def test_cli_report_only_preserves_unclassified_fixture_as_ineligible(tmp_path):
+    completed, report = _run_cli_fixture(
+        tmp_path, audit="AUDITED_UNCLASSIFIED_COVERAGE"
+    )
+    assert completed.returncode == 0
+    assert report["status"] == "ACCEPTED_WITH_UNCLASSIFIED_COVERAGE"
+    assert report["research_replay_eligible"] is False
+    assert report["confirmatory_validation_eligible"] is False
+    assert report["production_eligible"] is False
+
+
+def test_cli_report_only_writes_rejected_fixture_and_returns_rejection_code(tmp_path):
+    import json
+
+    manifest, raw = fixture(tmp_path)
+    manifest["raw"]["sha256"] = "0" * 64
+    manifest_path = tmp_path / "manifest.json"
+    report_path = tmp_path / "report.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    import subprocess
+    import sys
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/validate_mt5_research_manifest_v1.py",
+            "--manifest", str(manifest_path),
+            "--raw-csv", str(raw),
+            "--output", str(report_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 2
+    assert report_path.is_file()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["status"] == "REJECTED"
+    assert "RAW_SHA256_MISMATCH" in report["errors"]
+    assert report["research_replay_eligible"] is False
+    assert report["confirmatory_validation_eligible"] is False
+    assert report["production_eligible"] is False
