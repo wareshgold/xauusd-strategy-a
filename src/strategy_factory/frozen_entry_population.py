@@ -2,8 +2,13 @@ from __future__ import annotations
 
 """Frozen Strategy A V3 entry-population loader.
 
-Only the V3 entry identity and risk fields are consumed. Existing V3 exit
-outcomes are intentionally ignored so each exit variant is replayed afresh.
+Only V3 entry identity and risk fields are consumed. Existing V3 exit outcomes
+are intentionally ignored so each exit variant is replayed afresh.
+
+A trade identity is (entry timestamp, direction, entry proxy, initial stop).
+Multiple trades may share a signal identity (entry timestamp, direction,
+entry proxy) when their initial stops differ. This preserves the frozen source
+rows without claiming that same-signal trades are independently executable.
 """
 
 import csv
@@ -42,7 +47,8 @@ def load_frozen_entry_population(
 
     bar_index_by_time = {int(bar["time"]): index for index, bar in enumerate(bars)}
     population: list[dict[str, Any]] = []
-    seen = set()
+    seen_trade_identities = set()
+    signal_trade_counts: dict[tuple[int, str, float], int] = {}
     variants = set()
     previous_entry_time = None
 
@@ -76,10 +82,6 @@ def load_frozen_entry_population(
             raise ValueError("frozen V3 entry rows are not in chronological order")
         previous_entry_time = trigger_time
 
-        key = (trigger_time, row["direction"])
-        if key in seen:
-            raise ValueError(f"duplicate frozen V3 entry identity at row {index}")
-        seen.add(key)
         entry_idx = bar_index_by_time.get(trigger_time)
         if entry_idx is None:
             raise ValueError(
@@ -94,6 +96,19 @@ def load_frozen_entry_population(
                 raise ValueError(f"frozen V3 entry row {index} has invalid {field}") from exc
             if not math.isfinite(numeric[field]) or numeric[field] <= 0:
                 raise ValueError(f"frozen V3 entry row {index} {field} must be finite and positive")
+
+        trade_identity = (
+            trigger_time,
+            row["direction"],
+            numeric["entry_proxy"],
+            numeric["sl_initial"],
+        )
+        if trade_identity in seen_trade_identities:
+            raise ValueError(f"duplicate frozen V3 trade identity at row {index}")
+        seen_trade_identities.add(trade_identity)
+
+        signal_identity = (trigger_time, row["direction"], numeric["entry_proxy"])
+        signal_trade_counts[signal_identity] = signal_trade_counts.get(signal_identity, 0) + 1
 
         population.append({
             "trigger_time": trigger_time,
@@ -112,12 +127,22 @@ def load_frozen_entry_population(
     if len(variants) != 1:
         raise ValueError("frozen V3 entry artifact must contain exactly one source variant")
 
+    multi_trade_signal_count = sum(count > 1 for count in signal_trade_counts.values())
     return population, {
         "source": "FROZEN_V3_ENTRY_CSV",
         "artifact": str(artifact.resolve()),
         "content_sha256": observed_sha256,
         "rows": len(population),
+        "unique_trade_identities": len(seen_trade_identities),
+        "unique_signal_identities": len(signal_trade_counts),
+        "multi_trade_signal_groups": multi_trade_signal_count,
         "source_variant": next(iter(variants)),
+        "trade_identity_fields": [
+            "entry_time_utc", "direction", "entry_proxy", "sl_initial",
+        ],
+        "signal_identity_fields": [
+            "entry_time_utc", "direction", "entry_proxy",
+        ],
         "entry_fields": [
             "direction", "setup_time_utc", "entry_time_utc",
             "entry_proxy", "sl_initial", "risk_price",
