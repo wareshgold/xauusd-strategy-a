@@ -87,7 +87,7 @@ def load_frozen_entry_population(
             )
 
         numeric = {}
-        for field in ("entry_proxy", "sl_initial", "target", "risk_price"):
+        for field in ("entry_proxy", "sl_initial", "risk_price"):
             try:
                 numeric[field] = float(row[field])
             except (TypeError, ValueError) as exc:
