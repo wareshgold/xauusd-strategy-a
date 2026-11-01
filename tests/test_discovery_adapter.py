@@ -22,7 +22,7 @@ def make_spec() -> HistoricalTestSpec:
             role=DatasetRole.DEVELOPMENT,
             data_revision="M1-TEST-1",
             start="2026-10-05T00:00:00Z",
-            end="2026-10-07T00:00:00Z",
+            end="2026-10-07T05:30:00Z",
             source="synthetic://discovery-adapter",
         ),
         execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH,
@@ -35,7 +35,7 @@ def test_discovery_adapter_consumes_declared_variant_without_defining_geometry(t
     script.write_text("# existing Discovery Matrix placeholder\n", encoding="utf-8")
 
     bars_artifact = tmp_path / "m1.json"
-    bars_artifact.write_bytes(b'{"schema_version":1,"bars":[{"time":1,"open":1,"high":1,"low":1,"close":1,"tick_volume":1,"spread":0,"real_volume":1}],"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","window_utc":{"start":"2026-10-05T00:00:00Z","end":"2026-10-07T00:00:00Z"}}')
+    bars_artifact.write_bytes(b'{"schema_version":1,"bars":[{"time":1,"open":1,"high":1,"low":1,"close":1,"tick_volume":1,"spread":0,"real_volume":1}],"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","window_utc":{"start":"2026-10-05T00:00:00Z","end":"2026-10-07T05:30:00Z"}}')
     import hashlib
     dataset_sha = hashlib.sha256(bars_artifact.read_bytes()).hexdigest()
 
@@ -126,7 +126,7 @@ def test_discovery_adapter_rejects_non_research_output(tmp_path, monkeypatch):
             "timeframe": "M1",
             "window_utc": {
                 "start": "2026-10-05T00:00:00Z",
-                "end": "2026-10-07T00:00:00Z",
+                "end": "2026-10-07T05:30:00Z",
             },
             "bars": [{
                 "time": 1791158400,
