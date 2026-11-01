@@ -107,7 +107,7 @@ def test_m1_integrity_validates_original_mt5_csv_without_rewriting(tmp_path):
         f"{int(second.timestamp())},{second.isoformat()},4000.5,4002,4000,4001.5,12,2,0",
     ]
     path = tmp_path / "m1.csv"
-    path.write_text("\\n".join(rows) + "\\n", encoding="utf-8")
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
     original = path.read_bytes()
 
     report = validate_m1_artifact(
@@ -126,8 +126,8 @@ def test_m1_integrity_validates_original_mt5_csv_without_rewriting(tmp_path):
 def test_m1_integrity_rejects_csv_epoch_iso_mismatch(tmp_path):
     path = tmp_path / "m1.csv"
     path.write_text(
-        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\\n"
-        "1791158400,2026-10-05T00:01:00+00:00,4000,4001,3999,4000.5,10,2,0\\n",
+        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\n"
+        "1791158400,2026-10-05T00:01:00+00:00,4000,4001,3999,4000.5,10,2,0\n",
         encoding="utf-8",
     )
     with pytest.raises(M1IntegrityError, match="epoch and ISO timestamps disagree"):
