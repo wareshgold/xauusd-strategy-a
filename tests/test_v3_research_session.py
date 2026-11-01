@@ -72,6 +72,9 @@ def test_session_loads_and_binds_exact_dataset_and_frozen_entries(tmp_path):
 
     assert lab.research_only is True
     assert lab.population_size == 1
+    assert lab.manifest()["symbol_identity_verified"] is False
+    assert lab.manifest()["m1_metadata_provenance"] == "CALLER_ASSERTED_CSV_IDENTITY_NO_EMBEDDED_SYMBOL_OR_WINDOW"
+    assert lab.manifest()["symbol_identity_verified"] is True
     assert lab.dataset_report["content_sha256"] == paths[2]
     assert lab.entry_report["content_sha256"] == paths[3]
     assert lab.manifest()["canonical"] is False
