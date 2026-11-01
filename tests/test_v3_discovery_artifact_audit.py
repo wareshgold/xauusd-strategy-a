@@ -76,7 +76,9 @@ class DiscoveryArtifactAuditTests(unittest.TestCase):
             writer = csv.DictWriter(stream, fieldnames=list(trades[0]))
             writer.writeheader()
             writer.writerows(trades)
-        json_hash = hashlib.sha256(self.json_path.read_bytes()).hexdigest()
+        json_text = self.json_path.read_bytes().decode("utf-8")
+        normalized_json = json_text.replace("\r\n", "\n")
+        json_hash = hashlib.sha256(normalized_json.encode("utf-8")).hexdigest()
         (self.root / f"{self.stem}_SNAPSHOT.md").write_text(
             f"JSON SHA256: {json_hash}\n", encoding="utf-8"
         )
