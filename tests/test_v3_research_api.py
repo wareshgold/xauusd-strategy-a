@@ -103,3 +103,22 @@ def test_api_rejects_invalid_parameters_without_creating_variant(tmp_path):
         api.evaluate(session_id, rr=-1, activation_points=100, distance_points=20)
 
     assert api.variant_count == 0
+
+
+
+def test_api_evaluates_management_modes_and_compares_same_frozen_entries(tmp_path):
+    api = V3ResearchAPI()
+    session_id = api.create_session(**artifacts(tmp_path))["session_id"]
+
+    timed = api.evaluate_management(session_id, {"mode": "TIME_EXIT", "max_bars": 1})
+    no_target = api.evaluate_management(session_id, {"mode": "NO_TARGET"})
+
+    assert timed["research_only"] is True
+    assert timed["canonical"] is False
+    assert timed["validation_status"] == "NOT_VALIDATED"
+    assert timed["variant"]["summary"]["net_profit_usd"] == pytest.approx(1.9)
+    assert no_target["variant"]["trades"][0]["reason"] == "OPEN_OR_UNRESOLVED"
+
+    paired = api.compare(session_id, timed["variant_id"], no_target["variant_id"])
+    assert paired["comparison"]["paired_trade_count"] == 1
+    assert api.describe_session(session_id)["variant_count"] == 2
