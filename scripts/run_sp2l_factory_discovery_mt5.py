@@ -35,11 +35,11 @@ def main() -> int:
     parser.add_argument("--data-revision", default="MT5-M1-30D-20261024-B0782E716C7E")
     parser.add_argument(
         "--artifact",
-        default="artifacts/factory/mt5_m1_20261005_20261007.json",
+        default="artifacts/factory/mt5_m1_30d_20260924_20261023.json",
     )
     parser.add_argument(
         "--job-id",
-        default="SP2L-DISCOVERY-MT5-20261007-RR2_ACT10_D2",
+        default="SP2L-DISCOVERY-V3-FROZEN-ENTRIES-20261024-RR2_ACT10_D2",
     )
     args = parser.parse_args()
 
@@ -69,7 +69,7 @@ def main() -> int:
         immutable=False,
     )
     spec = HistoricalTestSpec(
-        test_id=f"SP2L_DISCOVERY_{args.variant}_MT5_20261007",
+        test_id=f"SP2L_DISCOVERY_{args.variant}_MT5_20261024",
         strategy_id=manifest.strategy_id,
         strategy_revision=manifest.revision,
         dataset=dataset,
