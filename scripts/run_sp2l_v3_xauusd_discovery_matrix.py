@@ -670,8 +670,12 @@ def main():
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         base = output_dir / f"SP2L_V3_CONTROLLED_DISCOVERY_{stamp}"
         raw = json.dumps(result, indent=2, ensure_ascii=False)
+        json_bytes = raw.encode("utf-8")
         json_path = base.with_suffix(".json")
-        json_path.write_text(raw, encoding="utf-8")
+        # Write and hash the exact same bytes. Path.write_text() performs
+        # platform newline translation on Windows, which would otherwise make
+        # the Snapshot hash differ from the stored JSON artifact.
+        json_path.write_bytes(json_bytes)
 
         summary_csv = base.with_name(base.name + "_SUMMARY.csv")
         fields = [
@@ -695,7 +699,7 @@ def main():
                 w.writeheader()
                 w.writerows(all_trades)
 
-        sha = hashlib.sha256(raw.encode()).hexdigest()
+        sha = hashlib.sha256(json_bytes).hexdigest()
         snapshot = base.with_name(base.name + "_SNAPSHOT.md")
         top = ranked[:10]
         lines = [
