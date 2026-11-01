@@ -39,6 +39,7 @@ class DiscoveryMatrixAdapter:
     bars_artifact_path: Path | None = None
     entry_population_artifact_path: Path | None = None
     entry_population_sha256: str | None = None
+    output_dir: Path | None = None
     python_executable: str = sys.executable
     engine_revision: str = "SP2L-V3-CONTROLLED-DISCOVERY-20261007"
 
@@ -74,6 +75,8 @@ class DiscoveryMatrixAdapter:
                 "--entry-population-artifact", str(self.entry_population_artifact_path),
                 "--entry-population-sha256", str(self.entry_population_sha256),
             ])
+        if self.output_dir is not None:
+            command.extend(["--output-dir", str(self.output_dir)])
         return command
 
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
