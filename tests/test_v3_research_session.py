@@ -111,3 +111,39 @@ def test_session_rejects_non_research_m1_artifact(tmp_path):
     paths[0].write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="research_only"):
         session(paths)
+
+def test_session_loads_existing_validated_m1_csv(tmp_path):
+    start = "2027-01-15T08:00:00+00:00"
+    end = "2027-01-15T08:02:00+00:00"
+    m1 = tmp_path / "xauusd_m1.csv"
+    m1.write_text(
+        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\\n"
+        "1800000000,2027-01-15T08:00:00+00:00,100,100,100,100,1,0,0\\n"
+        "1800000060,2027-01-15T08:01:00+00:00,100,102,99,101.9,1,0,0\\n"
+        "1800000120,2027-01-15T08:02:00+00:00,101.9,102,101.7,101.8,1,0,0\\n",
+        encoding="utf-8",
+    )
+    entry = tmp_path / "entries.csv"
+    row = {
+        "strategy": "A", "variant": "V3_FROZEN", "direction": "BUY",
+        "setup_time_utc": start, "entry_time_utc": start, "entry_proxy": "100",
+        "sl_initial": "95", "target": "110", "risk_price": "5",
+        "exit_time_utc": "", "exit_price": "", "exit_reason": "",
+        "status": "OPEN", "r_multiple": "",
+    }
+    with entry.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=ENTRY_FIELDS)
+        writer.writeheader()
+        writer.writerow(row)
+    import hashlib
+    lab = V3ResearchSession(
+        m1_artifact=m1, entry_artifact=entry,
+        expected_dataset_sha256=hashlib.sha256(m1.read_bytes()).hexdigest(),
+        expected_entry_sha256=hashlib.sha256(entry.read_bytes()).hexdigest(),
+        expected_symbol="XAUUSD.ecn", expected_start_utc=start, expected_end_utc=end,
+        mt5_point=0.01, contract_size=100, volume=0.01,
+        engine_revision="CSV-M1-TEST",
+    )
+    assert lab.dataset_report["bars"] == 3
+    assert lab.dataset_report["content_sha256"] == hashlib.sha256(m1.read_bytes()).hexdigest()
+    assert lab.population_size == 1
