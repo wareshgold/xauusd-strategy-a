@@ -145,3 +145,50 @@ class MT5M1ArtifactExporter:
             dataset_content_sha256=observed_sha,
             payload=payload,
         )
+
+
+def load_existing_m1_snapshot(
+    path: Path,
+    *,
+    expected_sha256: str,
+    spec: HistoricalTestSpec,
+) -> MT5M1Snapshot:
+    """Bind an existing, byte-preserved M1 CSV/JSON artifact to a declared test."""
+    import hashlib
+
+    artifact_path = Path(path)
+    if not artifact_path.is_file():
+        raise MT5DatasetPreparationError(f"existing M1 artifact not found: {artifact_path}")
+    raw = artifact_path.read_bytes()
+    observed_sha = hashlib.sha256(raw).hexdigest()
+    if observed_sha.lower() != expected_sha256.lower():
+        raise MT5DatasetPreparationError("existing M1 artifact SHA-256 does not match the declared source hash")
+    if spec.dataset.source != "MT5:XAUUSD.ecn:M1":
+        raise MT5DatasetPreparationError("existing M1 artifact requires source MT5:XAUUSD.ecn:M1")
+
+    report = validate_m1_artifact(
+        artifact_path,
+        expected_symbol="XAUUSD.ecn",
+        expected_start=spec.dataset.start,
+        expected_end=spec.dataset.end,
+    )
+    artifact = DatasetArtifact(
+        artifact_id=f"MT5-M1-{observed_sha[:16]}",
+        location=str(artifact_path.resolve()),
+        content_sha256=observed_sha,
+        byte_size=len(raw),
+        format=artifact_path.suffix.lower().lstrip(".") or "binary",
+    )
+    snapshot = MT5M1Snapshot(
+        artifact=artifact,
+        dataset_content_sha256=observed_sha,
+        payload={
+            "status": "COMPLETE",
+            "symbol": "XAUUSD.ecn",
+            "timeframe": "M1",
+            "source": "EXISTING_BYTE_PRESERVED_ARTIFACT",
+            "m1_integrity": report.as_dict(),
+        },
+    )
+    snapshot.validate_for_spec(spec)
+    return snapshot
