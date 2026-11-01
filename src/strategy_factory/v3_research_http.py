@@ -7,8 +7,10 @@ writes source datasets, modifies frozen entries, or emits trading decisions.
 Dataset roots must be explicitly configured by the operator.
 """
 
+import csv
 import hashlib
 import json
+from datetime import datetime, timezone
 import os
 from pathlib import Path
 from typing import Any
@@ -66,14 +68,20 @@ class V3ResearchHTTPApplication:
                     kind = self._artifact_kind(path)
                     if kind is None:
                         continue
-                    found.append({
+                    item = {
                         "id": f"{root_index}:{relative}",
                         "name": filename,
                         "kind": kind,
                         "relative_path": relative,
                         "size_bytes": stat.st_size,
                         "modified_ns": stat.st_mtime_ns,
-                    })
+                    }
+                    if kind == "M1_JSON":
+                        try:
+                            item.update(self._observed_m1_window(path))
+                        except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+                            item["window_error"] = str(exc)
+                    found.append(item)
                     visited += 1
                     if visited >= 500:
                         break
@@ -85,6 +93,35 @@ class V3ResearchHTTPApplication:
             "roots": [str(root) for root in self.data_roots],
             "items": found,
             "catalog_limit_per_root": 500,
+        }
+
+    @staticmethod
+    def _observed_m1_window(path: Path) -> dict[str, str]:
+        """Read the dataset's own declared JSON window or CSV first/last row times."""
+        if path.suffix.lower() == ".json":
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            window = payload.get("window_utc") if isinstance(payload, dict) else None
+            if not isinstance(window, dict) or not window.get("start") or not window.get("end"):
+                raise ValueError("M1 JSON has no declared window_utc metadata")
+            return {
+                "start_utc": str(window["start"]),
+                "end_utc": str(window["end"]),
+                "window_source": "M1_JSON_DECLARED_WINDOW",
+            }
+        with path.open("r", newline="", encoding="utf-8-sig") as handle:
+            reader = csv.DictReader(handle)
+            first = next(reader, None)
+            if first is None:
+                raise ValueError("M1 CSV contains no data rows")
+            last = first
+            for row in reader:
+                last = row
+        start = datetime.fromtimestamp(int(first["time_epoch_seconds"]), timezone.utc).isoformat()
+        end = datetime.fromtimestamp(int(last["time_epoch_seconds"]), timezone.utc).isoformat()
+        return {
+            "start_utc": start,
+            "end_utc": end,
+            "window_source": "M1_CSV_OBSERVED_FIRST_LAST_ROWS",
         }
 
     @staticmethod
@@ -121,14 +158,17 @@ class V3ResearchHTTPApplication:
         entries = self.resolve_artifact(str(payload["entry_artifact_id"]), "FROZEN_ENTRY_CSV")
         dataset_sha = self._sha256(m1)
         entry_sha = self._sha256(entries)
+        observed_window = self._observed_m1_window(m1)
+        requested_start = payload.get("start_utc") or observed_window["start_utc"]
+        requested_end = payload.get("end_utc") or observed_window["end_utc"]
         config = {
             "m1_artifact": m1,
             "entry_artifact": entries,
             "expected_dataset_sha256": dataset_sha,
             "expected_entry_sha256": entry_sha,
             "expected_symbol": str(payload["symbol"]),
-            "expected_start_utc": str(payload["start_utc"]),
-            "expected_end_utc": str(payload["end_utc"]),
+            "expected_start_utc": str(requested_start),
+            "expected_end_utc": str(requested_end),
             "mt5_point": float(payload["mt5_point"]),
             "contract_size": float(payload["contract_size"]),
             "volume": float(payload["volume"]),
@@ -140,6 +180,9 @@ class V3ResearchHTTPApplication:
             "entry_artifact_id": payload["entry_artifact_id"],
             "dataset_sha256": dataset_sha,
             "entry_sha256": entry_sha,
+            "start_utc": str(requested_start),
+            "end_utc": str(requested_end),
+            "window_source": observed_window["window_source"],
         }
         return result
 
