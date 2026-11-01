@@ -31,8 +31,7 @@ import sp2l_v3_config as cfg
 from strategy_factory.frozen_entry_population import load_frozen_entry_population
 from strategy_factory.m1_integrity import validate_m1_artifact
 
-OUT = ROOT / "artifacts" / "v3_discovery"
-OUT.mkdir(parents=True, exist_ok=True)
+DEFAULT_OUT = ROOT / "artifacts" / "v3_discovery"
 
 VOLUME = cfg.VOLUME
 
@@ -499,6 +498,8 @@ def main():
     )
     args = ap.parse_args()
 
+    output_dir = Path(args.output_dir).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
     start = datetime.fromisoformat(args.start)
     end = datetime.fromisoformat(args.end)
     if end <= start:
@@ -653,7 +654,7 @@ def main():
         }
 
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        base = OUT / f"SP2L_V3_CONTROLLED_DISCOVERY_{stamp}"
+        base = output_dir / f"SP2L_V3_CONTROLLED_DISCOVERY_{stamp}"
         raw = json.dumps(result, indent=2, ensure_ascii=False)
         json_path = base.with_suffix(".json")
         json_path.write_text(raw, encoding="utf-8")
