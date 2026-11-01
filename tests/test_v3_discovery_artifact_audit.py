@@ -93,6 +93,25 @@ class DiscoveryArtifactAuditTests(unittest.TestCase):
         self.assertEqual(manifest["audit_status"], "PASS")
         self.assertEqual(manifest["artifacts"]["trades_csv"]["rows"], 4)
 
+    def test_accepts_windows_crlf_json_when_snapshot_binds_normalized_content(self):
+        original = self.json_path.read_bytes()
+        crlf = original.replace(b"\\r\\n", b"\\n").replace(b"\\n", b"\\r\\n")
+        self.json_path.write_bytes(crlf)
+        raw_hash = hashlib.sha256(crlf).hexdigest()
+        normalized_hash = hashlib.sha256(original.replace(b"\\r\\n", b"\\n")).hexdigest()
+        self.assertNotEqual(raw_hash, normalized_hash)
+        result = audit_run(self.json_path)
+        manifest = json.loads(Path(result["manifest"]).read_text(encoding="utf-8"))
+        artifact = manifest["artifacts"]["discovery_json"]
+        self.assertEqual(artifact["sha256"], raw_hash)
+        self.assertEqual(artifact["normalized_lf_sha256"], normalized_hash)
+
+    def test_rejects_snapshot_with_wrong_normalized_json_hash(self):
+        snapshot = self.root / f"{self.stem}_SNAPSHOT.md"
+        snapshot.write_text("JSON SHA256: " + ("0" * 64) + "\\n", encoding="utf-8")
+        with self.assertRaisesRegex(AuditError, "LF-normalized JSON content"):
+            audit_run(self.json_path)
+
     def test_rejects_changed_dataset_hash(self):
         self.dataset.write_text("mutated M1 fixture\n", encoding="utf-8")
         with self.assertRaisesRegex(AuditError, "M1 source SHA-256"):
