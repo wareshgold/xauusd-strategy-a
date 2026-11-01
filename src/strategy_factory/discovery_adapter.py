@@ -150,6 +150,12 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError(
                 "Discovery did not consume the declared M1 dataset artifact"
             )
+        if self.entry_population_artifact_path is not None:
+            frozen_population = result.get("frozen_population") or {}
+            if frozen_population.get("source") != "FROZEN_V3_ENTRY_CSV":
+                raise DiscoveryAdapterError("Discovery did not use the frozen V3 entry CSV")
+            if frozen_population.get("content_sha256") != expected_entry_sha256:
+                raise DiscoveryAdapterError("Discovery frozen V3 entry SHA-256 does not match the declared artifact")
 
         matches = [
             row for row in result.get("matrix", [])
