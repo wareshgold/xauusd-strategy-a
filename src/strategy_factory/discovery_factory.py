@@ -72,6 +72,15 @@ class DiscoveryFactory:
                 "declared Discovery variant must match the HistoricalTestSpec parameters"
             )
 
+        if not context.entry_population_artifact_path or not context.entry_population_sha256:
+            raise DiscoveryFactoryError("frozen V3 entry population artifact and SHA-256 are required")
+        entry_path = Path(context.entry_population_artifact_path)
+        if not entry_path.is_file():
+            raise DiscoveryFactoryError(f"frozen V3 entry population artifact not found: {entry_path}")
+        entry_sha = hashlib.sha256(entry_path.read_bytes()).hexdigest()
+        if entry_sha.lower() != context.entry_population_sha256.lower():
+            raise DiscoveryFactoryError("frozen V3 entry population SHA-256 mismatch")
+
         if bool(context.source_artifact_path) != bool(context.source_artifact_sha256):
             raise DiscoveryFactoryError("existing M1 artifact path and SHA-256 must be supplied together")
         if context.source_artifact_path is not None:
@@ -93,14 +102,6 @@ class DiscoveryFactory:
             snapshot = exporter.export()
         snapshot.register(self.runner.runs.registry, context.spec, lock=True)
 
-        if not context.entry_population_artifact_path or not context.entry_population_sha256:
-            raise DiscoveryFactoryError("frozen V3 entry population artifact and SHA-256 are required")
-        entry_path = Path(context.entry_population_artifact_path)
-        if not entry_path.is_file():
-            raise DiscoveryFactoryError(f"frozen V3 entry population artifact not found: {entry_path}")
-        entry_sha = hashlib.sha256(entry_path.read_bytes()).hexdigest()
-        if entry_sha.lower() != context.entry_population_sha256.lower():
-            raise DiscoveryFactoryError("frozen V3 entry population SHA-256 mismatch")
 
         dataset_fingerprint = self.runner.runs.registry.get(
             context.spec.dataset.dataset_id
