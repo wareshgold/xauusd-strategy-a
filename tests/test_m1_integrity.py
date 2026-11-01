@@ -94,3 +94,46 @@ def test_m1_integrity_rejects_non_finite_price(tmp_path):
     path = write_artifact(tmp_path, [bar(T0, close=float("nan"))])
     with pytest.raises(M1IntegrityError, match="finite"):
         validate(path)
+
+
+def test_m1_integrity_validates_original_mt5_csv_without_rewriting(tmp_path):
+    from datetime import timedelta
+
+    first = datetime(2026, 10, 5, tzinfo=timezone.utc)
+    second = first + timedelta(minutes=2)
+    rows = [
+        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume",
+        f"{int(first.timestamp())},{first.isoformat()},4000,4001,3999,4000.5,10,2,0",
+        f"{int(second.timestamp())},{second.isoformat()},4000.5,4002,4000,4001.5,12,2,0",
+    ]
+    path = tmp_path / "m1.csv"
+    path.write_text("\\n".join(rows) + "\\n", encoding="utf-8")
+    original = path.read_bytes()
+
+    report = validate_m1_artifact(
+        path,
+        expected_symbol="XAUUSD.ecn",
+        expected_start=first.isoformat(),
+        expected_end=second.isoformat(),
+    )
+    assert report.status == "PASS_WITH_GAPS"
+    assert report.bars == 2
+    assert report.missing_minute_slots == 1
+    assert report.content_sha256 == hashlib.sha256(original).hexdigest()
+    assert path.read_bytes() == original
+
+
+def test_m1_integrity_rejects_csv_epoch_iso_mismatch(tmp_path):
+    path = tmp_path / "m1.csv"
+    path.write_text(
+        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\\n"
+        "1791158400,2026-10-05T00:01:00+00:00,4000,4001,3999,4000.5,10,2,0\\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(M1IntegrityError, match="epoch and ISO timestamps disagree"):
+        validate_m1_artifact(
+            path,
+            expected_symbol="XAUUSD.ecn",
+            expected_start="2026-10-05T00:00:00Z",
+            expected_end="2026-10-05T00:01:00Z",
+        )
