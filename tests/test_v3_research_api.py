@@ -121,4 +121,8 @@ def test_api_evaluates_management_modes_and_compares_same_frozen_entries(tmp_pat
 
     paired = api.compare(session_id, timed["variant_id"], no_target["variant_id"])
     assert paired["comparison"]["paired_trade_count"] == 1
-    assert api.describe_session(session_id)["variant_count"] == 2
+
+    legacy = api.evaluate(session_id, rr=2, activation_points=None, distance_points=None)
+    cross_engine = api.compare(session_id, legacy["variant_id"], timed["variant_id"])
+    assert cross_engine["comparison"]["paired_trade_count"] == 1
+    assert api.describe_session(session_id)["variant_count"] == 3
