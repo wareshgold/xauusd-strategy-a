@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SP2L V3 Research Workbench</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1117;--panel:#121c25;--line:#2b3b47;--text:#e0e8ed;--muted:#8b9ba6;--cyan:#65cddd;--green:#78c99b;--amber:#dfb65f;--red:#db777e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,Segoe UI,sans-serif}
+header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;align-items:center}
+h1{font-size:19px;letter-spacing:.08em;margin:0}header p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.lock{color:var(--amber);font:11px Consolas,monospace;border:1px solid #66532b;padding:8px 10px}
+main{max-width:1400px;margin:auto;padding:18px;display:grid;gap:14px;grid-template-columns:340px minmax(0,1fr)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+h2{font-size:12px;letter-spacing:.1em;color:var(--cyan);margin:0 0 14px}
+label{display:block;color:var(--muted);font-size:11px;margin:11px 0 5px}
+input,select{width:100%;background:#0b131a;border:1px solid #344652;border-radius:4px;color:var(--text);padding:9px;font:12px Consolas,monospace}
+button{background:#17313a;border:1px solid #3d7784;color:#dffaff;padding:9px 12px;border-radius:4px;cursor:pointer;font-weight:650}
+button:disabled{opacity:.4;cursor:not-allowed}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.small{font-size:10px;color:var(--muted);line-height:1.5}.status{font:11px Consolas,monospace;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px}
+.right{display:grid;gap:14px;align-content:start}.metrics{display:grid;grid-template-columns:repeat(5,minmax(90px,1fr));gap:8px}
+.metric{background:#0b141b;border:1px solid #263640;padding:11px}.metric b{display:block;font:700 20px Consolas,monospace}.metric span{color:var(--muted);font-size:10px}
+.table-wrap{overflow:auto;max-height:380px}table{border-collapse:collapse;width:100%;font:11px Consolas,monospace}th,td{padding:8px;border-bottom:1px solid #263640;text-align:left;white-space:nowrap}th{color:var(--muted);position:sticky;top:0;background:var(--panel)}
+canvas{width:100%;height:220px;background:#0a1218;border:1px solid #273943;border-radius:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.tag{color:var(--green)}.warning{color:var(--amber)}
+@media(max-width:900px){main{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div><h1>SP2L / V3 RESEARCH WORKBENCH</h1><p>Frozen entry population · in-memory M1 replay · parameter comparison</p></div><div class="lock">RESEARCH ONLY<br>CANONICAL: FALSE · BUY/SELL: DISABLED</div></header>
+<main>
+<section class="panel">
+<h2>01 / DATA SESSION</h2>
+<label>M1 artifact (JSON or validated CSV)</label><select id="m1"><option value="">Loading M1 artifacts…</option></select>
+<label>Frozen Entry CSV</label><select id="entries"><option value="">Loading catalog…</option></select>
+<label>Symbol</label><input id="symbol" value="XAUUSD.ecn">
+<div class="grid2"><div><label>Start UTC (declared window)</label><input id="start" placeholder="2026-10-01T00:00:00+00:00"></div><div><label>End UTC (declared window)</label><input id="end" placeholder="2026-10-31T23:59:00+00:00"></div></div>
+<div class="grid2"><div><label>MT5 point</label><input id="point" type="number" step="any" value="0.01"></div><div><label>Contract size</label><input id="contract" type="number" step="any" value="100"></div></div>
+<div class="grid2"><div><label>Volume</label><input id="volume" type="number" step="any" value="0.01"></div><div><label>Engine revision</label><input id="revision" value="V3-EXIT-ENGINE-1"></div></div>
+<button id="create">Validate & create session</button>
+<div id="sessionStatus" class="status">No session loaded.</div>
+<p class="small">Only files beneath explicitly configured data roots appear. File bytes are hashed at session creation. The server does not modify source artifacts.</p>
+<hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+<h2>02 / EXIT PARAMETERS</h2>
+<div class="grid2"><div><label>Target RR</label><input id="rr" type="number" step="any" value="2"></div><div><label>Activation (MT5 points)</label><input id="activation" type="number" step="any" value="40"></div></div>
+<label>Trailing distance (MT5 points)</label><input id="distance" type="number" step="any" value="4">
+<div class="actions"><button id="evaluate" disabled>Run replay</button><button id="noTrail" disabled>Replay without trailing</button></div>
+<div id="runStatus" class="status"></div>
+<p class="small warning">OHLC M1 proxy only. M1 gaps and same-bar SL/TP remain ambiguous. No spread, slippage, commission, tick fills, or execution assumptions are added.</p>
+</section>
+<div class="right">
+<section class="panel"><h2>03 / REPLAY SUMMARY</h2><div class="metrics" id="metrics">
+<div class="metric"><b>—</b><span>Signals</span></div><div class="metric"><b>—</b><span>Decisive</span></div><div class="metric"><b>—</b><span>Net R</span></div><div class="metric"><b>—</b><span>Profit factor</span></div><div class="metric"><b>—</b><span>Max DD R</span></div></div>
+<div class="small" id="runMeta">Create a validated session, then run a parameter replay.</div></section>
+<section class="panel"><h2>04 / TRADE-BY-TRADE RESULTS</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Side</th><th>Exit</th><th>R</th><th>USD</th><th>Ambiguous</th></tr></thead><tbody id="trades"><tr><td colspan="6" class="small">No replay results.</td></tr></tbody></table></div></section>
+<section class="panel"><h2>05 / EQUITY CURVE (DECISIVE TRADES)</h2><canvas id="equity" width="1100" height="240"></canvas><p class="small">Trade-order cumulative realized R. This is a descriptive replay plot, not validation evidence.</p></section>
+<section class="panel"><h2>06 / PAIRED VARIANT COMPARISON</h2><div class="grid2"><div><label>Variant A</label><select id="leftVariant"></select></div><div><label>Variant B</label><select id="rightVariant"></select></div></div><button id="compare" disabled style="margin-top:12px">Compare paired trades</button><div id="compareStatus" class="status"></div></section>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);let catalog=null,sessionId=null,variants=[];
+async function request(url,method="GET",body=null){const r=await fetch(url,{method,headers:body?{"Content-Type":"application/json"}:{},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok)throw new Error(d.error||("HTTP "+r.status));return d}
+function fillSelect(el,items,kind){el.innerHTML="";items.filter(x=>x.kind===kind).forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.name+" · "+(x.size_bytes/1048576).toFixed(2)+" MB";el.append(o)})}
+async function loadCatalog(){try{catalog=await request("/api/catalog");fillSelect($("m1"),catalog.items,"M1_JSON");fillSelect($("entries"),catalog.items,"FROZEN_ENTRY_CSV");$("sessionStatus").textContent="Catalog roots:\n"+catalog.roots.join("\n")+"\n"+catalog.items.length+" eligible artifacts found."; }catch(e){$("sessionStatus").textContent=e.message}}
+function setMetric(s){const keys=[["signals","Signals"],["decisive","Decisive"],["net_R","Net R"],["profit_factor","Profit factor"],["max_drawdown_R","Max DD R"]];$("metrics").innerHTML=keys.map(([k,l])=>{const v=s[k];return '<div class="metric"><b>'+((v===null||v===undefined)?"—":(typeof v==="number"?v.toFixed(3):v))+'</b><span>'+l+'</span></div>'}).join("")}
+function drawEquity(trades){const c=$("equity"),ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle="#263943";ctx.beginPath();ctx.moveTo(35,h/2);ctx.lineTo(w-15,h/2);ctx.stroke();const vals=[];let e=0;trades.filter(t=>!t.ambiguous&&t.realized_R!==null).forEach(t=>{e+=t.realized_R;vals.push(e)});if(!vals.length)return;const lo=Math.min(0,...vals),hi=Math.max(0,...vals),span=hi-lo||1;ctx.strokeStyle="#65cddd";ctx.lineWidth=2;ctx.beginPath();vals.forEach((v,i)=>{const x=35+(w-55)*(i/Math.max(1,vals.length-1)),y=h-20-(v-lo)/span*(h-40);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke()}
+function render(result){const v=result.variant,s=v.summary;setMetric(s);$("runMeta").textContent="Variant "+v.name+" · "+v.trades.length+" rows · Cache entries "+result.cache_entries+" · NOT VALIDATED";$("trades").innerHTML=v.trades.map(t=>'<tr><td>'+String(t.trigger_time??"")+'</td><td>'+t.direction+'</td><td>'+t.reason+'</td><td>'+(t.realized_R===null?"—":Number(t.realized_R).toFixed(3))+'</td><td>'+(t.realized_usd===null?"—":Number(t.realized_usd).toFixed(2))+'</td><td>'+(t.ambiguous?"YES":"NO")+'</td></tr>').join("");drawEquity(v.trades);if(!variants.includes(result.variant_id)){variants.push(result.variant_id);for(const id of ["leftVariant","rightVariant"]){const o=document.createElement("option");o.value=result.variant_id;o.textContent=v.name;$ (id).append(o)}}$("compare").disabled=variants.length<2}
+$("create").onclick=async()=>{try{$("create").disabled=true;const body={m1_artifact_id:$("m1").value,entry_artifact_id:$("entries").value,symbol:$("symbol").value,start_utc:$("start").value,end_utc:$("end").value,mt5_point:$("point").value,contract_size:$("contract").value,volume:$("volume").value,engine_revision:$("revision").value};const d=await request("/api/sessions","POST",body);sessionId=d.session_id;$("sessionStatus").textContent="SESSION "+sessionId+"\n"+JSON.stringify(d.artifact_selection,null,2)+"\nPopulation: "+d.population_size+" · "+d.validation_status+"\\nM1 metadata: "+d.m1_metadata_provenance+"\\nSymbol identity verified: "+d.symbol_identity_verified;$("evaluate").disabled=false;$("noTrail").disabled=false;$("compare").disabled=true;$("runStatus").textContent="Session ready. Research only."}catch(e){$("sessionStatus").textContent="REJECTED: "+e.message}finally{$("create").disabled=false}};
+async function evaluate(noTrail){if(!sessionId)return;try{const body={rr:$("rr").value,activation_points:noTrail?null:$("activation").value,distance_points:noTrail?null:$("distance").value};const d=await request("/api/sessions/"+sessionId+"/evaluate","POST",body);render(d);$("runStatus").textContent="Replay completed · "+d.variant_id+" · research only"}catch(e){$("runStatus").textContent="REJECTED: "+e.message}}
+$("evaluate").onclick=()=>evaluate(false);$("noTrail").onclick=()=>evaluate(true);
+$("compare").onclick=async()=>{try{const d=await request("/api/sessions/"+sessionId+"/compare","POST",{left_variant_id:$("leftVariant").value,right_variant_id:$("rightVariant").value});$("compareStatus").textContent=JSON.stringify(d.comparison,null,2)}catch(e){$("compareStatus").textContent="REJECTED: "+e.message}};
+loadCatalog();
+</script></body></html>
