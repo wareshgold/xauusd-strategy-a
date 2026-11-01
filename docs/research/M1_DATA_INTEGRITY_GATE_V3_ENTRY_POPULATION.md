@@ -47,8 +47,14 @@ source's actual trading schedule before interpreting performance.
 - The frozen V3 entry CSV is the sole signal/entry population for every exit variant.
 - The loader uses direction, setup/entry timestamps, entry proxy, initial SL, and risk.
 - Previous V3 target/exit time/exit price/exit reason/status/R multiple are ignored.
-- Every frozen entry timestamp must match exactly one M1 bar; duplicate entry
-  identities, wrong order, wrong SHA, or missing M1 timestamps fail closed.
+- Every frozen entry timestamp must match exactly one M1 bar. Trade identity is
+  `(entry_time_utc, direction, entry_proxy, sl_initial)`; an exact duplicate
+  trade identity, wrong order, wrong SHA, or missing M1 timestamp fails closed.
+- The frozen artifact contains 462 rows and 462 unique trade identities, but
+  452 signal identities `(entry_time_utc, direction, entry_proxy)`. Ten signal
+  groups contain two distinct initial-stop definitions each. All rows are
+  preserved. This identity rule does not assert that same-signal trades are
+  independently executable in a live account.
 - The existing V3 configuration remains the source of its research geometry.
 - This does not resolve source meaning for canonical SP2L, P-Gap, AB=CD anchors,
   fill semantics, or production execution rules.
