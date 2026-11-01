@@ -99,13 +99,12 @@ These totals use 461 decisive trades (not all 462 signals). They are scenario de
 The following are required before this candidate can be marked reproducible:
 
 1. Retrieve the exact run record and normalized parameter specification for `RR4_ACT50_D40`.
-2. Export the complete 462-row trade result, preserving stable trade identity and all exit/ambiguity fields.
+2. Update to the dashboard evidence-export revision (PR #385) and download the complete replay JSON, preserving the session request/manifest, normalized run spec, variant ID, trade-row SHA-256, and all 462 trade rows.
 3. Re-run against the exact session fingerprint and verify identical per-trade outcomes, aggregate metrics, and output hash.
-4. Reconcile the profit-factor discrepancy above.
-5. Produce a trade-level contribution analysis: top 1/5/10 trade contribution, win/loss distribution, R quantiles, holding-time distribution, exit-reason counts, unresolved/gap-exposed counts, and concentration of gross profit.
+4. Produce a trade-level contribution analysis: top 1/5/10 trade contribution, win/loss distribution, R quantiles, holding-time distribution, exit-reason counts, unresolved/gap-exposed counts, and concentration of gross profit.
 6. Confirm contract size, volume, MT5 point, and engine revision from the session's persisted manifest rather than relying on a UI default or a separate terminal observation.
 
-No trade-level rows were included in the supplied dashboard text. Accordingly, no trade concentration, distribution, or independent replay claim is made here.
+No trade-level rows were included in the supplied dashboard text. The dashboard evidence-export enhancement is being added separately in PR #385; until that revision is deployed and its JSON export is supplied, no trade concentration, distribution, or independent replay claim is made here.
 
 ## 7. Robustness protocol (not yet run)
 
