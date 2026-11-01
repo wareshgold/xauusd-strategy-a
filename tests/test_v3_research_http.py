@@ -78,6 +78,14 @@ def test_catalog_create_session_evaluate_and_compare(tmp_path):
     assert status == 200
     assert comparison["comparison"]["paired_trade_count"] == 1
 
+    status, management = app.dispatch("POST", f"/api/sessions/{session_id}/management", {
+        "spec": {"mode": "TIME_EXIT", "max_bars": 1},
+    })
+    assert status == 200
+    assert management["research_only"] is True
+    assert management["variant"]["management"]["mode"] == "TIME_EXIT"
+    assert management["variant"]["summary"]["net_profit_usd"] == pytest.approx(1.9)
+
 
 def test_catalog_artifact_id_cannot_escape_configured_root(tmp_path):
     start, end = write_artifacts(tmp_path)
