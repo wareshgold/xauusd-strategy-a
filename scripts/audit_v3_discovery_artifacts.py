@@ -176,6 +176,9 @@ def audit_run(run_json: Path, manifest_path: Path | None = None) -> dict[str, An
         raise AuditError("summary CSV row count does not match declared variant count")
     if len(trade_rows) != variant_count * signal_count:
         raise AuditError("trades CSV row count does not equal variants × frozen population")
+    json_trades = payload.get("trades")
+    if not isinstance(json_trades, list) or len(json_trades) != len(trade_rows):
+        raise AuditError("JSON trade population count does not match Trades CSV")
 
     compare_summary(matrix, summary_rows)
 
