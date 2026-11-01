@@ -92,6 +92,7 @@ class V3ResearchAPI:
                 "distance_points": variant.distance_points,
                 "management_config": variant.management_config,
                 "summary": dict(variant.summary),
+                "spread_sensitivity": session.flat_spread_sensitivity(variant.summary),
                 "trades": [dict(row) for row in variant.trades],
             },
             "cache_entries": session.cache_entries,
