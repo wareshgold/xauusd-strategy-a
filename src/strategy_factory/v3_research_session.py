@@ -16,6 +16,7 @@ from typing import Any
 from .frozen_entry_population import load_frozen_entry_population
 from .m1_integrity import validate_m1_artifact
 from .v3_exit_engine import V3ExitReplayEngine, V3ExitVariant
+from .v3_trade_management import V3TradeManagementEngine
 
 
 class V3ResearchSessionError(ValueError):
@@ -103,13 +104,14 @@ class V3ResearchSession:
             dataset_sha256=integrity.content_sha256,
             entry_population_sha256=entry_report["content_sha256"],
         )
+        self.management_engine = V3TradeManagementEngine(self.engine)
         self.session_fingerprint = self.engine.session_fingerprint
         self.engine_revision = engine_revision
         self.research_only = True
 
     @property
     def cache_entries(self) -> int:
-        return self.engine.cache_entries
+        return self.engine.cache_entries + self.management_engine.cache_entries
 
     @property
     def population_size(self) -> int:
@@ -127,6 +129,33 @@ class V3ResearchSession:
             activation_points=activation_points,
             distance_points=distance_points,
         )
+
+    def evaluate_management(self, policy: dict[str, Any]) -> V3ExitVariant:
+        return self.management_engine.evaluate(policy)
+
+    def flat_spread_sensitivity(self, summary: dict[str, Any]) -> dict[str, Any]:
+        """Return explicitly hypothetical one-full-spread-per-decisive-trade costs."""
+        decisive = int(summary["decisive"])
+        point = self.engine._mt5_point
+        notional = self.engine._volume * self.engine._contract_size
+        scenarios = {}
+        for spread_points in (20, 23, 30):
+            cost_per_trade = spread_points * point * notional
+            total_cost = cost_per_trade * decisive
+            scenarios[str(spread_points)] = {
+                "spread_points": spread_points,
+                "cost_per_trade_usd": cost_per_trade,
+                "estimated_total_spread_cost_usd": total_cost,
+                "estimated_net_after_spread_usd": float(summary["net_profit_usd"]) - total_cost,
+            }
+        return {
+            "method": "FLAT_ONE_FULL_SPREAD_PER_DECISIVE_TRADE_PROXY",
+            "not_actual_execution_cost": True,
+            "commission_included": False,
+            "slippage_included": False,
+            "decisive_trades_charged": decisive,
+            "scenarios": scenarios,
+        }
 
     def compare(self, left: V3ExitVariant, right: V3ExitVariant) -> dict[str, Any]:
         return self.engine.compare(left, right)

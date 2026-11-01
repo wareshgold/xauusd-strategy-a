@@ -90,7 +90,34 @@ class V3ResearchAPI:
                 "rr": variant.rr,
                 "activation_points": variant.activation_points,
                 "distance_points": variant.distance_points,
+                "management_config": variant.management_config,
                 "summary": dict(variant.summary),
+                "spread_sensitivity": session.flat_spread_sensitivity(variant.summary),
+                "trades": [dict(row) for row in variant.trades],
+            },
+            "cache_entries": session.cache_entries,
+        }
+
+    def evaluate_management(self, session_id: str, policy: dict[str, Any]) -> dict[str, Any]:
+        session = self._require_session(session_id)
+        try:
+            variant = session.evaluate_management(policy)
+        except (TypeError, ValueError) as exc:
+            raise V3ResearchAPIError(f"management evaluation rejected: {exc}") from exc
+        variant_id = self._variant_id(variant)
+        self._variants[variant_id] = variant
+        return {
+            "research_only": True,
+            "canonical": False,
+            "validation_status": "NOT_VALIDATED",
+            "session_id": session_id,
+            "variant_id": variant_id,
+            "variant": {
+                "name": variant.name,
+                "rr": variant.rr,
+                "management_config": dict(variant.management_config or {}),
+                "summary": dict(variant.summary),
+                "spread_sensitivity": session.flat_spread_sensitivity(variant.summary),
                 "trades": [dict(row) for row in variant.trades],
             },
             "cache_entries": session.cache_entries,
@@ -134,6 +161,7 @@ class V3ResearchAPI:
             "rr": variant.rr,
             "activation_points": variant.activation_points,
             "distance_points": variant.distance_points,
+            "management_config": variant.management_config,
         }
         return hashlib.sha256(
             json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")

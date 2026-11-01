@@ -96,3 +96,43 @@ def test_rejects_unconfigured_roots_and_non_loopback_bind(tmp_path):
     from strategy_factory.v3_research_http import serve
     with pytest.raises(V3ResearchHTTPError, match="loopback"):
         serve(host="0.0.0.0", port=8791)
+
+
+def test_management_matrix_endpoint_evaluates_policies_on_same_session(tmp_path):
+    start, end = write_artifacts(tmp_path)
+    app = V3ResearchHTTPApplication(data_roots=[tmp_path])
+    catalog = app.catalog()
+    m1 = next(x for x in catalog["items"] if x["kind"] == "M1_JSON")
+    entries = next(x for x in catalog["items"] if x["kind"] == "FROZEN_ENTRY_CSV")
+    status, session = app.dispatch("POST", "/api/sessions", {
+        "m1_artifact_id": m1["id"], "entry_artifact_id": entries["id"],
+        "symbol": "XAUUSD.ecn", "start_utc": start, "end_utc": end,
+        "mt5_point": 0.01, "contract_size": 100, "volume": 0.01,
+        "engine_revision": "HTTP-MGMT-TEST-1",
+    })
+    assert status == 201
+    status, matrix = app.dispatch(
+        "POST", f"/api/sessions/{session['session_id']}/management-matrix",
+        {"policies": [
+            {"mode": "fixed_rr", "target_rr": 1},
+            {"mode": "breakeven", "breakeven_trigger_r": 0.5},
+            {"mode": "time_exit", "time_exit_bars": 2},
+        ]},
+    )
+    assert status == 200
+    assert matrix["research_only"] is True
+    assert matrix["canonical"] is False
+    assert matrix["validation_status"] == "NOT_VALIDATED"
+    assert len(matrix["results"]) == 3
+    assert len({row["variant_id"] for row in matrix["results"]}) == 3
+
+
+def test_management_matrix_endpoint_limits_batch_size(tmp_path):
+    write_artifacts(tmp_path)
+    app = V3ResearchHTTPApplication(data_roots=[tmp_path])
+    status, response = app.dispatch(
+        "POST", "/api/sessions/not-a-session/management-matrix",
+        {"policies": [{}] * 51},
+    )
+    assert status == 400
+    assert "at most 50" in response["error"]

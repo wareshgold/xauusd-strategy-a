@@ -286,6 +286,7 @@ class V3ExitVariant:
     distance_points: float | None
     summary: dict[str, Any]
     trades: tuple[dict[str, Any], ...]
+    management_config: dict[str, Any] | None = None
 
 
 class V3ExitReplayEngine:
