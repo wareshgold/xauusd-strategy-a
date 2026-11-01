@@ -18,6 +18,7 @@ from typing import Any
 from .adapter import build_execution_receipt
 from .execution import ExecutionReceipt
 from .metrics import ResearchMetrics
+from .m1_integrity import validate_m1_artifact
 from .test_contract import HistoricalTestSpec
 
 
@@ -77,6 +78,14 @@ class DiscoveryMatrixAdapter:
         if not self.variant_name:
             raise DiscoveryAdapterError("variant_name is required")
         expected_dataset_sha256 = self.observed_dataset_content_sha256
+        integrity = validate_m1_artifact(
+            self.bars_artifact_path,
+            expected_symbol=self.symbol,
+            expected_start=self.start,
+            expected_end=self.end,
+        )
+        if integrity.content_sha256 != expected_dataset_sha256:
+            raise DiscoveryAdapterError("M1 integrity gate hash does not match the observed artifact")
 
         completed = subprocess.run(
             self._command(),
@@ -90,6 +99,10 @@ class DiscoveryMatrixAdapter:
                 "Discovery Matrix failed: "
                 + (completed.stderr.strip() or completed.stdout.strip())
             )
+
+        post_run_sha256 = self.observed_dataset_content_sha256
+        if post_run_sha256 != expected_dataset_sha256:
+            raise DiscoveryAdapterError("M1 dataset artifact changed while Discovery was running")
 
         try:
             payload = json.loads(completed.stdout)
