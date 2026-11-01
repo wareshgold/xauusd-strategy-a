@@ -29,7 +29,7 @@ import numpy as np
 
 import sp2l_v3_config as cfg
 from strategy_factory.frozen_entry_population import load_frozen_entry_population
-from strategy_factory.m1_integrity import validate_m1_artifact
+from strategy_factory.m1_integrity import m1_gap_detected, validate_m1_artifact
 
 DEFAULT_OUT = ROOT / "artifacts" / "v3_discovery"
 
@@ -236,8 +236,18 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
     # IMPORTANT: trailing is evaluated only from the just-completed bar and
     # therefore becomes effective on the NEXT M1 bar. The current bar cannot
     # use its own final high/low to move its own stop; doing that is lookahead.
+    previous_bar_time = int(bars[entry_idx]["time"])
     for k in range(entry_idx + 1, len(bars)):
         b = bars[k]
+        current_bar_time = int(b["time"])
+        # A missing M1 interval while the position is open can hide an SL,
+        # TP, or trailing event. Do not score a later observed bar as decisive.
+        if m1_gap_detected(previous_bar_time, current_bar_time):
+            ambiguous = True
+            reason = "M1_GAP_WHILE_OPEN"
+            exit_time = current_bar_time
+            break
+        previous_bar_time = current_bar_time
         high = float(b["high"])
         low = float(b["low"])
 
@@ -422,6 +432,7 @@ def summarize(rows):
         "wins": len(wins),
         "losses": len(losses),
         "ambiguous": len(rows) - len(decisive),
+        "gap_exposed": sum(1 for r in rows if r["reason"] == "M1_GAP_WHILE_OPEN"),
         "win_rate_decisive_pct": 100.0 * len(wins) / len(decisive) if decisive else None,
         "net_R": net_r,
         "profit_factor": gross_profit_r / gross_loss_r if gross_loss_r else None,
@@ -634,12 +645,14 @@ def main():
                 "contract_size": contract_size,
                 "usd_per_price_unit_at_volume": VOLUME * contract_size,
                 "spread_slippage_commission": "NOT_MODELED",
+                "m1_gap_policy": "OPEN_TRADE_CROSSED_GAP => AMBIGUOUS_NO_REALIZED_EXIT",
                 "mt5_point": mt5_point,
                 "trailing_units": "MT5_POINT",
             },
             "exit_policy": {
                 "trailing": "activate after favorable move reaches ACT points; update SL from completed M1 high/low by D points",
                 "sameBarPolicy": "SL_AND_TP_SAME_BAR => AMBIGUOUS",
+                "m1GapPolicy": "M1_GAP_WHILE_OPEN => AMBIGUOUS_NO_REALIZED_EXIT",
                 "tpPolicy": "fixed initial TP = Entry +/- RR * risk",
                 "noTrailPolicy": "explicitly disables trailing",
             },
@@ -663,7 +676,7 @@ def main():
         summary_csv = base.with_name(base.name + "_SUMMARY.csv")
         fields = [
             "name", "rr", "activation_points", "distance_points",
-            "signals", "decisive", "wins", "losses", "ambiguous",
+            "signals", "decisive", "wins", "losses", "ambiguous", "gap_exposed",
             "win_rate_decisive_pct", "net_R", "profit_factor", "max_drawdown_R",
             "max_losing_streak", "gross_profit_usd", "gross_loss_usd",
             "net_profit_usd", "avg_R_per_decisive", "avg_usd_per_decisive",
@@ -713,6 +726,7 @@ def main():
             "",
             "Trailing uses MT5 point units; TP is recalculated independently for every RR.",
             "SL+TP touched on the same M1 bar => ambiguous and excluded from decisive statistics.",
+            "Any missing M1 interval while a trade is open => M1_GAP_WHILE_OPEN, ambiguous and excluded.",
             "",
             "Top 10 by discovery rank (NET USD first):",
         ]
@@ -721,7 +735,7 @@ def main():
                 f"{i}. {row['name']} | USD={row['net_profit_usd']:.4f} | "
                 f"R={row['net_R']:.4f} | PF={row['profit_factor']} | "
                 f"DD={row['max_drawdown_R']:.4f}R | decisive={row['decisive']} | "
-                f"ambiguous={row['ambiguous']}"
+                f"ambiguous={row['ambiguous']} | gap_exposed={row['gap_exposed']}"
             )
         lines.extend([
             "",
