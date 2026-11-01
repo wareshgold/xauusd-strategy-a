@@ -202,19 +202,24 @@ def t_stat(values: list[float]) -> float:
 
 
 def max_stat_bootstrap(matrix: list[list[float]], *, iterations: int, seed: int) -> dict[str, Any]:
-    """Day-cluster bootstrap max-t test with per-variant daily means centered at zero."""
+    """Circular moving-block max-t bootstrap, preserving short daily sequences."""
     if not matrix or not matrix[0]:
         raise RobustnessError("no daily returns available for bootstrap")
     day_count = len(matrix[0])
     if day_count < 3:
         raise RobustnessError("at least three distinct UTC trade days are required")
+    block_length = max(2, round(day_count ** (1.0 / 3.0)))
     observed_max_t = max(t_stat(row) for row in matrix)
     centered = [[value - mean(row) for value in row] for row in matrix]
     rng = random.Random(seed)
     exceed = 0
     maxima: list[float] = []
     for _ in range(iterations):
-        indices = [rng.randrange(day_count) for _ in range(day_count)]
+        indices: list[int] = []
+        while len(indices) < day_count:
+            start = rng.randrange(day_count)
+            indices.extend((start + offset) % day_count for offset in range(block_length))
+        indices = indices[:day_count]
         max_t = float("-inf")
         for values in centered:
             sample = [values[i] for i in indices]
@@ -227,10 +232,11 @@ def max_stat_bootstrap(matrix: list[list[float]], *, iterations: int, seed: int)
     maxima.sort()
     q95 = maxima[min(len(maxima) - 1, math.ceil(0.95 * len(maxima)) - 1)]
     return {
-        "method": "UTC-day cluster bootstrap; same resampled day indices across all variants; centered max-t null",
+        "method": "UTC daily circular moving-block bootstrap; same sampled contiguous day blocks across all variants; centered max-t null",
         "iterations": iterations,
         "seed": seed,
         "distinct_trade_days": day_count,
+        "block_length_days": block_length,
         "observed_max_t": observed_max_t,
         "null_max_t_95pct": q95,
         "familywise_max_t_p_value": (exceed + 1) / (iterations + 1),
@@ -257,10 +263,8 @@ def main() -> int:
 
         names, days, daily, grouped = build_daily_matrix(all_rows)
         params = {name: parse_variant(name) for name in names}
-        slice_bounds = equal_time_slices(all_rows, 4)
         slice_rows: list[dict[str, Any]] = []
         summary_rows: list[dict[str, Any]] = []
-        temporal_by_variant: dict[str, list[dict[str, Any]]] = {}
 
         for name in names:
             rows = grouped[name]
@@ -285,7 +289,6 @@ def main() -> int:
                     valid_slices += 1
                     if float(stat["net_R"]) > 0:
                         positive_slices += 1
-            temporal_by_variant[name] = per_slice
             summary_rows.append({
                 **params[name],
                 **summary,
@@ -364,10 +367,14 @@ def main() -> int:
             "outputs": {
                 "variant_summary_csv": str(summary_path),
                 "time_slices_csv": str(slice_path),
+                "variant_summary_sha256": sha256_file(summary_path),
+                "time_slices_sha256": sha256_file(slice_path),
+                "variant_summary_rows": len(summary_rows),
+                "time_slice_rows": len(slice_rows),
             },
             "limitations": [
                 "Development sample only; all 288 variants were inspected on this same sample.",
-                "The day-cluster max-t bootstrap is an exploratory family-wise multiplicity diagnostic, not a formal guarantee under arbitrary serial dependence.",
+                "The circular moving-block max-t bootstrap is an exploratory family-wise multiplicity diagnostic; its short block length cannot represent every regime shift or long-memory dependence.",
                 "M1 OHLC proxy, known M1 gaps, ambiguous outcomes, and omitted spread/slippage/commission remain applicable.",
                 "No untouched validation or fresh holdout is performed by this script.",
                 "No canonical exit geometry or production candidate is selected.",
