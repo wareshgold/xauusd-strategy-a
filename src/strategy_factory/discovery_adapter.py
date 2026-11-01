@@ -77,6 +77,8 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError("mt5_path is required")
         if not self.variant_name:
             raise DiscoveryAdapterError("variant_name is required")
+        if spec.dataset.start != self.start or spec.dataset.end != self.end:
+            raise DiscoveryAdapterError("Discovery window does not match the declared dataset window")
         expected_dataset_sha256 = self.observed_dataset_content_sha256
         integrity = validate_m1_artifact(
             self.bars_artifact_path,
