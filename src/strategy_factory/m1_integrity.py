@@ -63,6 +63,11 @@ def _utc(value: str, field: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
+def same_utc_instant(left: str, right: str) -> bool:
+    """Compare two timezone-aware ISO-8601 timestamps as UTC instants."""
+    return _utc(left, "left timestamp") == _utc(right, "right timestamp")
+
+
 def _number(row: dict[str, Any], field: str, index: int) -> float:
     value = row.get(field)
     if isinstance(value, bool) or not isinstance(value, (int, float)):
