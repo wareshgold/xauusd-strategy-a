@@ -52,8 +52,8 @@ def normalize_management_spec(spec: dict[str, Any]) -> dict[str, Any]:
         result["rr"] = _positive(spec, "rr")
         result["activation_r"] = _positive(spec, "activation_r")
         result["offset_r"] = float(spec.get("offset_r", 0.0))
-        if result["offset_r"] < 0:
-            raise V3ExitEngineError("offset_r cannot be negative")
+        if not math.isfinite(result["offset_r"]) or result["offset_r"] < 0:
+            raise V3ExitEngineError("offset_r must be finite and non-negative")
     elif mode == "TRAILING_R":
         result["rr"] = None if spec.get("rr") is None else _positive(spec, "rr")
         result["activation_r"] = _positive(spec, "activation_r")
@@ -64,8 +64,8 @@ def normalize_management_spec(spec: dict[str, Any]) -> dict[str, Any]:
         result["be_offset_r"] = float(spec.get("be_offset_r", 0.0))
         result["trail_activation_r"] = _positive(spec, "trail_activation_r")
         result["trail_distance_r"] = _positive(spec, "trail_distance_r")
-        if result["be_offset_r"] < 0:
-            raise V3ExitEngineError("be_offset_r cannot be negative")
+        if not math.isfinite(result["be_offset_r"]) or result["be_offset_r"] < 0:
+            raise V3ExitEngineError("be_offset_r must be finite and non-negative")
     else:  # TIME_EXIT
         result["rr"] = None if spec.get("rr") is None else _positive(spec, "rr")
         try:
