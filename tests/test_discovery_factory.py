@@ -52,6 +52,13 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
     artifact_path = tmp_path / "m1.json"
     artifact_path.write_bytes(raw)
     sha = hashlib.sha256(raw).hexdigest()
+    entry_path = tmp_path / "v3_entries.csv"
+    entry_path.write_text(
+        "strategy,variant,direction,setup_time_utc,entry_time_utc,entry_proxy,sl_initial,target,risk_price,exit_time_utc,exit_price,exit_reason,status,r_multiple\\n"
+        "A,A_TRAIL_0.40_ACTIVATED_PROXY_V3,BUY,2026-10-05T00:00:00Z,2026-10-05T00:00:00Z,4000,3999,4002,1,2026-10-05T00:01:00Z,4001,TP,CLOSED,1\\n",
+        encoding="utf-8",
+    )
+    entry_sha = hashlib.sha256(entry_path.read_bytes()).hexdigest()
     artifact = DatasetArtifact(
         artifact_id="MT5-M1-TEST",
         location=str(artifact_path),
@@ -149,6 +156,8 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
             artifact_path=artifact_path,
             discovery_script=tmp_path / "discovery.py",
             evidence_id="DISCOVERY-EVIDENCE-001",
+            entry_population_artifact_path=entry_path,
+            entry_population_sha256=entry_sha,
         )
     )
 
