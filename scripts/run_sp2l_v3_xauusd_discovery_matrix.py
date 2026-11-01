@@ -654,7 +654,7 @@ def main():
             "trades": all_trades,
         }
 
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         base = output_dir / f"SP2L_V3_CONTROLLED_DISCOVERY_{stamp}"
         raw = json.dumps(result, indent=2, ensure_ascii=False)
         json_path = base.with_suffix(".json")
