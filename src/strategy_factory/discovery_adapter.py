@@ -18,7 +18,7 @@ from typing import Any
 from .adapter import build_execution_receipt
 from .execution import ExecutionReceipt
 from .metrics import ResearchMetrics
-from .m1_integrity import validate_m1_artifact
+from .m1_integrity import same_utc_instant, validate_m1_artifact
 from .test_contract import HistoricalTestSpec
 
 
@@ -77,7 +77,7 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError("mt5_path is required")
         if not self.variant_name:
             raise DiscoveryAdapterError("variant_name is required")
-        if spec.dataset.start != self.start or spec.dataset.end != self.end:
+        if not same_utc_instant(spec.dataset.start, self.start) or not same_utc_instant(spec.dataset.end, self.end):
             raise DiscoveryAdapterError("Discovery window does not match the declared dataset window")
         expected_dataset_sha256 = self.observed_dataset_content_sha256
         integrity = validate_m1_artifact(
