@@ -75,6 +75,37 @@ def load_m1_artifact(path):
         raise RuntimeError(f"M1 dataset artifact not found: {artifact}")
     raw = artifact.read_bytes()
     expected = hashlib.sha256(raw).hexdigest()
+    if artifact.suffix.lower() == ".csv":
+        import io
+        reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig"), newline=""))
+        fields = [
+            "time_epoch_seconds", "time_utc_iso", "open", "high", "low", "close",
+            "tick_volume", "spread", "real_volume",
+        ]
+        if reader.fieldnames != fields:
+            raise RuntimeError("M1 CSV header does not match the declared source schema")
+        dtype = [
+            ("time", "i8"), ("open", "f8"), ("high", "f8"), ("low", "f8"),
+            ("close", "f8"), ("tick_volume", "i8"), ("spread", "i8"), ("real_volume", "i8"),
+        ]
+        values = []
+        for index, row in enumerate(reader):
+            timestamp = int(row["time_epoch_seconds"])
+            row_time = datetime.fromisoformat(row["time_utc_iso"].replace("Z", "+00:00"))
+            if row_time.tzinfo is None or int(row_time.timestamp()) != timestamp:
+                raise RuntimeError(f"M1 CSV row {index} has inconsistent UTC/epoch timestamps")
+            values.append((
+                timestamp, float(row["open"]), float(row["high"]), float(row["low"]),
+                float(row["close"]), int(row["tick_volume"]), int(row["spread"]),
+                int(row["real_volume"]),
+            ))
+        bars = np.array(values, dtype=dtype)
+        if not len(bars):
+            raise RuntimeError("M1 CSV artifact contains no bars")
+        timestamps = bars["time"]
+        if np.any(timestamps % 60 != 0) or (len(timestamps) > 1 and np.any(np.diff(timestamps) <= 0)):
+            raise RuntimeError("M1 CSV artifact contains invalid, duplicate, or out-of-order timestamps")
+        return bars, expected
     payload = json.loads(raw.decode("utf-8"))
     if payload.get("schema_version") != 1:
         raise RuntimeError("unsupported M1 dataset artifact schema")
