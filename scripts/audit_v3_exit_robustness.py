@@ -178,17 +178,26 @@ def equal_time_slices(rows: list[dict[str, Any]], count: int = 4) -> dict[str, i
     return result
 
 
-def build_daily_matrix(rows: list[dict[str, Any]]) -> tuple[list[str], list[str], list[list[float]], dict[str, list[dict[str, Any]]]]:
+def build_daily_matrix(rows: list[dict[str, Any]]) -> tuple[list[str], list[str], list[list[float | None]], dict[str, list[dict[str, Any]]]]:
     names = sorted({r["variant"] for r in rows})
     days = sorted({r["day"] for r in rows})
     day_index = {day: i for i, day in enumerate(days)}
     name_index = {name: i for i, name in enumerate(names)}
-    matrix = [[0.0 for _ in days] for _ in names]
+    # A day with no triggered rows is a genuine zero-return day. A day with
+    # any ambiguous or unresolved outcome is unknown, not a synthetic zero.
+    matrix: list[list[float | None]] = [[0.0 for _ in days] for _ in names]
+    unknown_days: set[tuple[int, int]] = set()
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
         grouped[row["variant"]].append(row)
-        if not row["ambiguous"]:
-            matrix[name_index[row["variant"]]][day_index[row["day"]]] += float(row["realized_R"])
+        key = (name_index[row["variant"]], day_index[row["day"]])
+        realized = row["realized_R"]
+        if row["ambiguous"] or realized is None:
+            unknown_days.add(key)
+        elif key not in unknown_days:
+            matrix[key[0]][key[1]] += float(realized)
+    for variant_index, day in unknown_days:
+        matrix[variant_index][day] = None
     return names, days, matrix, grouped
 
 
@@ -201,16 +210,29 @@ def t_stat(values: list[float]) -> float:
     return mean(values) / (sd / math.sqrt(len(values)))
 
 
-def max_stat_bootstrap(matrix: list[list[float]], *, iterations: int, seed: int) -> dict[str, Any]:
-    """Circular moving-block max-t bootstrap, preserving short daily sequences."""
+def max_stat_bootstrap(matrix: list[list[float | None]], *, iterations: int, seed: int) -> dict[str, Any]:
+    """Circular moving-block max-t bootstrap with unresolved days kept missing."""
     if not matrix or not matrix[0]:
         raise RobustnessError("no daily returns available for bootstrap")
     day_count = len(matrix[0])
     if day_count < 3:
         raise RobustnessError("at least three distinct UTC trade days are required")
+    if any(len(row) != day_count for row in matrix):
+        raise RobustnessError("daily return matrix is not rectangular")
+
+    valid_rows = [[float(value) for value in row if value is not None] for row in matrix]
+    eligible = [index for index, values in enumerate(valid_rows) if len(values) >= 3]
+    excluded = len(matrix) - len(eligible)
+    if not eligible:
+        raise RobustnessError("no variant has at least three known daily returns")
     block_length = max(2, round(day_count ** (1.0 / 3.0)))
-    observed_max_t = max(t_stat(row) for row in matrix)
-    centered = [[value - mean(row) for value in row] for row in matrix]
+    observed_max_t = max(t_stat(valid_rows[index]) for index in eligible)
+    centered: list[list[float | None]] = []
+    for row in matrix:
+        known = [float(value) for value in row if value is not None]
+        row_mean = mean(known) if known else 0.0
+        centered.append([None if value is None else float(value) - row_mean for value in row])
+
     rng = random.Random(seed)
     exceed = 0
     maxima: list[float] = []
@@ -221,8 +243,14 @@ def max_stat_bootstrap(matrix: list[list[float]], *, iterations: int, seed: int)
             indices.extend((start + offset) % day_count for offset in range(block_length))
         indices = indices[:day_count]
         max_t = float("-inf")
-        for values in centered:
-            sample = [values[i] for i in indices]
+        for variant_index in eligible:
+            # Shared date indices preserve cross-variant alignment. Missing
+            # outcomes remain excluded rather than being converted to zero.
+            sample = [
+                float(centered[variant_index][i])
+                for i in indices
+                if centered[variant_index][i] is not None
+            ]
             stat = t_stat(sample)
             if stat > max_t:
                 max_t = stat
@@ -232,15 +260,19 @@ def max_stat_bootstrap(matrix: list[list[float]], *, iterations: int, seed: int)
     maxima.sort()
     q95 = maxima[min(len(maxima) - 1, math.ceil(0.95 * len(maxima)) - 1)]
     return {
-        "method": "UTC daily circular moving-block bootstrap; same sampled contiguous day blocks across all variants; centered max-t null",
+        "method": "UTC daily circular moving-block bootstrap; shared sampled contiguous day indices across variants; unresolved/ambiguous variant-days excluded; centered max-t null",
         "iterations": iterations,
         "seed": seed,
         "distinct_trade_days": day_count,
         "block_length_days": block_length,
+        "eligible_variants": len(eligible),
+        "excluded_variants_fewer_than_three_known_days": excluded,
+        "known_daily_returns_by_variant_min": min(len(valid_rows[index]) for index in eligible),
+        "known_daily_returns_by_variant_max": max(len(valid_rows[index]) for index in eligible),
         "observed_max_t": observed_max_t,
         "null_max_t_95pct": q95,
         "familywise_max_t_p_value": (exceed + 1) / (iterations + 1),
-        "interpretation": "Exploratory multiplicity diagnostic; not a substitute for untouched validation or a formal guarantee under all dependence structures.",
+        "interpretation": "Exploratory multiplicity diagnostic; missing unresolved/ambiguous days are not scored as zero; not a substitute for untouched validation or a formal guarantee under all dependence structures.",
     }
 
 
