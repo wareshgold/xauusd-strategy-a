@@ -60,6 +60,7 @@ class DiscoveryArtifactAuditTests(unittest.TestCase):
             },
             "discovery_grid": {"variant_count": 2},
             "matrix": matrix,
+            "trades": trades,
             "execution_assumptions": {"spread_slippage_commission": "NOT_MODELED"},
             "exit_policy": {"sameBarPolicy": "AMBIGUOUS"},
         }
