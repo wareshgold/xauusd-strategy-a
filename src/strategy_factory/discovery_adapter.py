@@ -144,7 +144,11 @@ class DiscoveryMatrixAdapter:
         if not json_path.is_file():
             raise DiscoveryAdapterError(f"Discovery output JSON not found: {json_path}")
 
-        result = json.loads(json_path.read_text(encoding="utf-8"))
+        matrix_raw = json_path.read_bytes()
+        observed_matrix_sha256 = hashlib.sha256(matrix_raw).hexdigest()
+        if payload.get("sha256") != observed_matrix_sha256:
+            raise DiscoveryAdapterError("Discovery matrix JSON SHA-256 does not match its completion payload")
+        result = json.loads(matrix_raw.decode("utf-8"))
         if result.get("research_only") is not True:
             raise DiscoveryAdapterError("Discovery output is not marked research_only")
 
@@ -208,7 +212,7 @@ class DiscoveryMatrixAdapter:
                 "end": self.end,
                 "variant_name": self.variant_name,
                 "matrix_json": str(json_path),
-                "matrix_sha256": payload.get("sha256"),
+                "matrix_sha256": observed_matrix_sha256,
                 "dataset_content_sha256": expected_dataset_sha256,
                 "m1_integrity": integrity.as_dict(),
                 "entry_population_artifact": str(self.entry_population_artifact_path) if self.entry_population_artifact_path else None,
