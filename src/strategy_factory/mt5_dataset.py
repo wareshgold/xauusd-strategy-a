@@ -134,4 +134,9 @@ class MT5M1ArtifactExporter:
         )
         if report.content_sha256 != observed_sha:
             raise MT5DatasetPreparationError("M1 integrity report hash changed during validation")
-        return snapshot
+        payload["m1_integrity"] = report.as_dict()
+        return MT5M1Snapshot(
+            artifact=artifact,
+            dataset_content_sha256=observed_sha,
+            payload=payload,
+        )
