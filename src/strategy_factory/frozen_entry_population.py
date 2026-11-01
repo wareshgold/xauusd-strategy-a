@@ -67,6 +67,8 @@ def load_frozen_entry_population(
             raise ValueError(f"frozen V3 entry row {index} timestamps must include timezone")
         setup_dt = setup_dt.astimezone(timezone.utc)
         entry_dt = entry_dt.astimezone(timezone.utc)
+        if setup_dt.microsecond != 0 or entry_dt.microsecond != 0:
+            raise ValueError(f"frozen V3 entry row {index} timestamps must have whole-second precision")
         trigger_time = int(entry_dt.timestamp())
         if trigger_time % 60 != 0:
             raise ValueError(f"frozen V3 entry row {index} is not aligned to M1")
