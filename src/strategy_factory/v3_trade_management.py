@@ -9,6 +9,7 @@ broker execution semantics. It does not alter entry identity or geometry.
 
 import copy
 import json
+from datetime import datetime, timezone
 from typing import Any
 
 from .v3_exit_engine import V3ExitVariant, summarize
@@ -53,6 +54,23 @@ def normalize_policy(policy: dict[str, Any]) -> dict[str, Any]:
             if number <= 0:
                 raise V3TradeManagementError(key + " must be positive")
             result[key] = number
+
+    permitted = {
+        "fixed_rr": {"target_rr"},
+        "no_target": set(),
+        "breakeven": {"target_rr", "breakeven_trigger_r"},
+        "trailing": {"target_rr", "trailing_activation_r", "trailing_distance_points"},
+        "breakeven_trailing": {"target_rr", "breakeven_trigger_r", "trailing_activation_r", "trailing_distance_points"},
+        "time_exit": {"target_rr", "time_exit_bars"},
+    }[mode]
+    supplied_but_unused = sorted(
+        key for key in _ALLOWED_KEYS - {"mode"}
+        if result[key] is not None and key not in permitted
+    )
+    if supplied_but_unused:
+        raise V3TradeManagementError(
+            "parameters are not valid for " + mode + ": " + ", ".join(supplied_but_unused)
+        )
 
     if mode == "fixed_rr" and result["target_rr"] is None:
         raise V3TradeManagementError("fixed_rr requires target_rr")
@@ -253,7 +271,7 @@ class V3TradeManagementEngine:
             "max_favorable_price": max_fav,
             "max_adverse_price": max_adverse,
             "exit_time_utc": (
-                __import__("datetime").datetime.fromtimestamp(exit_time, __import__("datetime").timezone.utc).isoformat()
+                datetime.fromtimestamp(exit_time, timezone.utc).isoformat()
                 if exit_time is not None else None
             ),
             "exit_price": exit_price,
