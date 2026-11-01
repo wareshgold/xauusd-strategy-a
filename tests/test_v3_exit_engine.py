@@ -39,6 +39,8 @@ def engine(m1, population=None):
         contract_size=100.0,
         volume=0.01,
         engine_revision="TEST-V3-ENGINE-1",
+        dataset_sha256="a" * 64,
+        entry_population_sha256="b" * 64,
     )
 
 
@@ -115,3 +117,29 @@ def test_engine_rejects_non_chronological_bars():
         assert "strictly chronological" in str(exc)
     else:
         raise AssertionError("expected non-chronological M1 bars to be rejected")
+
+def test_comparison_rejects_variant_from_another_dataset_session():
+    m1 = bars([
+        (1_800_000_000, 100, 100, 100, 100, 1, 0, 0),
+        (1_800_000_060, 100, 106, 99, 105, 1, 0, 0),
+    ])
+    first_engine = engine(m1)
+    first = first_engine.evaluate(rr=1, activation_points=None, distance_points=None)
+    second_engine = V3ExitReplayEngine(
+        bars=m1,
+        population=[candidate()],
+        mt5_point=0.01,
+        contract_size=100.0,
+        volume=0.01,
+        engine_revision="TEST-V3-ENGINE-1",
+        dataset_sha256="c" * 64,
+        entry_population_sha256="b" * 64,
+    )
+    second = second_engine.evaluate(rr=2, activation_points=None, distance_points=None)
+
+    try:
+        first_engine.compare(first, second)
+    except ValueError as exc:
+        assert "exact research session" in str(exc)
+    else:
+        raise AssertionError("expected cross-session variant comparison to be rejected")
