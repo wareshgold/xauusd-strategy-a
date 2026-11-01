@@ -1,22 +1,9 @@
-import numpy as np
-
 from strategy_factory.v3_exit_engine import V3ExitReplayEngine
 
 
-DTYPE = [
-    ("time", "i8"),
-    ("open", "f8"),
-    ("high", "f8"),
-    ("low", "f8"),
-    ("close", "f8"),
-    ("tick_volume", "i8"),
-    ("spread", "i8"),
-    ("real_volume", "i8"),
-]
-
-
 def bars(rows):
-    return np.array(rows, dtype=DTYPE)
+    fields = ("time", "open", "high", "low", "close", "tick_volume", "spread", "real_volume")
+    return [dict(zip(fields, row)) for row in rows]
 
 
 def candidate(entry_idx=0):
@@ -55,12 +42,16 @@ def test_in_memory_engine_replays_and_caches_exact_parameter_tuple():
     first = lab.evaluate(rr=5, activation_points=100, distance_points=20)
     second = lab.evaluate(rr=5, activation_points=100, distance_points=20)
 
-    assert first is second
+    assert first is not second
+    assert first == second
     assert lab.cache_entries == 1
     assert first.summary["signals"] == 1
     assert first.summary["decisive"] == 1
     assert first.trades[0]["reason"] == "TRAIL_SL"
     assert first.trades[0]["realized_R"] == 0.36
+    first.trades[0]["reason"] = "MUTATED_BY_CALLER"
+    third = lab.evaluate(rr=5, activation_points=100, distance_points=20)
+    assert third.trades[0]["reason"] == "TRAIL_SL"
 
 
 def test_engine_marks_same_bar_stop_and_target_as_ambiguous():
