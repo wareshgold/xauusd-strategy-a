@@ -40,13 +40,19 @@ def test_discovery_adapter_consumes_declared_variant_without_defining_geometry(t
     bars_artifact.write_bytes(b'{"schema_version":1,"bars":[{"time":1791158400,"open":1,"high":1,"low":1,"close":1,"tick_volume":1,"spread":0,"real_volume":1}],"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","window_utc":{"start":"2026-10-05T00:00:00Z","end":"2026-10-07T05:30:00Z"}}')
     import hashlib
     dataset_sha = hashlib.sha256(bars_artifact.read_bytes()).hexdigest()
+    integrity = module.validate_m1_artifact(
+        bars_artifact,
+        expected_symbol="XAUUSD.ecn",
+        expected_start=make_spec().dataset.start,
+        expected_end=make_spec().dataset.end,
+    ).as_dict()
 
     matrix_path = tmp_path / "discovery.json"
     matrix_path.write_text(
         json.dumps(
             {
                 "research_only": True,
-                "dataset_provenance": {"content_sha256": dataset_sha},
+                "dataset_provenance": {"content_sha256": dataset_sha, "m1_integrity": integrity},
                 "matrix": [
                     {
                         "name": "RR2_ACT10_D2",
@@ -161,7 +167,7 @@ def test_discovery_adapter_rejects_non_research_output(tmp_path, monkeypatch):
 
 def test_discovery_adapter_rejects_artifact_mutation_during_run(tmp_path, monkeypatch):
     script = tmp_path / "run_sp2l_v3_xauusd_discovery_matrix.py"
-    script.write_text("placeholder\\n", encoding="utf-8")
+    script.write_text("placeholder\n", encoding="utf-8")
     bars_artifact = tmp_path / "m1.json"
     bars_artifact.write_text(
         json.dumps({
@@ -208,11 +214,11 @@ def test_discovery_adapter_rejects_artifact_mutation_during_run(tmp_path, monkey
 
 def test_discovery_adapter_binds_frozen_v3_entry_artifact(tmp_path, monkeypatch):
     script = tmp_path / "run_sp2l_v3_xauusd_discovery_matrix.py"
-    script.write_text("placeholder\\n", encoding="utf-8")
+    script.write_text("placeholder\n", encoding="utf-8")
     bars_artifact = tmp_path / "m1.csv"
     bars_artifact.write_text(
-        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\\n"
-        "1791158400,2026-10-05T00:00:00+00:00,4000,4001,3999,4000.5,10,2,0\\n",
+        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\n"
+        "1791158400,2026-10-05T00:00:00+00:00,4000,4001,3999,4000.5,10,2,0\n",
         encoding="utf-8",
     )
     entry_artifact = tmp_path / "v3_entries.csv"
@@ -223,16 +229,22 @@ def test_discovery_adapter_binds_frozen_v3_entry_artifact(tmp_path, monkeypatch)
         "4004", "OLD_EXIT", "CLOSED", "1",
     ]
     entry_artifact.write_text(
-        ",".join(ENTRY_FIELDS) + "\\n" + ",".join(entry_row) + "\\n",
+        ",".join(ENTRY_FIELDS) + "\n" + ",".join(entry_row) + "\n",
         encoding="utf-8",
     )
     dataset_sha = hashlib.sha256(bars_artifact.read_bytes()).hexdigest()
+    integrity = module.validate_m1_artifact(
+        bars_artifact,
+        expected_symbol="XAUUSD.ecn",
+        expected_start=make_spec().dataset.start,
+        expected_end=make_spec().dataset.end,
+    ).as_dict()
     entry_sha = hashlib.sha256(entry_artifact.read_bytes()).hexdigest()
     matrix_path = tmp_path / "discovery.json"
     matrix_path.write_text(
         json.dumps({
             "research_only": True,
-            "dataset_provenance": {"content_sha256": dataset_sha},
+            "dataset_provenance": {"content_sha256": dataset_sha, "m1_integrity": integrity},
             "frozen_population": {
                 "source": "FROZEN_V3_ENTRY_CSV",
                 "content_sha256": entry_sha,
