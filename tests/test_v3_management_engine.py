@@ -22,7 +22,7 @@ def run(spec, rows):
 
 
 def test_fixed_rr_and_no_target_are_distinct_and_reproducible():
-    data = [(100, 100, 100, 100), (100, 111, 99, 105)]
+    data = [(100, 100, 100, 100), (100, 111, 94, 105)]
     fixed = run({"mode": "FIXED_RR", "rr": 2}, data)
     no_target = run({"mode": "NO_TARGET"}, data)
     assert fixed["reason"] == "SL_AND_TP_SAME_BAR" and fixed["ambiguous"]
