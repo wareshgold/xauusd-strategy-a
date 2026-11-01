@@ -58,7 +58,7 @@ canvas{width:100%;height:220px;background:#0a1218;border:1px solid #273943;borde
 <label>Time exit after completed M1 bars</label><input id="mgmtBars" type="number" step="1" value="30">
 <div class="actions"><button id="runManagement" disabled>Run selected policy</button><button id="runMatrix" disabled>Run 16-policy comparison matrix</button></div>
 <div id="matrixStatus" class="status">Management matrix not run.</div>
-<p class="small">Management policies change exits only. Entry population, entry prices, initial SL, volume and M1 artifact stay fixed. Time exit uses the completed-bar close as an OHLC proxy. Partial exits and ATR trailing are not enabled because their execution/anchor semantics need separate specification.</p>
+<p class="small">“Net @23pt proxy” subtracts one full 23-point spread from each decisive trade; it is a sensitivity estimate, not historical execution cost. Commission and slippage are excluded. Management policies change exits only. Entry population, entry prices, initial SL, volume and M1 artifact stay fixed. Time exit uses the completed-bar close as an OHLC proxy. Partial exits and ATR trailing are not enabled because their execution/anchor semantics need separate specification.</p>
 </section>
 <div class="right">
 <section class="panel"><h2>03 / REPLAY SUMMARY</h2><div class="metrics" id="metrics">
@@ -67,7 +67,7 @@ canvas{width:100%;height:220px;background:#0a1218;border:1px solid #273943;borde
 <section class="panel"><h2>04 / TRADE-BY-TRADE RESULTS</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Side</th><th>Exit</th><th>R</th><th>USD</th><th>Ambiguous</th></tr></thead><tbody id="trades"><tr><td colspan="6" class="small">No replay results.</td></tr></tbody></table></div></section>
 <section class="panel"><h2>05 / EQUITY CURVE (DECISIVE TRADES)</h2><canvas id="equity" width="1100" height="240"></canvas><p class="small">Trade-order cumulative realized R. This is a descriptive replay plot, not validation evidence.</p></section>
 <section class="panel"><h2>06 / PAIRED VARIANT COMPARISON</h2><div class="grid2"><div><label>Variant A</label><select id="leftVariant"></select></div><div><label>Variant B</label><select id="rightVariant"></select></div></div><button id="compare" disabled style="margin-top:12px">Compare paired trades</button><div id="compareStatus" class="status"></div></section>
-<section class="panel"><h2>07 / MANAGEMENT MATRIX RESULTS</h2><div class="table-wrap"><table><thead><tr><th>Policy</th><th>Decisive</th><th>Ambiguous</th><th>Gross + USD</th><th>Gross − USD</th><th>Net Gross USD</th><th>PF</th><th>Max DD R</th></tr></thead><tbody id="matrixRows"><tr><td colspan="8" class="small">Run the management matrix to populate this table.</td></tr></tbody></table></div></section>
+<section class="panel"><h2>07 / MANAGEMENT MATRIX RESULTS</h2><div class="table-wrap"><table><thead><tr><th>Policy</th><th>Decisive</th><th>Ambiguous</th><th>Gross + USD</th><th>Gross − USD</th><th>Net Gross USD</th><th>Net @23pt proxy USD</th><th>PF</th><th>Max DD R</th></tr></thead><tbody id="matrixRows"><tr><td colspan="9" class="small">Run the management matrix to populate this table.</td></tr></tbody></table></div></section>
 </div>
 </main>
 <script>
@@ -99,7 +99,7 @@ for(const trailing_activation_r of [0.5,1,1.5])policies.push({mode:"trailing",ta
 policies.push({mode:"breakeven_trailing",target_rr:2,breakeven_trigger_r:1,trailing_activation_r:1.5,trailing_distance_points:20});
 for(const time_exit_bars of [15,30,60,120])policies.push({mode:"time_exit",time_exit_bars});
 const d=await request("/api/sessions/"+sessionId+"/management-matrix","POST",{policies});
-$("matrixRows").innerHTML=d.results.map(r=>{const s=r.summary;registerVariant(r.variant_id,r.name);return '<tr><td>'+r.name+'</td><td>'+s.decisive+'</td><td>'+s.ambiguous+'</td><td>'+fmt(s.gross_profit_usd)+'</td><td>'+fmt(s.gross_loss_usd)+'</td><td>'+fmt(s.net_profit_usd)+'</td><td>'+fmt(s.profit_factor)+'</td><td>'+fmt(s.max_drawdown_R)+'</td></tr>'}).join("");
+$("matrixRows").innerHTML=d.results.map(r=>{const s=r.summary;registerVariant(r.variant_id,r.name);return '<tr><td>'+r.name+'</td><td>'+s.decisive+'</td><td>'+s.ambiguous+'</td><td>'+fmt(s.gross_profit_usd)+'</td><td>'+fmt(s.gross_loss_usd)+'</td><td>'+fmt(s.net_profit_usd)+'</td><td>'+fmt(r.spread_sensitivity.scenarios["23"].estimated_net_after_spread_usd)+'</td><td>'+fmt(s.profit_factor)+'</td><td>'+fmt(s.max_drawdown_R)+'</td></tr>'}).join("");
 $("matrixStatus").textContent="Completed "+d.results.length+" policies · same session fingerprint · NOT VALIDATED";
 }catch(e){$("matrixStatus").textContent="REJECTED: "+e.message}finally{$("runMatrix").disabled=false}};
 $("compare").onclick=async()=>{try{const d=await request("/api/sessions/"+sessionId+"/compare","POST",{left_variant_id:$("leftVariant").value,right_variant_id:$("rightVariant").value});$("compareStatus").textContent=JSON.stringify(d.comparison,null,2)}catch(e){$("compareStatus").textContent="REJECTED: "+e.message}};
