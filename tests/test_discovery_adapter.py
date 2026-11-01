@@ -155,3 +155,50 @@ def test_discovery_adapter_rejects_non_research_output(tmp_path, monkeypatch):
         assert "output JSON not found" in str(exc)
     else:
         raise AssertionError("expected missing M1 dataset artifact to be rejected")
+
+
+def test_discovery_adapter_rejects_artifact_mutation_during_run(tmp_path, monkeypatch):
+    script = tmp_path / "run_sp2l_v3_xauusd_discovery_matrix.py"
+    script.write_text("placeholder\\n", encoding="utf-8")
+    bars_artifact = tmp_path / "m1.json"
+    bars_artifact.write_text(
+        json.dumps({
+            "schema_version": 1,
+            "research_only": True,
+            "symbol": "XAUUSD.ecn",
+            "timeframe": "M1",
+            "window_utc": {
+                "start": "2026-10-05T00:00:00Z",
+                "end": "2026-10-07T05:30:00Z",
+            },
+            "bars": [{
+                "time": 1791158400,
+                "open": 1,
+                "high": 1,
+                "low": 1,
+                "close": 1,
+                "tick_volume": 1,
+                "spread": 0,
+                "real_volume": 1,
+            }],
+        }),
+        encoding="utf-8",
+    )
+
+    def fake_run(*args, **kwargs):
+        bars_artifact.write_text(bars_artifact.read_text(encoding="utf-8") + " ", encoding="utf-8")
+        return SimpleNamespace(returncode=0, stdout="{}", stderr="")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    adapter = DiscoveryMatrixAdapter(
+        script_path=script,
+        mt5_path="MT5",
+        variant_name="RR2_ACT10_D2",
+        bars_artifact_path=bars_artifact,
+    )
+    try:
+        adapter.execute(make_spec())
+    except Exception as exc:
+        assert "changed while Discovery was running" in str(exc)
+    else:
+        raise AssertionError("expected mutated M1 artifact to be rejected")
