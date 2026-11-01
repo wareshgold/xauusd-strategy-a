@@ -301,7 +301,7 @@ class V3ExitReplayEngine:
         volume: float,
         engine_revision: str,
     ) -> None:
-        if not bars or not population:
+        if len(bars) == 0 or len(population) == 0:
             raise V3ExitEngineError("bars and frozen entry population must be non-empty")
         if mt5_point <= 0 or contract_size <= 0 or volume <= 0:
             raise V3ExitEngineError("MT5 point, contract size, and volume must be positive")
