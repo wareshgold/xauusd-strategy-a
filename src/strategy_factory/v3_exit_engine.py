@@ -9,6 +9,8 @@ for binding the exact dataset and entry-artifact hashes to its research record.
 """
 
 from dataclasses import dataclass
+import hashlib
+import json
 from datetime import datetime, timezone
 from typing import Any, Sequence
 
@@ -276,6 +278,7 @@ def summarize(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
 
 @dataclass(frozen=True)
 class V3ExitVariant:
+    session_fingerprint: str
     name: str
     rr: float
     activation_points: float | None
@@ -300,6 +303,8 @@ class V3ExitReplayEngine:
         contract_size: float,
         volume: float,
         engine_revision: str,
+        dataset_sha256: str,
+        entry_population_sha256: str,
     ) -> None:
         if len(bars) == 0 or len(population) == 0:
             raise V3ExitEngineError("bars and frozen entry population must be non-empty")
@@ -307,6 +312,12 @@ class V3ExitReplayEngine:
             raise V3ExitEngineError("MT5 point, contract size, and volume must be positive")
         if not engine_revision:
             raise V3ExitEngineError("engine_revision is required")
+        for label, digest in (
+            ("dataset_sha256", dataset_sha256),
+            ("entry_population_sha256", entry_population_sha256),
+        ):
+            if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest.lower()):
+                raise V3ExitEngineError(f"{label} must be a SHA-256 hex digest")
         timestamps = [int(bar["time"]) for bar in bars]
         if any(left >= right for left, right in zip(timestamps, timestamps[1:])):
             raise V3ExitEngineError("M1 bars must be strictly chronological")
@@ -320,6 +331,17 @@ class V3ExitReplayEngine:
         self._contract_size = float(contract_size)
         self._volume = float(volume)
         self._engine_revision = engine_revision
+        identity = {
+            "engine_revision": engine_revision,
+            "dataset_sha256": dataset_sha256.lower(),
+            "entry_population_sha256": entry_population_sha256.lower(),
+            "mt5_point": float(mt5_point),
+            "contract_size": float(contract_size),
+            "volume": float(volume),
+        }
+        self.session_fingerprint = hashlib.sha256(
+            json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
         self._cache: dict[tuple[float, float | None, float | None], V3ExitVariant] = {}
 
     @property
@@ -368,6 +390,7 @@ class V3ExitReplayEngine:
             row["variant"] = name
             trades.append(row)
         result = V3ExitVariant(
+            session_fingerprint=self.session_fingerprint,
             name=name,
             rr=key[0],
             activation_points=key[1],
@@ -380,6 +403,8 @@ class V3ExitReplayEngine:
 
     def compare(self, left: V3ExitVariant, right: V3ExitVariant) -> dict[str, Any]:
         """Compare paired outcomes by frozen-population order and identity."""
+        if left.session_fingerprint != self.session_fingerprint or right.session_fingerprint != self.session_fingerprint:
+            raise V3ExitEngineError("variants do not belong to this exact research session")
         if len(left.trades) != len(right.trades) or len(left.trades) != len(self._population):
             raise V3ExitEngineError("variants do not share this engine's frozen population")
         paired = []
@@ -392,11 +417,11 @@ class V3ExitReplayEngine:
                 float(candidate["risk"]),
             )
             other_identity = (
-                int(candidate["trigger_time"]),
-                str(candidate["direction"]),
-                float(candidate["theoretical_entry"]),
-                float(candidate["sl"]),
-                float(candidate["risk"]),
+                int(b["trigger_time"]),
+                str(b["direction"]),
+                float(b["theoretical_entry"]),
+                float(b["initial_sl"]),
+                float(b["risk"]),
             )
             if identity != other_identity:
                 raise V3ExitEngineError("frozen trade identity mismatch")
