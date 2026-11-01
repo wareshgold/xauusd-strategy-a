@@ -117,6 +117,7 @@ class V3ResearchAPI:
                 "rr": variant.rr,
                 "management_config": dict(variant.management_config or {}),
                 "summary": dict(variant.summary),
+                "spread_sensitivity": session.flat_spread_sensitivity(variant.summary),
                 "trades": [dict(row) for row in variant.trades],
             },
             "cache_entries": session.cache_entries,
