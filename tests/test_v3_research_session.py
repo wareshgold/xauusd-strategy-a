@@ -118,10 +118,10 @@ def test_session_loads_existing_validated_m1_csv(tmp_path):
     end = "2027-01-15T08:02:00+00:00"
     m1 = tmp_path / "xauusd_m1.csv"
     m1.write_text(
-        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\\n"
-        "1800000000,2027-01-15T08:00:00+00:00,100,100,100,100,1,0,0\\n"
-        "1800000060,2027-01-15T08:01:00+00:00,100,102,99,101.9,1,0,0\\n"
-        "1800000120,2027-01-15T08:02:00+00:00,101.9,102,101.7,101.8,1,0,0\\n",
+        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\n"
+        "1800000000,2027-01-15T08:00:00+00:00,100,100,100,100,1,0,0\n"
+        "1800000060,2027-01-15T08:01:00+00:00,100,102,99,101.9,1,0,0\n"
+        "1800000120,2027-01-15T08:02:00+00:00,101.9,102,101.7,101.8,1,0,0\n",
         encoding="utf-8",
     )
     entry = tmp_path / "entries.csv"
