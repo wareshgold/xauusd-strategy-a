@@ -29,6 +29,7 @@ import numpy as np
 
 import sp2l_v3_config as cfg
 from strategy_factory.frozen_entry_population import load_frozen_entry_population
+from strategy_factory.m1_integrity import validate_m1_artifact
 
 OUT = ROOT / "artifacts" / "v3_discovery"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -474,12 +475,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mt5-path", required=True)
     ap.add_argument("--symbol", default="XAUUSD.ecn")
-    ap.add_argument("--start", default="2026-10-05T00:00:00+00:00")
-    ap.add_argument("--end", default="2026-10-07T05:30:00+00:00")
+    ap.add_argument("--start", default="2026-09-24T07:57:00+00:00")
+    ap.add_argument("--end", default="2026-10-23T23:57:00+00:00")
     ap.add_argument(
         "--bars-artifact",
         default=None,
-        help="Immutable JSON M1 snapshot. If supplied, MT5 is not queried for bars.",
+        help="Byte-preserved M1 JSON or CSV artifact. If supplied, MT5 history is not queried; symbol metadata is still required.",
     )
     ap.add_argument(
         "--write-bars-artifact",
@@ -515,13 +516,24 @@ def main():
 
         if args.bars_artifact:
             bars, bars_sha256 = load_m1_artifact(args.bars_artifact)
+            m1_integrity_report = validate_m1_artifact(
+                args.bars_artifact,
+                expected_symbol=args.symbol,
+                expected_start=args.start,
+                expected_end=args.end,
+            ).as_dict()
             dataset_source = "M1_ARTIFACT"
             dataset_artifact = str(Path(args.bars_artifact).resolve())
+            dataset_format = Path(args.bars_artifact).suffix.lower().lstrip(".")
+            dataset_byte_size = Path(args.bars_artifact).stat().st_size
         else:
             bars = fetch_m1_rates(args.symbol, start, end)
             bars_sha256 = None
+            m1_integrity_report = None
             dataset_source = "MT5_LIVE_HISTORY"
             dataset_artifact = None
+            dataset_format = "mt5_rates"
+            dataset_byte_size = None
 
         if len(bars) < 10:
             raise RuntimeError(f"Insufficient M1 data: {mt5.last_error()}")
@@ -534,6 +546,14 @@ def main():
             bars_sha256 = written_sha256
             dataset_source = "MT5_SNAPSHOT"
             dataset_artifact = str(Path(args.write_bars_artifact).resolve())
+            dataset_format = "json"
+            dataset_byte_size = written_bytes
+            m1_integrity_report = validate_m1_artifact(
+                args.write_bars_artifact,
+                expected_symbol=args.symbol,
+                expected_start=args.start,
+                expected_end=args.end,
+            ).as_dict()
         else:
             written_bytes = None
 
@@ -589,8 +609,10 @@ def main():
                 "source": dataset_source,
                 "artifact": dataset_artifact,
                 "content_sha256": bars_sha256,
-                "byte_size": written_bytes,
-                "schema_version": 1 if bars_sha256 is not None else None,
+                "byte_size": dataset_byte_size,
+                "format": dataset_format,
+                "schema_version": 1 if dataset_format == "json" else None,
+                "m1_integrity": m1_integrity_report,
             },
             "frozen_population": {
                 **frozen_population_info,
@@ -672,6 +694,9 @@ def main():
             f"Dataset artifact: {dataset_artifact}",
             f"Dataset SHA256: {bars_sha256}",
             f"Frozen signal/entry population: {len(population)}",
+            f"Entry population source: {frozen_population_info.get('source')}",
+            f"Entry population artifact: {frozen_population_info.get('artifact')}",
+            f"Entry population SHA256: {frozen_population_info.get('content_sha256')}",
             f"Variants: {len(variants)}",
             f"MT5 point: {mt5_point}",
             f"Volume: {VOLUME}",
@@ -681,7 +706,7 @@ def main():
             f"- pGap={cfg.P_GAP_PRICE}",
             f"- spikeMultiplier={cfg.SPIKE_MULTIPLIER}",
             f"- maxSL={cfg.MAX_SL_DISTANCE}",
-            f"- entry={cfg.__name__}.find_first_entry",
+            f"- entry={frozen_population_info.get('source')}",
             f"- session={cfg.SESSION_POLICY}",
             "",
             "Trailing uses MT5 point units; TP is recalculated independently for every RR.",
