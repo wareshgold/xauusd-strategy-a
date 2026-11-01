@@ -95,10 +95,10 @@ class DiscoveryArtifactAuditTests(unittest.TestCase):
 
     def test_accepts_windows_crlf_json_when_snapshot_binds_normalized_content(self):
         original = self.json_path.read_bytes()
-        crlf = original.replace(b"\\r\\n", b"\\n").replace(b"\\n", b"\\r\\n")
+        crlf = original.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
         self.json_path.write_bytes(crlf)
         raw_hash = hashlib.sha256(crlf).hexdigest()
-        normalized_hash = hashlib.sha256(original.replace(b"\\r\\n", b"\\n")).hexdigest()
+        normalized_hash = hashlib.sha256(original.replace(b"\r\n", b"\n")).hexdigest()
         self.assertNotEqual(raw_hash, normalized_hash)
         result = audit_run(self.json_path)
         manifest = json.loads(Path(result["manifest"]).read_text(encoding="utf-8"))
@@ -108,7 +108,7 @@ class DiscoveryArtifactAuditTests(unittest.TestCase):
 
     def test_rejects_snapshot_with_wrong_normalized_json_hash(self):
         snapshot = self.root / f"{self.stem}_SNAPSHOT.md"
-        snapshot.write_text("JSON SHA256: " + ("0" * 64) + "\\n", encoding="utf-8")
+        snapshot.write_text("JSON SHA256: " + ("0" * 64) + "\n", encoding="utf-8")
         with self.assertRaisesRegex(AuditError, "LF-normalized JSON content"):
             audit_run(self.json_path)
 
