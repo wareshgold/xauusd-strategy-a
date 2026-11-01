@@ -44,6 +44,7 @@ class DiscoveryFactoryContext:
     source_artifact_sha256: str | None = None
     entry_population_artifact_path: Path | None = None
     entry_population_sha256: str | None = None
+    discovery_output_dir: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -123,6 +124,7 @@ class DiscoveryFactory:
             bars_artifact_path=Path(snapshot.artifact.location),
             entry_population_artifact_path=entry_path,
             entry_population_sha256=entry_sha,
+            output_dir=context.discovery_output_dir,
             python_executable=context.python_executable,
             engine_revision=context.engine_revision,
         )
