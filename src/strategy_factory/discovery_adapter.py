@@ -37,6 +37,8 @@ class DiscoveryMatrixAdapter:
     end: str = "2026-10-07T05:30:00+00:00"
     variant_name: str = "RR2_ACT10_D2"
     bars_artifact_path: Path | None = None
+    entry_population_artifact_path: Path | None = None
+    entry_population_sha256: str | None = None
     python_executable: str = sys.executable
     engine_revision: str = "SP2L-V3-CONTROLLED-DISCOVERY-20261007"
 
@@ -67,6 +69,11 @@ class DiscoveryMatrixAdapter:
         ]
         if self.bars_artifact_path is not None:
             command.extend(["--bars-artifact", str(self.bars_artifact_path)])
+        if self.entry_population_artifact_path is not None:
+            command.extend([
+                "--entry-population-artifact", str(self.entry_population_artifact_path),
+                "--entry-population-sha256", str(self.entry_population_sha256),
+            ])
         return command
 
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
@@ -88,6 +95,16 @@ class DiscoveryMatrixAdapter:
         )
         if integrity.content_sha256 != expected_dataset_sha256:
             raise DiscoveryAdapterError("M1 integrity gate hash does not match the observed artifact")
+        if bool(self.entry_population_artifact_path) != bool(self.entry_population_sha256):
+            raise DiscoveryAdapterError("frozen entry artifact path and SHA-256 must be supplied together")
+        expected_entry_sha256 = None
+        if self.entry_population_artifact_path is not None:
+            entry_path = Path(self.entry_population_artifact_path)
+            if not entry_path.is_file():
+                raise DiscoveryAdapterError(f"frozen V3 entry artifact not found: {entry_path}")
+            expected_entry_sha256 = hashlib.sha256(entry_path.read_bytes()).hexdigest()
+            if expected_entry_sha256.lower() != self.entry_population_sha256.lower():
+                raise DiscoveryAdapterError("frozen V3 entry artifact SHA-256 mismatch")
 
         completed = subprocess.run(
             self._command(),
@@ -105,6 +122,10 @@ class DiscoveryMatrixAdapter:
         post_run_sha256 = self.observed_dataset_content_sha256
         if post_run_sha256 != expected_dataset_sha256:
             raise DiscoveryAdapterError("M1 dataset artifact changed while Discovery was running")
+        if self.entry_population_artifact_path is not None:
+            post_entry_sha256 = hashlib.sha256(Path(self.entry_population_artifact_path).read_bytes()).hexdigest()
+            if post_entry_sha256 != expected_entry_sha256:
+                raise DiscoveryAdapterError("frozen V3 entry artifact changed while Discovery was running")
 
         try:
             payload = json.loads(completed.stdout)
@@ -179,6 +200,8 @@ class DiscoveryMatrixAdapter:
                 "matrix_sha256": payload.get("sha256"),
                 "dataset_content_sha256": expected_dataset_sha256,
                 "m1_integrity": integrity.as_dict(),
+                "entry_population_artifact": str(self.entry_population_artifact_path) if self.entry_population_artifact_path else None,
+                "entry_population_sha256": expected_entry_sha256,
             },
             sort_keys=True,
             separators=(",", ":"),
