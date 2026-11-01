@@ -15,7 +15,7 @@ def row(direction, timestamp, *, exit_price="9999", r_multiple="88"):
     entry = datetime.fromtimestamp(timestamp, timezone.utc).isoformat()
     return [
         "A", VARIANT, direction, setup, entry,
-        "4000.0", "3996.0", "4008.0", "4.0",
+        "4000.0", "3996.0", "", "4.0",
         "2026-10-05T00:04:00+00:00", exit_price, "OLD_EXIT", "CLOSED", r_multiple,
     ]
 
