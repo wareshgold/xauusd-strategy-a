@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
 
@@ -107,3 +108,16 @@ def test_rejects_unconfigured_roots_and_non_loopback_bind(tmp_path):
     from strategy_factory.v3_research_http import serve
     with pytest.raises(V3ResearchHTTPError, match="loopback"):
         serve(host="0.0.0.0", port=8791)
+
+
+
+def test_dashboard_exposes_complete_replay_evidence_export():
+    dashboard = Path(__file__).resolve().parents[1] / "scripts" / "v3_research_dashboard.html"
+    html = dashboard.read_text(encoding="utf-8")
+    assert 'id="exportEvidence"' in html
+    assert "V3_RESEARCH_REPLAY_EXPORT" in html
+    assert "session_manifest:sessionManifest" in html
+    assert "session_request:sessionRequest" in html
+    assert "trade_rows_sha256:tradeHash" in html
+    assert "trades:v.trades" in html
+    assert '["profit_factor","Profit factor (R)"]' in html
