@@ -48,7 +48,7 @@ def test_in_memory_engine_replays_and_caches_exact_parameter_tuple():
     assert first.summary["signals"] == 1
     assert first.summary["decisive"] == 1
     assert first.trades[0]["reason"] == "TRAIL_SL"
-    assert first.trades[0]["realized_R"] == 0.36
+    assert abs(first.trades[0]["realized_R"] - 0.36) < 1e-12
     first.trades[0]["reason"] = "MUTATED_BY_CALLER"
     third = lab.evaluate(rr=5, activation_points=100, distance_points=20)
     assert third.trades[0]["reason"] == "TRAIL_SL"
