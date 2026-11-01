@@ -106,3 +106,30 @@ Preserve the current evidence files byte-for-byte. Do not regenerate Discovery, 
 - OHLC replay is not tick-level broker execution.
 - The current M1 gap treatment leaves some outcomes ambiguous.
 - No Fresh Holdout has been run.
+
+
+## 7. Robustness / stability audit implementation — CI PASS
+
+A separate research-only implementation has been added on:
+- Branch: `research/v3-exit-robustness-20261101`
+- PR: #380 — [DRAFT] assess V3 exit robustness and 288-way selection bias
+- Tested head commit: `eb6824c49e5f7b094f0c4c4b69903802021b750b`
+
+Implementation:
+- `scripts/audit_v3_exit_robustness.py`
+- `tests/test_v3_exit_robustness.py`
+- `docs/research/v3-exit-robustness-audit.md`
+
+The audit verifies the Trades CSV raw SHA-256 against the local AUDIT=PASS manifest before analysis. It retains unresolved/open outcomes as non-decisive and never assigns them a synthetic return. It produces four equal-width chronological slices, local adjacent-grid neighbourhood diagnostics, and a circular moving-block max-t bootstrap across all variants using common resampled day blocks.
+
+CI on tested head `eb6824c49e5f7b094f0c4c4b69903802021b750b`:
+- Full Repository Test Suite — run 77: PASS; 850 tests passed.
+- Factory Research Tests — run 1817: PASS.
+- SP2L forensic deterministic checks — run 1065: PASS.
+- Factory Journal Lock Cross-Platform Tests — run 644: PASS.
+
+PR #380 remains Draft and unmerged. CI validates the implementation and tests, not the user's local run outputs or a statistical edge.
+
+### Next local action
+
+Run the robustness audit against the already-preserved local manifest and Trades CSV, writing only to a new output directory. Inspect the resulting report and CSVs before deciding whether any candidates are stable enough to freeze for later untouched validation. No Fresh Holdout has been consumed, and no candidate is canonical or production-approved.
