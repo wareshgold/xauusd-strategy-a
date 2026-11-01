@@ -150,6 +150,8 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError(
                 "Discovery did not consume the declared M1 dataset artifact"
             )
+        if dataset.get("m1_integrity") != integrity.as_dict():
+            raise DiscoveryAdapterError("Discovery M1 integrity report does not match the independently validated artifact")
         if self.entry_population_artifact_path is not None:
             frozen_population = result.get("frozen_population") or {}
             if frozen_population.get("source") != "FROZEN_V3_ENTRY_CSV":
