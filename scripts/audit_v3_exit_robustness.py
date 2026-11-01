@@ -211,7 +211,14 @@ def t_stat(values: list[float]) -> float:
 
 
 def max_stat_bootstrap(matrix: list[list[float | None]], *, iterations: int, seed: int) -> dict[str, Any]:
-    """Circular moving-block max-t bootstrap with unresolved days kept missing."""
+    """Missingness-preserving circular moving-block bootstrap max-t diagnostic.
+
+    Calendar positions and their missingness masks are resampled together.
+    Each replicate is reduced to a mean over its known observations, but the
+    block sampler never compacts the source calendar before drawing blocks.
+    Studentization uses the bootstrap standard deviation of each variant's
+    resampled centered mean.
+    """
     if not matrix or not matrix[0]:
         raise RobustnessError("no daily returns available for bootstrap")
     day_count = len(matrix[0])
@@ -220,59 +227,97 @@ def max_stat_bootstrap(matrix: list[list[float | None]], *, iterations: int, see
     if any(len(row) != day_count for row in matrix):
         raise RobustnessError("daily return matrix is not rectangular")
 
-    valid_rows = [[float(value) for value in row if value is not None] for row in matrix]
-    eligible = [index for index, values in enumerate(valid_rows) if len(values) >= 3]
+    known_counts = [sum(value is not None for value in row) for row in matrix]
+    eligible = [index for index, count in enumerate(known_counts) if count >= 3]
     excluded = len(matrix) - len(eligible)
     if not eligible:
         raise RobustnessError("no variant has at least three known daily returns")
     block_length = max(2, round(day_count ** (1.0 / 3.0)))
-    observed_max_t = max(t_stat(valid_rows[index]) for index in eligible)
+
     centered: list[list[float | None]] = []
+    observed_means: list[float] = []
     for row in matrix:
         known = [float(value) for value in row if value is not None]
         row_mean = mean(known) if known else 0.0
+        observed_means.append(row_mean)
         centered.append([None if value is None else float(value) - row_mean for value in row])
 
     rng = random.Random(seed)
-    exceed = 0
-    maxima: list[float] = []
+    bootstrap_means: list[list[float | None]] = [[] for _ in matrix]
+    sampled_counts: list[list[int]] = [[] for _ in matrix]
     for _ in range(iterations):
+        # Draw contiguous blocks in original calendar coordinates. The same
+        # indices are shared by all variants, retaining cross-variant pairing.
         indices: list[int] = []
         while len(indices) < day_count:
             start = rng.randrange(day_count)
             indices.extend((start + offset) % day_count for offset in range(block_length))
         indices = indices[:day_count]
-        max_t = float("-inf")
+
         for variant_index in eligible:
-            # Shared date indices preserve cross-variant alignment. Missing
-            # outcomes remain excluded rather than being converted to zero.
-            sample = [
-                float(centered[variant_index][i])
-                for i in indices
-                if centered[variant_index][i] is not None
-            ]
-            stat = t_stat(sample)
-            if stat > max_t:
-                max_t = stat
+            # Keep None at its sampled calendar position. We aggregate only
+            # known outcomes after resampling; we do not pre-compress dates.
+            sample = [centered[variant_index][i] for i in indices]
+            known = [float(value) for value in sample if value is not None]
+            sampled_counts[variant_index].append(len(known))
+            bootstrap_means[variant_index].append(mean(known) if len(known) >= 3 else None)
+
+    standard_errors: dict[int, float] = {}
+    valid_replicates: dict[int, list[float]] = {}
+    for variant_index in eligible:
+        values = [value for value in bootstrap_means[variant_index] if value is not None]
+        if len(values) < max(20, iterations // 2):
+            raise RobustnessError(
+                f"too few bootstrap replicates retain three known days for variant index {variant_index}"
+            )
+        standard_error = stdev(values)
+        if standard_error <= 1e-15:
+            raise RobustnessError(
+                f"bootstrap standard error is zero for variant index {variant_index}"
+            )
+        standard_errors[variant_index] = standard_error
+        valid_replicates[variant_index] = values
+
+    observed_max_t = max(
+        observed_means[index] / standard_errors[index] for index in eligible
+    )
+    maxima: list[float] = []
+    exceed = 0
+    for iteration in range(iterations):
+        replicate_stats = []
+        for variant_index in eligible:
+            value = bootstrap_means[variant_index][iteration]
+            if value is not None:
+                replicate_stats.append(value / standard_errors[variant_index])
+        if not replicate_stats:
+            raise RobustnessError("bootstrap replicate contains no eligible known outcomes")
+        max_t = max(replicate_stats)
         maxima.append(max_t)
         if max_t >= observed_max_t:
             exceed += 1
+
     maxima.sort()
     q95 = maxima[min(len(maxima) - 1, math.ceil(0.95 * len(maxima)) - 1)]
+    eligible_counts = [known_counts[index] for index in eligible]
+    replicate_min = min(
+        sum(value is not None for value in bootstrap_means[index])
+        for index in eligible
+    )
     return {
-        "method": "UTC daily circular moving-block bootstrap; shared sampled contiguous day indices across variants; unresolved/ambiguous variant-days excluded; centered max-t null",
+        "method": "UTC daily circular moving-block bootstrap; shared contiguous calendar-index blocks across variants; missingness masks travel with sampled dates; centered max-t null studentized by bootstrap standard error",
         "iterations": iterations,
         "seed": seed,
         "distinct_trade_days": day_count,
         "block_length_days": block_length,
         "eligible_variants": len(eligible),
         "excluded_variants_fewer_than_three_known_days": excluded,
-        "known_daily_returns_by_variant_min": min(len(valid_rows[index]) for index in eligible),
-        "known_daily_returns_by_variant_max": max(len(valid_rows[index]) for index in eligible),
+        "known_daily_returns_by_variant_min": min(eligible_counts),
+        "known_daily_returns_by_variant_max": max(eligible_counts),
+        "minimum_valid_bootstrap_replicates_per_variant": replicate_min,
         "observed_max_t": observed_max_t,
         "null_max_t_95pct": q95,
         "familywise_max_t_p_value": (exceed + 1) / (iterations + 1),
-        "interpretation": "Exploratory multiplicity diagnostic; missing unresolved/ambiguous days are not scored as zero; not a substitute for untouched validation or a formal guarantee under all dependence structures.",
+        "interpretation": "Exploratory multiplicity diagnostic; calendar spacing and missingness masks are preserved during block sampling; unknown outcomes are not scored as zero; not a substitute for untouched validation or a formal guarantee under all dependence structures.",
     }
 
 
