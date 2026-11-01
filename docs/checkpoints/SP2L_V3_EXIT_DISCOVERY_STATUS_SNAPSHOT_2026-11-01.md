@@ -2,7 +2,7 @@
 
 **Snapshot date:** 2026-11-01  
 **Scope:** Strategy A V3 Entry / Exit Discovery and artifact-integrity remediation  
-**Status:** Research-only; artifact audit implementation CI green; local evidence audit not yet run successfully  
+**Status:** Research-only; artifact audit implementation CI green; local evidence audit PASS (2026-11-01)  
 **Checkpoint branch:** `research/checkpoint-v3-exit-discovery-20261101`  
 **Checkpoint base commit:** `3deebf6e3c3c75e652aaa31f61fdd8f31b2aa3bc`
 
@@ -77,17 +77,27 @@ PR #379 — `[DRAFT] audit V3 Discovery artifacts and write evidence manifest`
 
 Both PRs remain Draft and unmerged. PR #379 is stacked on #378; its branch is one commit behind the current #378 base branch. Do not merge either PR as part of this checkpoint.
 
-## 5. Audit state and outstanding action
+## 5. Local artifact audit — PASS
 
-**No evidence manifest has yet been generated for the preserved local Discovery run.** CI validates the code and fixtures; it does not validate the user's local 133,056-row artifact bundle.
+The user ran the corrected audit script from PR #379 against the preserved local Discovery run on 2026-11-01.
 
-Next action is to run the audit script from the corrected PR #379 branch against the existing JSON file. It must:
-- validate the M1 and frozen-entry source hashes and byte size;
-- reconcile JSON matrix, Summary CSV, Trades CSV, embedded JSON trades, and frozen trade identities;
-- validate Snapshot against the LF-normalized JSON content;
-- write a new manifest only if the target does not already exist.
+Reported result:
+- Audit status: `PASS`
+- Exit code: `0`
+- Variants: `288`
+- Frozen entry signals: `462`
+- Trade rows: `133056`
+- Local manifest:
+  `D:\Mirzaei\Private\1\sp2l-evidence\development\v3-exit-discovery-20261101\SP2L_V3_CONTROLLED_DISCOVERY_20261101T063522785317Z_EVIDENCE_MANIFEST.json`
+- User-reported manifest SHA-256:
+  `bea79456196e6e08b7186b1000eaec787d5ba6d697db0dd5c45bbb3322e49452`
 
-Preserve the current evidence files byte-for-byte. Do not regenerate Discovery, rewrite existing files, weaken integrity checks, merge PRs, place MT5 orders, or change Strategy A entry logic. If the audit fails, preserve the failure output and diagnose the specific invariant; do not force a PASS.
+The local manifest itself and its source artifacts were not uploaded to GitHub. The hash above is recorded as a user-reported audit receipt, not an independently re-hashed repository artifact. A separate receipt is stored at:
+`docs/checkpoints/SP2L_V3_EXIT_DISCOVERY_LOCAL_AUDIT_RECEIPT_2026-11-01.md`
+
+The audit PASS confirms artifact integrity and cross-file consistency only. It does not establish statistical significance, out-of-sample performance, execution realism, canonical exit geometry, or production readiness.
+
+Preserve the current evidence files byte-for-byte. Do not regenerate Discovery, rewrite existing files, weaken integrity checks, merge PRs, place MT5 orders, or change Strategy A entry logic.
 
 ## 6. Explicit non-claims
 
