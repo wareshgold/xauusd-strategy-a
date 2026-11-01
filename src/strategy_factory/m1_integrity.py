@@ -137,8 +137,8 @@ def validate_m1_artifact(
             raise M1IntegrityError(f"bar[{index}].time must be an integer Unix timestamp")
         if timestamp % 60 != 0:
             raise M1IntegrityError(f"bar[{index}].time is not aligned to an M1 boundary")
-        if timestamp < start_epoch or timestamp >= end_epoch:
-            raise M1IntegrityError(f"bar[{index}].time falls outside the declared [start,end) window")
+        if timestamp < start_epoch or timestamp > end_epoch:
+            raise M1IntegrityError(f"bar[{index}].time falls outside the declared inclusive [start,end] window")
         if previous_time is not None:
             if timestamp == previous_time:
                 raise M1IntegrityError(f"duplicate M1 timestamp at bar[{index}]")
