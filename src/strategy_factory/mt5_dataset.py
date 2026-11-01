@@ -44,6 +44,11 @@ class MT5M1Snapshot:
         )
         if report.content_sha256 != self.dataset_content_sha256:
             raise MT5DatasetPreparationError("M1 integrity report hash does not match snapshot hash")
+        if report.byte_size != self.artifact.byte_size:
+            raise MT5DatasetPreparationError("M1 integrity byte size does not match artifact metadata")
+        recorded_report = self.payload.get("m1_integrity")
+        if recorded_report is not None and recorded_report != report.as_dict():
+            raise MT5DatasetPreparationError("recorded M1 integrity report does not match the artifact")
 
     def register(self, registry: DatasetRegistry, spec: HistoricalTestSpec, *, lock: bool = True) -> None:
         self.validate_for_spec(spec)
