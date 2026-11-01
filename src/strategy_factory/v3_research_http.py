@@ -169,6 +169,8 @@ class V3ResearchHTTPApplication:
                     activation_points=None if body.get("activation_points") is None else float(body["activation_points"]),
                     distance_points=None if body.get("distance_points") is None else float(body["distance_points"]),
                 )
+            if len(parts) == 4 and parts[0:2] == ["api", "sessions"] and parts[3] == "management" and method == "POST":
+                return 200, self.api.evaluate_management(parts[2], body.get("spec", {}))
             if len(parts) == 4 and parts[0:2] == ["api", "sessions"] and parts[3] == "compare" and method == "POST":
                 return 200, self.api.compare(parts[2], str(body["left_variant_id"]), str(body["right_variant_id"]))
             return 404, {"error": "route not found"}
