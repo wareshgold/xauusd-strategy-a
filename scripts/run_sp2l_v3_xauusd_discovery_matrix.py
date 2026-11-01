@@ -496,6 +496,7 @@ def main():
         default=None,
         help="Expected SHA-256 of the frozen Strategy A V3 trade CSV.",
     )
+    ap.add_argument("--output-dir", default=str(DEFAULT_OUT), help="Directory for Discovery JSON/CSV/snapshot outputs.")
     args = ap.parse_args()
 
     output_dir = Path(args.output_dir).resolve()
