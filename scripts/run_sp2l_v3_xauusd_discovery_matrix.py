@@ -483,6 +483,16 @@ def main():
         default=None,
         help="Write the exact MT5 M1 snapshot used by this run to this path.",
     )
+    ap.add_argument(
+        "--entry-population-artifact",
+        default=None,
+        help="Frozen Strategy A V3 trade CSV used only for its entry fields.",
+    )
+    ap.add_argument(
+        "--entry-population-sha256",
+        default=None,
+        help="Expected SHA-256 of the frozen Strategy A V3 trade CSV.",
+    )
     args = ap.parse_args()
 
     start = datetime.fromisoformat(args.start)
@@ -589,7 +599,7 @@ def main():
                 "pGapPrice": cfg.P_GAP_PRICE,
                 "spikeMultiplier": cfg.SPIKE_MULTIPLIER,
                 "maxSlDistance": cfg.MAX_SL_DISTANCE,
-                "entryPolicy": "cfg.find_first_entry",
+                "entryPolicy": "FROZEN_V3_ENTRY_CSV" if args.entry_population_artifact else "cfg.find_first_entry",
                 "sessionPolicy": cfg.SESSION_POLICY,
             },
             "execution_assumptions": {
