@@ -183,6 +183,7 @@ class V3ResearchHTTPApplication:
                         "name": evaluated["variant"]["name"],
                         "management_config": evaluated["variant"]["management_config"],
                         "summary": evaluated["variant"]["summary"],
+                        "spread_sensitivity": evaluated["variant"]["spread_sensitivity"],
                     })
                 return 200, {
                     "research_only": True, "canonical": False,
