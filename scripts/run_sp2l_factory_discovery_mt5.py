@@ -37,6 +37,7 @@ def main() -> int:
     parser.add_argument("--entry-population-artifact", default="artifacts/monthly_ohlc_activated_sensitivity_v3_20261024_162634_105/a_trail_0_40_activated_proxy_v3_trades.csv")
     parser.add_argument("--entry-population-sha256", default="39ED87CD1F0BE3E59B5F064B0BCF97A9787E5266DF6E972AA07E5EA4D3608AB1")
     parser.add_argument("--data-revision", default="MT5-M1-30D-20261024-B0782E716C7E")
+    parser.add_argument("--output-dir", default=None, help="External directory for immutable Discovery matrix evidence.")
     parser.add_argument(
         "--artifact",
         default="artifacts/factory/mt5_m1_30d_20260924_20261023.json",
@@ -108,6 +109,7 @@ def main() -> int:
             source_artifact_sha256=args.source_m1_sha256,
             entry_population_artifact_path=(repo_root / args.entry_population_artifact),
             entry_population_sha256=args.entry_population_sha256,
+            discovery_output_dir=Path(args.output_dir) if args.output_dir else None,
         )
     )
 
@@ -127,6 +129,7 @@ def main() -> int:
         "frozen_entry_population_artifact": str(repo_root / args.entry_population_artifact),
         "frozen_entry_population_sha256": args.entry_population_sha256,
         "execution_input_fingerprint": result.result.receipt.input_fingerprint,
+        "discovery_output_dir": args.output_dir,
         "run_id": result.result.run.run_id,
         "run_fingerprint": result.result.run.fingerprint,
         "evidence_id": result.result.evidence.evidence_id,
