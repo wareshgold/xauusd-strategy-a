@@ -60,9 +60,10 @@ def fetch_m1_rates(symbol, start, end):
         cur = chunk_end + timedelta(minutes=1)
 
     bars = np.concatenate(chunks)
-    bars.sort(order="time")
-    _, idx = np.unique(bars["time"], return_index=True)
-    return bars[np.sort(idx)]
+    timestamps = bars["time"]
+    if len(timestamps) > 1 and np.any(np.diff(timestamps) <= 0):
+        raise RuntimeError("MT5 M1 history contains duplicate or out-of-order timestamps")
+    return bars
 
 
 BAR_FIELDS = ("time", "open", "high", "low", "close", "tick_volume", "spread", "real_volume")
@@ -99,9 +100,10 @@ def load_m1_artifact(path):
         for row in rows
     ]
     bars = np.array(values, dtype=dtype)
-    bars.sort(order="time")
-    _, idx = np.unique(bars["time"], return_index=True)
-    return bars[np.sort(idx)], expected
+    timestamps = bars["time"]
+    if len(timestamps) > 1 and np.any(np.diff(timestamps) <= 0):
+        raise RuntimeError("M1 artifact contains duplicate or out-of-order timestamps")
+    return bars, expected
 
 
 def write_m1_artifact(path, bars, *, symbol, start, end):
