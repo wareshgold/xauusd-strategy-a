@@ -7,6 +7,8 @@ The caller must supply exact source hashes, the expected M1 identity/window,
 and explicit broker contract metadata.
 """
 
+import csv
+import io
 import json
 from pathlib import Path
 from typing import Any
@@ -57,8 +59,21 @@ class V3ResearchSession:
             raise V3ResearchSessionError("M1 artifact SHA-256 does not match expected dataset hash")
 
         raw = self.m1_path.read_bytes()
-        payload = json.loads(raw.decode("utf-8"))
-        bars = tuple(dict(row) for row in payload["bars"])
+        if self.m1_path.suffix.lower() == ".csv":
+            reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig"), newline=""))
+            bars = tuple({
+                "time": int(row["time_epoch_seconds"]),
+                "open": float(row["open"]),
+                "high": float(row["high"]),
+                "low": float(row["low"]),
+                "close": float(row["close"]),
+                "tick_volume": int(row["tick_volume"]),
+                "spread": int(row["spread"]),
+                "real_volume": int(row["real_volume"]),
+            } for row in reader)
+        else:
+            payload = json.loads(raw.decode("utf-8"))
+            bars = tuple(dict(row) for row in payload["bars"])
         population, entry_report = load_frozen_entry_population(
             self.entry_path,
             bars,
