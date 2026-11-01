@@ -57,9 +57,9 @@ def test_mt5_m1_exporter_freezes_artifact_and_registers_it(tmp_path, monkeypatch
 def test_existing_m1_csv_snapshot_preserves_source_bytes_and_hash(tmp_path):
     artifact_path = tmp_path / "xauusd_ecn_m1.csv"
     artifact_bytes = (
-        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\\n"
-        "1791158400,2026-10-05T00:00:00+00:00,4000,4001,3999,4000.5,10,2,0\\n"
-        "1791158460,2026-10-05T00:01:00+00:00,4000.5,4002,4000,4001.5,12,2,0\\n"
+        "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\n"
+        "1791158400,2026-10-05T00:00:00+00:00,4000,4001,3999,4000.5,10,2,0\n"
+        "1791158460,2026-10-05T00:01:00+00:00,4000.5,4002,4000,4001.5,12,2,0\n"
     ).encode("utf-8")
     artifact_path.write_bytes(artifact_bytes)
     sha = hashlib.sha256(artifact_bytes).hexdigest()
