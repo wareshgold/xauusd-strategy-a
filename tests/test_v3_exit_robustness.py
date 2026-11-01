@@ -131,3 +131,20 @@ def test_bootstrap_excludes_missing_days_without_zero_imputation():
     assert first == second
     assert first["eligible_variants"] == 2
     assert first["excluded_variants_fewer_than_three_known_days"] == 0
+    assert first["minimum_valid_bootstrap_replicates_per_variant"] >= 125
+    assert "missingness masks travel with sampled dates" in first["method"]
+
+
+def test_bootstrap_preserves_irregular_calendar_missingness_deterministically():
+    # Each None remains attached to its calendar date during block sampling;
+    # the algorithm must not first compress each variant to a shorter series.
+    matrix = [
+        [0.4, None, None, -0.1, 0.2, None, 0.1, 0.3],
+        [None, 0.2, -0.2, None, 0.1, 0.0, None, 0.2],
+    ]
+    first = MODULE.max_stat_bootstrap(matrix, iterations=500, seed=20261101)
+    second = MODULE.max_stat_bootstrap(matrix, iterations=500, seed=20261101)
+    assert first == second
+    assert first["known_daily_returns_by_variant_min"] == 5
+    assert first["known_daily_returns_by_variant_max"] == 5
+    assert first["minimum_valid_bootstrap_replicates_per_variant"] >= 250
