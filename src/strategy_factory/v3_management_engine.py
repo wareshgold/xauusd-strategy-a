@@ -9,6 +9,8 @@ excluded until their sizing/fill semantics and data requirements are specified.
 """
 
 from dataclasses import dataclass
+import math
+from datetime import datetime, timezone
 from typing import Any, Sequence
 
 from .m1_integrity import m1_gap_detected
@@ -29,8 +31,8 @@ def _positive(spec: dict[str, Any], key: str) -> float:
         value = float(spec[key])
     except (KeyError, TypeError, ValueError) as exc:
         raise V3ExitEngineError(f"{key} must be a positive number") from exc
-    if value <= 0:
-        raise V3ExitEngineError(f"{key} must be a positive number")
+    if not math.isfinite(value) or value <= 0:
+        raise V3ExitEngineError(f"{key} must be a finite positive number")
     return value
 
 
@@ -100,6 +102,7 @@ def replay_management_trade(
     rr = spec.get("rr")
     target = None if rr is None else (entry + rr * risk if direction == "BUY" else entry - rr * risk)
     current_sl = initial_sl
+    stop_origin = "SL"
     activated = False
     be_activated = False
     trail_activated = False
@@ -135,7 +138,7 @@ def replay_management_trade(
             break
         if hit_sl:
             exit_price, exit_time = current_sl, now
-            reason = "TRAIL_SL" if trail_activated and current_sl != initial_sl else ("BREAK_EVEN_SL" if be_activated and current_sl != initial_sl else "SL")
+            reason = f"{stop_origin}_SL" if stop_origin != "SL" else "SL"
             break
         if hit_tp:
             exit_price, exit_time, reason = target, now, "TP"
@@ -149,6 +152,7 @@ def replay_management_trade(
                 improved = proposed > current_sl if direction == "BUY" else proposed < current_sl
                 if improved:
                     current_sl, updates, be_activated = proposed, updates + 1, True
+                    stop_origin = "BREAK_EVEN"
             else:
                 deferred += 1
         elif mode == "TRAILING_R":
@@ -161,6 +165,7 @@ def replay_management_trade(
                 improved = proposed > current_sl if direction == "BUY" else proposed < current_sl
                 if valid_side and improved:
                     current_sl, updates = proposed, updates + 1
+                    stop_origin = "TRAIL"
                 elif not valid_side:
                     deferred += 1
         elif mode == "BREAK_EVEN_TRAILING":
@@ -170,6 +175,7 @@ def replay_management_trade(
                 improved = proposed > current_sl if direction == "BUY" else proposed < current_sl
                 if valid_side and improved:
                     current_sl, be_activated, updates = proposed, True, updates + 1
+                    stop_origin = "BREAK_EVEN"
                 elif not valid_side:
                     deferred += 1
             if not trail_activated and favorable >= spec["trail_activation_r"] * risk:
