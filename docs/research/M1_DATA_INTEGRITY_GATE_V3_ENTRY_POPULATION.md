@@ -4,16 +4,26 @@ Status: research infrastructure proposal, not canonical Strategy A geometry.
 
 ## Purpose
 
-The first Factory stage continues to use the existing SP2L V3 output as its
-declared signal/entry population. This gate does not redefine, optimize, or
-filter those entries. It validates the exact M1 artifact before the existing
-V3 controlled Discovery Matrix is allowed to consume it.
+The first Factory stage uses the existing SP2L V3 output as its declared
+signal/entry population. It does not redefine, optimize, filter, or recompute
+those entries. The exact preserved M1 source and V3 trade CSV are both bound
+by their recorded SHA-256 before the controlled exit matrix runs.
+
+The currently identified inputs are:
+
+- M1 CSV: `xauusd_ecn_m1_30d.csv`, 29,919 bars, coverage
+  `2026-09-24T07:57:00Z` through `2026-10-23T23:57:00Z`,
+  SHA-256 `B0782E716C7ECCBD29EF25E146C088B356F2AADF2CCD5D7EA24E6AC1488AA285`.
+- Frozen V3 Strategy A entry CSV: `a_trail_0_40_activated_proxy_v3_trades.csv`,
+  462 rows, SHA-256
+  `39ED87CD1F0BE3E59B5F064B0BCF97A9787E5266DF6E972AA07E5EA4D3608AB1`.
 
 ## Enforced checks
 
-- UTF-8 JSON and supported artifact schema.
+- UTF-8 JSON or the exact preserved MT5 M1 CSV schema.
 - Explicit `research_only=true`, expected symbol, and M1 timeframe.
 - Exact artifact window match against the declared HistoricalTestSpec window.
+- Existing M1 CSV bytes are reused directly; no fresh MT5 re-export is required.
 - Inclusive `[start, end]` timestamp bounds, matching the MT5
   `copy_rates_range` date range convention used by the exporter.
 - Integer Unix timestamps aligned to M1 boundaries.
@@ -34,7 +44,11 @@ source's actual trading schedule before interpreting performance.
 
 ## Scope boundaries
 
-- V3 signal and entry population remains fixed for all exit-management variants.
+- The frozen V3 entry CSV is the sole signal/entry population for every exit variant.
+- The loader uses direction, setup/entry timestamps, entry proxy, initial SL, and risk.
+- Previous V3 target/exit time/exit price/exit reason/status/R multiple are ignored.
+- Every frozen entry timestamp must match exactly one M1 bar; duplicate entry
+  identities, wrong order, wrong SHA, or missing M1 timestamps fail closed.
 - The existing V3 configuration remains the source of its research geometry.
 - This does not resolve source meaning for canonical SP2L, P-Gap, AB=CD anchors,
   fill semantics, or production execution rules.
@@ -43,6 +57,8 @@ source's actual trading schedule before interpreting performance.
 - No parameter winner, statistical edge, untouched-validation result,
   Fresh Holdout result, or production authorization is created by this gate.
 - No MT5 export or Discovery run is triggered automatically by this code change.
+- The V3 trade CSV is an entry-population artifact, not evidence that its prior
+  exit outcomes remain valid under the new exit matrix.
 
 ## Required next evidence
 
