@@ -187,6 +187,7 @@ def replay_management_trade(
                 improved = proposed > current_sl if direction == "BUY" else proposed < current_sl
                 if valid_side and improved:
                     current_sl, updates = proposed, updates + 1
+                    stop_origin = "TRAIL"
                 elif not valid_side:
                     deferred += 1
 
@@ -207,7 +208,7 @@ def replay_management_trade(
         "deferred_trailing_updates": deferred, "bars_held": bars_held,
         "final_sl": current_sl, "max_favorable_price": max_fav,
         "max_adverse_price": max_adverse, "exit_time_utc": (
-            __import__("datetime").datetime.fromtimestamp(exit_time, __import__("datetime").timezone.utc).isoformat()
+            datetime.fromtimestamp(exit_time, timezone.utc).isoformat()
             if exit_time is not None else None
         ), "exit_price": exit_price, "reason": reason, "ambiguous": ambiguous,
         "realized_price": realized_price, "realized_R": realized_r,
