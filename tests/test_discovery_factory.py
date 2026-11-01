@@ -49,8 +49,8 @@ def make_snapshot(spec):
 
 def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
     raw = (
-        b"time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\\n"
-        b"1791158400,2026-10-05T00:00:00+00:00,4000,4001,3999,4000.5,10,2,0\\n"
+        b"time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\n"
+        b"1791158400,2026-10-05T00:00:00+00:00,4000,4001,3999,4000.5,10,2,0\n"
     )
     artifact_path = tmp_path / "m1.csv"
     artifact_path.write_bytes(raw)
