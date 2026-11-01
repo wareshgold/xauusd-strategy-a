@@ -31,3 +31,10 @@ The UI exposes only V3 exit parameters currently supported by the extracted engi
 Session and variant handles live only in process memory and disappear when the server stops. The dashboard does not write source files or persist experiments. Tick replay, filters/EMA, persistent experiment storage, validation promotion, and production execution are not implemented.
 
 All responses are marked research-only, non-canonical, and not validated. No BUY/SELL signal generation is provided.
+
+
+## Trade-management experiments
+
+The dashboard also exposes a first-stage management experiment panel. It replays `FIXED_RR`, `NO_TARGET`, `BREAK_EVEN`, `TRAILING_R`, `BREAK_EVEN_TRAILING`, and `TIME_EXIT` modes over the same frozen entries. Results can be compared pairwise with the existing comparison control, including net/gross USD at the session's declared volume and contract size.
+
+See [V3 Trade-Management Experiment Matrix](V3_TRADE_MANAGEMENT_MATRIX.md) for the supported parameter contract and explicit exclusions. Partial exits, scale-outs, ATR trailing, spread, commission, slippage, and broker fills remain unsupported; no cost is silently assumed or deducted.
