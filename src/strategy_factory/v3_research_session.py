@@ -7,7 +7,6 @@ The caller must supply exact source hashes, the expected M1 identity/window,
 and explicit broker contract metadata.
 """
 
-import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -84,6 +83,7 @@ class V3ResearchSession:
             entry_population_sha256=entry_report["content_sha256"],
         )
         self.session_fingerprint = self.engine.session_fingerprint
+        self.engine_revision = engine_revision
         self.research_only = True
 
     @property
@@ -121,7 +121,7 @@ class V3ResearchSession:
             "dataset": dict(self.dataset_report),
             "entry_population": dict(self.entry_report),
             "population_size": self.population_size,
-            "engine_revision": self.engine._engine_revision,
+            "engine_revision": self.engine_revision,
             "cache_entries": self.cache_entries,
             "canonical": False,
             "validation_status": "NOT_VALIDATED",
