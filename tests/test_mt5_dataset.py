@@ -10,7 +10,7 @@ from strategy_factory.test_contract import DatasetRole, TestDataset
 
 def test_mt5_m1_exporter_freezes_artifact_and_registers_it(tmp_path, monkeypatch):
     artifact_path = tmp_path / "m1.json"
-    artifact_bytes = b'{"schema_version":1,"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","bars":[]}'
+    artifact_bytes = b'{"schema_version":1,"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","window_utc":{"start":"2026-10-05T00:00:00Z","end":"2026-10-07T05:30:00Z"},"bars":[{"time":1791158400,"open":4000.0,"high":4001.0,"low":3999.0,"close":4000.5,"tick_volume":10,"spread":2,"real_volume":0}]}'
     artifact_path.write_bytes(artifact_bytes)
     sha = hashlib.sha256(artifact_bytes).hexdigest()
 
