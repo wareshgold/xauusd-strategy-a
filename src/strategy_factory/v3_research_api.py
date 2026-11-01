@@ -12,6 +12,7 @@ import json
 from typing import Any
 
 from .v3_exit_engine import V3ExitEngineError, V3ExitVariant
+from .v3_management_engine import V3ManagementVariant
 from .v3_research_session import V3ResearchSession, V3ResearchSessionError
 
 
@@ -25,6 +26,7 @@ class V3ResearchAPI:
     def __init__(self) -> None:
         self._sessions: dict[str, V3ResearchSession] = {}
         self._variants: dict[str, V3ExitVariant] = {}
+        self._management_variants: dict[str, V3ManagementVariant] = {}
 
     @property
     def session_count(self) -> int:
@@ -32,7 +34,7 @@ class V3ResearchAPI:
 
     @property
     def variant_count(self) -> int:
-        return len(self._variants)
+        return len(self._variants) + len(self._management_variants)
 
     def create_session(self, **config: Any) -> dict[str, Any]:
         try:
@@ -54,7 +56,7 @@ class V3ResearchAPI:
             "api_scope": "PROCESS_LOCAL",
             "persistence": "NONE",
             "variant_count": sum(
-                1 for variant in self._variants.values()
+                1 for variant in (*self._variants.values(), *self._management_variants.values())
                 if variant.session_fingerprint == session_id
             ),
         })
@@ -96,21 +98,53 @@ class V3ResearchAPI:
             "cache_entries": session.cache_entries,
         }
 
+    def evaluate_management(self, session_id: str, spec: dict[str, Any]) -> dict[str, Any]:
+        session = self._require_session(session_id)
+        try:
+            variant = session.evaluate_management(spec)
+        except (TypeError, ValueError) as exc:
+            raise V3ResearchAPIError(f"management evaluation rejected: {exc}") from exc
+        identity = {"session_fingerprint": variant.session_fingerprint, "spec": variant.spec}
+        variant_id = hashlib.sha256(
+            json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        self._management_variants[variant_id] = variant
+        return {
+            "research_only": True, "canonical": False, "validation_status": "NOT_VALIDATED",
+            "session_id": session_id, "variant_id": variant_id,
+            "variant": {"name": variant.name, "management": dict(variant.spec),
+                        "summary": dict(variant.summary), "trades": [dict(row) for row in variant.trades]},
+            "cache_entries": session.management_engine.cache_entries,
+        }
+
     def compare(self, session_id: str, left_variant_id: str, right_variant_id: str) -> dict[str, Any]:
         session = self._require_session(session_id)
-        left = self._require_variant(left_variant_id, session_id)
-        right = self._require_variant(right_variant_id, session_id)
         try:
-            paired = session.compare(left, right)
+            if left_variant_id in self._management_variants and right_variant_id in self._management_variants:
+                left = self._require_management_variant(left_variant_id, session_id)
+                right = self._require_management_variant(right_variant_id, session_id)
+                paired = session.compare_management(left, right)
+            elif left_variant_id in self._variants and right_variant_id in self._variants:
+                left = self._require_variant(left_variant_id, session_id)
+                right = self._require_variant(right_variant_id, session_id)
+                paired = session.compare(left, right)
+            else:
+                raise V3ResearchAPIError("comparison variants must be from the same replay engine")
         except (TypeError, ValueError) as exc:
             raise V3ResearchAPIError(f"paired comparison rejected: {exc}") from exc
         return {
-            "research_only": True,
-            "canonical": False,
-            "validation_status": "NOT_VALIDATED",
-            "session_id": session_id,
-            "comparison": paired,
+            "research_only": True, "canonical": False, "validation_status": "NOT_VALIDATED",
+            "session_id": session_id, "comparison": paired,
         }
+
+    def _require_management_variant(self, variant_id: str, session_id: str) -> V3ManagementVariant:
+        try:
+            variant = self._management_variants[variant_id]
+        except KeyError as exc:
+            raise V3ResearchAPIError("unknown or expired management variant_id") from exc
+        if variant.session_fingerprint != session_id:
+            raise V3ResearchAPIError("variant belongs to a different research session")
+        return variant
 
     def _require_session(self, session_id: str) -> V3ResearchSession:
         try:
