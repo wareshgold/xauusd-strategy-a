@@ -55,13 +55,16 @@ def test_catalog_create_session_evaluate_and_compare(tmp_path):
 
     status, session = app.dispatch("POST", "/api/sessions", {
         "m1_artifact_id": m1["id"], "entry_artifact_id": entries["id"],
-        "symbol": "XAUUSD.ecn", "start_utc": start, "end_utc": end,
+        "symbol": "XAUUSD.ecn",
         "mt5_point": 0.01, "contract_size": 100, "volume": 0.01,
         "engine_revision": "HTTP-TEST-1",
     })
     assert status == 201
     session_id = session["session_id"]
     assert session["artifact_selection"]["dataset_sha256"] == hashlib.sha256((tmp_path / "xauusd_m1.json").read_bytes()).hexdigest()
+    assert session["artifact_selection"]["start_utc"] == start
+    assert session["artifact_selection"]["end_utc"] == end
+    assert session["artifact_selection"]["window_source"] == "M1_JSON_DECLARED_WINDOW"
 
     status, left = app.dispatch("POST", f"/api/sessions/{session_id}/evaluate", {
         "rr": 2, "activation_points": 100, "distance_points": 20,
@@ -77,6 +80,14 @@ def test_catalog_create_session_evaluate_and_compare(tmp_path):
     })
     assert status == 200
     assert comparison["comparison"]["paired_trade_count"] == 1
+
+    status, management = app.dispatch("POST", f"/api/sessions/{session_id}/management", {
+        "spec": {"mode": "TIME_EXIT", "max_bars": 1},
+    })
+    assert status == 200
+    assert management["research_only"] is True
+    assert management["variant"]["management"]["mode"] == "TIME_EXIT"
+    assert management["variant"]["summary"]["net_profit_usd"] == pytest.approx(1.9)
 
 
 def test_catalog_artifact_id_cannot_escape_configured_root(tmp_path):

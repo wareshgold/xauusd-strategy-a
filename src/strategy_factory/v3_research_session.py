@@ -16,6 +16,7 @@ from typing import Any
 from .frozen_entry_population import load_frozen_entry_population
 from .m1_integrity import validate_m1_artifact
 from .v3_exit_engine import V3ExitReplayEngine, V3ExitVariant
+from .v3_management_engine import V3ManagementReplayEngine, V3ManagementVariant
 
 
 class V3ResearchSessionError(ValueError):
@@ -104,6 +105,14 @@ class V3ResearchSession:
             entry_population_sha256=entry_report["content_sha256"],
         )
         self.session_fingerprint = self.engine.session_fingerprint
+        self.management_engine = V3ManagementReplayEngine(
+            bars=bars,
+            population=population,
+            mt5_point=mt5_point,
+            contract_size=contract_size,
+            volume=volume,
+            session_fingerprint=self.session_fingerprint,
+        )
         self.engine_revision = engine_revision
         self.research_only = True
 
@@ -130,6 +139,12 @@ class V3ResearchSession:
 
     def compare(self, left: V3ExitVariant, right: V3ExitVariant) -> dict[str, Any]:
         return self.engine.compare(left, right)
+
+    def evaluate_management(self, spec: dict[str, Any]) -> V3ManagementVariant:
+        return self.management_engine.evaluate(spec)
+
+    def compare_management(self, left: V3ManagementVariant, right: V3ManagementVariant) -> dict[str, Any]:
+        return self.management_engine.compare(left, right)
 
     def manifest(self) -> dict[str, Any]:
         return {
