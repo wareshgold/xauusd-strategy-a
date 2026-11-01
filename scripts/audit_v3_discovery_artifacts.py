@@ -40,6 +40,15 @@ def sha256_file(path: Path) -> str:
             digest.update(chunk)
     return digest.hexdigest()
 
+def sha256_lf_normalized_text(path: Path) -> str:
+    """Hash UTF-8 text after CRLF-to-LF normalization for cross-platform identity."""
+    try:
+        content = path.read_bytes().decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise AuditError(f"text artifact is not valid UTF-8: {path}") from exc
+    normalized = content.replace("\\r\\n", "\\n")
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
 
 def require_file(path: Path, label: str) -> Path:
     if not path.is_file():
@@ -201,14 +210,16 @@ def audit_run(run_json: Path, manifest_path: Path | None = None) -> dict[str, An
             raise AuditError(f"{name} does not replay the same frozen entry population")
 
     json_hash = sha256_file(run_json)
+    json_lf_hash = sha256_lf_normalized_text(run_json)
     snapshot_text = snapshot_path.read_text(encoding="utf-8")
-    expected_snapshot_line = f"JSON SHA256: {json_hash}"
+    expected_snapshot_line = f"JSON SHA256: {json_lf_hash}"
     if expected_snapshot_line not in snapshot_text:
-        raise AuditError("snapshot JSON SHA-256 does not match the JSON artifact")
+        raise AuditError("snapshot JSON SHA-256 does not match the LF-normalized JSON content")
 
     artifacts = {
         "discovery_json": {
-            "path": str(run_json), "sha256": json_hash, "bytes": run_json.stat().st_size,
+            "path": str(run_json), "sha256": json_hash,
+            "normalized_lf_sha256": json_lf_hash, "bytes": run_json.stat().st_size,
         },
         "summary_csv": {
             "path": str(summary_path.resolve()),
@@ -242,7 +253,7 @@ def audit_run(run_json: Path, manifest_path: Path | None = None) -> dict[str, An
             "JSON/CSV variant and row-count consistency",
             "same frozen trade identities across every variant",
             "summary CSV agreement with JSON matrix",
-            "snapshot-to-JSON SHA-256 binding",
+            "snapshot-to-LF-normalized-JSON SHA-256 binding",
         ],
         "run": {
             "version": payload["version"],
