@@ -85,7 +85,7 @@ def test_catalog_artifact_id_cannot_escape_configured_root(tmp_path):
     outside.write_text("{}", encoding="utf-8")
     app = V3ResearchHTTPApplication(data_roots=[tmp_path])
 
-    with pytest.raises(V3ResearchHTTPError, match="invalid catalog artifact identifier"):
+    with pytest.raises(V3ResearchHTTPError, match="outside configured roots"):
         app.resolve_artifact("0:../outside_m1.json", "M1_JSON")
 
 
