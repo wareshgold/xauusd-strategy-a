@@ -8,6 +8,7 @@ from typing import Any, Sequence
 
 from .datasets import DatasetArtifact, DatasetRegistry, DatasetRegistryError
 from .test_contract import HistoricalTestSpec
+from .m1_integrity import validate_m1_artifact
 
 
 class MT5DatasetPreparationError(ValueError):
@@ -33,8 +34,19 @@ class MT5M1Snapshot:
         if self.payload.get("timeframe") != "M1":
             raise MT5DatasetPreparationError("MT5 snapshot timeframe is not M1")
 
-    def register(self, registry: DatasetRegistry, spec: HistoricalTestSpec, *, lock: bool = True) -> None:
+    def validate_for_spec(self, spec: HistoricalTestSpec) -> None:
         self.validate()
+        report = validate_m1_artifact(
+            self.artifact.location,
+            expected_symbol="XAUUSD.ecn",
+            expected_start=spec.dataset.start,
+            expected_end=spec.dataset.end,
+        )
+        if report.content_sha256 != self.dataset_content_sha256:
+            raise MT5DatasetPreparationError("M1 integrity report hash does not match snapshot hash")
+
+    def register(self, registry: DatasetRegistry, spec: HistoricalTestSpec, *, lock: bool = True) -> None:
+        self.validate_for_spec(spec)
         try:
             registry.register(
                 spec.dataset,
@@ -114,4 +126,12 @@ class MT5M1ArtifactExporter:
             payload=payload,
         )
         snapshot.validate()
+        report = validate_m1_artifact(
+            payload_path,
+            expected_symbol=self.symbol,
+            expected_start=self.start,
+            expected_end=self.end,
+        )
+        if report.content_sha256 != observed_sha:
+            raise MT5DatasetPreparationError("M1 integrity report hash changed during validation")
         return snapshot
