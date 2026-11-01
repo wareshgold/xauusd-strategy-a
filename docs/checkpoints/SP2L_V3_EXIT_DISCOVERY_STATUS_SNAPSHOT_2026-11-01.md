@@ -133,3 +133,8 @@ PR #380 remains Draft and unmerged. CI validates the implementation and tests, n
 ### Next local action
 
 Run the robustness audit against the already-preserved local manifest and Trades CSV, writing only to a new output directory. Inspect the resulting report and CSVs before deciding whether any candidates are stable enough to freeze for later untouched validation. No Fresh Holdout has been consumed, and no candidate is canonical or production-approved.
+
+
+## 8. Robustness runner correction — pending CI and local rerun
+
+The first local execution exposed a `None` handling defect in daily aggregation. Follow-up commit `b3fb9b5e7b498b0cbe5adef6e719c78c5c2d2522` updates the daily matrix so any variant/day containing an ambiguous or unresolved outcome remains missing through the bootstrap; it is not imputed as zero. Days with no triggered rows remain zero-return days. Variants with fewer than three known daily observations are excluded from the max-t family and counted. Regression tests and research documentation were added. This follow-up has not yet been validated by CI or by a successful local robustness run; the prior CI PASS applies to the earlier implementation only. PR #380 remains Draft and unmerged.
