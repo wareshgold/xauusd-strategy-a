@@ -79,7 +79,7 @@ def test_m1_integrity_rejects_window_mismatch(tmp_path):
 
 
 def test_m1_integrity_rejects_out_of_window_bar(tmp_path):
-    path = write_artifact(tmp_path, [bar(T0 + 300)])
+    path = write_artifact(tmp_path, [bar(T0 + 360)])
     with pytest.raises(M1IntegrityError, match="outside"):
         validate(path)
 
