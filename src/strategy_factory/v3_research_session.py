@@ -16,6 +16,7 @@ from typing import Any
 from .frozen_entry_population import load_frozen_entry_population
 from .m1_integrity import validate_m1_artifact
 from .v3_exit_engine import V3ExitReplayEngine, V3ExitVariant
+from .v3_trade_management import V3TradeManagementEngine
 
 
 class V3ResearchSessionError(ValueError):
@@ -103,13 +104,14 @@ class V3ResearchSession:
             dataset_sha256=integrity.content_sha256,
             entry_population_sha256=entry_report["content_sha256"],
         )
+        self.management_engine = V3TradeManagementEngine(self.engine)
         self.session_fingerprint = self.engine.session_fingerprint
         self.engine_revision = engine_revision
         self.research_only = True
 
     @property
     def cache_entries(self) -> int:
-        return self.engine.cache_entries
+        return self.engine.cache_entries + self.management_engine.cache_entries
 
     @property
     def population_size(self) -> int:
@@ -127,6 +129,9 @@ class V3ResearchSession:
             activation_points=activation_points,
             distance_points=distance_points,
         )
+
+    def evaluate_management(self, policy: dict[str, Any]) -> V3ExitVariant:
+        return self.management_engine.evaluate(policy)
 
     def compare(self, left: V3ExitVariant, right: V3ExitVariant) -> dict[str, Any]:
         return self.engine.compare(left, right)
