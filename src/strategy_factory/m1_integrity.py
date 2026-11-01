@@ -70,6 +70,11 @@ def same_utc_instant(left: str, right: str) -> bool:
     return _utc(left, "left timestamp") == _utc(right, "right timestamp")
 
 
+def m1_gap_detected(previous_time: int, current_time: int) -> bool:
+    """Return whether two ordered M1 bar timestamps contain a missing minute slot."""
+    return current_time - previous_time > 60
+
+
 def _number(row: dict[str, Any], field: str, index: int) -> float:
     value = row.get(field)
     if isinstance(value, bool) or not isinstance(value, (int, float)):
