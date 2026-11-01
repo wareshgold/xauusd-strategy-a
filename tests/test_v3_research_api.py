@@ -83,7 +83,9 @@ def test_api_is_process_local_and_deduplicates_identical_session_fingerprint(tmp
 def test_api_rejects_unknown_session_and_cross_session_variant(tmp_path):
     api = V3ResearchAPI()
     first_session = api.create_session(**artifacts(tmp_path, "_a"))["session_id"]
-    second_session = api.create_session(**artifacts(tmp_path, "_b"))["session_id"]
+    second_config = artifacts(tmp_path, "_b")
+    second_config["engine_revision"] = "TEST-ENGINE-2"
+    second_session = api.create_session(**second_config)["session_id"]
     variant = api.evaluate(first_session, rr=2, activation_points=100, distance_points=20)
 
     with pytest.raises(V3ResearchAPIError, match="unknown"):
