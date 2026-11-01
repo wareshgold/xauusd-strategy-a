@@ -46,7 +46,7 @@ def sha256_lf_normalized_text(path: Path) -> str:
         content = path.read_bytes().decode("utf-8")
     except UnicodeDecodeError as exc:
         raise AuditError(f"text artifact is not valid UTF-8: {path}") from exc
-    normalized = content.replace("\\r\\n", "\\n")
+    normalized = content.replace("\r\n", "\n")
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
