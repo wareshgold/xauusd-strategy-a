@@ -23,7 +23,8 @@ The command prints one concise `AUDIT=PASS` or `AUDIT=FAIL` line. On success it 
 - Checks JSON matrix count, Summary CSV rows, Trades CSV rows, and embedded JSON trade count.
 - Checks every variant has exactly the frozen number of trades and replays the same unique `(trigger_time, direction, theoretical_entry, initial_sl)` identities.
 - Compares summary statistics in CSV against the JSON matrix.
-- Verifies the Snapshot embeds the exact SHA-256 of the JSON artifact.
+- Verifies the Snapshot embeds the SHA-256 of the JSON UTF-8 content after CRLF-to-LF normalization. This is deterministic across Windows and Unix text-mode serialization.
+- Records both the raw on-disk JSON byte SHA-256 and the LF-normalized content SHA-256 in the manifest; the raw hash identifies the exact delivered file.
 - Writes hashes and byte sizes for all six artifacts into the manifest.
 
 The tool does not upload data, place orders, change strategy rules, choose a production candidate, or establish statistical significance. The manifest records research provenance and structural consistency only. M1 OHLC replay still omits spread, slippage, and commission.
