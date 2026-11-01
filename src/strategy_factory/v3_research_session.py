@@ -133,6 +133,30 @@ class V3ResearchSession:
     def evaluate_management(self, policy: dict[str, Any]) -> V3ExitVariant:
         return self.management_engine.evaluate(policy)
 
+    def flat_spread_sensitivity(self, summary: dict[str, Any]) -> dict[str, Any]:
+        """Return explicitly hypothetical one-full-spread-per-decisive-trade costs."""
+        decisive = int(summary["decisive"])
+        point = self.engine._mt5_point
+        notional = self.engine._volume * self.engine._contract_size
+        scenarios = {}
+        for spread_points in (20, 23, 30):
+            cost_per_trade = spread_points * point * notional
+            total_cost = cost_per_trade * decisive
+            scenarios[str(spread_points)] = {
+                "spread_points": spread_points,
+                "cost_per_trade_usd": cost_per_trade,
+                "estimated_total_spread_cost_usd": total_cost,
+                "estimated_net_after_spread_usd": float(summary["net_profit_usd"]) - total_cost,
+            }
+        return {
+            "method": "FLAT_ONE_FULL_SPREAD_PER_DECISIVE_TRADE_PROXY",
+            "not_actual_execution_cost": True,
+            "commission_included": False,
+            "slippage_included": False,
+            "decisive_trades_charged": decisive,
+            "scenarios": scenarios,
+        }
+
     def compare(self, left: V3ExitVariant, right: V3ExitVariant) -> dict[str, Any]:
         return self.engine.compare(left, right)
 
