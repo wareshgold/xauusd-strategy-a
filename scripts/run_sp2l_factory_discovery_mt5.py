@@ -28,7 +28,7 @@ def main() -> int:
     parser.add_argument("--start", default="2026-09-24T07:57:00+00:00")
     parser.add_argument("--end", default="2026-10-23T23:57:00+00:00")
     parser.add_argument("--variant", default="RR2_ACT10_D2")
-    parser.add_argument("--source-m1-artifact", default=r"D:\\Mirzaei\\Private\\1\\sp2l-mt5-market-data\\20261024T075827Z\\xauusd_ecn_m1_30d.csv")
+    parser.add_argument("--source-m1-artifact", default=r"D:\Mirzaei\Private\1\sp2l-mt5-market-data\20261024T075827Z\xauusd_ecn_m1_30d.csv")
     parser.add_argument("--source-m1-sha256", default="B0782E716C7ECCBD29EF25E146C088B356F2AADF2CCD5D7EA24E6AC1488AA285")
     parser.add_argument("--entry-population-artifact", default="artifacts/monthly_ohlc_activated_sensitivity_v3_20261024_162634_105/a_trail_0_40_activated_proxy_v3_trades.csv")
     parser.add_argument("--entry-population-sha256", default="39ED87CD1F0BE3E59B5F064B0BCF97A9787E5266DF6E972AA07E5EA4D3608AB1")
