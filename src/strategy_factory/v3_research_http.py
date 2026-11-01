@@ -148,7 +148,7 @@ class V3ResearchHTTPApplication:
 
     def create_session(self, payload: dict[str, Any]) -> dict[str, Any]:
         required = {
-            "m1_artifact_id", "entry_artifact_id", "symbol", "start_utc", "end_utc",
+            "m1_artifact_id", "entry_artifact_id", "symbol",
             "mt5_point", "contract_size", "volume", "engine_revision",
         }
         missing = sorted(required - payload.keys())
