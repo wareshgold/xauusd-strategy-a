@@ -124,6 +124,8 @@ def validate_m1_csv_artifact(
         except (TypeError, ValueError) as exc:
             raise M1IntegrityError(f"M1 CSV row[{index}] has an invalid epoch timestamp") from exc
         row_dt = _utc(row["time_utc_iso"], f"row[{index}].time_utc_iso")
+        if row_dt.microsecond != 0:
+            raise M1IntegrityError(f"M1 CSV row[{index}] timestamp has sub-second precision")
         if int(row_dt.timestamp()) != timestamp:
             raise M1IntegrityError(f"M1 CSV row[{index}] epoch and ISO timestamps disagree")
         if timestamp % 60 != 0:
