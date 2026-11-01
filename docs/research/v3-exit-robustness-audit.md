@@ -24,12 +24,12 @@ The output directory must not already exist. The script fails closed rather than
 
 - Four equal-width chronological slices based on the frozen trigger-time range. Each variant reports decisive outcomes, ambiguous outcomes, unresolved/open outcomes, net R, mean R per decisive trade, win rate, profit factor, drawdown, and gap exposure per slice.
 - Local parameter neighbourhood: immediate adjacent grid coordinates in RR, activation points, and trailing distance. The no-trailing controls remain isolated; they are not treated as a neighbouring point in trailing parameter space.
-- Day-cluster max-t bootstrap: UTC daily net-R vectors are resampled using the same sampled day indices across all 288 variants. Each variant's daily series is centered under the null, and the bootstrap maximum t-statistic is compared with the observed maximum. This is an exploratory family-wise multiplicity diagnostic for the 288-way search.
+- Circular moving-block max-t bootstrap: UTC daily net-R vectors are resampled in contiguous circular blocks (block length is selected deterministically as max(2, round(number_of_days^(1/3)))). The same sampled day blocks are used across all 288 variants. Each variant's daily series is centered under the null, and the bootstrap maximum t-statistic is compared with the observed maximum. This is an exploratory family-wise multiplicity diagnostic for the 288-way search.
 
 ## Interpretation limits
 
 - This is still the same development sample used to inspect all 288 variants. It is not untouched validation and not a Fresh Holdout.
-- The bootstrap diagnostic is not a formal guarantee under arbitrary serial dependence or regime shifts.
+- The moving-block bootstrap preserves short sequences of daily dependence, but its deterministic block length cannot represent every regime shift or long-memory dependence; it is not a formal guarantee.
 - Open/unresolved rows are retained as non-decisive and never assigned a fabricated return. Explicitly ambiguous rows remain separate.
 - Existing M1 gaps, same-bar ambiguity, OHLC proxy limitations, and omitted spread/slippage/commission remain applicable.
 - The report sorts variants for inspection only. It does not declare a winner, freeze canonical geometry, or authorize production decisions.
