@@ -33,3 +33,8 @@ The output directory must not already exist. The script fails closed rather than
 - Open/unresolved rows are retained as non-decisive and never assigned a fabricated return. Explicitly ambiguous rows remain separate.
 - Existing M1 gaps, same-bar ambiguity, OHLC proxy limitations, and omitted spread/slippage/commission remain applicable.
 - The report sorts variants for inspection only. It does not declare a winner, freeze canonical geometry, or authorize production decisions.
+
+
+## Follow-up correction: unresolved daily observations
+
+The initial local run exposed a missing-value bug in daily matrix construction: an unresolved row with `realized_R=None` reached `float(None)`. The corrected implementation treats a variant/day as unknown if any outcome triggered on that day is ambiguous or unresolved. Such a day remains `None` through the common-block bootstrap and is excluded from that variant's observed and resampled t-statistic; it is never imputed as zero. A calendar day with no triggered rows for a variant remains a genuine zero-return day. Variants with fewer than three known daily observations are excluded from the max-t family and explicitly counted. Regression tests cover unresolved, ambiguous, no-signal, and bootstrap missingness behavior. This correction remains research-only and does not change source trade rows or the canonical Strategy A rules.
