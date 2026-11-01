@@ -48,8 +48,11 @@ def make_snapshot(spec):
 
 
 def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
-    raw = b'{"schema_version":1,"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","window_utc":{"start":"2026-10-05T00:00:00Z","end":"2026-10-07T05:30:00Z"},"bars":[{"time":1791158400,"open":4000.0,"high":4001.0,"low":3999.0,"close":4000.5,"tick_volume":10,"spread":2,"real_volume":0}]}'
-    artifact_path = tmp_path / "m1.json"
+    raw = (
+        b"time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume\\n"
+        b"1791158400,2026-10-05T00:00:00+00:00,4000,4001,3999,4000.5,10,2,0\\n"
+    )
+    artifact_path = tmp_path / "m1.csv"
     artifact_path.write_bytes(raw)
     sha = hashlib.sha256(raw).hexdigest()
     entry_path = tmp_path / "v3_entries.csv"
@@ -59,14 +62,6 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
         encoding="utf-8",
     )
     entry_sha = hashlib.sha256(entry_path.read_bytes()).hexdigest()
-    artifact = DatasetArtifact(
-        artifact_id="MT5-M1-TEST",
-        location=str(artifact_path),
-        content_sha256=sha,
-        byte_size=len(raw),
-        format="json",
-    )
-
     dataset = TestDataset(
         dataset_id="MT5-FACTORY-001",
         role=DatasetRole.DEVELOPMENT,
@@ -89,15 +84,7 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
             pass
 
         def export(self):
-            return MT5M1Snapshot(
-                artifact=artifact,
-                dataset_content_sha256=sha,
-                payload={
-                    "status": "COMPLETE",
-                    "symbol": "XAUUSD.ecn",
-                    "timeframe": "M1",
-                },
-            )
+            raise AssertionError("existing M1 artifact path must bypass MT5 export")
 
     class FakeAdapter:
         engine_revision = "DISCOVERY-TEST"
@@ -156,6 +143,8 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
             artifact_path=artifact_path,
             discovery_script=tmp_path / "discovery.py",
             evidence_id="DISCOVERY-EVIDENCE-001",
+            source_artifact_path=artifact_path,
+            source_artifact_sha256=sha,
             entry_population_artifact_path=entry_path,
             entry_population_sha256=entry_sha,
         )
@@ -163,7 +152,7 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
 
     assert output.result.accepted is True
     assert output.result.dataset_provenance.status.value == "PASS"
-    assert output.result.run.artifact_id == artifact.artifact_id
+    assert output.result.run.artifact_id == f"MT5-M1-{sha[:16]}"
     assert output.result.record.provenance_status.value == "PASS"
     assert output.job.dataset_fingerprint == fingerprint_dataset(dataset, sha)
     assert output.result.receipt.input_fingerprint == hashlib.sha256(
