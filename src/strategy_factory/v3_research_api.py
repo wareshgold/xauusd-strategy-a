@@ -90,7 +90,7 @@ class V3ResearchAPI:
                 "rr": variant.rr,
                 "activation_points": variant.activation_points,
                 "distance_points": variant.distance_points,
-            "management_config": variant.management_config,
+                "management_config": variant.management_config,
                 "summary": dict(variant.summary),
                 "trades": [dict(row) for row in variant.trades],
             },
