@@ -19,6 +19,10 @@ import hashlib
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 import MetaTrader5 as mt5
 import numpy as np
@@ -26,7 +30,6 @@ import numpy as np
 import sp2l_v3_config as cfg
 from strategy_factory.frozen_entry_population import load_frozen_entry_population
 
-ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "artifacts" / "v3_discovery"
 OUT.mkdir(parents=True, exist_ok=True)
 
