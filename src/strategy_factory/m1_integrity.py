@@ -8,6 +8,8 @@ performance. Missing-minute intervals are reported, not silently filled.
 """
 
 from dataclasses import dataclass
+import csv
+import io
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -78,6 +80,109 @@ def _number(row: dict[str, Any], field: str, index: int) -> float:
     return result
 
 
+def validate_m1_csv_artifact(
+    path: str | Path,
+    *,
+    expected_symbol: str,
+    expected_start: str,
+    expected_end: str,
+) -> M1IntegrityReport:
+    artifact = Path(path)
+    if not artifact.is_file():
+        raise M1IntegrityError(f"M1 artifact not found: {artifact}")
+    raw = artifact.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    try:
+        decoded = raw.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise M1IntegrityError("M1 CSV must be valid UTF-8") from exc
+    reader = csv.DictReader(io.StringIO(decoded, newline=""))
+    expected_fields = [
+        "time_epoch_seconds", "time_utc_iso", "open", "high", "low", "close",
+        "tick_volume", "spread", "real_volume",
+    ]
+    if reader.fieldnames != expected_fields:
+        raise M1IntegrityError("M1 CSV header does not match the declared source schema")
+
+    start = _utc(expected_start, "expected_start")
+    end = _utc(expected_end, "expected_end")
+    if end <= start:
+        raise M1IntegrityError("expected M1 CSV window end must follow start")
+    start_epoch = int(start.timestamp())
+    end_epoch = int(end.timestamp())
+    previous_time: int | None = None
+    gap_count = 0
+    missing_slots = 0
+    largest_gap = 0
+    count = 0
+
+    for index, row in enumerate(reader):
+        if None in row or any(value is None for value in row.values()):
+            raise M1IntegrityError(f"M1 CSV row[{index}] has an invalid field count")
+        try:
+            timestamp = int(row["time_epoch_seconds"])
+        except (TypeError, ValueError) as exc:
+            raise M1IntegrityError(f"M1 CSV row[{index}] has an invalid epoch timestamp") from exc
+        row_dt = _utc(row["time_utc_iso"], f"row[{index}].time_utc_iso")
+        if int(row_dt.timestamp()) != timestamp:
+            raise M1IntegrityError(f"M1 CSV row[{index}] epoch and ISO timestamps disagree")
+        if timestamp % 60 != 0:
+            raise M1IntegrityError(f"M1 CSV row[{index}] timestamp is not aligned to M1")
+        if timestamp < start_epoch or timestamp > end_epoch:
+            raise M1IntegrityError(f"M1 CSV row[{index}] falls outside the inclusive declared window")
+        if previous_time is not None:
+            if timestamp == previous_time:
+                raise M1IntegrityError(f"duplicate M1 CSV timestamp at row[{index}]")
+            if timestamp < previous_time:
+                raise M1IntegrityError(f"out-of-order M1 CSV timestamp at row[{index}]")
+            delta_minutes = (timestamp - previous_time) // 60
+            if delta_minutes > 1:
+                gap_count += 1
+                missing_slots += delta_minutes - 1
+                largest_gap = max(largest_gap, delta_minutes - 1)
+        previous_time = timestamp
+
+        values: dict[str, float] = {}
+        for field in ("open", "high", "low", "close"):
+            try:
+                values[field] = float(row[field])
+            except (TypeError, ValueError) as exc:
+                raise M1IntegrityError(f"M1 CSV row[{index}].{field} must be numeric") from exc
+            if not math.isfinite(values[field]):
+                raise M1IntegrityError(f"M1 CSV row[{index}].{field} must be finite")
+            if values[field] <= 0:
+                raise M1IntegrityError(f"M1 CSV row[{index}].{field} must be positive")
+        if values["high"] < max(values["open"], values["close"], values["low"]):
+            raise M1IntegrityError(f"M1 CSV row[{index}] high is inconsistent with OHLC")
+        if values["low"] > min(values["open"], values["close"], values["high"]):
+            raise M1IntegrityError(f"M1 CSV row[{index}] low is inconsistent with OHLC")
+
+        for field in ("tick_volume", "spread", "real_volume"):
+            try:
+                number = int(row[field])
+            except (TypeError, ValueError) as exc:
+                raise M1IntegrityError(f"M1 CSV row[{index}].{field} must be an integer") from exc
+            if number < 0:
+                raise M1IntegrityError(f"M1 CSV row[{index}].{field} must be non-negative")
+        count += 1
+
+    if count == 0:
+        raise M1IntegrityError("M1 CSV contains no data rows")
+    return M1IntegrityReport(
+        status="PASS_WITH_GAPS" if gap_count else "PASS",
+        symbol=expected_symbol,
+        timeframe="M1",
+        start_utc=start.isoformat(),
+        end_utc=end.isoformat(),
+        bars=count,
+        byte_size=len(raw),
+        content_sha256=digest,
+        gap_count=gap_count,
+        missing_minute_slots=missing_slots,
+        largest_gap_minutes=largest_gap,
+    )
+
+
 def validate_m1_artifact(
     path: str | Path,
     *,
@@ -86,6 +191,13 @@ def validate_m1_artifact(
     expected_end: str,
 ) -> M1IntegrityReport:
     artifact = Path(path)
+    if artifact.suffix.lower() == ".csv":
+        return validate_m1_csv_artifact(
+            artifact,
+            expected_symbol=expected_symbol,
+            expected_start=expected_start,
+            expected_end=expected_end,
+        )
     if not artifact.is_file():
         raise M1IntegrityError(f"M1 artifact not found: {artifact}")
     raw = artifact.read_bytes()
