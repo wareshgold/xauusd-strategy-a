@@ -48,7 +48,7 @@ def make_snapshot(spec):
 
 
 def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
-    raw = b'{"schema_version":1,"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","bars":[]}'
+    raw = b'{"schema_version":1,"research_only":true,"symbol":"XAUUSD.ecn","timeframe":"M1","window_utc":{"start":"2026-10-05T00:00:00Z","end":"2026-10-07T05:30:00Z"},"bars":[{"time":1791158400,"open":4000.0,"high":4001.0,"low":3999.0,"close":4000.5,"tick_volume":10,"spread":2,"real_volume":0}]}'
     artifact_path = tmp_path / "m1.json"
     artifact_path.write_bytes(raw)
     sha = hashlib.sha256(raw).hexdigest()
