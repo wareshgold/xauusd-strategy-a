@@ -129,7 +129,7 @@ def test_discovery_adapter_rejects_non_research_output(tmp_path, monkeypatch):
                 "end": "2026-10-07T00:00:00Z",
             },
             "bars": [{
-                "time": 1,
+                "time": 1791158400,
                 "open": 1,
                 "high": 1,
                 "low": 1,
