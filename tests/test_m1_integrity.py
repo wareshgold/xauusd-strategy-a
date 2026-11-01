@@ -137,3 +137,11 @@ def test_m1_integrity_rejects_csv_epoch_iso_mismatch(tmp_path):
             expected_start="2026-10-05T00:00:00Z",
             expected_end="2026-10-05T00:01:00Z",
         )
+
+
+def test_m1_gap_detector_identifies_missing_minutes():
+    from strategy_factory.m1_integrity import m1_gap_detected
+
+    assert not m1_gap_detected(T0, T0 + 60)
+    assert m1_gap_detected(T0, T0 + 120)
+    assert m1_gap_detected(T0, T0 + 600)
