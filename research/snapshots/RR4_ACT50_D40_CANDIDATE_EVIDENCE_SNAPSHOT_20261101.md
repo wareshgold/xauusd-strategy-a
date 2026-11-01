@@ -38,9 +38,22 @@ The user explicitly confirmed that RR=4, activation=50, and distance=40 were man
 | Entry SHA-256 | `39ed87cd1f0be3e59b5f064b0bcf97a9787e5266df6e972aa07e5ea4d3608ab1` |
 | Observed UTC window | `2026-09-24T07:57:00+00:00` to `2026-10-23T23:57:00+00:00` |
 | Window source | `M1_CSV_OBSERVED_FIRST_LAST_ROWS` |
+| MT5 point | `0.01` |
+| Contract size | `100` |
+| Volume | `0.01` |
+| Engine revision | `V3-EXIT-ENGINE-1` |
+| Session fingerprint recomputation | Exact match |
 | Population status | `NOT_VALIDATED` |
 | M1 metadata provenance | `CALLER_ASSERTED_CSV_IDENTITY_NO_EMBEDDED_SYMBOL_OR_WINDOW` |
 | Symbol identity verified | `false` |
+
+The session fingerprint was independently recomputed using the exact identity fields and canonical JSON serialization implemented by `V3ExitReplayEngine`:
+
+```json
+{"contract_size":100.0,"dataset_sha256":"b0782e716c7eccbd29ef25e146c088b356f2aadf2ccd5d7ea24e6ac1488aa285","engine_revision":"V3-EXIT-ENGINE-1","entry_population_sha256":"39ed87cd1f0be3e59b5f064b0bcf97a9787e5266df6e972aa07e5ea4d3608ab1","mt5_point":0.01,"volume":0.01}
+```
+
+SHA-256 of this canonical identity equals the recorded Session ID exactly. This verifies the Session's parameter identity, not the trade replay outputs.
 
 The 462 rows are the frozen population `A_TRAIL_0.40_ACTIVATED_PROXY_V3`; they are not all V3 entries and do not establish canonical SP2L entry geometry. The M1 CSV has known reported gaps; gaps were not filled or classified. Same-bar SL/TP and M1 gap behavior remain ambiguous under the OHLC proxy.
 
