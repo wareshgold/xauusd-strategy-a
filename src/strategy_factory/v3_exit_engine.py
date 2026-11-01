@@ -9,6 +9,7 @@ for binding the exact dataset and entry-artifact hashes to its research record.
 """
 
 from dataclasses import dataclass
+import copy
 import hashlib
 import json
 from datetime import datetime, timezone
@@ -369,7 +370,7 @@ class V3ExitReplayEngine:
                None if distance_points is None else float(distance_points))
         cached = self._cache.get(key)
         if cached is not None:
-            return cached
+            return copy.deepcopy(cached)
         name = (
             f"RR{key[0]:g}_NO_TRAIL"
             if key[1] is None
@@ -399,7 +400,7 @@ class V3ExitReplayEngine:
             trades=tuple(trades),
         )
         self._cache[key] = result
-        return result
+        return copy.deepcopy(result)
 
     def compare(self, left: V3ExitVariant, right: V3ExitVariant) -> dict[str, Any]:
         """Compare paired outcomes by frozen-population order and identity."""
@@ -409,22 +410,30 @@ class V3ExitReplayEngine:
             raise V3ExitEngineError("variants do not share this engine's frozen population")
         paired = []
         for index, (a, b, candidate) in enumerate(zip(left.trades, right.trades, self._population)):
-            identity = (
+            expected_identity = (
                 int(candidate["trigger_time"]),
                 str(candidate["direction"]),
                 float(candidate["theoretical_entry"]),
                 float(candidate["sl"]),
                 float(candidate["risk"]),
             )
-            other_identity = (
+            left_identity = (
+                int(a["trigger_time"]),
+                str(a["direction"]),
+                float(a["theoretical_entry"]),
+                float(a["initial_sl"]),
+                float(a["risk"]),
+            )
+            right_identity = (
                 int(b["trigger_time"]),
                 str(b["direction"]),
                 float(b["theoretical_entry"]),
                 float(b["initial_sl"]),
                 float(b["risk"]),
             )
-            if identity != other_identity:
+            if left_identity != expected_identity or right_identity != expected_identity:
                 raise V3ExitEngineError("frozen trade identity mismatch")
+            identity = expected_identity
             a_r = a["realized_R"]
             b_r = b["realized_R"]
             paired.append({
