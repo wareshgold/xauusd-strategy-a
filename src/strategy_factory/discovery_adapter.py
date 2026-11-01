@@ -176,6 +176,7 @@ class DiscoveryMatrixAdapter:
                 "matrix_json": str(json_path),
                 "matrix_sha256": payload.get("sha256"),
                 "dataset_content_sha256": expected_dataset_sha256,
+                "m1_integrity": integrity.as_dict(),
             },
             sort_keys=True,
             separators=(",", ":"),
