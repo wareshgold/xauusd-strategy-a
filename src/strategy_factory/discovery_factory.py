@@ -8,11 +8,12 @@ decisions.
 """
 
 from dataclasses import dataclass
+import hashlib
 from pathlib import Path
 
 from .discovery_adapter import DiscoveryMatrixAdapter
 from .jobs import ResearchJobSpec
-from .mt5_dataset import MT5M1ArtifactExporter, MT5M1Snapshot
+from .mt5_dataset import MT5M1ArtifactExporter, MT5M1Snapshot, load_existing_m1_snapshot
 from .runner import ResearchJobRunner, ResearchJobRunResult
 from .snapshot import ReadinessSnapshot
 from .test_contract import HistoricalTestSpec
@@ -39,6 +40,11 @@ class DiscoveryFactoryContext:
     engine_revision: str = "SP2L-V3-CONTROLLED-DISCOVERY-20261007"
     evidence_id: str | None = None
     purpose: str = "HISTORICAL_TEST"
+    source_artifact_path: Path | None = None
+    source_artifact_sha256: str | None = None
+    entry_population_artifact_path: Path | None = None
+    entry_population_sha256: str | None = None
+    discovery_output_dir: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -67,17 +73,36 @@ class DiscoveryFactory:
                 "declared Discovery variant must match the HistoricalTestSpec parameters"
             )
 
-        exporter = MT5M1ArtifactExporter(
-            script_path=context.exporter_script,
-            mt5_path=context.mt5_path,
-            output_path=context.artifact_path,
-            symbol="XAUUSD.ecn",
-            start=context.spec.dataset.start,
-            end=context.spec.dataset.end,
-            python_executable=context.python_executable,
-        )
-        snapshot = exporter.export()
+        if not context.entry_population_artifact_path or not context.entry_population_sha256:
+            raise DiscoveryFactoryError("frozen V3 entry population artifact and SHA-256 are required")
+        entry_path = Path(context.entry_population_artifact_path)
+        if not entry_path.is_file():
+            raise DiscoveryFactoryError(f"frozen V3 entry population artifact not found: {entry_path}")
+        entry_sha = hashlib.sha256(entry_path.read_bytes()).hexdigest()
+        if entry_sha.lower() != context.entry_population_sha256.lower():
+            raise DiscoveryFactoryError("frozen V3 entry population SHA-256 mismatch")
+
+        if bool(context.source_artifact_path) != bool(context.source_artifact_sha256):
+            raise DiscoveryFactoryError("existing M1 artifact path and SHA-256 must be supplied together")
+        if context.source_artifact_path is not None:
+            snapshot = load_existing_m1_snapshot(
+                context.source_artifact_path,
+                expected_sha256=context.source_artifact_sha256,
+                spec=context.spec,
+            )
+        else:
+            exporter = MT5M1ArtifactExporter(
+                script_path=context.exporter_script,
+                mt5_path=context.mt5_path,
+                output_path=context.artifact_path,
+                symbol="XAUUSD.ecn",
+                start=context.spec.dataset.start,
+                end=context.spec.dataset.end,
+                python_executable=context.python_executable,
+            )
+            snapshot = exporter.export()
         snapshot.register(self.runner.runs.registry, context.spec, lock=True)
+
 
         dataset_fingerprint = self.runner.runs.registry.get(
             context.spec.dataset.dataset_id
@@ -97,6 +122,9 @@ class DiscoveryFactory:
             end=context.spec.dataset.end,
             variant_name=context.variant_name,
             bars_artifact_path=Path(snapshot.artifact.location),
+            entry_population_artifact_path=entry_path,
+            entry_population_sha256=entry_sha,
+            output_dir=context.discovery_output_dir,
             python_executable=context.python_executable,
             engine_revision=context.engine_revision,
         )

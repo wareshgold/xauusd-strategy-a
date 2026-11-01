@@ -18,6 +18,7 @@ from typing import Any
 from .adapter import build_execution_receipt
 from .execution import ExecutionReceipt
 from .metrics import ResearchMetrics
+from .m1_integrity import same_utc_instant, validate_m1_artifact
 from .test_contract import HistoricalTestSpec
 
 
@@ -36,6 +37,9 @@ class DiscoveryMatrixAdapter:
     end: str = "2026-10-07T05:30:00+00:00"
     variant_name: str = "RR2_ACT10_D2"
     bars_artifact_path: Path | None = None
+    entry_population_artifact_path: Path | None = None
+    entry_population_sha256: str | None = None
+    output_dir: Path | None = None
     python_executable: str = sys.executable
     engine_revision: str = "SP2L-V3-CONTROLLED-DISCOVERY-20261007"
 
@@ -66,6 +70,13 @@ class DiscoveryMatrixAdapter:
         ]
         if self.bars_artifact_path is not None:
             command.extend(["--bars-artifact", str(self.bars_artifact_path)])
+        if self.entry_population_artifact_path is not None:
+            command.extend([
+                "--entry-population-artifact", str(self.entry_population_artifact_path),
+                "--entry-population-sha256", str(self.entry_population_sha256),
+            ])
+        if self.output_dir is not None:
+            command.extend(["--output-dir", str(self.output_dir)])
         return command
 
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
@@ -76,7 +87,27 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError("mt5_path is required")
         if not self.variant_name:
             raise DiscoveryAdapterError("variant_name is required")
+        if not same_utc_instant(spec.dataset.start, self.start) or not same_utc_instant(spec.dataset.end, self.end):
+            raise DiscoveryAdapterError("Discovery window does not match the declared dataset window")
         expected_dataset_sha256 = self.observed_dataset_content_sha256
+        integrity = validate_m1_artifact(
+            self.bars_artifact_path,
+            expected_symbol=self.symbol,
+            expected_start=self.start,
+            expected_end=self.end,
+        )
+        if integrity.content_sha256 != expected_dataset_sha256:
+            raise DiscoveryAdapterError("M1 integrity gate hash does not match the observed artifact")
+        if bool(self.entry_population_artifact_path) != bool(self.entry_population_sha256):
+            raise DiscoveryAdapterError("frozen entry artifact path and SHA-256 must be supplied together")
+        expected_entry_sha256 = None
+        if self.entry_population_artifact_path is not None:
+            entry_path = Path(self.entry_population_artifact_path)
+            if not entry_path.is_file():
+                raise DiscoveryAdapterError(f"frozen V3 entry artifact not found: {entry_path}")
+            expected_entry_sha256 = hashlib.sha256(entry_path.read_bytes()).hexdigest()
+            if expected_entry_sha256.lower() != self.entry_population_sha256.lower():
+                raise DiscoveryAdapterError("frozen V3 entry artifact SHA-256 mismatch")
 
         completed = subprocess.run(
             self._command(),
@@ -90,6 +121,14 @@ class DiscoveryMatrixAdapter:
                 "Discovery Matrix failed: "
                 + (completed.stderr.strip() or completed.stdout.strip())
             )
+
+        post_run_sha256 = self.observed_dataset_content_sha256
+        if post_run_sha256 != expected_dataset_sha256:
+            raise DiscoveryAdapterError("M1 dataset artifact changed while Discovery was running")
+        if self.entry_population_artifact_path is not None:
+            post_entry_sha256 = hashlib.sha256(Path(self.entry_population_artifact_path).read_bytes()).hexdigest()
+            if post_entry_sha256 != expected_entry_sha256:
+                raise DiscoveryAdapterError("frozen V3 entry artifact changed while Discovery was running")
 
         try:
             payload = json.loads(completed.stdout)
@@ -105,7 +144,11 @@ class DiscoveryMatrixAdapter:
         if not json_path.is_file():
             raise DiscoveryAdapterError(f"Discovery output JSON not found: {json_path}")
 
-        result = json.loads(json_path.read_text(encoding="utf-8"))
+        matrix_raw = json_path.read_bytes()
+        observed_matrix_sha256 = hashlib.sha256(matrix_raw).hexdigest()
+        if payload.get("sha256") != observed_matrix_sha256:
+            raise DiscoveryAdapterError("Discovery matrix JSON SHA-256 does not match its completion payload")
+        result = json.loads(matrix_raw.decode("utf-8"))
         if result.get("research_only") is not True:
             raise DiscoveryAdapterError("Discovery output is not marked research_only")
 
@@ -114,6 +157,14 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError(
                 "Discovery did not consume the declared M1 dataset artifact"
             )
+        if dataset.get("m1_integrity") != integrity.as_dict():
+            raise DiscoveryAdapterError("Discovery M1 integrity report does not match the independently validated artifact")
+        if self.entry_population_artifact_path is not None:
+            frozen_population = result.get("frozen_population") or {}
+            if frozen_population.get("source") != "FROZEN_V3_ENTRY_CSV":
+                raise DiscoveryAdapterError("Discovery did not use the frozen V3 entry CSV")
+            if frozen_population.get("content_sha256") != expected_entry_sha256:
+                raise DiscoveryAdapterError("Discovery frozen V3 entry SHA-256 does not match the declared artifact")
 
         matches = [
             row for row in result.get("matrix", [])
@@ -161,8 +212,11 @@ class DiscoveryMatrixAdapter:
                 "end": self.end,
                 "variant_name": self.variant_name,
                 "matrix_json": str(json_path),
-                "matrix_sha256": payload.get("sha256"),
+                "matrix_sha256": observed_matrix_sha256,
                 "dataset_content_sha256": expected_dataset_sha256,
+                "m1_integrity": integrity.as_dict(),
+                "entry_population_artifact": str(self.entry_population_artifact_path) if self.entry_population_artifact_path else None,
+                "entry_population_sha256": expected_entry_sha256,
             },
             sort_keys=True,
             separators=(",", ":"),

@@ -32,9 +32,10 @@ def fetch_m1_rates(symbol: str, start: datetime, end: datetime):
         chunks.append(rates.copy())
         cur = chunk_end + timedelta(minutes=1)
     bars = np.concatenate(chunks)
-    bars.sort(order="time")
-    _, idx = np.unique(bars["time"], return_index=True)
-    return bars[np.sort(idx)]
+    timestamps = bars["time"]
+    if len(timestamps) > 1 and np.any(np.diff(timestamps) <= 0):
+        raise RuntimeError("MT5 M1 history contains duplicate or out-of-order timestamps")
+    return bars
 
 
 def main():

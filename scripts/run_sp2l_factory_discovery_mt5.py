@@ -5,6 +5,10 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from strategy_factory.datasets import DatasetRegistry
 from strategy_factory.discovery_factory import DiscoveryFactory, DiscoveryFactoryContext
@@ -25,20 +29,26 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mt5-path", required=True)
     parser.add_argument("--python-executable", required=True)
-    parser.add_argument("--start", default="2026-10-05T00:00:00+00:00")
-    parser.add_argument("--end", default="2026-10-07T05:30:00+00:00")
+    parser.add_argument("--start", default="2026-09-24T07:57:00+00:00")
+    parser.add_argument("--end", default="2026-10-23T23:57:00+00:00")
     parser.add_argument("--variant", default="RR2_ACT10_D2")
+    parser.add_argument("--source-m1-artifact", default=r"D:\Mirzaei\Private\1\sp2l-mt5-market-data\20261024T075827Z\xauusd_ecn_m1_30d.csv")
+    parser.add_argument("--source-m1-sha256", default="B0782E716C7ECCBD29EF25E146C088B356F2AADF2CCD5D7EA24E6AC1488AA285")
+    parser.add_argument("--entry-population-artifact", default="artifacts/monthly_ohlc_activated_sensitivity_v3_20261024_162634_105/a_trail_0_40_activated_proxy_v3_trades.csv")
+    parser.add_argument("--entry-population-sha256", default="39ED87CD1F0BE3E59B5F064B0BCF97A9787E5266DF6E972AA07E5EA4D3608AB1")
+    parser.add_argument("--data-revision", default="MT5-M1-30D-20261024-B0782E716C7E")
+    parser.add_argument("--output-dir", default=None, help="External directory for immutable Discovery matrix evidence.")
     parser.add_argument(
         "--artifact",
-        default="artifacts/factory/mt5_m1_20261005_20261007.json",
+        default="artifacts/factory/mt5_m1_30d_20260924_20261023.json",
     )
     parser.add_argument(
         "--job-id",
-        default="SP2L-DISCOVERY-MT5-20261007-RR2_ACT10_D2",
+        default="SP2L-DISCOVERY-V3-FROZEN-ENTRIES-20261024-RR2_ACT10_D2",
     )
     args = parser.parse_args()
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = REPO_ROOT
     manifest = build_sp2l_research_manifest()
     ledger = SourceResolutionLedger()
     passport = StrategyPassport(
@@ -46,7 +56,7 @@ def main() -> int:
         source_revision=manifest.revision,
         geometry_revision="UNRESOLVED-SOURCE-GEOMETRY",
         code_revision="SP2L-V3-CONTROLLED-DISCOVERY-20261007",
-        data_revision="MT5-M1-20261007",
+        data_revision=args.data_revision,
         execution_model="BAR_CLOSE_RESEARCH",
         parameter_set={"research_only": True},
         canonical=False,
@@ -55,16 +65,16 @@ def main() -> int:
     eligibility = evaluate_passport_eligibility(passport, manifest, ledger)
 
     dataset = TestDataset(
-        dataset_id=f"MT5-XAUUSD-ECN-M1-{args.start[:10]}-{args.end[:10]}",
+        dataset_id=f"MT5-XAUUSD-ECN-M1-{args.data_revision}",
         role=DatasetRole.DEVELOPMENT,
-        data_revision="MT5-M1-20261007",
+        data_revision=args.data_revision,
         start=args.start,
         end=args.end,
         source="MT5:XAUUSD.ecn:M1",
         immutable=False,
     )
     spec = HistoricalTestSpec(
-        test_id=f"SP2L_DISCOVERY_{args.variant}_MT5_20261007",
+        test_id=f"SP2L_DISCOVERY_{args.variant}_MT5_20261024",
         strategy_id=manifest.strategy_id,
         strategy_revision=manifest.revision,
         dataset=dataset,
@@ -95,6 +105,11 @@ def main() -> int:
             variant_name=args.variant,
             python_executable=args.python_executable,
             evidence_id=f"EVIDENCE-{args.job_id}",
+            source_artifact_path=Path(args.source_m1_artifact),
+            source_artifact_sha256=args.source_m1_sha256,
+            entry_population_artifact_path=(repo_root / args.entry_population_artifact),
+            entry_population_sha256=args.entry_population_sha256,
+            discovery_output_dir=Path(args.output_dir) if args.output_dir else None,
         )
     )
 
@@ -110,6 +125,11 @@ def main() -> int:
         "job_fingerprint": result.job.fingerprint,
         "dataset_artifact": result.snapshot.artifact.as_dict(),
         "dataset_content_sha256": result.snapshot.dataset_content_sha256,
+        "m1_integrity": result.snapshot.payload.get("m1_integrity"),
+        "frozen_entry_population_artifact": str(repo_root / args.entry_population_artifact),
+        "frozen_entry_population_sha256": args.entry_population_sha256,
+        "execution_input_fingerprint": result.result.receipt.input_fingerprint,
+        "discovery_output_dir": args.output_dir,
         "run_id": result.result.run.run_id,
         "run_fingerprint": result.result.run.fingerprint,
         "evidence_id": result.result.evidence.evidence_id,

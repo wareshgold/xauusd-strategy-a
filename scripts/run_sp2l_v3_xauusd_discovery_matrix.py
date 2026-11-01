@@ -19,15 +19,19 @@ import hashlib
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 import MetaTrader5 as mt5
 import numpy as np
 
 import sp2l_v3_config as cfg
+from strategy_factory.frozen_entry_population import load_frozen_entry_population
+from strategy_factory.m1_integrity import m1_gap_detected, validate_m1_artifact
 
-ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "artifacts" / "v3_discovery"
-OUT.mkdir(parents=True, exist_ok=True)
+DEFAULT_OUT = ROOT / "artifacts" / "v3_discovery"
 
 VOLUME = cfg.VOLUME
 
@@ -60,9 +64,10 @@ def fetch_m1_rates(symbol, start, end):
         cur = chunk_end + timedelta(minutes=1)
 
     bars = np.concatenate(chunks)
-    bars.sort(order="time")
-    _, idx = np.unique(bars["time"], return_index=True)
-    return bars[np.sort(idx)]
+    timestamps = bars["time"]
+    if len(timestamps) > 1 and np.any(np.diff(timestamps) <= 0):
+        raise RuntimeError("MT5 M1 history contains duplicate or out-of-order timestamps")
+    return bars
 
 
 BAR_FIELDS = ("time", "open", "high", "low", "close", "tick_volume", "spread", "real_volume")
@@ -74,6 +79,37 @@ def load_m1_artifact(path):
         raise RuntimeError(f"M1 dataset artifact not found: {artifact}")
     raw = artifact.read_bytes()
     expected = hashlib.sha256(raw).hexdigest()
+    if artifact.suffix.lower() == ".csv":
+        import io
+        reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig"), newline=""))
+        fields = [
+            "time_epoch_seconds", "time_utc_iso", "open", "high", "low", "close",
+            "tick_volume", "spread", "real_volume",
+        ]
+        if reader.fieldnames != fields:
+            raise RuntimeError("M1 CSV header does not match the declared source schema")
+        dtype = [
+            ("time", "i8"), ("open", "f8"), ("high", "f8"), ("low", "f8"),
+            ("close", "f8"), ("tick_volume", "i8"), ("spread", "i8"), ("real_volume", "i8"),
+        ]
+        values = []
+        for index, row in enumerate(reader):
+            timestamp = int(row["time_epoch_seconds"])
+            row_time = datetime.fromisoformat(row["time_utc_iso"].replace("Z", "+00:00"))
+            if row_time.tzinfo is None or int(row_time.timestamp()) != timestamp:
+                raise RuntimeError(f"M1 CSV row {index} has inconsistent UTC/epoch timestamps")
+            values.append((
+                timestamp, float(row["open"]), float(row["high"]), float(row["low"]),
+                float(row["close"]), int(row["tick_volume"]), int(row["spread"]),
+                int(row["real_volume"]),
+            ))
+        bars = np.array(values, dtype=dtype)
+        if not len(bars):
+            raise RuntimeError("M1 CSV artifact contains no bars")
+        timestamps = bars["time"]
+        if np.any(timestamps % 60 != 0) or (len(timestamps) > 1 and np.any(np.diff(timestamps) <= 0)):
+            raise RuntimeError("M1 CSV artifact contains invalid, duplicate, or out-of-order timestamps")
+        return bars, expected
     payload = json.loads(raw.decode("utf-8"))
     if payload.get("schema_version") != 1:
         raise RuntimeError("unsupported M1 dataset artifact schema")
@@ -99,9 +135,10 @@ def load_m1_artifact(path):
         for row in rows
     ]
     bars = np.array(values, dtype=dtype)
-    bars.sort(order="time")
-    _, idx = np.unique(bars["time"], return_index=True)
-    return bars[np.sort(idx)], expected
+    timestamps = bars["time"]
+    if len(timestamps) > 1 and np.any(np.diff(timestamps) <= 0):
+        raise RuntimeError("M1 artifact contains duplicate or out-of-order timestamps")
+    return bars, expected
 
 
 def write_m1_artifact(path, bars, *, symbol, start, end):
@@ -167,6 +204,8 @@ def build_population(bars, symbol):
     return population
 
 
+
+
 def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_point, contract_size):
     entry_idx = candidate["entry_idx"]
     entry = candidate["theoretical_entry"]
@@ -197,8 +236,18 @@ def replay_trade(candidate, bars, rr, activation_points, distance_points, mt5_po
     # IMPORTANT: trailing is evaluated only from the just-completed bar and
     # therefore becomes effective on the NEXT M1 bar. The current bar cannot
     # use its own final high/low to move its own stop; doing that is lookahead.
+    previous_bar_time = int(bars[entry_idx]["time"])
     for k in range(entry_idx + 1, len(bars)):
         b = bars[k]
+        current_bar_time = int(b["time"])
+        # A missing M1 interval while the position is open can hide an SL,
+        # TP, or trailing event. Do not score a later observed bar as decisive.
+        if m1_gap_detected(previous_bar_time, current_bar_time):
+            ambiguous = True
+            reason = "M1_GAP_WHILE_OPEN"
+            exit_time = current_bar_time
+            break
+        previous_bar_time = current_bar_time
         high = float(b["high"])
         low = float(b["low"])
 
@@ -383,6 +432,7 @@ def summarize(rows):
         "wins": len(wins),
         "losses": len(losses),
         "ambiguous": len(rows) - len(decisive),
+        "gap_exposed": sum(1 for r in rows if r["reason"] == "M1_GAP_WHILE_OPEN"),
         "win_rate_decisive_pct": 100.0 * len(wins) / len(decisive) if decisive else None,
         "net_R": net_r,
         "profit_factor": gross_profit_r / gross_loss_r if gross_loss_r else None,
@@ -435,20 +485,33 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mt5-path", required=True)
     ap.add_argument("--symbol", default="XAUUSD.ecn")
-    ap.add_argument("--start", default="2026-10-05T00:00:00+00:00")
-    ap.add_argument("--end", default="2026-10-07T05:30:00+00:00")
+    ap.add_argument("--start", default="2026-09-24T07:57:00+00:00")
+    ap.add_argument("--end", default="2026-10-23T23:57:00+00:00")
     ap.add_argument(
         "--bars-artifact",
         default=None,
-        help="Immutable JSON M1 snapshot. If supplied, MT5 is not queried for bars.",
+        help="Byte-preserved M1 JSON or CSV artifact. If supplied, MT5 history is not queried; symbol metadata is still required.",
     )
     ap.add_argument(
         "--write-bars-artifact",
         default=None,
         help="Write the exact MT5 M1 snapshot used by this run to this path.",
     )
+    ap.add_argument(
+        "--entry-population-artifact",
+        default=None,
+        help="Frozen Strategy A V3 trade CSV used only for its entry fields.",
+    )
+    ap.add_argument(
+        "--entry-population-sha256",
+        default=None,
+        help="Expected SHA-256 of the frozen Strategy A V3 trade CSV.",
+    )
+    ap.add_argument("--output-dir", default=str(DEFAULT_OUT), help="Directory for Discovery JSON/CSV/snapshot outputs.")
     args = ap.parse_args()
 
+    output_dir = Path(args.output_dir).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
     start = datetime.fromisoformat(args.start)
     end = datetime.fromisoformat(args.end)
     if end <= start:
@@ -466,13 +529,24 @@ def main():
 
         if args.bars_artifact:
             bars, bars_sha256 = load_m1_artifact(args.bars_artifact)
+            m1_integrity_report = validate_m1_artifact(
+                args.bars_artifact,
+                expected_symbol=args.symbol,
+                expected_start=args.start,
+                expected_end=args.end,
+            ).as_dict()
             dataset_source = "M1_ARTIFACT"
             dataset_artifact = str(Path(args.bars_artifact).resolve())
+            dataset_format = Path(args.bars_artifact).suffix.lower().lstrip(".")
+            dataset_byte_size = Path(args.bars_artifact).stat().st_size
         else:
             bars = fetch_m1_rates(args.symbol, start, end)
             bars_sha256 = None
+            m1_integrity_report = None
             dataset_source = "MT5_LIVE_HISTORY"
             dataset_artifact = None
+            dataset_format = "mt5_rates"
+            dataset_byte_size = None
 
         if len(bars) < 10:
             raise RuntimeError(f"Insufficient M1 data: {mt5.last_error()}")
@@ -485,12 +559,32 @@ def main():
             bars_sha256 = written_sha256
             dataset_source = "MT5_SNAPSHOT"
             dataset_artifact = str(Path(args.write_bars_artifact).resolve())
+            dataset_format = "json"
+            dataset_byte_size = written_bytes
+            m1_integrity_report = validate_m1_artifact(
+                args.write_bars_artifact,
+                expected_symbol=args.symbol,
+                expected_start=args.start,
+                expected_end=args.end,
+            ).as_dict()
         else:
             written_bytes = None
 
         mt5_point = float(getattr(info, "point", 0.01) or 0.01)
         contract_size = float(getattr(info, "trade_contract_size", 100.0) or 100.0)
-        population = build_population(bars, args.symbol)
+        if bool(args.entry_population_artifact) != bool(args.entry_population_sha256):
+            raise RuntimeError("entry population artifact and SHA-256 must be supplied together")
+        if args.entry_population_artifact:
+            population, frozen_population_info = load_frozen_entry_population(
+                args.entry_population_artifact, bars, args.entry_population_sha256
+            )
+        else:
+            population = build_population(bars, args.symbol)
+            frozen_population_info = {
+                "source": "REBUILT_FROM_V3_CONFIG",
+                "rows": len(population),
+                "warning": "No frozen V3 entry CSV was supplied; population was recomputed.",
+            }
         variants = make_variants()
 
         matrix = []
@@ -528,10 +622,13 @@ def main():
                 "source": dataset_source,
                 "artifact": dataset_artifact,
                 "content_sha256": bars_sha256,
-                "byte_size": written_bytes,
-                "schema_version": 1 if bars_sha256 is not None else None,
+                "byte_size": dataset_byte_size,
+                "format": dataset_format,
+                "schema_version": 1 if dataset_format == "json" else None,
+                "m1_integrity": m1_integrity_report,
             },
             "frozen_population": {
+                **frozen_population_info,
                 "signals": len(population),
                 "policy": "ONE_SHARED_SIGNAL_ENTRY_POPULATION_FOR_ALL_EXIT_VARIANTS",
             },
@@ -540,7 +637,7 @@ def main():
                 "pGapPrice": cfg.P_GAP_PRICE,
                 "spikeMultiplier": cfg.SPIKE_MULTIPLIER,
                 "maxSlDistance": cfg.MAX_SL_DISTANCE,
-                "entryPolicy": "cfg.find_first_entry",
+                "entryPolicy": "FROZEN_V3_ENTRY_CSV" if args.entry_population_artifact else "cfg.find_first_entry",
                 "sessionPolicy": cfg.SESSION_POLICY,
             },
             "execution_assumptions": {
@@ -548,12 +645,14 @@ def main():
                 "contract_size": contract_size,
                 "usd_per_price_unit_at_volume": VOLUME * contract_size,
                 "spread_slippage_commission": "NOT_MODELED",
+                "m1_gap_policy": "OPEN_TRADE_CROSSED_GAP => AMBIGUOUS_NO_REALIZED_EXIT",
                 "mt5_point": mt5_point,
                 "trailing_units": "MT5_POINT",
             },
             "exit_policy": {
                 "trailing": "activate after favorable move reaches ACT points; update SL from completed M1 high/low by D points",
                 "sameBarPolicy": "SL_AND_TP_SAME_BAR => AMBIGUOUS",
+                "m1GapPolicy": "M1_GAP_WHILE_OPEN => AMBIGUOUS_NO_REALIZED_EXIT",
                 "tpPolicy": "fixed initial TP = Entry +/- RR * risk",
                 "noTrailPolicy": "explicitly disables trailing",
             },
@@ -568,16 +667,20 @@ def main():
             "trades": all_trades,
         }
 
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        base = OUT / f"SP2L_V3_CONTROLLED_DISCOVERY_{stamp}"
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        base = output_dir / f"SP2L_V3_CONTROLLED_DISCOVERY_{stamp}"
         raw = json.dumps(result, indent=2, ensure_ascii=False)
+        json_bytes = raw.encode("utf-8")
         json_path = base.with_suffix(".json")
-        json_path.write_text(raw, encoding="utf-8")
+        # Write and hash the exact same bytes. Path.write_text() performs
+        # platform newline translation on Windows, which would otherwise make
+        # the Snapshot hash differ from the stored JSON artifact.
+        json_path.write_bytes(json_bytes)
 
         summary_csv = base.with_name(base.name + "_SUMMARY.csv")
         fields = [
             "name", "rr", "activation_points", "distance_points",
-            "signals", "decisive", "wins", "losses", "ambiguous",
+            "signals", "decisive", "wins", "losses", "ambiguous", "gap_exposed",
             "win_rate_decisive_pct", "net_R", "profit_factor", "max_drawdown_R",
             "max_losing_streak", "gross_profit_usd", "gross_loss_usd",
             "net_profit_usd", "avg_R_per_decisive", "avg_usd_per_decisive",
@@ -596,7 +699,7 @@ def main():
                 w.writeheader()
                 w.writerows(all_trades)
 
-        sha = hashlib.sha256(raw.encode()).hexdigest()
+        sha = hashlib.sha256(json_bytes).hexdigest()
         snapshot = base.with_name(base.name + "_SNAPSHOT.md")
         top = ranked[:10]
         lines = [
@@ -610,6 +713,9 @@ def main():
             f"Dataset artifact: {dataset_artifact}",
             f"Dataset SHA256: {bars_sha256}",
             f"Frozen signal/entry population: {len(population)}",
+            f"Entry population source: {frozen_population_info.get('source')}",
+            f"Entry population artifact: {frozen_population_info.get('artifact')}",
+            f"Entry population SHA256: {frozen_population_info.get('content_sha256')}",
             f"Variants: {len(variants)}",
             f"MT5 point: {mt5_point}",
             f"Volume: {VOLUME}",
@@ -619,11 +725,12 @@ def main():
             f"- pGap={cfg.P_GAP_PRICE}",
             f"- spikeMultiplier={cfg.SPIKE_MULTIPLIER}",
             f"- maxSL={cfg.MAX_SL_DISTANCE}",
-            f"- entry={cfg.__name__}.find_first_entry",
+            f"- entry={frozen_population_info.get('source')}",
             f"- session={cfg.SESSION_POLICY}",
             "",
             "Trailing uses MT5 point units; TP is recalculated independently for every RR.",
             "SL+TP touched on the same M1 bar => ambiguous and excluded from decisive statistics.",
+            "Any missing M1 interval while a trade is open => M1_GAP_WHILE_OPEN, ambiguous and excluded.",
             "",
             "Top 10 by discovery rank (NET USD first):",
         ]
@@ -632,7 +739,7 @@ def main():
                 f"{i}. {row['name']} | USD={row['net_profit_usd']:.4f} | "
                 f"R={row['net_R']:.4f} | PF={row['profit_factor']} | "
                 f"DD={row['max_drawdown_R']:.4f}R | decisive={row['decisive']} | "
-                f"ambiguous={row['ambiguous']}"
+                f"ambiguous={row['ambiguous']} | gap_exposed={row['gap_exposed']}"
             )
         lines.extend([
             "",
