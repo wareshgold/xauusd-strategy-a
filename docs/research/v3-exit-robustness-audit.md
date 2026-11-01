@@ -38,3 +38,11 @@ The output directory must not already exist. The script fails closed rather than
 ## Follow-up correction: unresolved daily observations
 
 The initial local run exposed a missing-value bug in daily matrix construction: an unresolved row with `realized_R=None` reached `float(None)`. The corrected implementation treats a variant/day as unknown if any outcome triggered on that day is ambiguous or unresolved. Such a day remains `None` through the common-block bootstrap and is excluded from that variant's observed and resampled t-statistic; it is never imputed as zero. A calendar day with no triggered rows for a variant remains a genuine zero-return day. Variants with fewer than three known daily observations are excluded from the max-t family and explicitly counted. Regression tests cover unresolved, ambiguous, no-signal, and bootstrap missingness behavior. This correction remains research-only and does not change source trade rows or the canonical Strategy A rules.
+
+## Follow-up correction: preserve calendar missingness in block resampling
+
+A further review found that the earlier bootstrap implementation selected common calendar indices but then removed missing values before computing each replicate's t-statistic. Although unknown outcomes were not imputed as zero, this compressed the sampled observations and could make non-adjacent known dates appear adjacent in the statistic. The implementation was therefore revised.
+
+The revised procedure samples contiguous blocks in the original shared calendar-index space for every variant. Missingness masks travel with those sampled dates; each replicate's centered mean is calculated only from its known observations, and each variant is studentized by the bootstrap standard deviation of its resampled means. Replicates with fewer than three known observations for a variant are not used for that variant's statistic. A minimum valid-replicate gate fails closed if too few replicates remain. Shared sampled indices continue to preserve cross-variant date alignment.
+
+This is a methodological correction, not a claim that the bootstrap is formally valid under every dependence or missingness mechanism. Its p-value must be recomputed after this code change, and the result remains exploratory. Regression tests include irregular missing-day patterns and deterministic repeatability.
