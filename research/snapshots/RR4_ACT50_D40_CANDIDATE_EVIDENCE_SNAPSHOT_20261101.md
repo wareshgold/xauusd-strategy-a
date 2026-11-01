@@ -70,13 +70,17 @@ The summary panel displayed variant `RR4_ACT50_D40`. The pasted capture does not
 | Cache entries | 36 |
 | Validation | `NOT_VALIDATED` |
 
-### Arithmetic consistency flag
+### Profit-factor basis
 
-The displayed gross profit and gross loss imply:
+Code inspection of `src/strategy_factory/v3_exit_engine.py::summarize` confirms that `profit_factor` is calculated in **R units**:
+
+`gross_profit_r / gross_loss_r`
+
+The displayed gross-profit and gross-loss USD figures imply a separate USD ratio:
 
 `725.760 / 282.620 = 2.568...`
 
-This does not equal the displayed profit factor `2.652`. The dashboard's PF definition, aggregation population, or displayed component values must be reconciled. Until reconciled, PF is retained as a reported value but flagged **UNRECONCILED** and must not be used as a validated metric.
+That USD ratio is not expected to equal the reported R-based PF of `2.652`, because each trade can have a different initial risk in price/USD terms. This is a difference in metric basis, not by itself an arithmetic defect. For future reports, label the existing metric explicitly as **PF (R-based)** and, if useful, report **PF (USD-based)** separately. The displayed `2.652` remains an observed R-based value, not a validated result.
 
 ## 5. Spread sensitivity as displayed
 
