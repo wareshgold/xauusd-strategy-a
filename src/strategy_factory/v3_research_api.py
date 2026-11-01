@@ -128,14 +128,52 @@ class V3ResearchAPI:
                 left = self._require_variant(left_variant_id, session_id)
                 right = self._require_variant(right_variant_id, session_id)
                 paired = session.compare(left, right)
+            elif left_variant_id in self._variants and right_variant_id in self._management_variants:
+                left = self._require_variant(left_variant_id, session_id)
+                right = self._require_management_variant(right_variant_id, session_id)
+                paired = self._compare_cross_engine(left, right)
+            elif left_variant_id in self._management_variants and right_variant_id in self._variants:
+                left = self._require_management_variant(left_variant_id, session_id)
+                right = self._require_variant(right_variant_id, session_id)
+                paired = self._compare_cross_engine(left, right)
             else:
-                raise V3ResearchAPIError("comparison variants must be from the same replay engine")
+                raise V3ResearchAPIError("unknown or expired comparison variant_id")
         except (TypeError, ValueError) as exc:
             raise V3ResearchAPIError(f"paired comparison rejected: {exc}") from exc
         return {
             "research_only": True, "canonical": False, "validation_status": "NOT_VALIDATED",
             "session_id": session_id, "comparison": paired,
         }
+
+    @staticmethod
+    def _compare_cross_engine(left: Any, right: Any) -> dict[str, Any]:
+        if left.session_fingerprint != right.session_fingerprint:
+            raise V3ResearchAPIError("variants do not belong to the same research session")
+        if len(left.trades) != len(right.trades):
+            raise V3ResearchAPIError("variants do not share the same frozen population")
+        paired = []
+        for index, (a, b) in enumerate(zip(left.trades, right.trades)):
+            identity_a = (int(a["trigger_time"]), str(a["direction"]), float(a["theoretical_entry"]),
+                          float(a["initial_sl"]), float(a["risk"]))
+            identity_b = (int(b["trigger_time"]), str(b["direction"]), float(b["theoretical_entry"]),
+                          float(b["initial_sl"]), float(b["risk"]))
+            if identity_a != identity_b:
+                raise V3ResearchAPIError("frozen trade identity mismatch")
+            paired.append({
+                "population_index": index, "trigger_time": identity_a[0],
+                "left_variant": left.name, "right_variant": right.name,
+                "left_reason": a["reason"], "right_reason": b["reason"],
+                "left_ambiguous": a["ambiguous"], "right_ambiguous": b["ambiguous"],
+                "left_realized_R": a["realized_R"], "right_realized_R": b["realized_R"],
+                "delta_R": b["realized_R"] - a["realized_R"]
+                if a["realized_R"] is not None and b["realized_R"] is not None else None,
+                "outcome_changed": (a["reason"], a["ambiguous"], a["realized_R"])
+                != (b["reason"], b["ambiguous"], b["realized_R"]),
+            })
+        return {"left_variant": left.name, "right_variant": right.name,
+                "paired_trade_count": len(paired),
+                "changed_outcome_count": sum(row["outcome_changed"] for row in paired),
+                "paired_trades": paired}
 
     def _require_management_variant(self, variant_id: str, session_id: str) -> V3ManagementVariant:
         try:
