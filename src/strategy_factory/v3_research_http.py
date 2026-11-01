@@ -92,7 +92,7 @@ class V3ResearchHTTPApplication:
         name = path.name.lower()
         if path.suffix.lower() in {".json", ".csv"} and ("m1" in name or "ohlc" in name):
             return "M1_JSON"
-        if path.suffix.lower() == ".csv" and ("entry" in name or "population" in name or "candidate" in name):
+        if path.suffix.lower() == ".csv" and ("entr" in name or "population" in name or "candidate" in name):
             return "FROZEN_ENTRY_CSV"
         return None
 
