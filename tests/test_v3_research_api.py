@@ -103,3 +103,30 @@ def test_api_rejects_invalid_parameters_without_creating_variant(tmp_path):
         api.evaluate(session_id, rr=-1, activation_points=100, distance_points=20)
 
     assert api.variant_count == 0
+
+
+def test_api_evaluates_management_policy_and_distinguishes_variant_ids(tmp_path):
+    api = V3ResearchAPI()
+    session_id = api.create_session(**artifacts(tmp_path))["session_id"]
+    be = api.evaluate_management(session_id, {
+        "mode": "breakeven", "breakeven_trigger_r": 0.5,
+    })
+    trailing = api.evaluate_management(session_id, {
+        "mode": "trailing", "trailing_activation_r": 0.5,
+        "trailing_distance_points": 20,
+    })
+    assert be["research_only"] is True
+    assert be["canonical"] is False
+    assert be["validation_status"] == "NOT_VALIDATED"
+    assert be["variant"]["management_config"]["mode"] == "breakeven"
+    assert be["variant_id"] != trailing["variant_id"]
+    paired = api.compare(session_id, be["variant_id"], trailing["variant_id"])
+    assert paired["comparison"]["paired_trade_count"] == 1
+
+
+def test_api_rejects_invalid_management_policy_without_variant(tmp_path):
+    api = V3ResearchAPI()
+    session_id = api.create_session(**artifacts(tmp_path))["session_id"]
+    with pytest.raises(V3ResearchAPIError, match="management evaluation rejected"):
+        api.evaluate_management(session_id, {"mode": "trailing"})
+    assert api.variant_count == 0
