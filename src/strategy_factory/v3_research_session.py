@@ -81,6 +81,12 @@ class V3ResearchSession:
         )
         self.dataset_report = integrity.as_dict()
         self.entry_report = entry_report
+        self.m1_metadata_provenance = (
+            "EMBEDDED_JSON_METADATA"
+            if self.m1_path.suffix.lower() != ".csv"
+            else "CALLER_ASSERTED_CSV_IDENTITY_NO_EMBEDDED_SYMBOL_OR_WINDOW"
+        )
+        self.symbol_identity_verified = self.m1_path.suffix.lower() != ".csv"
         self.symbol = expected_symbol
         self.timeframe = "M1"
         self.window_utc = {
@@ -134,6 +140,8 @@ class V3ResearchSession:
             "timeframe": self.timeframe,
             "window_utc": dict(self.window_utc),
             "dataset": dict(self.dataset_report),
+            "m1_metadata_provenance": self.m1_metadata_provenance,
+            "symbol_identity_verified": self.symbol_identity_verified,
             "entry_population": dict(self.entry_report),
             "population_size": self.population_size,
             "engine_revision": self.engine_revision,
