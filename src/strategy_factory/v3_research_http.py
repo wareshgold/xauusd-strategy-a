@@ -169,6 +169,26 @@ class V3ResearchHTTPApplication:
                     activation_points=None if body.get("activation_points") is None else float(body["activation_points"]),
                     distance_points=None if body.get("distance_points") is None else float(body["distance_points"]),
                 )
+            if len(parts) == 4 and parts[0:2] == ["api", "sessions"] and parts[3] == "management" and method == "POST":
+                return 200, self.api.evaluate_management(parts[2], body.get("policy", {}))
+            if len(parts) == 4 and parts[0:2] == ["api", "sessions"] and parts[3] == "management-matrix" and method == "POST":
+                policies = body.get("policies")
+                if not isinstance(policies, list) or not policies or len(policies) > 50:
+                    raise V3ResearchHTTPError("policies must be a non-empty array with at most 50 items")
+                results = []
+                for policy in policies:
+                    evaluated = self.api.evaluate_management(parts[2], policy)
+                    results.append({
+                        "variant_id": evaluated["variant_id"],
+                        "name": evaluated["variant"]["name"],
+                        "management_config": evaluated["variant"]["management_config"],
+                        "summary": evaluated["variant"]["summary"],
+                    })
+                return 200, {
+                    "research_only": True, "canonical": False,
+                    "validation_status": "NOT_VALIDATED", "session_id": parts[2],
+                    "results": results,
+                }
             if len(parts) == 4 and parts[0:2] == ["api", "sessions"] and parts[3] == "compare" and method == "POST":
                 return 200, self.api.compare(parts[2], str(body["left_variant_id"]), str(body["right_variant_id"]))
             return 404, {"error": "route not found"}
