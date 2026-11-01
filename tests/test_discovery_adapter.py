@@ -84,7 +84,7 @@ def test_discovery_adapter_consumes_declared_variant_without_defining_geometry(t
                 {
                     "status": "COMPLETE",
                     "json": str(matrix_path),
-                    "sha256": "a" * 64,
+                    "sha256": hashlib.sha256(matrix_path.read_bytes()).hexdigest(),
                 }
             ),
             stderr="",
@@ -280,7 +280,7 @@ def test_discovery_adapter_binds_frozen_v3_entry_artifact(tmp_path, monkeypatch)
             stdout=json.dumps({
                 "status": "COMPLETE",
                 "json": str(matrix_path),
-                "sha256": "b" * 64,
+                "sha256": hashlib.sha256(matrix_path.read_bytes()).hexdigest(),
             }),
             stderr="",
         )
