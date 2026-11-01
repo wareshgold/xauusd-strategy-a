@@ -5,6 +5,10 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from strategy_factory.datasets import DatasetRegistry
 from strategy_factory.discovery_factory import DiscoveryFactory, DiscoveryFactoryContext
@@ -43,7 +47,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = REPO_ROOT
     manifest = build_sp2l_research_manifest()
     ledger = SourceResolutionLedger()
     passport = StrategyPassport(
