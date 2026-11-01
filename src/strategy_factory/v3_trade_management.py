@@ -9,6 +9,7 @@ broker execution semantics. It does not alter entry identity or geometry.
 
 import copy
 import json
+import math
 from datetime import datetime, timezone
 from typing import Any
 
@@ -51,7 +52,7 @@ def normalize_policy(policy: dict[str, Any]) -> dict[str, Any]:
             result[key] = int(value)
         else:
             number = float(value)
-            if number <= 0:
+            if not math.isfinite(number) or number <= 0:
                 raise V3TradeManagementError(key + " must be positive")
             result[key] = number
 
