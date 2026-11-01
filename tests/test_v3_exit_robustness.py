@@ -103,3 +103,31 @@ def test_day_cluster_bootstrap_requires_three_days():
         assert "three distinct" in str(exc)
     else:
         raise AssertionError("expected insufficient days to fail closed")
+
+
+def test_daily_matrix_keeps_unresolved_and_ambiguous_days_missing():
+    rows = [
+        {"variant": "RR1_NO_TRAIL", "day": "2026-01-01", "ambiguous": False, "realized_R": 0.5},
+        {"variant": "RR1_NO_TRAIL", "day": "2026-01-02", "ambiguous": False, "realized_R": None},
+        {"variant": "RR1_NO_TRAIL", "day": "2026-01-03", "ambiguous": True, "realized_R": None},
+        {"variant": "RR1_ACT3_D1", "day": "2026-01-01", "ambiguous": False, "realized_R": -0.2},
+        {"variant": "RR1_ACT3_D1", "day": "2026-01-03", "ambiguous": False, "realized_R": 0.3},
+    ]
+    names, days, matrix, _ = MODULE.build_daily_matrix(rows)
+    assert names == ["RR1_ACT3_D1", "RR1_NO_TRAIL"]
+    assert days == ["2026-01-01", "2026-01-02", "2026-01-03"]
+    assert matrix[1] == [0.5, None, None]
+    # No signal for this variant/day is a true zero-return calendar day.
+    assert matrix[0] == [-0.2, 0.0, 0.3]
+
+
+def test_bootstrap_excludes_missing_days_without_zero_imputation():
+    matrix = [
+        [0.2, None, -0.1, 0.3, None, 0.1],
+        [0.1, -0.2, None, 0.2, 0.0, 0.1],
+    ]
+    first = MODULE.max_stat_bootstrap(matrix, iterations=250, seed=19)
+    second = MODULE.max_stat_bootstrap(matrix, iterations=250, seed=19)
+    assert first == second
+    assert first["eligible_variants"] == 2
+    assert first["excluded_variants_fewer_than_three_known_days"] == 0
