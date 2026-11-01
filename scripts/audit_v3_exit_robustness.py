@@ -109,8 +109,8 @@ def load_inputs(manifest_path: Path) -> tuple[dict[str, Any], list[dict[str, Any
         realized = finite_float(raw.get("realized_R"), f"row {index}.realized_R")
         if ambiguous and realized is not None:
             raise RobustnessError(f"row {index}: ambiguous trade has realized_R")
-        if not ambiguous and realized is None:
-            raise RobustnessError(f"row {index}: decisive trade has no realized_R")
+        # A non-ambiguous row with no realized_R is an unresolved/open outcome,
+        # not a decisive trade. Preserve it as non-decisive rather than guessing.
         variant = raw["variant"]
         rows.append({
             "variant": variant,
@@ -137,7 +137,7 @@ def load_inputs(manifest_path: Path) -> tuple[dict[str, Any], list[dict[str, Any
 
 
 def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    decisive = [r for r in rows if not r["ambiguous"]]
+    decisive = [r for r in rows if not r["ambiguous"] and r["realized_R"] is not None]
     returns = [float(r["realized_R"]) for r in decisive]
     wins = [x for x in returns if x > 0]
     losses = [x for x in returns if x < 0]
@@ -152,7 +152,9 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "signals": len(rows),
         "decisive": len(decisive),
-        "ambiguous": len(rows) - len(decisive),
+        "ambiguous": sum(1 for r in rows if r["ambiguous"]),
+        "unresolved": sum(1 for r in rows if not r["ambiguous"] and r["realized_R"] is None),
+        "non_decisive": len(rows) - len(decisive),
         "net_R": sum(returns),
         "mean_R_per_decisive": mean(returns) if returns else None,
         "win_rate_pct": 100.0 * len(wins) / len(returns) if returns else None,
