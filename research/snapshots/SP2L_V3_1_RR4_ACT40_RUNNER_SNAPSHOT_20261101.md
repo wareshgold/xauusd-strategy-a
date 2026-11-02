@@ -90,3 +90,18 @@ Only the two V3.1 files and this snapshot may be considered for the V3.1 commit.
 No broad staging is permitted.
 
 Forward start requires separate review and explicit user authorization.
+
+## Safety isolation amendment — 2026-11-02
+
+Follow-up branch: `research/strategy-a-v3-1-magic-clock-guard-20261102`
+
+- V3.1 sets `SP2L_MAGIC_BASE=26092300` before importing the shared runner.
+- XAUUSD V3.1 magic is therefore `26092301`; original V3 remains `26092201`.
+- The historical hard-coded/default UTC+03:00 offset has been removed.
+- Pending expiry continues to fail closed if `SP2L_PENDING_SERVER_OFFSET_HOURS` is absent or invalid.
+- An additional execution guard blocks every order attempt unless the operator explicitly pins the offset and both the broker tick freshness check (120-second tolerance) and MT5 strict offset helper agree.
+- The guard does not infer or silently set the server offset.
+- No V3 source file, V3 state file, or V3 events file is modified.
+- No runner was started and no MT5 order was submitted by this amendment.
+
+The prior exploratory M1 results remain in-sample and are not a production validation. The V3.1 branch remains research/forward-test only.
