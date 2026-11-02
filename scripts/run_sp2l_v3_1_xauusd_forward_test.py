@@ -76,6 +76,12 @@ def trail_positions(cfg_runtime,state):
         old_sl=float(getattr(p,"sl",0) or 0)
         tp=float(getattr(p,"tp",0) or 0)
         if entry<=0 or ticket<=0: continue
+        position_time=int(getattr(p,"time",0) or 0)
+        position_time_msc=int(getattr(p,"time_msc",0) or 0)
+        if not cfg.completed_bar_is_after_position(
+            completed_bar_time, position_time, position_time_msc
+        ):
+            continue
         attempt_key=f"{ticket}:{completed_bar_time}"
         if attempt_key in attempts: continue
         if int(p.type)==mt5.POSITION_TYPE_BUY:
@@ -428,6 +434,12 @@ runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
 _original_execute_candidate = runner.execute_candidate
 
 def _validate_execution_clock(symbol: str) -> None:
+    # This V3.1 candidate is intentionally hard-locked to Demo accounts.
+    # A future live deployment requires a separate reviewed code change.
+    account = mt5.account_info()
+    demo_mode = getattr(mt5, "ACCOUNT_TRADE_MODE_DEMO", None)
+    if account is None or demo_mode is None or int(getattr(account, "trade_mode", -1)) != int(demo_mode):
+        raise RuntimeError("ORDER_BLOCKED: V3.1 forward runner is DEMO-ONLY")
     configured = os.getenv("SP2L_PENDING_SERVER_OFFSET_HOURS", "").strip()
     if not configured:
         raise RuntimeError("ORDER_BLOCKED: SP2L_PENDING_SERVER_OFFSET_HOURS must be explicitly set")
