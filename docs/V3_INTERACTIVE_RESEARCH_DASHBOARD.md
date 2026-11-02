@@ -24,6 +24,12 @@ Choose the M1 artifact and frozen Entry CSV. Enter the declared symbol, inclusiv
 
 **CSV provenance limitation:** the current M1 CSV schema contains no embedded symbol or declared-window metadata. When CSV is selected, the symbol and window are caller assertions, not independently verified source metadata. The session manifest explicitly records this as `CALLER_ASSERTED_CSV_IDENTITY_NO_EMBEDDED_SYMBOL_OR_WINDOW` and `symbol_identity_verified=false`. Prefer the JSON artifact when embedded identity metadata is available.
 
+## M1 snapshot binding
+
+Session creation captures the selected M1 artifact once as immutable bytes. Its SHA-256, structural validation, and the bars supplied to both replay engines all use that same captured buffer. JSON and CSV retain their existing validation rules; CSV BOM and line endings remain part of the raw-byte hash. The path-based integrity APIs remain available and delegate to the same byte validator.
+
+A file replacement, corruption, or removal after capture does not change the session's bars or cause a second M1 read. A change captured before loading must pass structural validation and the expected SHA-256 check. This is snapshot consistency, not a filesystem lock or a claim that the current path still contains the captured bytes. Keep the exact source bytes separately for future reproduction; this change does not add persistent experiment storage or measured engine attestation.
+
 ## Replay and interpretation
 
 The UI exposes only V3 exit parameters currently supported by the extracted engine: target RR, trailing activation points, and trailing distance points. It does not change the frozen Entry population. M1 OHLC replay retains the existing ambiguity rules: M1 gaps while open and same-bar SL/TP are unresolved; completed-bar trailing changes apply to the next bar. No spread, slippage, commission, tick-fill, or broker execution semantics are inferred.

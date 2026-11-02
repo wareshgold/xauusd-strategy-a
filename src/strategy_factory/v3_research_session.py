@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .frozen_entry_population import load_frozen_entry_population
-from .m1_integrity import validate_m1_artifact
+from .m1_integrity import validate_m1_artifact_bytes
 from .v3_exit_engine import V3ExitReplayEngine, V3ExitVariant
 from .v3_management_engine import V3ManagementReplayEngine, V3ManagementVariant
 
@@ -48,8 +48,12 @@ class V3ResearchSession:
             if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest.lower()):
                 raise V3ResearchSessionError(f"{label} must be a SHA-256 hex digest")
         try:
-            integrity = validate_m1_artifact(
-                self.m1_path,
+            # Capture once: hashing, structure checks and replay parsing must
+            # consume identical bytes even if the source path changes later.
+            raw = self.m1_path.read_bytes()
+            integrity = validate_m1_artifact_bytes(
+                raw,
+                artifact_format="csv" if self.m1_path.suffix.lower() == ".csv" else "json",
                 expected_symbol=expected_symbol,
                 expected_start=expected_start_utc,
                 expected_end=expected_end_utc,
@@ -59,7 +63,6 @@ class V3ResearchSession:
         if integrity.content_sha256.lower() != expected_dataset_sha256.lower():
             raise V3ResearchSessionError("M1 artifact SHA-256 does not match expected dataset hash")
 
-        raw = self.m1_path.read_bytes()
         if self.m1_path.suffix.lower() == ".csv":
             reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig"), newline=""))
             bars = tuple({

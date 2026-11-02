@@ -95,7 +95,22 @@ def validate_m1_csv_artifact(
     artifact = Path(path)
     if not artifact.is_file():
         raise M1IntegrityError(f"M1 artifact not found: {artifact}")
-    raw = artifact.read_bytes()
+    return validate_m1_artifact_bytes(
+        artifact.read_bytes(),
+        artifact_format="csv",
+        expected_symbol=expected_symbol,
+        expected_start=expected_start,
+        expected_end=expected_end,
+    )
+
+
+def _validate_m1_csv_bytes(
+    raw: bytes,
+    *,
+    expected_symbol: str,
+    expected_start: str,
+    expected_end: str,
+) -> M1IntegrityReport:
     digest = hashlib.sha256(raw).hexdigest()
     try:
         decoded = raw.decode("utf-8-sig")
@@ -198,16 +213,41 @@ def validate_m1_artifact(
     expected_end: str,
 ) -> M1IntegrityReport:
     artifact = Path(path)
-    if artifact.suffix.lower() == ".csv":
-        return validate_m1_csv_artifact(
-            artifact,
+    if not artifact.is_file():
+        raise M1IntegrityError(f"M1 artifact not found: {artifact}")
+    return validate_m1_artifact_bytes(
+        artifact.read_bytes(),
+        artifact_format="csv" if artifact.suffix.lower() == ".csv" else "json",
+        expected_symbol=expected_symbol,
+        expected_start=expected_start,
+        expected_end=expected_end,
+    )
+
+
+def validate_m1_artifact_bytes(
+    raw: bytes,
+    *,
+    artifact_format: str,
+    expected_symbol: str,
+    expected_start: str,
+    expected_end: str,
+) -> M1IntegrityReport:
+    """Validate and hash one immutable snapshot without filesystem access.
+
+    A replay caller must parse this same raw value, not reopen its source path.
+    Byte order, BOM and line endings are preserved in the reported digest.
+    """
+    if not isinstance(raw, bytes):
+        raise M1IntegrityError("M1 artifact snapshot must be immutable bytes")
+    if artifact_format == "csv":
+        return _validate_m1_csv_bytes(
+            raw,
             expected_symbol=expected_symbol,
             expected_start=expected_start,
             expected_end=expected_end,
         )
-    if not artifact.is_file():
-        raise M1IntegrityError(f"M1 artifact not found: {artifact}")
-    raw = artifact.read_bytes()
+    if artifact_format != "json":
+        raise M1IntegrityError("M1 artifact format must be json or csv")
     digest = hashlib.sha256(raw).hexdigest()
     try:
         payload = json.loads(raw.decode("utf-8"))
