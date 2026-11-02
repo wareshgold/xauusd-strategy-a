@@ -5,7 +5,6 @@ import json
 import multiprocessing
 import os
 import tempfile
-import time
 import unittest
 from pathlib import Path
 
@@ -16,12 +15,15 @@ from sp2l_runner_lock import (
 )
 
 
-def _lock_holder(path: str, ready, release) -> None:
+def _lock_holder(path: str, ready) -> None:
     acquired = acquire_runner_lock(Path(path))
     ready.put((acquired is None, os.getpid()))
-    release.wait(10)
-    if acquired is None:
-        release_runner_lock(Path(path))
+    # Keep the lock until the parent terminates this process.
+
+
+def _lock_contender(path: str, result) -> None:
+    holder = acquire_runner_lock(Path(path))
+    result.put(holder)
 
 
 class RunnerLockTests(unittest.TestCase):
@@ -42,28 +44,42 @@ class RunnerLockTests(unittest.TestCase):
         self.assertIsNone(acquire_runner_lock(self.path, pid=os.getpid()))
         release_runner_lock(self.path, pid=os.getpid())
 
-    def test_second_process_is_blocked_and_can_acquire_after_owner_dies(self):
+    def test_second_process_is_blocked_then_acquires_after_owner_dies(self):
         ctx = multiprocessing.get_context("spawn")
         ready = ctx.Queue()
-        release = ctx.Event()
-        owner = ctx.Process(target=_lock_holder, args=(str(self.path), ready, release))
+        result = ctx.Queue()
+        owner = ctx.Process(target=_lock_holder, args=(str(self.path), ready))
+        contender = None
         owner.start()
-        acquired, owner_pid = ready.get(timeout=10)
-        self.assertTrue(acquired)
-        self.assertGreater(owner_pid, 0)
+        try:
+            acquired, owner_pid = ready.get(timeout=15)
+            self.assertTrue(acquired)
+            self.assertGreater(owner_pid, 0)
 
-        # This process must see the live OS lock, independent of PID probes.
-        holder = acquire_runner_lock(self.path, pid=os.getpid())
-        self.assertIn(holder, (owner_pid, 0))
+            contender = ctx.Process(
+                target=_lock_contender, args=(str(self.path), result)
+            )
+            contender.start()
+            holder_pid = result.get(timeout=15)
+            contender.join(timeout=15)
+            self.assertFalse(contender.is_alive())
+            self.assertEqual(holder_pid, owner_pid)
 
-        owner.terminate()
-        owner.join(timeout=10)
-        self.assertFalse(owner.is_alive())
+            owner.terminate()
+            owner.join(timeout=15)
+            self.assertFalse(owner.is_alive())
 
-        # Process termination releases the OS lock; no stale-file unlink is
-        # needed and no contender can delete a replacement lock.
-        self.assertIsNone(acquire_runner_lock(self.path, pid=os.getpid()))
-        release_runner_lock(self.path, pid=os.getpid())
+            # Process termination releases the OS lock without stale-file
+            # unlinking; this process can now acquire the persistent lock file.
+            self.assertIsNone(acquire_runner_lock(self.path, pid=os.getpid()))
+            release_runner_lock(self.path, pid=os.getpid())
+        finally:
+            if contender is not None and contender.is_alive():
+                contender.terminate()
+                contender.join(timeout=5)
+            if owner.is_alive():
+                owner.terminate()
+                owner.join(timeout=5)
 
     def test_invalid_pid_fails_closed(self):
         with self.assertRaises(RunnerLockError):
