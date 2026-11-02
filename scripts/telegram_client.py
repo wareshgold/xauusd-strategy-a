@@ -33,10 +33,18 @@ def read_telegram_config() -> tuple[str | None, str | None]:
 
 
 def read_telegram_env(env: dict | None = None) -> tuple[str | None, str | None]:
+    """Read an explicit test mapping, process environment, or local config.
+
+    Process environment takes precedence as a complete credential pair. If
+    either environment variable is present, do not silently mix it with a
+    value from the local config file; an incomplete pair remains unconfigured.
+    """
     source = os.environ if env is None else env
     token = source.get("TELEGRAM_BOT_TOKEN")
     chat = source.get("TELEGRAM_CHAT_ID")
     if env is not None:
+        return token, chat
+    if token or chat:
         return token, chat
     return read_telegram_config()
 
