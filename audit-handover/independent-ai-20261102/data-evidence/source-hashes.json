@@ -1,0 +1,22 @@
+{
+  "runner": {
+    "commit": "5c6ab4b7de7db320c9a0019a1c97500c2d9e08f6",
+    "files": {
+      "scripts/live_mt5_gateway.py": "782d94feb18f4e187d90042ff1eb70f7c59b1579677843b31717a881f43ec0f8",
+      "scripts/run_sp2l_v3_1_xauusd_forward_test.py": "209631a03bcaaf7b6ce86664b2f50b3f0a9d840434ee8b1983acc5e654511c95",
+      "scripts/run_sp2l_author_replica_multi_symbol_forward_test.py": "cd89d96e8af34aa7f964adc0e528fbfdae2ccf7747721560e542ae240f128c72",
+      "scripts/sp2l_v3_1_rr4_act40_config.py": "4817de67fdfb38f739c77a37e62f41f4496eaf06c861c0bd90a0a16a4f14b25b",
+      "tests/test_live_mt5_gateway.py": "e038c23a84bd7db52aa7e70105a750de156db2315586d9e28e36a8d6e056684e"
+    }
+  },
+  "factory": {
+    "commit": "38f63c62f12e4e5c9fd6e13bc39202c9dc46f5f5",
+    "files": {
+      "src/strategy_factory/v3_research_session.py": "8aed46cc827545ce0ea46d67f0cb091f258bc235dc0be4cb9241d8f6857da37e",
+      "src/strategy_factory/v3_exit_engine.py": "ae81ed109dfc1e615cbc024a619bbac632fc59e274100b6217249fd8f9a6b526",
+      "src/strategy_factory/v3_management_engine.py": "564582a1ff885347fdc7bf1a01aeda534822c5f626479dafd835ccc92c23b3ea",
+      "src/strategy_factory/m1_integrity.py": "1231498662d8206421e2786635957aa649a940592a0677cd2055c5a1a62717a0",
+      "src/strategy_factory/frozen_entry_population.py": "10ddd5f80d10c1525721e154d4d5b2b04671afae9c8fefa6fe727885516805e0"
+    }
+  }
+}

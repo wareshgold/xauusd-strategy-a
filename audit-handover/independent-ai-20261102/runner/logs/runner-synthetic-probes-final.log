@@ -1,0 +1,30 @@
+{
+  "forming_bar_geometry_changes_for_same_key": {
+    "first": {
+      "direction": "BUY",
+      "trigger_time": 240,
+      "theoretical_entry": 106.5,
+      "sl": 99.9,
+      "risk": 6.599999999999994,
+      "tp": 132.89999999999998,
+      "secondary_entry_2x": 103.2,
+      "symbol": "SYNTHETIC"
+    },
+    "updated": {
+      "direction": "BUY",
+      "trigger_time": 240,
+      "theoretical_entry": 104.0,
+      "sl": 99.9,
+      "risk": 4.099999999999994,
+      "tp": 120.39999999999998,
+      "secondary_entry_2x": 101.95,
+      "symbol": "SYNTHETIC"
+    }
+  },
+  "trailing_fake_mutations_despite_disabled_flags": 1,
+  "missing_local_helpers": [
+    "sp2l_history_query_failure_log",
+    "sp2l_tracked_deal_history"
+  ],
+  "scope": "Synthetic controls only; runner never imported; no MT5 installed or initialized; no network or broker"
+}

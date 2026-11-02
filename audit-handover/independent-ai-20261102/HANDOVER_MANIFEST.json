@@ -1,0 +1,314 @@
+{
+  "handover": "Independent AI audit handover 2026-11-02",
+  "repository": "https://github.com/wareshgold/xauusd-strategy-a",
+  "branches": {
+    "evidence": "audit/independent-ai-handover-20261102",
+    "runner": {
+      "branch": "audit/independent-ai-handover-20261102-runner",
+      "published_commit": "a6dad3ff7190c2cdece87082767aec6be931fec7",
+      "original_local_commit": "5c6ab4b7de7db320c9a0019a1c97500c2d9e08f6",
+      "parent": "dc14a451669992d39bad559a125a7b0196e410e4",
+      "tree": "548cfac0259b2bab57032a3cca3780eb0eabd786",
+      "changed_files": [
+        "scripts/live_mt5_gateway.py",
+        "tests/test_live_mt5_gateway.py"
+      ]
+    },
+    "factory": {
+      "branch": "audit/independent-ai-handover-20261102-factory",
+      "published_commit": "c40f29e927c90c68e72ac378375ae418bce7f912",
+      "original_local_commit": "95f3af891dbc0effd7037e925edc1735a3f88c68",
+      "parent": "38f63c62f12e4e5c9fd6e13bc39202c9dc46f5f5",
+      "tree": "051fa1b75ae962d255ae75fdc07e5abdaf369a43",
+      "changed_files": [
+        "src/strategy_factory/m1_integrity.py",
+        "src/strategy_factory/v3_research_session.py",
+        "tests/test_v3_session_snapshot_binding.py",
+        "docs/V3_INTERACTIVE_RESEARCH_DASHBOARD.md"
+      ]
+    }
+  },
+  "sanitized_files": [],
+  "secret_scan": "All published files scanned. No credentials, tokens, Telegram config, account identifiers or private URLs. One pre-existing personal local path found only in a full documentation copy; that copy withheld (see withheld[0]). No file sanitized or edited.",
+  "published_files_excluding_this_manifest": {
+    "COMMANDS.md": {
+      "sha256": "e1e09cf8201a6ed35950e9ad13bcf5fd16a56cbd54ee0f65fdcba8502760beb9",
+      "bytes": 8013
+    },
+    "INDEPENDENT_AUDIT.md": {
+      "sha256": "768b789aa542bb9cbdfc01e16847aca528dece439fe1dc18b9274cc97d2a7b3c",
+      "bytes": 33806
+    },
+    "README.md": {
+      "sha256": "a0296b286d1e65bf8c29eb9ef8a2c2f453236a5b6c7273b2e3d46ae4aed927c4",
+      "bytes": 10274
+    },
+    "data-evidence/dataset-inventory.log": {
+      "sha256": "97b889b16e6f0f884c42b1c6ca9ea705f5430ac4935e8d5b02366481d85e911a",
+      "bytes": 1574
+    },
+    "data-evidence/dataset_inventory.py": {
+      "sha256": "adb49cd08ae136cd751910869518224e7530bb0fa45330ef296f435de8783ce7",
+      "bytes": 2203
+    },
+    "data-evidence/datasets.json": {
+      "sha256": "28564de12e846daf6cdb056f76a5ac41c5d6a9fa7a8c0f561b2025105b7508e6",
+      "bytes": 6053
+    },
+    "data-evidence/source-hashes.json": {
+      "sha256": "15b02f9a8915f0022dea5598d7c924d6c3f30345bfd53157f0c3f6e31b3fab39",
+      "bytes": 1384
+    },
+    "discovery/clone.log": {
+      "sha256": "9bfd885d4aed45bd02c8ab007a00024fd805fec9cc82746b9ee99f13b62ce001",
+      "bytes": 58
+    },
+    "discovery/pull-requests.json": {
+      "sha256": "d8be95b1c438bea73971f8ee93ce973feee478efda968e033c50df524326572e",
+      "bytes": 7902
+    },
+    "discovery/recent-history.txt": {
+      "sha256": "b252977579b70cb99716dcfb8d2a671d7f7cd91ca87b3bb4520f97605e3eac79",
+      "bytes": 2345
+    },
+    "discovery/refs.txt": {
+      "sha256": "6a04419f044b9e3208d9b9325711d4219902d33e756a43701a8d76ae3fb34fe9",
+      "bytes": 45604
+    },
+    "environment/environment.txt": {
+      "sha256": "52e62f149b2f60dc307cb29c8cd865211bd25063ce9bf5818042d22c871b9dba",
+      "bytes": 365
+    },
+    "environment/npm-install.log": {
+      "sha256": "9ce727f8b8d0ca1cc82f4593c67c7f803be6e423de470f024a551a3b17e23d33",
+      "bytes": 383
+    },
+    "environment/numpy-install.log": {
+      "sha256": "18e84f0033b4a496a290e6736b42eeefc93a10a5472528a16e9e44c1395094a3",
+      "bytes": 385
+    },
+    "environment/python-install.log": {
+      "sha256": "51b26cf0a9d9adf5c80d5d70bb195bfa4202d280e5e48846d99d42ea7a1d1241",
+      "bytes": 2366
+    },
+    "environment/test-safety-scan.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "factory/audit/FACTORY_FIX_README.md": {
+      "sha256": "05b3295b8ec2bc5ef95bc3bdcc0a4d613bf839786effb70e1f53d9094e3eb049",
+      "bytes": 9006
+    },
+    "factory/audit/change-manifest.json": {
+      "sha256": "699988f71bf6fe33c0495b50fe16f7ccba95cdce9c060dccce1ebd6fdd36dd4c",
+      "bytes": 769
+    },
+    "factory/audit/factory-audit.md": {
+      "sha256": "3cbb0a86c4a7e3909096fb845b02b3a2dd49e87ff1e67a862ea90c566ed6f36f",
+      "bytes": 35299
+    },
+    "factory/logs/factory-broad.log": {
+      "sha256": "492ef93c5fa5a7ab0729169d4ad8e8837046255e898518be04dda0d1e6bbe6be",
+      "bytes": 3614
+    },
+    "factory/logs/factory-race-probe.log": {
+      "sha256": "08099c51944007439985eca73db38fb44c1aa1c093a1211b9e7d2c9a2e9cf492",
+      "bytes": 248
+    },
+    "factory/logs/factory-subset.log": {
+      "sha256": "ca02a70b6239c5af195f43303dd61005c6f5261c5ef7e517ad16a0ca1ccb8f02",
+      "bytes": 99
+    },
+    "factory/logs/factory-test-files.txt": {
+      "sha256": "7a6b360aeedb462100dd49c7b66872b4ab43643097dc44dca5234142e0d7ca73",
+      "bytes": 4180
+    },
+    "factory/logs/fix-commit.log": {
+      "sha256": "e8f3a34aa4afbd0592413b652adecaf4c63185368645a92e404d307ad03ece4c",
+      "bytes": 239
+    },
+    "factory/logs/fix-focused-after.log": {
+      "sha256": "7cbbc0d36697a197f4c57f76a4b438485da6ec12d3f42bd604f6da401ec7456b",
+      "bytes": 99
+    },
+    "factory/logs/fix-post-commit-tests.log": {
+      "sha256": "3c115a59802d22de7f982cb56a40ebfe9b20a630b04aa23d5522d4a00c4006e2",
+      "bytes": 99
+    },
+    "factory/logs/fix-regression-after.log": {
+      "sha256": "66cc078cc8ebf35e386cbc2ca44f5876ce414a6eabfa3961da7f1d18d9263f06",
+      "bytes": 99
+    },
+    "factory/logs/fix-regression-before.log": {
+      "sha256": "c1e3ec96a2d9eb8c3661686ff775292b80c6a7bf0e9dbdeab0aed560657900cc",
+      "bytes": 4693
+    },
+    "factory/logs/fix-research-synthetic-after.log": {
+      "sha256": "228e3ed73c6ae0fbd40d9bc6a21feecfd22a05a6d9049cc42fa2e435a6d15c91",
+      "bytes": 99
+    },
+    "factory/logs/v3-research-tests.log": {
+      "sha256": "daaac923c575bc78915c6bd917afcaf133d18ad5fefb7a05298eaefd78755ca9",
+      "bytes": 99
+    },
+    "factory/patch/0001-factory-single-snapshot-validation.patch": {
+      "sha256": "6772518f0db93592f0747a0f225a0009c14b7426a098c0d0a5fbc7d6ae0f86c5",
+      "bytes": 16835
+    },
+    "factory/probes/baseline_offline_guard.py": {
+      "sha256": "d9e250b3807899babb28addd098aeb3074ac83734beff021beb6fc1da84d5c00",
+      "bytes": 721
+    },
+    "factory/probes/factory-race-results.json": {
+      "sha256": "08099c51944007439985eca73db38fb44c1aa1c093a1211b9e7d2c9a2e9cf492",
+      "bytes": 248
+    },
+    "factory/probes/factory_race_probe.py": {
+      "sha256": "608bce5e5fb968f12520b20dd101d20eb5a78037dc9255eb976bb17b5bfffc65",
+      "bytes": 2769
+    },
+    "factory/probes/snapshot_offline_guard.py": {
+      "sha256": "97f1be264bf351dac8066e2c8976ac67b52e6f8105b37307ee6634cbf6a70b08",
+      "bytes": 1446
+    },
+    "factory/source-at-commit/m1_integrity.py": {
+      "sha256": "104796e3c7a18a69242498439dabcb0fdfb592f649dd90b0e8bcc92cb8c43b19",
+      "bytes": 13917
+    },
+    "factory/source-at-commit/test_v3_session_snapshot_binding.py": {
+      "sha256": "3c88b3942958a634a2656d396193976692a950b731588c622d1a21fbee69a57c",
+      "bytes": 9093
+    },
+    "factory/source-at-commit/v3_research_session.py": {
+      "sha256": "e9882e49d9b30cf0c19e0106c975216a30d0adb08925a4d7d56413bba7c2a4ee",
+      "bytes": 6537
+    },
+    "original-bundle-manifests/factory-fix-bundle-SHA256.json": {
+      "sha256": "de29b67b06dc2a6f0b5b72d5bf8b0b86c5915dab990d23aaed5ebe01d51f1e55",
+      "bytes": 1058
+    },
+    "original-bundle-manifests/runner-audit-bundle-SHA256.json": {
+      "sha256": "61b38e0fe64e2c60ebf41c9f0c7eed632648931db187cf123684af3e42da5521",
+      "bytes": 3586
+    },
+    "runner/audit/PR_PROPOSAL.md": {
+      "sha256": "fae5fd9ddb9119e330933c04745ff880c0f40b5a383526cf9285f3b612eb7695",
+      "bytes": 2071
+    },
+    "runner/audit/runner-audit.md": {
+      "sha256": "cd70dfdec5a40447157d37e6d8b3ec68443b0fba45e58f54728161924cce0117",
+      "bytes": 30064
+    },
+    "runner/logs/commit.log": {
+      "sha256": "1b853cad3c880c3e035000ee2acdbaa4df8f5c03c0a564ea69f8422ec0949cb8",
+      "bytes": 171
+    },
+    "runner/logs/exposure-regression-after.log": {
+      "sha256": "d3952543d0bc40111027320d9fb13139f8f9271423afb0d49a3b57fafab221ad",
+      "bytes": 113
+    },
+    "runner/logs/exposure-regression-before.log": {
+      "sha256": "0fc657cbc78b2957e22e8fa0b87cbc7e5cfcdd2a4ed24f6c3783bc2f4a38b583",
+      "bytes": 4191
+    },
+    "runner/logs/gateway-after.log": {
+      "sha256": "4e5a35669d61ee65aeeea5369160d8a02e9688179f0c0bcafccd366aeea5e8ff",
+      "bytes": 734
+    },
+    "runner/logs/relevant-after.log": {
+      "sha256": "4fb1eece8fdde5c6583b183072b7a6dd63c6f6dac0258c2671b9075f13f35af8",
+      "bytes": 99
+    },
+    "runner/logs/runner-baseline-pytest.log": {
+      "sha256": "fa976f1f03849027df64bfb71ccc080099f345635232da0b5fbb949d6af5dc5b",
+      "bytes": 4960
+    },
+    "runner/logs/runner-safe-subset-after.log": {
+      "sha256": "449af7d5f380e4d6db39e06f3213f1ccf58033a02d202711d5df8c923a66e211",
+      "bytes": 2714
+    },
+    "runner/logs/runner-safe-subset-before.log": {
+      "sha256": "7a221f51f39cd6ff78cc5c094d41927ddf2dee6dd32be1cf26d53239f966adc2",
+      "bytes": 3176
+    },
+    "runner/logs/runner-synthetic-probes-final.log": {
+      "sha256": "25a0b39ed6ea1c3ad0662b400ef7426fdae84664aa0008e081f5f39d8a473401",
+      "bytes": 844
+    },
+    "runner/logs/runner-synthetic-probes.log": {
+      "sha256": "6f2078104ef48b320ed261798efc78aa303d1ebf833e7b6364d68452c397fb43",
+      "bytes": 343
+    },
+    "runner/patch/0001-fail-closed-exposure-inventory.patch": {
+      "sha256": "b0c982c860992f4a8f40d133a1da6734a23d36b2c41954716e56894378b4f812",
+      "bytes": 5680
+    },
+    "runner/probes/offline_guard.py": {
+      "sha256": "d9e250b3807899babb28addd098aeb3074ac83734beff021beb6fc1da84d5c00",
+      "bytes": 721
+    },
+    "runner/probes/runner-synthetic-results.json": {
+      "sha256": "25a0b39ed6ea1c3ad0662b400ef7426fdae84664aa0008e081f5f39d8a473401",
+      "bytes": 844
+    },
+    "runner/probes/runner_synthetic_probes.py": {
+      "sha256": "c205daf0261f49150f548f4543fca709e5d6b0ea2c354150e5b2bd783cf3b55a",
+      "bytes": 2512
+    },
+    "runner/source-at-commit/live_mt5_gateway.py": {
+      "sha256": "782d94feb18f4e187d90042ff1eb70f7c59b1579677843b31717a881f43ec0f8",
+      "bytes": 24909
+    },
+    "runner/source-at-commit/test_live_mt5_gateway.py": {
+      "sha256": "e038c23a84bd7db52aa7e70105a750de156db2315586d9e28e36a8d6e056684e",
+      "bytes": 13788
+    }
+  },
+  "withheld": [
+    {
+      "file": "factory/source-at-commit/V3_INTERACTIVE_RESEARCH_DASHBOARD.md (copy of docs/V3_INTERACTIVE_RESEARCH_DASHBOARD.md at Factory commit)",
+      "sha256": "b790a4f40599f2219a0f6404392eb6029cc40bef82573d603319409fae68d821",
+      "reason": "Contains a pre-existing owner local filesystem path with a personal name (introduced in owner commit 9cbd1dfa9, not by this audit). Already public on research/v3-replay-evidence-export-20261101 and present unchanged on the Factory branch; not duplicated here. The audit change to this file is fully contained in factory/patch, which does not include the path."
+    },
+    {
+      "file": "sp2l-audit-evidence/gateway-compiled.pyc",
+      "sha256": "332f18e2243d7a3d164b125ead990c3667cf531ee8b022a2f0859d86cc5a1932",
+      "reason": "Generated bytecode from compile check; regenerable; not source evidence"
+    },
+    {
+      "file": "sp2l-factory-snapshot-fix-evidence/m1_integrity.pyc",
+      "sha256": "4ec2ea3bb69fbef58bd29fa93ee1128d21744e6182688cbe430033309d0290ad",
+      "reason": "Generated bytecode from compile check"
+    },
+    {
+      "file": "sp2l-factory-snapshot-fix-evidence/v3_research_session.pyc",
+      "sha256": "da40b7f47620328e5ffe713c0419058414afb7fb5d2add5ec5776815d0a69822",
+      "reason": "Generated bytecode from compile check"
+    },
+    {
+      "file": "sp2l-audit-evidence/__pycache__/offline_guard.cpython-39-pytest-8.4.2.pyc",
+      "sha256": null,
+      "reason": "pytest cache directory; generated"
+    },
+    {
+      "file": "SP2L-independent-offline-audit-20261102.zip",
+      "sha256": "feb3736bc31e410dbd380eb56c16d689083a70e1f18438162c2a59e56b529c56",
+      "reason": "Binary aggregate; members published individually here (pyc excluded); per-member SHA-256 manifest in original-bundle-manifests/"
+    },
+    {
+      "file": "SP2L-factory-snapshot-fix-20261102.zip",
+      "sha256": "756c9d7ef07bda06ddb5731e9225a2e3024b43dee24f864622bc6e92ee8bd304",
+      "reason": "Binary aggregate; members published individually except .pyc files; member manifest in original-bundle-manifests/"
+    },
+    {
+      "file": "raw market datasets (data/mt5-acquisition/*.csv etc.)",
+      "sha256": "see data-evidence/datasets.json",
+      "reason": "Raw market data not republished per policy; already committed in repository; hashes and scans published"
+    },
+    {
+      "file": "sandbox virtualenv and worktree __pycache__ directories",
+      "sha256": null,
+      "reason": "Generated environment/cache"
+    }
+  ]
+}

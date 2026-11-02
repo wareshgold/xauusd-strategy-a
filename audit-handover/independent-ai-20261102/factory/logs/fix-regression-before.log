@@ -1,0 +1,72 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+_____ test_session_uses_captured_bytes_after_source_changes[changed-json] ______
+tests/test_v3_session_snapshot_binding.py:78: in test_session_uses_captured_bytes_after_source_changes
+    assert result.trades[0]["reason"] == "OPEN_OR_UNRESOLVED"
+E   AssertionError: assert 'TP' == 'OPEN_OR_UNRESOLVED'
+E     
+E     - OPEN_OR_UNRESOLVED
+E     + TP
+______ test_session_uses_captured_bytes_after_source_changes[changed-csv] ______
+tests/test_v3_session_snapshot_binding.py:78: in test_session_uses_captured_bytes_after_source_changes
+    assert result.trades[0]["reason"] == "OPEN_OR_UNRESOLVED"
+E   AssertionError: assert 'TP' == 'OPEN_OR_UNRESOLVED'
+E     
+E     - OPEN_OR_UNRESOLVED
+E     + TP
+_____ test_session_uses_captured_bytes_after_source_changes[invalid-json] ______
+tests/test_v3_session_snapshot_binding.py:76: in test_session_uses_captured_bytes_after_source_changes
+    lab = V3ResearchSession(**config)
+src/strategy_factory/v3_research_session.py:76: in __init__
+    payload = json.loads(raw.decode("utf-8"))
+/usr/lib64/python3.9/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+/usr/lib64/python3.9/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+/usr/lib64/python3.9/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+______ test_session_uses_captured_bytes_after_source_changes[invalid-csv] ______
+tests/test_v3_session_snapshot_binding.py:76: in test_session_uses_captured_bytes_after_source_changes
+    lab = V3ResearchSession(**config)
+src/strategy_factory/v3_research_session.py:78: in __init__
+    population, entry_report = load_frozen_entry_population(
+src/strategy_factory/frozen_entry_population.py:87: in load_frozen_entry_population
+    raise ValueError(
+E   ValueError: frozen V3 entry timestamp 2027-01-15T08:00:00+00:00 is absent from the M1 dataset
+_____ test_session_uses_captured_bytes_after_source_changes[removed-json] ______
+tests/test_v3_session_snapshot_binding.py:76: in test_session_uses_captured_bytes_after_source_changes
+    lab = V3ResearchSession(**config)
+src/strategy_factory/v3_research_session.py:62: in __init__
+    raw = self.m1_path.read_bytes()
+tests/test_v3_session_snapshot_binding.py:65: in replace_after_read
+    captured = original_read(path)
+/usr/lib64/python3.9/pathlib.py:1187: in read_bytes
+    with self.open(mode='rb') as f:
+/usr/lib64/python3.9/pathlib.py:1180: in open
+    return io.open(self, mode, buffering, encoding, errors, newline,
+/usr/lib64/python3.9/pathlib.py:1038: in _opener
+    return self._accessor.open(self, flags, mode)
+E   FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-vercel-sandbox/pytest-9/test_session_uses_captured_byt4/synthetic_m1.json'
+______ test_session_uses_captured_bytes_after_source_changes[removed-csv] ______
+tests/test_v3_session_snapshot_binding.py:76: in test_session_uses_captured_bytes_after_source_changes
+    lab = V3ResearchSession(**config)
+src/strategy_factory/v3_research_session.py:62: in __init__
+    raw = self.m1_path.read_bytes()
+tests/test_v3_session_snapshot_binding.py:65: in replace_after_read
+    captured = original_read(path)
+/usr/lib64/python3.9/pathlib.py:1187: in read_bytes
+    with self.open(mode='rb') as f:
+/usr/lib64/python3.9/pathlib.py:1180: in open
+    return io.open(self, mode, buffering, encoding, errors, newline,
+/usr/lib64/python3.9/pathlib.py:1038: in _opener
+    return self._accessor.open(self, flags, mode)
+E   FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-vercel-sandbox/pytest-9/test_session_uses_captured_byt5/synthetic_m1.csv'
+=========================== short test summary info ============================
+FAILED tests/test_v3_session_snapshot_binding.py::test_session_uses_captured_bytes_after_source_changes[changed-json]
+FAILED tests/test_v3_session_snapshot_binding.py::test_session_uses_captured_bytes_after_source_changes[changed-csv]
+FAILED tests/test_v3_session_snapshot_binding.py::test_session_uses_captured_bytes_after_source_changes[invalid-json]
+FAILED tests/test_v3_session_snapshot_binding.py::test_session_uses_captured_bytes_after_source_changes[invalid-csv]
+FAILED tests/test_v3_session_snapshot_binding.py::test_session_uses_captured_bytes_after_source_changes[removed-json]
+FAILED tests/test_v3_session_snapshot_binding.py::test_session_uses_captured_bytes_after_source_changes[removed-csv]
+6 failed, 10 deselected in 0.30s
