@@ -105,3 +105,38 @@ Follow-up branch: `research/strategy-a-v3-1-magic-clock-guard-20261102`
 - No runner was started and no MT5 order was submitted by this amendment.
 
 The prior exploratory M1 results remain in-sample and are not a production validation. The V3.1 branch remains research/forward-test only.
+
+
+## Post-entry trailing safety correction — 2026-11-02
+
+A code review found that the V3.1 trailing loop used the latest completed M1
+bar without checking whether that bar began after the individual position
+opened. This could incorrectly count pre-entry High/Low movement toward
+trailing activation.
+
+Correction on this branch:
+- Added `completed_bar_is_after_position()` to the V3.1 config module.
+- The guard prefers MT5 `position.time_msc`; it falls back to `position.time`
+  only when the millisecond timestamp is unavailable.
+- A completed bar is eligible only when its start timestamp is strictly later
+  than the position entry timestamp. The entry minute itself is conservatively
+  excluded, even when the position opens at the first second of that minute.
+- Missing/invalid timestamps fail closed: no trailing update is attempted.
+- Added `scripts/test_sp2l_v3_1_trailing_bar_guard.py` with regression cases
+  for pre-entry, same-minute, post-entry, fallback, and missing timestamps.
+- Added a hard Demo-only execution gate: if MT5 account information is missing
+  or account trade mode is not `ACCOUNT_TRADE_MODE_DEMO`, new order execution
+  is blocked. A future live-money deployment requires a separate reviewed code
+  change; this branch cannot be used on a live account.
+
+Validation performed in this chat:
+- 7 synthetic timestamp assertions: PASS.
+- The actual Windows MT5 runner has NOT been executed after this correction.
+- No live or demo orders have been submitted by this correction.
+- Local Windows worktree synchronization, MT5 runtime smoke test, and demo
+  account verification remain required before the runner can be started.
+
+Commits:
+- Config helper: `1ed6c547a98a14c959751e051099e58bb79e5050`
+- Runner guard + Demo-only gate: `1a66c6c21b0d36cb374ca7ac0bf88a5ed5ff3c3a`
+- Regression tests: `725afb75e4c79c3d09e2fe396268506d771f4ae6`
