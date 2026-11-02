@@ -131,13 +131,26 @@ def account_snapshot() -> dict:
     }
 
 
+class ExposureInventoryUnavailable(RuntimeError):
+    """A failed inventory query cannot establish the absence of exposure."""
+
+    def __init__(self, query: str):
+        super().__init__(f"Exposure inventory unavailable: {query}")
+        self.query = query
+
+
 def open_positions() -> list:
     positions = mt5.positions_get(symbol=SYMBOL)
-    return list(positions or [])
+    if positions is None:
+        raise ExposureInventoryUnavailable("positions_get")
+    return list(positions)
+
 
 def active_orders() -> list:
     orders = mt5.orders_get(symbol=SYMBOL)
-    return list(orders or [])
+    if orders is None:
+        raise ExposureInventoryUnavailable("orders_get")
+    return list(orders)
 
 def active_exposure_count() -> int:
     # Research forward guard: count only this gateway's own broker exposure.
@@ -226,7 +239,12 @@ def _verify_pending_order_levels(order_ticket: int, expected_price: float, expec
 
 
 def execute_signal(signal: Signal) -> dict:
-    exposure_count = active_exposure_count()
+    try:
+        exposure_count = active_exposure_count()
+    except ExposureInventoryUnavailable as exc:
+        # Never infer zero exposure from an MT5 query failure. This gate is
+        # identical in dry-run and enabled modes and precedes market access.
+        return {"ok": False, "reason": "EXPOSURE_INVENTORY_UNAVAILABLE", "query": exc.query}
     if exposure_count >= MAX_OPEN_POSITIONS:
         return {"ok": False, "reason": "MAX_OPEN_POSITIONS", "active_exposure": exposure_count}
 

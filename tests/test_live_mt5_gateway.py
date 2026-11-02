@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 
 def load_gateway(monkeypatch, tmp_path):
     fake_mt5 = SimpleNamespace(
@@ -92,7 +94,8 @@ def test_sell_dry_run_builds_sell_order(monkeypatch, tmp_path):
 
 def test_max_open_positions_blocks_execution(monkeypatch, tmp_path):
     gateway, mt5 = load_gateway(monkeypatch, tmp_path)
-    mt5.positions_get = lambda symbol=None: [object()]
+    # Exposure is deliberately scoped to this gateway's magic, not all positions.
+    mt5.positions_get = lambda symbol=None: [SimpleNamespace(magic=gateway.MAGIC)]
     signal = gateway.Signal.from_json({
         "direction": "BUY",
         "symbol": "XAUUSD.ecn",
@@ -106,6 +109,51 @@ def test_max_open_positions_blocks_execution(monkeypatch, tmp_path):
     })
     result = gateway.execute_signal(signal)
     assert result == {"ok": False, "reason": "MAX_OPEN_POSITIONS", "active_exposure": 1}
+
+@pytest.mark.parametrize("failed_query", ["positions_get", "orders_get", "both"])
+@pytest.mark.parametrize("execution_enabled", [False, True])
+def test_unknown_inventory_blocks_before_market_or_submission(
+    monkeypatch, tmp_path, failed_query, execution_enabled
+):
+    """Unknown exposure is not empty exposure, even with execution enabled."""
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    monkeypatch.setattr(gateway, "LIVE_TRADING_ENABLE", execution_enabled)
+    monkeypatch.setattr(gateway, "ALLOW_REAL_EXECUTION", execution_enabled)
+    if failed_query in ("positions_get", "both"):
+        mt5.positions_get = lambda symbol=None: None
+    if failed_query in ("orders_get", "both"):
+        mt5.orders_get = lambda symbol=None: None
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("unknown inventory must block before market access or order_send")
+
+    mt5.symbol_info_tick = forbidden
+    mt5.order_send = forbidden
+    result = gateway.execute_signal(_approved_buy(gateway))
+    assert result == {
+        "ok": False,
+        "reason": "EXPOSURE_INVENTORY_UNAVAILABLE",
+        "query": "positions_get" if failed_query != "orders_get" else "orders_get",
+    }
+
+
+@pytest.mark.parametrize("query", ["positions_get", "orders_get"])
+def test_valid_owned_inventory_still_blocks(monkeypatch, tmp_path, query):
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    setattr(mt5, query, lambda symbol=None: (SimpleNamespace(magic=gateway.MAGIC),))
+    result = gateway.execute_signal(_approved_buy(gateway))
+    assert result == {"ok": False, "reason": "MAX_OPEN_POSITIONS", "active_exposure": 1}
+
+
+def test_valid_empty_and_foreign_inventory_remain_nonblocking(monkeypatch, tmp_path):
+    gateway, mt5 = load_gateway(monkeypatch, tmp_path)
+    mt5.positions_get = lambda symbol=None: ()
+    mt5.orders_get = lambda symbol=None: (SimpleNamespace(magic=gateway.MAGIC + 1),)
+    mt5.symbol_info_tick = lambda symbol: SimpleNamespace(bid=100.0, ask=100.2)
+    result = gateway.execute_signal(_approved_buy(gateway))
+    assert result["ok"] is True
+    assert result["dry_run"] is True
+
 
 def test_telegram_format_is_nexora_branded(monkeypatch, tmp_path):
     gateway, _ = load_gateway(monkeypatch, tmp_path)
