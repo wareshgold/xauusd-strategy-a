@@ -110,3 +110,25 @@ def trail_stop(direction: str, favorable_extreme: float) -> float:
     if direction == "BUY":
         return favorable_extreme - TRAIL_DISTANCE_PRICE
     return favorable_extreme + TRAIL_DISTANCE_PRICE
+
+def completed_bar_is_after_position(
+    completed_bar_time: int,
+    position_time: int,
+    position_time_msc: int = 0,
+) -> bool:
+    """Return True only when the completed M1 bar starts strictly after entry.
+
+    MT5 position and bar timestamps use the broker/server epoch. Prefer the
+    millisecond position timestamp; fall back to the seconds timestamp.
+    Unknown/invalid timestamps fail closed and cannot activate trailing.
+    """
+    try:
+        bar_start_ms = int(completed_bar_time) * 1000
+        entry_time_msc = int(position_time_msc or 0)
+        if entry_time_msc <= 0:
+            entry_time_msc = int(position_time or 0) * 1000
+    except (TypeError, ValueError, OverflowError):
+        return False
+    if bar_start_ms <= 0 or entry_time_msc <= 0:
+        return False
+    return bar_start_ms > entry_time_msc
