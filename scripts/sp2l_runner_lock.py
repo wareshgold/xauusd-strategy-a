@@ -61,7 +61,9 @@ def _unlock_os_lock(stream: BinaryIO) -> None:
 def _read_holder_pid(path: Path) -> int:
     """Return recorded owner PID, or 0 while metadata is unavailable."""
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        with path.open("rb") as stream:
+            stream.seek(1)  # byte zero is exclusively locked on Windows
+            payload = json.loads(stream.read().decode("utf-8"))
         pid = int(payload.get("pid", 0))
         return pid if pid > 0 else 0
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
@@ -104,8 +106,7 @@ def acquire_runner_lock(path: Path, pid: int | None = None) -> int | None:
             "created_utc": datetime.now(timezone.utc).isoformat(),
         }
         encoded = json.dumps(payload, sort_keys=True).encode("utf-8") + bytes((10,))
-        stream.seek(0)
-        # Preserve byte zero while its Windows byte-range lock is held.
+        stream.seek(1)  # metadata follows the byte reserved for the OS lock
         stream.write(encoded)
         stream.truncate()
         stream.flush()
@@ -141,7 +142,9 @@ def release_runner_lock(path: Path, pid: int | None = None) -> None:
         return
 
     try:
-        payload = json.loads(lock_path.read_text(encoding="utf-8"))
+        with lock_path.open("rb") as metadata:
+            metadata.seek(1)
+            payload = json.loads(metadata.read().decode("utf-8"))
         recorded_pid = int(payload.get("pid", 0))
         if recorded_pid != owner_pid:
             raise RunnerLockError(
