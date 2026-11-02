@@ -1,14 +1,13 @@
 """OS-backed, fail-closed singleton lock shared across runner worktrees.
 
 The lock file is persistent metadata, not the lock itself. The OS releases the
-advisory lock automatically when the owning process exits, so stale-file
-unlink/recreate races are eliminated.
+advisory lock automatically when the owning process exits, eliminating stale
+file unlink/recreate races.
 """
 from __future__ import annotations
 
 import json
 import os
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import BinaryIO
@@ -26,7 +25,7 @@ def _lock_key(path: Path) -> str:
 
 
 def _try_os_lock(stream: BinaryIO) -> bool:
-    """Acquire byte-range lock on Windows or flock on POSIX, without waiting."""
+    """Acquire a byte-range lock on Windows or flock on POSIX, without waiting."""
     if os.name == "nt":
         import msvcrt
 
@@ -66,23 +65,24 @@ def _read_holder_pid(path: Path) -> int:
         pid = int(payload.get("pid", 0))
         return pid if pid > 0 else 0
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
-        # A competing process may have acquired the OS lock but not written
-        # its metadata yet. The OS lock itself is authoritative: fail closed.
+        # The OS lock is authoritative. Metadata can briefly be incomplete
+        # while the owner writes it, so unknown ownership still fails closed.
         return 0
 
 
 def acquire_runner_lock(path: Path, pid: int | None = None) -> int | None:
     """Acquire a process-lifetime OS lock; return holder PID or None on success.
 
-    A persistent lock file is never unlinked during normal operation. This
-    avoids the stale-file TOCTOU race where two reclaimers can unlink a newly
-    created lock. Process death releases the OS lock automatically.
+    The persistent lock file is never unlinked during normal operation.
+    Process death releases the OS lock automatically.
     """
     lock_path = Path(path)
     owner_pid = int(pid if pid is not None else os.getpid())
     if owner_pid <= 0:
         raise RunnerLockError("runner lock owner PID must be positive")
 
+    stream = None
+    locked = False
     try:
         lock_path.parent.mkdir(parents=True, exist_ok=True)
         stream = lock_path.open("a+b")
@@ -92,9 +92,11 @@ def acquire_runner_lock(path: Path, pid: int | None = None) -> int | None:
             stream.write(b" ")
             stream.flush()
             os.fsync(stream.fileno())
+
         if not _try_os_lock(stream):
             stream.close()
             return _read_holder_pid(lock_path)
+        locked = True
 
         payload = {
             "pid": owner_pid,
@@ -102,15 +104,27 @@ def acquire_runner_lock(path: Path, pid: int | None = None) -> int | None:
         }
         encoded = (json.dumps(payload, sort_keys=True) + "\\n").encode("utf-8")
         stream.seek(0)
-        stream.truncate()
+        # Preserve byte zero while its Windows byte-range lock is held.
         stream.write(encoded)
+        stream.truncate()
         stream.flush()
         os.fsync(stream.fileno())
+
         _HELD_LOCKS[_lock_key(lock_path)] = stream
         return None
-    except RunnerLockError:
-        raise
-    except OSError as exc:
+    except Exception as exc:
+        if stream is not None:
+            if locked:
+                try:
+                    _unlock_os_lock(stream)
+                except OSError:
+                    pass
+            try:
+                stream.close()
+            except OSError:
+                pass
+        if isinstance(exc, RunnerLockError):
+            raise
         raise RunnerLockError(
             f"cannot acquire or persist OS runner lock; refusing to run: {exc}"
         ) from exc
