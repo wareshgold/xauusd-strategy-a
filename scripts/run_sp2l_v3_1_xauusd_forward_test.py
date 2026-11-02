@@ -1,4 +1,4 @@
-"""SP2L V3 XAUUSD Demo forward runner: frozen V2 geometry + research RR2/Trail 4.
+"""SP2L V3.1 XAUUSD Demo forward runner: research RR4 / ACT40 / DIST40.
 
 Trailing is evaluated from the latest COMPLETED M1 bar, matching the V3
 historical model. The initial TP remains fixed. Broker fills/exits are recorded
@@ -12,6 +12,7 @@ import MetaTrader5 as mt5
 import sp2l_v3_1_rr4_act40_config as cfg
 
 os.environ["SP2L_SYMBOLS"]="XAUUSD"
+os.environ["SP2L_MAGIC_BASE"]="26092300"  # XAUUSD slot => V3.1 magic 26092301; V3 remains 26092201.
 os.environ["SP2L_P_GAP_PRICE"]=str(cfg.P_GAP_PRICE)
 os.environ["SP2L_SPIKE_MULTIPLIER"]=str(cfg.SPIKE_MULTIPLIER)
 os.environ["SP2L_MAX_SL_DISTANCE"]=str(cfg.MAX_SL_DISTANCE)
@@ -19,9 +20,8 @@ os.environ["SP2L_TP_R"]=str(cfg.TP_R)
 os.environ["SP2L_VOLUME"]=str(cfg.VOLUME)
 os.environ["MT5_FORWARD_ORDER_MODE"]=cfg.ORDER_MODE
 os.environ["SP2L_PENDING_TTL_MINUTES"]=str(cfg.PENDING_TTL_MINUTES)
-# Operator-confirmed OtetGroup-MT5 server clock: UTC+03:00 (2026-10-15).
-# Preserve an explicit environment override; expiry retains its safety checks.
-os.environ.setdefault("SP2L_PENDING_SERVER_OFFSET_HOURS", "3")
+# Server UTC offset must be explicitly pinned by the operator for this run.
+# No historical/default UTC offset is assumed; expiry and order submission fail closed without it.
 os.environ.setdefault("LIVE_TRADING_ENABLE","true")
 os.environ.setdefault("ALLOW_REAL_EXECUTION","true")
 
@@ -30,7 +30,7 @@ from sp2l_history_query_failure_log import HistoryQueryFailureLogGate
 
 _HISTORY_QUERY_FAILURE_LOG_GATE = HistoryQueryFailureLogGate()
 
-# RR2/TRAIL4 Telegram display convention only: one pip = $0.10 price.
+# RR4/ACT40 Telegram display convention only: one pip = $0.10 price.
 # Do not alter the generic runner's pip_size or execution configuration.
 _original_send_signal = runner.send_signal
 def _rr2_trail4_send_signal(candidate, pip_size, order_ticket=None):
@@ -421,6 +421,40 @@ runner.enforce_pending_order_expiry=_run_scoped_pending
 runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
 runner.monitor_position_lifecycle=trail_positions
 runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
+
+# Execution clock guard: no order may be sent unless the operator has pinned
+# the current broker UTC offset and both tick freshness and MT5's strict offset
+# helper independently agree. This is separate from the TTL cancellation guard.
+_original_execute_candidate = runner.execute_candidate
+
+def _validate_execution_clock(symbol: str) -> None:
+    configured = os.getenv("SP2L_PENDING_SERVER_OFFSET_HOURS", "").strip()
+    if not configured:
+        raise RuntimeError("ORDER_BLOCKED: SP2L_PENDING_SERVER_OFFSET_HOURS must be explicitly set")
+    try:
+        hours = float(configured)
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError("ORDER_BLOCKED: invalid SP2L_PENDING_SERVER_OFFSET_HOURS") from exc
+    if not hours.is_integer() or not -12 <= hours <= 14:
+        raise RuntimeError("ORDER_BLOCKED: server offset must be an integer from -12 to +14")
+    expected = timedelta(hours=int(hours))
+    tick = mt5.symbol_info_tick(symbol)
+    tick_time = int(getattr(tick, "time", 0) or 0) if tick else 0
+    if tick_time <= 0:
+        raise RuntimeError("ORDER_BLOCKED: broker tick timestamp unavailable")
+    age = time.time() + expected.total_seconds() - tick_time
+    if abs(age) > 120:
+        raise RuntimeError(f"ORDER_BLOCKED: broker tick outside 120s freshness tolerance (age={age:.1f}s)")
+    observed = runner.mt5_server_offset_strict()
+    if observed != expected:
+        raise RuntimeError(f"ORDER_BLOCKED: pinned broker offset {expected} != observed {observed}")
+
+def _guarded_execute_candidate(candidate: dict, magic: int) -> dict:
+    _validate_execution_clock(str(candidate.get("symbol", "")))
+    return _original_execute_candidate(candidate, magic)
+
+runner.execute_candidate = _guarded_execute_candidate
+
 
 def _v3_main():
     # V3 forward-session boundary: only newly formed triggers after startup
