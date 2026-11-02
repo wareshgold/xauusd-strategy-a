@@ -1173,15 +1173,16 @@ def main() -> None:
     if not configs:
         raise RuntimeError(f"None of the configured symbols could be resolved in MT5: {BASE_SYMBOLS}")
 
-    holder_pid = acquire_runner_lock(RUNNER_LOCK)
-    if holder_pid is not None:
-        mt5.shutdown()
-        raise RuntimeError(
-            f"Another forward runner is already active (pid {holder_pid}). "
-            "Stop it first — two runners would duplicate every order."
-        )
-
+    lock_acquired = False
     try:
+        holder_pid = acquire_runner_lock(RUNNER_LOCK)
+        if holder_pid is not None:
+            owner = f"pid {holder_pid}" if holder_pid > 0 else "an active runner (owner metadata not yet available)"
+            raise RuntimeError(
+                f"Another forward runner holds the OS lock ({owner}). "
+                "Stop it first — two runners would duplicate every order."
+            )
+        lock_acquired = True
         log_event({
             "event": "START",
             "mode": "RESEARCH_AUTHOR_REPLICA_MULTI_SYMBOL_FORWARD_TEST",
@@ -1196,14 +1197,6 @@ def main() -> None:
                 "pendingTtlMinutes": PENDING_TTL_MINUTES,
                 "symbols": configs,
             },
-        })
-
-        startup_banner = gateway.send_telegram_message(_build_banner_text(account, configs))
-        log_event({
-            "event": "START_TELEGRAM",
-            "success": bool(getattr(startup_banner, "success", False)),
-            "detail": getattr(startup_banner, "detail", None),
-            "canonical": False,
         })
 
         state = load_state()
@@ -1222,6 +1215,17 @@ def main() -> None:
         recovery_hook = globals().get("startup_recovery_hook")
         if callable(recovery_hook):
             recovery_hook(configs, state)
+
+        # Announce a successful start only after broker recovery and its state
+        # persistence have completed. A failed recovery must not emit STARTED.
+        startup_banner = gateway.send_telegram_message(_build_banner_text(account, configs))
+        log_event({
+            "event": "START_TELEGRAM",
+            "success": bool(getattr(startup_banner, "success", False)),
+            "detail": getattr(startup_banner, "detail", None),
+            "canonical": False,
+        })
+
         while deadline is None or time.time() < deadline:
             for cfg in configs:
                 symbol = cfg["symbol"]
@@ -1303,8 +1307,12 @@ def main() -> None:
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
     finally:
-        release_runner_lock(RUNNER_LOCK)
-        mt5.shutdown()
+        try:
+            if lock_acquired:
+                release_runner_lock(RUNNER_LOCK)
+        finally:
+            # MT5 must be disconnected even if lock acquisition or release fails.
+            mt5.shutdown()
 
 
 if __name__ == "__main__":
