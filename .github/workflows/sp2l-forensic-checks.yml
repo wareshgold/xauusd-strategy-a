@@ -20,5 +20,7 @@ jobs:
         run: python scripts/test_sp2l_author_replica_detector_consistency.py
       - name: Run V3.1 deal lifecycle idempotency tests
         run: python scripts/test_sp2l_deal_lifecycle_dedupe.py
+      - name: Run Telegram credential source tests
+        run: python scripts/test_telegram_client_env.py
       - name: Run reconciliation tests
         run: python -m pytest -q tests/test_reconcile_sp2l_forward_backtest.py
