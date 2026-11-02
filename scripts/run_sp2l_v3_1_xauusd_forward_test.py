@@ -466,6 +466,9 @@ def _v31_startup_recovery(configs, state):
             sell_limit_type=mt5.ORDER_TYPE_SELL_LIMIT,
         )
         summaries.append(summary)
+    # Persist the recovered ownership set before recording recovery success
+    # or entering the first management poll. Any write failure aborts startup.
+    runner.save_state(state)
     runner.log_event({
         "event": "STARTUP_BROKER_RECOVERY",
         "version": cfg.VERSION,
@@ -474,9 +477,6 @@ def _v31_startup_recovery(configs, state):
         "positions_recovered": sum(item["positions_recovered"] for item in summaries),
         "canonical": False,
     })
-    # Persist the recovered ownership set before the first management poll.
-    # Any write failure raises and prevents the runner from entering its loop.
-    runner.save_state(state)
 
 
 runner.startup_recovery_hook = _v31_startup_recovery
