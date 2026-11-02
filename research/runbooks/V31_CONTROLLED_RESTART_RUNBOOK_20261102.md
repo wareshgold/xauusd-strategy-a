@@ -31,7 +31,7 @@ This runbook applies to the V3.1 RR4/ACT40 forward runner after PR #390 is revie
 
 ## Updated runner preflight
 
-1. Verify the shared lock path resolves under the current user's temporary directory and that no lock is held by a live PID.
+1. Verify the shared lock path resolves to the same per-user temporary path in every worktree. Do not delete the persistent lock file or infer lock ownership from its recorded PID alone. After the legacy process is confirmed absent, probe the OS lock with `acquire_runner_lock`; successful acquisition means the lock is free and must be immediately paired with `release_runner_lock`. A returned PID (or 0 while metadata is unavailable) means another process holds the lock.
 2. Verify the new worktree's ignored Telegram config exists and is ignored by Git.
 3. Verify the new worktree has no inherited old state or event log. The runner should create a fresh state and a new event log.
 4. Confirm exact symbol `XAUUSD.ecn`, V3.1 magic `26092301`, Demo account, and the reviewed RR4/ACT40 configuration from the local config module.
