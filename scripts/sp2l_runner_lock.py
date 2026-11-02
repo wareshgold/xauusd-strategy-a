@@ -85,7 +85,8 @@ def acquire_runner_lock(path: Path, pid: int | None = None) -> int | None:
     locked = False
     try:
         lock_path.parent.mkdir(parents=True, exist_ok=True)
-        stream = lock_path.open("a+b")
+        fd = os.open(str(lock_path), os.O_RDWR | os.O_CREAT, 0o600)
+        stream = os.fdopen(fd, "r+b")
         # Windows byte-range locking requires the target byte to exist.
         stream.seek(0, os.SEEK_END)
         if stream.tell() == 0:
@@ -102,7 +103,7 @@ def acquire_runner_lock(path: Path, pid: int | None = None) -> int | None:
             "pid": owner_pid,
             "created_utc": datetime.now(timezone.utc).isoformat(),
         }
-        encoded = (json.dumps(payload, sort_keys=True) + "\\n").encode("utf-8")
+        encoded = json.dumps(payload, sort_keys=True).encode("utf-8") + bytes((10,))
         stream.seek(0)
         # Preserve byte zero while its Windows byte-range lock is held.
         stream.write(encoded)
