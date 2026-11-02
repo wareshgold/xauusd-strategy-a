@@ -1,7 +1,8 @@
 """Read-only monitor for SP2L V3.1 RR4/ACT40/TRAIL40 Demo forward runner.
 
-Reads the exact V3.1 state/event paths and probes XAUUSD.ecn through MT5.
-It never calls order_send, never writes runner state, and binds to localhost.
+Reads the exact V3.1 state/event paths only. It deliberately does not initialize
+or shut down MT5 because the runner shares that terminal connection. It never
+writes runner state and binds to localhost.
 Run in a separate PowerShell window:
     python scripts/sp2l_v31_rr4_act40_monitor.py
 Default URL: http://127.0.0.1:8791
@@ -13,15 +14,9 @@ import json
 import os
 import subprocess
 import time
-from datetime import datetime, timezone
 from pathlib import Path
 
 from flask import Flask, Response, jsonify
-
-try:
-    import MetaTrader5 as mt5
-except Exception:
-    mt5 = None
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "runtime"
@@ -33,7 +28,6 @@ PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8791"))
 REFRESH_SECONDS = 5
 SYMBOL = "XAUUSD.ecn"
 VERSION = "SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101"
-MT5_PATH = os.getenv("MT5_PATH", r"C:\Program Files\Otet Group MT5 Terminal\terminal64.exe")
 
 app = Flask(__name__)
 
@@ -81,73 +75,16 @@ def _runner_status() -> dict:
 
 
 def _mt5_probe() -> dict:
-    result = {
-        "connected": False, "trade_allowed": False, "account": None,
-        "tick": None, "orders": [], "positions": [], "error": None,
+    """MT5 is intentionally isolated: never initialize/shutdown the runner terminal."""
+    return {
+        "connected": None,
+        "trade_allowed": None,
+        "account": None,
+        "tick": None,
+        "orders": [],
+        "positions": [],
+        "error": "Not queried: dashboard must not touch the runner's MT5 terminal",
     }
-    if mt5 is None:
-        result["error"] = "MetaTrader5 package unavailable"
-        return result
-    initialized = False
-    try:
-        initialized = bool(mt5.initialize(path=MT5_PATH))
-        if not initialized:
-            result["error"] = f"MT5 initialize failed: {mt5.last_error()}"
-            return result
-        terminal = mt5.terminal_info()
-        account = mt5.account_info()
-        tick = mt5.symbol_info_tick(SYMBOL)
-        result["connected"] = bool(terminal and terminal.connected)
-        result["trade_allowed"] = bool(terminal and getattr(terminal, "trade_allowed", False))
-        if account:
-            result["account"] = {
-                "login": int(account.login),
-                "server": str(account.server),
-                "trade_mode": int(account.trade_mode),
-                "account_type": "DEMO" if int(account.trade_mode) == 0 else "NON-DEMO",
-                "balance": float(account.balance),
-                "equity": float(account.equity),
-            }
-        if tick:
-            result["tick"] = {
-                "time": int(getattr(tick, "time", 0) or 0),
-                "bid": float(tick.bid), "ask": float(tick.ask),
-            }
-        orders = mt5.orders_get(symbol=SYMBOL)
-        if orders is None:
-            result["error"] = f"orders_get failed: {mt5.last_error()}"
-        else:
-            for order in orders:
-                result["orders"].append({
-                    "ticket": int(order.ticket), "type": int(order.type),
-                    "volume": float(getattr(order, "volume_current", 0) or 0),
-                    "price": float(getattr(order, "price_open", 0) or 0),
-                    "sl": float(getattr(order, "sl", 0) or 0),
-                    "tp": float(getattr(order, "tp", 0) or 0),
-                })
-        positions = mt5.positions_get(symbol=SYMBOL)
-        if positions is None:
-            result["error"] = f"positions_get failed: {mt5.last_error()}"
-        else:
-            for position in positions:
-                result["positions"].append({
-                    "ticket": int(position.ticket), "type": int(position.type),
-                    "volume": float(position.volume),
-                    "open": float(position.price_open),
-                    "current": float(position.price_current),
-                    "sl": float(position.sl or 0), "tp": float(position.tp or 0),
-                    "profit": float(position.profit),
-                    "magic": int(getattr(position, "magic", 0) or 0),
-                })
-    except Exception as exc:
-        result["error"] = str(exc)
-    finally:
-        if initialized:
-            try:
-                mt5.shutdown()
-            except Exception:
-                pass
-    return result
 
 
 def _summary(events: list[dict]) -> dict:
@@ -213,19 +150,16 @@ def _render() -> str:
         f"ALIVE · PID {runner['pid']}" if runner["alive"]
         else f"NOT CONFIRMED · {runner['detail']}"
     )
-    mt5_label = "CONNECTED" if probe["connected"] else "OFFLINE"
-    trade_label = "allowed" if probe["trade_allowed"] else "not allowed"
-    tick_label = (
-        f"Bid {tick.get('bid', 0):.2f} / Ask {tick.get('ask', 0):.2f}"
-        if tick else "no tick"
-    )
+    mt5_label = "NOT QUERIED (runner connection isolated)"
+    trade_label = "not queried"
+    tick_label = "not collected"
 
     order_rows = "".join(
         "<tr>" + "".join(f"<td>{_esc(v)}</td>" for v in (
             o["ticket"], o["type"], f'{o["volume"]:.2f}',
             f'{o["price"]:.2f}', f'{o["sl"]:.2f}', f'{o["tp"]:.2f}'
         )) + "</tr>" for o in probe["orders"]
-    ) or '<tr><td colspan="6" class="dim">No pending XAUUSD.ecn orders</td></tr>'
+    ) or '<tr><td colspan="6" class="dim">Not queried — MT5 is isolated from dashboard</td></tr>'
 
     position_rows = "".join(
         "<tr>" + "".join(f"<td>{_esc(v)}</td>" for v in (
@@ -233,7 +167,7 @@ def _render() -> str:
             f'{p["open"]:.2f}', f'{p["current"]:.2f}',
             f'{p["sl"]:.2f}', f'{p["tp"]:.2f}', f'{p["profit"]:+.2f}', p["magic"]
         )) + "</tr>" for p in probe["positions"]
-    ) or '<tr><td colspan="9" class="dim">No open XAUUSD.ecn positions</td></tr>'
+    ) or '<tr><td colspan="9" class="dim">Not queried — MT5 is isolated from dashboard</td></tr>'
 
     event_rows = ""
     for event in reversed(events[-40:]):
@@ -275,7 +209,7 @@ def _render() -> str:
         f'<div class="card"><div class="label">{_esc(k)}</div><div class="value">{_esc(v)}</div></div>'
         for k, v in cards
     )
-    error = f'<p class="warn">MT5 probe: {_esc(probe["error"])}</p>' if probe["error"] else ""
+    error = '<p class="warn">MT5 account, tick, orders and positions are intentionally not queried to protect the active runner connection.</p>'
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta http-equiv="refresh" content="{REFRESH_SECONDS}">
 <title>SP2L V3.1 RR4 ACT40 Monitor</title>
@@ -309,7 +243,7 @@ th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
 <table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Open</th><th>Current</th><th>SL</th><th>TP</th><th>Profit</th><th>Magic</th></tr>{position_rows}</table>
 <h2>Latest 40 events</h2>
 <table><tr><th>UTC</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>{event_rows}</table>
-<p class="dim">Read-only monitor: no order_send, no order modification, no state/event writes.</p>
+<p class="dim">Read-only monitor: filesystem reads only; no MT5 initialize/shutdown, no order API, no state/event writes.</p>
 </body></html>"""
 
 
@@ -331,7 +265,7 @@ def api_status():
         "state": _read_json(STATE_FILE),
         "state_age_seconds": state_age,
         "stats": _summary(events),
-        "mt5": _mt5_probe(),
+        "mt5": {"queried": False, "reason": "MT5 isolated; filesystem-only monitor"},
         "event_count_read": len(events),
     })
 
