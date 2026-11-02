@@ -189,33 +189,10 @@ def volume_guard(cfg: dict) -> tuple[bool, str]:
     return True, "VOLUME_VALID"
 
 
-RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
+from sp2l_runner_lock import acquire_runner_lock, release_runner_lock
 
-
-def acquire_runner_lock() -> int | None:
-    """Single-instance guard: two concurrent runners would double every order."""
-    RUNTIME.mkdir(parents=True, exist_ok=True)
-    try:
-        if RUNNER_LOCK.exists():
-            pid = int(RUNNER_LOCK.read_text(encoding="utf-8").strip() or 0)
-            if pid > 0 and pid != os.getpid():
-                try:
-                    os.kill(pid, 0)  # signal probe: raises if the process is gone
-                    return pid
-                except OSError:
-                    pass  # stale lock file
-        RUNNER_LOCK.write_text(str(os.getpid()), encoding="utf-8")
-        return None
-    except (OSError, ValueError):
-        return None  # lock unavailable: never block the demo runner on FS errors
-
-
-def release_runner_lock() -> None:
-    try:
-        if RUNNER_LOCK.exists() and RUNNER_LOCK.read_text(encoding="utf-8").strip() == str(os.getpid()):
-            RUNNER_LOCK.unlink()
-    except OSError:
-        pass
+# Shared per-user temp path coordinates separate Git worktrees on this host.
+RUNNER_LOCK = Path(os.getenv("SP2L_RUNNER_LOCK_PATH", Path(os.getenv("TEMP", "/tmp")) / "sp2l_multi_symbol_forward_runner.lock"))
 
 
 def now_utc() -> str:
@@ -1196,46 +1173,48 @@ def main() -> None:
     if not configs:
         raise RuntimeError(f"None of the configured symbols could be resolved in MT5: {BASE_SYMBOLS}")
 
-    log_event({
-        "event": "START",
-        "mode": "RESEARCH_AUTHOR_REPLICA_MULTI_SYMBOL_FORWARD_TEST",
-        "canonical": False,
-        "account_login": int(account.login),
-        "account_server": str(account.server),
-        "account_trade_mode": int(account.trade_mode),
-        "config": {
-            "pGapPrice": P_GAP_PRICE, "spikeMultiplier": SPIKE_MULTIPLIER,
-            "maxSlDistance": MAX_SL_DISTANCE, "tpR": TP_R, "volume": VOLUME,
-            "orderMode": ORDER_MODE, "slAnchor": SL_ANCHOR,
-            "pendingTtlMinutes": PENDING_TTL_MINUTES,
-            "symbols": configs,
-        },
-    })
-
-    startup_banner = gateway.send_telegram_message(_build_banner_text(account, configs))
-    log_event({
-        "event": "START_TELEGRAM",
-        "success": bool(getattr(startup_banner, "success", False)),
-        "detail": getattr(startup_banner, "detail", None),
-        "canonical": False,
-    })
-
-    state = load_state()
-    state.setdefault("position_orders", {})
-    deadline = None
-    seconds = os.getenv("FORWARD_TEST_SECONDS")
-    if seconds:
-        deadline = time.time() + int(seconds)
-    reconcile_state_from_events(state)
-    save_state(state)
-    seen_trigger = state["seen"]
-
-    holder_pid = acquire_runner_lock()
+    holder_pid = acquire_runner_lock(RUNNER_LOCK)
     if holder_pid is not None:
+        mt5.shutdown()
         raise RuntimeError(
             f"Another forward runner is already active (pid {holder_pid}). "
             "Stop it first — two runners would duplicate every order."
         )
+
+    try:
+        log_event({
+            "event": "START",
+            "mode": "RESEARCH_AUTHOR_REPLICA_MULTI_SYMBOL_FORWARD_TEST",
+            "canonical": False,
+            "account_login": int(account.login),
+            "account_server": str(account.server),
+            "account_trade_mode": int(account.trade_mode),
+            "config": {
+                "pGapPrice": P_GAP_PRICE, "spikeMultiplier": SPIKE_MULTIPLIER,
+                "maxSlDistance": MAX_SL_DISTANCE, "tpR": TP_R, "volume": VOLUME,
+                "orderMode": ORDER_MODE, "slAnchor": SL_ANCHOR,
+                "pendingTtlMinutes": PENDING_TTL_MINUTES,
+                "symbols": configs,
+            },
+        })
+
+        startup_banner = gateway.send_telegram_message(_build_banner_text(account, configs))
+        log_event({
+            "event": "START_TELEGRAM",
+            "success": bool(getattr(startup_banner, "success", False)),
+            "detail": getattr(startup_banner, "detail", None),
+            "canonical": False,
+        })
+
+        state = load_state()
+        state.setdefault("position_orders", {})
+        deadline = None
+        seconds = os.getenv("FORWARD_TEST_SECONDS")
+        if seconds:
+            deadline = time.time() + int(seconds)
+        reconcile_state_from_events(state)
+        save_state(state)
+        seen_trigger = state["seen"]
 
     try:
         # Optional runner-specific startup recovery executes only after the
