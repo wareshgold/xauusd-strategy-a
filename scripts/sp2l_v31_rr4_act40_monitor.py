@@ -243,7 +243,7 @@ th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
 <tr><th>MT5</th><td>{_esc(mt5_label)} · Trade API {_esc(trade_label)}</td></tr>
 <tr><th>Account</th><td>{_esc(account_label)}</td></tr>
 <tr><th>Symbol tick</th><td>{_esc(tick_label)}</td></tr>
-<tr><th>State tracked IDs</th><td>orders={len(state.get("orders", []))} · positions={len(state.get("positions", []))} · deals={len(state.get("deals", []))}</td></tr>
+<tr><th>State tracked IDs</th><td>orders={len(state.get("orders", []))} · positions={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
 </table>
 {error}
 <h2>Event counters (last {len(events)} available events)</h2><div class="grid">{card_html}</div>
