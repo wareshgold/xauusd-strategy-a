@@ -126,11 +126,12 @@ runner.monitor_position_lifecycle=trail_positions
 # Forward-Test statistics. Only broker objects created/tracked by THIS process
 # are eligible for lifecycle reporting/cancellation.
 from datetime import datetime, timezone
+from sp2l_deal_lifecycle_dedupe import claim_deal_lifecycle_event
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
 
 def _fresh_v3_state():
-    return {"seen": {}, "notified": set(), "deals": set(), "orders": set(),
+    return {"seen": {}, "notified": set(), "deals": set(), "deal_events": set(), "orders": set(),
             "positions": set(), "order_states": set(), "position_orders": {},
             "signal_orders": {}, "pending_signal_notifications": {}}
 
@@ -395,31 +396,42 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
         for linked_order in state.get("position_orders",{}).get(str(position),set()):
             execution_meta=state.get("signal_orders",{}).get(str(linked_order),{})
             if execution_meta: break
+        # Event observation and Telegram delivery are separate state dimensions.
+        # A missing Telegram configuration must not cause the same broker deal
+        # to be appended to the event log on every polling cycle.
+        first_observation = claim_deal_lifecycle_event(state, ticket)
         tg=runner.gateway.send_telegram_message(
             runner.lifecycle_message(deal,symbol,cfg.XAU_PIP_SIZE_PRICE,magic), parse_mode="HTML")
         delivered=bool(getattr(tg,"success",False))
         profit=float(getattr(deal,"profit",0.0) or 0.0)
         commission=float(getattr(deal,"commission",0.0) or 0.0)
         swap=float(getattr(deal,"swap",0.0) or 0.0)
-        runner.log_event({
-            "event":"TELEGRAM_DEAL_LIFECYCLE","version":cfg.VERSION,
-            "symbol":symbol,"deal":ticket,"order":order,"position":position,
-            "signal_id":execution_meta.get("signal_id"),
-            "entry":int(getattr(deal,"entry",-1)),
-            "reason":int(getattr(deal,"reason",-1)),
-            "entry_price":entry_price,
-            "theoretical_entry":execution_meta.get("theoretical_entry"),
-            "theoretical_sl":execution_meta.get("sl"),
-            "theoretical_tp":execution_meta.get("tp"),
-            "exit_price":float(deal.price),"profit":profit,
-            "commission":commission,"swap":swap,"net":profit+commission+swap,
-            "telegram":{"success":delivered,"detail":getattr(tg,"detail",None)},
-            "canonical":False})
+        if first_observation:
+            runner.log_event({
+                "event":"TELEGRAM_DEAL_LIFECYCLE","version":cfg.VERSION,
+                "symbol":symbol,"deal":ticket,"order":order,"position":position,
+                "signal_id":execution_meta.get("signal_id"),
+                "entry":int(getattr(deal,"entry",-1)),
+                "reason":int(getattr(deal,"reason",-1)),
+                "entry_price":entry_price,
+                "theoretical_entry":execution_meta.get("theoretical_entry"),
+                "theoretical_sl":execution_meta.get("sl"),
+                "theoretical_tp":execution_meta.get("tp"),
+                "exit_price":float(deal.price),"profit":profit,
+                "commission":commission,"swap":swap,"net":profit+commission+swap,
+                "telegram":{"success":delivered,"detail":getattr(tg,"detail",None)},
+                "canonical":False})
         if delivered:
             state["deals"].add(ticket)
+            if not first_observation:
+                runner.log_event({
+                    "event":"TELEGRAM_DEAL_NOTIFICATION_DELIVERED",
+                    "version":cfg.VERSION,"symbol":symbol,"deal":ticket,
+                    "position":position,"canonical":False})
             runner.save_state(state)
         else:
             # Preserve chronological OPENED -> CLOSED delivery and retry failed sends.
+            # The observation event is already de-duplicated in deal_events.
             runner.save_state(state)
             break
 

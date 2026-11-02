@@ -92,8 +92,9 @@ def _summary(events: list[dict]) -> dict:
     counts = {
         "signals": 0, "order_results": 0, "successful_orders": 0,
         "trail_updates": 0, "trail_failures": 0, "deal_lifecycle_events": 0,
-        "net": 0.0,
+        "deal_lifecycle_duplicate_rows": 0, "net": 0.0,
     }
+    seen_deal_ids = set()
     for event in events:
         kind = event.get("event")
         if kind == "TELEGRAM_SIGNAL":
@@ -108,6 +109,13 @@ def _summary(events: list[dict]) -> dict:
             elif event.get("success") is False:
                 counts["trail_failures"] += 1
         elif kind == "TELEGRAM_DEAL_LIFECYCLE":
+            deal_id = event.get("deal")
+            if deal_id is not None:
+                deal_key = str(deal_id)
+                if deal_key in seen_deal_ids:
+                    counts["deal_lifecycle_duplicate_rows"] += 1
+                    continue
+                seen_deal_ids.add(deal_key)
             counts["deal_lifecycle_events"] += 1
             try:
                 counts["net"] += float(event.get("net", 0) or 0)
@@ -203,8 +211,9 @@ def _render() -> str:
         ("Successful orders", stats["successful_orders"]),
         ("Trail updates", stats["trail_updates"]),
         ("Trail failures", stats["trail_failures"]),
-        ("Deal lifecycle events", stats["deal_lifecycle_events"]),
-        ("Net reported USD", f'{stats["net"]:+.2f}'),
+        ("Unique deal lifecycle events", stats["deal_lifecycle_events"]),
+        ("Duplicate lifecycle rows suppressed", stats["deal_lifecycle_duplicate_rows"]),
+        ("Net reported USD (unique deals)", f'{stats["net"]:+.2f}'),
     ]
     card_html = "".join(
         f'<div class="card"><div class="label">{_esc(k)}</div><div class="value">{_esc(v)}</div></div>'
@@ -234,7 +243,7 @@ th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
 <tr><th>MT5</th><td>{_esc(mt5_label)} · Trade API {_esc(trade_label)}</td></tr>
 <tr><th>Account</th><td>{_esc(account_label)}</td></tr>
 <tr><th>Symbol tick</th><td>{_esc(tick_label)}</td></tr>
-<tr><th>State tracked IDs</th><td>orders={len(state.get("orders", []))} · positions={len(state.get("positions", []))} · deals={len(state.get("deals", []))}</td></tr>
+<tr><th>State tracked IDs</th><td>orders={len(state.get("orders", []))} · positions={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
 </table>
 {error}
 <h2>Event counters (last {len(events)} available events)</h2><div class="grid">{card_html}</div>
