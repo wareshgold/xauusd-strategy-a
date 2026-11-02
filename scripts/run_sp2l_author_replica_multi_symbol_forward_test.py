@@ -1238,6 +1238,12 @@ def main() -> None:
         )
 
     try:
+        # Optional runner-specific startup recovery executes only after the
+        # singleton lock is held and before any management or entry loop.
+        # A recovery exception aborts startup and releases the lock in finally.
+        recovery_hook = globals().get("startup_recovery_hook")
+        if callable(recovery_hook):
+            recovery_hook(configs, state)
         while deadline is None or time.time() < deadline:
             for cfg in configs:
                 symbol = cfg["symbol"]
