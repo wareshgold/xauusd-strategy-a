@@ -2,6 +2,9 @@
 
 Avoid host-UTC time windows when broker timestamps use a different clock basis.
 Callers must supply only IDs they own or have explicitly reconciled.
+MT5 history_deals_get(ticket=...) selects a DEAL ticket, not an ORDER ticket.
+Resolve tracked orders with history_orders_get(ticket=...), then query linked
+position histories with history_deals_get(position=...).
 A failed MT5 history query is not equivalent to a valid empty result.
 """
 from __future__ import annotations
@@ -63,43 +66,28 @@ def collect_tracked_deals(
     """
     orders = {int(x) for x in tracked_orders if int(x) > 0}
     positions = {int(x) for x in tracked_positions if int(x) > 0}
-    found = {}
 
+    # MT5's history_deals_get(ticket=...) expects a DEAL ticket. Resolve each
+    # tracked ORDER ticket first, then use its position identifier to retrieve
+    # the complete lifecycle, including the closing deal.
     for order_id in sorted(orders):
-        if history_orders_get is not None:
-            historical_orders = _history_result(
-                history_orders_get,
-                "history_orders_get",
-                order_id,
-                last_error=last_error,
-                ticket=order_id,
-            )
-            for order in historical_orders:
-                if str(getattr(order, "symbol", symbol) or symbol) != symbol:
-                    continue
-                if int(getattr(order, "ticket", 0) or 0) != order_id:
-                    continue
-                position_id = int(getattr(order, "position_id", 0) or 0)
-                if position_id > 0:
-                    positions.add(position_id)
-
-        order_deals = _history_result(
-            history_deals_get,
-            "history_deals_get(ticket)",
+        historical_orders = _history_result(
+            history_orders_get,
+            "history_orders_get",
             order_id,
             last_error=last_error,
             ticket=order_id,
         )
-        for deal in order_deals:
-            if str(getattr(deal, "symbol", symbol) or symbol) != symbol:
+        for order in historical_orders:
+            if str(getattr(order, "symbol", symbol) or symbol) != symbol:
                 continue
-            if int(getattr(deal, "order", 0) or 0) != order_id:
+            if int(getattr(order, "ticket", 0) or 0) != order_id:
                 continue
-            found[int(deal.ticket)] = deal
-            position_id = int(getattr(deal, "position_id", 0) or 0)
+            position_id = int(getattr(order, "position_id", 0) or 0)
             if position_id > 0:
                 positions.add(position_id)
 
+    found = {}
     for position_id in sorted(positions):
         position_deals = _history_result(
             history_deals_get,
@@ -113,7 +101,7 @@ def collect_tracked_deals(
                 continue
             deal_order = int(getattr(deal, "order", 0) or 0)
             deal_position = int(getattr(deal, "position_id", 0) or 0)
-            if deal_order not in orders and deal_position not in positions:
+            if deal_order not in orders and deal_position != position_id:
                 continue
             found[int(deal.ticket)] = deal
 
