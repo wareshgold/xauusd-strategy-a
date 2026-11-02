@@ -1216,7 +1216,6 @@ def main() -> None:
         save_state(state)
         seen_trigger = state["seen"]
 
-    try:
         # Optional runner-specific startup recovery executes only after the
         # singleton lock is held and before any management or entry loop.
         # A recovery exception aborts startup and releases the lock in finally.
