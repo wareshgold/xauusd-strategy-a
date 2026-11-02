@@ -1,0 +1,54 @@
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+.....................................F.F....F........................... [ 32%]
+........................................................................ [ 43%]
+........................................................................ [ 54%]
+........................................................................ [ 65%]
+........................................................................ [ 76%]
+........................................................................ [ 87%]
+........................................................................ [ 98%]
+........                                                                 [100%]
+=================================== FAILURES ===================================
+_____ test_failed_event_append_failure_preserves_original_execution_error ______
+tests/test_factory_orchestrator_journal_faults.py:95: in fail_execution
+    raise ValueError("original research executor failure")
+E   ValueError: original research executor failure
+
+During handling of the above exception, another exception occurred:
+tests/test_factory_orchestrator_journal_faults.py:91: in fail_only_failure_append
+    raise OSError("injected FAILED journal failure")
+E   OSError: injected FAILED journal failure
+
+During handling of the above exception, another exception occurred:
+tests/test_factory_orchestrator_journal_faults.py:100: in test_failed_event_append_failure_preserves_original_execution_error
+    orchestrator.run_next(
+src/strategy_factory/orchestrator.py:277: in run_next
+    exc.add_note(
+E   AttributeError: 'ValueError' object has no attribute 'add_note'
+__ test_failure_telemetry_publish_failure_preserves_original_execution_error ___
+tests/test_factory_orchestrator_journal_faults.py:207: in fail_execution
+    raise ValueError("original research executor failure")
+E   ValueError: original research executor failure
+
+During handling of the above exception, another exception occurred:
+tests/test_factory_orchestrator_journal_faults.py:210: in test_failure_telemetry_publish_failure_preserves_original_execution_error
+    orchestrator.run_next(worker_id="W01", execute=fail_execution)
+src/strategy_factory/orchestrator.py:290: in run_next
+    exc.add_note(
+E   AttributeError: 'ValueError' object has no attribute 'add_note'
+__ test_failure_telemetry_fault_is_recorded_without_replacing_execution_error __
+tests/test_factory_orchestrator_terminal_telemetry.py:87: in fail_execution
+    raise ValueError("original research execution failure")
+E   ValueError: original research execution failure
+
+During handling of the above exception, another exception occurred:
+tests/test_factory_orchestrator_terminal_telemetry.py:90: in test_failure_telemetry_fault_is_recorded_without_replacing_execution_error
+    orchestrator.run_next(worker_id="W01", execute=fail_execution)
+src/strategy_factory/orchestrator.py:290: in run_next
+    exc.add_note(
+E   AttributeError: 'ValueError' object has no attribute 'add_note'
+=========================== short test summary info ============================
+FAILED tests/test_factory_orchestrator_journal_faults.py::test_failed_event_append_failure_preserves_original_execution_error
+FAILED tests/test_factory_orchestrator_journal_faults.py::test_failure_telemetry_publish_failure_preserves_original_execution_error
+FAILED tests/test_factory_orchestrator_terminal_telemetry.py::test_failure_telemetry_fault_is_recorded_without_replacing_execution_error
+3 failed, 653 passed in 3.93s

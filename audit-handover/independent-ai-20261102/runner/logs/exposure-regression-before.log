@@ -1,0 +1,58 @@
+FFFFFF...                                                                [100%]
+=================================== FAILURES ===================================
+_ test_unknown_inventory_blocks_before_market_or_submission[False-positions_get] _
+tests/test_live_mt5_gateway.py:131: in test_unknown_inventory_blocks_before_market_or_submission
+    result = gateway.execute_signal(_approved_buy(gateway))
+scripts/live_mt5_gateway.py:233: in execute_signal
+    tick = mt5.symbol_info_tick(SYMBOL)
+tests/test_live_mt5_gateway.py:127: in forbidden
+    pytest.fail("unknown inventory must block before market access or order_send")
+E   Failed: unknown inventory must block before market access or order_send
+_ test_unknown_inventory_blocks_before_market_or_submission[False-orders_get] __
+tests/test_live_mt5_gateway.py:131: in test_unknown_inventory_blocks_before_market_or_submission
+    result = gateway.execute_signal(_approved_buy(gateway))
+scripts/live_mt5_gateway.py:233: in execute_signal
+    tick = mt5.symbol_info_tick(SYMBOL)
+tests/test_live_mt5_gateway.py:127: in forbidden
+    pytest.fail("unknown inventory must block before market access or order_send")
+E   Failed: unknown inventory must block before market access or order_send
+____ test_unknown_inventory_blocks_before_market_or_submission[False-both] _____
+tests/test_live_mt5_gateway.py:131: in test_unknown_inventory_blocks_before_market_or_submission
+    result = gateway.execute_signal(_approved_buy(gateway))
+scripts/live_mt5_gateway.py:233: in execute_signal
+    tick = mt5.symbol_info_tick(SYMBOL)
+tests/test_live_mt5_gateway.py:127: in forbidden
+    pytest.fail("unknown inventory must block before market access or order_send")
+E   Failed: unknown inventory must block before market access or order_send
+_ test_unknown_inventory_blocks_before_market_or_submission[True-positions_get] _
+tests/test_live_mt5_gateway.py:131: in test_unknown_inventory_blocks_before_market_or_submission
+    result = gateway.execute_signal(_approved_buy(gateway))
+scripts/live_mt5_gateway.py:233: in execute_signal
+    tick = mt5.symbol_info_tick(SYMBOL)
+tests/test_live_mt5_gateway.py:127: in forbidden
+    pytest.fail("unknown inventory must block before market access or order_send")
+E   Failed: unknown inventory must block before market access or order_send
+__ test_unknown_inventory_blocks_before_market_or_submission[True-orders_get] __
+tests/test_live_mt5_gateway.py:131: in test_unknown_inventory_blocks_before_market_or_submission
+    result = gateway.execute_signal(_approved_buy(gateway))
+scripts/live_mt5_gateway.py:233: in execute_signal
+    tick = mt5.symbol_info_tick(SYMBOL)
+tests/test_live_mt5_gateway.py:127: in forbidden
+    pytest.fail("unknown inventory must block before market access or order_send")
+E   Failed: unknown inventory must block before market access or order_send
+_____ test_unknown_inventory_blocks_before_market_or_submission[True-both] _____
+tests/test_live_mt5_gateway.py:131: in test_unknown_inventory_blocks_before_market_or_submission
+    result = gateway.execute_signal(_approved_buy(gateway))
+scripts/live_mt5_gateway.py:233: in execute_signal
+    tick = mt5.symbol_info_tick(SYMBOL)
+tests/test_live_mt5_gateway.py:127: in forbidden
+    pytest.fail("unknown inventory must block before market access or order_send")
+E   Failed: unknown inventory must block before market access or order_send
+=========================== short test summary info ============================
+FAILED tests/test_live_mt5_gateway.py::test_unknown_inventory_blocks_before_market_or_submission[False-positions_get]
+FAILED tests/test_live_mt5_gateway.py::test_unknown_inventory_blocks_before_market_or_submission[False-orders_get]
+FAILED tests/test_live_mt5_gateway.py::test_unknown_inventory_blocks_before_market_or_submission[False-both]
+FAILED tests/test_live_mt5_gateway.py::test_unknown_inventory_blocks_before_market_or_submission[True-positions_get]
+FAILED tests/test_live_mt5_gateway.py::test_unknown_inventory_blocks_before_market_or_submission[True-orders_get]
+FAILED tests/test_live_mt5_gateway.py::test_unknown_inventory_blocks_before_market_or_submission[True-both]
+6 failed, 3 passed, 10 deselected in 0.20s

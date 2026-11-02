@@ -1,0 +1,15 @@
+{
+  "base": "38f63c62f12e4e5c9fd6e13bc39202c9dc46f5f5",
+  "commit": "95f3af891dbc0effd7037e925edc1735a3f88c68",
+  "branch": "fix/factory-single-snapshot-validation-20261102",
+  "changed_files": {
+    "docs/V3_INTERACTIVE_RESEARCH_DASHBOARD.md": "b790a4f40599f2219a0f6404392eb6029cc40bef82573d603319409fae68d821",
+    "src/strategy_factory/m1_integrity.py": "104796e3c7a18a69242498439dabcb0fdfb592f649dd90b0e8bcc92cb8c43b19",
+    "src/strategy_factory/v3_research_session.py": "e9882e49d9b30cf0c19e0106c975216a30d0adb08925a4d7d56413bba7c2a4ee",
+    "tests/test_v3_session_snapshot_binding.py": "3c88b3942958a634a2656d396193976692a950b731588c622d1a21fbee69a57c"
+  },
+  "research_only": true,
+  "broker_access": false,
+  "holdout_access": false,
+  "remote_write": false
+}

@@ -1,0 +1,7 @@
+{
+  "accepted": true,
+  "manifest_hash_is_old": true,
+  "loaded_bars_are_changed": true,
+  "result": "TP on changed bytes; original bytes would remain OPEN_OR_UNRESOLVED",
+  "scope": "Synthetic engineering reproduction only, not market research"
+}

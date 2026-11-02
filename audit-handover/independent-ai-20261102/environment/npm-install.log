@@ -1,0 +1,4 @@
+npm error code E403
+npm error 403 403 Forbidden - GET https://registry.npmjs.org/@types%2fnode
+npm error 403 In most cases, you or one of your dependencies are requesting a package version that is forbidden by your security policy, or on a server you do not have access to.
+npm error A complete log of this run can be found in: /agent/.npm/_logs/2026-11-02T10_42_55_817Z-debug-0.log

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/agent/workspace/sp2l-audit-evidence/runner_synthetic_probes.py", line 26, in <module>
+    scope['trail_positions'](dict(symbol='SYNTHETIC',magic=7),{})
+  File "<extracted trailing function>", line 59, in trail_positions
+AttributeError: 'types.SimpleNamespace' object has no attribute 'TIMEFRAME_M1'

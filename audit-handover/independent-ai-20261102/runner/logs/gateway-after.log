@@ -1,0 +1,11 @@
+..F................                                                      [100%]
+=================================== FAILURES ===================================
+___________________ test_max_open_positions_blocks_execution ___________________
+tests/test_live_mt5_gateway.py:109: in test_max_open_positions_blocks_execution
+    result = gateway.execute_signal(signal)
+scripts/live_mt5_gateway.py:251: in execute_signal
+    tick = mt5.symbol_info_tick(SYMBOL)
+E   AttributeError: 'types.SimpleNamespace' object has no attribute 'symbol_info_tick'
+=========================== short test summary info ============================
+FAILED tests/test_live_mt5_gateway.py::test_max_open_positions_blocks_execution
+1 failed, 18 passed in 0.12s

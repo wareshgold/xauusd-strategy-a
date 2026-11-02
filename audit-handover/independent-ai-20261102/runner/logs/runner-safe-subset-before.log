@@ -1,0 +1,46 @@
+............FF.......F.................................................. [ 69%]
+.....................FF.......FF                                         [100%]
+=================================== FAILURES ===================================
+_______________________ test_daily_summary_declares_mode _______________________
+tests/test_execution_mode_notices.py:109: in test_daily_summary_declares_mode
+    mod = load_runner_module()
+tests/test_execution_mode_notices.py:93: in load_runner_module
+    import MetaTrader5  # noqa: F401  (must already be importable in tests env)
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+_______________________ test_daily_summary_dry_run_mode ________________________
+tests/test_execution_mode_notices.py:134: in test_daily_summary_dry_run_mode
+    mod = load_runner_module()
+tests/test_execution_mode_notices.py:93: in load_runner_module
+    import MetaTrader5  # noqa: F401  (must already be importable in tests env)
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+___________________ test_max_open_positions_blocks_execution ___________________
+tests/test_live_mt5_gateway.py:107: in test_max_open_positions_blocks_execution
+    result = gateway.execute_signal(signal)
+scripts/live_mt5_gateway.py:233: in execute_signal
+    tick = mt5.symbol_info_tick(SYMBOL)
+E   AttributeError: 'types.SimpleNamespace' object has no attribute 'symbol_info_tick'
+________________________ test_buy_v2_setup_and_trigger _________________________
+tests/test_sp2l_strategy_a_v2_detector.py:26: in test_buy_v2_setup_and_trigger
+    assert entry["risk"] == 5.1
+E   assert 5.099999999999994 == 5.1
+________________________ test_sell_v2_setup_and_trigger ________________________
+tests/test_sp2l_strategy_a_v2_detector.py:47: in test_sell_v2_setup_and_trigger
+    assert entry["risk"] == 5.1
+E   assert 5.099999999999994 == 5.1
+___________________ test_robustness_variants_are_not_primary ___________________
+tests/test_sp2l_v2_test_matrix.py:24: in test_robustness_variants_are_not_primary
+    assert robust
+E   assert []
+__________________ test_v31_monitor_is_read_only_and_renders ___________________
+tests/test_sp2l_v31_monitor.py:31: in test_v31_monitor_is_read_only_and_renders
+    assert "4189.66" in page
+E   assert '4189.66' in '<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="3">\n<title>SP2L V3.1 Monitor</t...only reads state/events and probes MT5. It never calls order_send and never writes strategy state.</p>\n</body></html>'
+=========================== short test summary info ============================
+FAILED tests/test_execution_mode_notices.py::test_daily_summary_declares_mode
+FAILED tests/test_execution_mode_notices.py::test_daily_summary_dry_run_mode
+FAILED tests/test_live_mt5_gateway.py::test_max_open_positions_blocks_execution
+FAILED tests/test_sp2l_strategy_a_v2_detector.py::test_buy_v2_setup_and_trigger
+FAILED tests/test_sp2l_strategy_a_v2_detector.py::test_sell_v2_setup_and_trigger
+FAILED tests/test_sp2l_v2_test_matrix.py::test_robustness_variants_are_not_primary
+FAILED tests/test_sp2l_v31_monitor.py::test_v31_monitor_is_read_only_and_renders
+7 failed, 97 passed in 0.36s

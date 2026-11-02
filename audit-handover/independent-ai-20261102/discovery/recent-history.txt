@@ -1,0 +1,25 @@
+dc14a451669992d39bad559a125a7b0196e410e4 Merge pull request #390 from wareshgold/fix/v31-startup-broker-recovery-20261102
+9ee067ddefa4a437465fea721cf7cf9fccbe6dfb Merge pull request #391 from wareshgold/fix/v31-runner-lock-os-atomic-20261102
+0b3fcebd254c408cc9a1d2ffff40db3b36474ec3 fix: log broker recovery only after state persistence
+012c605e99c58c397ef9885430b36b753d225c5a docs: describe OS lock probe in restart runbook
+cdab4808fe675d2004723102e19fbe72efa12c48 fix: wrap all V3.1 startup in MT5 cleanup guard
+bc129033ade9601a457f309fa39bb3bf91380cba fix: guarantee MT5 shutdown across all startup failures
+00f1e38c0494a1660687c6d12fb01bcf456e168b docs: update controlled restart for OS-backed runner lock
+d568e8103a5dffaaa1c28dda37d34fbdca29b845 fix: always shut down MT5 on startup failure
+73b6ae1754e73baad68b977cf351490d2e95be8e test: inspect runner lock metadata past reserved byte
+a585294363ce3ecdb4716d21fbf4706cb3d32079 fix: read lock metadata outside Windows locked byte
+478effe8cd171f5b70a9cb79a401707c69285556 ci: validate V3.1 runner locks on Windows and Linux
+65d9f0a98c38f96457a5e02414dbb2ffa618ddd1 test: keep lock owner alive during contention assertion
+756b2ac0d91d22deb3d6a0d74b22ec718c4c253e test: exercise lock contention across separate processes
+bcd62fa58cb94438226af3f324087cbc4a989e4e fix: correct persistent OS lock file I/O
+c1020b5345cdb7a4552ddbfa604690baf5ed1f95 fix: harden OS lock persistence and failure cleanup
+52272c48658c8b58db34f49a663bc184e82b5d68 fix: gate V3.1 startup banner on broker recovery
+6f37631fed3374ba42b4be47876566316d50fd68 test: verify runner lock across real processes
+99abed461d42cd96003a1dc4d2255119fe036906 fix: use OS-backed singleton lock for V3.1 runners
+9c006512b550d3c2f7826df4439a3fe636cac25f Document V3.1 controlled restart safety runbook
+aa3b7b932ee9b44774fe6c905af9d3e9a51b479f Compile V3.1 runner modules in forensic CI
+9216c38ae0ee70a3d85d3845814cf62c555626e1 Release the shared runner lock by its exact path
+81a80c7f98334d009dbda2a03d7e08a3c4a8df61 Run shared runner lock tests in forensic CI
+a6aa7de2998a4347ba457fe817cedb983befd20d Keep startup and polling under one lock cleanup scope
+a433238802d7d1412339a36e2dd89291edd0371c Use atomic shared fail-closed runner lock before startup work
+09981c7a736bb38368de5b2eb464b788e817b536 Test atomic shared runner lock behavior

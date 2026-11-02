@@ -1,0 +1,2 @@
+[audit/offline-independent-20261102 5c6ab4b7] fix(gateway): fail closed when exposure inventory queries are unavailable
+ 2 files changed, 70 insertions(+), 4 deletions(-)

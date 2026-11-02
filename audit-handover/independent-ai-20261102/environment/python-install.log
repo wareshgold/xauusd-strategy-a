@@ -1,0 +1,42 @@
+Collecting pytest
+  Downloading pytest-8.4.2-py3-none-any.whl (365 kB)
+Collecting openpyxl
+  Downloading openpyxl-3.1.5-py2.py3-none-any.whl (250 kB)
+Collecting flask
+  Downloading flask-3.1.3-py3-none-any.whl (103 kB)
+Collecting pluggy<2,>=1.5
+  Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Collecting packaging>=20
+  Downloading packaging-26.3-py3-none-any.whl (129 kB)
+Collecting iniconfig>=1
+  Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+Collecting tomli>=1
+  Downloading tomli-2.5.0-py3-none-any.whl (14 kB)
+Collecting pygments>=2.7.2
+  Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+Collecting exceptiongroup>=1
+  Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+Collecting et-xmlfile
+  Downloading et_xmlfile-2.0.0-py3-none-any.whl (18 kB)
+Collecting itsdangerous>=2.2.0
+  Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+Collecting werkzeug>=3.1.0
+  Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+Collecting importlib-metadata>=3.6.0
+  Downloading importlib_metadata-8.7.1-py3-none-any.whl (27 kB)
+Collecting markupsafe>=2.1.1
+  Downloading markupsafe-3.0.4-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (20 kB)
+Collecting click>=8.1.3
+  Downloading click-8.1.8-py3-none-any.whl (98 kB)
+Collecting jinja2>=3.1.2
+  Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Collecting blinker>=1.9.0
+  Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+Collecting typing-extensions>=4.6.0
+  Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Collecting zipp>=3.20
+  Downloading zipp-3.23.1-py3-none-any.whl (10 kB)
+Installing collected packages: zipp, typing-extensions, markupsafe, werkzeug, tomli, pygments, pluggy, packaging, jinja2, itsdangerous, iniconfig, importlib-metadata, exceptiongroup, et-xmlfile, click, blinker, pytest, openpyxl, flask
+Successfully installed blinker-1.9.0 click-8.1.8 et-xmlfile-2.0.0 exceptiongroup-1.3.1 flask-3.1.3 importlib-metadata-8.7.1 iniconfig-2.1.0 itsdangerous-2.2.0 jinja2-3.1.6 markupsafe-3.0.4 openpyxl-3.1.5 packaging-26.3 pluggy-1.6.0 pygments-2.21.0 pytest-8.4.2 tomli-2.5.0 typing-extensions-4.16.0 werkzeug-3.1.9 zipp-3.23.1
+WARNING: You are using pip version 21.3.1; however, version 26.0.1 is available.
+You should consider upgrading via the '/agent/workspace/sp2l-audit-venv/bin/python -m pip install --upgrade pip' command.

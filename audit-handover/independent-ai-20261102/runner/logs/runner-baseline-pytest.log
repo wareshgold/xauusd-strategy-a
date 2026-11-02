@@ -1,0 +1,88 @@
+
+==================================== ERRORS ====================================
+_________ ERROR collecting tests/test_discover_mt5_research_symbols.py _________
+ImportError while importing test module '/agent/workspace/sp2l-independent-audit/tests/test_discover_mt5_research_symbols.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.9/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_discover_mt5_research_symbols.py:3: in <module>
+    import discover_mt5_research_symbols as discovery
+scripts/discover_mt5_research_symbols.py:13: in <module>
+    import MetaTrader5 as mt5
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+_______________ ERROR collecting tests/test_fixed_sltp_matrix.py _______________
+ImportError while importing test module '/agent/workspace/sp2l-independent-audit/tests/test_fixed_sltp_matrix.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.9/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_fixed_sltp_matrix.py:21: in <module>
+    import scripts.run_sp2l_fixed_sltp_matrix as m
+scripts/run_sp2l_fixed_sltp_matrix.py:38: in <module>
+    import MetaTrader5 as mt5
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+________________ ERROR collecting tests/test_live_readiness.py _________________
+ImportError while importing test module '/agent/workspace/sp2l-independent-audit/tests/test_live_readiness.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+scripts/live_readiness.py:31: in <module>
+    from live_mt5_gateway import SYMBOL  # type: ignore
+scripts/live_mt5_gateway.py:19: in <module>
+    import MetaTrader5 as mt5
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+
+During handling of the above exception, another exception occurred:
+/usr/lib64/python3.9/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_live_readiness.py:13: in <module>
+    import scripts.live_readiness as live_readiness
+scripts/live_readiness.py:34: in <module>
+    from scripts.live_mt5_gateway import SYMBOL  # type: ignore
+scripts/live_mt5_gateway.py:19: in <module>
+    import MetaTrader5 as mt5
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+______________ ERROR collecting tests/test_live_report_engine.py _______________
+tests/test_live_report_engine.py:35: in <module>
+    def trade(sid: str, ts: str, status: str, result: str | None = None, r: float | None = None) -> dict:
+E   TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'
+______________ ERROR collecting tests/test_live_session_infra.py _______________
+ImportError while importing test module '/agent/workspace/sp2l-independent-audit/tests/test_live_session_infra.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+scripts/live_signal_simulator.py:30: in <module>
+    from live_mt5_gateway import SIGNAL_FILE  # type: ignore
+scripts/live_mt5_gateway.py:19: in <module>
+    import MetaTrader5 as mt5
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+
+During handling of the above exception, another exception occurred:
+/usr/lib64/python3.9/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_live_session_infra.py:14: in <module>
+    import scripts.live_signal_simulator as sim
+scripts/live_signal_simulator.py:33: in <module>
+    from scripts.live_mt5_gateway import SIGNAL_FILE  # type: ignore
+scripts/live_mt5_gateway.py:19: in <module>
+    import MetaTrader5 as mt5
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+________ ERROR collecting tests/test_sp2l_continuous_poll_forensics.py _________
+ImportError while importing test module '/agent/workspace/sp2l-independent-audit/tests/test_sp2l_continuous_poll_forensics.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.9/importlib/__init__.py:127: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_sp2l_continuous_poll_forensics.py:5: in <module>
+    from scripts.run_sp2l_continuous_poll_forensics import serialize_bar
+scripts/run_sp2l_continuous_poll_forensics.py:19: in <module>
+    import MetaTrader5 as mt5
+E   ModuleNotFoundError: No module named 'MetaTrader5'
+=========================== short test summary info ============================
+ERROR tests/test_discover_mt5_research_symbols.py
+ERROR tests/test_fixed_sltp_matrix.py
+ERROR tests/test_live_readiness.py
+ERROR tests/test_live_report_engine.py - TypeError: unsupported operand type(...
+ERROR tests/test_live_session_infra.py
+ERROR tests/test_sp2l_continuous_poll_forensics.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 6 errors during collection !!!!!!!!!!!!!!!!!!!!
+6 errors in 0.58s

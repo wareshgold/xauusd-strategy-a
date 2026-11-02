@@ -1,0 +1,13 @@
+{
+  "0001-factory-single-snapshot-validation.patch": "6772518f0db93592f0747a0f225a0009c14b7426a098c0d0a5fbc7d6ae0f86c5",
+  "README.md": "05b3295b8ec2bc5ef95bc3bdcc0a4d613bf839786effb70e1f53d9094e3eb049",
+  "baseline_offline_guard.py": "d9e250b3807899babb28addd098aeb3074ac83734beff021beb6fc1da84d5c00",
+  "change-manifest.json": "699988f71bf6fe33c0495b50fe16f7ccba95cdce9c060dccce1ebd6fdd36dd4c",
+  "commit.log": "e8f3a34aa4afbd0592413b652adecaf4c63185368645a92e404d307ad03ece4c",
+  "focused-after.log": "7cbbc0d36697a197f4c57f76a4b438485da6ec12d3f42bd604f6da401ec7456b",
+  "post-commit-tests.log": "3c115a59802d22de7f982cb56a40ebfe9b20a630b04aa23d5522d4a00c4006e2",
+  "regression-after.log": "66cc078cc8ebf35e386cbc2ca44f5876ce414a6eabfa3961da7f1d18d9263f06",
+  "regression-before.log": "c1e3ec96a2d9eb8c3661686ff775292b80c6a7bf0e9dbdeab0aed560657900cc",
+  "research-synthetic-after.log": "228e3ed73c6ae0fbd40d9bc6a21feecfd22a05a6d9049cc42fa2e435a6d15c91",
+  "snapshot_offline_guard.py": "97f1be264bf351dac8066e2c8976ac67b52e6f8105b37307ee6634cbf6a70b08"
+}
