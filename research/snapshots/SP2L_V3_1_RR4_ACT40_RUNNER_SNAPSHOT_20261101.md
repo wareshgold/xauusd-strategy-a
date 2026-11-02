@@ -1,0 +1,92 @@
+# Strategy A V3.1 – RR4 / ACT40 / TRAIL40
+
+Created UTC: 2026-11-02T04:54:23Z
+
+Status: RESEARCH / FORWARD CANDIDATE ONLY.
+Runner execution: NOT STARTED.
+MT5 orders: NONE submitted by this preparation.
+
+## Git provenance
+
+Repository: wareshgold/xauusd-strategy-a
+Branch: research/strategy-a-v3-1-rr4-act40-20261101
+Base HEAD: dac76b09da01f022d745f51328ee703f6fb59851
+
+The source V3 runner has local modifications relative to Base HEAD.
+Those modifications are intentionally preserved and included in the V3.1 source copy.
+They have NOT been committed as part of this V3.1 preparation.
+
+## Source and artifact hashes
+
+Source runner: `scripts\run_sp2l_v3_xauusd_forward_test.py`
+SHA256: 0FE5B67D33BC93D9A7244C79B951F91E9A00A616960C2AD6DFD4E292611DC873
+
+Source config: `scripts\sp2l_v3_rr2_trail4_config.py`
+SHA256: F70B0DCC4C50E6D95FFAC2E39AFB1CA044830027FEACFC1D1E21ECDAD40E24E8
+
+V3.1 runner: `scripts\run_sp2l_v3_1_xauusd_forward_test.py`
+SHA256: 4DFEF376E2B16252351B71374B4D03E99D4F9CE4EC761195C9E6F139D011452C
+
+V3.1 config: `scripts\sp2l_v3_1_rr4_act40_config.py`
+SHA256: 201C013157DDAC51054982BD0171B7AC5E1BA4E1F06792100A8452889A2F5DEC
+
+Shared multi-symbol runner (unchanged by this task):
+SHA256: 238AE453292BA4CDFEA64E463A0BC93D76040721CD8709DF5FBA84DA725EBDD5
+
+## Exact change boundary
+
+V3.1 runner is byte-for-byte derived from the current local V3 runner,
+with only these substitutions:
+- Config import points to V3.1 config.
+- Events JSONL path is isolated for V3.1.
+- Runtime State path is isolated for V3.1.
+
+V3.1 config is byte-for-byte derived from V3 config,
+with only:
+- VERSION changed to SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101
+- TP_R changed from 2.0 to 4.0
+
+Normalized source comparisons: PASS.
+Python AST syntax validation: PASS.
+
+## Exit management
+
+TP_R: 4.0
+Trail activation: 0.40 price units
+Trail distance: 0.40 price units
+TRAIL_PIPS: 4.0
+XAU_PIP_SIZE_PRICE: 0.1
+
+No new trailing algorithm was introduced.
+
+## Entry and execution logic
+
+Entry logic is inherited unchanged from the local V3 runner.
+P-Gap, spike, initial SL, pending lifecycle, TTL, history handling,
+and other execution behavior are not intentionally redesigned here.
+
+## Research evidence
+
+Frozen population: 462 entries.
+Frozen entries SHA256:
+39ED87CD1F0BE3E59B5F064B0BCF97A9787E5266DF6E972AA07E5EA4D3608AB1
+
+M1 dataset: 29,919 bars.
+M1 SHA256:
+B0782E716C7ECCBD29EF25E146C088B356F2AADF2CCD5D7EA24E6AC1488AA285
+
+Exploratory RR4/ACT40 result:
+Net +208.601156R; PF 8.1931; trade-exit-ordered max DD 2.4977R.
+
+These are in-sample M1 OHLC research results, not production validation.
+Tick sequencing, spread, commission, slippage, broker rejections, and
+Fresh Holdout validation remain outstanding.
+
+## Isolation and safety
+
+V3 source files are not modified by this snapshot operation.
+Existing staged, unstaged, and untracked user evidence must be preserved.
+Only the two V3.1 files and this snapshot may be considered for the V3.1 commit.
+No broad staging is permitted.
+
+Forward start requires separate review and explicit user authorization.
