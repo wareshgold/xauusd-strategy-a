@@ -15,15 +15,19 @@ from sp2l_runner_lock import (
 )
 
 
-def _lock_holder(path: str, ready) -> None:
+def _lock_holder(path: str, ready, keep_alive) -> None:
     acquired = acquire_runner_lock(Path(path))
     ready.put((acquired is None, os.getpid()))
-    # Keep the lock until the parent terminates this process.
+    keep_alive.wait(30)
+    if acquired is None:
+        release_runner_lock(Path(path))
 
 
 def _lock_contender(path: str, result) -> None:
     holder = acquire_runner_lock(Path(path))
     result.put(holder)
+    if holder is None:
+        release_runner_lock(Path(path))
 
 
 class RunnerLockTests(unittest.TestCase):
@@ -48,7 +52,10 @@ class RunnerLockTests(unittest.TestCase):
         ctx = multiprocessing.get_context("spawn")
         ready = ctx.Queue()
         result = ctx.Queue()
-        owner = ctx.Process(target=_lock_holder, args=(str(self.path), ready))
+        keep_alive = ctx.Event()
+        owner = ctx.Process(
+            target=_lock_holder, args=(str(self.path), ready, keep_alive)
+        )
         contender = None
         owner.start()
         try:
