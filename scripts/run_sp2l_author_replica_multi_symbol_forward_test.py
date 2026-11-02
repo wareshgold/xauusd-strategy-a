@@ -593,6 +593,7 @@ def save_state(state: dict) -> None:
         "seen": state["seen"],
         "notified": sorted(state["notified"])[-1000:],
         "deals": sorted(state["deals"])[-1000:],
+        "deal_events": sorted(state.get("deal_events", set()))[-1000:],
         "orders": sorted(state["orders"])[-1000:],
         "positions": sorted(state["positions"])[-1000:],
         "position_orders": {k: sorted(v) for k, v in state.get("position_orders", {}).items()},
