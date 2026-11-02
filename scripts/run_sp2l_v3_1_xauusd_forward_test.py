@@ -127,6 +127,7 @@ runner.monitor_position_lifecycle=trail_positions
 # are eligible for lifecycle reporting/cancellation.
 from datetime import datetime, timezone
 from sp2l_deal_lifecycle_dedupe import claim_deal_lifecycle_event
+from sp2l_v31_startup_recovery import recover_owned_broker_inventory
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
 
@@ -439,6 +440,46 @@ runner.enforce_pending_order_expiry=_run_scoped_pending
 runner.monitor_pending_order_lifecycle=_run_scoped_pending_lifecycle
 runner.monitor_position_lifecycle=trail_positions
 runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
+
+
+def _v31_startup_recovery(configs, state):
+    """Reconcile live broker-owned objects before entering the V3.1 poll loop.
+
+    This is read-only at the broker boundary. Unknown/incomplete inventory
+    aborts startup; no signal history or old deal notifications are replayed.
+    """
+    summaries = []
+    for cfg_runtime in configs:
+        symbol = str(cfg_runtime["symbol"])
+        magic = int(cfg_runtime["magic"])
+        # MT5 returns None on query failure and an empty tuple on a valid
+        # empty result. Never collapse those two states.
+        active_orders = mt5.orders_get(symbol=symbol)
+        active_positions = mt5.positions_get(symbol=symbol)
+        summary = recover_owned_broker_inventory(
+            state,
+            symbol=symbol,
+            magic=magic,
+            orders=active_orders,
+            positions=active_positions,
+            buy_limit_type=mt5.ORDER_TYPE_BUY_LIMIT,
+            sell_limit_type=mt5.ORDER_TYPE_SELL_LIMIT,
+        )
+        summaries.append(summary)
+    # Persist the recovered ownership set before recording recovery success
+    # or entering the first management poll. Any write failure aborts startup.
+    runner.save_state(state)
+    runner.log_event({
+        "event": "STARTUP_BROKER_RECOVERY",
+        "version": cfg.VERSION,
+        "symbol": ",".join(str(item["symbol"]) for item in summaries),
+        "orders_recovered": sum(item["orders_recovered"] for item in summaries),
+        "positions_recovered": sum(item["positions_recovered"] for item in summaries),
+        "canonical": False,
+    })
+
+
+runner.startup_recovery_hook = _v31_startup_recovery
 
 # Execution clock guard: no order may be sent unless the operator has pinned
 # the current broker UTC offset and both tick freshness and MT5's strict offset

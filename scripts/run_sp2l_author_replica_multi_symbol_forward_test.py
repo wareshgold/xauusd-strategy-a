@@ -189,33 +189,10 @@ def volume_guard(cfg: dict) -> tuple[bool, str]:
     return True, "VOLUME_VALID"
 
 
-RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
+from sp2l_runner_lock import acquire_runner_lock, release_runner_lock
 
-
-def acquire_runner_lock() -> int | None:
-    """Single-instance guard: two concurrent runners would double every order."""
-    RUNTIME.mkdir(parents=True, exist_ok=True)
-    try:
-        if RUNNER_LOCK.exists():
-            pid = int(RUNNER_LOCK.read_text(encoding="utf-8").strip() or 0)
-            if pid > 0 and pid != os.getpid():
-                try:
-                    os.kill(pid, 0)  # signal probe: raises if the process is gone
-                    return pid
-                except OSError:
-                    pass  # stale lock file
-        RUNNER_LOCK.write_text(str(os.getpid()), encoding="utf-8")
-        return None
-    except (OSError, ValueError):
-        return None  # lock unavailable: never block the demo runner on FS errors
-
-
-def release_runner_lock() -> None:
-    try:
-        if RUNNER_LOCK.exists() and RUNNER_LOCK.read_text(encoding="utf-8").strip() == str(os.getpid()):
-            RUNNER_LOCK.unlink()
-    except OSError:
-        pass
+# Shared per-user temp path coordinates separate Git worktrees on this host.
+RUNNER_LOCK = Path(os.getenv("SP2L_RUNNER_LOCK_PATH", Path(os.getenv("TEMP", "/tmp")) / "sp2l_multi_symbol_forward_runner.lock"))
 
 
 def now_utc() -> str:
@@ -1175,69 +1152,79 @@ def main() -> None:
     if not initialized:
         raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
 
-    account = mt5.account_info()
-    if account is None or int(account.trade_mode) != 0:
-        raise RuntimeError("DEMO-ONLY GUARD: a DEMO MT5 account is required")
-
-    configs = []
-    for index, base in enumerate(BASE_SYMBOLS):
-        symbol = resolve_symbol(base)
-        if symbol is None:
-            log_event({"event": "SYMBOL_UNAVAILABLE", "base": base})
-            continue
-        if not mt5.symbol_select(symbol, True):
-            log_event({"event": "SYMBOL_SELECT_FAILED", "symbol": symbol, "error": str(mt5.last_error())})
-            continue
-        cfg = symbol_config(symbol)
-        cfg["magic"] = MAGIC_BASE + index + 1
-        cfg["volume"] = _volume_for(base.upper().split(".")[0])
-        configs.append(cfg)
-
-    if not configs:
-        raise RuntimeError(f"None of the configured symbols could be resolved in MT5: {BASE_SYMBOLS}")
-
-    log_event({
-        "event": "START",
-        "mode": "RESEARCH_AUTHOR_REPLICA_MULTI_SYMBOL_FORWARD_TEST",
-        "canonical": False,
-        "account_login": int(account.login),
-        "account_server": str(account.server),
-        "account_trade_mode": int(account.trade_mode),
-        "config": {
-            "pGapPrice": P_GAP_PRICE, "spikeMultiplier": SPIKE_MULTIPLIER,
-            "maxSlDistance": MAX_SL_DISTANCE, "tpR": TP_R, "volume": VOLUME,
-            "orderMode": ORDER_MODE, "slAnchor": SL_ANCHOR,
-            "pendingTtlMinutes": PENDING_TTL_MINUTES,
-            "symbols": configs,
-        },
-    })
-
-    startup_banner = gateway.send_telegram_message(_build_banner_text(account, configs))
-    log_event({
-        "event": "START_TELEGRAM",
-        "success": bool(getattr(startup_banner, "success", False)),
-        "detail": getattr(startup_banner, "detail", None),
-        "canonical": False,
-    })
-
-    state = load_state()
-    state.setdefault("position_orders", {})
-    deadline = None
-    seconds = os.getenv("FORWARD_TEST_SECONDS")
-    if seconds:
-        deadline = time.time() + int(seconds)
-    reconcile_state_from_events(state)
-    save_state(state)
-    seen_trigger = state["seen"]
-
-    holder_pid = acquire_runner_lock()
-    if holder_pid is not None:
-        raise RuntimeError(
-            f"Another forward runner is already active (pid {holder_pid}). "
-            "Stop it first — two runners would duplicate every order."
-        )
-
+    lock_acquired = False
     try:
+        account = mt5.account_info()
+        if account is None or int(account.trade_mode) != 0:
+            raise RuntimeError("DEMO-ONLY GUARD: a DEMO MT5 account is required")
+
+        configs = []
+        for index, base in enumerate(BASE_SYMBOLS):
+            symbol = resolve_symbol(base)
+            if symbol is None:
+                log_event({"event": "SYMBOL_UNAVAILABLE", "base": base})
+                continue
+            if not mt5.symbol_select(symbol, True):
+                log_event({"event": "SYMBOL_SELECT_FAILED", "symbol": symbol, "error": str(mt5.last_error())})
+                continue
+            cfg = symbol_config(symbol)
+            cfg["magic"] = MAGIC_BASE + index + 1
+            cfg["volume"] = _volume_for(base.upper().split(".")[0])
+            configs.append(cfg)
+
+        if not configs:
+            raise RuntimeError(f"None of the configured symbols could be resolved in MT5: {BASE_SYMBOLS}")
+
+
+        holder_pid = acquire_runner_lock(RUNNER_LOCK)
+        if holder_pid is not None:
+            owner = f"pid {holder_pid}" if holder_pid > 0 else "an active runner (owner metadata not yet available)"
+            raise RuntimeError(
+                f"Another forward runner holds the OS lock ({owner}). "
+                "Stop it first — two runners would duplicate every order."
+            )
+        lock_acquired = True
+        state = load_state()
+        state.setdefault("position_orders", {})
+        deadline = None
+        seconds = os.getenv("FORWARD_TEST_SECONDS")
+        if seconds:
+            deadline = time.time() + int(seconds)
+        reconcile_state_from_events(state)
+        save_state(state)
+        seen_trigger = state["seen"]
+
+        # Optional runner-specific startup recovery executes only after the
+        # singleton lock is held and before any management or entry loop.
+        # A recovery exception aborts startup and releases the lock in finally.
+        recovery_hook = globals().get("startup_recovery_hook")
+        if callable(recovery_hook):
+            recovery_hook(configs, state)
+
+        # Record and announce startup only after broker recovery and state
+        # persistence have completed. Failed recovery must not emit STARTED.
+        log_event({
+            "event": "START",
+            "mode": "RESEARCH_AUTHOR_REPLICA_MULTI_SYMBOL_FORWARD_TEST",
+            "canonical": False,
+            "account_login": int(account.login),
+            "account_server": str(account.server),
+            "account_trade_mode": int(account.trade_mode),
+            "config": {
+                "pGapPrice": P_GAP_PRICE, "spikeMultiplier": SPIKE_MULTIPLIER,
+                "maxSlDistance": MAX_SL_DISTANCE, "tpR": TP_R, "volume": VOLUME,
+                "orderMode": ORDER_MODE, "slAnchor": SL_ANCHOR,
+                "pendingTtlMinutes": PENDING_TTL_MINUTES,
+                "symbols": configs,
+            },
+        })
+        startup_banner = gateway.send_telegram_message(_build_banner_text(account, configs))
+        log_event({
+            "event": "START_TELEGRAM",
+            "success": bool(getattr(startup_banner, "success", False)),
+            "detail": getattr(startup_banner, "detail", None),
+            "canonical": False,
+        })
         while deadline is None or time.time() < deadline:
             for cfg in configs:
                 symbol = cfg["symbol"]
@@ -1319,8 +1306,12 @@ def main() -> None:
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
     finally:
-        release_runner_lock()
-        mt5.shutdown()
+        try:
+            if lock_acquired:
+                release_runner_lock(RUNNER_LOCK)
+        finally:
+            # MT5 must be disconnected even if startup or lock release fails.
+            mt5.shutdown()
 
 
 if __name__ == "__main__":

@@ -8,7 +8,11 @@ on:
 
 jobs:
   forensic-checks:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,6 +24,12 @@ jobs:
         run: python scripts/test_sp2l_author_replica_detector_consistency.py
       - name: Run V3.1 deal lifecycle idempotency tests
         run: python scripts/test_sp2l_deal_lifecycle_dedupe.py
+      - name: Run V3.1 startup broker recovery tests
+        run: python scripts/test_sp2l_v31_startup_recovery.py
+      - name: Run shared runner lock tests
+        run: python scripts/test_sp2l_runner_lock.py
+      - name: Compile V3.1 forward runner modules
+        run: python -m py_compile scripts/run_sp2l_author_replica_multi_symbol_forward_test.py scripts/run_sp2l_v3_1_xauusd_forward_test.py scripts/sp2l_v31_startup_recovery.py scripts/sp2l_runner_lock.py
       - name: Run Telegram credential source tests
         run: python scripts/test_telegram_client_env.py
       - name: Run reconciliation tests
