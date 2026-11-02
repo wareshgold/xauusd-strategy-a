@@ -1303,7 +1303,7 @@ def main() -> None:
             maybe_send_daily_summary(state)
             time.sleep(POLL_SECONDS)
     finally:
-        release_runner_lock()
+        release_runner_lock(RUNNER_LOCK)
         mt5.shutdown()
 
 
