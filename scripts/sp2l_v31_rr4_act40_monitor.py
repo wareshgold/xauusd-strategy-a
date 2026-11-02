@@ -92,8 +92,9 @@ def _summary(events: list[dict]) -> dict:
     counts = {
         "signals": 0, "order_results": 0, "successful_orders": 0,
         "trail_updates": 0, "trail_failures": 0, "deal_lifecycle_events": 0,
-        "net": 0.0,
+        "deal_lifecycle_duplicate_rows": 0, "net": 0.0,
     }
+    seen_deal_ids = set()
     for event in events:
         kind = event.get("event")
         if kind == "TELEGRAM_SIGNAL":
@@ -108,6 +109,13 @@ def _summary(events: list[dict]) -> dict:
             elif event.get("success") is False:
                 counts["trail_failures"] += 1
         elif kind == "TELEGRAM_DEAL_LIFECYCLE":
+            deal_id = event.get("deal")
+            if deal_id is not None:
+                deal_key = str(deal_id)
+                if deal_key in seen_deal_ids:
+                    counts["deal_lifecycle_duplicate_rows"] += 1
+                    continue
+                seen_deal_ids.add(deal_key)
             counts["deal_lifecycle_events"] += 1
             try:
                 counts["net"] += float(event.get("net", 0) or 0)
@@ -203,8 +211,9 @@ def _render() -> str:
         ("Successful orders", stats["successful_orders"]),
         ("Trail updates", stats["trail_updates"]),
         ("Trail failures", stats["trail_failures"]),
-        ("Deal lifecycle events", stats["deal_lifecycle_events"]),
-        ("Net reported USD", f'{stats["net"]:+.2f}'),
+        ("Unique deal lifecycle events", stats["deal_lifecycle_events"]),
+        ("Duplicate lifecycle rows suppressed", stats["deal_lifecycle_duplicate_rows"]),
+        ("Net reported USD (unique deals)", f'{stats["net"]:+.2f}'),
     ]
     card_html = "".join(
         f'<div class="card"><div class="label">{_esc(k)}</div><div class="value">{_esc(v)}</div></div>'
