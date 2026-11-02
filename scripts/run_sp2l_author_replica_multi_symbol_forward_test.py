@@ -1176,15 +1176,14 @@ def main() -> None:
             raise RuntimeError(f"None of the configured symbols could be resolved in MT5: {BASE_SYMBOLS}")
 
 
-    holder_pid = acquire_runner_lock(RUNNER_LOCK)
-    if holder_pid is not None:
-        mt5.shutdown()
-        raise RuntimeError(
-            f"Another forward runner is already active (pid {holder_pid}). "
-            "Stop it first — two runners would duplicate every order."
-        )
-
-    try:
+        holder_pid = acquire_runner_lock(RUNNER_LOCK)
+        if holder_pid is not None:
+            owner = f"pid {holder_pid}" if holder_pid > 0 else "an active runner (owner metadata not yet available)"
+            raise RuntimeError(
+                f"Another forward runner holds the OS lock ({owner}). "
+                "Stop it first — two runners would duplicate every order."
+            )
+        lock_acquired = True
         state = load_state()
         state.setdefault("position_orders", {})
         deadline = None
@@ -1226,7 +1225,6 @@ def main() -> None:
             "detail": getattr(startup_banner, "detail", None),
             "canonical": False,
         })
-
         while deadline is None or time.time() < deadline:
             for cfg in configs:
                 symbol = cfg["symbol"]
