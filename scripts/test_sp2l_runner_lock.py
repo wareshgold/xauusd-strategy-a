@@ -41,7 +41,9 @@ class RunnerLockTests(unittest.TestCase):
 
     def test_os_lock_acquire_and_release_keeps_metadata_file(self):
         self.assertIsNone(acquire_runner_lock(self.path, pid=os.getpid()))
-        payload = json.loads(self.path.read_text(encoding="utf-8"))
+        with self.path.open("rb") as metadata:
+            metadata.seek(1)
+            payload = json.loads(metadata.read().decode("utf-8"))
         self.assertEqual(payload["pid"], os.getpid())
         release_runner_lock(self.path, pid=os.getpid())
         self.assertTrue(self.path.exists())
