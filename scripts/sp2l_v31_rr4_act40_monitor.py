@@ -1,0 +1,345 @@
+"""Read-only monitor for SP2L V3.1 RR4/ACT40/TRAIL40 Demo forward runner.
+
+Reads the exact V3.1 state/event paths and probes XAUUSD.ecn through MT5.
+It never calls order_send, never writes runner state, and binds to localhost.
+Run in a separate PowerShell window:
+    python scripts/sp2l_v31_rr4_act40_monitor.py
+Default URL: http://127.0.0.1:8791
+"""
+from __future__ import annotations
+
+import html
+import json
+import os
+import subprocess
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+from flask import Flask, Response, jsonify
+
+try:
+    import MetaTrader5 as mt5
+except Exception:
+    mt5 = None
+
+ROOT = Path(__file__).resolve().parents[1]
+RUNTIME = ROOT / "runtime"
+ARTIFACTS = ROOT / "artifacts" / "forward-test"
+STATE_FILE = RUNTIME / "sp2l_v3_1_xauusd_rr4_act40_forward_state.json"
+EVENTS = ARTIFACTS / "SP2L_V3_1_XAUUSD_RR4_ACT40_FORWARD_EVENTS.jsonl"
+RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
+PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8791"))
+REFRESH_SECONDS = 5
+SYMBOL = "XAUUSD.ecn"
+VERSION = "SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101"
+MT5_PATH = os.getenv("MT5_PATH", r"C:\Program Files\Otet Group MT5 Terminal\terminal64.exe")
+
+app = Flask(__name__)
+
+
+def _read_json(path: Path) -> dict:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+        return value if isinstance(value, dict) else {}
+    except Exception:
+        return {}
+
+
+def _read_events(limit: int = 250) -> list[dict]:
+    try:
+        lines = EVENTS.read_text(encoding="utf-8").splitlines()[-limit:]
+    except OSError:
+        return []
+    out = []
+    for line in lines:
+        try:
+            item = json.loads(line)
+            if isinstance(item, dict):
+                out.append(item)
+        except json.JSONDecodeError:
+            continue
+    return out
+
+
+def _runner_status() -> dict:
+    try:
+        pid = int(RUNNER_LOCK.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return {"pid": None, "alive": False, "detail": "runner lock unavailable"}
+    if pid <= 0:
+        return {"pid": pid, "alive": False, "detail": "invalid PID"}
+    try:
+        result = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV"],
+            capture_output=True, text=True, timeout=4, check=False,
+        )
+        alive = "python" in result.stdout.lower()
+    except Exception:
+        alive = False
+    return {"pid": pid, "alive": alive, "detail": "process probe via tasklist"}
+
+
+def _mt5_probe() -> dict:
+    result = {
+        "connected": False, "trade_allowed": False, "account": None,
+        "tick": None, "orders": [], "positions": [], "error": None,
+    }
+    if mt5 is None:
+        result["error"] = "MetaTrader5 package unavailable"
+        return result
+    initialized = False
+    try:
+        initialized = bool(mt5.initialize(path=MT5_PATH))
+        if not initialized:
+            result["error"] = f"MT5 initialize failed: {mt5.last_error()}"
+            return result
+        terminal = mt5.terminal_info()
+        account = mt5.account_info()
+        tick = mt5.symbol_info_tick(SYMBOL)
+        result["connected"] = bool(terminal and terminal.connected)
+        result["trade_allowed"] = bool(terminal and getattr(terminal, "trade_allowed", False))
+        if account:
+            result["account"] = {
+                "login": int(account.login),
+                "server": str(account.server),
+                "trade_mode": int(account.trade_mode),
+                "account_type": "DEMO" if int(account.trade_mode) == 0 else "NON-DEMO",
+                "balance": float(account.balance),
+                "equity": float(account.equity),
+            }
+        if tick:
+            result["tick"] = {
+                "time": int(getattr(tick, "time", 0) or 0),
+                "bid": float(tick.bid), "ask": float(tick.ask),
+            }
+        orders = mt5.orders_get(symbol=SYMBOL)
+        if orders is None:
+            result["error"] = f"orders_get failed: {mt5.last_error()}"
+        else:
+            for order in orders:
+                result["orders"].append({
+                    "ticket": int(order.ticket), "type": int(order.type),
+                    "volume": float(getattr(order, "volume_current", 0) or 0),
+                    "price": float(getattr(order, "price_open", 0) or 0),
+                    "sl": float(getattr(order, "sl", 0) or 0),
+                    "tp": float(getattr(order, "tp", 0) or 0),
+                })
+        positions = mt5.positions_get(symbol=SYMBOL)
+        if positions is None:
+            result["error"] = f"positions_get failed: {mt5.last_error()}"
+        else:
+            for position in positions:
+                result["positions"].append({
+                    "ticket": int(position.ticket), "type": int(position.type),
+                    "volume": float(position.volume),
+                    "open": float(position.price_open),
+                    "current": float(position.price_current),
+                    "sl": float(position.sl or 0), "tp": float(position.tp or 0),
+                    "profit": float(position.profit),
+                    "magic": int(getattr(position, "magic", 0) or 0),
+                })
+    except Exception as exc:
+        result["error"] = str(exc)
+    finally:
+        if initialized:
+            try:
+                mt5.shutdown()
+            except Exception:
+                pass
+    return result
+
+
+def _summary(events: list[dict]) -> dict:
+    counts = {
+        "signals": 0, "order_results": 0, "successful_orders": 0,
+        "trail_updates": 0, "trail_failures": 0, "deal_lifecycle_events": 0,
+        "net": 0.0,
+    }
+    for event in events:
+        kind = event.get("event")
+        if kind == "TELEGRAM_SIGNAL":
+            counts["signals"] += 1
+        elif kind == "ORDER_RESULT":
+            counts["order_results"] += 1
+            if bool((event.get("result") or {}).get("ok")):
+                counts["successful_orders"] += 1
+        elif kind == "TRAIL_UPDATE":
+            if event.get("success") is True:
+                counts["trail_updates"] += 1
+            elif event.get("success") is False:
+                counts["trail_failures"] += 1
+        elif kind == "TELEGRAM_DEAL_LIFECYCLE":
+            counts["deal_lifecycle_events"] += 1
+            try:
+                counts["net"] += float(event.get("net", 0) or 0)
+            except (TypeError, ValueError):
+                pass
+    return counts
+
+
+def _esc(value) -> str:
+    return html.escape(str(value))
+
+
+def _fmt_time(value) -> str:
+    try:
+        return datetime.fromtimestamp(int(value), timezone.utc).strftime("%H:%M:%S UTC")
+    except (TypeError, ValueError, OSError):
+        return "—"
+
+
+def _render() -> str:
+    state = _read_json(STATE_FILE)
+    events = _read_events()
+    runner = _runner_status()
+    probe = _mt5_probe()
+    stats = _summary(events)
+
+    try:
+        state_age = max(0, time.time() - STATE_FILE.stat().st_mtime)
+        state_health = f"state file updated {state_age:.0f}s ago"
+    except OSError:
+        state_health = "state file not created yet"
+
+    account = probe.get("account") or {}
+    tick = probe.get("tick") or {}
+    account_label = (
+        f"{account.get('account_type')} · {account.get('server')} · "
+        f"balance {account.get('balance', '—'):.2f} · equity {account.get('equity', '—'):.2f}"
+        if account else "unavailable"
+    )
+    runner_label = (
+        f"ALIVE · PID {runner['pid']}" if runner["alive"]
+        else f"NOT CONFIRMED · {runner['detail']}"
+    )
+    mt5_label = "CONNECTED" if probe["connected"] else "OFFLINE"
+    trade_label = "allowed" if probe["trade_allowed"] else "not allowed"
+    tick_label = (
+        f"Bid {tick.get('bid', 0):.2f} / Ask {tick.get('ask', 0):.2f}"
+        if tick else "no tick"
+    )
+
+    order_rows = "".join(
+        "<tr>" + "".join(f"<td>{_esc(v)}</td>" for v in (
+            o["ticket"], o["type"], f'{o["volume"]:.2f}',
+            f'{o["price"]:.2f}', f'{o["sl"]:.2f}', f'{o["tp"]:.2f}'
+        )) + "</tr>" for o in probe["orders"]
+    ) or '<tr><td colspan="6" class="dim">No pending XAUUSD.ecn orders</td></tr>'
+
+    position_rows = "".join(
+        "<tr>" + "".join(f"<td>{_esc(v)}</td>" for v in (
+            p["ticket"], p["type"], f'{p["volume"]:.2f}',
+            f'{p["open"]:.2f}', f'{p["current"]:.2f}',
+            f'{p["sl"]:.2f}', f'{p["tp"]:.2f}', f'{p["profit"]:+.2f}', p["magic"]
+        )) + "</tr>" for p in probe["positions"]
+    ) or '<tr><td colspan="9" class="dim">No open XAUUSD.ecn positions</td></tr>'
+
+    event_rows = ""
+    for event in reversed(events[-40:]):
+        kind = event.get("event", "?")
+        detail = event.get("detail") or event.get("outcome") or ""
+        if kind == "ORDER_RESULT":
+            result = event.get("result") or {}
+            detail = f"ok={result.get('ok')} retcode={result.get('retcode')} order={result.get('order')}"
+        elif kind == "TRAIL_UPDATE":
+            detail = (
+                f"position={event.get('position')} "
+                f"SL {event.get('old_sl')} -> {event.get('new_sl')} "
+                f"success={event.get('success')}"
+            )
+        elif kind == "TELEGRAM_DEAL_LIFECYCLE":
+            detail = (
+                f"deal={event.get('deal')} position={event.get('position')} "
+                f"entry={event.get('entry')} net={event.get('net')}"
+            )
+        event_rows += (
+            "<tr><td>" + _esc(str(event.get("ts_utc", ""))[-16:]) +
+            "</td><td>" + _esc(kind) + "</td><td>" +
+            _esc(event.get("symbol", "")) + "</td><td>" +
+            _esc(detail) + "</td></tr>"
+        )
+    if not event_rows:
+        event_rows = '<tr><td colspan="4" class="dim">No V3.1 events recorded yet</td></tr>'
+
+    cards = [
+        ("Signals", stats["signals"]),
+        ("Order results", stats["order_results"]),
+        ("Successful orders", stats["successful_orders"]),
+        ("Trail updates", stats["trail_updates"]),
+        ("Trail failures", stats["trail_failures"]),
+        ("Deal lifecycle events", stats["deal_lifecycle_events"]),
+        ("Net reported USD", f'{stats["net"]:+.2f}'),
+    ]
+    card_html = "".join(
+        f'<div class="card"><div class="label">{_esc(k)}</div><div class="value">{_esc(v)}</div></div>'
+        for k, v in cards
+    )
+    error = f'<p class="warn">MT5 probe: {_esc(probe["error"])}</p>' if probe["error"] else ""
+    return f"""<!doctype html><html><head><meta charset="utf-8">
+<meta http-equiv="refresh" content="{REFRESH_SECONDS}">
+<title>SP2L V3.1 RR4 ACT40 Monitor</title>
+<style>
+body{{margin:18px;background:#0d1117;color:#d7dee8;font:14px Consolas,monospace}}
+h1{{color:#8bd5ca}} h2{{color:#7aa2f7;font-size:15px;margin-top:22px}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}}
+.card{{background:#161b22;border:1px solid #30363d;padding:10px;border-radius:6px}}
+.label{{color:#8b949e;font-size:11px}} .value{{font-size:20px;margin-top:5px}}
+table{{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}}
+th,td{{border:1px solid #30363d;padding:5px;text-align:left}}
+th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
+.warn{{color:#e3b341}} .bad{{color:#ff7b72}} .dim{{color:#8b949e}}
+</style></head><body>
+<h1>SP2L V3.1 — XAUUSD Forward Monitor</h1>
+<p class="dim">{VERSION} · RR4 / ACT40 / DIST40 · research-only · read-only · refresh {REFRESH_SECONDS}s</p>
+<h2>Session</h2>
+<table>
+<tr><th>Runner</th><td>{_esc(runner_label)}</td></tr>
+<tr><th>State file</th><td>{_esc(state_health)} · {_esc(STATE_FILE.name)}</td></tr>
+<tr><th>MT5</th><td>{_esc(mt5_label)} · Trade API {_esc(trade_label)}</td></tr>
+<tr><th>Account</th><td>{_esc(account_label)}</td></tr>
+<tr><th>Symbol tick</th><td>{_esc(tick_label)}</td></tr>
+<tr><th>State tracked IDs</th><td>orders={len(state.get("orders", []))} · positions={len(state.get("positions", []))} · deals={len(state.get("deals", []))}</td></tr>
+</table>
+{error}
+<h2>Event counters (last {len(events)} available events)</h2><div class="grid">{card_html}</div>
+<h2>Pending orders — {SYMBOL}</h2>
+<table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Price</th><th>SL</th><th>TP</th></tr>{order_rows}</table>
+<h2>Open positions — {SYMBOL}</h2>
+<table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Open</th><th>Current</th><th>SL</th><th>TP</th><th>Profit</th><th>Magic</th></tr>{position_rows}</table>
+<h2>Latest 40 events</h2>
+<table><tr><th>UTC</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>{event_rows}</table>
+<p class="dim">Read-only monitor: no order_send, no order modification, no state/event writes.</p>
+</body></html>"""
+
+
+@app.get("/")
+def index() -> Response:
+    return Response(_render(), mimetype="text/html")
+
+
+@app.get("/api/status")
+def api_status():
+    events = _read_events()
+    try:
+        state_age = time.time() - STATE_FILE.stat().st_mtime
+    except OSError:
+        state_age = None
+    return jsonify({
+        "version": VERSION,
+        "runner": _runner_status(),
+        "state": _read_json(STATE_FILE),
+        "state_age_seconds": state_age,
+        "stats": _summary(events),
+        "mt5": _mt5_probe(),
+        "event_count_read": len(events),
+    })
+
+
+def main() -> None:
+    print(f"SP2L V3.1 read-only monitor: http://127.0.0.1:{PORT}", flush=True)
+    app.run(host="127.0.0.1", port=PORT, debug=False, use_reloader=False, threaded=True)
+
+
+if __name__ == "__main__":
+    main()
