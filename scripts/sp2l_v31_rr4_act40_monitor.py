@@ -210,6 +210,17 @@ def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> 
             f'Last malformed line: {event_health.get("last_malformed_line")}; '
             f'{event_health.get("last_parse_error", "")}',
         )
+    if not _RUNNER_ROOT_ENV:
+        add("WARNING", "RUNNER_ROOT_NOT_EXPLICIT", None,
+            "SP2L_RUNNER_ROOT is unset; monitor is reading relative to its own worktree",
+            f"Resolved data root: {RUNNER_ROOT}")
+    try:
+        state_age = max(0, time.time() - STATE_FILE.stat().st_mtime)
+    except OSError as exc:
+        state_age = None
+        add("ERROR", "STATE_FILE_UNAVAILABLE", None, "Runner state file is missing or unreadable", str(exc))
+    if state_age is not None and state_age > 90:
+        add("WARNING", "STATE_FILE_STALE", None, "Runner state file has not been updated for more than 90 seconds", f"age_seconds={state_age:.0f}")
     if runner.get("pid") is None:
         add("WARNING", "RUNNER_LOCK_UNAVAILABLE", None, "Runner PID cannot be confirmed", runner.get("detail", ""))
     elif not runner.get("alive"):
