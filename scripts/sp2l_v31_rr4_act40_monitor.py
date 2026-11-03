@@ -190,6 +190,8 @@ def _render() -> str:
         else f"NOT CONFIRMED · {runner['detail']}"
     )
     source_warning = (
+        " · WARNING: SP2L_RUNNER_ROOT is unset; defaulting to the monitor worktree"
+        if not _RUNNER_ROOT_ENV else
         " · WARNING: monitor and runner data roots differ"
         if ROOT.resolve() != RUNNER_ROOT.resolve() else ""
     )
