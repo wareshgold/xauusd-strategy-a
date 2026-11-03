@@ -1,6 +1,10 @@
 import unittest
+import sys
+from pathlib import Path
 
-from scripts.sp2l_trailing_rules import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+
+from sp2l_trailing_rules import (
     normalize_trailing_sl,
     should_retry_trailing,
     trailing_sl_is_placeable,
