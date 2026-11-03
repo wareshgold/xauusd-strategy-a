@@ -39,7 +39,7 @@ jobs:
       - name: Run shared runner lock tests
         run: python scripts/test_sp2l_runner_lock.py
       - name: Compile V3.1 forward runner modules
-        run: python -m py_compile scripts/run_sp2l_author_replica_multi_symbol_forward_test.py scripts/run_sp2l_v3_1_xauusd_forward_test.py scripts/sp2l_v31_startup_recovery.py scripts/sp2l_runner_lock.py scripts/sp2l_trailing_rules.py scripts/sp2l_trailing_state.py scripts/sp2l_history_query_failure_log.py scripts/sp2l_tracked_deal_history.py
+        run: python -m py_compile scripts/run_sp2l_author_replica_multi_symbol_forward_test.py scripts/run_sp2l_v3_1_xauusd_forward_test.py scripts/sp2l_v31_startup_recovery.py scripts/sp2l_runner_lock.py scripts/sp2l_trailing_rules.py scripts/sp2l_trailing_state.py scripts/sp2l_history_query_failure_log.py scripts/sp2l_tracked_deal_history.py scripts/sp2l_v31_rr4_act40_monitor.py
       - name: Run Telegram credential source tests
         run: python scripts/test_telegram_client_env.py
       - name: Run reconciliation tests
