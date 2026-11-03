@@ -39,15 +39,14 @@ def _normal_path(value: str) -> str:
 
 
 def validate_terminal_paths(observer_path: str | None, runner_path: str | None = None) -> str:
-    """Fail closed unless observer uses a distinct, explicitly configured terminal binary."""
+    """Validate the existing MT5 executable path; shared Runner terminal is intentional."""
     if not observer_path:
-        raise RuntimeError("SP2L_OBSERVER_TERMINAL_PATH is required; use a dedicated MT5 portable copy.")
+        raise RuntimeError("SP2L_OBSERVER_TERMINAL_PATH is required; point it to the existing MT5 terminal.")
     candidate = Path(observer_path).expanduser()
     if not candidate.is_file():
-        raise RuntimeError(f"Observer terminal executable does not exist: {candidate}")
-    runner = runner_path or os.getenv("SP2L_RUNNER_TERMINAL_PATH", DEFAULT_RUNNER_TERMINAL)
-    if _normal_path(str(candidate)) == _normal_path(runner):
-        raise RuntimeError("Observer terminal path matches the Forward Runner terminal; refusing shared connection.")
+        raise RuntimeError(f"MT5 terminal executable does not exist: {candidate}")
+    # The observer intentionally shares the already-running terminal. The runner_path
+    # argument remains accepted for backward-compatible callers and audit visibility.
     return str(candidate.resolve())
 
 
@@ -148,16 +147,13 @@ class MT5Observer:
         if self.mt5 is None:
             import MetaTrader5 as mt5
             self.mt5 = mt5
-        ok = self.mt5.initialize(path=terminal, portable=True, timeout=10000)
+        # portable=False attaches to the normal existing terminal data folder.
+        # Do not start an isolated portable instance or invoke shutdown() on this shared terminal.
+        ok = self.mt5.initialize(path=terminal, portable=False, timeout=10000)
         if not ok:
             self.last_error = f"initialize failed: {self.mt5.last_error()}"
             raise RuntimeError(self.last_error)
         self.connected = True
-
-    def close(self):
-        if self.connected:
-            self.mt5.shutdown()
-            self.connected = False
 
     def snapshot(self, symbol="XAUUSD.ecn"):
         try:
@@ -353,16 +349,13 @@ def api_status():
 
 
 def main():
-    # Fail before opening the web server if isolation cannot be established.
+    # Validate the existing terminal path before opening the web server.
     validate_terminal_paths(
         os.getenv("SP2L_OBSERVER_TERMINAL_PATH"),
         os.getenv("SP2L_RUNNER_TERMINAL_PATH", DEFAULT_RUNNER_TERMINAL),
     )
     print(f"{VERSION}: http://127.0.0.1:{PORT} (read-only observer)", flush=True)
-    try:
-        APP.run(host="127.0.0.1", port=PORT, debug=False, use_reloader=False, threaded=True)
-    finally:
-        observer.close()
+    APP.run(host="127.0.0.1", port=PORT, debug=False, use_reloader=False, threaded=True)
 
 
 if __name__ == "__main__":
