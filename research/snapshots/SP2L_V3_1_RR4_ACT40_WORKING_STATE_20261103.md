@@ -1,6 +1,6 @@
 # SP2L V3.1 RR4 / ACT40 — Working-State Evidence Snapshot
 
-- Snapshot recorded (Tehran): 2026-11-03 10:55:16.048+0
+- Snapshot recorded (Tehran): 2026-11-03 10:55:16 +03:30
 - Classification: DEMO / RESEARCH ONLY
 - Strategy canonical status: `canonical=false`
 - Version: `SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101`
