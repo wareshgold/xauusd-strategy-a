@@ -26,6 +26,29 @@ def update_favorable_extreme(
     raise ValueError("direction must be BUY or SELL")
 
 
+def favorable_move(direction: str, entry: float, favorable_extreme: float) -> float:
+    """Measure the favorable price excursion without converting it to USD."""
+    if not all(math.isfinite(float(value)) for value in (entry, favorable_extreme)):
+        raise ValueError("activation prices must be finite")
+    if direction == "BUY":
+        return float(favorable_extreme) - float(entry)
+    if direction == "SELL":
+        return float(entry) - float(favorable_extreme)
+    raise ValueError("direction must be BUY or SELL")
+
+
+def trailing_activation_reached(
+    direction: str,
+    entry: float,
+    favorable_extreme: float,
+    activation_distance: float,
+) -> bool:
+    """Preserve the existing price-distance activation threshold."""
+    if not math.isfinite(float(activation_distance)) or activation_distance < 0:
+        raise ValueError("activation_distance must be finite and non-negative")
+    return favorable_move(direction, entry, favorable_extreme) >= float(activation_distance)
+
+
 def trailing_record_matches(
     record: dict | None,
     *,
