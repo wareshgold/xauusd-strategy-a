@@ -210,3 +210,114 @@ def test_rr4_act40_monitor_marks_retried_events_recovered(monkeypatch, tmp_path)
     assert "TELEGRAM_RETRY_RECOVERED" in codes
     assert "TRAIL_DEFERRED" not in codes
     assert "TELEGRAM_SIGNAL_RETRY" not in codes
+
+
+def test_runner_process_detection_does_not_require_lock_file(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+
+    monitor = load_monitor(monkeypatch, tmp_path)
+    runner_root = tmp_path / "active-runner"
+    scripts = runner_root / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "run_sp2l_v3_1_xauusd_forward_test.py").write_text("# fixture", encoding="utf-8")
+    monkeypatch.setattr(monitor, "RUNNER_ROOT", runner_root)
+    monkeypatch.setattr(monitor.os, "name", "nt")
+    assert not monitor.RUNNER_LOCK.exists()
+
+    payload = [
+        {"pid": 11352, "parent_pid": 11216, "command_line": "python runner.py"},
+        {"pid": 9088, "parent_pid": 11352, "command_line": "python runner.py"},
+    ]
+    monkeypatch.setattr(
+        monitor.subprocess, "run",
+        lambda *args, **kwargs: SimpleNamespace(
+            returncode=0, stdout=json.dumps(payload), stderr=""
+        ),
+    )
+
+    status = monitor._runner_status()
+
+    assert status["alive"] is True
+    assert status["pid"] == 11352
+    assert status["pids"] == [11352, 9088]
+    assert status["source"] == "windows_cim_process_probe"
+
+
+def test_runner_process_missing_is_distinct_from_probe_unavailable(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+
+    monitor = load_monitor(monkeypatch, tmp_path)
+    runner_root = tmp_path / "active-runner"
+    scripts = runner_root / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "run_sp2l_v3_1_xauusd_forward_test.py").write_text("# fixture", encoding="utf-8")
+    monkeypatch.setattr(monitor, "RUNNER_ROOT", runner_root)
+    monkeypatch.setattr(monitor.os, "name", "nt")
+    monkeypatch.setattr(
+        monitor.subprocess, "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="[]", stderr=""),
+    )
+
+    status = monitor._runner_status()
+    diagnostics = monitor._build_diagnostics(
+        [], status, {"malformed_lines": 0, "read_error": None}
+    )
+
+    assert status["alive"] is False
+    assert any(item["code"] == "RUNNER_PROCESS_NOT_FOUND" and item["level"] == "ERROR"
+               for item in diagnostics)
+    assert all(item["code"] != "RUNNER_LOCK_UNAVAILABLE" for item in diagnostics)
+
+
+def test_runner_process_probe_failure_is_unverified_not_stopped(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    runner_root = tmp_path / "active-runner"
+    scripts = runner_root / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "run_sp2l_v3_1_xauusd_forward_test.py").write_text("# fixture", encoding="utf-8")
+    monkeypatch.setattr(monitor, "RUNNER_ROOT", runner_root)
+    monkeypatch.setattr(monitor.os, "name", "nt")
+
+    def unavailable(*args, **kwargs):
+        raise FileNotFoundError("powershell.exe unavailable")
+
+    monkeypatch.setattr(monitor.subprocess, "run", unavailable)
+    status = monitor._runner_status()
+    diagnostics = monitor._build_diagnostics(
+        [], status, {"malformed_lines": 0, "read_error": None}
+    )
+
+    assert status["alive"] is None
+    assert any(item["code"] == "RUNNER_PROCESS_UNVERIFIED" and item["level"] == "WARNING"
+               for item in diagnostics)
+    assert all(item["code"] != "RUNNER_PROCESS_NOT_FOUND" for item in diagnostics)
+
+
+def test_separate_monitor_and_runner_worktrees_are_not_a_warning(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    runner_root = tmp_path / "separate-runner-worktree"
+    runner_root.mkdir()
+    monitor.RUNNER_ROOT = runner_root
+    monitor.RUNNER_ROOT_SOURCE = "SP2L_RUNNER_ROOT"
+    monitor._RUNNER_ROOT_ENV = str(runner_root)
+    monitor.STATE_FILE = tmp_path / "state.json"
+    monitor.EVENTS = tmp_path / "events.jsonl"
+    monitor.STATE_FILE.write_text(
+        json.dumps({"orders": [], "positions": [], "deal_events": [], "deals": []}),
+        encoding="utf-8",
+    )
+    monitor.EVENTS.write_text("", encoding="utf-8")
+    monkeypatch.setattr(monitor, "_runner_status", lambda: {
+        "pid": 11352, "pids": [11352, 9088], "alive": True, "detail": "fixture"
+    })
+
+    page = monitor._render()
+    diagnostics = monitor._build_diagnostics(
+        [], {"pid": 11352, "pids": [11352, 9088], "alive": True},
+        {"malformed_lines": 0, "read_error": None},
+    )
+
+    assert "WARNING: monitor and runner data roots differ" not in page
+    assert "RUNNER_ROOT_NOT_EXPLICIT" not in {item["code"] for item in diagnostics}
+    assert "ACTIVE · PID 11352 · processes=11352,9088" in page
+    assert "RUNNER_LOCK_UNAVAILABLE" not in {item["code"] for item in diagnostics}
