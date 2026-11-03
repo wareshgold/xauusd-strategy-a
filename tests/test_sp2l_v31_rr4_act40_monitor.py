@@ -112,3 +112,76 @@ def test_rr4_act40_monitor_uses_explicit_runner_root(monkeypatch, tmp_path):
         / "sp2l_v3_1_xauusd_rr4_act40_forward_state.json"
     )
     assert monitor.RUNNER_ROOT_SOURCE == "SP2L_RUNNER_ROOT"
+
+
+
+def test_rr4_act40_monitor_surfaces_actionable_trailing_failure(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    events = [{
+        "ts_utc": "2026-11-03T08:00:00+00:00",
+        "event": "TRAIL_UPDATE",
+        "symbol": "XAUUSD.ecn",
+        "position": 65001173,
+        "old_sl": 3925.66,
+        "new_sl": 3915.59,
+        "success": False,
+        "retcode": 10016,
+        "comment": "Invalid stops",
+        "last_error": "broker rejected modification",
+        "attempt_number": 2,
+        "retry_scheduled": True,
+    }]
+    findings = monitor._diagnostics(events)
+    assert len(findings) == 1
+    assert findings[0]["severity"] == "ERROR"
+    assert findings[0]["timestamp_tehran"] == "2026-11-03 11:30:00"
+    assert "retcode=10016" in findings[0]["detail"]
+    assert "broker rejected modification" in findings[0]["detail"]
+    assert "later successful TRAIL_UPDATE" in findings[0]["action"]
+
+
+def test_rr4_act40_monitor_marks_deferred_trailing_as_resolved_when_retry_succeeds(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    events = [
+        {
+            "ts_utc": "2026-11-03T08:00:00+00:00",
+            "event": "TRAIL_DEFERRED",
+            "position": 65001173,
+            "completed_bar_time": 1793695860,
+            "reason": "CURRENT_QUOTE_OR_BROKER_DISTANCE",
+        },
+        {
+            "ts_utc": "2026-11-03T08:00:06+00:00",
+            "event": "TRAIL_UPDATE",
+            "position": 65001173,
+            "completed_bar_time": 1793695860,
+            "success": True,
+            "retcode": 10009,
+        },
+    ]
+    findings = monitor._diagnostics(events)
+    assert len(findings) == 1
+    assert findings[0]["severity"] == "INFO"
+    assert findings[0]["title"] == "Trailing stop retry succeeded"
+
+
+def test_rr4_act40_monitor_surfaces_order_and_session_errors(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    events = [
+        {
+            "ts_utc": "2026-11-03T08:00:00+00:00",
+            "event": "ORDER_RESULT",
+            "result": {"ok": False, "retcode": 10016, "comment": "Invalid stops"},
+        },
+        {
+            "ts_utc": "2026-11-03T08:01:00+00:00",
+            "event": "SESSION_GATE_ERROR",
+            "error": "clock source unavailable",
+        },
+    ]
+    findings = monitor._diagnostics(events)
+    assert [item["severity"] for item in findings] == ["ERROR", "ERROR"]
+    assert findings[0]["title"] == "Order placement failed"
+    assert findings[1]["title"] == "Session gate evaluation error"
+    page = monitor._render()
+    assert "Actionable diagnostics" in page
