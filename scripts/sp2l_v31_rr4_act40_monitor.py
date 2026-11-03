@@ -207,6 +207,21 @@ def _diagnostics(events: list[dict]) -> list[dict]:
             title = "Trading is not currently allowed"
             detail_parts = ["trade_allowed=False"]
             action = "Check terminal/account trading permissions; the dashboard does not change them."
+        elif kind in ("TELEGRAM_SIGNAL_RETRY", "TELEGRAM_SIGNAL", "TELEGRAM_DEAL_LIFECYCLE", "START_TELEGRAM") and (
+            event.get("success") is False or (event.get("telegram") or {}).get("success") is False
+        ):
+            retrying = kind == "TELEGRAM_SIGNAL_RETRY" or bool(event.get("retry_scheduled"))
+            severity = "WARNING" if retrying else "ERROR"
+            title = "Telegram notification retry pending" if retrying else "Telegram notification failed"
+            detail_parts = [f"{k}={v}" for k, v in event.items()
+                            if k not in ("ts_utc", "event", "canonical", "telegram")]
+            telegram = event.get("telegram") or {}
+            detail_parts.extend(f"telegram.{k}={v}" for k, v in telegram.items())
+            action = (
+                "Check the next retry result and confirm eventual HTTP success."
+                if retrying else
+                "Inspect Telegram response/error and delivery configuration; the trade lifecycle is separate from notification delivery."
+            )
         elif kind == "EXECUTION_BLOCKED":
             severity = "INFO"
             title = "Execution blocked by a guard"
