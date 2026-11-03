@@ -135,6 +135,108 @@ def _summary(events: list[dict]) -> dict:
     return counts
 
 
+def _diagnostics(events: list[dict]) -> list[dict]:
+    """Convert raw runner events into concise, actionable dashboard findings."""
+    successful_trails = {
+        (str(e.get("position")), str(e.get("completed_bar_time")))
+        for e in events
+        if e.get("event") == "TRAIL_UPDATE" and e.get("success") is True
+    }
+    findings = []
+    for event in events:
+        kind = str(event.get("event") or "UNKNOWN")
+        position = event.get("position")
+        detail_parts = []
+        severity = None
+        title = kind.replace("_", " ").title()
+        action = "Review the event details and correlate by signal, order, deal, or position ID."
+
+        if kind == "TRAIL_UPDATE" and event.get("success") is False:
+            severity = "ERROR"
+            title = "Trailing stop modification failed"
+            action = (
+                "Inspect retcode, comment, last_error and retry fields. Confirm a later "
+                "successful TRAIL_UPDATE for the same position/bar before treating the SL as changed."
+            )
+            for field in ("old_sl", "new_sl", "retcode", "comment", "last_error",
+                          "attempt_number", "retry_scheduled", "retry_max_attempts_per_bar"):
+                if event.get(field) is not None:
+                    detail_parts.append(f"{field}={event[field]}")
+        elif kind == "TRAIL_DEFERRED":
+            key = (str(position), str(event.get("completed_bar_time")))
+            resolved = key in successful_trails
+            severity = "INFO" if resolved else "WARNING"
+            title = "Trailing stop retry succeeded" if resolved else "Trailing stop update deferred"
+            action = (
+                "A later successful update for this position/bar is present in the event window."
+                if resolved else
+                "Check for a later successful TRAIL_UPDATE for this position/bar. If absent, inspect "
+                "quote side, broker distance, retcode and retry diagnostics."
+            )
+            for field in ("reason", "old_sl", "raw_sl", "normalized_sl", "bid", "ask",
+                          "stops_level", "freeze_level"):
+                if event.get(field) is not None:
+                    detail_parts.append(f"{field}={event[field]}")
+        elif kind == "ORDER_RESULT" and not bool((event.get("result") or {}).get("ok")):
+            severity = "ERROR"
+            title = "Order placement failed"
+            result = event.get("result") or {}
+            for field in ("retcode", "comment", "order", "deal"):
+                if result.get(field) is not None:
+                    detail_parts.append(f"{field}={result[field]}")
+            action = "Inspect order retcode/comment and verification checks; no successful placement is confirmed."
+        elif kind == "SESSION_GATE_ERROR":
+            severity = "ERROR"
+            title = "Session gate evaluation error"
+            detail_parts = [f"{k}={v}" for k, v in event.items()
+                            if k not in ("ts_utc", "event", "canonical")]
+            action = "Inspect the recorded exception/reason and confirm whether the session gate safely blocked execution."
+        elif kind == "HEARTBEAT" and event.get("mt5_connected") is False:
+            severity = "ERROR"
+            title = "Runner reports MT5 disconnected"
+            detail_parts = ["mt5_connected=False"]
+            action = "Check the MT5 terminal and runner connectivity. This dashboard will not connect to MT5 itself."
+        elif kind == "HEARTBEAT" and event.get("trade_allowed") is False:
+            severity = "WARNING"
+            title = "Trading is not currently allowed"
+            detail_parts = ["trade_allowed=False"]
+            action = "Check terminal/account trading permissions; the dashboard does not change them."
+        elif kind == "EXECUTION_BLOCKED":
+            severity = "INFO"
+            title = "Execution blocked by a guard"
+            detail_parts = [f"{k}={v}" for k, v in event.items()
+                            if k not in ("ts_utc", "event", "canonical")]
+            action = "Usually an intentional safety/session gate. Review the recorded block reason if unexpected."
+        elif kind in ("PENDING_ORDER_EXPIRED", "TELEGRAM_PENDING_EXPIRED"):
+            severity = "INFO"
+            title = "Pending order expired"
+            detail_parts = [f"{k}={v}" for k, v in event.items()
+                            if k not in ("ts_utc", "event", "canonical")]
+            action = "Informational lifecycle event; confirm expiry is expected for this signal."
+        elif "ERROR" in kind or "FAIL" in kind:
+            severity = "ERROR"
+            detail_parts = [f"{k}={v}" for k, v in event.items()
+                            if k not in ("ts_utc", "event", "canonical")]
+            action = "Inspect the full event payload and correlate it with the associated signal/order/position."
+
+        if severity:
+            findings.append({
+                "severity": severity,
+                "title": title,
+                "event": kind,
+                "timestamp_tehran": _fmt_event_time(event.get("ts_utc")),
+                "ts_utc": event.get("ts_utc"),
+                "symbol": event.get("symbol"),
+                "position": position,
+                "signal_id": event.get("signal_id"),
+                "detail": " · ".join(detail_parts) or event.get("detail") or event.get("reason") or "",
+                "action": action,
+            })
+    rank = {"ERROR": 0, "WARNING": 1, "INFO": 2}
+    findings.sort(key=lambda x: (rank.get(x["severity"], 3), str(x.get("ts_utc") or "")), reverse=False)
+    return list(reversed(findings[-100:]))
+
+
 def _esc(value) -> str:
     return html.escape(str(value))
 
@@ -171,6 +273,7 @@ def _render() -> str:
     runner = _runner_status()
     probe = _mt5_probe()
     stats = _summary(events)
+    diagnostics = _diagnostics(events)
 
     try:
         state_age = max(0, time.time() - STATE_FILE.stat().st_mtime)
@@ -263,6 +366,19 @@ def _render() -> str:
         f'<div class="card"><div class="label">{_esc(k)}</div><div class="value">{_esc(v)}</div></div>'
         for k, v in cards
     )
+    diagnostic_rows = ""
+    for item in diagnostics[:30]:
+        diagnostic_rows += (
+            "<tr><td>" + _esc(item["severity"]) + "</td><td>" +
+            _esc(item["timestamp_tehran"]) + " Tehran</td><td>" +
+            _esc(item["title"]) + "</td><td>" +
+            _esc(item.get("symbol") or "") + "</td><td>" +
+            _esc(item.get("position") or "") + "</td><td>" +
+            _esc(item.get("detail") or "") + "</td><td>" +
+            _esc(item["action"]) + "</td></tr>"
+        )
+    if not diagnostic_rows:
+        diagnostic_rows = '<tr><td colspan="7" class="ok">No actionable errors or warnings in the recent event window.</td></tr>'
     error = '<p class="warn">MT5 account, tick, orders and positions are intentionally not queried to protect the active runner connection.</p>'
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta http-equiv="refresh" content="{REFRESH_SECONDS}">
@@ -292,6 +408,8 @@ th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
 <tr><th>State tracked IDs (not live inventory)</th><td>orders={len(state.get("orders", []))} · position IDs={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
 </table>
 {error}
+<h2>Actionable diagnostics (last {len(diagnostics)} findings · ERROR / WARNING / INFO)</h2>
+<table><tr><th>Severity</th><th>Tehran time</th><th>Finding</th><th>Symbol</th><th>Position</th><th>Observed details</th><th>What to check</th></tr>{diagnostic_rows}</table>
 <h2>Event counters (last {len(events)} available events)</h2><div class="grid">{card_html}</div>
 <h2>Pending orders — {SYMBOL}</h2>
 <table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Price</th><th>SL</th><th>TP</th></tr>{order_rows}</table>
@@ -321,6 +439,7 @@ def api_status():
         "state": _read_json(STATE_FILE),
         "state_age_seconds": state_age,
         "stats": _summary(events),
+        "diagnostics": _diagnostics(events),
         "mt5": {"queried": False, "reason": "MT5 isolated; filesystem-only monitor"},
         "event_count_read": len(events),
         "data_root": str(RUNNER_ROOT),
