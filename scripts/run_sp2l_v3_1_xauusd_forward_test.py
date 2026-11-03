@@ -17,6 +17,8 @@ from sp2l_trailing_state import (
     load_trailing_state,
     save_trailing_state,
     update_favorable_extreme,
+    favorable_move,
+    trailing_activation_reached,
     trailing_record_matches,
 )
 import MetaTrader5 as mt5
@@ -160,12 +162,10 @@ def trail_positions(cfg_runtime,state):
                     "detail":f"{type(exc).__name__}: {exc}","canonical":False})
                 continue
 
-        favorable = (
-            favorable_extreme - entry
-            if direction == "BUY"
-            else entry - favorable_extreme
-        )
-        if favorable < cfg.TRAIL_DISTANCE_PRICE:
+        favorable = favorable_move(direction, entry, favorable_extreme)
+        if not trailing_activation_reached(
+            direction, entry, favorable_extreme, cfg.TRAIL_DISTANCE_PRICE
+        ):
             continue
         raw_sl=cfg.trail_stop(direction,favorable_extreme)
 
