@@ -233,8 +233,8 @@ def _diagnostics(events: list[dict]) -> list[dict]:
                 "action": action,
             })
     rank = {"ERROR": 0, "WARNING": 1, "INFO": 2}
-    findings.sort(key=lambda x: (rank.get(x["severity"], 3), str(x.get("ts_utc") or "")), reverse=False)
-    return list(reversed(findings[-100:]))
+    findings.sort(key=lambda x: (rank.get(x["severity"], 3), str(x.get("ts_utc") or "")))
+    return findings[-100:]
 
 
 def _esc(value) -> str:
