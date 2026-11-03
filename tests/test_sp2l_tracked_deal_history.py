@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from sp2l_tracked_deal_history import (
+from scripts.sp2l_tracked_deal_history import (
     DealHistoryQueryError,
     collect_tracked_deals,
 )
