@@ -1,4 +1,4 @@
-from sp2l_history_query_failure_log import HistoryQueryFailureLogGate
+from scripts.sp2l_history_query_failure_log import HistoryQueryFailureLogGate
 
 
 def test_logs_same_failure_once_until_success():
