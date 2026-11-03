@@ -8,6 +8,11 @@ from __future__ import annotations
 import os
 import time
 from datetime import timedelta
+from sp2l_trailing_rules import (
+    normalize_trailing_sl,
+    trailing_sl_is_placeable,
+    should_retry_trailing,
+)
 import MetaTrader5 as mt5
 import sp2l_v3_1_rr4_act40_config as cfg
 
@@ -49,12 +54,16 @@ _original_rates=runner.rates
 runner.rates=lambda symbol,count=10:_original_rates(symbol,30)
 
 _original_monitor=runner.monitor_position_lifecycle
+_TRAIL_MAX_SEND_ATTEMPTS_PER_BAR = 3
+_TRAIL_RETRY_COOLDOWN_SECONDS = 2.0
+_TRAIL_RETRY_STATE = {}
+_TRAIL_DEFERRED_LOGGED = set()
+
 def trail_positions(cfg_runtime,state):
     _original_monitor(cfg_runtime,state)
     symbol=cfg_runtime["symbol"]; magic=cfg_runtime["magic"]
     info=mt5.symbol_info(symbol)
-    tick=mt5.symbol_info_tick(symbol)
-    if info is None or tick is None: return
+    if info is None: return
     # Bar 0 is forming; bar 1 is the latest completed M1 candle.
     bars=mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, 1, 1)
     if bars is None or len(bars)!=1: return
@@ -63,12 +72,16 @@ def trail_positions(cfg_runtime,state):
     high=float(b["high"]); low=float(b["low"])
     positions=mt5.positions_get(symbol=symbol) or []
     attempts=state.setdefault("trail_attempts", set())
-    point=float(getattr(info,"point",0.0) or 0.0)
-    stops_level=int(getattr(info,"trade_stops_level",0) or 0)
-    freeze_level=int(getattr(info,"trade_freeze_level",0) or 0)
-    min_distance=max(stops_level,freeze_level)*point
-    bid=float(getattr(tick,"bid",0.0) or 0.0)
-    ask=float(getattr(tick,"ask",0.0) or 0.0)
+    now=time.monotonic()
+
+    # Keep only retry state for the currently evaluated completed bar.
+    for key in list(_TRAIL_RETRY_STATE):
+        if not key.endswith(f":{completed_bar_time}"):
+            _TRAIL_RETRY_STATE.pop(key,None)
+    for key in list(_TRAIL_DEFERRED_LOGGED):
+        if not key.endswith(f":{completed_bar_time}"):
+            _TRAIL_DEFERRED_LOGGED.discard(key)
+
     for p in positions:
         if int(getattr(p,"magic",0) or 0)!=magic: continue
         ticket=int(getattr(p,"ticket",0) or 0)
@@ -84,32 +97,74 @@ def trail_positions(cfg_runtime,state):
             continue
         attempt_key=f"{ticket}:{completed_bar_time}"
         if attempt_key in attempts: continue
+        retry=_TRAIL_RETRY_STATE.get(attempt_key,{"count":0,"last_attempt":0.0})
+        if retry["count"] >= _TRAIL_MAX_SEND_ATTEMPTS_PER_BAR:
+            attempts.add(attempt_key)
+            continue
+        if now-float(retry["last_attempt"]) < _TRAIL_RETRY_COOLDOWN_SECONDS:
+            continue
+
         if int(p.type)==mt5.POSITION_TYPE_BUY:
             favorable=high-entry
             if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
-            new_sl=cfg.trail_stop("BUY",high)
-            if new_sl<=old_sl or new_sl>=high: continue
-            # MT5 requires a BUY SL to remain below current Bid and outside
-            # the broker's stops/freeze distance. The historical trail target
-            # is retained; execution is deferred when the broker rejects the
-            # target as currently unplaceable.
-            if bid <= 0 or new_sl >= bid - min_distance: continue
+            raw_sl=cfg.trail_stop("BUY",high)
             direction="BUY"
         else:
             favorable=entry-low
             if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
-            new_sl=cfg.trail_stop("SELL",low)
-            if old_sl>0 and new_sl>=old_sl: continue
-            if new_sl<=low: continue
-            # MT5 requires a SELL SL to remain above current Ask and outside
-            # the broker's stops/freeze distance.
-            if ask <= 0 or new_sl <= ask + min_distance: continue
+            raw_sl=cfg.trail_stop("SELL",low)
             direction="SELL"
+
+        # Refresh broker quote and symbol constraints immediately before each
+        # send. The quote used for an earlier poll is not safe for order_send.
+        info_now=mt5.symbol_info(symbol)
+        tick_now=mt5.symbol_info_tick(symbol)
+        if info_now is None or tick_now is None: continue
+        point=float(getattr(info_now,"point",0.0) or 0.0)
+        tick_size=float(getattr(info_now,"trade_tick_size",0.0) or 0.0) or point
+        digits=int(getattr(info_now,"digits",2) or 0)
+        stops_level=int(getattr(info_now,"trade_stops_level",0) or 0)
+        freeze_level=int(getattr(info_now,"trade_freeze_level",0) or 0)
+        bid=float(getattr(tick_now,"bid",0.0) or 0.0)
+        ask=float(getattr(tick_now,"ask",0.0) or 0.0)
+        if point<=0 or tick_size<=0: continue
+        min_distance=max(stops_level,freeze_level)*point
+        new_sl=normalize_trailing_sl(direction,raw_sl,tick_size,digits)
+        placeable=trailing_sl_is_placeable(
+            direction,new_sl,bid,ask,min_distance
+        )
+        improving=(new_sl>old_sl) if direction=="BUY" else (old_sl<=0 or new_sl<old_sl)
+        if not placeable or not improving:
+            if attempt_key not in _TRAIL_DEFERRED_LOGGED:
+                runner.log_event({
+                    "event":"TRAIL_DEFERRED","version":cfg.VERSION,"symbol":symbol,
+                    "position":ticket,"direction":direction,
+                    "completed_bar_time":completed_bar_time,
+                    "raw_sl":float(raw_sl),"normalized_sl":float(new_sl),
+                    "old_sl":old_sl,"bid":bid,"ask":ask,
+                    "point":point,"tick_size":tick_size,"digits":digits,
+                    "stops_level":stops_level,"freeze_level":freeze_level,
+                    "min_distance":min_distance,
+                    "reason":"CURRENT_QUOTE_OR_BROKER_DISTANCE" if not placeable else "SL_NOT_IMPROVING",
+                    "canonical":False})
+                _TRAIL_DEFERRED_LOGGED.add(attempt_key)
+            continue
+
         request={"action":mt5.TRADE_ACTION_SLTP,"symbol":symbol,
                  "position":ticket,"sl":float(new_sl),"tp":tp}
         send=mt5.order_send(request)
-        ok=bool(send and send.retcode==mt5.TRADE_RETCODE_DONE)
-        attempts.add(attempt_key)
+        retcode=int(send.retcode) if send else None
+        ok=bool(send and retcode==mt5.TRADE_RETCODE_DONE)
+        retry["count"]+=1
+        retry["last_attempt"]=time.monotonic()
+        if ok:
+            attempts.add(attempt_key)
+            _TRAIL_RETRY_STATE.pop(attempt_key,None)
+        elif should_retry_trailing(retcode,retry["count"],_TRAIL_MAX_SEND_ATTEMPTS_PER_BAR):
+            _TRAIL_RETRY_STATE[attempt_key]=retry
+        else:
+            attempts.add(attempt_key)
+            _TRAIL_RETRY_STATE.pop(attempt_key,None)
         runner.log_event({
             "event":"TRAIL_UPDATE","version":cfg.VERSION,"symbol":symbol,
             "position":ticket,"direction":direction,
@@ -118,7 +173,11 @@ def trail_positions(cfg_runtime,state):
             "old_sl":old_sl,"new_sl":float(new_sl),"tp":tp,
             "trail_pips":cfg.TRAIL_PIPS,
             "trail_distance_price":cfg.TRAIL_DISTANCE_PRICE,
-            "success":ok,"retcode":int(send.retcode) if send else None,
+            "bid":bid,"ask":ask,"point":point,"tick_size":tick_size,
+            "digits":digits,"stops_level":stops_level,
+            "freeze_level":freeze_level,"min_distance":min_distance,
+            "attempt_number":retry["count"],
+            "success":ok,"retcode":retcode,
             "comment":str(send.comment) if send else None,"canonical":False})
 runner.monitor_position_lifecycle=trail_positions
 
