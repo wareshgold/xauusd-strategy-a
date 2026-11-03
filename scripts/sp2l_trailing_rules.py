@@ -47,3 +47,13 @@ def should_retry_trailing(retcode: int | None, attempt_count: int, max_attempts:
         and attempt_count >= 1
         and attempt_count < max_attempts
     )
+
+
+def mt5_last_error_detail(last_error) -> str:
+    """Return MT5 last_error safely for diagnostics when order_send returns None."""
+    if not callable(last_error):
+        return "last_error unavailable: function unavailable"
+    try:
+        return str(last_error())
+    except Exception as exc:
+        return f"last_error unavailable: {type(exc).__name__}: {exc}"
