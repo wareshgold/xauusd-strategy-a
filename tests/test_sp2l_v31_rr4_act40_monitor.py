@@ -84,7 +84,7 @@ def test_rr4_act40_monitor_renders_full_tehran_timestamp(monkeypatch, tmp_path):
         "entry": 1,
         "net": 2.5,
     }
-    monitor.EVENTS.write_text(json.dumps(event) + "\\n", encoding="utf-8")
+    monitor.EVENTS.write_text(json.dumps(event) + "\n", encoding="utf-8")
 
     page = monitor._render()
 
