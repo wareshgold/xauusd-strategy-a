@@ -1,4 +1,4 @@
-"""Isolated, read-only MT5 account observer and professional SP2L dashboard.
+r"""Isolated, read-only MT5 account observer and professional SP2L dashboard.
 
 Safety contract:
 - Requires a dedicated MT5 terminal executable path (portable copy).
