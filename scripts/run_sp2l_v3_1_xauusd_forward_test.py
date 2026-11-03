@@ -69,8 +69,10 @@ _TRAIL_DEFERRED_LOGGED = set()
 _TRAIL_STATE_FILE = runner.RUNTIME / "sp2l_v3_1_xauusd_rr4_act40_trailing_state.json"
 _TRAIL_FAVORABLE_EXTREMES = {}
 _TRAIL_STATE_LOADED = False
+_TRAIL_STATE_DIRTY = False
 
 def trail_positions(cfg_runtime,state):
+    global _TRAIL_STATE_DIRTY
     _original_monitor(cfg_runtime,state)
     symbol=cfg_runtime["symbol"]; magic=cfg_runtime["magic"]
     if mt5.symbol_info(symbol) is None: return
@@ -82,6 +84,16 @@ def trail_positions(cfg_runtime,state):
     high=float(b["high"]); low=float(b["low"])
     positions=mt5.positions_get(symbol=symbol)
     if positions is None: return
+    if _TRAIL_STATE_DIRTY:
+        try:
+            save_trailing_state(_TRAIL_STATE_FILE,_TRAIL_FAVORABLE_EXTREMES)
+            _TRAIL_STATE_DIRTY = False
+        except Exception as exc:
+            runner.log_event({
+                "event":"TRAIL_STATE_PERSIST_FAILED","version":cfg.VERSION,
+                "symbol":symbol,"detail":f"{type(exc).__name__}: {exc}",
+                "canonical":False})
+            return
     attempts=state.setdefault("trail_attempts", set())
     now=time.monotonic()
 
@@ -149,11 +161,13 @@ def trail_positions(cfg_runtime,state):
                 "favorable_extreme": float(favorable_extreme),
                 "last_completed_bar_time": int(completed_bar_time),
             }
+            _TRAIL_STATE_DIRTY = True
             try:
                 # Persist before attempting the broker modification. If MT5
                 # rejects/defer the SL, the excursion survives the next bar
                 # and a controlled process restart.
                 save_trailing_state(_TRAIL_STATE_FILE, _TRAIL_FAVORABLE_EXTREMES)
+                _TRAIL_STATE_DIRTY = False
             except Exception as exc:
                 runner.log_event({
                     "event":"TRAIL_STATE_PERSIST_FAILED","version":cfg.VERSION,
@@ -244,8 +258,10 @@ def trail_positions(cfg_runtime,state):
     if stale_keys:
         for stale_key in stale_keys:
             _TRAIL_FAVORABLE_EXTREMES.pop(stale_key,None)
+        _TRAIL_STATE_DIRTY = True
         try:
             save_trailing_state(_TRAIL_STATE_FILE,_TRAIL_FAVORABLE_EXTREMES)
+            _TRAIL_STATE_DIRTY = False
         except Exception as exc:
             runner.log_event({
                 "event":"TRAIL_STATE_PERSIST_FAILED","version":cfg.VERSION,
