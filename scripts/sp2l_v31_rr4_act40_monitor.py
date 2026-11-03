@@ -87,21 +87,75 @@ def _read_events(limit: int = 250) -> list[dict]:
 
 
 def _runner_status() -> dict:
-    try:
-        pid = int(RUNNER_LOCK.read_text(encoding="utf-8").strip())
-    except (OSError, ValueError):
-        return {"pid": None, "alive": False, "detail": "runner lock unavailable"}
-    if pid <= 0:
-        return {"pid": pid, "alive": False, "detail": "invalid PID"}
+    """Identify the Runner by its exact script path; a lock file is optional legacy metadata."""
+    runner_script = RUNNER_ROOT / "scripts" / "run_sp2l_v3_1_xauusd_forward_test.py"
+    if os.name != "nt":
+        return {
+            "pid": None, "pids": [], "alive": None,
+            "detail": "process command-line probe is available only on Windows",
+            "source": "unavailable",
+        }
+    if not runner_script.is_file():
+        return {
+            "pid": None, "pids": [], "alive": None,
+            "detail": f"expected Runner script is missing: {runner_script}",
+            "source": "runner_script_path",
+        }
+    # Keep the PowerShell program static. Pass the path through the child
+    # environment instead of interpolating a filesystem path into a command.
+    probe = r"""
+$ErrorActionPreference = 'Stop'
+$runnerScript = [IO.Path]::GetFullPath((Join-Path $env:SP2L_MONITOR_RUNNER_ROOT 'scripts\run_sp2l_v3_1_xauusd_forward_test.py'))
+$matches = @(Get-CimInstance Win32_Process | Where-Object {
+    $_.CommandLine -and $_.CommandLine.IndexOf($runnerScript, [StringComparison]::OrdinalIgnoreCase) -ge 0
+} | ForEach-Object {
+    [PSCustomObject]@{
+        pid = [int]$_.ProcessId
+        parent_pid = [int]$_.ParentProcessId
+        command_line = [string]$_.CommandLine
+    }
+})
+ConvertTo-Json -InputObject $matches -Compress -Depth 3
+"""
     try:
         result = subprocess.run(
-            ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV"],
-            capture_output=True, text=True, timeout=4, check=False,
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", probe],
+            capture_output=True, text=True, timeout=8, check=False,
+            env={**os.environ, "SP2L_MONITOR_RUNNER_ROOT": str(RUNNER_ROOT)},
         )
-        alive = "python" in result.stdout.lower()
-    except Exception:
-        alive = False
-    return {"pid": pid, "alive": alive, "detail": "process probe via tasklist"}
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout or "PowerShell process probe failed").strip()
+            return {
+                "pid": None, "pids": [], "alive": None,
+                "detail": f"Runner process probe unavailable: {detail}",
+                "source": "windows_cim_process_probe",
+            }
+        raw = result.stdout.strip()
+        rows = json.loads(raw) if raw else []
+        if isinstance(rows, dict):
+            rows = [rows]
+        rows = [row for row in rows if isinstance(row, dict) and row.get("pid")]
+        rows.sort(key=lambda row: (int(row.get("parent_pid") or 0), int(row["pid"])))
+        pids = [int(row["pid"]) for row in rows]
+        pid_set = set(pids)
+        roots = [int(row["pid"]) for row in rows if int(row.get("parent_pid") or 0) not in pid_set]
+        primary_pid = roots[0] if roots else (pids[0] if pids else None)
+        return {
+            "pid": primary_pid,
+            "pids": pids,
+            "alive": bool(pids),
+            "detail": (
+                "Runner process matched by exact script path"
+                if pids else "No process matched the configured Runner script path"
+            ),
+            "source": "windows_cim_process_probe",
+        }
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, TypeError, ValueError) as exc:
+        return {
+            "pid": None, "pids": [], "alive": None,
+            "detail": f"Runner process probe unavailable: {type(exc).__name__}: {exc}",
+            "source": "windows_cim_process_probe",
+        }
 
 
 def _mt5_probe() -> dict:
@@ -230,6 +284,10 @@ def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> 
         add("WARNING", "RUNNER_ROOT_NOT_EXPLICIT", None,
             "SP2L_RUNNER_ROOT is unset; monitor is reading relative to its own worktree",
             f"Resolved data root: {RUNNER_ROOT}")
+    elif not RUNNER_ROOT.is_dir():
+        add("ERROR", "RUNNER_ROOT_UNAVAILABLE", None,
+            "Configured Runner data root does not exist or is not a directory",
+            f"Resolved data root: {RUNNER_ROOT}")
     try:
         state_age = max(0, time.time() - STATE_FILE.stat().st_mtime)
     except OSError as exc:
@@ -237,10 +295,14 @@ def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> 
         add("ERROR", "STATE_FILE_UNAVAILABLE", None, "Runner state file is missing or unreadable", str(exc))
     if state_age is not None and state_age > 90:
         add("WARNING", "STATE_FILE_STALE", None, "Runner state file has not been updated for more than 90 seconds", f"age_seconds={state_age:.0f}")
-    if runner.get("pid") is None:
-        add("WARNING", "RUNNER_LOCK_UNAVAILABLE", None, "Runner PID cannot be confirmed", runner.get("detail", ""))
-    elif not runner.get("alive"):
-        add("ERROR", "RUNNER_PROCESS_NOT_FOUND", None, "Runner process was not found for the PID in its lock file", f'PID={runner.get("pid")}')
+    if runner.get("alive") is False:
+        add("ERROR", "RUNNER_PROCESS_NOT_FOUND", None,
+            "No process matched the configured V3.1 Runner script path",
+            runner.get("detail", ""))
+    elif runner.get("alive") is None:
+        add("WARNING", "RUNNER_PROCESS_UNVERIFIED", None,
+            "Runner process status could not be verified; this is not evidence that the Runner stopped",
+            runner.get("detail", ""))
 
     for event in events:
         kind = event.get("event")
@@ -325,14 +387,17 @@ def _render() -> str:
         if account else "unavailable"
     )
     runner_label = (
-        f"ALIVE · PID {runner['pid']}" if runner["alive"]
-        else f"NOT CONFIRMED · {runner['detail']}"
+        f"ACTIVE · PID {runner['pid']} · processes={','.join(str(pid) for pid in runner.get('pids', []))}"
+        if runner.get("alive") is True else
+        f"NOT FOUND · {runner['detail']}" if runner.get("alive") is False else
+        f"NOT VERIFIED · {runner['detail']}"
     )
+    root_valid = RUNNER_ROOT.is_dir()
     source_warning = (
         " · WARNING: SP2L_RUNNER_ROOT is unset; defaulting to the monitor worktree"
         if not _RUNNER_ROOT_ENV else
-        " · WARNING: monitor and runner data roots differ"
-        if ROOT.resolve() != RUNNER_ROOT.resolve() else ""
+        " · ERROR: configured Runner data root does not exist"
+        if not root_valid else ""
     )
     mt5_label = "NOT QUERIED (runner connection isolated)"
     trade_label = "not queried"
@@ -482,7 +547,7 @@ def api_status():
         state_age = None
     return jsonify({
         "version": VERSION,
-        "runner": _runner_status(),
+        "runner": runner,
         "state": _read_json(STATE_FILE),
         "state_age_seconds": state_age,
         "stats": _summary(events),
@@ -496,6 +561,7 @@ def api_status():
         },
         "data_root": str(RUNNER_ROOT),
         "data_root_source": RUNNER_ROOT_SOURCE,
+        "data_root_valid": RUNNER_ROOT.is_dir(),
         "events_path": str(EVENTS),
         "state_path": str(STATE_FILE),
         "events_health": _file_health(EVENTS),
