@@ -1,6 +1,6 @@
 import unittest
 
-from sp2l_trailing_rules import (
+from scripts.sp2l_trailing_rules import (
     normalize_trailing_sl,
     should_retry_trailing,
     trailing_sl_is_placeable,
