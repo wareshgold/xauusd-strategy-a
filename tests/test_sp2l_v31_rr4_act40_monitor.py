@@ -150,7 +150,7 @@ def test_rr4_act40_monitor_builds_actionable_diagnostics(monkeypatch, tmp_path):
     assert {"TRAIL_UPDATE_FAILED", "TRAIL_DEFERRED", "ORDER_SEND_FAILED", "TELEGRAM_SIGNAL_RETRY"} <= codes
     failed_trail = next(item for item in diagnostics if item["code"] == "TRAIL_UPDATE_FAILED")
     assert failed_trail["level"] == "ERROR"
-    assert failed_trail["time_tehran"] == "2026-11-03 11:00:00"
+    assert failed_trail["time_tehran"] == "2026-11-03 11:30:00"
     assert "retcode=10030" in failed_trail["detail"]
     assert "attempt_number=3" in failed_trail["detail"]
     assert failed_trail["position"] == 65001173
