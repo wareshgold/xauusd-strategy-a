@@ -186,11 +186,19 @@ def _render() -> str:
             result = event.get("result") or {}
             detail = f"ok={result.get('ok')} retcode={result.get('retcode')} order={result.get('order')}"
         elif kind == "TRAIL_UPDATE":
-            detail = (
-                f"position={event.get('position')} "
-                f"SL {event.get('old_sl')} -> {event.get('new_sl')} "
-                f"success={event.get('success')}"
-            )
+            detail_parts = [
+                f"position={event.get('position')}",
+                f"SL {event.get('old_sl')} -> {event.get('new_sl')}",
+                f"success={event.get('success')}",
+            ]
+            for field in (
+                "retcode", "comment", "last_error", "attempt_number",
+                "retry_scheduled", "retry_max_attempts_per_bar",
+            ):
+                value = event.get(field)
+                if value is not None:
+                    detail_parts.append(f"{field}={value}")
+            detail = " · ".join(detail_parts)
         elif kind == "TELEGRAM_DEAL_LIFECYCLE":
             detail = (
                 f"deal={event.get('deal')} position={event.get('position')} "
