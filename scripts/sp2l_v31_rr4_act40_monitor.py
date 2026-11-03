@@ -52,20 +52,38 @@ def _read_json(path: Path) -> dict:
         return {}
 
 
-def _read_events(limit: int = 250) -> list[dict]:
+def _read_events_with_health(limit: int = 250) -> tuple[list[dict], dict]:
+    health = {
+        "path": str(EVENTS), "total_lines": 0, "malformed_lines": 0,
+        "last_malformed_line": None, "read_error": None,
+    }
     try:
-        lines = EVENTS.read_text(encoding="utf-8").splitlines()[-limit:]
-    except OSError:
-        return []
+        lines = EVENTS.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        health["read_error"] = f"{type(exc).__name__}: {exc}"
+        return [], health
+    health["total_lines"] = len(lines)
     out = []
-    for line in lines:
+    start = max(0, len(lines) - limit)
+    for line_number, line in enumerate(lines[start:], start=start + 1):
+        if not line.strip():
+            continue
         try:
             item = json.loads(line)
             if isinstance(item, dict):
                 out.append(item)
-        except json.JSONDecodeError:
-            continue
-    return out
+            else:
+                health["malformed_lines"] += 1
+                health["last_malformed_line"] = line_number
+        except json.JSONDecodeError as exc:
+            health["malformed_lines"] += 1
+            health["last_malformed_line"] = line_number
+            health["last_parse_error"] = f"line {line_number}: {exc.msg}"
+    return out, health
+
+
+def _read_events(limit: int = 250) -> list[dict]:
+    return _read_events_with_health(limit)[0]
 
 
 def _runner_status() -> dict:
@@ -164,13 +182,93 @@ def _file_health(path: Path) -> str:
     except OSError:
         return "missing or unreadable"
 
+def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> list[dict]:
+    """Convert explicit runtime evidence into actionable, timestamped dashboard diagnostics."""
+    items: list[dict] = []
+
+    def add(level: str, code: str, event: dict | None, message: str, detail: str = ""):
+        event = event or {}
+        items.append({
+            "level": level,
+            "code": code,
+            "time_tehran": _fmt_event_time(event.get("ts_utc")) if event else "—",
+            "event": event.get("event", "MONITOR_HEALTH"),
+            "symbol": event.get("symbol", ""),
+            "order": event.get("order") or event.get("tracked_order") or "",
+            "position": event.get("position") or "",
+            "deal": event.get("deal") or event.get("tracked_deal") or "",
+            "message": message,
+            "detail": detail,
+        })
+
+    if event_health.get("read_error"):
+        add("ERROR", "EVENT_FILE_READ", None, "Event log cannot be read", event_health["read_error"])
+    if event_health.get("malformed_lines", 0):
+        add(
+            "ERROR", "EVENT_JSON_INVALID", None,
+            f'{event_health["malformed_lines"]} malformed JSON line(s) detected',
+            f'Last malformed line: {event_health.get("last_malformed_line")}; '
+            f'{event_health.get("last_parse_error", "")}',
+        )
+    if runner.get("pid") is None:
+        add("WARNING", "RUNNER_LOCK_UNAVAILABLE", None, "Runner PID cannot be confirmed", runner.get("detail", ""))
+    elif not runner.get("alive"):
+        add("ERROR", "RUNNER_PROCESS_NOT_FOUND", None, "Runner process was not found for the PID in its lock file", f'PID={runner.get("pid")}')
+
+    for event in events:
+        kind = event.get("event")
+        result = event.get("result") if isinstance(event.get("result"), dict) else {}
+        telegram = event.get("telegram") if isinstance(event.get("telegram"), dict) else {}
+        detail_fields = []
+        for field in (
+            "retcode", "comment", "last_error", "reason", "attempt_number",
+            "retry_scheduled", "retry_max_attempts_per_bar", "completed_bar_time",
+        ):
+            if event.get(field) is not None:
+                detail_fields.append(f"{field}={event[field]}")
+        for field in ("ok", "retcode", "comment", "order", "deal"):
+            if result.get(field) is not None:
+                detail_fields.append(f"result.{field}={result[field]}")
+        if telegram.get("success") is not None:
+            detail_fields.append(f'telegram.success={telegram.get("success")}')
+        if telegram.get("detail") is not None:
+            detail_fields.append(f'telegram.detail={telegram.get("detail")}')
+        detail = " · ".join(detail_fields)
+
+        if kind == "SESSION_GATE_ERROR":
+            add("ERROR", "SESSION_GATE_ERROR", event, "Session gate raised an error", detail)
+        elif kind == "ORDER_RESULT" and result.get("ok") is False:
+            add("ERROR", "ORDER_SEND_FAILED", event, "Order request failed", detail)
+        elif kind == "TRAIL_UPDATE" and event.get("success") is False:
+            add("ERROR", "TRAIL_UPDATE_FAILED", event, "Trailing stop modification failed", detail)
+        elif kind == "TRAIL_DEFERRED":
+            add("WARNING", "TRAIL_DEFERRED", event, "Trailing stop update was deferred; inspect the retry / next attempt", detail or str(event.get("reason", "")))
+        elif kind == "START_TELEGRAM" and event.get("success") is False:
+            add("ERROR", "TELEGRAM_START_FAILED", event, "Telegram startup notification failed", detail)
+        elif kind == "TELEGRAM_DEAL_LIFECYCLE" and telegram.get("success") is False:
+            add("ERROR", "TELEGRAM_DEAL_NOTIFY_FAILED", event, "Telegram deal notification failed", detail)
+        elif kind == "TELEGRAM_SIGNAL_RETRY":
+            add("WARNING", "TELEGRAM_SIGNAL_RETRY", event, "Signal notification entered retry handling; delivery is not yet confirmed", detail)
+        elif kind == "HEARTBEAT":
+            if event.get("mt5_connected") is False:
+                add("ERROR", "MT5_DISCONNECTED", event, "Runner heartbeat reports MT5 disconnected", detail)
+            if event.get("trade_allowed") is False:
+                add("WARNING", "TRADING_NOT_ALLOWED", event, "Runner heartbeat reports trading is not allowed", detail)
+        elif kind == "EXECUTION_BLOCKED":
+            add("INFO", "EXECUTION_BLOCKED", event, "Candidate execution was blocked by a gate or guard (not automatically a software defect)", detail)
+        elif isinstance(kind, str) and kind.endswith("_ERROR") and kind != "SESSION_GATE_ERROR":
+            add("ERROR", kind, event, f"Runner emitted {kind}", detail)
+
+    return list(reversed(items[-100:]))
+
 
 def _render() -> str:
     state = _read_json(STATE_FILE)
-    events = _read_events()
+    events, event_health = _read_events_with_health()
     runner = _runner_status()
     probe = _mt5_probe()
     stats = _summary(events)
+    diagnostics = _build_diagnostics(events, runner, event_health)
 
     try:
         state_age = max(0, time.time() - STATE_FILE.stat().st_mtime)
@@ -249,6 +347,26 @@ def _render() -> str:
     if not event_rows:
         event_rows = '<tr><td colspan="4" class="dim">No V3.1 events recorded yet</td></tr>'
 
+    diagnostic_rows = "".join(
+        "<tr><td>" + _esc(item["time_tehran"]) + " Tehran</td><td>" +
+        _esc(item["level"]) + "</td><td>" + _esc(item["code"]) +
+        "</td><td>" + _esc(item["event"]) + "</td><td>" +
+        _esc(item["symbol"]) + "</td><td>" +
+        _esc("order=" + str(item["order"]) + " position=" + str(item["position"]) +
+             " deal=" + str(item["deal"])) + "</td><td>" +
+        _esc(item["message"] + (" · " + item["detail"] if item["detail"] else "")) +
+        "</td></tr>"
+        for item in diagnostics
+    ) or '<tr><td colspan="7" class="ok">No actionable error or warning detected in the latest readable event window.</td></tr>'
+    diagnostic_counts = {
+        level: sum(1 for item in diagnostics if item["level"] == level)
+        for level in ("ERROR", "WARNING", "INFO")
+    }
+    diagnostic_banner = (
+        f'Errors: {diagnostic_counts["ERROR"]} · Warnings: {diagnostic_counts["WARNING"]} · '
+        f'Informational: {diagnostic_counts["INFO"]} · malformed JSON: {event_health["malformed_lines"]}'
+    )
+
     cards = [
         ("Signals", stats["signals"]),
         ("Order results", stats["order_results"]),
@@ -292,6 +410,10 @@ th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
 <tr><th>State tracked IDs (not live inventory)</th><td>orders={len(state.get("orders", []))} · position IDs={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
 </table>
 {error}
+<h2>Automatic diagnostics — no manual log search</h2>
+<p class="warn">{_esc(diagnostic_banner)}</p>
+<table><tr><th>Tehran time</th><th>Level</th><th>Code</th><th>Source event</th><th>Symbol</th><th>Identifiers</th><th>What happened / technical detail</th></tr>{diagnostic_rows}</table>
+<p class="dim">Deferred operations and retry notices are warnings, not final failures. Execution-blocked events are informational unless a separate error is emitted.</p>
 <h2>Event counters (last {len(events)} available events)</h2><div class="grid">{card_html}</div>
 <h2>Pending orders — {SYMBOL}</h2>
 <table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Price</th><th>SL</th><th>TP</th></tr>{order_rows}</table>
@@ -310,7 +432,9 @@ def index() -> Response:
 
 @app.get("/api/status")
 def api_status():
-    events = _read_events()
+    events, event_health = _read_events_with_health()
+    runner = _runner_status()
+    diagnostics = _build_diagnostics(events, runner, event_health)
     try:
         state_age = time.time() - STATE_FILE.stat().st_mtime
     except OSError:
@@ -323,6 +447,12 @@ def api_status():
         "stats": _summary(events),
         "mt5": {"queried": False, "reason": "MT5 isolated; filesystem-only monitor"},
         "event_count_read": len(events),
+        "event_read_health": event_health,
+        "diagnostics": diagnostics,
+        "diagnostic_counts": {
+            level: sum(1 for item in diagnostics if item["level"] == level)
+            for level in ("ERROR", "WARNING", "INFO")
+        },
         "data_root": str(RUNNER_ROOT),
         "data_root_source": RUNNER_ROOT_SOURCE,
         "events_path": str(EVENTS),
