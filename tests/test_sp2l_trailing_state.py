@@ -9,6 +9,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from sp2l_trailing_state import (
     load_trailing_state,
     save_trailing_state,
+    favorable_move,
+    trailing_activation_reached,
     trailing_record_matches,
     update_favorable_extreme,
 )
@@ -36,6 +38,16 @@ class TrailingStateTests(unittest.TestCase):
             update_favorable_extreme("FLAT", 100.0, 100.0, 101.0, 99.0)
         with self.assertRaises(ValueError):
             update_favorable_extreme("BUY", 100.0, 100.0, float("nan"), 99.0)
+
+    def test_buy_activation_uses_cumulative_price_excursion(self):
+        self.assertAlmostEqual(favorable_move("BUY", 100.0, 100.4), 0.4)
+        self.assertFalse(trailing_activation_reached("BUY", 100.0, 100.39, 0.4))
+        self.assertTrue(trailing_activation_reached("BUY", 100.0, 100.4, 0.4))
+
+    def test_sell_activation_uses_cumulative_price_excursion(self):
+        self.assertAlmostEqual(favorable_move("SELL", 100.0, 99.6), 0.4)
+        self.assertFalse(trailing_activation_reached("SELL", 100.0, 99.61, 0.4))
+        self.assertTrue(trailing_activation_reached("SELL", 100.0, 99.6, 0.4))
 
     def test_record_identity_prevents_ticket_reuse(self):
         record = {
