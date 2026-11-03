@@ -16,12 +16,21 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from flask import Flask, Response, jsonify
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ROOT / "runtime"
-ARTIFACTS = ROOT / "artifacts" / "forward-test"
+# The monitor may run from a separate dashboard worktree. Bind data paths to
+# the explicitly selected runner worktree instead of silently reading ROOT.
+_RUNNER_ROOT_ENV = os.getenv("SP2L_RUNNER_ROOT", "").strip()
+RUNNER_ROOT = (
+    Path(_RUNNER_ROOT_ENV).expanduser().resolve()
+    if _RUNNER_ROOT_ENV else ROOT
+)
+RUNNER_ROOT_SOURCE = "SP2L_RUNNER_ROOT" if _RUNNER_ROOT_ENV else "monitor-worktree fallback"
+RUNTIME = RUNNER_ROOT / "runtime"
+ARTIFACTS = RUNNER_ROOT / "artifacts" / "forward-test"
 STATE_FILE = RUNTIME / "sp2l_v3_1_xauusd_rr4_act40_forward_state.json"
 EVENTS = ARTIFACTS / "SP2L_V3_1_XAUUSD_RR4_ACT40_FORWARD_EVENTS.jsonl"
 RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
@@ -29,6 +38,7 @@ PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8791"))
 REFRESH_SECONDS = 5
 SYMBOL = "XAUUSD.ecn"
 VERSION = "SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101"
+TEHRAN_TZ = ZoneInfo("Asia/Tehran")
 
 app = Flask(__name__)
 
@@ -135,6 +145,25 @@ def _fmt_time(value) -> str:
         return "—"
 
 
+def _fmt_event_time(value) -> str:
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(TEHRAN_TZ).strftime("%Y-%m-%d %H:%M:%S")
+    except (TypeError, ValueError, OSError):
+        return "—"
+
+
+def _file_health(path: Path) -> str:
+    try:
+        stat = path.stat()
+        age = max(0, time.time() - stat.st_mtime)
+        return f"present · {stat.st_size} bytes · updated {age:.0f}s ago"
+    except OSError:
+        return "missing or unreadable"
+
+
 def _render() -> str:
     state = _read_json(STATE_FILE)
     events = _read_events()
@@ -158,6 +187,10 @@ def _render() -> str:
     runner_label = (
         f"ALIVE · PID {runner['pid']}" if runner["alive"]
         else f"NOT CONFIRMED · {runner['detail']}"
+    )
+    source_warning = (
+        " · WARNING: monitor and runner data roots differ"
+        if ROOT.resolve() != RUNNER_ROOT.resolve() else ""
     )
     mt5_label = "NOT QUERIED (runner connection isolated)"
     trade_label = "not queried"
@@ -205,7 +238,7 @@ def _render() -> str:
                 f"entry={event.get('entry')} net={event.get('net')}"
             )
         event_rows += (
-            "<tr><td>" + _esc(str(event.get("ts_utc", ""))[-16:]) +
+            "<tr><td>" + _esc(_fmt_event_time(event.get("ts_utc"))) + " Tehran" +
             "</td><td>" + _esc(kind) + "</td><td>" +
             _esc(event.get("symbol", "")) + "</td><td>" +
             _esc(detail) + "</td></tr>"
@@ -247,20 +280,22 @@ th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
 <h2>Session</h2>
 <table>
 <tr><th>Runner</th><td>{_esc(runner_label)}</td></tr>
-<tr><th>State file</th><td>{_esc(state_health)} · {_esc(STATE_FILE.name)}</td></tr>
+<tr><th>Data root</th><td>{_esc(str(RUNNER_ROOT))} · {_esc(RUNNER_ROOT_SOURCE)}{_esc(source_warning)}</td></tr>
+<tr><th>Event file</th><td>{_esc(_file_health(EVENTS))} · {_esc(str(EVENTS))}</td></tr>
+<tr><th>State file</th><td>{_esc(state_health)} · {_esc(str(STATE_FILE))}</td></tr>
 <tr><th>MT5</th><td>{_esc(mt5_label)} · Trade API {_esc(trade_label)}</td></tr>
 <tr><th>Account</th><td>{_esc(account_label)}</td></tr>
 <tr><th>Symbol tick</th><td>{_esc(tick_label)}</td></tr>
-<tr><th>State tracked IDs</th><td>orders={len(state.get("orders", []))} · positions={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
+<tr><th>State tracked IDs (not live inventory)</th><td>orders={len(state.get("orders", []))} · position IDs={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
 </table>
 {error}
 <h2>Event counters (last {len(events)} available events)</h2><div class="grid">{card_html}</div>
 <h2>Pending orders — {SYMBOL}</h2>
 <table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Price</th><th>SL</th><th>TP</th></tr>{order_rows}</table>
-<h2>Open positions — {SYMBOL}</h2>
+<h2>Live broker positions — {SYMBOL} (not queried)</h2>
 <table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Open</th><th>Current</th><th>SL</th><th>TP</th><th>Profit</th><th>Magic</th></tr>{position_rows}</table>
 <h2>Latest 40 events</h2>
-<table><tr><th>UTC</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>{event_rows}</table>
+<table><tr><th>Tehran time</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>{event_rows}</table>
 <p class="dim">Read-only monitor: filesystem reads only; no MT5 initialize/shutdown, no order API, no state/event writes.</p>
 </body></html>"""
 
@@ -285,6 +320,12 @@ def api_status():
         "stats": _summary(events),
         "mt5": {"queried": False, "reason": "MT5 isolated; filesystem-only monitor"},
         "event_count_read": len(events),
+        "data_root": str(RUNNER_ROOT),
+        "data_root_source": RUNNER_ROOT_SOURCE,
+        "events_path": str(EVENTS),
+        "state_path": str(STATE_FILE),
+        "events_health": _file_health(EVENTS),
+        "state_health": _file_health(STATE_FILE),
     })
 
 
