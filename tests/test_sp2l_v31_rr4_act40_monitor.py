@@ -70,3 +70,45 @@ def test_rr4_act40_monitor_keeps_legacy_trail_events_renderable(monkeypatch, tmp
     assert "success=True" in page
     assert "last_error=" not in page
     assert "retry_scheduled=" not in page
+
+
+
+def test_rr4_act40_monitor_renders_full_tehran_timestamp(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    event = {
+        "ts_utc": "2026-11-03T08:01:00+00:00",
+        "event": "TELEGRAM_DEAL_LIFECYCLE",
+        "symbol": "XAUUSD.ecn",
+        "deal": 64128158,
+        "position": 65001173,
+        "entry": 1,
+        "net": 2.5,
+    }
+    monitor.EVENTS.write_text(json.dumps(event) + "\\n", encoding="utf-8")
+
+    page = monitor._render()
+
+    assert "2026-11-03 11:31:00 Tehran" in page
+    assert "<th>Tehran time</th>" in page
+
+
+def test_rr4_act40_monitor_uses_explicit_runner_root(monkeypatch, tmp_path):
+    runner_root = tmp_path / "runner-worktree"
+    runner_root.mkdir()
+    monkeypatch.setenv("SP2L_RUNNER_ROOT", str(runner_root))
+
+    scripts = Path(__file__).resolve().parents[1] / "scripts"
+    monkeypatch.syspath_prepend(str(scripts))
+    sys.modules.pop("sp2l_v31_rr4_act40_monitor", None)
+    monitor = importlib.import_module("sp2l_v31_rr4_act40_monitor")
+
+    assert monitor.RUNNER_ROOT == runner_root.resolve()
+    assert monitor.EVENTS == (
+        runner_root / "artifacts" / "forward-test"
+        / "SP2L_V3_1_XAUUSD_RR4_ACT40_FORWARD_EVENTS.jsonl"
+    )
+    assert monitor.STATE_FILE == (
+        runner_root / "runtime"
+        / "sp2l_v3_1_xauusd_rr4_act40_forward_state.json"
+    )
+    assert monitor.RUNNER_ROOT_SOURCE == "SP2L_RUNNER_ROOT"
