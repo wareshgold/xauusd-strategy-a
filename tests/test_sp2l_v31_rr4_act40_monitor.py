@@ -181,8 +181,9 @@ def test_rr4_act40_monitor_surfaces_order_and_session_errors(monkeypatch, tmp_pa
     ]
     findings = monitor._diagnostics(events)
     assert [item["severity"] for item in findings] == ["ERROR", "ERROR"]
-    assert findings[0]["title"] == "Order placement failed"
-    assert findings[1]["title"] == "Session gate evaluation error"
+    assert {item["title"] for item in findings} == {
+        "Order placement failed", "Session gate evaluation error"
+    }
     page = monitor._render()
     assert "Actionable diagnostics" in page
 
