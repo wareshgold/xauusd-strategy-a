@@ -14,14 +14,22 @@ import json
 import os
 import subprocess
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import Flask, Response, jsonify
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ROOT / "runtime"
-ARTIFACTS = ROOT / "artifacts" / "forward-test"
+# The monitor may run from a separate dashboard worktree. Bind data paths to
+# the explicitly selected runner worktree instead of silently reading ROOT.
+_RUNNER_ROOT_ENV = os.getenv("SP2L_RUNNER_ROOT", "").strip()
+RUNNER_ROOT = (
+    Path(_RUNNER_ROOT_ENV).expanduser().resolve()
+    if _RUNNER_ROOT_ENV else ROOT
+)
+RUNNER_ROOT_SOURCE = "SP2L_RUNNER_ROOT" if _RUNNER_ROOT_ENV else "monitor-worktree fallback"
+RUNTIME = RUNNER_ROOT / "runtime"
+ARTIFACTS = RUNNER_ROOT / "artifacts" / "forward-test"
 STATE_FILE = RUNTIME / "sp2l_v3_1_xauusd_rr4_act40_forward_state.json"
 EVENTS = ARTIFACTS / "SP2L_V3_1_XAUUSD_RR4_ACT40_FORWARD_EVENTS.jsonl"
 RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
@@ -29,6 +37,9 @@ PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8791"))
 REFRESH_SECONDS = 5
 SYMBOL = "XAUUSD.ecn"
 VERSION = "SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101"
+# Iran uses UTC+03:30 year-round in the 2026 operating period.
+# A fixed offset avoids relying on an OS-installed IANA tz database on Windows.
+TEHRAN_TZ = timezone(timedelta(hours=3, minutes=30), name="Asia/Tehran")
 
 app = Flask(__name__)
 
@@ -41,38 +52,110 @@ def _read_json(path: Path) -> dict:
         return {}
 
 
-def _read_events(limit: int = 250) -> list[dict]:
+def _read_events_with_health(limit: int = 2000) -> tuple[list[dict], dict]:
+    health = {
+        "path": str(EVENTS), "total_lines": 0, "malformed_lines": 0,
+        "last_malformed_line": None, "read_error": None,
+    }
     try:
-        lines = EVENTS.read_text(encoding="utf-8").splitlines()[-limit:]
-    except OSError:
-        return []
+        lines = EVENTS.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        health["read_error"] = f"{type(exc).__name__}: {exc}"
+        return [], health
+    health["total_lines"] = len(lines)
     out = []
-    for line in lines:
+    start = max(0, len(lines) - limit)
+    for line_number, line in enumerate(lines[start:], start=start + 1):
+        if not line.strip():
+            continue
         try:
             item = json.loads(line)
             if isinstance(item, dict):
                 out.append(item)
-        except json.JSONDecodeError:
-            continue
-    return out
+            else:
+                health["malformed_lines"] += 1
+                health["last_malformed_line"] = line_number
+        except json.JSONDecodeError as exc:
+            health["malformed_lines"] += 1
+            health["last_malformed_line"] = line_number
+            health["last_parse_error"] = f"line {line_number}: {exc.msg}"
+    return out, health
+
+
+def _read_events(limit: int = 2000) -> list[dict]:
+    return _read_events_with_health(limit)[0]
 
 
 def _runner_status() -> dict:
-    try:
-        pid = int(RUNNER_LOCK.read_text(encoding="utf-8").strip())
-    except (OSError, ValueError):
-        return {"pid": None, "alive": False, "detail": "runner lock unavailable"}
-    if pid <= 0:
-        return {"pid": pid, "alive": False, "detail": "invalid PID"}
+    """Identify the Runner by its exact script path; a lock file is optional legacy metadata."""
+    runner_script = RUNNER_ROOT / "scripts" / "run_sp2l_v3_1_xauusd_forward_test.py"
+    if os.name != "nt":
+        return {
+            "pid": None, "pids": [], "alive": None,
+            "detail": "process command-line probe is available only on Windows",
+            "source": "unavailable",
+        }
+    if not runner_script.is_file():
+        return {
+            "pid": None, "pids": [], "alive": None,
+            "detail": f"expected Runner script is missing: {runner_script}",
+            "source": "runner_script_path",
+        }
+    # Keep the PowerShell program static. Pass the path through the child
+    # environment instead of interpolating a filesystem path into a command.
+    probe = r"""
+$ErrorActionPreference = 'Stop'
+$runnerScript = [IO.Path]::GetFullPath((Join-Path $env:SP2L_MONITOR_RUNNER_ROOT 'scripts\run_sp2l_v3_1_xauusd_forward_test.py'))
+$matches = @(Get-CimInstance Win32_Process | Where-Object {
+    $_.CommandLine -and $_.CommandLine.IndexOf($runnerScript, [StringComparison]::OrdinalIgnoreCase) -ge 0
+} | ForEach-Object {
+    [PSCustomObject]@{
+        pid = [int]$_.ProcessId
+        parent_pid = [int]$_.ParentProcessId
+        command_line = [string]$_.CommandLine
+    }
+})
+ConvertTo-Json -InputObject $matches -Compress -Depth 3
+"""
     try:
         result = subprocess.run(
-            ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV"],
-            capture_output=True, text=True, timeout=4, check=False,
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", probe],
+            capture_output=True, text=True, timeout=8, check=False,
+            env={**os.environ, "SP2L_MONITOR_RUNNER_ROOT": str(RUNNER_ROOT)},
         )
-        alive = "python" in result.stdout.lower()
-    except Exception:
-        alive = False
-    return {"pid": pid, "alive": alive, "detail": "process probe via tasklist"}
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout or "PowerShell process probe failed").strip()
+            return {
+                "pid": None, "pids": [], "alive": None,
+                "detail": f"Runner process probe unavailable: {detail}",
+                "source": "windows_cim_process_probe",
+            }
+        raw = result.stdout.strip()
+        rows = json.loads(raw) if raw else []
+        if isinstance(rows, dict):
+            rows = [rows]
+        rows = [row for row in rows if isinstance(row, dict) and row.get("pid")]
+        rows.sort(key=lambda row: (int(row.get("parent_pid") or 0), int(row["pid"])))
+        pids = [int(row["pid"]) for row in rows]
+        pid_set = set(pids)
+        roots = [int(row["pid"]) for row in rows if int(row.get("parent_pid") or 0) not in pid_set]
+        primary_pid = roots[0] if roots else (pids[0] if pids else None)
+        return {
+            "pid": primary_pid,
+            "pids": pids,
+            "alive": bool(pids),
+            "detail": (
+                "Runner process matched by exact script path"
+                if pids else "No process matched the configured Runner script path"
+            ),
+            "source": "windows_cim_process_probe",
+        }
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, TypeError, ValueError) as exc:
+        return {
+            "pid": None, "pids": [], "alive": None,
+            "detail": f"Runner process probe unavailable: {type(exc).__name__}: {exc}",
+            "source": "windows_cim_process_probe",
+        }
 
 
 def _mt5_probe() -> dict:
@@ -135,12 +218,170 @@ def _fmt_time(value) -> str:
         return "—"
 
 
+def _fmt_event_time(value) -> str:
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(TEHRAN_TZ).strftime("%Y-%m-%d %H:%M:%S")
+    except (TypeError, ValueError, OSError):
+        return "—"
+
+
+def _file_health(path: Path) -> str:
+    try:
+        stat = path.stat()
+        age = max(0, time.time() - stat.st_mtime)
+        return f"present · {stat.st_size} bytes · updated {age:.0f}s ago"
+    except OSError:
+        return "missing or unreadable"
+
+def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> list[dict]:
+    """Convert explicit runtime evidence into actionable, timestamped dashboard diagnostics."""
+    items: list[dict] = []
+    successful_trail_keys = {
+        (str(event.get("position")), str(event.get("completed_bar_time")))
+        for event in events
+        if event.get("event") == "TRAIL_UPDATE" and event.get("success") is True
+        and event.get("position") is not None and event.get("completed_bar_time") is not None
+    }
+    delivered_signal_ids = {
+        str(event.get("signal_id"))
+        for event in events
+        if event.get("event") == "TELEGRAM_SIGNAL"
+        and event.get("signal_id") is not None
+        and (
+            event.get("success") is True
+            or (isinstance(event.get("telegram"), dict) and event["telegram"].get("success") is True)
+        )
+    }
+
+    def add(level: str, code: str, event: dict | None, message: str, detail: str = ""):
+        event = event or {}
+        items.append({
+            "level": level,
+            "code": code,
+            "time_tehran": _fmt_event_time(event.get("ts_utc")) if event else "—",
+            "event": event.get("event", "MONITOR_HEALTH"),
+            "symbol": event.get("symbol", ""),
+            "order": event.get("order") or event.get("tracked_order") or "",
+            "position": event.get("position") or "",
+            "deal": event.get("deal") or event.get("tracked_deal") or "",
+            "message": message,
+            "detail": detail,
+        })
+
+    if event_health.get("read_error"):
+        add("ERROR", "EVENT_FILE_READ", None, "Event log cannot be read", event_health["read_error"])
+    if event_health.get("malformed_lines", 0):
+        add(
+            "ERROR", "EVENT_JSON_INVALID", None,
+            f'{event_health["malformed_lines"]} malformed JSON line(s) detected',
+            f'Last malformed line: {event_health.get("last_malformed_line")}; '
+            f'{event_health.get("last_parse_error", "")}',
+        )
+    if not _RUNNER_ROOT_ENV:
+        add("WARNING", "RUNNER_ROOT_NOT_EXPLICIT", None,
+            "SP2L_RUNNER_ROOT is unset; monitor is reading relative to its own worktree",
+            f"Resolved data root: {RUNNER_ROOT}")
+    elif not RUNNER_ROOT.is_dir():
+        add("ERROR", "RUNNER_ROOT_UNAVAILABLE", None,
+            "Configured Runner data root does not exist or is not a directory",
+            f"Resolved data root: {RUNNER_ROOT}")
+    try:
+        state_age = max(0, time.time() - STATE_FILE.stat().st_mtime)
+    except OSError as exc:
+        state_age = None
+        add("ERROR", "STATE_FILE_UNAVAILABLE", None, "Runner state file is missing or unreadable", str(exc))
+    if state_age is not None and state_age > 90:
+        add("WARNING", "STATE_FILE_STALE", None, "Runner state file has not been updated for more than 90 seconds", f"age_seconds={state_age:.0f}")
+    if runner.get("alive") is False:
+        add("ERROR", "RUNNER_PROCESS_NOT_FOUND", None,
+            "No process matched the configured V3.1 Runner script path",
+            runner.get("detail", ""))
+    elif runner.get("alive") is None:
+        add("WARNING", "RUNNER_PROCESS_UNVERIFIED", None,
+            "Runner process status could not be verified; this is not evidence that the Runner stopped",
+            runner.get("detail", ""))
+
+    for event in events:
+        kind = event.get("event")
+        result = event.get("result") if isinstance(event.get("result"), dict) else {}
+        telegram = event.get("telegram") if isinstance(event.get("telegram"), dict) else {}
+        detail_fields = []
+        for field in (
+            "retcode", "comment", "last_error", "reason", "attempt_number",
+            "retry_scheduled", "retry_max_attempts_per_bar", "completed_bar_time",
+        ):
+            if event.get(field) is not None:
+                detail_fields.append(f"{field}={event[field]}")
+        for field in ("ok", "retcode", "comment", "order", "deal"):
+            if result.get(field) is not None:
+                detail_fields.append(f"result.{field}={result[field]}")
+        if telegram.get("success") is not None:
+            detail_fields.append(f'telegram.success={telegram.get("success")}')
+        if telegram.get("detail") is not None:
+            detail_fields.append(f'telegram.detail={telegram.get("detail")}')
+        detail = " · ".join(detail_fields)
+
+        if kind == "SESSION_GATE_ERROR":
+            add("ERROR", "SESSION_GATE_ERROR", event, "Session gate raised an error", detail)
+        elif kind == "ORDER_RESULT" and result.get("ok") is False:
+            add("ERROR", "ORDER_SEND_FAILED", event, "Order request failed", detail)
+        elif kind == "TRAIL_UPDATE" and event.get("success") is False:
+            trail_key = (str(event.get("position")), str(event.get("completed_bar_time")))
+            if trail_key in successful_trail_keys:
+                add("INFO", "TRAIL_UPDATE_RECOVERED", event, "A later trailing update succeeded for the same position and completed bar", detail)
+            elif event.get("retry_scheduled") is True:
+                add("WARNING", "TRAIL_UPDATE_RETRY_PENDING", event, "Trailing modification failed but a retry is scheduled; this is not yet a terminal failure", detail)
+            else:
+                add("ERROR", "TRAIL_UPDATE_FAILED", event, "Trailing stop modification failed without a recorded scheduled retry or recovery", detail)
+        elif kind == "TRAIL_DEFERRED":
+            trail_key = (str(event.get("position")), str(event.get("completed_bar_time")))
+            if trail_key in successful_trail_keys:
+                add("INFO", "TRAIL_DEFERRED_RECOVERED", event, "Deferred trailing update was subsequently applied for the same position and completed bar", detail or str(event.get("reason", "")))
+            else:
+                add("WARNING", "TRAIL_DEFERRED", event, "Trailing stop update was deferred; inspect the retry / next attempt", detail or str(event.get("reason", "")))
+        elif kind == "START_TELEGRAM" and event.get("success") is False:
+            add("ERROR", "TELEGRAM_START_FAILED", event, "Telegram startup notification failed", detail)
+        elif kind == "TELEGRAM_DEAL_LIFECYCLE" and telegram.get("success") is False:
+            add("ERROR", "TELEGRAM_DEAL_NOTIFY_FAILED", event, "Telegram deal notification failed", detail)
+        elif kind == "TELEGRAM_SIGNAL_RETRY":
+            signal_id = event.get("signal_id")
+            if signal_id is not None and str(signal_id) in delivered_signal_ids:
+                add("INFO", "TELEGRAM_RETRY_RECOVERED", event, "A later Telegram signal event confirms delivery for this signal ID", detail)
+            else:
+                add("WARNING", "TELEGRAM_SIGNAL_RETRY", event, "Signal notification entered retry handling; delivery is not yet confirmed", detail)
+        elif kind == "HEARTBEAT":
+            if event.get("mt5_connected") is False:
+                add("ERROR", "MT5_DISCONNECTED", event, "Runner heartbeat reports MT5 disconnected", detail)
+            if event.get("trade_allowed") is False:
+                add("WARNING", "TRADING_NOT_ALLOWED", event, "Runner heartbeat reports trading is not allowed", detail)
+        elif kind == "TELEGRAM_SIGNAL" and (
+            event.get("success") is False or telegram.get("success") is False
+        ):
+            signal_id = event.get("signal_id")
+            if signal_id is not None and str(signal_id) in delivered_signal_ids:
+                add("INFO", "TELEGRAM_SIGNAL_RECOVERED", event, "A later Telegram signal event confirms delivery for this signal ID", detail)
+            else:
+                add("ERROR", "TELEGRAM_SIGNAL_FAILED", event, "Telegram signal notification failed", detail)
+        elif kind in ("PENDING_ORDER_EXPIRED", "TELEGRAM_PENDING_EXPIRED"):
+            add("INFO", "PENDING_ORDER_EXPIRED", event, "Pending-order lifecycle reached its recorded expiry event", detail or str(event.get("reason", "")))
+        elif kind == "EXECUTION_BLOCKED":
+            add("INFO", "EXECUTION_BLOCKED", event, "Candidate execution was blocked by a gate or guard (not automatically a software defect)", detail)
+        elif isinstance(kind, str) and ("ERROR" in kind or "FAIL" in kind):
+            add("ERROR", kind, event, f"Runner emitted {kind}", detail)
+
+    return list(reversed(items[-100:]))
+
+
 def _render() -> str:
     state = _read_json(STATE_FILE)
-    events = _read_events()
+    events, event_health = _read_events_with_health()
     runner = _runner_status()
     probe = _mt5_probe()
     stats = _summary(events)
+    diagnostics = _build_diagnostics(events, runner, event_health)
 
     try:
         state_age = max(0, time.time() - STATE_FILE.stat().st_mtime)
@@ -156,8 +397,17 @@ def _render() -> str:
         if account else "unavailable"
     )
     runner_label = (
-        f"ALIVE · PID {runner['pid']}" if runner["alive"]
-        else f"NOT CONFIRMED · {runner['detail']}"
+        f"ACTIVE · PID {runner['pid']} · processes={','.join(str(pid) for pid in runner.get('pids', []))}"
+        if runner.get("alive") is True else
+        f"NOT FOUND · {runner['detail']}" if runner.get("alive") is False else
+        f"NOT VERIFIED · {runner['detail']}"
+    )
+    root_valid = RUNNER_ROOT.is_dir()
+    source_warning = (
+        " · WARNING: SP2L_RUNNER_ROOT is unset; defaulting to the monitor worktree"
+        if not _RUNNER_ROOT_ENV else
+        " · ERROR: configured Runner data root does not exist"
+        if not root_valid else ""
     )
     mt5_label = "NOT QUERIED (runner connection isolated)"
     trade_label = "not queried"
@@ -186,24 +436,52 @@ def _render() -> str:
             result = event.get("result") or {}
             detail = f"ok={result.get('ok')} retcode={result.get('retcode')} order={result.get('order')}"
         elif kind == "TRAIL_UPDATE":
-            detail = (
-                f"position={event.get('position')} "
-                f"SL {event.get('old_sl')} -> {event.get('new_sl')} "
-                f"success={event.get('success')}"
-            )
+            detail_parts = [
+                f"position={event.get('position')}",
+                f"SL {event.get('old_sl')} -> {event.get('new_sl')}",
+                f"success={event.get('success')}",
+            ]
+            for field in (
+                "retcode", "comment", "last_error", "attempt_number",
+                "retry_scheduled", "retry_max_attempts_per_bar",
+            ):
+                value = event.get(field)
+                if value is not None:
+                    detail_parts.append(f"{field}={value}")
+            detail = " · ".join(detail_parts)
         elif kind == "TELEGRAM_DEAL_LIFECYCLE":
             detail = (
                 f"deal={event.get('deal')} position={event.get('position')} "
                 f"entry={event.get('entry')} net={event.get('net')}"
             )
         event_rows += (
-            "<tr><td>" + _esc(str(event.get("ts_utc", ""))[-16:]) +
+            "<tr><td>" + _esc(_fmt_event_time(event.get("ts_utc"))) + " Tehran" +
             "</td><td>" + _esc(kind) + "</td><td>" +
             _esc(event.get("symbol", "")) + "</td><td>" +
             _esc(detail) + "</td></tr>"
         )
     if not event_rows:
         event_rows = '<tr><td colspan="4" class="dim">No V3.1 events recorded yet</td></tr>'
+
+    diagnostic_rows = "".join(
+        "<tr><td>" + _esc(item["time_tehran"]) + " Tehran</td><td>" +
+        _esc(item["level"]) + "</td><td>" + _esc(item["code"]) +
+        "</td><td>" + _esc(item["event"]) + "</td><td>" +
+        _esc(item["symbol"]) + "</td><td>" +
+        _esc("order=" + str(item["order"]) + " position=" + str(item["position"]) +
+             " deal=" + str(item["deal"])) + "</td><td>" +
+        _esc(item["message"] + (" · " + item["detail"] if item["detail"] else "")) +
+        "</td></tr>"
+        for item in diagnostics
+    ) or '<tr><td colspan="7" class="ok">No actionable error or warning detected in the latest readable event window.</td></tr>'
+    diagnostic_counts = {
+        level: sum(1 for item in diagnostics if item["level"] == level)
+        for level in ("ERROR", "WARNING", "INFO")
+    }
+    diagnostic_banner = (
+        f'Errors: {diagnostic_counts["ERROR"]} · Warnings: {diagnostic_counts["WARNING"]} · '
+        f'Informational: {diagnostic_counts["INFO"]} · malformed JSON: {event_health["malformed_lines"]}'
+    )
 
     cards = [
         ("Signals", stats["signals"]),
@@ -239,20 +517,26 @@ th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
 <h2>Session</h2>
 <table>
 <tr><th>Runner</th><td>{_esc(runner_label)}</td></tr>
-<tr><th>State file</th><td>{_esc(state_health)} · {_esc(STATE_FILE.name)}</td></tr>
+<tr><th>Data root</th><td>{_esc(str(RUNNER_ROOT))} · {_esc(RUNNER_ROOT_SOURCE)}{_esc(source_warning)}</td></tr>
+<tr><th>Event file</th><td>{_esc(_file_health(EVENTS))} · {_esc(str(EVENTS))}</td></tr>
+<tr><th>State file</th><td>{_esc(state_health)} · {_esc(str(STATE_FILE))}</td></tr>
 <tr><th>MT5</th><td>{_esc(mt5_label)} · Trade API {_esc(trade_label)}</td></tr>
 <tr><th>Account</th><td>{_esc(account_label)}</td></tr>
 <tr><th>Symbol tick</th><td>{_esc(tick_label)}</td></tr>
-<tr><th>State tracked IDs</th><td>orders={len(state.get("orders", []))} · positions={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
+<tr><th>State tracked IDs (not live inventory)</th><td>orders={len(state.get("orders", []))} · position IDs={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
 </table>
 {error}
+<h2>Automatic diagnostics — no manual log search</h2>
+<p class="warn">{_esc(diagnostic_banner)}</p>
+<table><tr><th>Tehran time</th><th>Level</th><th>Code</th><th>Source event</th><th>Symbol</th><th>Identifiers</th><th>What happened / technical detail</th></tr>{diagnostic_rows}</table>
+<p class="dim">Deferred operations and retry notices are warnings, not final failures. Execution-blocked events are informational unless a separate error is emitted.</p>
 <h2>Event counters (last {len(events)} available events)</h2><div class="grid">{card_html}</div>
 <h2>Pending orders — {SYMBOL}</h2>
 <table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Price</th><th>SL</th><th>TP</th></tr>{order_rows}</table>
-<h2>Open positions — {SYMBOL}</h2>
+<h2>Live broker positions — {SYMBOL} (not queried)</h2>
 <table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Open</th><th>Current</th><th>SL</th><th>TP</th><th>Profit</th><th>Magic</th></tr>{position_rows}</table>
 <h2>Latest 40 events</h2>
-<table><tr><th>UTC</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>{event_rows}</table>
+<table><tr><th>Tehran time</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>{event_rows}</table>
 <p class="dim">Read-only monitor: filesystem reads only; no MT5 initialize/shutdown, no order API, no state/event writes.</p>
 </body></html>"""
 
@@ -264,19 +548,34 @@ def index() -> Response:
 
 @app.get("/api/status")
 def api_status():
-    events = _read_events()
+    events, event_health = _read_events_with_health()
+    runner = _runner_status()
+    diagnostics = _build_diagnostics(events, runner, event_health)
     try:
         state_age = time.time() - STATE_FILE.stat().st_mtime
     except OSError:
         state_age = None
     return jsonify({
         "version": VERSION,
-        "runner": _runner_status(),
+        "runner": runner,
         "state": _read_json(STATE_FILE),
         "state_age_seconds": state_age,
         "stats": _summary(events),
         "mt5": {"queried": False, "reason": "MT5 isolated; filesystem-only monitor"},
         "event_count_read": len(events),
+        "event_read_health": event_health,
+        "diagnostics": diagnostics,
+        "diagnostic_counts": {
+            level: sum(1 for item in diagnostics if item["level"] == level)
+            for level in ("ERROR", "WARNING", "INFO")
+        },
+        "data_root": str(RUNNER_ROOT),
+        "data_root_source": RUNNER_ROOT_SOURCE,
+        "data_root_valid": RUNNER_ROOT.is_dir(),
+        "events_path": str(EVENTS),
+        "state_path": str(STATE_FILE),
+        "events_health": _file_health(EVENTS),
+        "state_health": _file_health(STATE_FILE),
     })
 
 
