@@ -52,7 +52,7 @@ def _read_json(path: Path) -> dict:
         return {}
 
 
-def _read_events(limit: int = 250) -> list[dict]:
+def _read_events(limit: int = 2000) -> list[dict]:
     try:
         lines = EVENTS.read_text(encoding="utf-8").splitlines()[-limit:]
     except OSError:
@@ -137,11 +137,11 @@ def _summary(events: list[dict]) -> dict:
 
 def _diagnostics(events: list[dict]) -> list[dict]:
     """Convert raw runner events into concise, actionable dashboard findings."""
-    successful_trails = {
-        (str(e.get("position")), str(e.get("completed_bar_time")))
-        for e in events
-        if e.get("event") == "TRAIL_UPDATE" and e.get("success") is True
-    }
+    successful_trails = {}
+    for trail_event in events:
+        if trail_event.get("event") == "TRAIL_UPDATE" and trail_event.get("success") is True:
+            key = (str(trail_event.get("position")), str(trail_event.get("completed_bar_time")))
+            successful_trails.setdefault(key, []).append(str(trail_event.get("ts_utc") or ""))
     findings = []
     for event in events:
         kind = str(event.get("event") or "UNKNOWN")
@@ -152,9 +152,14 @@ def _diagnostics(events: list[dict]) -> list[dict]:
         action = "Review the event details and correlate by signal, order, deal, or position ID."
 
         if kind == "TRAIL_UPDATE" and event.get("success") is False:
-            severity = "ERROR"
-            title = "Trailing stop modification failed"
+            key = (str(position), str(event.get("completed_bar_time")))
+            event_time = str(event.get("ts_utc") or "")
+            resolved = any(t > event_time for t in successful_trails.get(key, []))
+            severity = "INFO" if resolved else "ERROR"
+            title = "Trailing stop retry later succeeded" if resolved else "Trailing stop modification failed"
             action = (
+                "A later successful update for this position/bar is present in the event window."
+                if resolved else
                 "Inspect retcode, comment, last_error and retry fields. Confirm a later "
                 "successful TRAIL_UPDATE for the same position/bar before treating the SL as changed."
             )
@@ -164,7 +169,8 @@ def _diagnostics(events: list[dict]) -> list[dict]:
                     detail_parts.append(f"{field}={event[field]}")
         elif kind == "TRAIL_DEFERRED":
             key = (str(position), str(event.get("completed_bar_time")))
-            resolved = key in successful_trails
+            event_time = str(event.get("ts_utc") or "")
+            resolved = any(t > event_time for t in successful_trails.get(key, []))
             severity = "INFO" if resolved else "WARNING"
             title = "Trailing stop retry succeeded" if resolved else "Trailing stop update deferred"
             action = (
