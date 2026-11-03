@@ -160,9 +160,9 @@ class MT5Observer:
             self.connected = False
 
     def snapshot(self, symbol="XAUUSD.ecn"):
-        if not self.connected:
-            self.connect()
         try:
+            if not self.connected:
+                self.connect()
             account = _safe_call(self.mt5.account_info)
             positions = _safe_call(self.mt5.positions_get, symbol=symbol)
             orders = _safe_call(self.mt5.orders_get, symbol=symbol)
@@ -358,7 +358,6 @@ def main():
         os.getenv("SP2L_OBSERVER_TERMINAL_PATH"),
         os.getenv("SP2L_RUNNER_TERMINAL_PATH", DEFAULT_RUNNER_TERMINAL),
     )
-    observer.connect()
     print(f"{VERSION}: http://127.0.0.1:{PORT} (read-only observer)", flush=True)
     try:
         APP.run(host="127.0.0.1", port=PORT, debug=False, use_reloader=False, threaded=True)
