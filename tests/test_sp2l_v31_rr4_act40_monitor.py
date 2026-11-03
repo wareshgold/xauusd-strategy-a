@@ -185,3 +185,31 @@ def test_rr4_act40_monitor_surfaces_order_and_session_errors(monkeypatch, tmp_pa
     assert findings[1]["title"] == "Session gate evaluation error"
     page = monitor._render()
     assert "Actionable diagnostics" in page
+
+
+
+def test_rr4_act40_monitor_resolves_failed_trailing_attempt_after_later_success(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    events = [
+        {
+            "ts_utc": "2026-11-03T08:00:00+00:00",
+            "event": "TRAIL_UPDATE",
+            "position": 65001173,
+            "completed_bar_time": 1793695860,
+            "success": False,
+            "retcode": 10016,
+            "comment": "Invalid stops",
+        },
+        {
+            "ts_utc": "2026-11-03T08:00:06+00:00",
+            "event": "TRAIL_UPDATE",
+            "position": 65001173,
+            "completed_bar_time": 1793695860,
+            "success": True,
+            "retcode": 10009,
+        },
+    ]
+    findings = monitor._diagnostics(events)
+    assert len(findings) == 1
+    assert findings[0]["severity"] == "INFO"
+    assert findings[0]["title"] == "Trailing stop retry later succeeded"
