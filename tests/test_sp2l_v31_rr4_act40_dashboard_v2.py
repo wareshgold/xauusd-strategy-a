@@ -56,7 +56,7 @@ def test_dashboard_v2_hides_session_from_primary_view_and_keeps_it_collapsed(mon
     page = dashboard._render()
 
     assert "Right now" in page
-    assert "Action needed" in page
+    assert "System attention" in page
     assert "Today's recorded trading results" in page
     assert "<details>" in page
     assert "<h2>Session</h2>" not in page
