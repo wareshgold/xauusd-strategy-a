@@ -345,3 +345,33 @@ def test_windows_cim_probe_executes_without_lock(monkeypatch, tmp_path):
     assert status["alive"] is False
     assert status["pids"] == []
     assert "No process matched" in status["detail"]
+
+
+
+def test_monitor_reports_expiry_as_information_and_telegram_failure(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    events = [
+        {
+            "ts_utc": "2026-11-03T08:00:00+00:00",
+            "event": "PENDING_ORDER_EXPIRED",
+            "symbol": "XAUUSD.ecn",
+            "order": 65001173,
+            "reason": "TTL elapsed",
+        },
+        {
+            "ts_utc": "2026-11-03T08:01:00+00:00",
+            "event": "TELEGRAM_SIGNAL",
+            "symbol": "XAUUSD.ecn",
+            "signal_id": "signal-1",
+            "success": False,
+            "telegram": {"success": False, "detail": "HTTP_503"},
+        },
+    ]
+    findings = monitor._build_diagnostics(events, {"alive": True, "pid": 11352, "pids": [11352, 9088]}, {"malformed_lines": 0})
+    assert any(item["code"] == "PENDING_ORDER_EXPIRED" and item["level"] == "INFO" for item in findings)
+    assert any(item["code"] == "TELEGRAM_SIGNAL_FAILED" and item["level"] == "ERROR" and "HTTP_503" in item["detail"] for item in findings)
+
+
+def test_monitor_reads_up_to_2000_events_by_default(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    assert monitor._read_events.__defaults__ == (2000,)

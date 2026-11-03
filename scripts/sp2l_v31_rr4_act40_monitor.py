@@ -52,7 +52,7 @@ def _read_json(path: Path) -> dict:
         return {}
 
 
-def _read_events_with_health(limit: int = 250) -> tuple[list[dict], dict]:
+def _read_events_with_health(limit: int = 2000) -> tuple[list[dict], dict]:
     health = {
         "path": str(EVENTS), "total_lines": 0, "malformed_lines": 0,
         "last_malformed_line": None, "read_error": None,
@@ -82,7 +82,7 @@ def _read_events_with_health(limit: int = 250) -> tuple[list[dict], dict]:
     return out, health
 
 
-def _read_events(limit: int = 250) -> list[dict]:
+def _read_events(limit: int = 2000) -> list[dict]:
     return _read_events_with_health(limit)[0]
 
 
@@ -357,9 +357,19 @@ def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> 
                 add("ERROR", "MT5_DISCONNECTED", event, "Runner heartbeat reports MT5 disconnected", detail)
             if event.get("trade_allowed") is False:
                 add("WARNING", "TRADING_NOT_ALLOWED", event, "Runner heartbeat reports trading is not allowed", detail)
+        elif kind == "TELEGRAM_SIGNAL" and (
+            event.get("success") is False or telegram.get("success") is False
+        ):
+            signal_id = event.get("signal_id")
+            if signal_id is not None and str(signal_id) in delivered_signal_ids:
+                add("INFO", "TELEGRAM_SIGNAL_RECOVERED", event, "A later Telegram signal event confirms delivery for this signal ID", detail)
+            else:
+                add("ERROR", "TELEGRAM_SIGNAL_FAILED", event, "Telegram signal notification failed", detail)
+        elif kind in ("PENDING_ORDER_EXPIRED", "TELEGRAM_PENDING_EXPIRED"):
+            add("INFO", "PENDING_ORDER_EXPIRED", event, "Pending-order lifecycle reached its recorded expiry event", detail or str(event.get("reason", "")))
         elif kind == "EXECUTION_BLOCKED":
             add("INFO", "EXECUTION_BLOCKED", event, "Candidate execution was blocked by a gate or guard (not automatically a software defect)", detail)
-        elif isinstance(kind, str) and kind.endswith("_ERROR") and kind != "SESSION_GATE_ERROR":
+        elif isinstance(kind, str) and ("ERROR" in kind or "FAIL" in kind):
             add("ERROR", kind, event, f"Runner emitted {kind}", detail)
 
     return list(reversed(items[-100:]))
