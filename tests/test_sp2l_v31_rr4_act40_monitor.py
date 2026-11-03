@@ -213,3 +213,22 @@ def test_rr4_act40_monitor_resolves_failed_trailing_attempt_after_later_success(
     assert len(findings) == 1
     assert findings[0]["severity"] == "INFO"
     assert findings[0]["title"] == "Trailing stop retry later succeeded"
+
+
+
+def test_rr4_act40_monitor_surfaces_telegram_delivery_retry(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    events = [{
+        "ts_utc": "2026-11-03T08:00:00+00:00",
+        "event": "TELEGRAM_SIGNAL_RETRY",
+        "symbol": "XAUUSD.ecn",
+        "success": False,
+        "attempt": 2,
+        "retry_scheduled": True,
+        "last_error": "HTTP_503",
+    }]
+    findings = monitor._diagnostics(events)
+    assert len(findings) == 1
+    assert findings[0]["severity"] == "WARNING"
+    assert findings[0]["title"] == "Telegram notification retry pending"
+    assert "HTTP_503" in findings[0]["detail"]
