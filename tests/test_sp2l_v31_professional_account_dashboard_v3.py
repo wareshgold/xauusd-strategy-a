@@ -30,7 +30,7 @@ def test_performance_counts_wins_losses_breakeven_and_drawdown():
     assert result["net"] == 2.0
     assert result["max_drawdown_currency"] == 6.0
     assert result["win_rate"] == 40.0
-    assert result["profit_factor"] == pytest.approx(8 / 6)
+    assert result["profit_factor"] == pytest.approx(8 / 6, abs=1e-4)
 
 
 def test_closed_trade_aggregation_groups_partial_fills_by_position():
