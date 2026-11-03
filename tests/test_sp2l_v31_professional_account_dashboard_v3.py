@@ -48,11 +48,10 @@ def test_closed_trade_aggregation_groups_partial_fills_by_position():
     assert rows[0]["net"] == pytest.approx(2.5)
 
 
-def test_observer_refuses_runner_terminal_path(tmp_path):
+def test_observer_allows_existing_runner_terminal_path(tmp_path):
     terminal = tmp_path / "terminal64.exe"
     terminal.write_bytes(b"test")
-    with pytest.raises(RuntimeError, match="matches the Forward Runner"):
-        dashboard.validate_terminal_paths(str(terminal), str(terminal))
+    assert dashboard.validate_terminal_paths(str(terminal), str(terminal)) == str(terminal.resolve())
 
 
 def test_observer_requires_explicit_terminal_path():
@@ -63,6 +62,9 @@ def test_observer_requires_explicit_terminal_path():
 def test_dashboard_is_localhost_only_and_never_exposes_trade_api():
     source = SCRIPT.read_text(encoding="utf-8")
     assert 'host="127.0.0.1"' in source
+    assert "portable=False" in source
+    assert "portable=True" not in source
+    assert "self.mt5.shutdown()" not in source
     assert ".order_send(" not in source
     assert ".order_modify(" not in source
     assert ".positions_get(" not in source
