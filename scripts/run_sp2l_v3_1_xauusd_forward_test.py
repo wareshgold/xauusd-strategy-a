@@ -13,6 +13,12 @@ from sp2l_trailing_rules import (
     trailing_sl_is_placeable,
     should_retry_trailing,
 )
+from sp2l_trailing_state import (
+    load_trailing_state,
+    save_trailing_state,
+    update_favorable_extreme,
+    trailing_record_matches,
+)
 import MetaTrader5 as mt5
 import sp2l_v3_1_rr4_act40_config as cfg
 
@@ -58,6 +64,9 @@ _TRAIL_MAX_SEND_ATTEMPTS_PER_BAR = 3
 _TRAIL_RETRY_COOLDOWN_SECONDS = 2.0
 _TRAIL_RETRY_STATE = {}
 _TRAIL_DEFERRED_LOGGED = set()
+_TRAIL_STATE_FILE = runner.RUNTIME / "sp2l_v3_1_xauusd_rr4_act40_trailing_state.json"
+_TRAIL_FAVORABLE_EXTREMES = {}
+_TRAIL_STATE_LOADED = False
 
 def trail_positions(cfg_runtime,state):
     _original_monitor(cfg_runtime,state)
@@ -105,15 +114,60 @@ def trail_positions(cfg_runtime,state):
             continue
 
         if int(p.type)==mt5.POSITION_TYPE_BUY:
-            favorable=high-entry
-            if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
-            raw_sl=cfg.trail_stop("BUY",high)
             direction="BUY"
         else:
-            favorable=entry-low
-            if favorable < cfg.TRAIL_DISTANCE_PRICE: continue
-            raw_sl=cfg.trail_stop("SELL",low)
             direction="SELL"
+
+        # Preserve the best completed-bar excursion for the full position
+        # lifetime. A rejected/deferred SL update must not erase a prior
+        # favorable extreme when the next M1 bar starts.
+        entry_time_msc = position_time_msc or position_time * 1000
+        prior_record = _TRAIL_FAVORABLE_EXTREMES.get(str(ticket))
+        record_matches = trailing_record_matches(
+            prior_record,
+            symbol=symbol,
+            magic=magic,
+            direction=direction,
+            entry=entry,
+            position_time_msc=entry_time_msc,
+        )
+        previous_extreme = (
+            float(prior_record["favorable_extreme"]) if record_matches else entry
+        )
+        favorable_extreme = update_favorable_extreme(
+            direction, entry, previous_extreme, high, low
+        )
+        if not record_matches or favorable_extreme != previous_extreme:
+            _TRAIL_FAVORABLE_EXTREMES[str(ticket)] = {
+                "symbol": symbol,
+                "magic": int(magic),
+                "direction": direction,
+                "entry": float(entry),
+                "position_time_msc": int(entry_time_msc),
+                "favorable_extreme": float(favorable_extreme),
+                "last_completed_bar_time": int(completed_bar_time),
+            }
+            try:
+                # Persist before attempting the broker modification. If MT5
+                # rejects/defer the SL, the excursion survives the next bar
+                # and a controlled process restart.
+                save_trailing_state(_TRAIL_STATE_FILE, _TRAIL_FAVORABLE_EXTREMES)
+            except Exception as exc:
+                runner.log_event({
+                    "event":"TRAIL_STATE_PERSIST_FAILED","version":cfg.VERSION,
+                    "symbol":symbol,"position":ticket,
+                    "completed_bar_time":completed_bar_time,
+                    "detail":f"{type(exc).__name__}: {exc}","canonical":False})
+                continue
+
+        favorable = (
+            favorable_extreme - entry
+            if direction == "BUY"
+            else entry - favorable_extreme
+        )
+        if favorable < cfg.TRAIL_DISTANCE_PRICE:
+            continue
+        raw_sl=cfg.trail_stop(direction,favorable_extreme)
 
         # Refresh quote and symbol constraints immediately before each SLTP send.
         info_now=mt5.symbol_info(symbol)
@@ -166,7 +220,8 @@ def trail_positions(cfg_runtime,state):
             "event":"TRAIL_UPDATE","version":cfg.VERSION,"symbol":symbol,
             "position":ticket,"direction":direction,
             "completed_bar_time":completed_bar_time,
-            "bar_high":high,"bar_low":low,"entry":entry,
+            "bar_high":high,"bar_low":low,"favorable_extreme":favorable_extreme,
+            "favorable_move":favorable,"entry":entry,
             "old_sl":old_sl,"new_sl":float(new_sl),"tp":tp,
             "trail_pips":cfg.TRAIL_PIPS,
             "trail_distance_price":cfg.TRAIL_DISTANCE_PRICE,
@@ -176,6 +231,27 @@ def trail_positions(cfg_runtime,state):
             "attempt_number":retry["count"],
             "success":ok,"retcode":retcode,
             "comment":str(send.comment) if send else None,"canonical":False})
+
+    # Remove persisted extrema only after a successful broker inventory query.
+    # A None result returned above leaves the recovery file untouched.
+    active_owned = {
+        str(int(getattr(pos,"ticket",0) or 0))
+        for pos in positions
+        if int(getattr(pos,"magic",0) or 0)==magic
+        and int(getattr(pos,"ticket",0) or 0)>0
+    }
+    stale_keys = set(_TRAIL_FAVORABLE_EXTREMES) - active_owned
+    if stale_keys:
+        for stale_key in stale_keys:
+            _TRAIL_FAVORABLE_EXTREMES.pop(stale_key,None)
+        try:
+            save_trailing_state(_TRAIL_STATE_FILE,_TRAIL_FAVORABLE_EXTREMES)
+        except Exception as exc:
+            runner.log_event({
+                "event":"TRAIL_STATE_PERSIST_FAILED","version":cfg.VERSION,
+                "symbol":symbol,"detail":f"{type(exc).__name__}: {exc}",
+                "canonical":False})
+
 runner.monitor_position_lifecycle=trail_positions
 
 # V3 RUN-ISOLATION: never replay pre-existing broker history into Telegram or
@@ -578,6 +654,13 @@ runner.execute_candidate = _guarded_execute_candidate
 
 
 def _v3_main():
+    global _TRAIL_FAVORABLE_EXTREMES, _TRAIL_STATE_LOADED
+    # A corrupt/unreadable trailing recovery file must stop startup rather
+    # than silently resetting a position's previously observed excursion.
+    if not _TRAIL_STATE_LOADED:
+        _TRAIL_FAVORABLE_EXTREMES = load_trailing_state(_TRAIL_STATE_FILE)
+        _TRAIL_STATE_LOADED = True
+
     # V3 forward-session boundary: only newly formed triggers after startup
     # are eligible for execution. Recent M1 history is context, not backlog.
     original_load, original_reconcile = runner.load_state, runner.reconcile_state_from_events
