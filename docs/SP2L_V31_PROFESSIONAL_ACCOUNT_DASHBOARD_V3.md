@@ -1,25 +1,25 @@
 # SP2L V3.1 Professional Account Dashboard V3
 
-## Isolation requirement
+## Existing-terminal mode
 
-V3 is a separate read-only observer process. It must use a separate MT5 terminal installation/copy in portable mode, not the terminal used by the Forward Runner.
+V3 uses the same MT5 terminal executable already used by the Forward Runner. No second terminal installation or portable copy is required.
 
-1. Copy the complete MT5 terminal installation to a separate writable folder, for example D:\MT5-Observer\.
-2. Keep the existing Runner terminal at C:\Program Files\Otet Group MT5 Terminal\terminal64.exe.
-3. Start the copied terminal once, log in to the intended demo account, and confirm the account/server. Do not use the same terminal executable path as the Runner.
-4. In a separate PowerShell window, set:
-
-   $env:SP2L_OBSERVER_TERMINAL_PATH = 'D:\MT5-Observer\terminal64.exe'
-   $env:SP2L_RUNNER_TERMINAL_PATH = 'C:\Program Files\Otet Group MT5 Terminal\terminal64.exe'
+1. Keep the existing MT5 terminal running and logged in to the intended demo account.
+2. In a separate PowerShell window, set both paths to the existing terminal:
+   
+   $env:SP2L_OBSERVER_TERMINAL_PATH = 'C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe'
+   $env:SP2L_RUNNER_TERMINAL_PATH = 'C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe'
    $env:SP2L_OBSERVER_PORT = '8793'
 
-5. Run from the isolated V3 worktree:
+3. Run from the V3 worktree:
 
-   python scripts\sp2l_v31_professional_account_dashboard_v3.py
+   python scripts\\sp2l_v31_professional_account_dashboard_v3.py
 
-6. Open http://127.0.0.1:8793.
+4. Open http://127.0.0.1:8793.
 
-The script requires an explicit observer terminal path and refuses the known Runner terminal path. It initializes the observer terminal with portable=True, binds the web server to localhost, and shuts down only the observer connection when its own process exits. Do not configure the Runner terminal path as the observer path.
+The observer calls MetaTrader5.initialize(path=..., portable=False) to attach to the normal existing terminal data folder. It does not call MetaTrader5.shutdown() because the terminal is shared with the Runner. The observer is a separate Python process and uses only read APIs. It does not import the Runner or read/write Runner state and event files.
+
+**Important limitation:** MT5's Python IPC is shared with the same terminal. Although this implementation avoids terminal shutdown and all trading APIs, MetaQuotes does not provide a general isolation guarantee for concurrent Python clients. Run the local smoke test first and verify Runner PIDs and order activity remain unchanged. If the terminal reports IPC contention or the Runner shows any connection error, stop the dashboard process only; do not restart the Runner.
 
 ## Read-only surface
 
@@ -42,5 +42,5 @@ The dashboard is a research/demo operational display, not a strategy decision en
 - MT5 terminal, Python package MetaTrader5, Flask and a logged-in demo account are required on the user's Windows machine.
 - History is limited to the most recent 90 days.
 - Confirm the observer terminal is connected to the intended demo account before trusting displayed values.
-- Local Windows smoke testing and confirmation that Runner PIDs remain unchanged are required before treating V3 as accepted.
+- Local Windows smoke testing, correct account/server confirmation, and confirmation that Runner PIDs and activity remain unchanged are required before treating V3 as accepted.
 - V3 is not deployed and does not replace ports 8791 or 8792.
