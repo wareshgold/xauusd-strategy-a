@@ -8,6 +8,7 @@ from sp2l_trailing_rules import (
     normalize_trailing_sl,
     should_retry_trailing,
     trailing_sl_is_placeable,
+    mt5_last_error_detail,
 )
 
 
@@ -40,6 +41,27 @@ class TrailingRulesTests(unittest.TestCase):
     def test_non_transient_retcodes_are_not_retried(self):
         self.assertFalse(should_retry_trailing(10009, 1, 3))
         self.assertFalse(should_retry_trailing(None, 1, 3))
+
+    def test_mt5_last_error_is_captured_for_missing_send_result(self):
+        self.assertEqual(
+            mt5_last_error_detail(lambda: (-2, "Terminal: Invalid params")),
+            "(-2, 'Terminal: Invalid params')",
+        )
+
+    def test_mt5_last_error_failure_is_reported_without_raising(self):
+        def unavailable():
+            raise RuntimeError("IPC unavailable")
+
+        self.assertEqual(
+            mt5_last_error_detail(unavailable),
+            "last_error unavailable: RuntimeError: IPC unavailable",
+        )
+
+    def test_mt5_last_error_missing_callable_is_reported(self):
+        self.assertEqual(
+            mt5_last_error_detail(None),
+            "last_error unavailable: function unavailable",
+        )
 
 
 if __name__ == "__main__":
