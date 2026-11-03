@@ -34,9 +34,9 @@ def trailing_sl_is_placeable(
     if min_distance < 0:
         return False
     if direction == "BUY":
-        return bid > 0 and sl < bid - min_distance
+        return bid > 0 and sl < bid - min_distance - 1e-9
     if direction == "SELL":
-        return ask > 0 and sl > ask + min_distance
+        return ask > 0 and sl > ask + min_distance + 1e-9
     return False
 
 
