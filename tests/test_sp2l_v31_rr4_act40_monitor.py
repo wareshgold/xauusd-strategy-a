@@ -321,3 +321,27 @@ def test_separate_monitor_and_runner_worktrees_are_not_a_warning(monkeypatch, tm
     assert "RUNNER_ROOT_NOT_EXPLICIT" not in {item["code"] for item in diagnostics}
     assert "ACTIVE · PID 11352 · processes=11352,9088" in page
     assert "RUNNER_LOCK_UNAVAILABLE" not in {item["code"] for item in diagnostics}
+
+
+def test_windows_cim_probe_executes_without_lock(monkeypatch, tmp_path):
+    import os
+    import pytest
+
+    if os.name != "nt":
+        pytest.skip("Windows CIM integration smoke test")
+    monitor = load_monitor(monkeypatch, tmp_path)
+    runner_root = tmp_path / "active-runner"
+    scripts = runner_root / "scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "run_sp2l_v3_1_xauusd_forward_test.py").write_text("# fixture", encoding="utf-8")
+    monkeypatch.setattr(monitor, "RUNNER_ROOT", runner_root)
+    monitor.RUNNER_LOCK.unlink()
+
+    status = monitor._runner_status()
+
+    # The test process is not running the fixture Runner script. A successful
+    # CIM query therefore returns a definitive no-match, not a lock warning.
+    assert status["source"] == "windows_cim_process_probe"
+    assert status["alive"] is False
+    assert status["pids"] == []
+    assert "No process matched" in status["detail"]
