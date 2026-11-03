@@ -186,3 +186,27 @@ def test_rr4_act40_monitor_reports_mt5_disconnect_from_heartbeat(monkeypatch, tm
                for item in diagnostics)
     assert any(item["code"] == "TRADING_NOT_ALLOWED" and item["level"] == "WARNING"
                for item in diagnostics)
+
+
+
+def test_rr4_act40_monitor_marks_retried_events_recovered(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    events = [
+        {"ts_utc": "2026-11-03T08:00:00+00:00", "event": "TRAIL_DEFERRED",
+         "position": 7, "completed_bar_time": 1234},
+        {"ts_utc": "2026-11-03T08:00:05+00:00", "event": "TRAIL_UPDATE",
+         "position": 7, "completed_bar_time": 1234, "success": True},
+        {"ts_utc": "2026-11-03T08:01:00+00:00", "event": "TELEGRAM_SIGNAL_RETRY",
+         "signal_id": "sig-1"},
+        {"ts_utc": "2026-11-03T08:01:05+00:00", "event": "TELEGRAM_SIGNAL",
+         "signal_id": "sig-1", "success": True},
+    ]
+    diagnostics = monitor._build_diagnostics(
+        events, {"pid": 123, "alive": True},
+        {"malformed_lines": 0, "read_error": None},
+    )
+    codes = {item["code"] for item in diagnostics}
+    assert "TRAIL_DEFERRED_RECOVERED" in codes
+    assert "TELEGRAM_RETRY_RECOVERED" in codes
+    assert "TRAIL_DEFERRED" not in codes
+    assert "TELEGRAM_SIGNAL_RETRY" not in codes
