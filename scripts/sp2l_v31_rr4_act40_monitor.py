@@ -185,6 +185,22 @@ def _file_health(path: Path) -> str:
 def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> list[dict]:
     """Convert explicit runtime evidence into actionable, timestamped dashboard diagnostics."""
     items: list[dict] = []
+    successful_trail_keys = {
+        (str(event.get("position")), str(event.get("completed_bar_time")))
+        for event in events
+        if event.get("event") == "TRAIL_UPDATE" and event.get("success") is True
+        and event.get("position") is not None and event.get("completed_bar_time") is not None
+    }
+    delivered_signal_ids = {
+        str(event.get("signal_id"))
+        for event in events
+        if event.get("event") == "TELEGRAM_SIGNAL"
+        and event.get("signal_id") is not None
+        and (
+            event.get("success") is True
+            or (isinstance(event.get("telegram"), dict) and event["telegram"].get("success") is True)
+        )
+    }
 
     def add(level: str, code: str, event: dict | None, message: str, detail: str = ""):
         event = event or {}
@@ -251,15 +267,29 @@ def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> 
         elif kind == "ORDER_RESULT" and result.get("ok") is False:
             add("ERROR", "ORDER_SEND_FAILED", event, "Order request failed", detail)
         elif kind == "TRAIL_UPDATE" and event.get("success") is False:
-            add("ERROR", "TRAIL_UPDATE_FAILED", event, "Trailing stop modification failed", detail)
+            trail_key = (str(event.get("position")), str(event.get("completed_bar_time")))
+            if trail_key in successful_trail_keys:
+                add("INFO", "TRAIL_UPDATE_RECOVERED", event, "A later trailing update succeeded for the same position and completed bar", detail)
+            elif event.get("retry_scheduled") is True:
+                add("WARNING", "TRAIL_UPDATE_RETRY_PENDING", event, "Trailing modification failed but a retry is scheduled; this is not yet a terminal failure", detail)
+            else:
+                add("ERROR", "TRAIL_UPDATE_FAILED", event, "Trailing stop modification failed without a recorded scheduled retry or recovery", detail)
         elif kind == "TRAIL_DEFERRED":
-            add("WARNING", "TRAIL_DEFERRED", event, "Trailing stop update was deferred; inspect the retry / next attempt", detail or str(event.get("reason", "")))
+            trail_key = (str(event.get("position")), str(event.get("completed_bar_time")))
+            if trail_key in successful_trail_keys:
+                add("INFO", "TRAIL_DEFERRED_RECOVERED", event, "Deferred trailing update was subsequently applied for the same position and completed bar", detail or str(event.get("reason", "")))
+            else:
+                add("WARNING", "TRAIL_DEFERRED", event, "Trailing stop update was deferred; inspect the retry / next attempt", detail or str(event.get("reason", "")))
         elif kind == "START_TELEGRAM" and event.get("success") is False:
             add("ERROR", "TELEGRAM_START_FAILED", event, "Telegram startup notification failed", detail)
         elif kind == "TELEGRAM_DEAL_LIFECYCLE" and telegram.get("success") is False:
             add("ERROR", "TELEGRAM_DEAL_NOTIFY_FAILED", event, "Telegram deal notification failed", detail)
         elif kind == "TELEGRAM_SIGNAL_RETRY":
-            add("WARNING", "TELEGRAM_SIGNAL_RETRY", event, "Signal notification entered retry handling; delivery is not yet confirmed", detail)
+            signal_id = event.get("signal_id")
+            if signal_id is not None and str(signal_id) in delivered_signal_ids:
+                add("INFO", "TELEGRAM_RETRY_RECOVERED", event, "A later Telegram signal event confirms delivery for this signal ID", detail)
+            else:
+                add("WARNING", "TELEGRAM_SIGNAL_RETRY", event, "Signal notification entered retry handling; delivery is not yet confirmed", detail)
         elif kind == "HEARTBEAT":
             if event.get("mt5_connected") is False:
                 add("ERROR", "MT5_DISCONNECTED", event, "Runner heartbeat reports MT5 disconnected", detail)
