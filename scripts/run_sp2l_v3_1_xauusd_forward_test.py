@@ -12,6 +12,7 @@ from sp2l_trailing_rules import (
     normalize_trailing_sl,
     trailing_sl_is_placeable,
     should_retry_trailing,
+    mt5_last_error_detail,
 )
 from sp2l_trailing_state import (
     load_trailing_state,
@@ -220,12 +221,21 @@ def trail_positions(cfg_runtime,state):
         send=mt5.order_send(request)
         retcode=int(send.retcode) if send else None
         ok=bool(send and retcode==mt5.TRADE_RETCODE_DONE)
+        send_last_error = (
+            mt5_last_error_detail(getattr(mt5, "last_error", None))
+            if send is None else None
+        )
         retry["count"]+=1
         retry["last_attempt"]=time.monotonic()
+        retry_scheduled = (
+            not ok and should_retry_trailing(
+                retcode,retry["count"],_TRAIL_MAX_SEND_ATTEMPTS_PER_BAR
+            )
+        )
         if ok:
             attempts.add(attempt_key)
             _TRAIL_RETRY_STATE.pop(attempt_key,None)
-        elif should_retry_trailing(retcode,retry["count"],_TRAIL_MAX_SEND_ATTEMPTS_PER_BAR):
+        elif retry_scheduled:
             _TRAIL_RETRY_STATE[attempt_key]=retry
         else:
             attempts.add(attempt_key)
@@ -244,7 +254,11 @@ def trail_positions(cfg_runtime,state):
             "freeze_level":freeze_level,"min_distance":min_distance,
             "attempt_number":retry["count"],
             "success":ok,"retcode":retcode,
-            "comment":str(send.comment) if send else None,"canonical":False})
+            "comment":str(send.comment) if send else None,
+            "last_error":send_last_error,
+            "retry_scheduled":retry_scheduled,
+            "retry_max_attempts_per_bar":_TRAIL_MAX_SEND_ATTEMPTS_PER_BAR,
+            "canonical":False})
 
     # Remove persisted extrema only after a successful broker inventory query.
     # A None result returned above leaves the recovery file untouched.
