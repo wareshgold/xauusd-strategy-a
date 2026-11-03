@@ -14,9 +14,8 @@ import json
 import os
 import subprocess
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from flask import Flask, Response, jsonify
 
@@ -38,7 +37,9 @@ PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8791"))
 REFRESH_SECONDS = 5
 SYMBOL = "XAUUSD.ecn"
 VERSION = "SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101"
-TEHRAN_TZ = ZoneInfo("Asia/Tehran")
+# Iran uses UTC+03:30 year-round in the 2026 operating period.
+# A fixed offset avoids relying on an OS-installed IANA tz database on Windows.
+TEHRAN_TZ = timezone(timedelta(hours=3, minutes=30), name="Asia/Tehran")
 
 app = Flask(__name__)
 
