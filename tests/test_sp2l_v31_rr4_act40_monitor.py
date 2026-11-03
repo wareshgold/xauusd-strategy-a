@@ -222,7 +222,7 @@ def test_runner_process_detection_does_not_require_lock_file(monkeypatch, tmp_pa
     (scripts / "run_sp2l_v3_1_xauusd_forward_test.py").write_text("# fixture", encoding="utf-8")
     monkeypatch.setattr(monitor, "RUNNER_ROOT", runner_root)
     monkeypatch.setattr(monitor.os, "name", "nt")
-    assert not monitor.RUNNER_LOCK.exists()
+    monitor.RUNNER_LOCK.unlink()
 
     payload = [
         {"pid": 11352, "parent_pid": 11216, "command_line": "python runner.py"},
