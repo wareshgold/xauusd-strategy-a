@@ -404,13 +404,13 @@ table{{width:100%;border-collapse:collapse;font-size:12px}}th,td{{padding:9px 7p
 <script>
 const rows=JSON.parse(document.getElementById('event-data').textContent);
 const q=document.getElementById('q'), kind=document.getElementById('kind'), limit=document.getElementById('limit'), body=document.getElementById('events');
-[...new Set(rows.map(r=>r.event))].sort().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;kind.appendChild(o)});
-function draw(){const query=q.value.toLowerCase(), selected=kind.value, n=Number(limit.value);
+[...new Set(rows.map(r=>r.event))].sort().forEach(k=>{{const o=document.createElement('option');o.value=k;o.textContent=k;kind.appendChild(o)}});
+function draw(){{const query=q.value.toLowerCase(), selected=kind.value, n=Number(limit.value);
  const filtered=rows.filter(r=>(!selected||r.event===selected)&&(!query||JSON.stringify(r).toLowerCase().includes(query))).slice(0,n);
  body.replaceChildren();
- for(const r of filtered){const tr=document.createElement('tr');[r.time,r.event,r.id,r.symbol,r.summary].forEach(v=>{const td=document.createElement('td');td.textContent=v??'—';tr.appendChild(td)});body.appendChild(tr)}
- if(!filtered.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='No matching events';tr.appendChild(td);body.appendChild(tr)}
-}
+ for(const r of filtered){{const tr=document.createElement('tr');[r.time,r.event,r.id,r.symbol,r.summary].forEach(v=>{{const td=document.createElement('td');td.textContent=v??'—';tr.appendChild(td)}});body.appendChild(tr)}}
+ if(!filtered.length){{const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='No matching events';tr.appendChild(td);body.appendChild(tr)}}
+}}
 [q,kind,limit].forEach(el=>el.addEventListener('input',draw));draw();
 </script></body></html>"""
 
