@@ -1,0 +1,189 @@
+{
+  "captured_at": "2026-11-04T12:05:18.2576676+03:30",
+  "purpose": "READ_ONLY_FORWARD_RUNNER_MONITOR_HANDOFF",
+  "safety": "No MT5 calls; no Runner restart; no trading or state/event writes",
+  "runner_root": "[LOCAL_PATH_REDACTED]",
+  "dashboard_root": "[LOCAL_PATH_REDACTED]",
+  "processes": [
+    {
+      "ProcessId": 11352,
+      "ParentProcessId": 11216,
+      "Name": "python.exe",
+      "ExecutablePath": "[LOCAL_PATH_REDACTED]",
+      "CreationDate": "/Date(1793686600167)/",
+      "CommandLine": "\"[LOCAL_PATH_REDACTED]\" [LOCAL_PATH_REDACTED]"
+    },
+    {
+      "ProcessId": 9088,
+      "ParentProcessId": 11352,
+      "Name": "python.exe",
+      "ExecutablePath": "[LOCAL_PATH_REDACTED]",
+      "CreationDate": "/Date(1793686600180)/",
+      "CommandLine": "\"[LOCAL_PATH_REDACTED]\" [LOCAL_PATH_REDACTED]"
+    },
+    {
+      "ProcessId": 16252,
+      "ParentProcessId": 14960,
+      "Name": "python.exe",
+      "ExecutablePath": "[LOCAL_PATH_REDACTED]",
+      "CreationDate": "/Date(1793772153853)/",
+      "CommandLine": "\"[LOCAL_PATH_REDACTED]\" -u \"[LOCAL_PATH_REDACTED]\" "
+    },
+    {
+      "ProcessId": 15272,
+      "ParentProcessId": 16252,
+      "Name": "python.exe",
+      "ExecutablePath": "[LOCAL_PATH_REDACTED]",
+      "CreationDate": "/Date(1793772153982)/",
+      "CommandLine": "\"[LOCAL_PATH_REDACTED]\" -u \"[LOCAL_PATH_REDACTED]\" "
+    }
+  ],
+  "dashboard_port_8792": [
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 8792,
+      "OwningProcess": 15272
+    }
+  ],
+  "event_file": {
+    "path": "[LOCAL_PATH_REDACTED]",
+    "exists": true,
+    "bytes": 93836,
+    "last_write": "2026-11-04T11:26:41.7549980+03:30",
+    "sha256": "81C2032E351818275EBAF30F149DFC7BFE0C2DB0E40FE645ED3F9DF1E1E291E4"
+  },
+  "state_file": {
+    "path": "[LOCAL_PATH_REDACTED]",
+    "exists": true,
+    "bytes": 9400,
+    "last_write": "2026-11-04T12:05:17.2812194+03:30",
+    "sha256": "3426AFE8321C73868D632223CCBD5FCD5DB3B83F877D30EE052F2D73B8847CFA"
+  },
+  "parsed_event_count": 227,
+  "event_counts": {
+    "DAILY_SUMMARY": 1,
+    "MT5_DEAL_HISTORY_QUERY_FAILED": 8,
+    "TRAIL_DEFERRED": 12,
+    "CANDIDATE": 18,
+    "PENDING_ORDER_TTL_SKIPPED": 3,
+    "STARTUP_BROKER_RECOVERY": 1,
+    "START": 1,
+    "PENDING_ORDER_LIFECYCLE": 37,
+    "TELEGRAM_SIGNAL": 15,
+    "EXECUTION_BLOCKED": 3,
+    "TELEGRAM_DEAL_LIFECYCLE": 28,
+    "POSITION_LIFECYCLE": 21,
+    "START_TELEGRAM": 1,
+    "ORDER_RESULT": 18,
+    "TELEGRAM_DEAL_NOTIFICATION_DELIVERED": 1,
+    "TELEGRAM_SIGNAL_RETRY": 12,
+    "ORDER_ATTEMPT": 18,
+    "TRAIL_UPDATE": 11,
+    "SESSION_GATE": 18
+  },
+  "recent_events": [
+    {
+      "timestamp": null,
+      "event": "TRAIL_UPDATE",
+      "symbol": "XAUUSD.ecn",
+      "success": true,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "POSITION_LIFECYCLE",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "TELEGRAM_DEAL_LIFECYCLE",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": 4
+    },
+    {
+      "timestamp": null,
+      "event": "PENDING_ORDER_LIFECYCLE",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "PENDING_ORDER_LIFECYCLE",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "PENDING_ORDER_LIFECYCLE",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "PENDING_ORDER_LIFECYCLE",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "SESSION_GATE",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": "V3_ALL_MARKET_HOURS"
+    },
+    {
+      "timestamp": null,
+      "event": "CANDIDATE",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "ORDER_ATTEMPT",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "ORDER_RESULT",
+      "symbol": "XAUUSD.ecn",
+      "success": false,
+      "reason": null
+    },
+    {
+      "timestamp": null,
+      "event": "EXECUTION_BLOCKED",
+      "symbol": "XAUUSD.ecn",
+      "success": null,
+      "reason": "LIMIT_ENTRY_NOT_PLACEABLE_AT_CURRENT_MARKET"
+    }
+  ],
+  "git": {
+    "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a-v3-1-trailing-retry-20261103": {
+      "branch": "local/v31-trailing-retry-20261103",
+      "head": "bae11652ad1deeb5e823ba6c02c764a635a07722",
+      "status": [
+        "?? artifacts/forward-test/SP2L_V3_1_XAUUSD_RR4_ACT40_FORWARD_EVENTS.jsonl"
+      ]
+    },
+    "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a-v3-dashboard-v3-20261103": {
+      "branch": "local/v31-professional-dashboard-v3-20261103",
+      "head": "5700a747612a368dd547ad9fc3d05a35e3861bbc",
+      "status": [
+        " M scripts/sp2l_v31_professional_account_dashboard_v3.py",
+        "?? scripts/sp2l_v31_professional_account_dashboard_v3.py.backup-before-mt5-last-error-20261104-090110",
+        "?? scripts/sp2l_v31_professional_account_dashboard_v3.py.backup-before-portable-20261104-083546",
+        "?? scripts/sp2l_v31_professional_account_dashboard_v3.py.backup-shared-mt5-20261104-084900"
+      ]
+    }
+  }
+}
