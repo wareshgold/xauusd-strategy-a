@@ -264,9 +264,10 @@ def _snapshot():
     }
 
 
-def _table_rows(events):
+def _table_rows(events, limit: int = 300):
     rows = []
-    for e in reversed(events[-300:]):
+    safe_limit = max(1, min(EVENT_LIMIT, int(limit)))
+    for e in reversed(events[-safe_limit:]):
         kind = e.get("event", "UNKNOWN")
         result = e.get("result") if isinstance(e.get("result"), dict) else {}
         summary = e.get("detail") or e.get("outcome") or e.get("reason") or ""
@@ -686,7 +687,7 @@ def api_events():
         offset = max(0, int(request.args.get("offset", "0")))
     except ValueError:
         return jsonify({"error": "limit and offset must be integers"}), 400
-    rows = _table_rows(d["events"])
+    rows = _table_rows(d["events"], limit=EVENT_LIMIT)
     if event_type:
         rows = [row for row in rows if row["event"] == event_type]
     if query:
