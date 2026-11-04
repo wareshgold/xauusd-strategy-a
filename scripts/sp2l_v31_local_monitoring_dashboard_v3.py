@@ -365,7 +365,10 @@ def _trailing_diagnostics(events: list[dict]) -> list[dict]:
         if last.get("event") == "TRAIL_DEFERRED":
             status = "DEFERRED"
         elif last_update.get("success") is True and (
-            not attempts or _stamp(last_update) >= (_stamp(last) or datetime.min.replace(tzinfo=timezone.utc))
+            last is last_update or (
+                _stamp(last_update) is not None and _stamp(last) is not None
+                and _stamp(last_update) >= _stamp(last)
+            )
         ):
             status = "SUCCEEDED"
         elif last_update.get("success") is False and last_update.get("retry_scheduled") is True:
