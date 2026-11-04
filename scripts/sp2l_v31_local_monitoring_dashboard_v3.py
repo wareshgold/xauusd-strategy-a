@@ -301,7 +301,7 @@ def _order_lifecycle(events: list[dict], state: dict) -> list[dict]:
         result = event.get("result") if isinstance(event.get("result"), dict) else {}
         for value in (
             event.get("order"), event.get("tracked_order"), event.get("ticket"),
-            result.get("order"), event.get("position"),
+            result.get("order"),
         ):
             if value not in (None, "", 0, "0"):
                 return str(value)
@@ -360,15 +360,17 @@ def _trailing_diagnostics(events: list[dict]) -> list[dict]:
     for (position, bar), attempts in grouped.items():
         attempts.sort(key=lambda e: _stamp(e) or datetime.min.replace(tzinfo=timezone.utc))
         updates = [e for e in attempts if e.get("event") == "TRAIL_UPDATE"]
-        successful = any(e.get("success") is True for e in updates)
         last = attempts[-1]
-        if successful:
-            status = "SUCCEEDED"
-        elif last.get("event") == "TRAIL_DEFERRED":
+        last_update = updates[-1] if updates else {}
+        if last.get("event") == "TRAIL_DEFERRED":
             status = "DEFERRED"
-        elif last.get("retry_scheduled") is True:
+        elif last_update.get("success") is True and (
+            not attempts or _stamp(last_update) >= (_stamp(last) or datetime.min.replace(tzinfo=timezone.utc))
+        ):
+            status = "SUCCEEDED"
+        elif last_update.get("success") is False and last_update.get("retry_scheduled") is True:
             status = "RETRY_PENDING"
-        elif updates and updates[-1].get("success") is False:
+        elif last_update.get("success") is False:
             status = "FAILED_UNRESOLVED"
         else:
             status = "UNRESOLVED"
@@ -423,16 +425,19 @@ def _history_failures(events: list[dict]) -> list[dict]:
 def _file_fingerprint(path) -> dict:
     """On-demand SHA-256; intentionally not called during the five-second refresh."""
     try:
+        before = path.stat()
         digest = hashlib.sha256()
         size = 0
         with path.open("rb") as stream:
             for chunk in iter(lambda: stream.read(1024 * 1024), b""):
                 digest.update(chunk)
                 size += len(chunk)
-        stat = path.stat()
+        after = path.stat()
+        stable = before.st_size == after.st_size and before.st_mtime_ns == after.st_mtime_ns
         return {
             "exists": True, "bytes": size, "sha256": digest.hexdigest(),
-            "mtime_utc": datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
+            "mtime_utc": datetime.fromtimestamp(after.st_mtime, timezone.utc).isoformat(),
+            "stable_during_hash": stable,
         }
     except OSError as exc:
         return {"exists": False, "bytes": None, "sha256": None, "error": f"{type(exc).__name__}: {exc}"}
