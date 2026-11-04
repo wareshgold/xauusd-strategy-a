@@ -495,7 +495,7 @@ h1{{font-size:24px;margin:0}}h2{{font-size:16px;margin:0 0 13px}}p{{color:var(--
 .alert{{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--amber);padding:11px;border-radius:8px;margin:8px 0}}
 .alert.error{{border-left-color:var(--red)}}.alert.clear{{border-left-color:var(--green)}}.alert span{{float:right;color:var(--muted);font-size:11px}}small{{display:block;color:var(--muted);overflow-wrap:anywhere;margin-top:5px}}
 table{{width:100%;border-collapse:collapse;font-size:12px}}th,td{{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{color:var(--blue)}}td{{overflow-wrap:anywhere}}
-.tools{{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}}input,select{{background:#0b1626;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:9px;min-width:160px}}
+.tools{{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}}input,select,button{{background:#0b1626;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:9px;min-width:120px}}button{{cursor:pointer}}button:hover{{border-color:var(--blue)}}
 .tablewrap{{overflow:auto;max-height:620px}}.muted{{color:var(--muted)}}.foot{{font-size:11px;color:var(--muted);line-height:1.6}}
 @media(max-width:650px){{main{{padding:11px}}.panel{{padding:12px}}}}
 </style></head><body><main>
@@ -589,47 +589,55 @@ function draw(){{const query=q.value.toLowerCase(), selected=kind.value, n=Numbe
 }}
 [q,kind,limit].forEach(el=>el.addEventListener('input',draw));draw();
 
-async function getJson(url) {
- const response=await fetch(url,{cache:'no-store'});
+async function getJson(url) {{
+ const response=await fetch(url,{{cache:'no-store'}});
  if(!response.ok) throw new Error('HTTP '+response.status);
  return response.json();
-}
-function tableInto(target, headers, rows) {
+}}
+function tableInto(target, headers, rows, loadedAt=new Date().toISOString(), persist=true) {{
  const root=document.getElementById(target); root.replaceChildren();
- if(!rows.length){root.textContent='No records in the current readable evidence window.';return;}
- const table=document.createElement('table'),thead=document.createElement('thead'),hr=document.createElement('tr');
- headers.forEach(h=>{const th=document.createElement('th');th.textContent=h;hr.appendChild(th)});
- thead.appendChild(hr);table.appendChild(thead);
- const tbody=document.createElement('tbody');
- rows.forEach(row=>{const tr=document.createElement('tr');row.forEach(value=>{const td=document.createElement('td');td.textContent=value===null||value===undefined?'—':String(value);tr.appendChild(td)});tbody.appendChild(tr)});
- table.appendChild(tbody);root.appendChild(table);
-}
-document.getElementById('load-orders').addEventListener('click',async()=>{
- const root='orders-result';try{const d=await getJson('/api/orders');tableInto(root,
+ const note=document.createElement('p');note.className='muted';note.textContent='Snapshot loaded: '+loadedAt;root.appendChild(note);
+ if(!rows.length){{const empty=document.createElement('p');empty.textContent='No records in the current readable evidence window.';root.appendChild(empty)}}
+ else {{
+  const table=document.createElement('table'),thead=document.createElement('thead'),hr=document.createElement('tr');
+  headers.forEach(h=>{{const th=document.createElement('th');th.textContent=h;hr.appendChild(th)}});
+  thead.appendChild(hr);table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  rows.forEach(row=>{{const tr=document.createElement('tr');row.forEach(value=>{{const td=document.createElement('td');td.textContent=value===null||value===undefined?'—':String(value);tr.appendChild(td)}});tbody.appendChild(tr)}});
+  table.appendChild(tbody);root.appendChild(table);
+ }}
+ if(persist){{try{{sessionStorage.setItem('sp2l-panel-'+target,JSON.stringify({{headers,rows,loadedAt}}))}}catch(e){{}}}}
+}}
+document.getElementById('load-orders').addEventListener('click',async()=>{{
+ const root='orders-result';try{{const d=await getJson('/api/orders');tableInto(root,
  ['Order ID','Recorded status','Events','Last event','Last time','Retcode'],
- d.orders.map(x=>[x.order_id,x.lifecycle_status,x.event_count,x.last_event,x.last_time,x.last_retcode]));}
- catch(e){document.getElementById(root).textContent='Load failed: '+e.message;}
-});
-document.getElementById('load-trailing').addEventListener('click',async()=>{
- const root='trailing-result';try{const d=await getJson('/api/trailing');tableInto(root,
+ d.orders.map(x=>[x.order_id,x.lifecycle_status,x.event_count,x.last_event,x.last_time,x.last_retcode]));}}
+ catch(e){{document.getElementById(root).textContent='Load failed: '+e.message;}}
+}});
+document.getElementById('load-trailing').addEventListener('click',async()=>{{
+ const root='trailing-result';try{{const d=await getJson('/api/trailing');tableInto(root,
  ['Position','Completed bar','Status','Attempts','Last SL','Retcode','Comment'],
  d.trailing.map(x=>[x.position,x.completed_bar_time,x.status,x.attempts,
- (x.old_sl??'—')+' → '+(x.new_sl??'—'),x.retcode,x.comment]));}
- catch(e){document.getElementById(root).textContent='Load failed: '+e.message;}
-});
-document.getElementById('load-history').addEventListener('click',async()=>{
- const root='history-result';try{const d=await getJson('/api/history-failures');tableInto(root,
+ (x.old_sl??'—')+' → '+(x.new_sl??'—'),x.retcode,x.comment]));}}
+ catch(e){{document.getElementById(root).textContent='Load failed: '+e.message;}}
+}});
+document.getElementById('load-history').addEventListener('click',async()=>{{
+ const root='history-result';try{{const d=await getJson('/api/history-failures');tableInto(root,
  ['Time','Ticket','Position','Query','Error','Last error'],
- d.failures.map(x=>[x.time,x.ticket,x.position,x.query,x.error,JSON.stringify(x.last_error)]));}
- catch(e){document.getElementById(root).textContent='Load failed: '+e.message;}
-});
-document.getElementById('load-evidence').addEventListener('click',async()=>{
+ d.failures.map(x=>[x.time,x.ticket,x.position,x.query,x.error,JSON.stringify(x.last_error)]));}}
+ catch(e){{document.getElementById(root).textContent='Load failed: '+e.message;}}
+}});
+document.getElementById('load-evidence').addEventListener('click',async()=>{{
  const root=document.getElementById('evidence-result');root.textContent='Computing SHA-256…';
- try{const d=await getJson('/api/evidence');tableInto('evidence-result',
- ['File','Exists','Bytes','SHA-256','Modified UTC'],
- Object.entries(d.files).map(([name,x])=>[name,x.exists,x.bytes,x.sha256,x.mtime_utc]));}
- catch(e){root.textContent='Fingerprint failed: '+e.message;}
-});
+ try{{const d=await getJson('/api/evidence');tableInto('evidence-result',
+ ['File','Exists','Bytes','SHA-256','Modified UTC','Stable during hash'],
+ Object.entries(d.files).map(([name,x])=>[name,x.exists,x.bytes,x.sha256,x.mtime_utc,x.stable_during_hash]));}}
+ catch(e){{root.textContent='Fingerprint failed: '+e.message;}}
+}});
+["orders-result","trailing-result","history-result","evidence-result"].forEach(target=>{{
+ try{{const raw=sessionStorage.getItem('sp2l-panel-'+target);if(raw){{const saved=JSON.parse(raw);tableInto(target,saved.headers,saved.rows,saved.loadedAt,false)}}}}catch(e){{}}
+}});
+
 
 </script></body></html>"""
 
