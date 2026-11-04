@@ -1,0 +1,18 @@
+name: V3.1 dashboard checks
+on:
+  push:
+    branches: [research/v31-dashboard-local-monitor-20261104]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install Flask pytest
+      - run: python -m compileall -q scripts/sp2l_rr4_act40_monitor.py scripts/sp2l_v31_local_monitoring_dashboard_v3.py
+      - run: python -m pytest -q tests/test_v31_local_monitoring_dashboard_v3.py
