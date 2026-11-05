@@ -142,7 +142,7 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
 
         t_events = [
             e for e in trail_events.get(position_id, [])
-            if entry_stamp is not None and close_stamp is not None
+            if entry_stamp is not None and last_exit_stamp is not None
             and (trail_stamp := _dt(e.get("ts_utc"))) is not None
             and entry_stamp <= trail_stamp <= last_exit_stamp
         ]
