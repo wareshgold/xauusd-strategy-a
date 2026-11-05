@@ -102,7 +102,7 @@ def _position_journal(deals: list[dict]) -> list[dict]:
         rows.append({
             "position_id": position_id,
             "side": sides[-1] if sides else "—",
-            "signal_id": next((x["signal_id"] for x in items if x["signal_id"]), None),
+            "signal_id": next((x.get("signal_id") for x in items if x.get("signal_id")), None),
             "first_time": items[0]["time_local"],
             "last_time": items[-1]["time_local"],
             "deal_count": len(items),
