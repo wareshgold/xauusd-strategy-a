@@ -31,6 +31,7 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
         self.assertEqual(result["daily"][0]["position_groups_with_exit_observed"], 1)
         self.assertEqual(result["daily"][0]["net_sum_runner_recorded"], 2.0)
         self.assertEqual(result["daily"][0]["buy"]["positions"], 1)
+        self.assertEqual(result["daily"][0]["buy"]["positions_with_known_net"], 1)
         self.assertEqual(result["daily"][1]["sell"]["losses"], 1)
         self.assertEqual(result["overall"]["net_sum_runner_recorded"], 0.5)
 
