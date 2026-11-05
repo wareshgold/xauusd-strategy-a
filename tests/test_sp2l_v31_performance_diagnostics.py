@@ -96,15 +96,15 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
         self.assertEqual(result["daily"][0]["date_local"], "2026-11-05")
         self.assertEqual(result["trades"][0]["close_day_local"], "2026-11-05")
 
-    def test_tehran_local_day_does_not_leak_into_previous_day(self):
+    def test_tehran_local_day_keeps_pre_midnight_close_on_same_day(self):
         events = [
             {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 41, "position": 601,
              "entry": 1, "signal_id": "XAUUSD.ecn:7:SELL", "net": -1.0,
              "ts_utc": "2026-11-04T20:00:00Z"},
         ]
         result = diagnostics._build_diagnostics(events, "2026-11-04", "2026-11-05")
-        self.assertEqual(result["daily"][0]["closed_position_groups"], 0)
-        self.assertEqual(result["daily"][1]["closed_position_groups"], 1)
+        self.assertEqual(result["daily"][0]["closed_position_groups"], 1)
+        self.assertEqual(result["daily"][1]["closed_position_groups"], 0)
 
 
 
