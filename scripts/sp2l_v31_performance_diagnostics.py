@@ -1,13 +1,14 @@
 """Read-only SP2L V3.1 daily performance diagnostics.
 
-Standalone companion to the Trading Intelligence dashboard. Reads only the
-existing filesystem monitor snapshot; never imports MetaTrader5 or accesses
-broker/trading APIs. All classifications are descriptive, not causal.
+Reusable analytics module embedded in the Trading Intelligence dashboard.
+Consumes Runner-recorded filesystem events only; never accesses MT5 or broker
+APIs. All classifications are descriptive, not causal.
 """
 from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date, datetime, timezone, timedelta
+import os
 
 DEFAULT_START = os.getenv("SP2L_DIAGNOSTICS_START", "2026-11-04")
 DEFAULT_END = os.getenv("SP2L_DIAGNOSTICS_END", "2026-11-05")
@@ -221,7 +222,7 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         "timezone": "Asia/Tehran (UTC+03:30 fixed offset)",
         "daily": daily,
         "overall": summarize(trades),
-        "trades": sorted(trades, key=lambda r: (r["close_day_utc"], r["position_id"])),
+        "trades": sorted(trades, key=lambda r: (r["close_day_local"], r["position_id"])),
         "data_limits": [
             "P&L is the sum of Runner-recorded TELEGRAM_DEAL_LIFECYCLE net fields, grouped by position; it is not broker-reconciled account equity.",
             "A position group is assigned to the Tehran-local date of its last recorded OUT/OUT_BY deal. Multi-exit positions may span dates.",
