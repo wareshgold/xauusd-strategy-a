@@ -7,7 +7,7 @@ broker/trading APIs. All classifications are descriptive, not causal.
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 import json
 import os
 
@@ -20,6 +20,7 @@ PORT = int(os.getenv("SP2L_DIAGNOSTICS_PORT", "8796"))
 DEFAULT_START = os.getenv("SP2L_DIAGNOSTICS_START", "2026-11-04")
 DEFAULT_END = os.getenv("SP2L_DIAGNOSTICS_END", "2026-11-05")
 TRAIL_ACTIVATION_PRICE = 0.40
+TEHRAN = timezone(timedelta(hours=3, minutes=30))
 
 
 def _num(value):
@@ -39,7 +40,7 @@ def _dt(value):
 
 def _day(value):
     stamp = _dt(value)
-    return stamp.date().isoformat() if stamp else None
+    return stamp.astimezone(TEHRAN).date().isoformat() if stamp else None
 
 
 def _side(event):
@@ -223,9 +224,9 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         cursor = date.fromordinal(cursor.toordinal() + 1)
 
     return {
-        "date_start_utc": start.isoformat(),
-        "date_end_utc": end.isoformat(),
-        "timezone": "UTC",
+        "date_start_local": start.isoformat(),
+        "date_end_local": end.isoformat(),
+        "timezone": "Asia/Tehran (UTC+03:30 fixed offset)",
         "daily": daily,
         "overall": summarize(trades),
         "trades": sorted(trades, key=lambda r: (r["close_day_utc"], r["position_id"])),
@@ -273,13 +274,13 @@ table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}th,t
 ul{padding-left:18px;color:var(--muted);font-size:12px;line-height:1.65}.status{border:1px solid var(--line);padding:7px 10px;border-radius:20px;font-size:11px}
 @media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}}@media(max-width:520px){main{padding:14px}header{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr 1fr}}
 </style></head><body><main>
-<header><div><div class="eyebrow">SP2L / V3.1 · READ-ONLY</div><h1>Performance Diagnostics</h1><div class="muted">Daily comparison · Direction · Trailing · Sampled excursions · UTC</div></div>
+<header><div><div class="eyebrow">SP2L / V3.1 · READ-ONLY</div><h1>Performance Diagnostics</h1><div class="muted">Daily comparison · Direction · Trailing · Sampled excursions · Tehran time</div></div>
 <div class="controls"><label>From <input id="start" type="date" value="2026-11-04"></label><label>To <input id="end" type="date" value="2026-11-05"></label><button id="load">Refresh</button><span class="status" id="status">Loading…</span></div></header>
 <div class="note">This report describes Runner-recorded evidence only. It does not connect to MT5, verify broker inventory, issue BUY/SELL decisions, or prove causality. Missing observations remain unknown.</div>
 <div id="days"></div>
 <h2>BUY vs SELL</h2><div class="two" id="direction"></div>
 <h2>Trailing evidence</h2><div class="two" id="trailing"></div>
-<h2>Closed position groups</h2><div class="tablewrap"><table><thead><tr><th>UTC close day</th><th>Position</th><th>Side</th><th>Net</th><th>Sampled MFE</th><th>Sampled MAE</th><th>Price samples</th><th>Trail OK</th><th>Trail failed</th><th>Deferred</th><th>Unrecovered same-bar</th><th>Activation evidence</th></tr></thead><tbody id="trades"></tbody></table></div>
+<h2>Closed position groups</h2><div class="tablewrap"><table><thead><tr><th>Tehran close day</th><th>Position</th><th>Side</th><th>Net</th><th>Sampled MFE</th><th>Sampled MAE</th><th>Price samples</th><th>Trail OK</th><th>Trail failed</th><th>Deferred</th><th>Unrecovered same-bar</th><th>Activation evidence</th></tr></thead><tbody id="trades"></tbody></table></div>
 <h2>Interpretation limits</h2><ul id="limits"></ul>
 </main><script>
 const $=id=>document.getElementById(id), f=v=>v===null||v===undefined?"—":Number(v).toFixed(2), esc=v=>String(v??"—").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
