@@ -111,7 +111,7 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
         result = diagnostics._build_diagnostics(events, "2026-11-05", "2026-11-05")
         self.assertEqual(result["timezone"], "Asia/Tehran (UTC+03:30 fixed offset)")
         self.assertEqual(result["daily"][0]["date_local"], "2026-11-05")
-        self.assertEqual(result["trades"][0]["close_day_local"], "2026-11-05")
+        self.assertEqual(result["trades"][0]["last_exit_observation_day_local"], "2026-11-05")
 
     def test_tehran_local_day_keeps_pre_midnight_close_on_same_day(self):
         events = [
