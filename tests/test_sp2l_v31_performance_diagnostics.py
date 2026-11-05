@@ -85,10 +85,15 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
         self.assertIn("not tick-complete", result["data_limits"][3])
 
     def test_duplicate_deal_ids_are_deduplicated(self):
-        row = {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 31, "position": 500,
-               "entry": 1, "signal_id": "XAUUSD.ecn:5:SELL", "net": 1.25,
-               "ts_utc": "2026-11-04T09:00:00Z"}
-        result = diagnostics._build_diagnostics([row, dict(row)], "2026-11-04", "2026-11-04")
+        entry = {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 30, "position": 500,
+                 "entry": 0, "signal_id": "XAUUSD.ecn:5:SELL", "entry_price": 100.0,
+                 "net": -0.10, "ts_utc": "2026-11-04T08:00:00Z"}
+        exit_row = {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 31, "position": 500,
+                    "entry": 1, "signal_id": "XAUUSD.ecn:5:SELL", "net": 1.35,
+                    "ts_utc": "2026-11-04T09:00:00Z"}
+        result = diagnostics._build_diagnostics(
+            [entry, exit_row, dict(exit_row)], "2026-11-04", "2026-11-04"
+        )
         self.assertEqual(result["overall"]["position_groups_with_exit_observed"], 1)
         self.assertEqual(result["overall"]["net_sum_runner_recorded"], 1.25)
 
