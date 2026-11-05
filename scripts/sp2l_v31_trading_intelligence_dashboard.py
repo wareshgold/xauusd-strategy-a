@@ -464,12 +464,12 @@ const card=(label,value,note="")=>'<div class="card"><div class="kpi-label">'+es
 $("pd-days").innerHTML=d.daily.map(day=>'<div class="section-head"><div><h2>'+esc(day.date_local)+'</h2><p>Tehran local day · '+day.position_groups_with_exit_observed+' position groups with exit observations</p></div></div><div class="grid">'+
 card("Recorded net",fmt(day.net_sum_runner_recorded),"Runner deal net; not account equity")+
 card("Wins / losses",day.wins+" / "+day.losses)+card("Unknown net",day.unknown_net)+
-card("BUY net",fmt(day.buy.net),day.buy.positions+" positions · "+day.buy.wins+"W / "+day.buy.losses+"L")+
-card("SELL net",fmt(day.sell.net),day.sell.positions+" positions · "+day.sell.wins+"W / "+day.sell.losses+"L")+
+card("BUY net",fmt(day.buy.net),day.buy.positions+" groups · "+day.buy.positions_with_known_net+" known net · "+day.buy.wins+"W / "+day.buy.losses+"L")+
+card("SELL net",fmt(day.sell.net),day.sell.positions+" groups · "+day.sell.positions_with_known_net+" known net · "+day.sell.wins+"W / "+day.sell.losses+"L")+
 card("Losses with unrecovered deferred",day.trailing.losses_with_unrecovered_deferred_same_bar)+
 card("Sampled MFE ≥ $0.40",day.sampled_excursions.positions_with_mfe_at_least_activation)+'</div>').join("")||'<div class="empty">No daily observations in this range.</div>';
 const overall=d.overall;
-$("pd-direction").innerHTML=["BUY","SELL"].map(side=>{const x=overall[side.toLowerCase()];return card(side+" positions",x.positions,"Net "+fmt(x.net)+" · "+x.wins+" wins / "+x.losses+" losses")}).join("");
+$("pd-direction").innerHTML=["BUY","SELL"].map(side=>{const x=overall[side.toLowerCase()];return card(side+" groups",x.positions,x.positions_with_known_net+" with known net · Net "+fmt(x.net)+" · "+x.wins+" wins / "+x.losses+" losses")}).join("");
 const t=overall.trailing,e=overall.sampled_excursions;
 $("pd-trailing").innerHTML=[
 card("Positions with trail success",t.positions_with_success),
@@ -481,7 +481,7 @@ card("Positions with sampled prices",e.positions_with_price_samples),
 card("Sampled MFE ≥ activation",e.positions_with_mfe_at_least_activation),
 card("Sampled MAE > MFE",e.positions_with_mae_greater_than_mfe)
 ].join("");
-$("pd-trades").innerHTML=d.trades.map(r=>'<tr><td>'+esc(r.close_day_local)+'</td><td>'+esc(r.position_id)+'</td><td>'+esc(r.side)+'</td><td class="'+(r.net>0?"green":r.net<0?"red":"")+'">'+fmt(r.net)+'</td><td>'+fmt(r.sampled_mfe_price)+'</td><td>'+fmt(r.sampled_mae_price)+'</td><td>'+r.price_sample_count+'</td><td>'+r.trail_success+'</td><td>'+r.trail_failed+'</td><td>'+r.trail_deferred+'</td><td>'+r.trail_deferred_unrecovered_same_bar+'</td><td>'+esc(r.trail_evidence)+'</td></tr>').join("")||'<tr><td colspan="12" class="empty">No closed groups found for the selected dates.</td></tr>';
+$("pd-trades").innerHTML=d.trades.map(r=>'<tr><td>'+esc(r.close_day_local)+'</td><td>'+esc(r.position_id)+'</td><td>'+esc(r.side)+'</td><td class="'+(r.net>0?"green":r.net<0?"red":"")+'">'+fmt(r.net)+'</td><td>'+fmt(r.sampled_mfe_price)+'</td><td>'+fmt(r.sampled_mae_price)+'</td><td>'+r.price_sample_count+'</td><td>'+r.trail_success+'</td><td>'+r.trail_failed+'</td><td>'+r.trail_deferred+'</td><td>'+r.trail_deferred_unrecovered_same_bar+'</td><td>'+esc(r.trail_evidence)+'</td></tr>').join("")||'<tr><td colspan="12" class="empty">No groups with exit observations found for the selected dates.</td></tr>';
 $("pd-limits").innerHTML=d.data_limits.map(x=>'<li>'+esc(x)+'</li>').join("");
 }
 async function loadPerformanceDiagnostics(){
