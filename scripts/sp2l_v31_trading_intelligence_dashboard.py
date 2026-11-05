@@ -386,7 +386,7 @@ table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th{t
 </section>
 
 <section class="page" id="page-diagnostics">
-<div class="notice">Read-only diagnostic view of Runner-recorded closed-position groups. Daily grouping uses Tehran local time (UTC+03:30). Direction and trailing correlations are descriptive, not causal. Sampled MFE/MAE are not tick-complete. MT5 is not queried and broker inventory is not verified.</div>
+<div class="notice">Read-only diagnostic view of Runner-recorded position groups with exit observations; an OUT event may be partial and does not prove the broker position is flat. Daily grouping uses Tehran local time (UTC+03:30). Direction and trailing correlations are descriptive, not causal. Sampled MFE/MAE are not tick-complete. MT5 is not queried and broker inventory is not verified.</div>
 <div class="toolbar">
 <label>From <input id="pd-start" type="date"></label>
 <label>To <input id="pd-end" type="date"></label>
