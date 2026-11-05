@@ -99,10 +99,10 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         exits = [d for d in deals if d.get("entry") in (1, 2, 3)]
         if not exits:
             continue
-        close_event = exits[-1]
-        close_stamp = _dt(close_event.get("ts_utc"))
-        close_day = _day(close_event.get("ts_utc"))
-        if not close_day or not (start <= date.fromisoformat(close_day) <= end):
+        last_exit_event = exits[-1]
+        last_exit_stamp = _dt(last_exit_event.get("ts_utc"))
+        last_exit_day = _day(last_exit_event.get("ts_utc"))
+        if not last_exit_day or not (start <= date.fromisoformat(last_exit_day) <= end):
             continue
         entry_deals = [d for d in deals if d.get("entry") == 0]
         entry_stamps = [_dt(d.get("ts_utc")) for d in entry_deals]
@@ -116,9 +116,9 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         side = next((_side(d) for d in deals if _side(d)), None)
         samples = [
             e for e in position_events.get(position_id, [])
-            if entry_stamp is not None and close_stamp is not None
+            if entry_stamp is not None and last_exit_stamp is not None
             and (sample_stamp := _dt(e.get("ts_utc"))) is not None
-            and entry_stamp <= sample_stamp <= close_stamp
+            and entry_stamp <= sample_stamp <= last_exit_stamp
         ]
         entry_prices = [_num(d.get("entry_price")) for d in entry_deals]
         entry = next((v for v in entry_prices if v is not None), None)
@@ -144,7 +144,7 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
             e for e in trail_events.get(position_id, [])
             if entry_stamp is not None and close_stamp is not None
             and (trail_stamp := _dt(e.get("ts_utc"))) is not None
-            and entry_stamp <= trail_stamp <= close_stamp
+            and entry_stamp <= trail_stamp <= last_exit_stamp
         ]
         successful = [e for e in t_events if e.get("event") == "TRAIL_UPDATE" and e.get("success") is True]
         failed = [e for e in t_events if e.get("event") == "TRAIL_UPDATE" and e.get("success") is False]
@@ -164,7 +164,7 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         )
         trades.append({
             "position_id": position_id,
-            "close_day_local": close_day,
+            "last_exit_observation_day_local": last_exit_day,
             "position_group_status": "EXIT_OBSERVED_NOT_BROKER_CONFIRMED_CLOSED",
             "net_status": "COMPLETE_RECORDED_GROUP" if net_complete else "INCOMPLETE_EVENT_WINDOW_OR_NET_FIELDS",
             "side": side or "UNKNOWN",
@@ -240,7 +240,7 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
     cursor = start
     while cursor <= end:
         day = cursor.isoformat()
-        rows = [r for r in trades if r["close_day_local"] == day]
+        rows = [r for r in trades if r["last_exit_observation_day_local"] == day]
         daily.append({"date_local": day, **summarize(rows), "trades": rows})
         cursor = date.fromordinal(cursor.toordinal() + 1)
 
@@ -250,7 +250,7 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         "timezone": "Asia/Tehran (UTC+03:30 fixed offset)",
         "daily": daily,
         "overall": summarize(trades),
-        "trades": sorted(trades, key=lambda r: (r["close_day_local"], r["position_id"])),
+        "trades": sorted(trades, key=lambda r: (r["last_exit_observation_day_local"], r["position_id"])),
         "data_limits": [
             "P&L is the sum of Runner-recorded TELEGRAM_DEAL_LIFECYCLE net fields, grouped by position; it is not broker-reconciled account equity.",
             "A position group is assigned to the Tehran-local date of its last recorded OUT/INOUT/OUT_BY deal. OUT may be partial; exit observation does not prove the broker position is flat.",
