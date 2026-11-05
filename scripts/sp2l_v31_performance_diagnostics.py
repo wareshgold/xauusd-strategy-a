@@ -10,10 +10,13 @@ from collections import defaultdict
 from datetime import date, datetime, timezone, timedelta
 import os
 
-DEFAULT_START = os.getenv("SP2L_DIAGNOSTICS_START", "2026-11-04")
-DEFAULT_END = os.getenv("SP2L_DIAGNOSTICS_END", "2026-11-05")
-TRAIL_ACTIVATION_PRICE = 0.40
 TEHRAN = timezone(timedelta(hours=3, minutes=30))
+DEFAULT_END = os.getenv("SP2L_DIAGNOSTICS_END", datetime.now(TEHRAN).date().isoformat())
+DEFAULT_START = os.getenv(
+    "SP2L_DIAGNOSTICS_START",
+    (datetime.now(TEHRAN).date() - timedelta(days=1)).isoformat(),
+)
+TRAIL_ACTIVATION_PRICE = 0.40
 
 
 def _num(value):
@@ -90,20 +93,34 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
 
     trades = []
     for position_id, deals in grouped.items():
-        deals.sort(key=lambda row: row.get("ts_utc") or "")
-        exits = [d for d in deals if d.get("entry") in (1, 3)]
+        deals.sort(key=lambda row: _dt(row.get("ts_utc")) or datetime.min.replace(tzinfo=timezone.utc))
+        # MT5 OUT, INOUT and OUT_BY all provide exit-side observations. OUT may
+        # be partial, so this is not proof that the broker position is flat.
+        exits = [d for d in deals if d.get("entry") in (1, 2, 3)]
         if not exits:
             continue
         close_event = exits[-1]
+        close_stamp = _dt(close_event.get("ts_utc"))
         close_day = _day(close_event.get("ts_utc"))
         if not close_day or not (start <= date.fromisoformat(close_day) <= end):
             continue
+        entry_deals = [d for d in deals if d.get("entry") == 0]
+        entry_stamps = [_dt(d.get("ts_utc")) for d in entry_deals]
+        entry_stamps = [stamp for stamp in entry_stamps if stamp is not None]
+        entry_stamp = min(entry_stamps) if entry_stamps else None
         net_values = [_num(d.get("net")) for d in deals]
         known_net = [v for v in net_values if v is not None]
-        net = round(sum(known_net), 2) if known_net else None
+        # Do not present a partial event-window sum as position-group P&L.
+        net_complete = bool(entry_deals) and len(known_net) == len(deals)
+        net = round(sum(known_net), 2) if net_complete else None
         side = next((_side(d) for d in deals if _side(d)), None)
-        samples = position_events.get(position_id, [])
-        entry_prices = [_num(d.get("entry_price")) for d in deals if d.get("entry") == 0]
+        samples = [
+            e for e in position_events.get(position_id, [])
+            if entry_stamp is not None and close_stamp is not None
+            and (sample_stamp := _dt(e.get("ts_utc"))) is not None
+            and entry_stamp <= sample_stamp <= close_stamp
+        ]
+        entry_prices = [_num(d.get("entry_price")) for d in entry_deals]
         entry = next((v for v in entry_prices if v is not None), None)
         if entry is None:
             entry = next((_num(e.get("price_open")) for e in samples
@@ -123,7 +140,12 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         mfe = max(favorable) if favorable else None
         mae = max(adverse) if adverse else None
 
-        t_events = trail_events.get(position_id, [])
+        t_events = [
+            e for e in trail_events.get(position_id, [])
+            if entry_stamp is not None and close_stamp is not None
+            and (trail_stamp := _dt(e.get("ts_utc"))) is not None
+            and entry_stamp <= trail_stamp <= close_stamp
+        ]
         successful = [e for e in t_events if e.get("event") == "TRAIL_UPDATE" and e.get("success") is True]
         failed = [e for e in t_events if e.get("event") == "TRAIL_UPDATE" and e.get("success") is False]
         deferred = [e for e in t_events if e.get("event") == "TRAIL_DEFERRED"]
@@ -143,10 +165,13 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         trades.append({
             "position_id": position_id,
             "close_day_local": close_day,
+            "position_group_status": "EXIT_OBSERVED_NOT_BROKER_CONFIRMED_CLOSED",
+            "net_status": "COMPLETE_RECORDED_GROUP" if net_complete else "INCOMPLETE_EVENT_WINDOW_OR_NET_FIELDS",
             "side": side or "UNKNOWN",
             "net": net,
             "deal_count": len(deals),
             "exit_deal_count": len(exits),
+            "entry_deal_count": len(entry_deals),
             "entry": entry,
             "sampled_mfe_price": round(mfe, 4) if mfe is not None else None,
             "sampled_mae_price": round(mae, 4) if mae is not None else None,
@@ -166,7 +191,7 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
     def summarize(rows):
         known = [r for r in rows if r["net"] is not None]
         return {
-            "closed_position_groups": len(rows),
+            "position_groups_with_exit_observed": len(rows),
             "net_sum_runner_recorded": round(sum(r["net"] for r in known), 2),
             "wins": sum(r["net"] > 0 for r in known),
             "losses": sum(r["net"] < 0 for r in known),
@@ -225,8 +250,9 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         "trades": sorted(trades, key=lambda r: (r["close_day_local"], r["position_id"])),
         "data_limits": [
             "P&L is the sum of Runner-recorded TELEGRAM_DEAL_LIFECYCLE net fields, grouped by position; it is not broker-reconciled account equity.",
-            "A position group is assigned to the Tehran-local date of its last recorded OUT/OUT_BY deal. Multi-exit positions may span dates.",
-            "MFE/MAE are sampled POSITION_LIFECYCLE price observations, not tick-complete excursions; absent samples mean unknown, not zero.",
+            "A position group is assigned to the Tehran-local date of its last recorded OUT/INOUT/OUT_BY deal. OUT may be partial; exit observation does not prove the broker position is flat.",
+            "A position-group net is unknown when its entry deal is absent from the readable event window or any grouped deal lacks a net value; incomplete sums are not presented as complete P&L.",
+            "MFE/MAE use only timestamped POSITION_LIFECYCLE observations between the first recorded entry and last recorded exit-side deal; they remain sampled, not tick-complete excursions. Missing boundary timestamps or samples mean unknown, not zero.",
             "Trailing counts are correlated by position. A deferred update is considered recovered only when a successful TRAIL_UPDATE for the same completed M1 bar is present in this event window.",
             "Direction comparison is descriptive. It cannot prove market trend or that an entry direction was wrong.",
             "No market tick/bar replay is included; exact counterfactual P&L with a different trailing rule is unavailable.",
