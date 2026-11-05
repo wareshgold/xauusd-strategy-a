@@ -11,9 +11,10 @@ from datetime import datetime, timezone
 import json
 import os
 
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, Response, request
 
 import sp2l_v31_local_monitoring_dashboard_v3 as ops
+import sp2l_v31_performance_diagnostics as performance_diagnostics
 
 APP = Flask(__name__)
 PORT = int(os.getenv("SP2L_INTELLIGENCE_PORT", "8795"))
@@ -272,6 +273,23 @@ def api_dashboard():
     return jsonify(_payload())
 
 
+@APP.get("/api/performance-diagnostics")
+def api_performance_diagnostics():
+    start = request.args.get("start", performance_diagnostics.DEFAULT_START)
+    end = request.args.get("end", performance_diagnostics.DEFAULT_END)
+    try:
+        snapshot = ops._snapshot()
+        result = performance_diagnostics._build_diagnostics(snapshot["events"], start, end)
+        result["generated_at_utc"] = datetime.now(timezone.utc).isoformat()
+        result["event_health"] = snapshot["health"]
+        result["runner"] = snapshot["runner"]
+        result["mt5_queried"] = False
+        result["broker_state_verified"] = False
+        return jsonify(result)
+    except (ValueError, KeyError) as exc:
+        return jsonify({"error": str(exc), "mt5_queried": False, "broker_state_verified": False}), 400
+
+
 @APP.get("/api/health")
 def api_health():
     data = _payload()
@@ -316,6 +334,7 @@ table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th{t
 <button data-page="positions"><span>◎</span>Positions & Orders</button>
 <button data-page="journal"><span>▤</span>Deal Journal</button>
 <button data-page="performance"><span>⌁</span>Performance</button>
+<button data-page="diagnostics"><span>◉</span>Performance Diagnostics</button>
 <button data-page="execution"><span>⌘</span>Execution & Risk</button>
 <button data-page="evidence"><span>◈</span>Evidence & Health</button>
 </nav>
@@ -366,6 +385,25 @@ table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th{t
 <div class="card tablewrap"><table><thead><tr><th>Date UTC</th><th>Recorded deal net</th></tr></thead><tbody id="daily-table"></tbody></table></div>
 </section>
 
+<section class="page" id="page-diagnostics">
+<div class="notice">Read-only diagnostic view of Runner-recorded closed-position groups. Daily grouping uses Tehran local time (UTC+03:30). Direction and trailing correlations are descriptive, not causal. Sampled MFE/MAE are not tick-complete. MT5 is not queried and broker inventory is not verified.</div>
+<div class="toolbar">
+<label>From <input id="pd-start" type="date" value="2026-11-04"></label>
+<label>To <input id="pd-end" type="date" value="2026-11-05"></label>
+<button id="pd-refresh" class="refresh">Refresh diagnostics</button>
+<span class="pill" id="pd-status">Not loaded</span>
+</div>
+<div id="pd-days"></div>
+<div class="section-head"><div><h2>BUY vs SELL</h2><p>Descriptive performance by recorded position direction</p></div></div>
+<div class="grid" id="pd-direction"></div>
+<div class="section-head"><div><h2>Trailing evidence</h2><p>Deferred / successful events correlated by position and completed M1 bar</p></div></div>
+<div class="grid" id="pd-trailing"></div>
+<div class="section-head"><div><h2>Closed position groups</h2><p>Tehran-local close day · Runner-recorded deal net</p></div></div>
+<div class="card tablewrap"><table><thead><tr><th>Local day</th><th>Position</th><th>Side</th><th>Net</th><th>Sampled MFE</th><th>Sampled MAE</th><th>Samples</th><th>Trail OK</th><th>Failed</th><th>Deferred</th><th>Unrecovered</th><th>Activation evidence</th></tr></thead><tbody id="pd-trades"></tbody></table></div>
+<div class="section-head"><div><h2>Interpretation limits</h2></div></div>
+<ul id="pd-limits" class="muted"></ul>
+</section>
+
 <section class="page" id="page-execution">
 <div class="grid">
 <div class="card"><div class="kpi-label">Signal events</div><div class="kpi-value" id="s-signals">—</div></div>
@@ -397,7 +435,8 @@ function pill(status){let cls=status==="EXIT_OBSERVED"?"good":status==="ENTRY_ON
 return '<span class="pill '+cls+'">'+esc(status)+'</span>'}
 function nav(page){document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
 document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+page));
-$("page-title").textContent=({overview:"Overview",positions:"Positions & Orders",journal:"Deal Journal",performance:"Performance",execution:"Execution & Risk",evidence:"Evidence & Health"})[page]||page}
+$("page-title").textContent=({overview:"Overview",positions:"Positions & Orders",journal:"Deal Journal",performance:"Performance",diagnostics:"Performance Diagnostics",execution:"Execution & Risk",evidence:"Evidence & Health"})[page]||page;
+if(page==="diagnostics")loadPerformanceDiagnostics()}
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>nav(b.dataset.page)));
 document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>nav(b.dataset.goto)));
 function drawCurve(points){const svg=$("curve");svg.replaceChildren();$("curve-count").textContent=points.length+" points";
@@ -418,6 +457,40 @@ const vals=[["Side",r.side],["Signal",r.signal_id],["Observed net",fmt(r.observe
 $("detail-grid").innerHTML=vals.map(v=>'<div class="detail-item"><small>'+esc(v[0])+'</small><b>'+esc(v[1])+'</b></div>').join("");
 $("detail-deals").innerHTML=r.deals.map(d=>'<tr><td>'+esc(d.time_local)+'</td><td>'+esc(d.deal_id)+'</td><td>'+esc(d.entry_label)+'</td><td>'+fmt(d.entry_price,3)+'</td><td>'+fmt(d.exit_price,3)+'</td><td>'+fmt(d.profit)+'</td><td>'+fmt(d.commission)+'</td><td>'+fmt(d.swap)+'</td><td>'+fmt(d.net)+'</td></tr>').join("");
 $("journal-detail").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function renderPerformanceDiagnostics(d){
+$("pd-status").textContent="Read-only · MT5 not queried";
+const card=(label,value,note="")=>'<div class="card"><div class="kpi-label">'+esc(label)+'</div><div class="kpi-value">'+esc(value)+'</div><div class="kpi-note">'+esc(note)+'</div></div>';
+$("pd-days").innerHTML=d.daily.map(day=>'<div class="section-head"><div><h2>'+esc(day.date_local)+'</h2><p>Tehran local day · '+day.closed_position_groups+' closed position groups</p></div></div><div class="grid">'+
+card("Recorded net",fmt(day.net_sum_runner_recorded),"Runner deal net; not account equity")+
+card("Wins / losses",day.wins+" / "+day.losses)+card("Unknown net",day.unknown_net)+
+card("BUY net",fmt(day.buy.net),day.buy.positions+" positions · "+day.buy.wins+"W / "+day.buy.losses+"L")+
+card("SELL net",fmt(day.sell.net),day.sell.positions+" positions · "+day.sell.wins+"W / "+day.sell.losses+"L")+
+card("Losses with unrecovered deferred",day.trailing.losses_with_unrecovered_deferred_same_bar)+
+card("Sampled MFE ≥ $0.40",day.sampled_excursions.positions_with_mfe_at_least_activation)+'</div>').join("")||'<div class="empty">No daily observations in this range.</div>';
+const overall=d.overall;
+$("pd-direction").innerHTML=["BUY","SELL"].map(side=>{const x=overall[side.toLowerCase()];return card(side+" positions",x.positions,"Net "+fmt(x.net)+" · "+x.wins+" wins / "+x.losses+" losses")}).join("");
+const t=overall.trailing,e=overall.sampled_excursions;
+$("pd-trailing").innerHTML=[
+card("Positions with trail success",t.positions_with_success),
+card("Positions with failed update",t.positions_with_failed_update),
+card("Positions with deferred update",t.positions_with_deferred_update),
+card("Deferred unrecovered same bar",t.positions_with_unrecovered_deferred_same_bar),
+card("Losing positions in that group",t.losses_with_unrecovered_deferred_same_bar),
+card("Positions with sampled prices",e.positions_with_price_samples),
+card("Sampled MFE ≥ activation",e.positions_with_mfe_at_least_activation),
+card("Sampled MAE > MFE",e.positions_with_mae_greater_than_mfe)
+].join("");
+$("pd-trades").innerHTML=d.trades.map(r=>'<tr><td>'+esc(r.close_day_local)+'</td><td>'+esc(r.position_id)+'</td><td>'+esc(r.side)+'</td><td class="'+(r.net>0?"green":r.net<0?"red":"")+'">'+fmt(r.net)+'</td><td>'+fmt(r.sampled_mfe_price)+'</td><td>'+fmt(r.sampled_mae_price)+'</td><td>'+r.price_sample_count+'</td><td>'+r.trail_success+'</td><td>'+r.trail_failed+'</td><td>'+r.trail_deferred+'</td><td>'+r.trail_deferred_unrecovered_same_bar+'</td><td>'+esc(r.trail_evidence)+'</td></tr>').join("")||'<tr><td colspan="12" class="empty">No closed groups found for the selected dates.</td></tr>';
+$("pd-limits").innerHTML=d.data_limits.map(x=>'<li>'+esc(x)+'</li>').join("");
+}
+async function loadPerformanceDiagnostics(){
+try{
+const q=new URLSearchParams({start:$("pd-start").value,end:$("pd-end").value});
+const r=await fetch("/api/performance-diagnostics?"+q,{cache:"no-store"}),d=await r.json();
+if(!r.ok)throw Error(d.error||("HTTP "+r.status));
+renderPerformanceDiagnostics(d);
+}catch(e){$("pd-status").textContent="Error: "+e.message}
 }
 function render(d){DATA=d;
 const runner=d.runner||{},alive=runner.alive===true;
@@ -449,6 +522,7 @@ $("last-refresh").textContent="Updated "+new Date().toLocaleTimeString();
 }
 async function refresh(){try{const r=await fetch("/api/dashboard",{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);render(await r.json())}catch(e){$("runner-status").textContent="DATA ERROR: "+e.message;$("runner-status").className="status red"}}
 $("refresh").addEventListener("click",refresh);$("journal-search").addEventListener("input",renderJournal);$("journal-status").addEventListener("change",renderJournal);
+$("pd-refresh").addEventListener("click",loadPerformanceDiagnostics);
 refresh();setInterval(refresh,10000);
 </script></body></html>"""
 
