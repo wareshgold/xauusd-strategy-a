@@ -13,6 +13,7 @@ Run:
 """
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 import time
@@ -24,7 +25,7 @@ from flask import Flask, Response, jsonify, request
 import sp2l_v31_rr4_act40_monitor as source
 
 APP = Flask(__name__)
-VERSION = "SP2L V3.1 LOCAL MONITORING DASHBOARD V3"
+VERSION = "SP2L V3.1 LOCAL MONITORING DASHBOARD V4"
 PORT = int(__import__("os").environ.get("SP2L_DASHBOARD_PORT", "8793"))
 REFRESH_SECONDS = 5
 TEHRAN = source.TEHRAN_TZ
@@ -263,9 +264,10 @@ def _snapshot():
     }
 
 
-def _table_rows(events):
+def _table_rows(events, limit: int = 300):
     rows = []
-    for e in reversed(events[-300:]):
+    safe_limit = max(1, min(EVENT_LIMIT, int(limit)))
+    for e in reversed(events[-safe_limit:]):
         kind = e.get("event", "UNKNOWN")
         result = e.get("result") if isinstance(e.get("result"), dict) else {}
         summary = e.get("detail") or e.get("outcome") or e.get("reason") or ""
@@ -284,6 +286,166 @@ def _table_rows(events):
             "raw": e,
         })
     return rows
+
+
+
+def _order_lifecycle(events: list[dict], state: dict) -> list[dict]:
+    """Group Runner-recorded order events; never represents live broker inventory."""
+    grouped: dict[str, list[dict]] = {}
+    state_orders = state.get("orders", []) if isinstance(state, dict) else []
+    if isinstance(state_orders, dict):
+        state_orders = list(state_orders.values())
+    if not isinstance(state_orders, list):
+        state_orders = []
+
+    def order_id(event: dict):
+        result = event.get("result") if isinstance(event.get("result"), dict) else {}
+        for value in (
+            event.get("order"), event.get("tracked_order"), event.get("ticket"),
+            result.get("order"),
+        ):
+            if value not in (None, "", 0, "0"):
+                return str(value)
+        return None
+
+    for event in events:
+        key = order_id(event)
+        if key:
+            grouped.setdefault(key, []).append(event)
+    for item in state_orders:
+        if not isinstance(item, dict):
+            continue
+        key = next((str(item[k]) for k in ("ticket", "order", "order_id", "tracked_order")
+                    if item.get(k) not in (None, "", 0, "0")), None)
+        if key:
+            grouped.setdefault(key, [])
+
+    rows = []
+    for key, rows_for_order in grouped.items():
+        ordered = sorted(rows_for_order, key=lambda e: _stamp(e) or datetime.min.replace(tzinfo=timezone.utc))
+        last = ordered[-1] if ordered else {}
+        lifecycle = next(
+            (e for e in reversed(ordered) if e.get("event") == "PENDING_ORDER_LIFECYCLE"),
+            None,
+        )
+        result = last.get("result") if isinstance(last.get("result"), dict) else {}
+        rows.append({
+            "order_id": key,
+            "lifecycle_status": (
+                lifecycle.get("state") or lifecycle.get("status") or lifecycle.get("reason")
+                if lifecycle else last.get("state") or last.get("status") or "RECORDED_ONLY"
+            ),
+            "event_count": len(ordered),
+            "last_event": last.get("event", "STATE_ONLY"),
+            "last_time": _tehran_time(last) if last else "—",
+            "last_retcode": result.get("retcode", last.get("retcode")),
+            "event_types": [e.get("event", "UNKNOWN") for e in ordered[-12:]],
+            "source": "runner_state_and_event_log",
+            "broker_reconciled": False,
+        })
+    rows.sort(key=lambda row: row["last_time"], reverse=True)
+    return rows[:500]
+
+
+def _trailing_diagnostics(events: list[dict]) -> list[dict]:
+    """Group trailing attempts by position/completed bar and preserve raw outcomes."""
+    grouped: dict[tuple[str, str], list[dict]] = {}
+    for event in events:
+        if event.get("event") not in ("TRAIL_UPDATE", "TRAIL_DEFERRED"):
+            continue
+        position = str(event.get("position") or "UNKNOWN")
+        bar = str(event.get("completed_bar_time") or "UNKNOWN_BAR")
+        grouped.setdefault((position, bar), []).append(event)
+
+    rows = []
+    for (position, bar), attempts in grouped.items():
+        attempts.sort(key=lambda e: _stamp(e) or datetime.min.replace(tzinfo=timezone.utc))
+        updates = [e for e in attempts if e.get("event") == "TRAIL_UPDATE"]
+        last = attempts[-1]
+        last_update = updates[-1] if updates else {}
+        if last.get("event") == "TRAIL_DEFERRED":
+            status = "DEFERRED"
+        elif last_update.get("success") is True and (
+            last is last_update or (
+                _stamp(last_update) is not None and _stamp(last) is not None
+                and _stamp(last_update) >= _stamp(last)
+            )
+        ):
+            status = "SUCCEEDED"
+        elif last_update.get("success") is False and last_update.get("retry_scheduled") is True:
+            status = "RETRY_PENDING"
+        elif last_update.get("success") is False:
+            status = "FAILED_UNRESOLVED"
+        else:
+            status = "UNRESOLVED"
+        rows.append({
+            "position": position,
+            "completed_bar_time": bar,
+            "status": status,
+            "attempts": len(attempts),
+            "last_time": _tehran_time(last),
+            "old_sl": last.get("old_sl"),
+            "new_sl": last.get("new_sl"),
+            "retcode": last.get("retcode"),
+            "comment": last.get("comment"),
+            "last_error": last.get("last_error"),
+            "retry_scheduled": last.get("retry_scheduled"),
+            "history": [{
+                "event": e.get("event"),
+                "time": _tehran_time(e),
+                "success": e.get("success"),
+                "old_sl": e.get("old_sl"),
+                "new_sl": e.get("new_sl"),
+                "retcode": e.get("retcode"),
+                "comment": e.get("comment"),
+                "reason": e.get("reason"),
+                "retry_scheduled": e.get("retry_scheduled"),
+            } for e in attempts],
+        })
+    rows.sort(key=lambda row: row["last_time"], reverse=True)
+    return rows[:500]
+
+
+def _history_failures(events: list[dict]) -> list[dict]:
+    """Expose history-query failures without interpreting them as empty history."""
+    rows = []
+    for event in events:
+        if event.get("event") != "MT5_DEAL_HISTORY_QUERY_FAILED":
+            continue
+        result = event.get("result") if isinstance(event.get("result"), dict) else {}
+        rows.append({
+            "time": _tehran_time(event),
+            "ticket": event.get("ticket") or event.get("order") or event.get("tracked_order"),
+            "position": event.get("position"),
+            "query": event.get("query") or event.get("operation") or event.get("function"),
+            "error": event.get("error") or event.get("last_error") or event.get("detail"),
+            "last_error": event.get("last_error"),
+            "attempt": event.get("attempt_number"),
+            "raw_event": event,
+        })
+    return list(reversed(rows[-500:]))
+
+
+def _file_fingerprint(path) -> dict:
+    """On-demand SHA-256; intentionally not called during the five-second refresh."""
+    try:
+        before = path.stat()
+        digest = hashlib.sha256()
+        size = 0
+        with path.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(chunk)
+                size += len(chunk)
+        after = path.stat()
+        stable = before.st_size == after.st_size and before.st_mtime_ns == after.st_mtime_ns
+        return {
+            "exists": True, "bytes": size, "sha256": digest.hexdigest(),
+            "mtime_utc": datetime.fromtimestamp(after.st_mtime, timezone.utc).isoformat(),
+            "stable_during_hash": stable,
+        }
+    except OSError as exc:
+        return {"exists": False, "bytes": None, "sha256": None, "error": f"{type(exc).__name__}: {exc}"}
+
 
 
 def _render():
@@ -334,7 +496,7 @@ h1{{font-size:24px;margin:0}}h2{{font-size:16px;margin:0 0 13px}}p{{color:var(--
 .alert{{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--amber);padding:11px;border-radius:8px;margin:8px 0}}
 .alert.error{{border-left-color:var(--red)}}.alert.clear{{border-left-color:var(--green)}}.alert span{{float:right;color:var(--muted);font-size:11px}}small{{display:block;color:var(--muted);overflow-wrap:anywhere;margin-top:5px}}
 table{{width:100%;border-collapse:collapse;font-size:12px}}th,td{{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}th{{color:var(--blue)}}td{{overflow-wrap:anywhere}}
-.tools{{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}}input,select{{background:#0b1626;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:9px;min-width:160px}}
+.tools{{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}}input,select,button{{background:#0b1626;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:9px;min-width:120px}}button{{cursor:pointer}}button:hover{{border-color:var(--blue)}}
 .tablewrap{{overflow:auto;max-height:620px}}.muted{{color:var(--muted)}}.foot{{font-size:11px;color:var(--muted);line-height:1.6}}
 @media(max-width:650px){{main{{padding:11px}}.panel{{padding:12px}}}}
 </style></head><body><main>
@@ -386,6 +548,21 @@ table{{width:100%;border-collapse:collapse;font-size:12px}}th,td{{padding:9px 7p
 <div class="tablewrap"><table><thead><tr><th>Tehran time</th><th>Event</th><th>ID</th><th>Symbol</th><th>Summary</th></tr></thead><tbody id="events"></tbody></table></div>
 </section>
 
+
+<section class="panel"><h2>Operational inspectors</h2>
+<p>These inspectors use Runner state/event evidence only. They do not query MT5 or infer live broker status.</p>
+<div class="tools">
+<button id="load-orders" type="button">Load order lifecycle</button>
+<button id="load-trailing" type="button">Load trailing diagnostics</button>
+<button id="load-history" type="button">Load History failures</button>
+<button id="load-evidence" type="button">Compute file SHA-256</button>
+</div>
+<div id="orders-result" class="tablewrap"><p class="muted">Order lifecycle explorer has not been loaded.</p></div>
+<div id="trailing-result" class="tablewrap"><p class="muted">Trailing diagnostics have not been loaded.</p></div>
+<div id="history-result" class="tablewrap"><p class="muted">History failure inspector has not been loaded.</p></div>
+<div id="evidence-result"><p class="muted">File fingerprints are computed only when requested.</p></div>
+</section>
+
 <section class="panel"><h2>Evidence & data quality</h2><div class="grid">
 <div class="metric"><span>Parsed events</span><b>{len(d['events'])}</b></div>
 <div class="metric"><span>Total lines in event file</span><b>{d['health'].get('total_lines', 0)}</b></div>
@@ -412,6 +589,57 @@ function draw(){{const query=q.value.toLowerCase(), selected=kind.value, n=Numbe
  if(!filtered.length){{const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='No matching events';tr.appendChild(td);body.appendChild(tr)}}
 }}
 [q,kind,limit].forEach(el=>el.addEventListener('input',draw));draw();
+
+async function getJson(url) {{
+ const response=await fetch(url,{{cache:'no-store'}});
+ if(!response.ok) throw new Error('HTTP '+response.status);
+ return response.json();
+}}
+function tableInto(target, headers, rows, loadedAt=new Date().toISOString(), persist=true) {{
+ const root=document.getElementById(target); root.replaceChildren();
+ const note=document.createElement('p');note.className='muted';note.textContent='Snapshot loaded: '+loadedAt;root.appendChild(note);
+ if(!rows.length){{const empty=document.createElement('p');empty.textContent='No records in the current readable evidence window.';root.appendChild(empty)}}
+ else {{
+  const table=document.createElement('table'),thead=document.createElement('thead'),hr=document.createElement('tr');
+  headers.forEach(h=>{{const th=document.createElement('th');th.textContent=h;hr.appendChild(th)}});
+  thead.appendChild(hr);table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+  rows.forEach(row=>{{const tr=document.createElement('tr');row.forEach(value=>{{const td=document.createElement('td');td.textContent=value===null||value===undefined?'—':String(value);tr.appendChild(td)}});tbody.appendChild(tr)}});
+  table.appendChild(tbody);root.appendChild(table);
+ }}
+ if(persist){{try{{sessionStorage.setItem('sp2l-panel-'+target,JSON.stringify({{headers,rows,loadedAt}}))}}catch(e){{}}}}
+}}
+document.getElementById('load-orders').addEventListener('click',async()=>{{
+ const root='orders-result';try{{const d=await getJson('/api/orders');tableInto(root,
+ ['Order ID','Recorded status','Events','Last event','Last time','Retcode'],
+ d.orders.map(x=>[x.order_id,x.lifecycle_status,x.event_count,x.last_event,x.last_time,x.last_retcode]));}}
+ catch(e){{document.getElementById(root).textContent='Load failed: '+e.message;}}
+}});
+document.getElementById('load-trailing').addEventListener('click',async()=>{{
+ const root='trailing-result';try{{const d=await getJson('/api/trailing');tableInto(root,
+ ['Position','Completed bar','Status','Attempts','Last SL','Retcode','Comment'],
+ d.trailing.map(x=>[x.position,x.completed_bar_time,x.status,x.attempts,
+ (x.old_sl??'—')+' → '+(x.new_sl??'—'),x.retcode,x.comment]));}}
+ catch(e){{document.getElementById(root).textContent='Load failed: '+e.message;}}
+}});
+document.getElementById('load-history').addEventListener('click',async()=>{{
+ const root='history-result';try{{const d=await getJson('/api/history-failures');tableInto(root,
+ ['Time','Ticket','Position','Query','Error','Last error'],
+ d.failures.map(x=>[x.time,x.ticket,x.position,x.query,x.error,JSON.stringify(x.last_error)]));}}
+ catch(e){{document.getElementById(root).textContent='Load failed: '+e.message;}}
+}});
+document.getElementById('load-evidence').addEventListener('click',async()=>{{
+ const root=document.getElementById('evidence-result');root.textContent='Computing SHA-256…';
+ try{{const d=await getJson('/api/evidence');tableInto('evidence-result',
+ ['File','Exists','Bytes','SHA-256','Modified UTC','Stable during hash'],
+ Object.entries(d.files).map(([name,x])=>[name,x.exists,x.bytes,x.sha256,x.mtime_utc,x.stable_during_hash]));}}
+ catch(e){{root.textContent='Fingerprint failed: '+e.message;}}
+}});
+["orders-result","trailing-result","history-result","evidence-result"].forEach(target=>{{
+ try{{const raw=sessionStorage.getItem('sp2l-panel-'+target);if(raw){{const saved=JSON.parse(raw);tableInto(target,saved.headers,saved.rows,saved.loadedAt,false)}}}}catch(e){{}}
+}});
+
+
 </script></body></html>"""
 
 
@@ -430,6 +658,85 @@ def api_status():
         "event_count_read": len(d["events"]), "mt5_queried": False,
         "data_root": str(source.RUNNER_ROOT),
     })
+
+
+
+@APP.get("/api/health")
+def api_health():
+    d = _snapshot()
+    return jsonify({
+        "runner": d["runner"],
+        "state_age_seconds": d["state_age_seconds"],
+        "state_mtime_utc": d["state_mtime_utc"],
+        "event_meta": d["event_meta"],
+        "event_health": d["health"],
+        "diagnostic_counts": dict(Counter(item["level"] for item in d["diagnostics"])),
+        "latest_event": d["latest"],
+        "mt5_queried": False,
+        "broker_state_verified": False,
+    })
+
+
+@APP.get("/api/events")
+def api_events():
+    d = _snapshot()
+    query = request.args.get("q", "").strip().lower()
+    event_type = request.args.get("event", "").strip()
+    try:
+        limit = max(1, min(500, int(request.args.get("limit", "100"))))
+        offset = max(0, int(request.args.get("offset", "0")))
+    except ValueError:
+        return jsonify({"error": "limit and offset must be integers"}), 400
+    rows = _table_rows(d["events"], limit=EVENT_LIMIT)
+    if event_type:
+        rows = [row for row in rows if row["event"] == event_type]
+    if query:
+        rows = [row for row in rows if query in json.dumps(row, ensure_ascii=False, default=str).lower()]
+    total = len(rows)
+    page = rows[offset:offset + limit]
+    return jsonify({"total": total, "offset": offset, "limit": limit, "events": page})
+
+
+@APP.get("/api/orders")
+def api_orders():
+    d = _snapshot()
+    return jsonify({
+        "orders": _order_lifecycle(d["events"], d["state"]),
+        "source": "runner_state_and_event_log",
+        "broker_reconciled": False,
+    })
+
+
+@APP.get("/api/trailing")
+def api_trailing():
+    d = _snapshot()
+    rows = _trailing_diagnostics(d["events"])
+    return jsonify({
+        "trailing": rows,
+        "counts": dict(Counter(row["status"] for row in rows)),
+        "source": "runner_event_log",
+    })
+
+
+@APP.get("/api/history-failures")
+def api_history_failures():
+    d = _snapshot()
+    rows = _history_failures(d["events"])
+    return jsonify({"failures": rows, "count": len(rows), "source": "runner_event_log"})
+
+
+@APP.get("/api/evidence")
+def api_evidence():
+    # Explicit on-demand hashing; never performed during routine dashboard refresh.
+    return jsonify({
+        "files": {
+            "events": _file_fingerprint(source.EVENTS),
+            "state": _file_fingerprint(source.STATE_FILE),
+        },
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "read_only": True,
+    })
+
 
 
 def main():
