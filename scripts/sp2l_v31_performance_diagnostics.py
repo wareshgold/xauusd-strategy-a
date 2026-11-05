@@ -225,12 +225,15 @@ def _build_diagnostics(events, start_date=DEFAULT_START, end_date=DEFAULT_END):
         }
 
     def summarize_side(rows, side):
-        subset = [r for r in rows if r["side"] == side and r["net"] is not None]
+        subset = [r for r in rows if r["side"] == side]
+        known = [r for r in subset if r["net"] is not None]
         return {
             "positions": len(subset),
-            "net": round(sum(r["net"] for r in subset), 2),
-            "wins": sum(r["net"] > 0 for r in subset),
-            "losses": sum(r["net"] < 0 for r in subset),
+            "positions_with_known_net": len(known),
+            "unknown_net": len(subset) - len(known),
+            "net": round(sum(r["net"] for r in known), 2),
+            "wins": sum(r["net"] > 0 for r in known),
+            "losses": sum(r["net"] < 0 for r in known),
         }
 
     daily = []
