@@ -481,7 +481,7 @@ card("Positions with sampled prices",e.positions_with_price_samples),
 card("Sampled MFE ≥ activation",e.positions_with_mfe_at_least_activation),
 card("Sampled MAE > MFE",e.positions_with_mae_greater_than_mfe)
 ].join("");
-$("pd-trades").innerHTML=d.trades.map(r=>'<tr><td>'+esc(r.close_day_local)+'</td><td>'+esc(r.position_id)+'</td><td>'+esc(r.side)+'</td><td class="'+(r.net>0?"green":r.net<0?"red":"")+'">'+fmt(r.net)+'</td><td>'+fmt(r.sampled_mfe_price)+'</td><td>'+fmt(r.sampled_mae_price)+'</td><td>'+r.price_sample_count+'</td><td>'+r.trail_success+'</td><td>'+r.trail_failed+'</td><td>'+r.trail_deferred+'</td><td>'+r.trail_deferred_unrecovered_same_bar+'</td><td>'+esc(r.trail_evidence)+'</td></tr>').join("")||'<tr><td colspan="12" class="empty">No groups with exit observations found for the selected dates.</td></tr>';
+$("pd-trades").innerHTML=d.trades.map(r=>'<tr><td>'+esc(r.last_exit_observation_day_local)+'</td><td>'+esc(r.position_id)+'</td><td>'+esc(r.side)+'</td><td class="'+(r.net>0?"green":r.net<0?"red":"")+'">'+fmt(r.net)+'</td><td>'+fmt(r.sampled_mfe_price)+'</td><td>'+fmt(r.sampled_mae_price)+'</td><td>'+r.price_sample_count+'</td><td>'+r.trail_success+'</td><td>'+r.trail_failed+'</td><td>'+r.trail_deferred+'</td><td>'+r.trail_deferred_unrecovered_same_bar+'</td><td>'+esc(r.trail_evidence)+'</td></tr>').join("")||'<tr><td colspan="12" class="empty">No groups with exit observations found for the selected dates.</td></tr>';
 $("pd-limits").innerHTML=d.data_limits.map(x=>'<li>'+esc(x)+'</li>').join("");
 }
 async function loadPerformanceDiagnostics(){
