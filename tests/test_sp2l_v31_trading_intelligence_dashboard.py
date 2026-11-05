@@ -87,6 +87,35 @@ class TradingIntelligenceDashboardTests(unittest.TestCase):
         self.assertEqual(body["journal"], [])
         self.assertEqual(body["performance"]["net_sum"], 0.0)
 
+    def test_performance_diagnostics_is_embedded_in_existing_dashboard(self):
+        snapshot = {
+            "runner": {"alive": True, "pids": [1]},
+            "state_age_seconds": 1.0,
+            "event_meta": {"bytes": 10},
+            "health": {"total_lines": 1, "malformed_lines": 0, "path": "events.jsonl"},
+            "diagnostics": [],
+            "latest": None,
+            "metrics": {},
+            "events": [
+                {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 501, "position": 9501,
+                 "entry": 1, "signal_id": "XAUUSD.ecn:123:BUY", "net": 1.25,
+                 "ts_utc": "2026-11-04T21:00:00Z"}
+            ],
+            "state": {},
+        }
+        with patch.object(dashboard.ops, "_snapshot", return_value=snapshot):
+            response = dashboard.APP.test_client().get(
+                "/api/performance-diagnostics?start=2026-11-05&end=2026-11-05"
+            )
+        self.assertEqual(response.status_code, 200)
+        body = response.get_json()
+        self.assertFalse(body["mt5_queried"])
+        self.assertFalse(body["broker_state_verified"])
+        self.assertEqual(body["daily"][0]["date_local"], "2026-11-05")
+        page = dashboard.APP.test_client().get("/")
+        self.assertIn(b"Performance Diagnostics", page.data)
+        self.assertIn(b"page-diagnostics", page.data)
+
     def test_dashboard_page_renders(self):
         response = dashboard.APP.test_client().get("/")
         self.assertEqual(response.status_code, 200)
