@@ -28,7 +28,7 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
              "ts_utc": "2026-11-05T09:00:00Z"},
         ]
         result = diagnostics._build_diagnostics(events, "2026-11-04", "2026-11-05")
-        self.assertEqual(result["daily"][0]["closed_position_groups"], 1)
+        self.assertEqual(result["daily"][0]["position_groups_with_exit_observed"], 1)
         self.assertEqual(result["daily"][0]["net_sum_runner_recorded"], 2.0)
         self.assertEqual(result["daily"][0]["buy"]["positions"], 1)
         self.assertEqual(result["daily"][1]["sell"]["losses"], 1)
@@ -42,9 +42,11 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
             {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 11, "position": 300,
              "entry": 1, "signal_id": "XAUUSD.ecn:3:BUY", "net": -1.0,
              "ts_utc": "2026-11-05T09:00:00Z"},
-            {"event": "TRAIL_DEFERRED", "position": 300, "completed_bar_time": 123},
+            {"event": "TRAIL_DEFERRED", "position": 300, "completed_bar_time": 123,
+             "ts_utc": "2026-11-05T08:30:00Z"},
             {"event": "TRAIL_UPDATE", "position": 300, "completed_bar_time": 123,
-             "success": True, "favorable_move": 0.5},
+             "success": True, "favorable_move": 0.5,
+             "ts_utc": "2026-11-05T08:31:00Z"},
         ]
         result = diagnostics._build_diagnostics(events, "2026-11-05", "2026-11-05")
         trade = result["trades"][0]
@@ -60,17 +62,26 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
              "net": 0, "ts_utc": "2026-11-04T08:00:00Z"},
             {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 21, "position": 400,
              "entry": 1, "signal_id": "XAUUSD.ecn:4:BUY", "net": 1,
-             "ts_utc": "2026-11-04T09:00:00Z"},
+             "ts_utc": "2026-11-04T10:00:00Z"},
             {"event": "POSITION_LIFECYCLE", "position": 400, "type": 0,
-             "price_open": 100, "price_current": 100.8},
+             "price_open": 100, "price_current": 120,
+             "ts_utc": "2026-11-04T07:59:00Z"},
             {"event": "POSITION_LIFECYCLE", "position": 400, "type": 0,
-             "price_open": 100, "price_current": 99.6},
+             "price_open": 100, "price_current": 100.8,
+             "ts_utc": "2026-11-04T08:30:00Z"},
+            {"event": "POSITION_LIFECYCLE", "position": 400, "type": 0,
+             "price_open": 100, "price_current": 99.6,
+             "ts_utc": "2026-11-04T09:30:00Z"},
+            {"event": "POSITION_LIFECYCLE", "position": 400, "type": 0,
+             "price_open": 100, "price_current": 130,
+             "ts_utc": "2026-11-04T10:01:00Z"},
         ]
         result = diagnostics._build_diagnostics(events, "2026-11-04", "2026-11-04")
         trade = result["trades"][0]
         self.assertEqual(trade["sampled_mfe_price"], 0.8)
         self.assertAlmostEqual(trade["sampled_mae_price"], 0.4)
         self.assertEqual(trade["price_sample_count"], 2)
+        self.assertEqual(trade["net_status"], "COMPLETE_RECORDED_GROUP")
         self.assertIn("not tick-complete", result["data_limits"][2])
 
     def test_duplicate_deal_ids_are_deduplicated(self):
@@ -103,9 +114,26 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
              "ts_utc": "2026-11-04T20:00:00Z"},
         ]
         result = diagnostics._build_diagnostics(events, "2026-11-04", "2026-11-05")
-        self.assertEqual(result["daily"][0]["closed_position_groups"], 1)
-        self.assertEqual(result["daily"][1]["closed_position_groups"], 0)
+        self.assertEqual(result["daily"][0]["position_groups_with_exit_observed"], 1)
+        self.assertEqual(result["daily"][1]["position_groups_with_exit_observed"], 0)
 
+
+    def test_inout_is_an_exit_observation_but_missing_net_keeps_group_unknown(self):
+        events = [
+            {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 50, "position": 700,
+             "entry": 0, "signal_id": "XAUUSD.ecn:8:BUY", "entry_price": 100,
+             "net": -0.1, "ts_utc": "2026-11-05T08:00:00Z"},
+            {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 51, "position": 700,
+             "entry": 2, "signal_id": "XAUUSD.ecn:8:BUY", "net": None,
+             "ts_utc": "2026-11-05T09:00:00Z"},
+        ]
+        result = diagnostics._build_diagnostics(events, "2026-11-05", "2026-11-05")
+        trade = result["trades"][0]
+        self.assertEqual(trade["exit_deal_count"], 1)
+        self.assertEqual(trade["position_group_status"], "EXIT_OBSERVED_NOT_BROKER_CONFIRMED_CLOSED")
+        self.assertEqual(trade["net"], None)
+        self.assertEqual(trade["net_status"], "INCOMPLETE_EVENT_WINDOW_OR_NET_FIELDS")
+        self.assertEqual(result["overall"]["unknown_net"], 1)
 
 
 if __name__ == "__main__":
