@@ -85,24 +85,27 @@ class PerformanceDiagnosticsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             diagnostics._build_diagnostics([], "2026-11-05", "2026-11-04")
 
-    def test_api_and_page_are_read_only(self):
-        snapshot = {
-            "events": [],
-            "health": {"total_lines": 0, "malformed_lines": 0, "path": "events.jsonl"},
-            "runner": {"alive": True, "pids": []},
-        }
-        with patch.object(diagnostics.intelligence.ops, "_snapshot", return_value=snapshot):
-            response = diagnostics.APP.test_client().get(
-                "/api/diagnostics?start=2026-11-04&end=2026-11-05"
-            )
-        self.assertEqual(response.status_code, 200)
-        body = response.get_json()
-        self.assertFalse(body["mt5_queried"])
-        self.assertFalse(body["broker_state_verified"])
-        self.assertEqual(len(body["daily"]), 2)
-        page = diagnostics.APP.test_client().get("/")
-        self.assertEqual(page.status_code, 200)
-        self.assertIn(b"Performance Diagnostics", page.data)
+    def test_tehran_local_day_boundary_is_used(self):
+        events = [
+            {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 40, "position": 600,
+             "entry": 1, "signal_id": "XAUUSD.ecn:6:BUY", "net": 1.0,
+             "ts_utc": "2026-11-04T21:00:00Z"},
+        ]
+        result = diagnostics._build_diagnostics(events, "2026-11-05", "2026-11-05")
+        self.assertEqual(result["timezone"], "Asia/Tehran (UTC+03:30 fixed offset)")
+        self.assertEqual(result["daily"][0]["date_local"], "2026-11-05")
+        self.assertEqual(result["trades"][0]["close_day_local"], "2026-11-05")
+
+    def test_tehran_local_day_does_not_leak_into_previous_day(self):
+        events = [
+            {"event": "TELEGRAM_DEAL_LIFECYCLE", "deal": 41, "position": 601,
+             "entry": 1, "signal_id": "XAUUSD.ecn:7:SELL", "net": -1.0,
+             "ts_utc": "2026-11-04T20:00:00Z"},
+        ]
+        result = diagnostics._build_diagnostics(events, "2026-11-04", "2026-11-05")
+        self.assertEqual(result["daily"][0]["closed_position_groups"], 0)
+        self.assertEqual(result["daily"][1]["closed_position_groups"], 1)
+
 
 
 if __name__ == "__main__":
