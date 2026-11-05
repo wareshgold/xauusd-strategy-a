@@ -388,8 +388,8 @@ table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th{t
 <section class="page" id="page-diagnostics">
 <div class="notice">Read-only diagnostic view of Runner-recorded closed-position groups. Daily grouping uses Tehran local time (UTC+03:30). Direction and trailing correlations are descriptive, not causal. Sampled MFE/MAE are not tick-complete. MT5 is not queried and broker inventory is not verified.</div>
 <div class="toolbar">
-<label>From <input id="pd-start" type="date" value="2026-11-04"></label>
-<label>To <input id="pd-end" type="date" value="2026-11-05"></label>
+<label>From <input id="pd-start" type="date"></label>
+<label>To <input id="pd-end" type="date"></label>
 <button id="pd-refresh" class="refresh">Refresh diagnostics</button>
 <span class="pill" id="pd-status">Not loaded</span>
 </div>
@@ -398,8 +398,8 @@ table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}th{t
 <div class="grid" id="pd-direction"></div>
 <div class="section-head"><div><h2>Trailing evidence</h2><p>Deferred / successful events correlated by position and completed M1 bar</p></div></div>
 <div class="grid" id="pd-trailing"></div>
-<div class="section-head"><div><h2>Closed position groups</h2><p>Tehran-local close day · Runner-recorded deal net</p></div></div>
-<div class="card tablewrap"><table><thead><tr><th>Local day</th><th>Position</th><th>Side</th><th>Net</th><th>Sampled MFE</th><th>Sampled MAE</th><th>Samples</th><th>Trail OK</th><th>Failed</th><th>Deferred</th><th>Unrecovered</th><th>Activation evidence</th></tr></thead><tbody id="pd-trades"></tbody></table></div>
+<div class="section-head"><div><h2>Position groups with exit observations</h2><p>Tehran-local last exit-observation day · Runner-recorded deal net</p></div></div>
+<div class="card tablewrap"><table><thead><tr><th>Local day</th><th>Position</th><th>Side</th><th>Recorded net</th><th>Sampled MFE</th><th>Sampled MAE</th><th>Samples</th><th>Trail OK</th><th>Failed</th><th>Deferred</th><th>Unrecovered</th><th>Activation evidence</th></tr></thead><tbody id="pd-trades"></tbody></table></div>
 <div class="section-head"><div><h2>Interpretation limits</h2></div></div>
 <ul id="pd-limits" class="muted"></ul>
 </section>
@@ -461,7 +461,7 @@ $("journal-detail").scrollIntoView({behavior:"smooth",block:"nearest"});
 function renderPerformanceDiagnostics(d){
 $("pd-status").textContent="Read-only · MT5 not queried";
 const card=(label,value,note="")=>'<div class="card"><div class="kpi-label">'+esc(label)+'</div><div class="kpi-value">'+esc(value)+'</div><div class="kpi-note">'+esc(note)+'</div></div>';
-$("pd-days").innerHTML=d.daily.map(day=>'<div class="section-head"><div><h2>'+esc(day.date_local)+'</h2><p>Tehran local day · '+day.closed_position_groups+' closed position groups</p></div></div><div class="grid">'+
+$("pd-days").innerHTML=d.daily.map(day=>'<div class="section-head"><div><h2>'+esc(day.date_local)+'</h2><p>Tehran local day · '+day.position_groups_with_exit_observed+' position groups with exit observations</p></div></div><div class="grid">'+
 card("Recorded net",fmt(day.net_sum_runner_recorded),"Runner deal net; not account equity")+
 card("Wins / losses",day.wins+" / "+day.losses)+card("Unknown net",day.unknown_net)+
 card("BUY net",fmt(day.buy.net),day.buy.positions+" positions · "+day.buy.wins+"W / "+day.buy.losses+"L")+
@@ -486,9 +486,13 @@ $("pd-limits").innerHTML=d.data_limits.map(x=>'<li>'+esc(x)+'</li>').join("");
 }
 async function loadPerformanceDiagnostics(){
 try{
-const q=new URLSearchParams({start:$("pd-start").value,end:$("pd-end").value});
+const q=new URLSearchParams();
+if($("pd-start").value)q.set("start",$("pd-start").value);
+if($("pd-end").value)q.set("end",$("pd-end").value);
 const r=await fetch("/api/performance-diagnostics?"+q,{cache:"no-store"}),d=await r.json();
 if(!r.ok)throw Error(d.error||("HTTP "+r.status));
+if(!$("pd-start").value)$("pd-start").value=d.date_start_local;
+if(!$("pd-end").value)$("pd-end").value=d.date_end_local;
 renderPerformanceDiagnostics(d);
 }catch(e){$("pd-status").textContent="Error: "+e.message}
 }
