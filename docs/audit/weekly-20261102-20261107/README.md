@@ -19,7 +19,7 @@ $py = 'D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe'
 $tmp = Join-Path $env:TEMP 'collect_sp2l_v31_weekly_audit.py'
 $url = 'https://raw.githubusercontent.com/wareshgold/xauusd-strategy-a/audit/weekly-20261102-20261107/scripts/collect_sp2l_v31_weekly_audit.py'
 Invoke-WebRequest -Uri $url -OutFile $tmp
-$out = & $py $tmp --worktree $repo --server-offset-hours 2 2>&1 | Out-String
+$out = & $py $tmp --worktree $repo --server-offset-hours 2 --mt5-terminal-path 'C:\Program Files\Otet Group MT5 Terminal\terminal64.exe' 2>&1 | Out-String
 $out
 $out | Set-Clipboard
 Write-Host 'RESULT_COPIED_TO_CLIPBOARD'
