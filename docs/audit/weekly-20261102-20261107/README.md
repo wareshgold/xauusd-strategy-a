@@ -4,10 +4,31 @@
 
 ## Safety and scope
 - This repository is public. Do not commit raw MT5 account history, account/login identifiers, order/deal/position tickets, exact trade timestamps, exact prices, terminal paths, credentials, or unredacted runner logs.
-- This branch contains audit methodology and templates only. Raw evidence must remain in private storage until an explicitly approved private transfer path is available.
+- The collector writes raw evidence only to a local private folder and ZIP. It does not upload raw evidence.
 - No runner, MT5 terminal, orders, positions, configuration, or live process may be changed for this audit.
 - This is a diagnostic weekly sample, not an untouched holdout or proof of out-of-sample edge.
 - No production BUY/SELL decisions are produced.
+
+## Run the read-only collector
+Run this in PowerShell on the Factory PC. It downloads the collector from this branch, runs it with the project's Python environment, and copies the short result to the clipboard. It does not change or restart the Runner.
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$repo = 'D:\Mirzaei\Private\1\xauusd-strategy-a-v3-1-trailing-retry-20261103'
+$py = 'D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe'
+$tmp = Join-Path $env:TEMP 'collect_sp2l_v31_weekly_audit.py'
+$url = 'https://raw.githubusercontent.com/wareshgold/xauusd-strategy-a/audit/weekly-20261102-20261107/scripts/collect_sp2l_v31_weekly_audit.py'
+Invoke-WebRequest -Uri $url -OutFile $tmp
+$out = & $py $tmp --worktree $repo --server-offset-hours 2 2>&1 | Out-String
+$out
+$out | Set-Clipboard
+Write-Host 'RESULT_COPIED_TO_CLIPBOARD'
+```
+
+Expected local output folder:
+`$HOME\SP2L_PRIVATE_AUDIT_20261102_20261107`
+
+The ZIP contains raw runner/MT5 evidence and is private. Do not upload it to this public repository. The collector also writes `PUBLIC_SAFE_SUMMARY.json`, which contains only aggregate counts and event-type counts. Review it before sharing.
 
 ## Audit questions
 1. What is the complete in-scope population of entries, pending orders, fills, positions, and exits for the audit window?
