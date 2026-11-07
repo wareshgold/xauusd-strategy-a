@@ -88,11 +88,11 @@ def main():
             if not path: no_tick+=1; continue
             path.sort(key=lambda x:x[0])
             fav={x:None for x in FAV}; adv={x:None for x in ADV}
-            for idx,(_,v) in enumerate(path):
+            for ms,v in path:
                 for x in FAV:
-                    if fav[x] is None and v>=x: fav[x]=idx
+                    if fav[x] is None and v>=x: fav[x]=ms
                 for x in ADV:
-                    if adv[x] is None and v<=-x: adv[x]=idx
+                    if adv[x] is None and v<=-x: adv[x]=ms
             rows.append({"outcome":classify(net),"fav":fav,"adv":adv})
         groups={g:[r for r in rows if r["outcome"]==g] for g in ("winner","loser","flat")}
         result={
@@ -106,7 +106,7 @@ def main():
              g:[compare(rs,f,a) for f in FAV for a in ADV] for g,rs in groups.items()},
           "limitations":[
              "First-passage order compares first gross favorable and adverse threshold hits.",
-             "same_tick_timestamp means both first hits share a tick index; no within-timestamp order is inferred.",
+             "same_tick_timestamp means both first hits share the same time_msc millisecond; no within-millisecond order is inferred.",
              "This is not a stop-fill, trailing, slippage, spread-cost or execution simulation.",
              "Only exactly one IN and one OUT deal positions are included.",
              "No canonical SP2L geometry or execution rules are inferred or changed.",
