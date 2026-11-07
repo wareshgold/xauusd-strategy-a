@@ -72,6 +72,7 @@ def main():
         partial=0
         for ent,ex in eligible:
             t0=int(ent.get("time",0)); t1=int(ex.get("time",0))
+            t0ms=int(ent.get("time_msc",t0*1000)); t1ms=int(ex.get("time_msc",t1*1000))
             start=datetime.fromtimestamp(max(0,t0-1),timezone.utc).replace(tzinfo=None)
             end=datetime.fromtimestamp(t1+1,timezone.utc).replace(tzinfo=None)
             ticks=mt5.copy_ticks_range(SYMBOL,start,end,mt5.COPY_TICKS_INFO)
@@ -85,6 +86,8 @@ def main():
                 excluded["invalid_entry_or_contract"]+=1; continue
             valid=[]
             for q in ticks:
+                qms=int(q["time_msc"]) if "time_msc" in q.dtype.names else int(q["time"])*1000
+                if qms < t0ms or qms > t1ms: continue
                 bid=n(q["bid"]); ask=n(q["ask"])
                 mark=bid if direction==0 else ask
                 if mark<=0:
@@ -118,7 +121,7 @@ def main():
              "mae_at_least_1_00_adverse":sum(x<=-1.00 for x in mae),
              "mae_at_least_2_00_adverse":sum(x<=-2.00 for x in mae)},
           "limitations":[
-            "MFE/MAE use historical bid/ask ticks available from the broker terminal; missing history is reported, not imputed.",
+            "MFE/MAE use historical bid/ask ticks between recorded entry and exit deal times (millisecond fields when available); missing history is reported, not imputed.",
             "Single-entry/single-exit positions only; multi-deal position lifecycles are excluded pending dedicated handling.",
             "MFE/MAE are gross mark-to-market excursions, not realized P/L and do not include commissions.",
             "This does not infer or change canonical entry, P-Gap, AB=CD, SL-anchor, fill, or execution rules.",
