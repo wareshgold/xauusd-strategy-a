@@ -158,7 +158,7 @@ def summarize(rows, label, min_n=20, min_days=3):
             "mean_delta_usd": round(float(np.mean(values)), 4) if values else None,
             "median_delta_usd": round(float(np.median(values)), 4) if values else None,
             "bootstrap_iid_95pct_ci_mean_usd": (
-                bootstrap_ci(values, stable_seed(label, rr)) if gate_pass and len(values) >= 2 else None
+                bootstrap_ci(values, stable_seed(label, rr)) if gate_pass and len(values) >= min_n else None
             ),
             "actual_better_n": sum(v > 0.005 for v in values),
             "fixed_rr_better_n": sum(v < -0.005 for v in values),
