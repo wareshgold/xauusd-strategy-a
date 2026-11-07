@@ -343,7 +343,7 @@ def main():
                   for rr in RRS
               ))
         for direction, detail in group_reports[name]["by_direction"].items():
-            d = detail["overall"]
+            d = detail
             print(" ", direction, "N=", d["n"], "DAYS=", d["distinct_day_buckets"],
                   "ACTUAL_NET_MEAN=", d["actual_net_mean_usd"],
                   " ".join(f"RR{rr}={d['paired_deltas'][f'RR{rr}']['mean_delta_usd']}" for rr in RRS))
