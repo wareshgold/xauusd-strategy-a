@@ -72,7 +72,7 @@ def main():
     ap.add_argument("--worktree", default=str(EXPECTED_WORKTREE))
     ap.add_argument("--output", default=str(Path.home() / "SP2L_PRIVATE_AUDIT_20261102_20261107"))
     ap.add_argument("--server-offset-hours", type=float, default=2.0)
-    ap.add_argument("--mt5-terminal-path", default=os.environ.get("SP2L_MT5_TERMINAL_PATH", r"C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe"), help="Explicit terminal64.exe path for read-only MT5 history access.")
+    ap.add_argument("--mt5-terminal-path", default=os.environ.get("SP2L_MT5_TERMINAL_PATH", "C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe"), help="Explicit terminal64.exe path for read-only MT5 history access.")
     args = ap.parse_args()
 
     root = Path(args.worktree)
