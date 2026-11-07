@@ -113,12 +113,13 @@ def main():
     # Locate event/state files without modifying them.
     candidates = []
     if root.exists():
-        candidates += [root / EVENT_REL, root / STATE_NAME]
+        candidates += [root / EVENT_REL, root / STATE_NAME, root / "scripts" / "run_sp2l_v3_1_xauusd_forward_test.py"]
         candidates += list(root.glob("**/" + STATE_NAME))
         candidates += list(root.glob("**/SP2L_V3_1_XAUUSD_RR4_ACT40_FORWARD_EVENTS.jsonl"))
     for p in dict.fromkeys(candidates):
         if p.is_file():
-            dest = raw / "runner_files" / (p.name if p.name != EVENT_REL.name else "forward_events.jsonl")
+            dest_name = "forward_events.jsonl" if p.name == EVENT_REL.name else p.name
+            dest = raw / "runner_files" / dest_name
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(p, dest)
             capture["files"].append({"artifact": dest.relative_to(out).as_posix(), "size_bytes": dest.stat().st_size, "sha256": sha256(dest), "source_path": str(p)})
