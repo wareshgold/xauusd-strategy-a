@@ -65,12 +65,17 @@ def main():
         deals=load(z,"raw/mt5_history_deals.json")
         orders=load(z,"raw/mt5_history_orders.json")
         with z.open("raw/runner_files/forward_events.jsonl") as f:
-            events=[json.loads(line) for line in f if line.strip()]
+            events=[]
+            for line in f:
+                try:
+                    if line.strip(): events.append(json.loads(line))
+                except Exception: pass
     ds=[d for d in deals if d.get("symbol")==SYMBOL and str(d.get("magic"))==str(MAGIC)]
     os=[o for o in orders if o.get("symbol")==SYMBOL and str(o.get("magic"))==str(MAGIC)]
     pos=defaultdict(lambda: {"in":0,"out":0,"inout":0,"net":0.0,"profit":0.0,
                              "commission":0.0,"swap":0.0,"fee":0.0,"entry_type":None,
-                             "exit_reason":Counter(),"exit_time":None,"exit_day":None})
+                             "exit_reason":Counter(),"exit_time":None,"exit_day":None,
+                             "volume_in":0.0,"volume_out":0.0})
     entry_counts, exit_reasons, exit_types = Counter(), Counter(), Counter()
     for d in ds:
         pid=str(d.get("position_id"))
@@ -79,6 +84,10 @@ def main():
         typ=code(d.get("type"),DEAL_TYPE)
         reason=code(d.get("reason"),REASON)
         p[{"IN":"in","OUT":"out","INOUT":"inout"}.get(e,"inout")]+=1
+        if e=="IN": p["volume_in"] += num(d.get("volume"))
+        elif e=="OUT": p["volume_out"] += num(d.get("volume"))
+        elif e=="INOUT":
+            p["volume_out"] += num(d.get("volume"))
         for k in ("profit","commission","swap","fee"):
             p[k]+=num(d.get(k))
         p["net"]+=sum(num(d.get(k)) for k in ("profit","commission","swap","fee"))
@@ -93,8 +102,8 @@ def main():
             exit_types[typ]+=1
         entry_counts[e]+=1
     valid=[p for k,p in pos.items() if k not in ("None","")]
-    closed=[p for p in valid if p["out"]>0 or p["inout"]>0]
-    open_pos=[p for p in valid if p["in"]>0 and p["out"]==0 and p["inout"]==0]
+    closed=[p for p in valid if p["volume_in"]>0 and p["volume_out"]+1e-8>=p["volume_in"]]
+    open_pos=[p for p in valid if p["volume_in"]>p["volume_out"]+1e-8]
     closed.sort(key=lambda p:p["exit_time"] or 0)
     closed_net=[p["net"] for p in closed]
     closed_gross=[p["profit"] for p in closed]
@@ -131,7 +140,7 @@ def main():
       "orders":{"state_counts":dict(order_states),"type_counts":dict(order_types)},
       "runner_event_counts":dict(Counter(str(e.get("event") or e.get("type") or "UNKNOWN") for e in events)),
       "limitations":[
-        "Closed positions are inferred from deal IN/OUT lifecycle; broker-specific accounting should be checked.",
+        "Closed positions are inferred by comparing cumulative IN and OUT deal volume; INOUT is treated as closing volume. Broker-specific accounting should be checked.",
         "Net position result sums deal profit, commission, swap and fee; floating P/L is unavailable.",
         "Maximum drawdown is calculated on sequential realized closed-position net results, ordered by exit time; no intraday mark-to-market.",
         "MFE/MAE and price-path attribution require private tick or bar data not contained in this aggregate calculation.",
