@@ -72,6 +72,7 @@ def main():
     ap.add_argument("--worktree", default=str(EXPECTED_WORKTREE))
     ap.add_argument("--output", default=str(Path.home() / "SP2L_PRIVATE_AUDIT_20261102_20261107"))
     ap.add_argument("--server-offset-hours", type=float, default=2.0)
+    ap.add_argument("--mt5-terminal-path", default=os.environ.get("SP2L_MT5_TERMINAL_PATH", r"C:\\Program Files\\Otet Group MT5 Terminal\\terminal64.exe"), help="Explicit terminal64.exe path for read-only MT5 history access.")
     args = ap.parse_args()
 
     root = Path(args.worktree)
@@ -127,8 +128,11 @@ def main():
     # MT5 API is strictly history/read-only here.
     try:
         import MetaTrader5 as mt5
-        initialized = mt5.initialize()
-        mt5_meta = {"initialize": bool(initialized), "last_error": mt5.last_error()}
+        # Explicit path avoids relying on automatic terminal discovery. This is a read-only
+        # Python API connection; it does not start/stop the trading runner or submit orders.
+        terminal_path = str(Path(args.mt5_terminal_path).expanduser())
+        initialized = mt5.initialize(path=terminal_path)
+        mt5_meta = {"initialize": bool(initialized), "terminal_path": terminal_path, "last_error": mt5.last_error()}
         if initialized:
             ti, ai = mt5.terminal_info(), mt5.account_info()
             mt5_meta["terminal_info"] = json_safe(ti)
@@ -181,7 +185,7 @@ def main():
     # Sanitized public-safe aggregate only. No account IDs, tickets, timestamps, prices, or per-trade rows.
     public = {
         "audit_window_label": "2026-11-02_to_2026-11-07",
-        "collector_version": "1.0-read-only",
+        "collector_version": "1.1-read-only-explicit-mt5-path",
         "captured_at_utc_date": datetime.now(timezone.utc).date().isoformat(),
         "raw_bundle_created_locally": True,
         "raw_bundle_uploaded": False,
