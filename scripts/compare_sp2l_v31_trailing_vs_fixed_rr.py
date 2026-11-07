@@ -389,7 +389,7 @@ def main():
     actual_update_events = sum(r["successful_trail_updates"] for r in results)
     actual_deferred_events = sum(r["trail_deferred_events"] for r in results)
 
-     tick_count_reference_match = raw_tick_count == EXPECTED_TICKS
+    tick_count_reference_match = raw_tick_count == EXPECTED_TICKS
     # Tick-row count is diagnostic only: MT5 historical range retrieval can vary
     # slightly at chunk boundaries. Exact population, realized net, and all six
     # independently reproduced TP/SL/open/net results are the controlling gates.
