@@ -73,8 +73,9 @@ def main():
         for ent,ex in eligible:
             t0=int(ent.get("time",0)); t1=int(ex.get("time",0))
             t0ms=int(ent.get("time_msc",t0*1000)); t1ms=int(ex.get("time_msc",t1*1000))
-            start=datetime.fromtimestamp(max(0,t0-1),timezone.utc).replace(tzinfo=None)
-            end=datetime.fromtimestamp(t1+1,timezone.utc).replace(tzinfo=None)
+            # Keep UTC timezone information: MT5 interprets naive datetimes in local time.
+            start=datetime.fromtimestamp(max(0,t0-1),timezone.utc)
+            end=datetime.fromtimestamp(t1+1,timezone.utc)
             ticks=mt5.copy_ticks_range(SYMBOL,start,end,mt5.COPY_TICKS_INFO)
             if ticks is None or len(ticks)==0:
                 no_ticks+=1; continue
