@@ -126,9 +126,8 @@ def bootstrap_ci(values, seed):
     if len(values) < 2:
         return None
     rng = np.random.default_rng(seed)
-    samples = np.empty(BOOTSTRAP_REPS, dtype=float)
-    for index in range(BOOTSTRAP_REPS):
-        samples[index] = np.mean(rng.choice(values, size=len(values), replace=True))
+    draws = values[rng.integers(0, len(values), size=(BOOTSTRAP_REPS, len(values)))]
+    samples = np.mean(draws, axis=1)
     return [
         round(float(np.quantile(samples, 0.025)), 4),
         round(float(np.quantile(samples, 0.975)), 4),
@@ -142,13 +141,14 @@ def stable_seed(label, rr=0):
 
 def summarize(rows, label, min_n=20, min_days=3):
     days = sorted({row["day_bucket"] for row in rows})
+    gate_pass = len(rows) >= min_n and len(days) >= min_days
     result = {
         "n": len(rows),
         "distinct_day_buckets": len(days),
         "actual_net_mean_usd": round(float(np.mean([r["actual_net"] for r in rows])), 4) if rows else None,
         "minimum_n_for_screen": min_n,
         "minimum_days_for_screen": min_days,
-        "screen_sample_gate_pass": len(rows) >= min_n and len(days) >= min_days,
+        "screen_sample_gate_pass": gate_pass,
         "paired_deltas": {},
     }
     for rr in RRS:
@@ -157,7 +157,9 @@ def summarize(rows, label, min_n=20, min_days=3):
             "paired_n": len(values),
             "mean_delta_usd": round(float(np.mean(values)), 4) if values else None,
             "median_delta_usd": round(float(np.median(values)), 4) if values else None,
-            "bootstrap_iid_95pct_ci_mean_usd": bootstrap_ci(values, stable_seed(label, rr)),
+            "bootstrap_iid_95pct_ci_mean_usd": (
+                bootstrap_ci(values, stable_seed(label, rr)) if gate_pass and len(values) >= 2 else None
+            ),
             "actual_better_n": sum(v > 0.005 for v in values),
             "fixed_rr_better_n": sum(v < -0.005 for v in values),
         }
