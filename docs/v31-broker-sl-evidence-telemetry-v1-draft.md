@@ -30,7 +30,7 @@ Observed current flow:
 - `attempt_number` exists, but is not a globally unique attempt identifier.
 - `POSITION_LIFECYCLE` is change-triggered/deduplicated, not a record of every poll or every post-request observation.
 - The base monitor uses `mt5.positions_get(symbol=symbol) or []`; therefore `None` (query failure) and an empty result (valid no-position result) are collapsed in that path.
-- The V3.1 trailing path also returns silently when `positions_get()` returns `None`; it does not emit a dedicated observation-failure event.
+- The reviewed V3.1 trailing path collapses `positions_get()` returning `None` into an empty list; a sibling current-base snapshot instead returns silently on `None`. Neither path emits a dedicated observation-failure event.
 
 These findings explain why absence of a later `POSITION_LIFECYCLE` event cannot be interpreted as proof that no broker readback occurred or that the SL modification failed.
 
