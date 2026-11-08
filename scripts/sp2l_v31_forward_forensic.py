@@ -36,7 +36,10 @@ def _json(zf, name):
     return json.loads(zf.read(name).decode("utf-8-sig"))
 
 def _i(row, key, default=0):
-    try: return int(row.get(key, default) or default)
+    value = row.get(key, default)
+    if value is None or value == "":
+        return default
+    try: return int(value)
     except (TypeError, ValueError): return default
 
 def _f(row, key):
