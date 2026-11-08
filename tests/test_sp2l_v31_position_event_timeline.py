@@ -31,3 +31,22 @@ def test_missing_runner_timestamp_uses_completed_bar_time():
     ],[])
     assert rows[0]["time_basis"]=="completed_bar_time"
     assert rows[0]["timestamp_utc"] is not None
+
+
+def test_explicit_broker_offset_preserves_raw_time_and_never_shifts_runner_time():
+    rows, _ = build_timeline(
+        [{"ts_utc":"2026-11-07T10:02:00+00:00","event":"TRAIL_DEFERRED","position":123}],
+        [{
+            "position_id":123,"side":"BUY","status":"CLOSED",
+            "entry_time_utc":"2026-11-07T10:00:00+00:00",
+            "exit_time_utc":"2026-11-07T10:04:00+00:00",
+        }],
+        broker_server_offset_hours=2,
+    )
+    entry = next(r for r in rows if r["event_type"] == "BROKER_ENTRY_DEAL")
+    runner = next(r for r in rows if r["event_type"] == "TRAIL_DEFERRED")
+    assert entry["timestamp_raw"] == "2026-11-07T10:00:00+00:00"
+    assert entry["timestamp_utc"] == "2026-11-07T08:00:00+00:00"
+    assert entry["broker_offset_hours"] == 2
+    assert runner["timestamp_utc"] == "2026-11-07T10:02:00+00:00"
+    assert runner["broker_offset_hours"] is None
