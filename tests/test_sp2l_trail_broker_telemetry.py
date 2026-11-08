@@ -131,6 +131,15 @@ class TrailBrokerTelemetryTests(unittest.TestCase):
         _, evidence, _ = self.run_case(api)
         self.assertEqual(evidence["verification_status"], "POSITION_NOT_FOUND")
 
+    def test_malformed_readback_is_contained_as_observation_failure(self):
+        malformed = SimpleNamespace(ticket="not-a-ticket", sl=3902.5, tp=3910.0)
+        api = FakeMT5(response(), [malformed])
+        _, evidence, events = self.run_case(api)
+        self.assertEqual(evidence["query_outcome"], "QUERY_FAILED")
+        self.assertEqual(evidence["verification_status"], "OBSERVATION_FAILED")
+        self.assertIn("readback_parse_failed", events[2]["last_error"])
+        self.assertEqual(len(api.sent), 1)
+
     def test_wrong_ticket_is_position_not_found(self):
         api = FakeMT5(response(), [position(ticket=777)])
         _, evidence, _ = self.run_case(api)
