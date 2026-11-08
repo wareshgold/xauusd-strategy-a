@@ -261,6 +261,7 @@ def trail_positions(cfg_runtime,state):
             "verification_status":trail_evidence["verification_status"],
             "observed_sl":trail_evidence["observed_sl"],
             "query_outcome":trail_evidence["query_outcome"],
+            "telemetry_write_failures":trail_evidence["telemetry_write_failures"],
             "position":ticket,"direction":direction,
             "completed_bar_time":completed_bar_time,
             "bar_high":high,"bar_low":low,"favorable_extreme":favorable_extreme,
