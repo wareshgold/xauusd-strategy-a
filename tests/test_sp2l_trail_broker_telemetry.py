@@ -60,7 +60,11 @@ class FakeMT5:
 
 
 def response(retcode=10009, comment="done"):
-    return SimpleNamespace(retcode=retcode, comment=comment)
+    return SimpleNamespace(
+        retcode=retcode, retcode_external=0, request_id=444,
+        order=555, deal=666, volume=0.01, price=3902.5,
+        bid=3902.4, ask=3902.6, comment=comment,
+    )
 
 
 def position(ticket=12345, sl=3902.5, tp=3910.0):
@@ -104,6 +108,11 @@ class TrailBrokerTelemetryTests(unittest.TestCase):
         self.assertFalse(evidence["api_success"])
         self.assertEqual(evidence["verification_status"], "OBSERVED_MISMATCH")
         self.assertEqual(events[1]["retcode"], 10016)
+        self.assertEqual(events[1]["request_id"], 444)
+        self.assertEqual(events[1]["order"], 555)
+        self.assertEqual(events[1]["deal"], 666)
+        self.assertEqual(events[1]["volume"], 0.01)
+        self.assertEqual(events[1]["price"], 3902.5)
 
     def test_none_response_records_last_error_and_still_reads_position(self):
         api = FakeMT5(None, [position(sl=3900.0)])
@@ -136,6 +145,14 @@ class TrailBrokerTelemetryTests(unittest.TestCase):
         api = FakeMT5(response(), [malformed])
         _, evidence, events = self.run_case(api)
         self.assertEqual(evidence["query_outcome"], "QUERY_FAILED")
+        self.assertEqual(evidence["verification_status"], "OBSERVATION_FAILED")
+        self.assertIn("readback_parse_failed", events[2]["last_error"])
+        self.assertEqual(len(api.sent), 1)
+
+    def test_malformed_position_identifier_is_contained(self):
+        malformed = SimpleNamespace(ticket=12345, identifier="bad-id", sl=3902.5, tp=3910.0)
+        api = FakeMT5(response(), [malformed])
+        _, evidence, events = self.run_case(api)
         self.assertEqual(evidence["verification_status"], "OBSERVATION_FAILED")
         self.assertIn("readback_parse_failed", events[2]["last_error"])
         self.assertEqual(len(api.sent), 1)
