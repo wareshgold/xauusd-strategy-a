@@ -6,7 +6,7 @@ import json
 import re
 import zipfile
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -47,7 +47,7 @@ def _event_time_day(value):
         parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
         if parsed.tzinfo is None:
             return "NAIVE_TIMESTAMP"
-        return parsed.astimezone().date().isoformat()
+        return parsed.astimezone(timezone.utc).date().isoformat()
     except (TypeError, ValueError, OverflowError):
         return "INVALID_TIMESTAMP"
 
