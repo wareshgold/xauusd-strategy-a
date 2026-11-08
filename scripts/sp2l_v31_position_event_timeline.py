@@ -44,7 +44,16 @@ def _num(value):
     except (TypeError, ValueError):
         return None
 
-def build_timeline(events, trades):
+def _offset_iso(stamp, hours):
+    if not stamp or not hours:
+        return stamp
+    parsed = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        raise ValueError("Broker deal timestamp must be timezone-aware")
+    from datetime import timedelta
+    return (parsed - timedelta(hours=hours)).astimezone(timezone.utc).isoformat()
+
+def build_timeline(events, trades, broker_server_offset_hours=0):
     by_position = defaultdict(list)
     counters = Counter()
     for trade in trades:
@@ -53,11 +62,15 @@ def build_timeline(events, trades):
             continue
         for key, label in (("entry_time_utc", "BROKER_ENTRY_DEAL"),
                            ("exit_time_utc", "BROKER_EXIT_DEAL")):
-            stamp = trade.get(key)
-            if stamp:
+            raw_stamp = trade.get(key)
+            if raw_stamp:
+                stamp = _offset_iso(raw_stamp, broker_server_offset_hours)
                 by_position[pid].append({
                     "position_id": pid, "event_type": label,
-                    "timestamp_utc": stamp, "time_basis": "broker_deal_epoch",
+                    "timestamp_utc": stamp, "timestamp_raw": raw_stamp,
+                    "broker_offset_hours": broker_server_offset_hours,
+                    "time_basis": ("broker_deal_epoch_utc" if not broker_server_offset_hours
+                                   else "broker_deal_epoch_minus_server_offset"),
                     "event_index": None, "success": None,
                     "direction": trade.get("side"), "price": (
                         trade.get("entry_price_volume_weighted") if label == "BROKER_ENTRY_DEAL"
@@ -77,6 +90,8 @@ def build_timeline(events, trades):
         stamp = event_time(event)
         row = {
             "position_id": pid, "event_type": kind, "timestamp_utc": stamp,
+            "timestamp_raw": event.get("ts_utc") or event.get("timestamp_utc") or event.get("time_utc") or event.get("completed_bar_time"),
+            "broker_offset_hours": None,
             "time_basis": "runner_ts_utc" if event.get("ts_utc") else (
                 "completed_bar_time" if event.get("completed_bar_time") else "missing"),
             "event_index": idx, "success": event.get("success"),
@@ -102,9 +117,9 @@ def build_timeline(events, trades):
     rows.sort(key=lambda x: (x["position_id"], x["sequence"]))
     return rows, counters
 
-def analyze(zip_path):
+def analyze(zip_path, broker_server_offset_hours=0):
     summary, trades, events = analyze_zip(zip_path)
-    timeline, counts = build_timeline(events, trades)
+    timeline, counts = build_timeline(events, trades, broker_server_offset_hours)
     by_pid = defaultdict(list)
     for row in timeline:
         by_pid[row["position_id"]].append(row)
@@ -146,8 +161,14 @@ def analyze(zip_path):
         names = sorted(n for n in zf.namelist()
                        if any(k in n.lower() for k in ("tick", "bar", "candle", "ohlc", "rate")))
     report = {
-        "report_version": 1, "input_zip": zip_path.name,
+        "report_version": 2, "input_zip": zip_path.name,
         "input_zip_sha256": summary["input_zip_sha256"],
+        "broker_server_offset_hours_applied": broker_server_offset_hours,
+        "timestamp_policy": (
+            "Runner ts_utc is authoritative and unchanged. Broker deal timestamps retain "
+            "their raw interpretation in timestamp_raw; the explicit configured offset "
+            "is subtracted only when --broker-server-offset-hours is supplied."
+        ),
         "closed_positions": summary["realized_closed_positions"]["count"],
         "event_counts_by_type": dict(sorted(counts.items())),
         "timeline_rows": len(timeline),
@@ -160,8 +181,8 @@ def analyze(zip_path):
             "the holding interval and cannot be labeled MFE/MAE."
         ),
         "interpretation_limits": [
-            "Runner ts_utc is used when present; completed_bar_time is a fallback event-time basis.",
-            "Broker entry/exit timestamps come from deal history and are separate synthesized timeline rows.",
+            "Runner ts_utc is authoritative and is never offset-adjusted; completed_bar_time is only a fallback.",
+            "Broker deal rows preserve timestamp_raw and expose the explicitly applied broker offset; do not assume offset semantics without broker evidence.",
             "A missing event is not evidence that the underlying broker state did not change.",
             "Sparse trail bar extrema are not complete price paths; no MFE/MAE or causal trailing claim is made.",
             "Position identifiers are joined exactly as recorded; unmatched event IDs remain visible as their own groups.",
@@ -170,7 +191,7 @@ def analyze(zip_path):
     return report, timeline, per_position
 
 def write_csv(path, rows):
-    fields = ["position_id","sequence","event_type","timestamp_utc","time_basis","event_index",
+    fields = ["position_id","sequence","event_type","timestamp_utc","timestamp_raw","broker_offset_hours","time_basis","event_index",
               "success","direction","price","old_sl","new_sl","bar_high","bar_low","bid","ask",
               "retcode","reason","detail"]
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -181,10 +202,12 @@ def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--zip", required=True, type=Path)
     p.add_argument("--out", type=Path, default=Path("artifacts/forensic/v31-local-20261108"))
+    p.add_argument("--broker-server-offset-hours", type=float, default=0,
+                   help="Explicit hours to subtract from broker deal timestamps only; runner ts_utc is never changed.")
     a=p.parse_args(argv)
     if not a.zip.is_file(): p.error(f"ZIP not found: {a.zip}")
     try:
-        report, timeline, positions = analyze(a.zip)
+        report, timeline, positions = analyze(a.zip, a.broker_server_offset_hours)
         a.out.mkdir(parents=True, exist_ok=True)
         (a.out/"v31_event_timeline_summary.json").write_text(json.dumps(report,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
         write_csv(a.out/"v31_position_event_timeline.csv",timeline)
@@ -195,6 +218,7 @@ def main(argv=None):
     print("SP2L V3.1 POSITION EVENT TIMELINE")
     print(f"CLOSED_POSITIONS={report['closed_positions']} TIMELINE_ROWS={report['timeline_rows']} POSITIONS_WITH_TIMELINE={report['positions_with_timeline']}")
     print("EVENT_COUNTS="+json.dumps(report["event_counts_by_type"],sort_keys=True))
+    print(f"BROKER_SERVER_OFFSET_HOURS_APPLIED={report['broker_server_offset_hours_applied']}")
     print(f"PRICE_LIKE_ARCHIVE_MEMBERS={json.dumps(report['price_like_archive_members'])}")
     print(f"MFE_MAE_STATUS={report['mfe_mae_status']}")
     print(f"TIMELINE_CSV={(a.out/'v31_position_event_timeline.csv').resolve()}")
