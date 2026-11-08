@@ -10,7 +10,10 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from sp2l_v31_forward_forensic import analyze_zip
+try:
+    from .sp2l_v31_forward_forensic import analyze_zip
+except ImportError:  # direct script execution from the scripts directory
+    from sp2l_v31_forward_forensic import analyze_zip
 
 POSITION_EVENTS = {
     "TRAIL_UPDATE", "TRAIL_DEFERRED", "POSITION_LIFECYCLE",
@@ -96,8 +99,7 @@ def build_timeline(events, trades):
         for seq, item in enumerate(items, 1):
             item["sequence"] = seq
             rows.append(item)
-    rows.sort(key=lambda x: (int(x["position_id"]) if x["position_id"].isdigit() else x["position_id"],
-                             x["sequence"]))
+    rows.sort(key=lambda x: (x["position_id"], x["sequence"]))
     return rows, counters
 
 def analyze(zip_path):
