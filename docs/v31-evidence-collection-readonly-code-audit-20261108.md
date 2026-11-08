@@ -2,17 +2,18 @@
 
 **Date:** 2026-11-08  
 **Status:** Research audit; no runtime or trading changes  
-**Reviewed source branch:** `fix/v31-history-query-helper-import-20261102`
+**Reviewed helper source branch:** `fix/v31-history-query-helper-import-20261102`  
+**Exact runner snapshot additionally checked:** `7e20e991a0880b1e209c71a72d788836d0d821df`
 
 ## 1. Trailing evidence path
 
-The V3.1 wrapper calls the original Position lifecycle monitor before evaluating/sending a trailing update. The base monitor reads `positions_get(symbol=...)` and emits a `POSITION_LIFECYCLE` event only for a previously unseen Position SL/TP marker stored in `state["order_states"]`.
+The V3.1 wrapper at the exact runner snapshot calls the original Position lifecycle monitor before evaluating/sending a trailing update. The base monitor reads `positions_get(symbol=...) or []` and emits a `POSITION_LIFECYCLE` event only for a previously unseen Position SL/TP marker stored in `state["order_states"]`. The V3.1 trailing path itself returns silently when its own `positions_get(symbol=...)` returns `None`.
 
 Consequences:
 - `POSITION_LIFECYCLE` is change-triggered/deduplicated telemetry, not a record of every polling observation.
 - A later lifecycle event with the requested SL is useful readback corroboration.
 - Absence of a later lifecycle event is inconclusive: it can reflect no changed marker, a closed/not-found Position, a failed read, or a missing poll/event.
-- In the reviewed branch, the base monitor collapses `positions_get() is None` into an empty list. The trailing path also uses an empty-list fallback in that branch. This does not preserve the MT5 distinction between query failure and a valid empty result.
+- The base monitor collapses `positions_get() is None` into an empty list. The trailing path at the exact runner snapshot preserves the early-return distinction internally, but emits no failure event. Neither path records a separately auditable Position-query outcome.
 
 The trailing code emits `TRAIL_UPDATE` after `order_send(TRADE_ACTION_SLTP)`. It includes retcode/comment and a boolean derived from `TRADE_RETCODE_DONE`, but there is no unique per-send ID, pre-send request event, or immediate readback linked to that send.
 
