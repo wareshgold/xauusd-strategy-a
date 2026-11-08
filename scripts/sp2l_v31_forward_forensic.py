@@ -126,7 +126,8 @@ def analyze_zip(zip_path: Path):
         entries = [x for x in rows if _i(x, "entry", -1) in ENTRY_IN]
         exits = [x for x in rows if _i(x, "entry", -1) in ENTRY_OUT]
         net = sum(_f(x,"profit")+_f(x,"commission")+_f(x,"swap")+_f(x,"fee") for x in rows)
-        if exits: closed_nets.append(net)
+        complete_closed = bool(entries and exits)
+        if complete_closed: closed_nets.append(net)
         exit_codes = sorted({_i(x, "reason", -1) for x in exits})
         for code in exit_codes: reasons[REASON_NAMES.get(code, f"UNKNOWN_{code}")] += 1
         first, last = (entries[0] if entries else {}), (exits[-1] if exits else {})
@@ -136,7 +137,8 @@ def analyze_zip(zip_path: Path):
         tr = trails.get(pid, [])
         ok = sum(bool(x.get("success")) for x in tr)
         trade_rows.append({
-            "position_id":pid, "status":"CLOSED" if exits else "OPEN_OR_INCOMPLETE",
+            "position_id":pid,
+            "status":"CLOSED" if complete_closed else ("EXIT_WITHOUT_ENTRY" if exits else "OPEN_OR_INCOMPLETE"),
             "side":("BUY" if _i(first,"type",-1)==0 else "SELL" if entries else "UNKNOWN"),
             "entry_time_utc":_utc(_i(first,"time")), "exit_time_utc":_utc(_i(last,"time")),
             "entry_price_volume_weighted":round(ep,5) if ep is not None else None,
@@ -166,7 +168,9 @@ def analyze_zip(zip_path: Path):
             "git_branch":metadata.get("branch") or metadata.get("git_branch"),
         },
         "integrity":{"manifest":manifest,"required_member_sha256":member_hashes},
-        "raw_counts":{"deals":len(deals),"orders":len(orders),"events":len(events),"positions_with_deals":len(grouped)},
+        "raw_counts":{"deals":len(deals),"orders":len(orders),"events":len(events),"positions_with_deals":len(grouped),
+                      "fully_observed_closed_positions":len(closed_nets),
+                      "exit_without_entry_positions":sum(1 for row in trade_rows if row["status"]=="EXIT_WITHOUT_ENTRY")},
         "realized_closed_positions":{
             "count":n,"wins":wins,"losses":losses,"breakeven":n-wins-losses,
             "win_rate_pct":round(100*wins/n,2) if n else None,
