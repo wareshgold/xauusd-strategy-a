@@ -46,12 +46,14 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
     digits = int(common.get("digits") or 0)
     tolerance = max(tick_size * 0.5, (10.0 ** (-digits)) * 0.5, 1e-9)
 
-    _safe_log(log_event, {
+    write_failures = 0
+    if not _safe_log(log_event, {
         "event": "TRAIL_REQUEST",
         **common,
         "request": dict(request),
         "canonical": False,
-    })
+    }):
+        write_failures += 1
 
     # Preserve the existing order_send call semantics: exceptions still
     # propagate exactly as they did before this telemetry wrapper.
@@ -79,7 +81,8 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
     }
     if response is None:
         response_event["last_error"] = _last_error(mt5_api)
-    _safe_log(log_event, response_event)
+    if not _safe_log(log_event, response_event):
+        write_failures += 1
 
     query_error = None
     try:
@@ -128,7 +131,8 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
     }
     if query_error is not None:
         observation_event["last_error"] = query_error
-    _safe_log(log_event, observation_event)
+    if not _safe_log(log_event, observation_event):
+        write_failures += 1
 
     if query_outcome == "QUERY_FAILED":
         verification_status = "OBSERVATION_FAILED"
@@ -139,7 +143,7 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
     else:
         verification_status = "OBSERVED_MISMATCH"
 
-    _safe_log(log_event, {
+    if not _safe_log(log_event, {
         "event": "TRAIL_VERIFICATION",
         "trail_cycle_id": trail_cycle_id,
         "trail_attempt_id": trail_attempt_id,
@@ -152,7 +156,8 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
         "verification_status": verification_status,
         "api_success": api_success,
         "canonical": False,
-    })
+    }):
+        write_failures += 1
 
     return response, {
         "trail_cycle_id": trail_cycle_id,
@@ -162,4 +167,5 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
         "verification_status": verification_status,
         "observed_sl": observed_sl,
         "query_outcome": query_outcome,
+        "telemetry_write_failures": write_failures,
     }
