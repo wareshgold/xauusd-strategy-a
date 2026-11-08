@@ -7,7 +7,9 @@ as observed facts; no canonical production decision is made here.
 from __future__ import annotations
 import os
 import time
+import uuid
 from datetime import timedelta
+from sp2l_trail_broker_telemetry import execute_and_verify_trailing_request
 from sp2l_trailing_rules import (
     normalize_trailing_sl,
     trailing_sl_is_placeable,
@@ -217,9 +219,31 @@ def trail_positions(cfg_runtime,state):
 
         request={"action":mt5.TRADE_ACTION_SLTP,"symbol":symbol,
                  "position":ticket,"sl":float(new_sl),"tp":tp}
-        send=mt5.order_send(request)
-        retcode=int(send.retcode) if send else None
-        ok=bool(send and retcode==mt5.TRADE_RETCODE_DONE)
+        trail_cycle_id=(
+            f"{symbol}:{magic}:{ticket}:"
+            f"{position_time_msc or position_time}:{completed_bar_time}"
+        )
+        trail_attempt_id=uuid.uuid4().hex
+        attempt_number=int(retry["count"])+1
+        send,trail_evidence=execute_and_verify_trailing_request(
+            mt5,runner.log_event,request,{
+                "trail_cycle_id":trail_cycle_id,
+                "trail_attempt_id":trail_attempt_id,
+                "position_ticket":ticket,
+                "position_identifier":int(getattr(p,"identifier",0) or 0),
+                "symbol":symbol,"magic":int(magic),"direction":direction,
+                "completed_bar_time":completed_bar_time,
+                "entry":entry,"position_time_msc":int(position_time_msc or position_time*1000),
+                "attempt_number":attempt_number,"old_sl":old_sl,
+                "requested_sl":float(new_sl),"tp":tp,
+                "raw_sl":float(raw_sl),"favorable_extreme":float(favorable_extreme),
+                "favorable_move":float(favorable),
+                "bid":bid,"ask":ask,"point":point,"tick_size":tick_size,
+                "digits":digits,"stops_level":stops_level,
+                "freeze_level":freeze_level,"min_distance":min_distance,
+            })
+        retcode=trail_evidence["retcode"]
+        ok=trail_evidence["api_success"]
         retry["count"]+=1
         retry["last_attempt"]=time.monotonic()
         if ok:
@@ -232,6 +256,12 @@ def trail_positions(cfg_runtime,state):
             _TRAIL_RETRY_STATE.pop(attempt_key,None)
         runner.log_event({
             "event":"TRAIL_UPDATE","version":cfg.VERSION,"symbol":symbol,
+            "trail_cycle_id":trail_evidence["trail_cycle_id"],
+            "trail_attempt_id":trail_evidence["trail_attempt_id"],
+            "verification_status":trail_evidence["verification_status"],
+            "observed_sl":trail_evidence["observed_sl"],
+            "query_outcome":trail_evidence["query_outcome"],
+            "telemetry_write_failures":trail_evidence["telemetry_write_failures"],
             "position":ticket,"direction":direction,
             "completed_bar_time":completed_bar_time,
             "bar_high":high,"bar_low":low,"favorable_extreme":favorable_extreme,
