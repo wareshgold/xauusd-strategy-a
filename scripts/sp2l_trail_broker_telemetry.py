@@ -92,28 +92,32 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
         query_error = f"{type(exc).__name__}:{exc}"
 
     observed = None
-    if positions is None:
-        query_outcome = "QUERY_FAILED"
-        query_error = query_error or _last_error(mt5_api)
-    else:
-        matches = [
-            position for position in positions
-            if int(getattr(position, "ticket", 0) or 0) == ticket
-        ]
-        if not matches:
-            query_outcome = "POSITION_NOT_FOUND"
+    observed_sl = None
+    observed_tp = None
+    try:
+        if positions is None:
+            query_outcome = "QUERY_FAILED"
+            query_error = query_error or _last_error(mt5_api)
         else:
-            query_outcome = "OK"
-            observed = matches[0]
-
-    observed_sl = (
-        float(getattr(observed, "sl", 0.0) or 0.0)
-        if observed is not None else None
-    )
-    observed_tp = (
-        float(getattr(observed, "tp", 0.0) or 0.0)
-        if observed is not None else None
-    )
+            matches = [
+                position for position in positions
+                if int(getattr(position, "ticket", 0) or 0) == ticket
+            ]
+            if not matches:
+                query_outcome = "POSITION_NOT_FOUND"
+            else:
+                query_outcome = "OK"
+                observed = matches[0]
+                observed_sl = float(getattr(observed, "sl", 0.0) or 0.0)
+                observed_tp = float(getattr(observed, "tp", 0.0) or 0.0)
+    except Exception as exc:
+        # Malformed/unexpected readback data is telemetry failure, never a
+        # reason to interrupt the runner's already-completed SLTP operation.
+        query_outcome = "QUERY_FAILED"
+        query_error = f"readback_parse_failed:{type(exc).__name__}:{exc}"
+        observed = None
+        observed_sl = None
+        observed_tp = None
     observation_event = {
         "event": "TRAIL_BROKER_OBSERVATION",
         "trail_cycle_id": trail_cycle_id,
