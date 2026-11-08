@@ -7,7 +7,7 @@
 
 ## 1. Code review baseline
 
-Reviewed GitHub source branch: `fix/v31-trailing-live-quote-retry-20261103`.
+Reviewed GitHub source branch: `fix/v31-trailing-live-quote-retry-20261103`. The exact runner snapshot at local HEAD `7e20e991a0880b1e209c71a72d788836d0d821df` was also inspected read-only.
 
 Relevant files:
 - `scripts/run_sp2l_v3_1_xauusd_forward_test.py`
@@ -30,7 +30,8 @@ Observed current flow:
 - `attempt_number` exists, but is not a globally unique attempt identifier.
 - `POSITION_LIFECYCLE` is change-triggered/deduplicated, not a record of every poll or every post-request observation.
 - The base monitor uses `mt5.positions_get(symbol=symbol) or []`; therefore `None` (query failure) and an empty result (valid no-position result) are collapsed in that path.
-- The reviewed V3.1 trailing path collapses `positions_get()` returning `None` into an empty list; a sibling current-base snapshot instead returns silently on `None`. Neither path emits a dedicated observation-failure event.
+- At the exact local HEAD snapshot, the V3.1 trailing path returns silently when `positions_get()` returns `None`; it does not emit a dedicated observation-failure event.
+- A sibling remote branch snapshot uses an empty-list fallback in the trailing path. Both variants lack an explicit query-outcome event.
 
 These findings explain why absence of a later `POSITION_LIFECYCLE` event cannot be interpreted as proof that no broker readback occurred or that the SL modification failed.
 
