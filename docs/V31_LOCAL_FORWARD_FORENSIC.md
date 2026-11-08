@@ -29,6 +29,8 @@ detailed per-position CSV remain local.
 
 ## Interpretation boundaries
 
+- Realized P&L totals include only positions with at least one observed entry
+  deal and one observed exit deal. Exit-only histories are flagged separately.
 - Net sums broker deal profit + commission + swap + fee where present, in
   account currency.
 - Broker-reported exit reason is descriptive evidence, not proof of causation.
