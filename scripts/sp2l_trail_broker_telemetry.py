@@ -76,6 +76,14 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
         "api_returned": response is not None,
         "api_success": api_success,
         "retcode": retcode,
+        "retcode_external": getattr(response, "retcode_external", None) if response is not None else None,
+        "request_id": getattr(response, "request_id", None) if response is not None else None,
+        "order": getattr(response, "order", None) if response is not None else None,
+        "deal": getattr(response, "deal", None) if response is not None else None,
+        "volume": getattr(response, "volume", None) if response is not None else None,
+        "price": getattr(response, "price", None) if response is not None else None,
+        "bid": getattr(response, "bid", None) if response is not None else None,
+        "ask": getattr(response, "ask", None) if response is not None else None,
         "comment": str(getattr(response, "comment", "")) if response is not None else None,
         "canonical": False,
     }
@@ -94,6 +102,7 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
     observed = None
     observed_sl = None
     observed_tp = None
+    observed_identifier = None
     try:
         if positions is None:
             query_outcome = "QUERY_FAILED"
@@ -110,6 +119,7 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
                 observed = matches[0]
                 observed_sl = float(getattr(observed, "sl", 0.0) or 0.0)
                 observed_tp = float(getattr(observed, "tp", 0.0) or 0.0)
+                observed_identifier = int(getattr(observed, "identifier", 0) or 0) or None
     except Exception as exc:
         # Malformed/unexpected readback data is telemetry failure, never a
         # reason to interrupt the runner's already-completed SLTP operation.
@@ -127,10 +137,7 @@ def execute_and_verify_trailing_request(mt5_api, log_event, request: dict, conte
         "query_outcome": query_outcome,
         "observed_sl": observed_sl,
         "observed_tp": observed_tp,
-        "position_identifier": (
-            int(getattr(observed, "identifier", 0) or 0)
-            if observed is not None else None
-        ),
+        "position_identifier": observed_identifier,
         "canonical": False,
     }
     if query_error is not None:
