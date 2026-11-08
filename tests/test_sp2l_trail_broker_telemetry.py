@@ -158,6 +158,7 @@ class TrailBrokerTelemetryTests(unittest.TestCase):
         self.assertEqual(len(api.sent), 1)
         self.assertEqual(api.queries, [12345])
         self.assertEqual(events, [])
+        self.assertEqual(evidence["telemetry_write_failures"], 4)
 
     def test_helper_never_retries_order_send(self):
         api = FakeMT5(response(10016, "Invalid stops"), [position(sl=3900.0)])
