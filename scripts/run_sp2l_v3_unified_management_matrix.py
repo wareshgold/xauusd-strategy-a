@@ -22,7 +22,7 @@ def dt(s):
  return x.astimezone(timezone.utc)
 def load(mp,ep):
  ms,es=sha(mp),sha(ep)
- if ms!=M1_SHA or es!=ENTRY_SHA:raise ValueError(f"input SHA mismatch M1={ms} entries={es}")
+ if ms.upper()!=M1_SHA.upper() or es.upper()!=ENTRY_SHA.upper():raise ValueError(f"input SHA mismatch M1={ms} entries={es}")
  bars=[];prev=None
  with mp.open(encoding="utf-8-sig",newline="") as f:
   rd=csv.DictReader(f)
