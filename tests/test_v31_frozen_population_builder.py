@@ -17,13 +17,11 @@ SPEC.loader.exec_module(BUILDER)
 class TestV31FrozenPopulationBuilder(unittest.TestCase):
     def make_source(self, directory: Path):
         path = directory / "m1.csv.gz"
-        rows = [
-            "time,time_utc,open,high,low,close,tick_volume,spread_points,real_volume",
-            "1791507600,2026-10-09T01:00:00Z,3900,3901,3899,3900.5,10,20,0",
-            "1791507660,2026-10-09T01:01:00Z,3900.5,3902,3900,3901,11,20,0",
-            "1791507720,2026-10-09T01:02:00Z,3901,3903,3900.5,3902,12,20,0",
-            "1791507780,2026-10-09T01:03:00Z,3902,3904,3901,3903,13,20,0",
-        ]
+        rows = ["time,time_utc,open,high,low,close,tick_volume,spread_points,real_volume"]
+        base = 1791507600
+        for i in range(10):
+            stamp = BUILDER.utc_iso(base + 60 * i)
+            rows.append(f"{base + 60 * i},{stamp},3900,3901,3899,3900.5,10,20,0")
         with gzip.open(path, "wt", encoding="utf-8", newline="") as stream:
             stream.write("\n".join(rows) + "\n")
         return path
@@ -33,7 +31,7 @@ class TestV31FrozenPopulationBuilder(unittest.TestCase):
             path = self.make_source(Path(tmp))
             raw = path.read_bytes()
             bars, digest, size = BUILDER.load_m1_csv_gz(path, hashlib.sha256(raw).hexdigest())
-            self.assertEqual(len(bars), 4)
+            self.assertEqual(len(bars), 10)
             self.assertEqual(digest, hashlib.sha256(raw).hexdigest())
             self.assertEqual(size, len(raw))
 
