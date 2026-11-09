@@ -140,6 +140,10 @@ def main():
         writer.writerows(population)
     population_sha = sha256(csv_path.read_bytes())
 
+    config_path = Path(cfg.__file__).resolve()
+    builder_path = Path(__file__).resolve()
+    config_sha = sha256(config_path.read_bytes())
+    builder_sha = sha256(builder_path.read_bytes())
     manifest = {
         "research_only": True,
         "canonical": False,
@@ -154,6 +158,9 @@ def main():
         "timeframe": "M1",
         "entry_config_version": cfg.VERSION,
         "entry_config_file": "scripts/sp2l_v3_1_rr4_act40_config.py",
+        "entry_config_sha256": config_sha,
+        "builder_file": "scripts/build_sp2l_v3_1_frozen_population_from_m1.py",
+        "builder_sha256": builder_sha,
         "population_rows": len(population),
         "population_sha256": population_sha,
         "population_policy": "ONE_FIXED_V3_1_ENTRY_POPULATION_SHARED_BY_ALL_EXIT_VARIANTS",
@@ -167,13 +174,19 @@ def main():
         ],
     }
     manifest_path = out / "SP2L_V3_1_FROZEN_ENTRY_POPULATION_MANIFEST.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    manifest_raw = (json.dumps(manifest, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+    with manifest_path.open("xb") as stream:
+        stream.write(manifest_raw)
+    manifest_sha = sha256(manifest_raw)
     print(json.dumps({
         "status": "COMPLETE",
         "population_csv": str(csv_path),
         "population_rows": len(population),
         "population_sha256": population_sha,
         "manifest": str(manifest_path),
+        "manifest_sha256": manifest_sha,
+        "entry_config_sha256": config_sha,
+        "builder_sha256": builder_sha,
         "source_sha256": source_sha,
         "source_rows": len(bars),
         "first_utc": manifest["source_first_utc"],
