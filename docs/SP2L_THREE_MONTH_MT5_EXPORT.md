@@ -22,9 +22,9 @@ Set-Location D:\Mirzaei\Private\1\xauusd-strategy-a
   --out-dir D:\SP2L_RESEARCH_DATA\20261109
 ```
 
-The interval is UTC and half-open: start included, end excluded. The chosen end includes all of 2026-11-09. This is a requested window, not a claim that MT5 has complete history for it.
+The interval is UTC and half-open: start included, end excluded. The chosen end includes all of 2026-11-09. This is a requested window, not a claim that MT5 has complete history for it. The exporter streams rows to disk in daily chunks rather than retaining the three-month Tick corpus in memory. It refuses to overwrite existing output files; use a new output directory for each acquisition attempt.
 
-## Outputs
+## Synthetic tests\n\nRun without connecting to MT5:\n\n\`\`\`powershell\n& .\\.venv\\Scripts\\python.exe -m unittest discover -s tests -p test_mt5_research_exporter.py -v\n\`\`\`\n\nThe tests cover UTC parsing, same-millisecond Tick handling, crossed quotes, M1 gap reporting, symbol-spec extraction, streaming gzip output, and no-overwrite behavior. They do not validate MT5 connectivity or broker history availability.\n\n## Outputs
 
 - `*_ticks.csv.gz`: raw Tick ALL records, including Bid, Ask, Last, Volume and flags.
 - `*_M1.csv.gz`: raw M1 bars with OHLC, tick volume, spread points and real volume.
