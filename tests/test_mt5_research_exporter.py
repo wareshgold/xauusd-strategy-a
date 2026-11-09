@@ -27,6 +27,8 @@ class TestMt5ResearchExporter(unittest.TestCase):
         self.assertEqual(result["same_millisecond_timestamp_count"], 1)
         self.assertEqual(result["out_of_order_timestamp_count"], 1)
         self.assertEqual(result["crossed_quote_count"], 1)
+        audit.add((1001, "t1", "nan", "10.3", "0", "0", 1))
+        self.assertEqual(audit.report()["nonfinite_bidask_count"], 1)
 
     def test_m1_audit_reports_gaps_without_filling(self):
         audit = MODULE.M1Audit()
