@@ -65,14 +65,14 @@ def variants():
  def add(f,n,s,k="mgmt"):out.append({"family":f,"name":n,"spec":s,"kind":k})
  for rr in (1,1.5,2,3):add("FIXED_RR",f"RR_{rr:g}",{"mode":"FIXED_RR","rr":rr})
  add("NO_TARGET","NO_TARGET",{"mode":"NO_TARGET"})
- for x in (.5,1,1.5):add("BREAK_EVEN",f"BE_{x:g}R",{"mode":"BREAK_EVEN","rr":1e6,"activation_r":x,"offset_r":0})
+ for x in (.5,1,1.5):add("BREAK_EVEN",f"BE_{x:g}R",{"mode":"BREAK_EVEN","rr":None,"activation_r":x,"offset_r":0})
  for x in acts:
   for y in dists:add("FIXED_DISTANCE_TRAIL",f"FDT_A{x:g}_D{y:g}",{"mode":"TRAILING_R","rr":None,"activation_r":x,"distance_r":y,"price_units":True})
  add("STEP_LOCK","STEP_LOCK_NO_TP",{},"step_no_tp")
  for rr in (1,1.5,2,3):add("STEP_LOCK_TP",f"STEP_LOCK_TP_RR{rr:g}",{"rr":rr},"step_tp")
  for be in (.5,1,1.5):
   for ta in (1,1.5,2,3):
-   for td in (.5,1,1.5):add("BE_PLUS_TRAIL",f"BE{be:g}_TA{ta:g}_TD{td:g}",{"mode":"BREAK_EVEN_TRAILING","rr":1e6,"be_activation_r":be,"be_offset_r":0,"trail_activation_r":ta,"trail_distance_r":td})
+   for td in (.5,1,1.5):add("BE_PLUS_TRAIL",f"BE{be:g}_TA{ta:g}_TD{td:g}",{"mode":"BREAK_EVEN_TRAILING","rr":None,"be_activation_r":be,"be_offset_r":0,"trail_activation_r":ta,"trail_distance_r":td})
  for rr in (1,1.5,2,3):
   for x in acts:
    for y in dists:add("FIXED_TP_PLUS_TRAIL",f"TP{rr:g}_A{x:g}_D{y:g}",{"mode":"TRAILING_R","rr":rr,"activation_r":x,"distance_r":y,"price_units":True})
