@@ -51,8 +51,8 @@ def load(mp,ep):
 def step_tp(c,bars,rr,contract,volume):
  e=float(c["theoretical_entry"]);risk=float(c["risk"]);side=c["direction"];tp=e+(rr*risk if side=="BUY" else -rr*risk);sl=float(c["sl"]);mil=0;prev=int(bars[c["entry_idx"]]["time"]);held=0
  o={"direction":side,"trigger_time":c["trigger_time"],"signal_time_utc":c.get("signal_time_utc"),"theoretical_entry":e,"risk":risk,"initial_sl":sl,"initial_tp":tp,"final_sl":sl,"highest_milestone_R":0,"bars_held":0,"exit_price":None,"exit_time_utc":None,"reason":"OPEN_OR_UNRESOLVED","ambiguous":False,"realized_price":None,"realized_R":None,"risk_usd":risk*contract*volume,"realized_usd":None,"management_mode":"STEP_LOCK_WITH_TP"}
- for b in bars[c["entry_idx"]+1:]:
-  now=int(b["time"])
+ for bi in range(c["entry_idx"]+1,len(bars)):
+  b=bars[bi];now=int(b["time"])
   if m1_gap_detected(prev,now):o.update(ambiguous=True,reason="M1_GAP_WHILE_OPEN",exit_time_utc=datetime.fromtimestamp(now,timezone.utc).isoformat());break
   prev=now;held+=1;hi,lo=float(b["high"]),float(b["low"]);sh=lo<=sl if side=="BUY" else hi>=sl;th=hi>=tp if side=="BUY" else lo<=tp;fav=hi-e if side=="BUY" else e-lo;reached=max(0,int(math.floor((fav+1e-6)/risk)));new=reached>mil
   if (sh and th) or (sh and new):o.update(ambiguous=True,reason="MULTIPLE_EVENTS_SAME_BAR",exit_time_utc=datetime.fromtimestamp(now,timezone.utc).isoformat());break
@@ -81,8 +81,9 @@ def variants():
  return out
 def summary(rows):
  dec=[x for x in rows if not x["ambiguous"] and x["realized_R"] is not None];w=[x for x in dec if x["realized_R"]>0];l=[x for x in dec if x["realized_R"]<0];gp=sum(x["realized_usd"] for x in w);gl=abs(sum(x["realized_usd"] for x in l));eq=peak=dd=0
- for x in rows:
-  if x["realized_R"] is not None and not x["ambiguous"]:eq+=x["realized_usd"];peak=max(peak,eq);dd=max(dd,peak-eq)
+ settled=sorted((x for x in rows if x["realized_R"] is not None and not x["ambiguous"]),key=lambda x:x["exit_time_utc"] or "")
+ for x in settled:
+  eq+=x["realized_usd"];peak=max(peak,eq);dd=max(dd,peak-eq)
  return {"signals":len(rows),"decisive":len(dec),"wins":len(w),"losses":len(l),"breakeven":len(dec)-len(w)-len(l),"ambiguous":sum(bool(x["ambiguous"]) for x in rows),"open_unresolved":sum(x["reason"]=="OPEN_OR_UNRESOLVED" for x in rows),"gap_exposed":sum(x["reason"]=="M1_GAP_WHILE_OPEN" for x in rows),"net_R":sum(x["realized_R"] for x in dec),"gross_usd":sum(x["realized_usd"] for x in dec),"gross_profit_usd":gp,"gross_loss_usd":gl,"profit_factor":gp/gl if gl else(None if not gp else "infinity"),"max_drawdown_usd":dd,"average_R":sum(x["realized_R"] for x in dec)/len(dec) if dec else None,"costs_modeled":False}
 def main():
  p=argparse.ArgumentParser();p.add_argument("--m1-csv",required=True);p.add_argument("--entry-csv",required=True);p.add_argument("--point",type=float,required=True);p.add_argument("--contract-size",type=float,required=True);p.add_argument("--volume",type=float,required=True);p.add_argument("--output-dir",required=True);p.add_argument("--symbol",default="XAUUSD.ecn");a=p.parse_args()
