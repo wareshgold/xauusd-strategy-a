@@ -31,3 +31,10 @@ def test_zero_activation_trailing_is_eligible_even_if_first_bar_never_reaches_en
  assert r["trailing_activated"] is True
  assert r["trailing_updates"] == 1
  assert r["final_sl"] == 99.4
+
+def test_drawdown_uses_exit_chronology_not_population_order():
+ rows=[
+  {"ambiguous":False,"realized_R":-1.,"realized_usd":-10.,"reason":"SL","exit_time_utc":"2026-01-02T00:00:00+00:00"},
+  {"ambiguous":False,"realized_R":1.,"realized_usd":10.,"reason":"TP","exit_time_utc":"2026-01-01T00:00:00+00:00"},
+ ]
+ assert summary(rows)["max_drawdown_usd"]==0
