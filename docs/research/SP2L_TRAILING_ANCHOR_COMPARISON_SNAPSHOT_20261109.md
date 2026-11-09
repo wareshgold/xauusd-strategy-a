@@ -106,7 +106,7 @@ Next gate: run pytest with `PYTHONPATH=<review-worktree>\\src` and confirm the i
   - Frozen-input loader: `a4b4cbeee3026868264d0269f05c4f34cc1feba7`
 - The output directory's manifest SHA256 matches the reported value `52e14660dc5fa214a9d20849d413c49782696b12ba5f9dbec4647d6f3c17df91`. All three artifact hashes recorded in the manifest independently match the files on disk:
   - SUMMARY.csv: `f9ec5e0108e19937f04a123663ba86bddec3b92653b1f95fd036437f0a77a21`
-  - TRADES.csv: `54f8e60e22b139603baeb489cc1cba f8ee4afc59f6a5648d7568e3debe47fea4`
+  - TRADES.csv: `54f8e60e22b139603baeb489cc1cbaf8ee4afc59f6a5648d7568e3debe47fea4`
   - PAIRED.csv: `294c1fae3553a7fa2af8fb1c325d6b34401bc8f087b97c6acb2f90000786e30d`
 - Frozen input hashes in the manifest match the expected M1 and entry-population hashes.
 - **Provenance limitation remains:** the run manifest does not record the Git commit or code blob hashes at execution time. Current code identity and test/import correctness are verified, and artifact integrity is verified, but this does not independently prove which code bytes were loaded during the historical replay. Therefore the reported metrics remain **provisional research evidence**, not a fully provenance-closed result.
