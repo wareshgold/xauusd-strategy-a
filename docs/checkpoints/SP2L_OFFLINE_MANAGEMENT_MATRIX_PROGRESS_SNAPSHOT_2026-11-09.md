@@ -1,6 +1,6 @@
 # SP2L Offline Management Matrix — Progress Snapshot
 Date: 2026-11-09
-Status: PRE-IMPLEMENTATION SNAPSHOT — NO BACKTEST EXECUTED
+Status: IMPLEMENTATION IN PROGRESS — NO BACKTEST EXECUTED
 Research-only; non-canonical; no production or forward-runner changes.
 
 ## Purpose
@@ -58,7 +58,7 @@ Repository: wareshgold/xauusd-strategy-a
 Base branch inspected: research/three-month-management-matrix-20261109
 Base commit: ad8dcf9fbad4f3e83bdb4504ec0bea0097e32a67
 Isolated work branch created: research/offline-step-lock-matrix-20261109
-Branch starts at the exact base commit above. No files have yet been changed on this branch.
+Branch starts at the exact base commit above. Implementation files have been added on this isolated branch; see the progress section below.
 
 Inspected source:
 - src/strategy_factory/v3_management_engine.py (blob 933d21c58908c3afce91fb5d37f10fb0396ab994)
@@ -96,16 +96,19 @@ Findings:
 - Added `tests/test_v3_step_lock_engine.py`: seven synthetic unit tests covering progression, multi-milestone bars, same-bar ambiguity, SELL symmetry, entry-bar exclusion/no TP, gap ambiguity, and invalid risk/stop.
 - Added `scripts/run_sp2l_v3_offline_step_lock.py`: standalone offline runner bound to the known 30-day M1 SHA and 462-row entry SHA; requires explicit point/contract-size/volume; rejects output overwrite; checks row count, coverage, gap count and frozen entry risk; writes trades, summary, manifest and SHA256SUMS. No MetaTrader5 import or broker API.
 - Added fail-fast checks for exact M1 row count (29,919), 21 gaps, first/last UTC timestamps, 462 frozen entries and both expected SHA-256 values.
+- Code review correction: summary now separates explicitly ambiguous trades from `OPEN_OR_UNRESOLVED` trades and reports `unresolved_total`; open trades at the dataset boundary are no longer mislabeled as ambiguous.
+- Code review correction: the runner no longer guesses that the frozen CSV strategy label must equal `SP2L`; it requires a non-empty, single consistent strategy label and records the observed label in the population provenance.
+- Added `tests/test_v3_step_lock_runner.py` to test ambiguous/open-unresolved accounting.
 - Core logic sanity simulation was run in an isolated Python harness for six cases: step progression, multi-milestone bar, same-bar ambiguity, SELL symmetry, entry-bar exclusion, and gap ambiguity. All six produced the expected outcomes. This was not a full pytest run and does not validate the repository files or local data artifacts.
 - GitHub Actions checks were not reported for the PR head; repository pytest suite has NOT been run.
 - Opened draft PR #411 for isolated review/CI only: https://github.com/wareshgold/xauusd-strategy-a/pull/411. It targets `research/three-month-management-matrix-20261109`; it is not merged.
 
 ## Current exact checkpoint
 - Work branch: `research/offline-step-lock-matrix-20261109`
-- Latest branch HEAD: `17842c6e85d3de7c3699d0b1b4c7ab51478f34a7`
+- Latest branch HEAD at snapshot update: `a24463457f7fe7dcc485dd549fd340e8b1645b34`
 - Parent/base commit: `ad8dcf9fbad4f3e83bdb4504ec0bea0097e32a67`
 - Draft PR: #411, open, not merged.
 - Snapshot document is stored at this path in the work branch.
-- Implementation status: Step-Lock engine, tests, and Step-Lock-only offline runner added; awaiting repository test execution and code review.
+- Implementation status: Step-Lock engine, seven synthetic engine tests, offline runner, and runner-summary test added; code-review corrections applied; awaiting repository test execution and local data preflight.
 - Not completed: full multi-family matrix runner, local data-path verification, actual 462-trade replay, actual matrix.
 - Backtest executed: NO.
