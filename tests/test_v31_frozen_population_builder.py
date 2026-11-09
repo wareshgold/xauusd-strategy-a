@@ -119,7 +119,7 @@ class TestV31FrozenPopulationBuilder(unittest.TestCase):
             self.assertEqual(start_index, 6)
             return candidate
 
-        with patch.object(BUILDER.cfg, "detect", side_effect=detect), \\
+        with patch.object(BUILDER.cfg, "detect", side_effect=detect), \
              patch.object(BUILDER.cfg, "find_first_entry", side_effect=find_entry):
             rows = BUILDER.build_population(bars, "XAUUSD.ecn")
 
