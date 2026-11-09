@@ -18,11 +18,11 @@ Set-Location D:\Mirzaei\Private\1\xauusd-strategy-a
 .\.venv\Scripts\python.exe .\scripts\acquire_sp2l_three_month_mt5_data.py `
   --symbol XAUUSD.ecn `
   --start-utc 2026-08-09T00:00:00Z `
-  --end-utc 2026-11-10T00:00:00Z `
+  --end-utc 2026-11-09T00:00:00Z `
   --out-dir D:\SP2L_RESEARCH_DATA\20261109
 ```
 
-The interval is UTC and half-open: start included, end excluded. The chosen end includes all of 2026-11-09. This is a requested window, not a claim that MT5 has complete history for it. The exporter streams rows to disk in daily chunks rather than retaining the three-month Tick corpus in memory. It refuses to overwrite existing output files; use a new output directory for each acquisition attempt.
+The interval is UTC and half-open: start included, end excluded. The chosen end is exclusive and captures complete UTC calendar days from 2026-08-09 through 2026-11-08. The partially elapsed 2026-11-09 UTC day is not included. This is a requested window, not a claim that MT5 has complete history for it. The exporter streams rows to disk in daily chunks rather than retaining the three-month Tick corpus in memory. It refuses to overwrite existing output files; use a new output directory for each acquisition attempt.
 
 ## Synthetic tests
 
