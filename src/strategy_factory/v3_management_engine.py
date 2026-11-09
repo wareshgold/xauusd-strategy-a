@@ -50,15 +50,15 @@ def normalize_management_spec(spec: dict[str, Any]) -> dict[str, Any]:
         result["rr"] = _positive(spec, "rr")
     elif mode == "BREAK_EVEN":
         result["rr"] = _positive(spec, "rr")
-        result["activation_r"] = float(spec["activation_r"])
-        if not math.isfinite(result["activation_r"]) or result["activation_r"] < 0:
-            raise V3ExitEngineError("activation_r must be finite and non-negative")
+        result["activation_r"] = _positive(spec, "activation_r")
         result["offset_r"] = float(spec.get("offset_r", 0.0))
         if not math.isfinite(result["offset_r"]) or result["offset_r"] < 0:
             raise V3ExitEngineError("offset_r must be finite and non-negative")
     elif mode == "TRAILING_R":
         result["rr"] = None if spec.get("rr") is None else _positive(spec, "rr")
-        result["activation_r"] = _positive(spec, "activation_r")
+        result["activation_r"] = float(spec["activation_r"])
+        if not math.isfinite(result["activation_r"]) or result["activation_r"] < 0:
+            raise V3ExitEngineError("activation_r must be finite and non-negative")
         result["distance_r"] = _positive(spec, "distance_r")
     elif mode == "BREAK_EVEN_TRAILING":
         result["rr"] = _positive(spec, "rr")
