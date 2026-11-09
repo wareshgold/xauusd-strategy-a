@@ -21,8 +21,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import sp2l_v3_1_rr4_act40_config as cfg
 
 M1_FIELDS = [
-    "time_epoch_seconds", "time_utc_iso", "open", "high", "low", "close",
-    "tick_volume", "spread", "real_volume",
+    "time", "time_utc", "open", "high", "low", "close",
+    "tick_volume", "spread_points", "real_volume",
 ]
 ENTRY_FIELDS = [
     "strategy", "variant", "direction", "setup_time_utc", "entry_time_utc",
@@ -52,8 +52,8 @@ def load_m1_csv_gz(path: Path, expected_sha256: str):
             raise ValueError(f"M1 CSV header mismatch: expected exact schema {M1_FIELDS}; got {reader.fieldnames}")
         previous = None
         for row_no, row in enumerate(reader, start=2):
-            ts = int(row["time_epoch_seconds"])
-            parsed = datetime.fromisoformat(row["time_utc_iso"].replace("Z", "+00:00"))
+            ts = int(row["time"])
+            parsed = datetime.fromisoformat(row["time_utc"].replace("Z", "+00:00"))
             if parsed.tzinfo is None or int(parsed.timestamp()) != ts or ts % 60:
                 raise ValueError(f"invalid UTC/epoch/M1 timestamp at CSV row {row_no}")
             if previous is not None and ts <= previous:
@@ -69,7 +69,7 @@ def load_m1_csv_gz(path: Path, expected_sha256: str):
             bars.append({
                 "time": ts, **values,
                 "tick_volume": int(row["tick_volume"]),
-                "spread": int(row["spread"]),
+                "spread": int(row["spread_points"]),
                 "real_volume": int(row["real_volume"]),
             })
     if len(bars) < 10:
