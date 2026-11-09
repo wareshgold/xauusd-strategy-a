@@ -39,6 +39,34 @@ def utc_iso(epoch: int) -> str:
     return datetime.fromtimestamp(epoch, timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def find_m1_gaps(bars):
+    """Return every missing-minute interval; never infer or synthesize candles."""
+    gaps = []
+    for previous, current in zip(bars, bars[1:]):
+        delta = int(current["time"]) - int(previous["time"])
+        if delta > 60:
+            gaps.append({
+                "after_utc": utc_iso(int(previous["time"])),
+                "before_utc": utc_iso(int(current["time"])),
+                "missing_minutes": delta // 60 - 1,
+            })
+    return gaps
+
+
+def split_contiguous_segments(bars):
+    """Split on timestamp discontinuities so signal and entry logic cannot bridge gaps."""
+    if not bars:
+        return []
+    segments = []
+    start = 0
+    for index in range(1, len(bars)):
+        if int(bars[index]["time"]) - int(bars[index - 1]["time"]) != 60:
+            segments.append(bars[start:index])
+            start = index
+    segments.append(bars[start:])
+    return [segment for segment in segments if segment]
+
+
 def load_m1_csv_gz(path: Path, expected_sha256: str):
     raw = path.read_bytes()
     observed = sha256(raw)
@@ -80,40 +108,48 @@ def load_m1_csv_gz(path: Path, expected_sha256: str):
 def build_population(bars, symbol: str):
     population = []
     seen = set()
-    for i in range(2, len(bars) - 2):
-        setup = cfg.detect(bars[i - 2:i + 1], symbol)
-        if not setup:
+    for segment in split_contiguous_segments(bars):
+        if len(segment) < 5:
             continue
-        candidate = cfg.find_first_entry(bars, i, setup)
-        if not candidate:
-            continue
-        key = (int(candidate["trigger_time"]), candidate["direction"])
-        if key in seen:
-            continue
-        seen.add(key)
-        entry_idx = next(
-            (k for k in range(i + 1, len(bars))
-             if int(bars[k]["time"]) == int(candidate["trigger_time"])),
-            None,
-        )
-        if entry_idx is None:
-            continue
-        population.append({
-            "strategy": "SP2L",
-            "variant": cfg.VERSION,
-            "direction": candidate["direction"],
-            "setup_time_utc": utc_iso(int(bars[i]["time"])),
-            "entry_time_utc": utc_iso(int(candidate["trigger_time"])),
-            "entry_proxy": f'{float(candidate["theoretical_entry"]):.10g}',
-            "sl_initial": f'{float(candidate["sl"]):.10g}',
-            "target": f'{float(candidate["tp"]):.10g}',
-            "risk_price": f'{float(candidate["risk"]):.10g}',
-            "exit_time_utc": "",
-            "exit_price": "",
-            "exit_reason": "",
-            "status": "",
-            "r_multiple": "",
-        })
+        for i in range(2, len(segment) - 2):
+            setup = cfg.detect(segment[i - 2:i + 1], symbol)
+            if not setup:
+                continue
+            # The entry search is deliberately confined to this uninterrupted segment.
+            candidate = cfg.find_first_entry(segment, i, setup)
+            if not candidate:
+                continue
+            key = (int(candidate["trigger_time"]), candidate["direction"])
+            if key in seen:
+                continue
+            seen.add(key)
+            entry_idx = next(
+                (k for k in range(i + 1, len(segment))
+                 if int(segment[k]["time"]) == int(candidate["trigger_time"])),
+                None,
+            )
+            if entry_idx is None:
+                continue
+            population.append({
+                "strategy": "SP2L",
+                "variant": cfg.VERSION,
+                "direction": candidate["direction"],
+                "setup_time_utc": utc_iso(int(segment[i]["time"])),
+                "entry_time_utc": utc_iso(int(candidate["trigger_time"])),
+                "entry_proxy": f'{float(candidate["theoretical_entry"]):.10g}',
+                "sl_initial": f'{float(candidate["sl"]):.10g}',
+                # Exit targets belong to the replay variant, not the frozen entry population.
+                "target": "",
+                "risk_price": f'{float(candidate["risk"]):.10g}',
+                "exit_time_utc": "",
+                "exit_price": "",
+                "exit_reason": "",
+                "status": "",
+                "r_multiple": "",
+            })
+    population.sort(key=lambda row: (
+        row["entry_time_utc"], row["setup_time_utc"], row["direction"]
+    ))
     return population
 
 
@@ -129,6 +165,7 @@ def main():
     out = Path(args.output_dir).resolve()
     out.mkdir(parents=True, exist_ok=True)
     bars, source_sha, source_bytes = load_m1_csv_gz(source, args.m1_sha256)
+    gaps = find_m1_gaps(bars)
     population = build_population(bars, args.symbol)
     if not population:
         raise RuntimeError("V3.1 configuration produced an empty entry population")
@@ -154,22 +191,28 @@ def main():
         "source_rows": len(bars),
         "source_first_utc": utc_iso(int(bars[0]["time"])),
         "source_last_utc": utc_iso(int(bars[-1]["time"])),
+        "source_gap_count": len(gaps),
+        "source_gaps": gaps,
+        "gap_policy": "SIGNAL_AND_ENTRY_SEARCH_SPLIT_AT_EACH_GAP; NO_CROSS_GAP_SETUPS_OR_ENTRIES; DOWNSTREAM_REPLAY_MUST_MARK_GAP_EXPOSED_OPEN_TRADES_AMBIGUOUS",
         "symbol": args.symbol,
         "timeframe": "M1",
         "entry_config_version": cfg.VERSION,
         "entry_config_file": "scripts/sp2l_v3_1_rr4_act40_config.py",
         "entry_config_sha256": config_sha,
+        "entry_config_tp_r_metadata_only": cfg.TP_R,
         "builder_file": "scripts/build_sp2l_v3_1_frozen_population_from_m1.py",
         "builder_sha256": builder_sha,
         "population_rows": len(population),
         "population_sha256": population_sha,
         "population_policy": "ONE_FIXED_V3_1_ENTRY_POPULATION_SHARED_BY_ALL_EXIT_VARIANTS",
         "entry_fields_only": ["direction", "setup_time_utc", "entry_time_utc", "entry_proxy", "sl_initial", "risk_price"],
-        "ignored_exit_fields": ["target", "exit_time_utc", "exit_price", "exit_reason", "status", "r_multiple"],
+        "excluded_exit_fields": ["target", "exit_time_utc", "exit_price", "exit_reason", "status", "r_multiple"],
         "notes": [
             "Uses the declared V3.1 research config without claiming canonical Strategy A source resolution.",
             "No MT5 connection, order API, runner process, or dashboard is used.",
             "This artifact freezes entries only; all management variants must consume the exact CSV SHA.",
+            "The RR4 TP_R value is config metadata only and no target price is written to the entry CSV.",
+            "All source timestamp gaps are preserved in the manifest; signal and entry searches are segmented at each gap.",
             "Entry geometry and fill semantics remain research assumptions, not source-resolved facts.",
         ],
     }
@@ -189,6 +232,7 @@ def main():
         "builder_sha256": builder_sha,
         "source_sha256": source_sha,
         "source_rows": len(bars),
+        "source_gap_count": len(gaps),
         "first_utc": manifest["source_first_utc"],
         "last_utc": manifest["source_last_utc"],
         "config": cfg.VERSION,
