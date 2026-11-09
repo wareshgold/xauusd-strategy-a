@@ -1,0 +1,23 @@
+name: Research - V3.1 Frozen Population Builder
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/build_sp2l_v3_1_frozen_population_from_m1.py'
+      - 'scripts/sp2l_v3_1_rr4_act40_config.py'
+      - 'tests/test_v31_frozen_population_builder.py'
+      - '.github/workflows/research-v31-frozen-population-builder.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  population-builder-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run focused offline tests
+        run: python -m unittest discover -s tests -p 'test_v31_frozen_population_builder.py' -v
