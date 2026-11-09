@@ -91,9 +91,21 @@ Findings:
 - No canonical or production promotion.
 - No Fresh Holdout use for tuning. Freeze discovery candidates before any separate holdout evaluation.
 
+## ## Implementation progress after the initial snapshot
+- Added `src/strategy_factory/v3_step_lock_engine.py`: independent no-TP Step-Lock replay; strict frozen risk/SL validation (1e-6 price tolerance); BUY/SELL symmetry; gap and same-bar ambiguity handling; completed-bar updates active on next bar.
+- Added `tests/test_v3_step_lock_engine.py`: seven synthetic unit tests covering progression, multi-milestone bars, same-bar ambiguity, SELL symmetry, entry-bar exclusion/no TP, gap ambiguity, and invalid risk/stop.
+- Added `scripts/run_sp2l_v3_offline_step_lock.py`: standalone offline runner bound to the known 30-day M1 SHA and 462-row entry SHA; requires explicit point/contract-size/volume; rejects output overwrite; checks row count, coverage, gap count and frozen entry risk; writes trades, summary, manifest and SHA256SUMS. No MetaTrader5 import or broker API.
+- Added fail-fast checks for exact M1 row count (29,919), 21 gaps, first/last UTC timestamps, 462 frozen entries and both expected SHA-256 values.
+- Core logic sanity simulation was run in an isolated Python harness for six cases: step progression, multi-milestone bar, same-bar ambiguity, SELL symmetry, entry-bar exclusion, and gap ambiguity. All six produced the expected outcomes. This was not a full pytest run and does not validate the repository files or local data artifacts.
+- GitHub Actions checks were not reported for the PR head; repository pytest suite has NOT been run.
+- Opened draft PR #411 for isolated review/CI only: https://github.com/wareshgold/xauusd-strategy-a/pull/411. It targets `research/three-month-management-matrix-20261109`; it is not merged.
+
 ## Current exact checkpoint
-- Snapshot commit branch: research/offline-step-lock-matrix-20261109
-- Parent/base commit: ad8dcf9fbad4f3e83bdb4504ec0bea0097e32a67
-- Current work completed: audit and plan only.
-- Current work not completed: engine changes, offline runner, tests, actual matrix.
+- Work branch: `research/offline-step-lock-matrix-20261109`
+- Latest branch HEAD: `17842c6e85d3de7c3699d0b1b4c7ab51478f34a7`
+- Parent/base commit: `ad8dcf9fbad4f3e83bdb4504ec0bea0097e32a67`
+- Draft PR: #411, open, not merged.
+- Snapshot document is stored at this path in the work branch.
+- Implementation status: Step-Lock engine, tests, and Step-Lock-only offline runner added; awaiting repository test execution and code review.
+- Not completed: full multi-family matrix runner, local data-path verification, actual 462-trade replay, actual matrix.
 - Backtest executed: NO.
