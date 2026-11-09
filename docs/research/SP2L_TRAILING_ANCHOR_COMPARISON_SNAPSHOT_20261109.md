@@ -94,3 +94,20 @@ The traceback imports `strategy_factory` from the original checkout:
 `D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\src\\strategy_factory\\__init__.py`
 rather than the isolated review worktree. The reported syntax error is in that original checkout's `strategy_comparison.py`; the corresponding branch file fetched from GitHub is syntactically normal in the reported area. Likely cause: the shared virtualenv's editable-install path takes precedence because the worktree's `src` directory was not explicitly prepended to `PYTHONPATH`.
 Next gate: run pytest with `PYTHONPATH=<review-worktree>\\src` and confirm the imported module path points inside the review worktree. Do not modify the original checkout to work around this.
+
+
+## Verification follow-up (2026-11-09)
+
+- Local isolated-worktree validation completed: `ENGINE_PATH` resolved inside `xauusd-strategy-a-trailing-anchor-review\src\strategy_factory\v3_management_engine.py`; focused test command completed with **13 passed**.
+- The local execution worktree was at commit `1d1b29e79e7b2a0305e066bcf5122ce98d9f375e` in detached-HEAD state (empty `git branch --show-current`). The remote research branch subsequently contains one documentation-only commit, `03b8a27236c3eb199795625a779f15ba5053e888`; that commit changes only this snapshot.
+- Local Git blob hashes match the branch's current code blobs:
+  - Engine: `e4601bea40672a52303d62ff5ec966e9035c1f92`
+  - Comparison runner: `83da8c8d56952c097a9b46e89cd4a34ddf54f956`
+  - Frozen-input loader: `a4b4cbeee3026868264d0269f05c4f34cc1feba7`
+- The output directory's manifest SHA256 matches the reported value `52e14660dc5fa214a9d20849d413c49782696b12ba5f9dbec4647d6f3c17df91`. All three artifact hashes recorded in the manifest independently match the files on disk:
+  - SUMMARY.csv: `f9ec5e0108e19937f04a123663ba86bddec3b92653b1f95fd036437f0a77a21`
+  - TRADES.csv: `54f8e60e22b139603baeb489cc1cba f8ee4afc59f6a5648d7568e3debe47fea4`
+  - PAIRED.csv: `294c1fae3553a7fa2af8fb1c325d6b34401bc8f087b97c6acb2f90000786e30d`
+- Frozen input hashes in the manifest match the expected M1 and entry-population hashes.
+- **Provenance limitation remains:** the run manifest does not record the Git commit or code blob hashes at execution time. Current code identity and test/import correctness are verified, and artifact integrity is verified, but this does not independently prove which code bytes were loaded during the historical replay. Therefore the reported metrics remain **provisional research evidence**, not a fully provenance-closed result.
+- No replay was rerun; no MT5/Runner was accessed; no PR was merged.
