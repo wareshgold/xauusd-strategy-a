@@ -106,17 +106,17 @@ class TestV31FrozenPopulationBuilder(unittest.TestCase):
 
     def test_last_possible_setup_bar_is_included(self):
         bars = [{"time": 1000 + 60 * i, "open": 10.0, "high": 11.0,
-                 "low": 9.0, "close": 10.5} for i in range(8)]
+                 "low": 9.0, "close": 10.5} for i in range(4)]
         candidate = {
-            "trigger_time": bars[7]["time"], "direction": "BUY",
+            "trigger_time": bars[3]["time"], "direction": "BUY",
             "theoretical_entry": 10.0, "sl": 9.5, "tp": 12.0, "risk": 0.5,
         }
 
         def detect(window, symbol):
-            return {"direction": "BUY"} if window[-1]["time"] == bars[6]["time"] else None
+            return {"direction": "BUY"} if window[-1]["time"] == bars[2]["time"] else None
 
         def find_entry(segment, start_index, setup):
-            self.assertEqual(start_index, 6)
+            self.assertEqual(start_index, 2)
             return candidate
 
         with patch.object(BUILDER.cfg, "detect", side_effect=detect), \
@@ -124,7 +124,7 @@ class TestV31FrozenPopulationBuilder(unittest.TestCase):
             rows = BUILDER.build_population(bars, "XAUUSD.ecn")
 
         self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0]["entry_time_utc"], BUILDER.utc_iso(bars[7]["time"]))
+        self.assertEqual(rows[0]["entry_time_utc"], BUILDER.utc_iso(bars[3]["time"]))
 
     def test_population_is_sorted_chronologically(self):
         bars = [{"time": 1000 + 60 * i, "open": 10.0, "high": 11.0,
