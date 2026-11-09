@@ -109,7 +109,7 @@ def build_population(bars, symbol: str):
     population = []
     seen = set()
     for segment in split_contiguous_segments(bars):
-        if len(segment) < 5:
+        if len(segment) < 4:
             continue
         for i in range(2, len(segment) - 1):
             setup = cfg.detect(segment[i - 2:i + 1], symbol)
