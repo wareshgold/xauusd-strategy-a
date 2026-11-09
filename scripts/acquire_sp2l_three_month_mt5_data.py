@@ -34,8 +34,8 @@ def get(record: Any, name: str) -> Any:
 def number(raw: Any) -> float:
     try:
         x = float(raw)
-    except (TypeError, ValueError):
-        return 0.0
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"non-numeric MT5 field: {raw!r}") from exc
     return x  # Preserve NaN/Inf as evidence; quality gates must report, never coerce.
 
 
