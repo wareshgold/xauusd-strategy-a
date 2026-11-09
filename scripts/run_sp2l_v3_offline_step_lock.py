@@ -187,12 +187,18 @@ def main() -> int:
         raise ValueError("this frozen 30-day runner requires the audited M1 SHA-256")
     if args.entry_sha256.lower() != EXPECTED_ENTRY_SHA.lower():
         raise ValueError("this frozen 30-day runner requires the audited 462-row entry SHA-256")
+    if out.exists():
+        raise FileExistsError(f"output directory already exists; refusing overwrite: {out}")
     bars, m1_report = load_bars(m1_path, args.m1_sha256)
     population, population_report = load_population(entry_path, args.entry_sha256, bars)
 
     # The current audited 30-day source must remain exactly the known 29,919-bar snapshot.
     if m1_report["bars"] != 29919:
         raise ValueError(f"unexpected M1 row count: {m1_report['bars']}")
+    if m1_report["gap_count"] != 21:
+        raise ValueError(f"unexpected M1 gap count: {m1_report['gap_count']}")
+    if m1_report["first_utc"] != "2026-09-24T07:57:00+00:00" or m1_report["last_utc"] != "2026-10-23T23:57:00+00:00":
+        raise ValueError("M1 coverage does not match the frozen 30-day audit window")
     rows = [replay_step_lock_no_tp(c, bars, contract_size=args.contract_size, volume=args.volume)
             for c in population]
     summary = summarize(rows)
@@ -226,7 +232,7 @@ def main() -> int:
         "artifacts": {},
     }
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    for path in (trades_path, summary_path, manifest_path):
+    for path in (trades_path, summary_path):
         manifest["artifacts"][path.name] = {"sha256": digest(path), "bytes": path.stat().st_size}
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     sums_path = out / f"{stem}_SHA256SUMS.txt"
