@@ -81,7 +81,7 @@ def variants():
  return out
 def summary(rows):
  dec=[x for x in rows if not x["ambiguous"] and x["realized_R"] is not None];w=[x for x in dec if x["realized_R"]>0];l=[x for x in dec if x["realized_R"]<0];gp=sum(x["realized_usd"] for x in w);gl=abs(sum(x["realized_usd"] for x in l));eq=peak=dd=0
- settled=sorted((x for x in rows if x["realized_R"] is not None and not x["ambiguous"]),key=lambda x:x["exit_time_utc"] or "")
+ settled=sorted((x for x in rows if x["realized_R"] is not None and not x["ambiguous"]),key=lambda x:x.get("exit_time_utc") or "")
  for x in settled:
   eq+=x["realized_usd"];peak=max(peak,eq);dd=max(dd,peak-eq)
  return {"signals":len(rows),"decisive":len(dec),"wins":len(w),"losses":len(l),"breakeven":len(dec)-len(w)-len(l),"ambiguous":sum(bool(x["ambiguous"]) for x in rows),"open_unresolved":sum(x["reason"]=="OPEN_OR_UNRESOLVED" for x in rows),"gap_exposed":sum(x["reason"]=="M1_GAP_WHILE_OPEN" for x in rows),"net_R":sum(x["realized_R"] for x in dec),"gross_usd":sum(x["realized_usd"] for x in dec),"gross_profit_usd":gp,"gross_loss_usd":gl,"profit_factor":gp/gl if gl else(None if not gp else "infinity"),"max_drawdown_usd":dd,"average_R":sum(x["realized_R"] for x in dec)/len(dec) if dec else None,"costs_modeled":False}
