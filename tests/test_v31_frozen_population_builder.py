@@ -113,7 +113,7 @@ class TestV31FrozenPopulationBuilder(unittest.TestCase):
             {"trigger_time": 1000 + 60 * 5, "direction": "SELL",
              "theoretical_entry": 10.0, "sl": 10.5, "tp": 8.0, "risk": 0.5},
         ]
-        with patch.object(BUILDER.cfg, "detect", return_value={"direction": "BUY"}), \
+        with patch.object(BUILDER.cfg, "detect", side_effect=[{"direction": "BUY"}, {"direction": "BUY"}, None, None, None, None]), \
              patch.object(BUILDER.cfg, "find_first_entry", side_effect=candidates):
             rows = BUILDER.build_population(bars, "XAUUSD.ecn")
         self.assertEqual([r["entry_time_utc"] for r in rows],
