@@ -29,10 +29,10 @@ The interval is UTC and half-open: start included, end excluded. The chosen end 
 Run without connecting to MT5:
 
 ```powershell
-& .\.venv\Scripts\python.exe -m unittest discover -s tests -p test_mt5_research_exporter.py -v
+& .\.venv\Scripts\python.exe -m unittest discover -s tests -p test_*mt5*exporter*.py -v
 ```
 
-The tests cover UTC parsing, same-millisecond Tick handling, crossed quotes, M1 gap reporting, symbol-spec extraction, streaming gzip output, and no-overwrite behavior. They do not validate MT5 connectivity or broker history availability.
+The tests cover UTC parsing, same-millisecond Tick handling, crossed/non-finite quotes, M1 gap reporting, symbol-spec extraction, streaming gzip output, no-overwrite behavior, and a static AST guard against trading/inventory API calls. They do not validate MT5 connectivity or broker history availability.
 
 ## Outputs
 
