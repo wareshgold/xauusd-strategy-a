@@ -18,7 +18,7 @@ class TestV31FrozenPopulationBuilder(unittest.TestCase):
     def make_source(self, directory: Path):
         path = directory / "m1.csv.gz"
         rows = [
-            "time_epoch_seconds,time_utc_iso,open,high,low,close,tick_volume,spread,real_volume",
+            "time,time_utc,open,high,low,close,tick_volume,spread_points,real_volume",
             "1791507600,2026-10-09T01:00:00Z,3900,3901,3899,3900.5,10,20,0",
             "1791507660,2026-10-09T01:01:00Z,3900.5,3902,3900,3901,11,20,0",
             "1791507720,2026-10-09T01:02:00Z,3901,3903,3900.5,3902,12,20,0",
