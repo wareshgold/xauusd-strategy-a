@@ -111,3 +111,13 @@ Next gate: run pytest with `PYTHONPATH=<review-worktree>\\src` and confirm the i
 - Frozen input hashes in the manifest match the expected M1 and entry-population hashes.
 - **Provenance limitation remains:** the run manifest does not record the Git commit or code blob hashes at execution time. Current code identity and test/import correctness are verified, and artifact integrity is verified, but this does not independently prove which code bytes were loaded during the historical replay. Therefore the reported metrics remain **provisional research evidence**, not a fully provenance-closed result.
 - No replay was rerun; no MT5/Runner was accessed; no PR was merged.
+
+## Provenance-closed rerun preparation (2026-11-09)
+
+- Updated `scripts/run_sp2l_trailing_anchor_comparison.py` to capture execution provenance before loading the frozen inputs and before replay begins.
+- The new manifest field `execution_provenance` records Git root, HEAD, branch, complete porcelain worktree status, dirty flag, SHA256 of the diff against HEAD, and SHA256/path for the exact comparison runner, imported matrix loader, and imported management engine source files.
+- It also records Python executable/version, platform, and exact command-line arguments.
+- The capture is made inside the replay process, after Python imports resolve and before any replay is performed. This closes the prior missing evidence about the source files and repository state used by the run, subject to the normal assumption that those source files are not modified during execution.
+- The script still refuses output-directory overwrite. The rerun must use a new unique output directory; the prior `DIAG_ANCHOR_CANONICAL_20261109_150521` remains untouched.
+- This commit only prepares the runner. **No replay has been executed here** because the frozen M1/entry files and local Windows worktree are not mounted in this environment. No MT5/Runner access, no PR merge, and no canonical selection.
+- Rerun acceptance gate: verify manifest contains non-null `git_head`, exact source-file hashes, `git_worktree_dirty=false` (or explicitly review a dirty state), and unchanged frozen input hashes before comparing metrics with the provisional run.
