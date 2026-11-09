@@ -69,3 +69,28 @@ Both currently use a close-side validity check in the diagnostic. A stop can rem
   - Costs and broker stop/freeze constraints remain explicitly unmodeled.
 - Remote code is not yet locally tested. The next gate is local isolated worktree test execution, then the 1,848 canonical replays (4 profiles × 462 entries).
 - No local worktree, live runner, MT5, or PR #414 was modified.
+
+
+## Canonical replay results received (2026-11-09)
+Output directory reported by local operator:
+`DIAG_ANCHOR_CANONICAL_20261109_150521`
+
+Manifest SHA256 reported:
+`52e14660dc5fa214a9d20849d413c49782696b12ba5f9dbec4647d6f3c17df91`
+
+| Profile | Net R | PF | Max DD USD | Ambiguous | Open |
+|---|---:|---:|---:|---:|---:|
+| RR4_CANDLE | 153.2532206 | 2.5887624 | 17.98 | 0 | 1 |
+| RR4_CUMULATIVE | 140.7877514 | 1.8466330 | 18.85 | 1 | 1 |
+| NO_TP_CANDLE | 152.4809289 | 2.5580619 | 17.98 | 0 | 1 |
+| NO_TP_CUMULATIVE | 141.7862445 | 1.8348757 | 18.85 | 1 | 1 |
+
+Paired outcome changes: RR4=147/462; NO_TP=148/462.
+
+**Interpretation boundary:** these are reported offline engine outputs before test-collection was fixed. The accompanying pytest attempt failed during import, so treat metrics as provisional until the isolated worktree is explicitly forced onto Python's import path and the focused tests pass. No canonical method selection.
+
+## Test collection failure — diagnosis
+The traceback imports `strategy_factory` from the original checkout:
+`D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\src\\strategy_factory\\__init__.py`
+rather than the isolated review worktree. The reported syntax error is in that original checkout's `strategy_comparison.py`; the corresponding branch file fetched from GitHub is syntactically normal in the reported area. Likely cause: the shared virtualenv's editable-install path takes precedence because the worktree's `src` directory was not explicitly prepended to `PYTHONPATH`.
+Next gate: run pytest with `PYTHONPATH=<review-worktree>\\src` and confirm the imported module path points inside the review worktree. Do not modify the original checkout to work around this.
