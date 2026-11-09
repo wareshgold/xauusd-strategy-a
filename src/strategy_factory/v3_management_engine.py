@@ -56,12 +56,20 @@ def normalize_management_spec(spec: dict[str, Any]) -> dict[str, Any]:
             raise V3ExitEngineError("offset_r must be finite and non-negative")
     elif mode == "TRAILING_R":
         result["rr"] = None if spec.get("rr") is None else _positive(spec, "rr")
+        anchor_mode = str(spec.get("anchor_mode", "CANDLE")).upper()
+        if anchor_mode not in {"CANDLE", "CUMULATIVE"}:
+            raise V3ExitEngineError("anchor_mode must be CANDLE or CUMULATIVE")
+        result["anchor_mode"] = anchor_mode
         result["activation_r"] = float(spec["activation_r"])
         if not math.isfinite(result["activation_r"]) or result["activation_r"] < 0:
             raise V3ExitEngineError("activation_r must be finite and non-negative")
         result["distance_r"] = _positive(spec, "distance_r")
     elif mode == "BREAK_EVEN_TRAILING":
         result["rr"] = None if spec.get("rr") is None else _positive(spec, "rr")
+        anchor_mode = str(spec.get("anchor_mode", "CANDLE")).upper()
+        if anchor_mode not in {"CANDLE", "CUMULATIVE"}:
+            raise V3ExitEngineError("anchor_mode must be CANDLE or CUMULATIVE")
+        result["anchor_mode"] = anchor_mode
         result["be_activation_r"] = _positive(spec, "be_activation_r")
         result["be_offset_r"] = float(spec.get("be_offset_r", 0.0))
         result["trail_activation_r"] = _positive(spec, "trail_activation_r")
@@ -78,6 +86,21 @@ def normalize_management_spec(spec: dict[str, Any]) -> dict[str, Any]:
             raise V3ExitEngineError("max_bars must be a positive integer")
     return result
 
+
+
+def fixed_price_trailing_spec(*, activation_price: float, distance_price: float,
+                              risk: float, anchor_mode: str = "CANDLE",
+                              rr: float | None = None) -> dict[str, Any]:
+    """Convert fixed XAU price distances to the engine's per-trade R units."""
+    values = (activation_price, distance_price, risk)
+    if not all(math.isfinite(float(x)) and float(x) > 0 for x in values):
+        raise V3ExitEngineError("activation_price, distance_price, and risk must be positive")
+    return normalize_management_spec({
+        "mode": "TRAILING_R", "rr": rr,
+        "activation_r": float(activation_price) / float(risk),
+        "distance_r": float(distance_price) / float(risk),
+        "anchor_mode": anchor_mode,
+    })
 
 def replay_management_trade(
     candidate: dict[str, Any],
@@ -118,6 +141,7 @@ def replay_management_trade(
     updates = 0
     deferred = 0
     previous_time = int(bars[entry_idx]["time"])
+    best_favorable_price = entry
 
     for k in range(entry_idx + 1, len(bars)):
         bar = bars[k]
@@ -130,6 +154,7 @@ def replay_management_trade(
         previous_time = now
         bars_held += 1
         high, low, close = float(bar["high"]), float(bar["low"]), float(bar["close"])
+        best_favorable_price = max(best_favorable_price, high) if direction == "BUY" else min(best_favorable_price, low)
         favorable = high - entry if direction == "BUY" else entry - low
         adverse = entry - low if direction == "BUY" else high - entry
         max_fav, max_adverse = max(max_fav, favorable), max(max_adverse, adverse)
@@ -164,7 +189,8 @@ def replay_management_trade(
                 trail_activated = activated = True
             if trail_activated:
                 distance = spec["distance_r"] * risk
-                proposed = high - distance if direction == "BUY" else low + distance
+                anchor = (high if direction == "BUY" else low) if spec.get("anchor_mode", "CANDLE") == "CANDLE" else best_favorable_price
+                proposed = anchor - distance if direction == "BUY" else anchor + distance
                 valid_side = proposed < close if direction == "BUY" else proposed > close
                 improved = proposed > current_sl if direction == "BUY" else proposed < current_sl
                 if valid_side and improved:
@@ -186,7 +212,8 @@ def replay_management_trade(
                 trail_activated = activated = True
             if trail_activated:
                 distance = spec["trail_distance_r"] * risk
-                proposed = high - distance if direction == "BUY" else low + distance
+                anchor = (high if direction == "BUY" else low) if spec.get("anchor_mode", "CANDLE") == "CANDLE" else best_favorable_price
+                proposed = anchor - distance if direction == "BUY" else anchor + distance
                 valid_side = proposed < close if direction == "BUY" else proposed > close
                 improved = proposed > current_sl if direction == "BUY" else proposed < current_sl
                 if valid_side and improved:
