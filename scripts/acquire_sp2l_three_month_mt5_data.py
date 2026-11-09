@@ -36,7 +36,7 @@ def number(raw: Any) -> float:
         x = float(raw)
     except (TypeError, ValueError):
         return 0.0
-    return x if x == x and abs(x) != float("inf") else 0.0
+    return x  # Preserve NaN/Inf as evidence; quality gates must report, never coerce.
 
 
 def sha256(path: Path) -> str:
@@ -97,7 +97,7 @@ class CsvGzip:
 
 class TickAudit:
     def __init__(self):
-        self.n = self.same_ms = self.out_of_order = self.valid = self.missing = self.crossed = 0
+        self.n = self.same_ms = self.out_of_order = self.valid = self.missing = self.crossed = self.nonfinite = 0
         self.prev = self.first = self.last = None
         self.spread_min = self.spread_max = None
         self.spread_sum = 0.0
@@ -110,7 +110,9 @@ class TickAudit:
             if ms == self.prev: self.same_ms += 1
             elif ms < self.prev: self.out_of_order += 1
         self.prev = ms
-        if bid <= 0 or ask <= 0: self.missing += 1
+        if not (bid == bid and ask == ask and abs(bid) != float("inf") and abs(ask) != float("inf")):
+            self.nonfinite += 1
+        elif bid <= 0 or ask <= 0: self.missing += 1
         elif ask < bid: self.crossed += 1
         else:
             spread = ask - bid
@@ -128,7 +130,8 @@ class TickAudit:
         return {"tick_count": self.n, "first_tick_utc": self.first, "last_tick_utc": self.last,
                 "same_millisecond_timestamp_count": self.same_ms, "out_of_order_timestamp_count": self.out_of_order,
                 "valid_non_crossed_bidask_count": self.valid, "missing_bid_or_ask_count": self.missing,
-                "crossed_quote_count": self.crossed, "spread_price_min": self.spread_min,
+                "crossed_quote_count": self.crossed, "nonfinite_bidask_count": self.nonfinite,
+                "spread_price_min": self.spread_min,
                 "spread_price_max": self.spread_max, "spread_price_mean": self.spread_sum / self.valid if self.valid else None,
                 "spread_price_frequency": self.spread_frequency,
                 "note": "Same-millisecond ticks are retained; they are not automatically classified as duplicate records."}
