@@ -38,7 +38,7 @@ def replay_step_lock_no_tp(
     *,
     contract_size: float,
     volume: float,
-    risk_tolerance: float = 1e-8,
+    risk_tolerance: float = 1e-6,
 ) -> dict[str, Any]:
     """Replay +nR milestones locking +(n-1)R, with no final target.
 
