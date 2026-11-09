@@ -55,3 +55,17 @@ Both currently use a close-side validity check in the diagnostic. A stop can rem
 - Do not initialize or query MT5.
 - Do not restart, configure, or modify the live Runner/dashboard.
 - Do not merge PR #414 or this research branch without explicit approval.
+
+
+## Implementation progress (2026-11-09, follow-up)
+- Added explicit `anchor_mode` validation to canonical `TRAILING_R` and `BREAK_EVEN_TRAILING` specs; accepted values are `CANDLE` and `CUMULATIVE`.
+- Added per-trade fixed-price adapter `fixed_price_trailing_spec`: activation and distance are converted independently using the trade's frozen initial risk.
+- Cumulative anchor tracks best favorable high/low since entry; candle anchor uses current completed bar high/low. Existing canonical close-side validity, next-bar stop activation, SL/TP same-bar ambiguity, and M1 gap detection are retained.
+- Added unit tests for fixed-price conversion, anchor-mode validation, and a synthetic case where candle anchoring can update while cumulative anchoring remains deferred.
+- Added offline comparison runner: `scripts/run_sp2l_trailing_anchor_comparison.py`.
+  - Executes four paired profiles: RR4+CANDLE, RR4+CUMULATIVE, NO_TP+CANDLE, NO_TP+CUMULATIVE.
+  - Uses the canonical frozen-input loader and `replay_management_trade`, with ACT=$0.40 and distance=$0.40 by default.
+  - Produces SUMMARY.csv, TRADES.csv, PAIRED.csv, MANIFEST.json, SHA256SUMS.txt in a new output directory; refuses overwrite.
+  - Costs and broker stop/freeze constraints remain explicitly unmodeled.
+- Remote code is not yet locally tested. The next gate is local isolated worktree test execution, then the 1,848 canonical replays (4 profiles × 462 entries).
+- No local worktree, live runner, MT5, or PR #414 was modified.
