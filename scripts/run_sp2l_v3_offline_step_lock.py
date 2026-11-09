@@ -109,13 +109,18 @@ def load_population(path: Path, expected_sha: str, bars: list[dict]) -> tuple[li
     index_by_time = {int(bar["time"]): i for i, bar in enumerate(bars)}
     population = []
     seen = set()
+    strategy_values = set()
     with path.open("r", encoding="utf-8-sig", newline="") as stream:
         reader = csv.DictReader(stream)
         if reader.fieldnames != ENTRY_FIELDS:
             raise ValueError(f"entry CSV header mismatch: {reader.fieldnames}")
         for line_no, row in enumerate(reader, 2):
-            if row["strategy"].strip().upper() != "SP2L":
-                raise ValueError(f"unexpected strategy at entry line {line_no}")
+            strategy_value = row["strategy"].strip()
+            if not strategy_value:
+                raise ValueError(f"empty strategy at entry line {line_no}")
+            strategy_values.add(strategy_value)
+            if len(strategy_values) > 1:
+                raise ValueError("frozen entry CSV contains multiple strategy labels")
             direction = row["direction"].strip().upper()
             if direction not in {"BUY", "SELL"}:
                 raise ValueError(f"invalid direction at entry line {line_no}")
@@ -143,11 +148,14 @@ def load_population(path: Path, expected_sha: str, bars: list[dict]) -> tuple[li
     if len(population) != EXPECTED_ENTRY_ROWS:
         raise ValueError(f"entry row count mismatch: expected={EXPECTED_ENTRY_ROWS}, observed={len(population)}")
     return population, {"rows": len(population), "sha256": observed,
+                        "strategy": next(iter(strategy_values), None),
                         "policy": "FROZEN_ENTRY_CSV_ONLY_NO_SIGNAL_REBUILD"}
 
 
 def summarize(rows: list[dict]) -> dict:
     decisive = [x for x in rows if not x["ambiguous"] and x["realized_R"] is not None]
+    ambiguous = [x for x in rows if x["ambiguous"]]
+    open_unresolved = [x for x in rows if x["reason"] == "OPEN_OR_UNRESOLVED"]
     wins = [x for x in decisive if x["realized_R"] > 0]
     losses = [x for x in decisive if x["realized_R"] < 0]
     gp = sum(x["realized_usd"] for x in wins)
@@ -156,7 +164,9 @@ def summarize(rows: list[dict]) -> dict:
     return {
         "signals": len(rows), "decisive": len(decisive),
         "wins": len(wins), "losses": len(losses),
-        "ambiguous": len(rows) - len(decisive),
+        "ambiguous": len(ambiguous),
+        "open_unresolved": len(open_unresolved),
+        "unresolved_total": len(ambiguous) + len(open_unresolved),
         "gap_exposed": sum(x["reason"] == "M1_GAP_WHILE_OPEN" for x in rows),
         "net_R": sum(x["realized_R"] for x in decisive),
         "profit_factor": (sum(x["realized_R"] for x in wins) /
