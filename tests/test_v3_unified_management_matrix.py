@@ -1,3 +1,6 @@
+import pytest
+from strategy_factory.v3_management_engine import normalize_management_spec
+from strategy_factory.v3_exit_engine import V3ExitEngineError
 from scripts.run_sp2l_v3_unified_management_matrix import variants,summary
 def test_variant_inventory():
  v=variants();c={}
@@ -8,3 +11,10 @@ def test_variant_inventory():
 def test_summary_counts_breakeven_and_unresolved():
  rows=[{"ambiguous":False,"realized_R":1.,"realized_usd":10.,"reason":"TP"},{"ambiguous":False,"realized_R":0.,"realized_usd":0.,"reason":"BE"},{"ambiguous":False,"realized_R":-1.,"realized_usd":-10.,"reason":"SL"},{"ambiguous":True,"realized_R":None,"realized_usd":None,"reason":"M1_GAP_WHILE_OPEN"},{"ambiguous":False,"realized_R":None,"realized_usd":None,"reason":"OPEN_OR_UNRESOLVED"}]
  s=summary(rows);assert(s["decisive"],s["wins"],s["losses"],s["breakeven"])==(3,1,1,1);assert(s["ambiguous"],s["open_unresolved"],s["gap_exposed"])==(1,1,1)
+
+def test_no_final_tp_and_zero_trailing_activation_are_explicit():
+ assert normalize_management_spec({"mode":"BREAK_EVEN","rr":None,"activation_r":1})["rr"] is None
+ assert normalize_management_spec({"mode":"BREAK_EVEN_TRAILING","rr":None,"be_activation_r":1,"be_offset_r":0,"trail_activation_r":1,"trail_distance_r":0.5})["rr"] is None
+ assert normalize_management_spec({"mode":"TRAILING_R","rr":None,"activation_r":0,"distance_r":0.2})["activation_r"]==0
+ with pytest.raises(V3ExitEngineError):
+  normalize_management_spec({"mode":"BREAK_EVEN","rr":None,"activation_r":0})
