@@ -121,3 +121,37 @@ Next gate: run pytest with `PYTHONPATH=<review-worktree>\\src` and confirm the i
 - The script still refuses output-directory overwrite. The rerun must use a new unique output directory; the prior `DIAG_ANCHOR_CANONICAL_20261109_150521` remains untouched.
 - This commit only prepares the runner. **No replay has been executed here** because the frozen M1/entry files and local Windows worktree are not mounted in this environment. No MT5/Runner access, no PR merge, and no canonical selection.
 - Rerun acceptance gate: verify manifest contains non-null `git_head`, exact source-file hashes, `git_worktree_dirty=false` (or explicitly review a dirty state), and unchanged frozen input hashes before comparing metrics with the provisional run.
+
+
+## Provenance-closed replay — verified operator report (2026-11-09)
+
+Output directory:
+`DIAG_ANCHOR_PROVENANCE_20261109_153230`
+
+- Execution HEAD: `1a5f85d02874509074eeb20df28e28706b5c5e9c` (detached HEAD; branch field empty by design for the detached worktree).
+- Worktree status: dirty only because Python generated untracked `src/strategy_factory/__pycache__/*.pyc` files. `git diff --name-only HEAD` was empty and the diff SHA256 was the SHA256 of an empty byte stream: `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`. No tracked source files were modified.
+- Exact loaded source SHA256 values recorded in the run manifest:
+  - Comparison runner: `ee45c57c5e28d889662cb5342c04391611f714d8a7772201bf3ca25e169cd26e`
+  - Frozen-input matrix loader: `ed01d603d4a8736802241b55b78e6dfe750ac96fa61dbeb33bc56049990ef772`
+  - Management engine: `d7479575ad7f1689b4943932850f23b8a5bde1480419d9f1961538c7b9959b61`
+- Frozen input hashes match the baseline above: M1 `B0782E716C7ECCBD29EF25E146C088B356F2AADF2CCD5D7EA24E6AC1488AA285`; entries `39ED87CD1F0BE3E59B5F064B0BCF97A9787E5266DF6E972AA07E5EA4D3608AB1`.
+- Manifest SHA256: `36EEC32688C1E399C57C14C681B8CAE0C61F84E45F9BB8F066EE895DAECDFE4C`.
+
+| Profile | Decisive | Wins | Losses | Breakeven | Ambiguous | Open | Gap-exposed | Net R | Gross USD |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| RR4_CANDLE | 461 | 325 | 135 | 1 | 0 | 1 | 0 | 153.2532206 | 439.69 |
+| RR4_CUMULATIVE | 460 | 327 | 133 | 0 | 1 | 1 | 1 | 140.7877514 | 379.19 |
+| NO_TP_CANDLE | 461 | 323 | 137 | 1 | 0 | 1 | 0 | 152.4809289 | 433.78 |
+| NO_TP_CUMULATIVE | 460 | 325 | 135 | 0 | 1 | 1 | 1 | 141.7862445 | 375.31 |
+
+- Results reproduce the earlier canonical replay metrics to the displayed precision.
+- Candle versus Cumulative gross difference: +$60.50 for RR4 and +$58.47 for NO_TP, in favor of Candle anchoring.
+- These are gross, pre-cost research results. Spread, commission, slippage, broker stop/freeze restrictions, and tick-level bid/ask execution are not modeled. One open trade remains in each profile; cumulative profiles each have one ambiguous and one gap-exposed outcome.
+- The untracked cache files explain `git_worktree_dirty=true`; the tracked source tree was clean. No replay rerun is required to explain this status.
+
+## Research decision and next gate
+
+- The provenance-closed replay is accepted as reproducible offline evidence for this frozen sample. Candle anchoring is the current research leader, not a canonical or production selection.
+- **Do not promote this result to canonical and do not tune further on this same sample.** Next gate is a separately identified Fresh Holdout with a pre-registered comparison protocol, locked before any holdout outcomes are inspected.
+- Holdout protocol must specify the anchor variants, management settings, entry population/data window and hashes, treatment of open/ambiguous/gap-exposed trades, costs/execution assumptions, primary metric, paired statistical test, and acceptance/rejection thresholds in advance. Holdout must remain untouched until that protocol is frozen.
+- No MT5/Runner/dashboard access or changes; PR #414 remains untouched and unmerged.
