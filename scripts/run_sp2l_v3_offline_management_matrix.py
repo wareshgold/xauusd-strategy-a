@@ -314,19 +314,6 @@ def main() -> int:
         variants.append((label, "STEP_LOCK_WITH_TP", summary))
         rows_by_variant.append((label, "STEP_LOCK_WITH_TP", {"mode": "STEP_LOCK_WITH_TP", "rr": rr}, rows))
 
-    # Include fixed-TP controls at each RR independently of management.
-    for rr in FIXED_RR_GRID:
-        label = f"FIXED_TP_CONTROL_{rr:g}R"
-        spec = normalize_management_spec({"mode": "FIXED_RR", "rr": rr})
-        rows = [replay_management_trade(c, bars, spec, mt5_point=args.point,
-                                        contract_size=args.contract_size, volume=args.volume)
-                for c in population]
-        for row in rows:
-            row["variant"], row["variant_family"] = label, "FIXED_TP_CONTROL"
-        summary = add_quality_counts(summarize(rows), rows)
-        variants.append((label, "FIXED_TP_CONTROL", summary))
-        rows_by_variant.append((label, "FIXED_TP_CONTROL", spec, rows))
-
     # Stable, discovery-only ordering. Coverage and risk metrics break ties after gross USD/R.
     ranked = sorted(variants, key=lambda item: (
         item[2]["net_profit_usd"], item[2]["net_R"],
