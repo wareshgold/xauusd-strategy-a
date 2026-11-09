@@ -314,6 +314,12 @@ def main() -> int:
         variants.append((label, "STEP_LOCK_WITH_TP", summary))
         rows_by_variant.append((label, "STEP_LOCK_WITH_TP", {"mode": "STEP_LOCK_WITH_TP", "rr": rr}, rows))
 
+    # Re-hash both immutable inputs after replay to detect concurrent mutation.
+    if digest(m1_path).lower() != args.m1_sha256.lower():
+        raise RuntimeError("M1 source changed during matrix execution")
+    if digest(entry_path).lower() != args.entry_sha256.lower():
+        raise RuntimeError("frozen entry CSV changed during matrix execution")
+
     # Stable, discovery-only ordering. Coverage and risk metrics break ties after gross USD/R.
     ranked = sorted(variants, key=lambda item: (
         item[2]["net_profit_usd"], item[2]["net_R"],
