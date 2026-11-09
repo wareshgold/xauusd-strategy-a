@@ -158,7 +158,9 @@ def replay_management_trade(
             else:
                 deferred += 1
         elif mode == "TRAILING_R":
-            if not trail_activated and favorable >= spec["activation_r"] * risk:
+            if not trail_activated and (
+                spec["activation_r"] == 0 or favorable >= spec["activation_r"] * risk
+            ):
                 trail_activated = activated = True
             if trail_activated:
                 distance = spec["distance_r"] * risk
