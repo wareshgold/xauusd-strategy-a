@@ -10,13 +10,60 @@ import csv
 import hashlib
 import json
 import math
+import platform
+import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import run_sp2l_v3_unified_management_matrix as matrix_loader
+import strategy_factory.v3_management_engine as management_engine
 from run_sp2l_v3_unified_management_matrix import load, summary, sha
 from strategy_factory.v3_management_engine import (
     fixed_price_trailing_spec, replay_management_trade,
 )
+
+def _git(root: Path, *args: str) -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", *args], cwd=root, stderr=subprocess.STDOUT, text=True
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def execution_provenance(argv: list[str]) -> dict:
+    """Capture source identity and worktree state before any replay begins."""
+    script = Path(__file__).resolve()
+    root_text = _git(script.parent.parent, "rev-parse", "--show-toplevel")
+    root = Path(root_text).resolve() if root_text else script.parent.parent
+    status = _git(root, "status", "--porcelain=v1", "--untracked-files=all")
+    diff = _git(root, "diff", "--binary", "HEAD")
+    sources = {
+        "comparison_runner": script,
+        "matrix_loader": Path(matrix_loader.__file__).resolve(),
+        "management_engine": Path(management_engine.__file__).resolve(),
+    }
+    source_hashes = {}
+    for name, source in sources.items():
+        source_hashes[name] = {
+            "path": str(source),
+            "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+        }
+    return {
+        "git_root": str(root),
+        "git_head": _git(root, "rev-parse", "HEAD"),
+        "git_branch": _git(root, "branch", "--show-current"),
+        "git_status_porcelain": status,
+        "git_worktree_dirty": bool(status),
+        "git_diff_head_sha256": hashlib.sha256((diff or "").encode()).hexdigest(),
+        "source_files": source_hashes,
+        "python_executable": sys.executable,
+        "python_version": sys.version,
+        "platform": platform.platform(),
+        "argv": list(argv),
+    }
+
 
 def write_csv(path: Path, rows: list[dict]) -> None:
     fields = list(dict.fromkeys(k for row in rows for k in row))
@@ -42,6 +89,7 @@ def main() -> int:
     out = Path(a.output_dir).resolve()
     if out.exists():
         raise FileExistsError(f"refusing overwrite: {out}")
+    provenance = execution_provenance(sys.argv)
     bars, population, inputs = load(Path(a.m1_csv).resolve(), Path(a.entry_csv).resolve())
     profiles = [
         ("RR4_CANDLE", "CANDLE", 4.0),
@@ -115,6 +163,7 @@ def main() -> int:
                        "distance_price": a.distance_price, "point": a.point,
                        "contract_size": a.contract_size, "volume": a.volume},
         "inputs": inputs,
+        "execution_provenance": provenance,
         "execution": {"spread_commission_slippage": "NOT_MODELED",
                       "broker_stop_freeze_levels": "NOT_MODELED",
                       "entry_bar": "EXCLUDED", "stop_update": "NEXT_BAR",
