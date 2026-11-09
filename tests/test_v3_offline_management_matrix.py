@@ -45,8 +45,13 @@ def test_no_target_break_even_and_zero_activation_trailing_are_valid():
     trail = normalize_management_spec({
         "mode": "TRAILING_R", "rr": None, "activation_r": 0.0, "distance_r": 0.5,
     })
+    hybrid = normalize_management_spec({
+        "mode": "BREAK_EVEN_TRAILING", "rr": None, "be_activation_r": 0.5,
+        "be_offset_r": 0.0, "trail_activation_r": 1.0, "trail_distance_r": 0.5,
+    })
     assert be["rr"] is None
     assert trail["activation_r"] == 0.0
+    assert hybrid["rr"] is None
 
     result = replay_management_trade(
         candidate(), bars([(100, 100, 100, 100), (100, 106, 101, 105)]),
