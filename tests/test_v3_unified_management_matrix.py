@@ -18,3 +18,16 @@ def test_no_final_tp_and_zero_trailing_activation_are_explicit():
  assert normalize_management_spec({"mode":"TRAILING_R","rr":None,"activation_r":0,"distance_r":0.2})["activation_r"]==0
  with pytest.raises(V3ExitEngineError):
   normalize_management_spec({"mode":"BREAK_EVEN","rr":None,"activation_r":0})
+
+def test_zero_activation_trailing_is_eligible_even_if_first_bar_never_reaches_entry():
+ from strategy_factory.v3_management_engine import replay_management_trade
+ c={"entry_idx":0,"theoretical_entry":100.0,"risk":5.0,"sl":95.0,
+    "direction":"BUY","trigger_time":1800000000,"signal_time_utc":"t0"}
+ b=[{"time":1800000000,"open":100.0,"high":100.0,"low":100.0,"close":100.0},
+    {"time":1800000060,"open":99.8,"high":99.9,"low":99.7,"close":99.8}]
+ r=replay_management_trade(c,b,normalize_management_spec(
+    {"mode":"TRAILING_R","rr":None,"activation_r":0,"distance_r":0.1}),
+    mt5_point=.01,contract_size=100,volume=.01)
+ assert r["trailing_activated"] is True
+ assert r["trailing_updates"] == 1
+ assert r["final_sl"] == 99.4
