@@ -77,7 +77,7 @@ def test_cumulative_anchor_defers_when_old_extreme_is_not_valid_but_candle_ancho
     data = [
         (100, 100, 100, 100),
         (100, 103.46, 99.5, 102.0),  # activation; proposed 103.06 is above close
-        (102, 108.27, 101.5, 108.0), # new best; proposed 107.87 is valid
+        (102, 108.27, 101.5, 107.5), # new best; cumulative proposal 107.87 is invalid
         (108, 107.0, 106.8, 107.2),  # candle proposal 106.6 valid; cumulative 107.87 invalid
         (107, 107.0, 106.5, 106.7), # next bar hits candle stop only
     ]
