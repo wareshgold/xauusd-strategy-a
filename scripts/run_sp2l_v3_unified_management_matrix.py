@@ -55,7 +55,7 @@ def step_tp(c,bars,rr,contract,volume):
   now=int(b["time"])
   if m1_gap_detected(prev,now):o.update(ambiguous=True,reason="M1_GAP_WHILE_OPEN",exit_time_utc=datetime.fromtimestamp(now,timezone.utc).isoformat());break
   prev=now;held+=1;hi,lo=float(b["high"]),float(b["low"]);sh=lo<=sl if side=="BUY" else hi>=sl;th=hi>=tp if side=="BUY" else lo<=tp;fav=hi-e if side=="BUY" else e-lo;reached=max(0,int(math.floor((fav+1e-6)/risk)));new=reached>mil
-  if (sh and th) or (sh and new) or (th and new):o.update(ambiguous=True,reason="MULTIPLE_EVENTS_SAME_BAR",exit_time_utc=datetime.fromtimestamp(now,timezone.utc).isoformat());break
+  if (sh and th) or (sh and new):o.update(ambiguous=True,reason="MULTIPLE_EVENTS_SAME_BAR",exit_time_utc=datetime.fromtimestamp(now,timezone.utc).isoformat());break
   if sh or th:
    px=sl if sh else tp;gain=px-e if side=="BUY" else e-px;o.update(exit_price=px,reason=("STEP_LOCK_SL" if mil else "SL") if sh else "TP",exit_time_utc=datetime.fromtimestamp(now,timezone.utc).isoformat(),realized_price=gain,realized_R=gain/risk,realized_usd=gain*contract*volume);break
   if new:mil=reached;sl=e+(mil-1)*risk if side=="BUY" else e-(mil-1)*risk
@@ -108,7 +108,8 @@ def main():
  with rp.open("x",encoding="utf-8-sig",newline="") as f:
   wr=csv.DictWriter(f,fieldnames=list(ranked[0]));wr.writeheader()
   for x in ranked:wr.writerow({k:json.dumps(v,ensure_ascii=False) if isinstance(v,(dict,list)) else v for k,v in x.items()})
- with tp.open("x",encoding="utf-8-sig",newline="") as f:wr=csv.DictWriter(f,fieldnames=list(alltrades[0]));wr.writeheader();wr.writerows(alltrades)
+ with tp.open("x",encoding="utf-8-sig",newline="") as f:
+  trade_fields=list(dict.fromkeys(k for row in alltrades for k in row));wr=csv.DictWriter(f,fieldnames=trade_fields,extrasaction="ignore");wr.writeheader();wr.writerows(alltrades)
  manifest={"research_only":True,"canonical":False,"mt5_accessed":False,"signal_rebuild":False,"variant_count":603,"population_count":462,"trade_replays":278586,"symbol":a.symbol,"timeframe":"M1","execution":{"point_metadata_only":a.point,"contract_size":a.contract_size,"volume":a.volume,"spread_commission_slippage":"NOT_MODELED"},"inputs":inputs,"families":{"fixed_RR":[1,1.5,2,3],"no_target":1,"BE_activation_R":[.5,1,1.5],"fixed_distance_activation_price":[0,.25,.5,.75,1,1.5,2,3,4,6],"fixed_distance_price":[.2,.3,.4,.5,.7,1,1.5,2,3,4,6],"step_lock_no_TP":1,"step_lock_TP_RR":[1,1.5,2,3],"BE_trail_BE_activation_R":[.5,1,1.5],"BE_trail_activation_R":[1,1.5,2,3],"BE_trail_distance_R":[.5,1,1.5],"fixed_TP_trail_RR":[1,1.5,2,3],"time_exit_bars":[15,30,60,120],"partial_close":"EXCLUDED_UNDEFINED_FILL_SEMANTICS"},"semantics":{"entry_bar":"EXCLUDED","stop_update":"NEXT_BAR","same_bar_conflicts":"AMBIGUOUS","M1_gap":"AMBIGUOUS_NO_FILL","zero_trail_activation":"FIRST_COMPLETED_POST_ENTRY_BAR","ranking":"DISCOVERY_ONLY_GROSS_USD_THEN_PF_THEN_UNRESOLVED","costs":"NOT_MODELED"},"top_20":ranked[:20],"artifacts":{}}
  for f in(rp,tp):manifest["artifacts"][f.name]={"sha256":sha(f),"bytes":f.stat().st_size}
  mf.write_text(json.dumps(manifest,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
