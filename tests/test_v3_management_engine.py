@@ -60,3 +60,40 @@ def test_management_engine_pairs_same_frozen_population():
     a = engine.evaluate({"mode": "FIXED_RR", "rr": 10})
     b = engine.evaluate({"mode": "BREAK_EVEN", "rr": 10, "activation_r": 1})
     assert engine.compare(a, b)["paired_trade_count"] == 1
+
+
+from strategy_factory.v3_management_engine import fixed_price_trailing_spec
+
+
+def test_fixed_price_adapter_converts_price_units_per_trade_risk():
+    spec = fixed_price_trailing_spec(activation_price=0.4, distance_price=0.4, risk=2.0)
+    assert spec["activation_r"] == pytest.approx(0.2)
+    assert spec["distance_r"] == pytest.approx(0.2)
+    assert spec["anchor_mode"] == "CANDLE"
+
+
+def test_cumulative_anchor_defers_when_old_extreme_is_not_valid_but_candle_anchor_updates():
+    c = candidate()
+    data = [
+        (100, 100, 100, 100),
+        (100, 103.46, 99.5, 102.0),  # activation; proposed 103.06 is above close
+        (102, 108.27, 101.5, 108.0), # new best; proposed 107.87 is valid
+        (108, 107.0, 106.8, 107.2),  # candle proposal 106.6 valid; cumulative 107.87 invalid
+        (107, 107.0, 106.5, 106.7), # next bar hits candle stop only
+    ]
+    base = {"mode": "TRAILING_R", "rr": None, "activation_r": 0.08, "distance_r": 0.08}
+    candle = run({**base, "anchor_mode": "CANDLE"}, data)
+    cumulative = run({**base, "anchor_mode": "CUMULATIVE"}, data)
+    assert candle["trailing_updates"] >= 1
+    assert candle["reason"] == "TRAIL_SL"
+    assert cumulative["trailing_updates"] == 0
+    assert cumulative["reason"] == "OPEN_OR_UNRESOLVED"
+
+
+def test_invalid_anchor_mode_fails_closed():
+    with pytest.raises(V3ExitEngineError):
+        normalize_management_spec({
+            "mode": "TRAILING_R", "rr": None,
+            "activation_r": 0.1, "distance_r": 0.1,
+            "anchor_mode": "MAGIC",
+        })
