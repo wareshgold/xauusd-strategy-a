@@ -1,15 +1,16 @@
 """Fetch lifecycle deals by runner-owned MT5 order/position IDs.
 
+Avoid host-UTC time windows when broker timestamps use a different clock basis.
+Callers must supply only IDs they own or have explicitly reconciled.
 Active orders are observed through orders_get, not history_orders_get.
-Terminal orders are resolved through history_orders_get(ticket=...), then
-linked position histories are collected with history_deals_get(position=...).
+Terminal orders are resolved with history_orders_get(ticket=...), then linked
+position histories are collected with history_deals_get(position=...).
 Query failures remain distinct from valid empty results and are returned
 alongside any deals that could still be collected.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
-from types import SimpleNamespace
 
 
 class DealHistoryQueryError(RuntimeError):
