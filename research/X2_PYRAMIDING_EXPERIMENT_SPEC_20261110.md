@@ -1,7 +1,7 @@
 # SP2L X2 Pyramiding Experiment — Offline Specification
 
 Date: 2026-11-10
-Status: IMPLEMENTED DRAFT — synthetic tests authored but not yet executed; full replay not run
+Status: IMPLEMENTED DRAFT — synthetic suite expanded; latest local execution pending; full replay not run
 Research-only; non-canonical; no production or forward-runner changes.
 
 ## Objective
@@ -41,7 +41,7 @@ For BUY (SELL is exactly symmetric):
 3. A pullback is confirmed only after a later completed bar has retraced at least 0.25 × X1 initial risk from that best favorable extreme. Track the pullback extreme (lowest low for BUY, highest high for SELL) from the first qualifying pullback bar onward.
 4. After pullback is armed, continuation confirmation occurs when a completed bar closes above the immediately preceding completed bar's high (BUY), or below its low (SELL).
 5. X2 theoretical fill is the next M1 bar's open. No same-bar close fill, intrabar sequencing assumption, or look-ahead is allowed.
-6. If the next bar is unavailable, a data gap intervenes, the opening price is already through the proposed X2 stop, or X1 has exited on the confirmation bar, X2 is not opened. If X1 stop/exit and X2 confirmation are both possible in the same M1 bar, mark the X2 opportunity ambiguous and do not open it.
+6. If the next bar is unavailable, a data gap intervenes, the opening price is already through the proposed X2 stop, or X1 has exited before continuation confirmation, X2 is not opened. An X1 exit on a threshold or pullback bar cancels the setup because no X2 confirmation occurred. If X1 stop/exit and X2 continuation confirmation are both possible in the same M1 bar, mark the X2 opportunity ambiguous and do not open it.
 7. X2 initial stop is the pullback extreme: below X2 entry for BUY, above X2 entry for SELL. Reject invalid/non-positive stop distance. No guessed structural anchor or additional buffer is introduced.
 
 ## Risk budget and volume
@@ -78,7 +78,7 @@ For each configuration report:
 - Decisive, ambiguous, gap-exposed and open/unresolved counts by leg and by combined signal.
 - Combined gross USD and R, profit factor, max drawdown by exit-time cohorts, average R, win/loss/BE counts.
 - X1-only versus X1+X2 paired delta for every original population key.
-- X2 incremental gross USD, X2 risk at admission, maximum combined open risk, and distribution of X2 holding time.
+- X2 incremental gross USD, X1 remaining open risk and X2 risk at each admission attempt, maximum combined open risk, and distribution of X2 holding time.
 - Profit concentration excluding top 1/3/5/10 combined winners.
 - No ranking may hide unresolved/ambiguous counts. Discovery ranking is secondary to risk and completeness.
 
@@ -101,10 +101,12 @@ Synthetic tests must cover:
 - Threshold bar cannot double as pullback bar.
 - Pullback depth exactly 0.25R and just below 0.25R.
 - Confirmation uses prior completed bar high/low and fills next bar open.
-- No X2 if X1 exits before confirmation or on the confirmation bar.
-- Same-bar exit/confirmation ambiguity.
+- No X2 if X1 exits before confirmation, including on threshold/pullback bars.
+- Same-bar X1 exit and continuation-confirmation ambiguity; combined signal must remain unresolved.
 - Invalid/gap-crossed next-bar entry and invalid stop side.
 - Risk-budget admission, exact cap boundary, and risk-budget rejection.
+- X2 initial stop remains immutable in output while its final stop trails; X2 management remains independent after X1 exits.
+- Next-open-through-stop rejection and combined ambiguity propagation.
 - X1 and X2 independent stop management and next-bar activation.
 - Gap ambiguity, X1 entry-bar exclusion, X2 next-open entry-bar stop handling, and same-minute drawdown cohort invariance.
 - No MT5 import/API or live-runner references in the implementation.
