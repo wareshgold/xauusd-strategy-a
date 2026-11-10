@@ -176,3 +176,21 @@ def test_active_pending_order_without_position_is_valid_empty_history():
     )
     assert result.deals == []
     assert result.failures == []
+
+
+def test_unknown_active_inventory_fails_closed_when_caller_marks_all_tracked_orders_active():
+    # Runner contract: when orders_get returns None, it passes every tracked
+    # order ID as active/unknown so none can leak into history_orders_get.
+    def forbidden_history_order_query(**kwargs):
+        raise AssertionError("unknown active inventory must suppress order history lookup")
+
+    result = collect_tracked_deals(
+        history_deals_get=lambda **kwargs: (),
+        history_orders_get=forbidden_history_order_query,
+        symbol="XAUUSD",
+        tracked_orders={100, 101},
+        tracked_positions=set(),
+        active_order_ids={100, 101},
+    )
+    assert result.deals == []
+    assert result.failures == []
