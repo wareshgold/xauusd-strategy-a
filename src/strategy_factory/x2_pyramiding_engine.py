@@ -114,13 +114,23 @@ def replay_x2_signal(
             x2_exit, x2_exit_time = x2_sl, now
             x2_reason = f"{x2_origin}_SL" if x2_origin != "SL" else "SL"
         if x1_hit and state not in {"DONE", "CANCELLED"}:
-            # An exit on a potential confirmation bar cannot be ordered against
-            # a close-confirmation using OHLC alone.
-            if state == "PULLBACK_ARMED" and (
-                (direction == "BUY" and close > float(bars[bi - 1]["high"])) or
-                (direction == "SELL" and close < float(bars[bi - 1]["low"]))
-            ):
-                x2_status, x2_skip_reason = "AMBIGUOUS", "X1_EXIT_AND_X2_CONFIRMATION_SAME_BAR"
+            # If OHLC permits both the X1 stop and an X2 state transition on
+            # this bar, their intrabar order cannot be inferred.
+            possible_x2_event = False
+            if state == "WAIT_THRESHOLD":
+                possible_x2_event = _favorable(bar, direction, entry) >= threshold_r * risk
+            elif state == "WAIT_PULLBACK" and best_favorable is not None:
+                best_now = max(best_favorable, high) if direction == "BUY" else min(best_favorable, low)
+                retrace_now = best_now - low if direction == "BUY" else high - best_now
+                possible_x2_event = retrace_now + 1e-12 >= pullback_r * risk
+            elif state == "PULLBACK_ARMED":
+                possible_x2_event = (
+                    (direction == "BUY" and close > float(bars[bi - 1]["high"])) or
+                    (direction == "SELL" and close < float(bars[bi - 1]["low"]))
+                )
+            if possible_x2_event:
+                x2_status, x2_skip_reason = "AMBIGUOUS", "X1_EXIT_AND_X2_EVENT_SAME_BAR"
+                opportunities += 1
             else:
                 x2_status, x2_skip_reason = "CANCELLED", "X1_EXIT_BEFORE_X2"
             state = "CANCELLED"
