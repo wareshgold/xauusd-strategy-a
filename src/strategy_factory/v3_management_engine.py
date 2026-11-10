@@ -49,17 +49,19 @@ def normalize_management_spec(spec: dict[str, Any]) -> dict[str, Any]:
     if mode == "FIXED_RR":
         result["rr"] = _positive(spec, "rr")
     elif mode == "BREAK_EVEN":
-        result["rr"] = _positive(spec, "rr")
+        result["rr"] = None if spec.get("rr") is None else _positive(spec, "rr")
         result["activation_r"] = _positive(spec, "activation_r")
         result["offset_r"] = float(spec.get("offset_r", 0.0))
         if not math.isfinite(result["offset_r"]) or result["offset_r"] < 0:
             raise V3ExitEngineError("offset_r must be finite and non-negative")
     elif mode == "TRAILING_R":
         result["rr"] = None if spec.get("rr") is None else _positive(spec, "rr")
-        result["activation_r"] = _positive(spec, "activation_r")
+        result["activation_r"] = float(spec["activation_r"])
+        if not math.isfinite(result["activation_r"]) or result["activation_r"] < 0:
+            raise V3ExitEngineError("activation_r must be finite and non-negative")
         result["distance_r"] = _positive(spec, "distance_r")
     elif mode == "BREAK_EVEN_TRAILING":
-        result["rr"] = _positive(spec, "rr")
+        result["rr"] = None if spec.get("rr") is None else _positive(spec, "rr")
         result["be_activation_r"] = _positive(spec, "be_activation_r")
         result["be_offset_r"] = float(spec.get("be_offset_r", 0.0))
         result["trail_activation_r"] = _positive(spec, "trail_activation_r")
@@ -156,7 +158,9 @@ def replay_management_trade(
             else:
                 deferred += 1
         elif mode == "TRAILING_R":
-            if not trail_activated and favorable >= spec["activation_r"] * risk:
+            if not trail_activated and (
+                spec["activation_r"] == 0 or favorable >= spec["activation_r"] * risk
+            ):
                 trail_activated = activated = True
             if trail_activated:
                 distance = spec["distance_r"] * risk
