@@ -1,7 +1,7 @@
 # SP2L X2 Pyramiding Experiment — Offline Specification
 
 Date: 2026-11-10
-Status: IMPLEMENTED DRAFT — synthetic suite expanded; latest local execution pending; full replay not run
+Status: IMPLEMENTED DRAFT — 17 engine tests passed locally at a prior engine revision; batch runner and batch tests added; combined local verification pending; full replay not run
 Research-only; non-canonical; no production or forward-runner changes.
 
 ## Objective
@@ -89,12 +89,12 @@ For each configuration report:
 - Use only completed bars for arming, pullback and confirmation.
 - Fill X2 only at the next bar open.
 - If a bar can contain conflicting events whose order cannot be established from OHLC, mark ambiguous or skip the X2 admission; never assume the favorable sequence.
-- Aggregate same-minute realized PnL before drawdown calculations; do not invent intraminute ordering.
+- Aggregate same-minute realized PnL before drawdown calculations; do not invent intraminute ordering. The batch suite must verify row-order invariance and exclusion of ambiguous combined signals from portfolio PnL.
 - Costs (spread, commission, slippage) remain NOT_MODELED and all PnL is gross, not broker net profit.
 
 ## Required tests before any full replay
 
-Synthetic tests must cover:
+Synthetic tests must cover (engine suite plus batch-runner suite):
 
 - BUY and SELL symmetry.
 - Each +1R/+1.5R/+2R arming threshold.
