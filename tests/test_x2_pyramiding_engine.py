@@ -239,3 +239,40 @@ def test_x1_frozen_entry_bar_is_excluded_from_stop_checks():
                            trail_distance_price=0.3, threshold_r=1.0)
     assert out["x1"]["exit_price"] is None
     assert out["x1"]["reason"] == "OPEN_OR_UNRESOLVED"
+
+
+def test_x1_management_matches_standalone_trailing_engine_after_activation_deferred():
+    from strategy_factory.v3_management_engine import (
+        normalize_management_spec, replay_management_trade,
+    )
+
+    bars = _bars([
+        (100.0, 100.1, 99.9, 100.0),
+        # Activation reached, but close makes the proposed trail invalid.
+        (100.0, 100.6, 100.0, 100.2),
+        # Current bar's favorable excursion is below activation; latched
+        # activation must nevertheless permit a valid improved stop.
+        (100.2, 100.45, 100.0, 100.4),
+        (100.4, 100.5, 100.1, 100.2),
+    ])
+    candidate = _candidate()
+    spec = normalize_management_spec({
+        "mode": "TRAILING_R", "rr": None,
+        "activation_r": 0.5, "distance_r": 0.3,
+    })
+    standalone = replay_management_trade(
+        candidate, bars, spec, mt5_point=0.01,
+        contract_size=100.0, volume=0.01,
+    )
+    combined = replay_x2_signal(
+        candidate, bars, activation_price=0.5,
+        trail_distance_price=0.3, threshold_r=10.0,
+    )
+    x1 = combined["x1"]
+    assert standalone["exit_price"] == 100.15
+    assert x1["exit_price"] == standalone["exit_price"]
+    assert x1["exit_time_utc"] == standalone["exit_time_utc"]
+    assert x1["reason"] == standalone["reason"]
+    assert x1["final_sl"] == standalone["final_sl"]
+    assert x1["trailing_updates"] == standalone["trailing_updates"]
+    assert x1["realized_usd"] == standalone["realized_usd"]
