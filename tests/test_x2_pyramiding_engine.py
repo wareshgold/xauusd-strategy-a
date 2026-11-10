@@ -82,6 +82,9 @@ def test_no_x2_when_x1_stops_before_setup_completes():
     # intrabar ordering is unknowable, so the conservative result is ambiguous.
     assert out["x2_status"] == "AMBIGUOUS"
     assert out["x2_skip_reason"] == "X1_EXIT_AND_X2_EVENT_SAME_BAR"
+    assert out["combined_ambiguous"] is True
+    assert out["combined_decisive"] is False
+    assert out["combined_gross_usd"] is None
 
 
 def test_gap_is_ambiguous_and_never_filled():
@@ -164,3 +167,46 @@ def test_x2_entry_bar_can_hit_its_initial_stop():
     assert out["x2"] is not None
     assert out["x2"]["reason"] == "SL_ON_ENTRY_BAR"
     assert out["x2"]["exit_price"] == out["x2"]["initial_sl"]
+
+
+
+def test_x2_trailing_is_independent_and_initial_stop_is_immutable():
+    bars = _buy_path()
+    bars[5]["low"] = 101.0  # Hits X1's active stop, not X2's initial stop.
+    bars[5]["high"] = 102.0  # X2 trail advances only after this bar's stop checks.
+    bars.append(dict(time=360, open=101.9, high=102.0, low=101.6, close=101.8))
+    out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x2"] is not None
+    assert out["x1"]["exit_price"] == 101.1
+    assert out["x2"]["initial_sl"] == 100.8
+    assert out["x2"]["final_sl"] == 101.7
+    assert out["x2"]["exit_price"] == 101.7
+    assert out["x2"]["reason"] == "TRAIL_SL"
+    assert out["x2"]["realized_R"] > 0
+
+
+def test_x2_risk_admission_exactly_at_shared_budget_cap():
+    bars = _bars([
+        (100.0, 100.1, 99.9, 100.0),
+        (100.0, 101.0, 100.9, 100.95),
+        (100.95, 101.2, 100.8, 101.1),
+        (101.1, 101.3, 101.0, 101.25),
+        (101.8, 102.0, 101.1, 101.9),
+    ])
+    out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x2_status"] == "OPENED"
+    assert out["x1_risk_at_x2_admission_usd"] == 0.0
+    assert out["x2_admission_risk_usd"] == 100.0
+    assert out["max_combined_open_risk_usd"] == 100.0
+
+
+def test_next_open_through_x2_stop_is_rejected():
+    bars = _threshold_path(1.0)
+    bars[4]["open"] = 100.7
+    out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x2"] is None
+    assert out["x2_status"] == "SKIPPED"
+    assert out["x2_skip_reason"] == "NEXT_OPEN_THROUGH_X2_STOP"
