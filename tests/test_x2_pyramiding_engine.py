@@ -277,3 +277,40 @@ def test_x1_management_matches_standalone_trailing_engine_after_activation_defer
     assert x1["final_sl"] == standalone["final_sl"]
     assert x1["trailing_updates"] == standalone["trailing_updates"]
     assert x1["realized_usd"] == standalone["realized_usd"]
+
+
+def test_trailing_activation_exact_price_boundary_is_not_lost_to_float_rounding():
+    from strategy_factory.v3_management_engine import (
+        normalize_management_spec, replay_management_trade,
+    )
+
+    # This frozen risk representation makes 0.75 / risk * risk slightly
+    # greater than 0.75, while the actual favorable move is exactly 0.75.
+    risk = 2.9600000000000364
+    candidate = dict(
+        entry_idx=0, theoretical_entry=3996.2, sl=3999.16, risk=risk,
+        direction="SELL", trigger_time=0, population_index=461,
+        signal_time_utc="2026-10-23T21:42:00+00:00",
+    )
+    bars = [
+        dict(time=0, open=3996.2, high=3996.3, low=3996.1, close=3996.2),
+        dict(time=60, open=3996.18, high=3997.22, low=3996.06, close=3997.2),
+        dict(time=120, open=3997.21, high=3997.47, low=3996.77, close=3996.8),
+        dict(time=180, open=3996.79, high=3996.98, low=3996.18, close=3996.24),
+        dict(time=240, open=3996.23, high=3996.7, low=3995.49, close=3995.94),
+        dict(time=300, open=3995.96, high=3996.14, low=3995.45, close=3995.65),
+        dict(time=360, open=3995.65, high=3997.46, low=3995.52, close=3997.18),
+    ]
+    spec = normalize_management_spec({
+        "mode": "TRAILING_R", "rr": None,
+        "activation_r": 0.75 / risk, "distance_r": 0.30 / risk,
+    })
+    out = replay_management_trade(
+        candidate, bars, spec, mt5_point=0.01,
+        contract_size=100.0, volume=0.01,
+    )
+    assert out["trailing_activated"] is True
+    assert out["trailing_updates"] == 1
+    assert out["final_sl"] == 3995.75
+    assert out["exit_price"] == 3995.75
+    assert out["exit_time_utc"] == "1970-01-01T00:06:00+00:00"
