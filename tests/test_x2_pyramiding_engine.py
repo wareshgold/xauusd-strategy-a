@@ -104,3 +104,60 @@ def test_frozen_risk_must_match_entry_stop():
     with pytest.raises(ValueError):
         replay_x2_signal(c, _buy_path(), activation_price=0.5,
                          trail_distance_price=0.3, threshold_r=1.0)
+
+
+
+def _threshold_path(threshold, pullback_depth=0.25):
+    peak = 100.0 + threshold
+    return _bars([
+        (100.0, 100.1, 99.9, 100.0),
+        (100.0, peak, peak - 0.05, peak - 0.05),
+        (peak - 0.05, peak + 0.1, peak - pullback_depth, peak - 0.02),
+        (peak - 0.02, peak + 0.3, peak - 0.01, peak + 0.2),
+        (peak + 0.2, peak + 0.4, peak + 0.1, peak + 0.3),
+    ])
+
+
+def test_all_three_thresholds_can_arm_and_fill_x2():
+    for threshold in (1.0, 1.5, 2.0):
+        out = replay_x2_signal(_candidate(), _threshold_path(threshold),
+                               activation_price=0.5, trail_distance_price=0.3,
+                               threshold_r=threshold)
+        assert out["x2_status"] == "OPENED"
+        assert out["x2"]["entry"] == _threshold_path(threshold)[4]["open"]
+
+
+def test_pullback_exactly_quarter_r_qualifies():
+    bars = _threshold_path(1.0, pullback_depth=0.25)
+    out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x2_status"] == "OPENED"
+
+
+def test_pullback_just_below_quarter_r_does_not_qualify():
+    bars = _threshold_path(1.0, pullback_depth=0.249)
+    # Remove later bars so a later pullback cannot qualify.
+    bars = bars[:3]
+    out = replay_x2_signal(_candidate(), bars, activation_price=10.0,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x2"] is None
+    assert out["x2_status"] == "NOT_TRIGGERED"
+
+
+def test_x2_rejected_when_x1_consumes_entire_open_risk_budget():
+    bars = _threshold_path(1.0)
+    out = replay_x2_signal(_candidate(), bars, activation_price=10.0,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x2"] is None
+    assert out["x2_status"] == "SKIPPED"
+    assert out["x2_skip_reason"] == "X2_SKIPPED_RISK_BUDGET"
+
+
+def test_x2_entry_bar_can_hit_its_initial_stop():
+    bars = _threshold_path(1.0)
+    bars[4]["low"] = 100.0
+    out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x2"] is not None
+    assert out["x2"]["reason"] == "SL_ON_ENTRY_BAR"
+    assert out["x2"]["exit_price"] == out["x2"]["initial_sl"]
