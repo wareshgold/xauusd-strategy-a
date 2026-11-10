@@ -314,3 +314,13 @@ def test_trailing_activation_exact_price_boundary_is_not_lost_to_float_rounding(
     assert out["final_sl"] == 3995.75
     assert out["exit_price"] == 3995.75
     assert out["exit_time_utc"] == "1970-01-01T00:06:00+00:00"
+
+    # The X1 leg inside the X2 engine must follow the same exact-boundary path.
+    combined = replay_x2_signal(
+        candidate, bars, activation_price=0.75,
+        trail_distance_price=0.30, threshold_r=10.0,
+    )
+    assert combined["x1"]["trailing_updates"] == out["trailing_updates"]
+    assert combined["x1"]["final_sl"] == out["final_sl"]
+    assert combined["x1"]["exit_price"] == out["exit_price"]
+    assert combined["x1"]["exit_time_utc"] == out["exit_time_utc"]
