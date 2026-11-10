@@ -375,3 +375,39 @@ def test_monitor_reports_expiry_as_information_and_telegram_failure(monkeypatch,
 def test_monitor_reads_up_to_2000_events_by_default(monkeypatch, tmp_path):
     monitor = load_monitor(monkeypatch, tmp_path)
     assert monitor._read_events.__defaults__ == (2000,)
+
+def test_monitor_preserves_mt5_history_query_failure_details(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    event = {
+        "ts_utc": "2026-11-10T08:20:07.216743+00:00",
+        "event": "MT5_DEAL_HISTORY_QUERY_FAILED",
+        "symbol": "XAUUSD.ecn",
+        "query": "history_orders_get",
+        "target": 65639448,
+        "detail": "MT5 returned None; MT5 last_error=(-2, 'Terminal: Invalid params')",
+        "canonical": False,
+    }
+
+    diagnostics = monitor._build_diagnostics(
+        [event], {"pid": 123, "alive": True},
+        {"malformed_lines": 0, "read_error": None},
+    )
+    failure = next(
+        item for item in diagnostics
+        if item["code"] == "MT5_DEAL_HISTORY_QUERY_FAILED"
+    )
+
+    assert "query=history_orders_get" in failure["detail"]
+    assert "target=65639448" in failure["detail"]
+    assert "source_detail=MT5 returned None; MT5 last_error=" in failure["detail"]
+    assert "Terminal: Invalid params" in failure["detail"]
+
+    monitor.EVENTS.write_text(json.dumps(event) + "\\n", encoding="utf-8")
+    page = monitor._render()
+    assert "query=history_orders_get" in page
+    assert "target=65639448" in page
+    assert "source_detail=MT5 returned None; MT5 last_error=" in page
+    assert "Terminal: Invalid params" in page
+    # User-controlled event detail must remain HTML-escaped in the page.
+    assert "&#x27;Terminal: Invalid params&#x27;" in page
+

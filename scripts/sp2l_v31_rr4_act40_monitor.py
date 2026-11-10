@@ -310,11 +310,16 @@ def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> 
         telegram = event.get("telegram") if isinstance(event.get("telegram"), dict) else {}
         detail_fields = []
         for field in (
-            "retcode", "comment", "last_error", "reason", "attempt_number",
-            "retry_scheduled", "retry_max_attempts_per_bar", "completed_bar_time",
+            "query", "target", "retcode", "comment", "last_error", "reason",
+            "attempt_number", "retry_scheduled", "retry_max_attempts_per_bar",
+            "completed_bar_time",
         ):
             if event.get(field) is not None:
                 detail_fields.append(f"{field}={event[field]}")
+        # Preserve the original broker/API diagnostic verbatim. The renderer
+        # HTML-escapes the complete detail before inserting it into the page.
+        if event.get("detail") is not None:
+            detail_fields.append(f"source_detail={event['detail']}")
         for field in ("ok", "retcode", "comment", "order", "deal"):
             if result.get(field) is not None:
                 detail_fields.append(f"result.{field}={result[field]}")
