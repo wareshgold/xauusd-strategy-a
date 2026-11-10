@@ -59,7 +59,7 @@ For BUY (SELL is exactly symmetric):
 - X2 uses the same fixed-distance trailing rule as its parent X1 control: activation 0.5 or 0.75 XAU price units and distance 0.3 XAU price units, measured from X2's own entry and using X2's own initial stop/risk.
 - X1 and X2 are independent legs with independent stops. Do not merge their entry prices or average the positions.
 - Both legs use completed-bar updates that become active on the next M1 bar.
-- Entry bar is excluded from stop/exit replay for each leg.
+- X1 retains the existing matrix convention: its frozen entry bar is excluded. X2 is filled at the next M1 bar open, so its entry bar's subsequent high/low must be checked against its initial stop; do not exclude that bar. No trailing-stop update is calculated from the X2 entry bar.
 - A gap while either leg is open is ambiguous; do not infer fills.
 - Same-bar stop/target conflicts are ambiguous. There is no final TP in this X2 experiment.
 - If X1 and X2 are both open, process their stop checks on each bar before any new stop updates; any newly calculated stop is active on the next bar.
@@ -106,7 +106,7 @@ Synthetic tests must cover:
 - Invalid/gap-crossed next-bar entry and invalid stop side.
 - Risk-budget admission, exact cap boundary, and risk-budget rejection.
 - X1 and X2 independent stop management and next-bar activation.
-- Gap ambiguity, entry-bar exclusion, and same-minute drawdown cohort invariance.
+- Gap ambiguity, X1 entry-bar exclusion, X2 next-open entry-bar stop handling, and same-minute drawdown cohort invariance.
 - No MT5 import/API or live-runner references in the implementation.
 
 ## Safety and evidence
