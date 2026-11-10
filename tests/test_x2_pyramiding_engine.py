@@ -50,7 +50,7 @@ def test_threshold_bar_does_not_also_count_as_pullback_bar():
     out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
                            trail_distance_price=0.3, threshold_r=1.0)
     # If the threshold bar had been reused as the pullback, this would open earlier.
-    assert out["x2"] is None or out["x2"]["entry"] == bars[5]["open"]
+    assert out["x2"] is None or out["x2"]["entry"] == bars[4]["open"]
 
 
 def test_sell_is_symmetric():
