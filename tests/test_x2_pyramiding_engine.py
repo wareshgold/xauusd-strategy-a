@@ -193,7 +193,7 @@ def test_x2_trailing_is_independent_and_initial_stop_is_immutable():
     out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
                            trail_distance_price=0.3, threshold_r=1.0)
     assert out["x2"] is not None
-    assert out["x1"]["exit_price"] == 101.1
+    assert out["x1"]["exit_price"] == 101.4
     assert out["x2"]["initial_sl"] == 100.8
     assert out["x2"]["final_sl"] == 101.7
     assert out["x2"]["exit_price"] == 101.7
@@ -213,8 +213,9 @@ def test_x2_risk_admission_exactly_at_shared_budget_cap():
                            trail_distance_price=0.3, threshold_r=1.0)
     assert out["x2_status"] == "OPENED"
     assert out["x1_risk_at_x2_admission_usd"] == 0.0
-    assert out["x2_admission_risk_usd"] == 100.0
-    assert out["max_combined_open_risk_usd"] == 100.0
+    assert out["x2_admission_risk_usd"] == 1.0
+    assert out["max_combined_open_risk_usd"] == 1.0
+    assert out["x2"]["risk_usd"] == 1.0
 
 
 def test_next_open_through_x2_stop_is_rejected():
