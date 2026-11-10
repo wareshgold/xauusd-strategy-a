@@ -256,6 +256,7 @@ def test_x1_management_matches_standalone_trailing_engine_after_activation_defer
         (100.4, 100.5, 100.1, 100.2),
     ])
     candidate = _candidate()
+    candidate["signal_time_utc"] = "1970-01-01T00:00:00+00:00"
     spec = normalize_management_spec({
         "mode": "TRAILING_R", "rr": None,
         "activation_r": 0.5, "distance_r": 0.3,
