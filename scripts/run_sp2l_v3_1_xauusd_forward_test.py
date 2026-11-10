@@ -328,7 +328,7 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # MT5 time-window history can omit recent deals when broker timestamps use
     # a different clock basis from host UTC. Resolve only runner-owned IDs,
     # then query each linked position so its closing deal is not missed.
-    from sp2l_tracked_deal_history import collect_tracked_deals
+    from sp2l_tracked_deal_history import DealHistoryQueryError, collect_tracked_deals
     # Active orders are queried through orders_get. Never send those tickets
     # to history_orders_get(ticket=...), which is reserved for historical orders.
     active_orders = mt5.orders_get(symbol=symbol)
