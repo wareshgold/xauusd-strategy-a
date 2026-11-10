@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 from strategy_factory.x2_pyramiding_engine import replay_x2_signal
 from strategy_factory.v3_management_engine import replay_management_trade, normalize_management_spec
@@ -72,12 +73,12 @@ def cohort_drawdown(events):
 def _leg_state(leg):
     if leg is None:
         return "NOT_OPENED"
+    if leg.get("reason") == "M1_GAP_WHILE_OPEN":
+        return "GAP_EXPOSED"
     if leg.get("ambiguous"):
         return "AMBIGUOUS"
     if leg.get("realized_usd") is not None:
         return "DECISIVE"
-    if leg.get("reason") == "M1_GAP_WHILE_OPEN":
-        return "GAP_EXPOSED"
     return "OPEN_UNRESOLVED"
 
 
@@ -106,7 +107,7 @@ def summarize(rows, kind):
         "signals": len(rows), "combined_decisive": len(decisive),
         "combined_ambiguous": sum(bool(r["combined_ambiguous"]) for r in rows),
         "combined_open_unresolved": sum(r["combined_state"] == "OPEN_UNRESOLVED" for r in rows),
-        "combined_gap_exposed": sum(r["combined_state"] == "GAP_EXPOSED" for r in rows),
+        "combined_gap_exposed": sum(r["x1_state"] == "GAP_EXPOSED" or r["x2_state"] == "GAP_EXPOSED" for r in rows),
         "wins": len(wins), "losses": len(losses),
         "breakeven": len(decisive) - len(wins) - len(losses),
         "gross_usd": sum(pnl), "net_R_on_initial_signal_budget": net_r,
