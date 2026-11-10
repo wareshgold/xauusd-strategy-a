@@ -1,7 +1,7 @@
 # SP2L X2 Pyramiding Experiment — Offline Specification
 
 Date: 2026-11-10
-Status: IMPLEMENTED DRAFT — 17 engine tests passed locally at a prior engine revision; batch runner and batch tests added; combined local verification pending; full replay not run
+Status: RESEARCH PATCH — X1-stop-at-X2-open guard and BUY/SELL regression tests added; local rerun and fresh batch replay pending; full replay evidence from prior revision must not be treated as validation of this patch
 Research-only; non-canonical; no production or forward-runner changes.
 
 ## Objective
@@ -41,7 +41,7 @@ For BUY (SELL is exactly symmetric):
 3. A pullback is confirmed only after a later completed bar has retraced at least 0.25 × X1 initial risk from that best favorable extreme. Track the pullback extreme (lowest low for BUY, highest high for SELL) from the first qualifying pullback bar onward.
 4. After pullback is armed, continuation confirmation occurs when a completed bar closes above the immediately preceding completed bar's high (BUY), or below its low (SELL).
 5. X2 theoretical fill is the next M1 bar's open. No same-bar close fill, intrabar sequencing assumption, or look-ahead is allowed.
-6. If the next bar is unavailable, a data gap intervenes, the opening price is already through the proposed X2 stop, or X1 has exited before continuation confirmation, X2 is not opened. An X1 exit on a threshold or pullback bar cancels the setup because no X2 confirmation occurred. If X1 stop/exit and X2 continuation confirmation are both possible in the same M1 bar, mark the X2 opportunity ambiguous and do not open it.
+6. If the next bar is unavailable, a data gap intervenes, the opening price is already through the proposed X2 stop, or the next-bar open is at/through X1's then-active stop, X2 is not opened. In the latter case, resolve X1's stop first under the replay's existing stop-fill convention and cancel the pending X2 admission. An X1 exit on a threshold or pullback bar cancels the setup because no X2 confirmation occurred. If X1 stop/exit and X2 continuation confirmation are both possible in the same M1 bar, mark the X2 opportunity ambiguous and do not open it.
 7. X2 initial stop is the pullback extreme: below X2 entry for BUY, above X2 entry for SELL. Reject invalid/non-positive stop distance. No guessed structural anchor or additional buffer is introduced.
 
 ## Risk budget and volume
@@ -106,7 +106,7 @@ Synthetic tests must cover (engine suite plus batch-runner suite):
 - Invalid/gap-crossed next-bar entry and invalid stop side.
 - Risk-budget admission, exact cap boundary, and risk-budget rejection.
 - X2 initial stop remains immutable in output while its final stop trails; X2 management remains independent after X1 exits.
-- Next-open-through-stop rejection and combined ambiguity propagation.
+- Next-open-through-X2-stop rejection; BUY and SELL next-open crossing of X1's active stop must cancel X2 admission before risk-budget calculation; combined ambiguity propagation.
 - X1 and X2 independent stop management and next-bar activation.
 - Gap ambiguity, X1 entry-bar exclusion, X2 next-open entry-bar stop handling, and same-minute drawdown cohort invariance.
 - No MT5 import/API or live-runner references in the implementation.
