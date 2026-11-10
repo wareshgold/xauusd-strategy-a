@@ -76,7 +76,7 @@ def replay_x2_signal(
     x2_pending_idx = None
     x2_status = "NOT_TRIGGERED"
     x2_skip_reason = None
-    x2_entry = x2_sl = None
+    x2_entry = x2_sl = x2_initial_sl = None
     x2_exit = x2_exit_time = None
     x2_reason = "NOT_OPENED"
     x2_ambiguous = False
@@ -104,7 +104,29 @@ def replay_x2_signal(
         previous_time = now
         high, low, close, opn = (float(bar[k]) for k in ("high", "low", "close", "open"))
 
-        # Check stops already active at the start of this completed bar.
+        # A next-open X2 fill occurs at this bar's open, before evaluating
+        # either leg's intrabar stop touches on this bar.
+        if x2_pending_idx == bi and state == "PENDING_FILL":
+            if not _stop_valid(float(pullback_extreme), opn, direction):
+                x2_status, x2_skip_reason, state = "SKIPPED", "NEXT_OPEN_THROUGH_X2_STOP", "CANCELLED"
+            else:
+                proposed_entry = opn
+                proposed_initial_sl = float(pullback_extreme)
+                proposed_risk = abs(proposed_entry - proposed_initial_sl) * volume * contract_size
+                x1_open_risk_at_open = _remaining_risk(entry, x1_sl, direction, volume, contract_size) if x1_exit is None else 0.0
+                initial_budget = risk * volume * contract_size
+                residual = max(0.0, initial_budget - x1_open_risk_at_open)
+                x2_admission_risk = proposed_risk
+                if proposed_risk > residual + risk_tolerance:
+                    x2_status, x2_skip_reason, state = "SKIPPED", "X2_SKIPPED_RISK_BUDGET", "CANCELLED"
+                else:
+                    x2_entry, x2_initial_sl, x2_sl = proposed_entry, proposed_initial_sl, proposed_initial_sl
+                    x2_entry_idx = bi
+                    x2_status, state = "OPENED", "DONE"
+            x2_pending_idx = None
+
+        # Check stops already active at the start of this completed bar,
+        # including a newly opened X2 whose fill was at this bar's open.
         x1_hit = x1_exit is None and _hit_stop(bar, direction, x1_sl)
         x2_hit = x2_entry is not None and x2_exit is None and _hit_stop(bar, direction, x2_sl)
         if x1_hit:
@@ -112,7 +134,7 @@ def replay_x2_signal(
             x1_reason = f"{x1_origin}_SL" if x1_origin != "SL" else "SL"
         if x2_hit:
             x2_exit, x2_exit_time = x2_sl, now
-            x2_reason = f"{x2_origin}_SL" if x2_origin != "SL" else "SL"
+            x2_reason = "SL_ON_ENTRY_BAR" if bi == x2_entry_idx else (f"{x2_origin}_SL" if x2_origin != "SL" else "SL")
         if x1_hit and state not in {"DONE", "CANCELLED"}:
             # If OHLC permits both the X1 stop and an X2 state transition on
             # this bar, their intrabar order cannot be inferred.
@@ -149,30 +171,6 @@ def replay_x2_signal(
             break
         if x1_exit is not None and x2_exit is not None:
             break
-
-        # A next-open X2 fill is pending from the prior completed bar.
-        if x2_pending_idx == bi and state == "PENDING_FILL":
-            if not _stop_valid(float(pullback_extreme), opn, direction):
-                x2_status, x2_skip_reason, state = "SKIPPED", "NEXT_OPEN_THROUGH_X2_STOP", "CANCELLED"
-            else:
-                x2_entry, x2_sl = opn, float(pullback_extreme)
-                x2_entry_idx = bi
-                x2_risk = abs(x2_entry - x2_sl) * volume * contract_size
-                x1_open_risk = _remaining_risk(entry, x1_sl, direction, volume, contract_size) if x1_exit is None else 0.0
-                initial_budget = risk * volume * contract_size
-                residual = max(0.0, initial_budget - x1_open_risk)
-                x2_admission_risk = x2_risk
-                if x2_risk > residual + risk_tolerance:
-                    x2_status, x2_skip_reason, state = "SKIPPED", "X2_SKIPPED_RISK_BUDGET", "CANCELLED"
-                    x2_entry = x2_sl = None
-                else:
-                    x2_status, state = "OPENED", "DONE"
-                    # The X2 fill occurs at this bar's open; subsequent range
-                    # on this same bar can hit its initial stop, but no trail
-                    # update is calculated from this entry bar.
-                    if _hit_stop(bar, direction, x2_sl):
-                        x2_exit, x2_exit_time, x2_reason = x2_sl, now, "SL_ON_ENTRY_BAR"
-            x2_pending_idx = None
 
         # Manage X1 trailing after stop checks; updated stop starts next bar.
         if x1_exit is None:
@@ -236,9 +234,9 @@ def replay_x2_signal(
     x1["risk_usd"] = risk * volume * contract_size
     x2 = None
     if x2_entry is not None:
-        x2 = leg_result(x2_entry, x2_sl, x2_exit, x2_exit_time, x2_reason, x2_ambiguous, "X2", x2_updates, x2_bars_held)
+        x2 = leg_result(x2_entry, x2_initial_sl, x2_exit, x2_exit_time, x2_reason, x2_ambiguous, "X2", x2_updates, x2_bars_held)
         x2["final_sl"] = x2_sl
-        x2["risk_usd"] = abs(x2_entry - x2_sl) * volume * contract_size
+        x2["risk_usd"] = abs(x2_entry - x2_initial_sl) * volume * contract_size
     combined_usd = sum(float(x["realized_usd"]) for x in (x1, x2) if x and x["realized_usd"] is not None)
     combined_decisive = (x1["realized_usd"] is not None and not x1["ambiguous"] and
                          (x2 is None or (x2["realized_usd"] is not None and not x2["ambiguous"])))
