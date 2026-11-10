@@ -81,9 +81,19 @@ def variants():
  return out
 def summary(rows):
  dec=[x for x in rows if not x["ambiguous"] and x["realized_R"] is not None];w=[x for x in dec if x["realized_R"]>0];l=[x for x in dec if x["realized_R"]<0];gp=sum(x["realized_usd"] for x in w);gl=abs(sum(x["realized_usd"] for x in l));eq=peak=dd=0
- settled=sorted((x for x in rows if x["realized_R"] is not None and not x["ambiguous"]),key=lambda x:x.get("exit_time_utc") or "")
- for x in settled:
-  eq+=x["realized_usd"];peak=max(peak,eq);dd=max(dd,peak-eq)
+ # M1 exit timestamps identify a minute, not an intraminute sequence.
+ # Aggregate all exits in the same minute before advancing the equity curve;
+ # never let CSV/population row order invent a within-minute path.
+ cohorts={}
+ for x in rows:
+  if x["realized_R"] is None or x["ambiguous"]:
+   continue
+  ts=x.get("exit_time_utc")
+  if not ts:
+   raise ValueError("settled trade is missing exit_time_utc")
+  cohorts[ts]=cohorts.get(ts,0.0)+float(x["realized_usd"])
+ for ts in sorted(cohorts):
+  eq+=cohorts[ts];peak=max(peak,eq);dd=max(dd,peak-eq)
  return {"signals":len(rows),"decisive":len(dec),"wins":len(w),"losses":len(l),"breakeven":len(dec)-len(w)-len(l),"ambiguous":sum(bool(x["ambiguous"]) for x in rows),"open_unresolved":sum(x["reason"]=="OPEN_OR_UNRESOLVED" for x in rows),"gap_exposed":sum(x["reason"]=="M1_GAP_WHILE_OPEN" for x in rows),"net_R":sum(x["realized_R"] for x in dec),"gross_usd":sum(x["realized_usd"] for x in dec),"gross_profit_usd":gp,"gross_loss_usd":gl,"profit_factor":gp/gl if gl else(None if not gp else "infinity"),"max_drawdown_usd":dd,"average_R":sum(x["realized_R"] for x in dec)/len(dec) if dec else None,"costs_modeled":False}
 def main():
  p=argparse.ArgumentParser();p.add_argument("--m1-csv",required=True);p.add_argument("--entry-csv",required=True);p.add_argument("--point",type=float,required=True);p.add_argument("--contract-size",type=float,required=True);p.add_argument("--volume",type=float,required=True);p.add_argument("--output-dir",required=True);p.add_argument("--symbol",default="XAUUSD.ecn");a=p.parse_args()
