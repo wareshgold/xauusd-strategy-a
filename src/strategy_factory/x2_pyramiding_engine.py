@@ -85,7 +85,7 @@ def replay_x2_signal(
     x2_bars_held = 0
     x2_origin = "SL"
     x2_max_fav = 0.0
-    x2_admission_risk = 0.0
+    x2_admission_risk = None
     x1_risk_at_x2_admission = None
     max_combined_open_risk = risk * volume * contract_size
     opportunities = 0
