@@ -63,9 +63,10 @@ def test_sell_is_symmetric():
     ])
     out = replay_x2_signal(_candidate("SELL"), bars, activation_price=0.5,
                            trail_distance_price=0.3, threshold_r=1.0)
-    assert out["x2_status"] in {"OPENED", "SKIPPED", "CANCELLED"}
-    if out["x2"] is not None:
-        assert out["x2"]["entry"] < out["x2"]["initial_sl"]
+    assert out["x2_status"] == "OPENED"
+    assert out["x2"] is not None
+    assert out["x2"]["entry"] == bars[4]["open"]
+    assert out["x2"]["entry"] < out["x2"]["initial_sl"]
 
 
 def test_no_x2_when_x1_stops_before_setup_completes():
@@ -219,8 +220,21 @@ def test_x2_risk_admission_exactly_at_shared_budget_cap():
 def test_next_open_through_x2_stop_is_rejected():
     bars = _threshold_path(1.0)
     bars[4]["open"] = 100.7
+    bars[4]["low"] = 100.5
     out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
                            trail_distance_price=0.3, threshold_r=1.0)
     assert out["x2"] is None
     assert out["x2_status"] == "SKIPPED"
     assert out["x2_skip_reason"] == "NEXT_OPEN_THROUGH_X2_STOP"
+
+
+
+def test_x1_frozen_entry_bar_is_excluded_from_stop_checks():
+    bars = _bars([
+        (100.0, 100.1, 98.0, 100.0),  # Frozen entry bar touches below X1 SL.
+        (100.0, 100.2, 99.5, 100.0),
+    ])
+    out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x1"]["exit_price"] is None
+    assert out["x1"]["reason"] == "OPEN_OR_UNRESOLVED"
