@@ -39,7 +39,7 @@ def test_ambiguous_combined_signal_is_excluded_from_portfolio_pnl():
             "combined_decisive": False, "combined_ambiguous": True,
             "combined_state": "AMBIGUOUS", "combined_gross_usd": None,
             "initial_risk_usd": 1.0, "x1_state": "DECISIVE",
-            "x2_state": "AMBIGUOUS", "x1": {"exit_time_utc": "2026-01-01T00:00:00+00:00",
+            "x2_state": "NOT_OPENED", "x2_status": "AMBIGUOUS", "x1": {"exit_time_utc": "2026-01-01T00:00:00+00:00",
             "realized_usd": 20.0}, "x2": None, "x2_opportunities": 1,
         },
     ]
@@ -48,3 +48,5 @@ def test_ambiguous_combined_signal_is_excluded_from_portfolio_pnl():
     assert summary["combined_ambiguous"] == 1
     assert summary["gross_usd"] == 5.0
     assert summary["combined_gap_exposed"] == 0
+    assert summary["x2_ambiguous"] == 1
+    assert summary["x2_admissions"] == 0
