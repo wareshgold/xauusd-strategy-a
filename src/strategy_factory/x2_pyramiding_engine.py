@@ -141,14 +141,11 @@ def replay_x2_signal(
         if x1_hit and state not in {"DONE", "CANCELLED"}:
             # If OHLC permits both the X1 stop and an X2 state transition on
             # this bar, their intrabar order cannot be inferred.
+            # Only continuation confirmation is an X2 admission trigger.
+            # A threshold or pullback occurring on the X1 exit bar cannot
+            # produce an X2 fill; the setup is simply cancelled.
             possible_x2_event = False
-            if state == "WAIT_THRESHOLD":
-                possible_x2_event = _favorable(bar, direction, entry) >= threshold_r * risk
-            elif state == "WAIT_PULLBACK" and best_favorable is not None:
-                best_now = max(best_favorable, high) if direction == "BUY" else min(best_favorable, low)
-                retrace_now = best_now - low if direction == "BUY" else high - best_now
-                possible_x2_event = retrace_now + 1e-12 >= pullback_r * risk
-            elif state == "PULLBACK_ARMED":
+            if state == "PULLBACK_ARMED":
                 possible_x2_event = (
                     (direction == "BUY" and close > float(bars[bi - 1]["high"])) or
                     (direction == "SELL" and close < float(bars[bi - 1]["low"]))
