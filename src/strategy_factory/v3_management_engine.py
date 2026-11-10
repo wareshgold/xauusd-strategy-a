@@ -26,6 +26,11 @@ class V3ManagementVariant:
     trades: tuple[dict[str, Any], ...]
 
 
+def _threshold_reached(actual: float, threshold: float) -> bool:
+    """Compare price distances without losing exact-boundary activations to float noise."""
+    return actual >= threshold or math.isclose(actual, threshold, rel_tol=1e-12, abs_tol=1e-12)
+
+
 def _positive(spec: dict[str, Any], key: str) -> float:
     try:
         value = float(spec[key])
@@ -147,7 +152,7 @@ def replay_management_trade(
             break
 
         # Stops updated from a completed bar become active only on the next bar.
-        if mode == "BREAK_EVEN" and not be_activated and favorable >= spec["activation_r"] * risk:
+        if mode == "BREAK_EVEN" and not be_activated and _threshold_reached(favorable, spec["activation_r"] * risk):
             proposed = entry + spec["offset_r"] * risk if direction == "BUY" else entry - spec["offset_r"] * risk
             valid_side = proposed < close if direction == "BUY" else proposed > close
             if valid_side:
@@ -159,7 +164,7 @@ def replay_management_trade(
                 deferred += 1
         elif mode == "TRAILING_R":
             if not trail_activated and (
-                spec["activation_r"] == 0 or favorable >= spec["activation_r"] * risk
+                spec["activation_r"] == 0 or _threshold_reached(favorable, spec["activation_r"] * risk)
             ):
                 trail_activated = activated = True
             if trail_activated:
@@ -173,7 +178,7 @@ def replay_management_trade(
                 elif not valid_side:
                     deferred += 1
         elif mode == "BREAK_EVEN_TRAILING":
-            if not be_activated and favorable >= spec["be_activation_r"] * risk:
+            if not be_activated and _threshold_reached(favorable, spec["be_activation_r"] * risk):
                 proposed = entry + spec["be_offset_r"] * risk if direction == "BUY" else entry - spec["be_offset_r"] * risk
                 valid_side = proposed < close if direction == "BUY" else proposed > close
                 improved = proposed > current_sl if direction == "BUY" else proposed < current_sl
@@ -182,7 +187,7 @@ def replay_management_trade(
                     stop_origin = "BREAK_EVEN"
                 elif not valid_side:
                     deferred += 1
-            if not trail_activated and favorable >= spec["trail_activation_r"] * risk:
+            if not trail_activated and _threshold_reached(favorable, spec["trail_activation_r"] * risk):
                 trail_activated = activated = True
             if trail_activated:
                 distance = spec["trail_distance_r"] * risk
