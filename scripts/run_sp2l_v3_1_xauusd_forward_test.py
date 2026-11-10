@@ -332,18 +332,26 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
         DealHistoryQueryError,
         collect_tracked_deals,
     )
-    try:
-        deals = collect_tracked_deals(
-            history_deals_get=mt5.history_deals_get,
-            history_orders_get=getattr(mt5, "history_orders_get", None),
-            symbol=symbol,
-            tracked_orders=tracked_orders,
-            tracked_positions=tracked_positions,
-            last_error=getattr(mt5, "last_error", None),
-        )
-    except DealHistoryQueryError as exc:
-        # A failed query is not an empty history snapshot. Suppress only
-        # duplicate diagnostics; always defer lifecycle processing.
+    # Active orders are queried through orders_get. Never send those tickets
+    # to history_orders_get(ticket=...), which is reserved for historical orders.
+    active_orders = mt5.orders_get(symbol=symbol)
+    active_order_ids = {
+        int(getattr(order, "ticket", 0) or 0)
+        for order in (active_orders or [])
+        if int(getattr(order, "ticket", 0) or 0) > 0
+        and str(getattr(order, "symbol", "") or "") == symbol
+        and int(getattr(order, "magic", 0) or 0) == int(magic)
+    }
+    collection = collect_tracked_deals(
+        history_deals_get=mt5.history_deals_get,
+        history_orders_get=getattr(mt5, "history_orders_get", None),
+        symbol=symbol,
+        tracked_orders=tracked_orders,
+        tracked_positions=tracked_positions,
+        active_order_ids=active_order_ids,
+        last_error=getattr(mt5, "last_error", None),
+    )
+    for exc in collection.failures:
         if _HISTORY_QUERY_FAILURE_LOG_GATE.should_log(
             exc.query, exc.target, exc.detail
         ):
@@ -356,10 +364,15 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
                 "detail": exc.detail,
                 "canonical": False,
             })
+    if not collection.failures:
+        _HISTORY_QUERY_FAILURE_LOG_GATE.mark_success()
+    deals = collection.deals
+    if collection.failures and not deals:
+        # No usable lifecycle deals were recovered. Keep state unchanged and
+        # retry on the next poll; do not convert a failed query into empty history.
         runner.save_state(state)
         return
 
-    _HISTORY_QUERY_FAILURE_LOG_GATE.mark_success()
     run_started_epoch = int(_RUN_STARTED_UTC.timestamp())
     for deal in deals:
         ticket=int(deal.ticket)
