@@ -78,7 +78,10 @@ def test_no_x2_when_x1_stops_before_setup_completes():
     out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
                            trail_distance_price=0.3, threshold_r=1.0)
     assert out["x2"] is None
-    assert out["x2_status"] == "CANCELLED"
+    # The same OHLC bar can contain both the X1 stop and the X2 pullback;
+    # intrabar ordering is unknowable, so the conservative result is ambiguous.
+    assert out["x2_status"] == "AMBIGUOUS"
+    assert out["x2_skip_reason"] == "X1_EXIT_AND_X2_EVENT_SAME_BAR"
 
 
 def test_gap_is_ambiguous_and_never_filled():
