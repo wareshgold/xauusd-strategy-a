@@ -332,13 +332,28 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # Active orders are queried through orders_get. Never send those tickets
     # to history_orders_get(ticket=...), which is reserved for historical orders.
     active_orders = mt5.orders_get(symbol=symbol)
-    active_order_ids = {
-        int(getattr(order, "ticket", 0) or 0)
-        for order in (active_orders or [])
-        if int(getattr(order, "ticket", 0) or 0) > 0
-        and str(getattr(order, "symbol", "") or "") == symbol
-        and int(getattr(order, "magic", 0) or 0) == int(magic)
-    }
+    active_inventory_error = None
+    if active_orders is None:
+        # Unknown active-order inventory must fail closed: do not assume the
+        # tracked tickets are historical and send them to history_orders_get.
+        # Known position histories can still be reconciled independently.
+        active_order_ids = set(tracked_orders)
+        detail = "MT5 orders_get returned None"
+        last_error = getattr(mt5, "last_error", None)
+        if callable(last_error):
+            try:
+                detail += f"; MT5 last_error={last_error()}"
+            except Exception as exc:
+                detail += f"; last_error unavailable: {type(exc).__name__}: {exc}"
+        active_inventory_error = DealHistoryQueryError("orders_get", 0, detail)
+    else:
+        active_order_ids = {
+            int(getattr(order, "ticket", 0) or 0)
+            for order in active_orders
+            if int(getattr(order, "ticket", 0) or 0) > 0
+            and str(getattr(order, "symbol", "") or "") == symbol
+            and int(getattr(order, "magic", 0) or 0) == int(magic)
+        }
     collection = collect_tracked_deals(
         history_deals_get=mt5.history_deals_get,
         history_orders_get=getattr(mt5, "history_orders_get", None),
@@ -348,7 +363,8 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
         active_order_ids=active_order_ids,
         last_error=getattr(mt5, "last_error", None),
     )
-    for exc in collection.failures:
+    failures = ([active_inventory_error] if active_inventory_error is not None else []) + collection.failures
+    for exc in failures:
         if _HISTORY_QUERY_FAILURE_LOG_GATE.should_log(
             exc.query, exc.target, exc.detail
         ):
@@ -361,10 +377,10 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
                 "detail": exc.detail,
                 "canonical": False,
             })
-    if not collection.failures:
+    if not failures:
         _HISTORY_QUERY_FAILURE_LOG_GATE.mark_success()
     deals = collection.deals
-    if collection.failures and not deals:
+    if failures and not deals:
         # No usable lifecycle deals were recovered. Keep state unchanged and
         # retry on the next poll; do not convert a failed query into empty history.
         runner.save_state(state)
