@@ -109,7 +109,17 @@ def replay_x2_signal(
         # A next-open X2 fill occurs at this bar's open, before evaluating
         # either leg's intrabar stop touches on this bar.
         if x2_pending_idx == bi and state == "PENDING_FILL":
-            if not _stop_valid(float(pullback_extreme), opn, direction):
+            # X1's active stop is already executable if the next bar opens
+            # through it. Do not admit X2 using a zeroed X1 risk figure:
+            # resolve the X1 stop first and cancel the pending continuation.
+            x1_stop_crossed_at_open = (
+                (opn <= x1_sl) if direction == "BUY" else (opn >= x1_sl)
+            )
+            if x1_exit is None and x1_stop_crossed_at_open:
+                x2_status, x2_skip_reason, state = (
+                    "CANCELLED", "X1_STOP_CROSSED_AT_X2_OPEN", "CANCELLED"
+                )
+            elif not _stop_valid(float(pullback_extreme), opn, direction):
                 x2_status, x2_skip_reason, state = "SKIPPED", "NEXT_OPEN_THROUGH_X2_STOP", "CANCELLED"
             else:
                 proposed_entry = opn
