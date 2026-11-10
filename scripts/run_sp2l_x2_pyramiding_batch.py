@@ -122,7 +122,7 @@ def summarize(rows, kind):
         "x2_opportunities": sum(r.get("x2_opportunities", 0) for r in rows),
         "x2_opened": sum(r["x2_state"] not in ("NOT_OPENED",) and r.get("x2") is not None for r in rows),
         "x2_skipped_risk_budget": sum(r.get("x2_skip_reason") == "X2_SKIPPED_RISK_BUDGET" for r in rows),
-        "x2_ambiguous": sum(r["x2_state"] == "AMBIGUOUS" for r in rows),
+        "x2_ambiguous": sum(r["x2_state"] == "AMBIGUOUS" or r.get("x2_status") == "AMBIGUOUS" for r in rows),
         "x2_cancelled_or_other_skipped": sum(r.get("x2_status") in ("CANCELLED", "SKIPPED") and r.get("x2_skip_reason") != "X2_SKIPPED_RISK_BUDGET" for r in rows),
         "x2_decisive": sum(r["x2_state"] == "DECISIVE" for r in rows),
         "x2_gap_exposed": sum(r["x2_state"] == "GAP_EXPOSED" for r in rows),
