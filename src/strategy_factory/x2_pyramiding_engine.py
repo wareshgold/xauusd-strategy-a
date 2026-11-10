@@ -81,6 +81,7 @@ def replay_x2_signal(
     x2_reason = "NOT_OPENED"
     x2_ambiguous = False
     x2_updates = 0
+    x2_entry_idx = None
     x2_bars_held = 0
     x2_origin = "SL"
     x2_max_fav = 0.0
@@ -126,7 +127,14 @@ def replay_x2_signal(
 
         if x2_entry is not None and x2_exit is None:
             x2_bars_held += 1
-            x2_max_fav = max(x2_max_fav, _favorable(bar, direction, x2_entry))
+            x2_fav = _favorable(bar, direction, x2_entry)
+            x2_max_fav = max(x2_max_fav, x2_fav)
+            if bi > int(x2_entry_idx) and x2_fav >= activation_price:
+                proposed_x2 = high - trail_distance_price if direction == "BUY" else low + trail_distance_price
+                if _stop_valid(proposed_x2, close, direction):
+                    improved_x2 = proposed_x2 > x2_sl if direction == "BUY" else proposed_x2 < x2_sl
+                    if improved_x2:
+                        x2_sl, x2_origin, x2_updates = proposed_x2, "TRAIL", x2_updates + 1
         if x1_exit is not None and x2_entry is None:
             break
         if x1_exit is not None and x2_exit is not None:
@@ -138,6 +146,7 @@ def replay_x2_signal(
                 x2_status, x2_skip_reason, state = "SKIPPED", "NEXT_OPEN_THROUGH_X2_STOP", "CANCELLED"
             else:
                 x2_entry, x2_sl = opn, float(pullback_extreme)
+                x2_entry_idx = bi
                 x2_risk = abs(x2_entry - x2_sl) * volume * contract_size
                 x1_open_risk = _remaining_risk(entry, x1_sl, direction, volume, contract_size) if x1_exit is None else 0.0
                 initial_budget = risk * volume * contract_size
