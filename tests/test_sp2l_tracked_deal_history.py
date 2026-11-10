@@ -160,3 +160,19 @@ def test_history_query_exception_is_not_treated_as_empty():
     assert result.deals == []
     assert len(result.failures) == 1
     assert "TimeoutError: history unavailable" in result.failures[0].detail
+
+
+def test_active_pending_order_without_position_is_valid_empty_history():
+    def forbidden_history_order_query(**kwargs):
+        raise AssertionError("active pending order must not be queried as history")
+
+    result = collect_tracked_deals(
+        history_deals_get=lambda **kwargs: (),
+        history_orders_get=forbidden_history_order_query,
+        symbol="XAUUSD",
+        tracked_orders={100},
+        tracked_positions=set(),
+        active_order_ids={100},
+    )
+    assert result.deals == []
+    assert result.failures == []
