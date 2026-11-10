@@ -232,13 +232,24 @@ def run_batch(m1_path, entry_path, output_dir, point=0.01, contract_size=CONTRAC
         deltas = []
         for idx in sorted(baseline):
             b, x = baseline[idx], current[idx]
-            if b["combined_decisive"] and x["combined_decisive"]:
-                deltas.append(float(x["combined_gross_usd"]) - float(b["combined_gross_usd"]))
-        paired.append({"config": config["name"], "parent": config["parent"],
-                       "paired_decisive_n": len(deltas), "paired_delta_gross_usd": sum(deltas),
-                       "x2_better": sum(d > 1e-12 for d in deltas),
-                       "x1_only_better": sum(d < -1e-12 for d in deltas),
-                       "equal": sum(abs(d) <= 1e-12 for d in deltas)})
+            comparable = bool(b["combined_decisive"] and x["combined_decisive"])
+            delta = (float(x["combined_gross_usd"]) - float(b["combined_gross_usd"])) if comparable else None
+            if delta is not None:
+                deltas.append(delta)
+            paired.append({
+                "config": config["name"], "parent": config["parent"],
+                "population_index": idx, "trigger_time": x["trigger_time"],
+                "direction": x["direction"], "x1_only_decisive": b["combined_decisive"],
+                "x1_x2_decisive": x["combined_decisive"],
+                "x1_only_gross_usd": b["combined_gross_usd"],
+                "x1_x2_combined_gross_usd": x["combined_gross_usd"],
+                "paired_delta_usd": delta, "comparison_status": "PAIRED_DECISIVE" if comparable else "UNRESOLVED_OR_AMBIGUOUS",
+            })
+        sm = next(row for row in summaries if row["config"] == config["name"])
+        sm.update({"paired_decisive_n": len(deltas), "paired_delta_gross_usd": sum(deltas),
+                   "x2_better": sum(d > 1e-12 for d in deltas),
+                   "x1_only_better": sum(d < -1e-12 for d in deltas),
+                   "paired_equal": sum(abs(d) <= 1e-12 for d in deltas)})
     output_dir.mkdir(parents=True, exist_ok=False)
     stem = "SP2L_X2_PYRAMIDING_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     trades_path, summary_path = output_dir / (stem + "_TRADES.csv"), output_dir / (stem + "_SUMMARY.csv")
