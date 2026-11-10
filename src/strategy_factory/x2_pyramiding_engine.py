@@ -69,6 +69,7 @@ def replay_x2_signal(
     x1_ambiguous = False
     x1_updates = 0
     x1_max_fav = 0.0
+    x1_trail_activated = False
 
     state = "WAIT_THRESHOLD"
     best_favorable = None
@@ -177,6 +178,8 @@ def replay_x2_signal(
             fav = _favorable(bar, direction, entry)
             x1_max_fav = max(x1_max_fav, fav)
             if fav >= activation_price:
+                x1_trail_activated = True
+            if x1_trail_activated:
                 proposed = high - trail_distance_price if direction == "BUY" else low + trail_distance_price
                 if _stop_valid(proposed, close, direction):
                     improved = proposed > x1_sl if direction == "BUY" else proposed < x1_sl
