@@ -324,3 +324,36 @@ def test_trailing_activation_exact_price_boundary_is_not_lost_to_float_rounding(
     assert combined["x1"]["final_sl"] == out["final_sl"]
     assert combined["x1"]["exit_price"] == out["exit_price"]
     assert combined["x1"]["exit_time_utc"] == out["exit_time_utc"]
+
+
+
+def test_buy_x2_not_admitted_when_next_open_crosses_active_x1_stop():
+    bars = _buy_path()
+    # X1's trailing stop after the confirmation bar is 101.1. The X2
+    # pullback stop is 100.8, so this open is valid for X2 but through X1 SL.
+    bars[4]["open"] = 101.0
+    bars[4]["low"] = 101.0
+    out = replay_x2_signal(_candidate("BUY"), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x1"]["exit_price"] == 101.1
+    assert out["x2"] is None
+    assert out["x2_status"] == "CANCELLED"
+    assert out["x2_skip_reason"] == "X1_STOP_CROSSED_AT_X2_OPEN"
+
+
+def test_sell_x2_not_admitted_when_next_open_crosses_active_x1_stop():
+    bars = _bars([
+        (100.0, 100.1, 99.9, 100.0),
+        (100.0, 100.5, 98.9, 99.2),
+        (99.2, 99.2, 98.8, 99.0),
+        (99.0, 99.0, 98.6, 98.7),
+        (99.0, 99.1, 98.3, 98.4),
+    ])
+    # X1's trailing stop is 98.9; X2's pullback stop is 99.2.
+    # The next open is valid relative to X2 but already through X1 SL.
+    out = replay_x2_signal(_candidate("SELL"), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x1"]["exit_price"] == 98.9
+    assert out["x2"] is None
+    assert out["x2_status"] == "CANCELLED"
+    assert out["x2_skip_reason"] == "X1_STOP_CROSSED_AT_X2_OPEN"
