@@ -1,7 +1,7 @@
 # SP2L X2 Pyramiding Experiment — Offline Specification
 
 Date: 2026-11-10
-Status: SPECIFICATION — implementation and replay not yet executed
+Status: IMPLEMENTED DRAFT — synthetic tests authored but not yet executed; full replay not run
 Research-only; non-canonical; no production or forward-runner changes.
 
 ## Objective
