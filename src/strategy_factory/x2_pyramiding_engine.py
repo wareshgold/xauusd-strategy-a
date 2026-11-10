@@ -86,6 +86,7 @@ def replay_x2_signal(
     x2_origin = "SL"
     x2_max_fav = 0.0
     x2_admission_risk = 0.0
+    x1_risk_at_x2_admission = None
     max_combined_open_risk = risk * volume * contract_size
     opportunities = 0
 
@@ -114,6 +115,7 @@ def replay_x2_signal(
                 proposed_initial_sl = float(pullback_extreme)
                 proposed_risk = abs(proposed_entry - proposed_initial_sl) * volume * contract_size
                 x1_open_risk_at_open = _remaining_risk(entry, x1_sl, direction, volume, contract_size) if x1_exit is None else 0.0
+                x1_risk_at_x2_admission = x1_open_risk_at_open
                 initial_budget = risk * volume * contract_size
                 residual = max(0.0, initial_budget - x1_open_risk_at_open)
                 x2_admission_risk = proposed_risk
@@ -122,6 +124,7 @@ def replay_x2_signal(
                 else:
                     x2_entry, x2_initial_sl, x2_sl = proposed_entry, proposed_initial_sl, proposed_initial_sl
                     x2_entry_idx = bi
+                    max_combined_open_risk = max(max_combined_open_risk, x1_open_risk_at_open + proposed_risk)
                     x2_status, state = "OPENED", "DONE"
             x2_pending_idx = None
 
@@ -238,7 +241,9 @@ def replay_x2_signal(
         x2["final_sl"] = x2_sl
         x2["risk_usd"] = abs(x2_entry - x2_initial_sl) * volume * contract_size
     combined_usd = sum(float(x["realized_usd"]) for x in (x1, x2) if x and x["realized_usd"] is not None)
+    combined_ambiguous = x1_ambiguous or x2_ambiguous or x2_status == "AMBIGUOUS"
     combined_decisive = (x1["realized_usd"] is not None and not x1["ambiguous"] and
+                         x2_status != "AMBIGUOUS" and
                          (x2 is None or (x2["realized_usd"] is not None and not x2["ambiguous"])))
     return {
         "population_index": candidate.get("population_index"),
@@ -247,7 +252,8 @@ def replay_x2_signal(
         "x2_skip_reason": x2_skip_reason, "x2_opportunities": opportunities,
         "combined_gross_usd": combined_usd if combined_decisive else None,
         "combined_decisive": combined_decisive,
-        "combined_ambiguous": x1_ambiguous or x2_ambiguous,
+        "combined_ambiguous": combined_ambiguous,
         "max_combined_open_risk_usd": max_combined_open_risk,
+        "x1_risk_at_x2_admission_usd": x1_risk_at_x2_admission,
         "x2_admission_risk_usd": x2_admission_risk,
     }
