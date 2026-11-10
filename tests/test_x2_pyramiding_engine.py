@@ -112,7 +112,7 @@ def _threshold_path(threshold, pullback_depth=0.25):
     return _bars([
         (100.0, 100.1, 99.9, 100.0),
         (100.0, peak, peak - 0.05, peak - 0.05),
-        (peak - 0.05, peak + 0.1, peak - pullback_depth, peak - 0.02),
+        (peak - 0.05, peak, peak - pullback_depth, peak - 0.02),
         (peak - 0.02, peak + 0.3, peak - 0.01, peak + 0.2),
         (peak + 0.2, peak + 0.4, peak + 0.1, peak + 0.3),
     ])
