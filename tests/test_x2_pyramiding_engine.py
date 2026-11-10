@@ -78,8 +78,22 @@ def test_no_x2_when_x1_stops_before_setup_completes():
     out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
                            trail_distance_price=0.3, threshold_r=1.0)
     assert out["x2"] is None
-    # The same OHLC bar can contain both the X1 stop and the X2 pullback;
-    # intrabar ordering is unknowable, so the conservative result is ambiguous.
+    # A pullback alone is not an X2 admission trigger. X1 exits before
+    # continuation confirmation, so the setup is cancelled.
+    assert out["x2_status"] == "CANCELLED"
+    assert out["x2_skip_reason"] == "X1_EXIT_BEFORE_X2"
+
+
+def test_x1_exit_and_x2_continuation_confirmation_same_bar_are_ambiguous():
+    bars = _bars([
+        (100.0, 100.1, 99.9, 100.0),
+        (100.0, 101.1, 100.9, 101.0),   # threshold; X1 trail -> 100.8
+        (101.0, 101.2, 100.85, 101.1),  # pullback arms; X1 trail -> 100.9
+        (101.1, 101.4, 100.8, 101.3),   # X1 stop and continuation both possible
+    ])
+    out = replay_x2_signal(_candidate(), bars, activation_price=0.5,
+                           trail_distance_price=0.3, threshold_r=1.0)
+    assert out["x2"] is None
     assert out["x2_status"] == "AMBIGUOUS"
     assert out["x2_skip_reason"] == "X1_EXIT_AND_X2_EVENT_SAME_BAR"
     assert out["combined_ambiguous"] is True
