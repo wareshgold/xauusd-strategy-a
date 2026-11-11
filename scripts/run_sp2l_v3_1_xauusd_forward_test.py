@@ -328,55 +328,30 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # MT5 time-window history can omit recent deals when broker timestamps use
     # a different clock basis from host UTC. Resolve only runner-owned IDs,
     # then query each linked position so its closing deal is not missed.
-    from sp2l_tracked_deal_history import DealHistoryQueryError, collect_tracked_deals
-    # Active orders are queried through orders_get. Never send those tickets
-    # to history_orders_get(ticket=...), which is reserved for historical orders.
-    active_orders = mt5.orders_get(symbol=symbol)
-    active_inventory_error = None
-    if active_orders is None:
-        # Unknown active-order inventory must fail closed: do not assume the
-        # tracked tickets are historical and send them to history_orders_get.
-        # Known position histories can still be reconciled independently.
-        active_order_ids = set(tracked_orders)
-        detail = "MT5 orders_get returned None"
-        last_error = getattr(mt5, "last_error", None)
-        if callable(last_error):
-            try:
-                detail += f"; MT5 last_error={last_error()}"
-            except Exception as exc:
-                detail += f"; last_error unavailable: {type(exc).__name__}: {exc}"
-        active_inventory_error = DealHistoryQueryError("orders_get", 0, detail)
-    else:
-        active_order_ids = {
-            int(getattr(order, "ticket", 0) or 0)
-            for order in active_orders
-            if int(getattr(order, "ticket", 0) or 0) > 0
-            and str(getattr(order, "symbol", "") or "") == symbol
-            and int(getattr(order, "magic", 0) or 0) == int(magic)
-        }
-    collection = collect_tracked_deals(
+    from sp2l_tracked_deal_history import (
+        collect_runner_scoped_deals,
+        log_deal_history_failures,
+    )
+    # Active-order inventory uncertainty is handled fail-closed by the pure
+    # helper; known position histories remain independently recoverable.
+    collection = collect_runner_scoped_deals(
+        orders_get=mt5.orders_get,
         history_deals_get=mt5.history_deals_get,
         history_orders_get=getattr(mt5, "history_orders_get", None),
         symbol=symbol,
+        magic=magic,
         tracked_orders=tracked_orders,
         tracked_positions=tracked_positions,
-        active_order_ids=active_order_ids,
         last_error=getattr(mt5, "last_error", None),
     )
-    failures = ([active_inventory_error] if active_inventory_error is not None else []) + collection.failures
-    for exc in failures:
-        if _HISTORY_QUERY_FAILURE_LOG_GATE.should_log(
-            exc.query, exc.target, exc.detail
-        ):
-            runner.log_event({
-                "event": "MT5_DEAL_HISTORY_QUERY_FAILED",
-                "version": cfg.VERSION,
-                "symbol": symbol,
-                "query": exc.query,
-                "target": exc.target,
-                "detail": exc.detail,
-                "canonical": False,
-            })
+    failures = collection.failures
+    log_deal_history_failures(
+        failures=failures,
+        should_log=_HISTORY_QUERY_FAILURE_LOG_GATE.should_log,
+        log_event=runner.log_event,
+        version=cfg.VERSION,
+        symbol=symbol,
+    )
     if not failures:
         _HISTORY_QUERY_FAILURE_LOG_GATE.mark_success()
     deals = collection.deals
