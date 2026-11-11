@@ -90,6 +90,35 @@ class TestFatiBreakevenResearchFixtures(unittest.TestCase):
         self.assertEqual(action, BreakevenAction.ALREADY_CONFIRMED)
         self.assertIsNone(proposed)
 
+
+    def test_nan_entry_price_is_rejected(self):
+        with self.assertRaises(ValueError):
+            evaluate_breakeven(
+                model=self.model, direction="BUY", entry_price=float("nan"),
+                current_sl=3995.0, favorable_move_price=0.50, be_confirmed=False,
+            )
+
+    def test_nan_favorable_move_is_rejected(self):
+        with self.assertRaises(ValueError):
+            evaluate_breakeven(
+                model=self.model, direction="BUY", entry_price=4000.0,
+                current_sl=3995.0, favorable_move_price=float("nan"), be_confirmed=False,
+            )
+
+    def test_non_finite_current_sl_is_rejected(self):
+        with self.assertRaises(ValueError):
+            evaluate_breakeven(
+                model=self.model, direction="BUY", entry_price=4000.0,
+                current_sl=float("inf"), favorable_move_price=0.50, be_confirmed=False,
+            )
+
+    def test_negative_current_sl_is_rejected(self):
+        with self.assertRaises(ValueError):
+            evaluate_breakeven(
+                model=self.model, direction="BUY", entry_price=4000.0,
+                current_sl=-1.0, favorable_move_price=0.50, be_confirmed=False,
+            )
+
     def test_invalid_direction_is_rejected(self):
         with self.assertRaises(ValueError):
             self.model.desired_sl("LONG", 4000.0)
