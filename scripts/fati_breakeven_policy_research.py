@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from math import isfinite
 
 
 class BreakevenAction(str, Enum):
@@ -35,10 +36,10 @@ class BreakevenModel:
             self.commission_per_side_usd,
             self.activation_pips,
         )
-        if any(value <= 0 for value in values):
-            raise ValueError("all model inputs must be positive and finite")
-        if any(value != value or value in (float("inf"), float("-inf")) for value in values):
+        if any(not isfinite(value) for value in values):
             raise ValueError("all model inputs must be finite")
+        if any(value <= 0 for value in values):
+            raise ValueError("all model inputs must be positive")
 
     @property
     def value_per_pip_usd(self) -> float:
@@ -86,8 +87,11 @@ def evaluate_breakeven(
     """
     if direction not in {"BUY", "SELL"}:
         raise ValueError("direction must be BUY or SELL")
-    if entry_price <= 0 or favorable_move_price < 0:
-        raise ValueError("entry_price must be positive and favorable move non-negative")
+    numeric_inputs = (entry_price, current_sl, favorable_move_price)
+    if any(not isfinite(value) for value in numeric_inputs):
+        raise ValueError("entry, current SL, and favorable move must be finite")
+    if entry_price <= 0 or current_sl < 0 or favorable_move_price < 0:
+        raise ValueError("entry must be positive; current SL and favorable move must be non-negative")
     if be_confirmed:
         return BreakevenAction.ALREADY_CONFIRMED, None
     if favorable_move_price < model.activation_move_price:
