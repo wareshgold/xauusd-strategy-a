@@ -1,0 +1,23 @@
+name: Research - Fati Breakeven Offline Fixtures
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/fati_breakeven_policy_research.py'
+      - 'tests/test_fati_breakeven_policy_research.py'
+      - 'docs/FATI_BREAKEVEN_OFFLINE_RESEARCH.md'
+      - '.github/workflows/research-fati-breakeven.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fati-breakeven-offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run offline Fati breakeven fixtures
+        run: python -m unittest discover -s tests -p 'test_fati_breakeven_policy_research.py' -v
