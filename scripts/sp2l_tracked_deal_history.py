@@ -123,3 +123,74 @@ def collect_tracked_deals(
 
     deals = sorted(found.values(), key=lambda d: (int(d.time), int(d.ticket)))
     return DealHistoryCollection(deals=deals, failures=failures)
+
+
+def collect_runner_scoped_deals(
+    *,
+    orders_get,
+    history_deals_get,
+    history_orders_get,
+    symbol,
+    magic,
+    tracked_orders,
+    tracked_positions,
+    last_error=None,
+):
+    """Resolve active inventory and collect history, failing closed on uncertainty.
+
+    If orders_get returns None or raises, every tracked order is treated as
+    active/unknown and excluded from history_orders_get. Known position IDs
+    are still queried independently. A successful empty inventory is distinct
+    from an unavailable inventory.
+    """
+    tracked = {int(x) for x in tracked_orders if int(x) > 0}
+    inventory_failure = None
+    try:
+        active_orders = orders_get(symbol=symbol)
+        if active_orders is None:
+            raise RuntimeError("MT5 orders_get returned None")
+    except Exception as exc:
+        active_ids = tracked
+        detail = f"{type(exc).__name__}: {exc}"
+        extra = _last_error_detail(last_error)
+        if extra:
+            detail += f"; MT5 last_error={extra}"
+        inventory_failure = DealHistoryQueryError("orders_get", 0, detail)
+    else:
+        active_ids = {
+            int(getattr(order, "ticket", 0) or 0)
+            for order in active_orders
+            if int(getattr(order, "ticket", 0) or 0) > 0
+            and str(getattr(order, "symbol", "") or "") == symbol
+            and int(getattr(order, "magic", 0) or 0) == int(magic)
+        }
+
+    collection = collect_tracked_deals(
+        history_deals_get=history_deals_get,
+        history_orders_get=history_orders_get,
+        symbol=symbol,
+        tracked_orders=tracked,
+        tracked_positions=tracked_positions,
+        active_order_ids=active_ids,
+        last_error=last_error,
+    )
+    failures = ([inventory_failure] if inventory_failure else []) + collection.failures
+    return DealHistoryCollection(deals=collection.deals, failures=failures)
+
+
+def log_deal_history_failures(*, failures, should_log, log_event, version, symbol):
+    """Emit deduplicated, non-canonical failure telemetry for a collection."""
+    logged = 0
+    for exc in failures:
+        if should_log(exc.query, exc.target, exc.detail):
+            log_event({
+                "event": "MT5_DEAL_HISTORY_QUERY_FAILED",
+                "version": version,
+                "symbol": symbol,
+                "query": exc.query,
+                "target": exc.target,
+                "detail": exc.detail,
+                "canonical": False,
+            })
+            logged += 1
+    return logged
