@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "research/sp2l-f13-forensic-repro-*"
+      - "fix/v31-active-order-history-query-20261110"
   pull_request:
 
 jobs:
@@ -20,3 +21,7 @@ jobs:
         run: python scripts/test_sp2l_author_replica_detector_consistency.py
       - name: Run reconciliation tests
         run: python -m pytest -q tests/test_reconcile_sp2l_forward_backtest.py
+      - name: Run V3.1 tracked history helper tests
+        run: python -m pytest -q tests/test_sp2l_tracked_deal_history.py
+      - name: Compile V3.1 runner and helper
+        run: python -m py_compile scripts/run_sp2l_v3_1_xauusd_forward_test.py scripts/sp2l_tracked_deal_history.py

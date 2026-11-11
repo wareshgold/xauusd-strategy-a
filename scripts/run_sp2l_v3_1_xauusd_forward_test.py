@@ -329,37 +329,38 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     # a different clock basis from host UTC. Resolve only runner-owned IDs,
     # then query each linked position so its closing deal is not missed.
     from sp2l_tracked_deal_history import (
-        DealHistoryQueryError,
-        collect_tracked_deals,
+        collect_runner_scoped_deals,
+        log_deal_history_failures,
     )
-    try:
-        deals = collect_tracked_deals(
-            history_deals_get=mt5.history_deals_get,
-            history_orders_get=getattr(mt5, "history_orders_get", None),
-            symbol=symbol,
-            tracked_orders=tracked_orders,
-            tracked_positions=tracked_positions,
-            last_error=getattr(mt5, "last_error", None),
-        )
-    except DealHistoryQueryError as exc:
-        # A failed query is not an empty history snapshot. Suppress only
-        # duplicate diagnostics; always defer lifecycle processing.
-        if _HISTORY_QUERY_FAILURE_LOG_GATE.should_log(
-            exc.query, exc.target, exc.detail
-        ):
-            runner.log_event({
-                "event": "MT5_DEAL_HISTORY_QUERY_FAILED",
-                "version": cfg.VERSION,
-                "symbol": symbol,
-                "query": exc.query,
-                "target": exc.target,
-                "detail": exc.detail,
-                "canonical": False,
-            })
+    # Active-order inventory uncertainty is handled fail-closed by the pure
+    # helper; known position histories remain independently recoverable.
+    collection = collect_runner_scoped_deals(
+        orders_get=mt5.orders_get,
+        history_deals_get=mt5.history_deals_get,
+        history_orders_get=getattr(mt5, "history_orders_get", None),
+        symbol=symbol,
+        magic=magic,
+        tracked_orders=tracked_orders,
+        tracked_positions=tracked_positions,
+        last_error=getattr(mt5, "last_error", None),
+    )
+    failures = collection.failures
+    log_deal_history_failures(
+        failures=failures,
+        should_log=_HISTORY_QUERY_FAILURE_LOG_GATE.should_log,
+        log_event=runner.log_event,
+        version=cfg.VERSION,
+        symbol=symbol,
+    )
+    if not failures:
+        _HISTORY_QUERY_FAILURE_LOG_GATE.mark_success()
+    deals = collection.deals
+    if failures and not deals:
+        # No usable lifecycle deals were recovered. Keep state unchanged and
+        # retry on the next poll; do not convert a failed query into empty history.
         runner.save_state(state)
         return
 
-    _HISTORY_QUERY_FAILURE_LOG_GATE.mark_success()
     run_started_epoch = int(_RUN_STARTED_UTC.timestamp())
     for deal in deals:
         ticket=int(deal.ticket)
