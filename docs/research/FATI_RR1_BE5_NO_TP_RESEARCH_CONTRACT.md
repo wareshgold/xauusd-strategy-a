@@ -31,7 +31,7 @@ The RR1 evaluator receives:
 - broker-confirmed one-time-change state.
 
 It calculates initial risk from actual fill to the original SL. The source of
-avorable_move_priceP (Bid/Ask, tick stream, or another quote convention)
+`favorable_move_price` (Bid/Ask, tick stream, or another quote convention)
 is deliberately not defined by this helper.
 
 ## Unresolved before any execution adapter
