@@ -81,7 +81,7 @@ The comparison script also records excluded winners/losers per filter in the gen
 
 1. Resolve/reconstruct the Runner candidate/decision timestamp and the exact information available at that moment. Do not substitute fill time or trigger-bar open time as if it were the decision timestamp.
 2. Establish whether a matching multi-month **Runner deal population** exists and can be aligned with its M1 history. Historical market data alone is insufficient to replay the realized Runner population.
-3. Add synthetic fixtures for the comparison script's position grouping, partial/multiple exits, reversal/ambiguous cases, timestamp boundary/equality handling, M1 gaps, and MA initialization before using it for a larger study.
+3. Validate the analyzer's M1 chronology, gap diagnostics, and exact completed-bar boundary behavior with synthetic fixtures; decide explicitly how MA windows should treat long data gaps before a larger study.
 4. Only after alignment and fixture correctness, run long-term Discovery on a frozen population; report per-filter sample sizes, rejected winners/losers, uncertainty intervals, daily/block-bootstrap stability, and multiple-comparison controls.
 5. Keep all candidate definitions and outputs research-only. No canonical selection or production change until source resolution, untouched validation, robustness/stability, and a fresh holdout are completed.
 
