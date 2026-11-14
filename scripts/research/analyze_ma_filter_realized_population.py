@@ -55,22 +55,38 @@ def last_completed_m1_index(times, timestamp):
     index = bisect.bisect_right(completed, timestamp) - 1
     return index if index >= 0 else None
 
-def moving_average(values, period, exponential=False):
+def moving_average(values, period, exponential=False, gap_indices=()):
+    """Calculate MA independently inside contiguous M1 segments.
+
+    A gap index identifies the first observed bar after a missing interval.
+    Both SMA and EMA remain unavailable until a full period of contiguous
+    observations has accumulated. EMA is reseeded from that segment's first
+    full-period SMA; no pre-gap recursive state is carried across the gap.
+    """
+    if period <= 0:
+        raise ValueError("period must be positive")
     out = [None] * len(values)
-    if len(values) < period:
-        return out
-    seed = sum(values[:period]) / period
-    out[period - 1] = seed
-    if not exponential:
-        running = sum(values[:period])
-        for i in range(period, len(values)):
-            running += values[i] - values[i-period]
-            out[i] = running / period
-        return out
-    alpha, previous = 2.0 / (period + 1.0), seed
-    for i in range(period, len(values)):
-        previous = alpha * values[i] + (1.0-alpha) * previous
-        out[i] = previous
+    boundaries = sorted(set(int(i) for i in gap_indices))
+    if any(i <= 0 or i >= len(values) for i in boundaries):
+        raise ValueError("gap index must identify a non-initial bar within values")
+    starts = [0, *boundaries]
+    ends = [*boundaries, len(values)]
+    for start, end in zip(starts, ends):
+        segment = values[start:end]
+        if len(segment) < period:
+            continue
+        seed = sum(segment[:period]) / period
+        out[start + period - 1] = seed
+        if not exponential:
+            running = sum(segment[:period])
+            for offset in range(period, len(segment)):
+                running += segment[offset] - segment[offset-period]
+                out[start + offset] = running / period
+            continue
+        alpha, previous = 2.0 / (period + 1.0), seed
+        for offset in range(period, len(segment)):
+            previous = alpha * segment[offset] + (1.0-alpha) * previous
+            out[start + offset] = previous
     return out
 
 def position_groups(deals):
@@ -180,10 +196,11 @@ def main():
     times = [integer(r,"time") for r in bars]
     gaps = inspect_m1_timestamps(times)
     closes = [num(r,"close") for r in bars]
+    gap_indices = [g["index"] for g in gaps]
     ma = {}
     for p in PERIODS:
-        ma[f"SMA{p}"] = moving_average(closes,p)
-        ma[f"EMA{p}"] = moving_average(closes,p,True)
+        ma[f"SMA{p}"] = moving_average(closes,p,gap_indices=gap_indices)
+        ma[f"EMA{p}"] = moving_average(closes,p,True,gap_indices=gap_indices)
     aligned, unaligned = [], 0
     for pos in positions:
         i = last_completed_m1_index(times, pos["entry_time"])
