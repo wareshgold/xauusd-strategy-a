@@ -6,6 +6,7 @@ The caller supplies candidate observations and their capture timestamps.
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -74,6 +75,9 @@ def _load_and_validate_input(input_bytes):
         if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence <= previous_sequence:
             raise ValueError("poll_sequence values must be strictly increasing non-negative integers")
         previous_sequence = sequence
+        trigger_time = observation["trigger_time_server_epoch"]
+        if isinstance(trigger_time, bool) or not isinstance(trigger_time, int):
+            raise ValueError("trigger_time_server_epoch must be an integer server-epoch bar time")
         if not isinstance(observation["decision_observed_at_utc"], str):
             raise ValueError("decision_observed_at_utc must be supplied as a string")
         monotonic = observation["decision_monotonic_ns"]
@@ -123,7 +127,7 @@ def run_offline_observer(*, input_path, output_dir):
             "observation": record,
         })
 
-    jsonl_bytes = b"".join(_canonical_json_bytes(row) + b"\n" for row in records)
+    jsonl_bytes = b"".join(_canonical_json_bytes(row) + b"\\n" for row in records)
     manifest = {
         "manifest_schema_version": MANIFEST_SCHEMA_VERSION,
         "evidence_mode": EVIDENCE_MODE,
@@ -143,7 +147,7 @@ def run_offline_observer(*, input_path, output_dir):
             })
         },
     }
-    manifest_bytes = _canonical_json_bytes(manifest) + b"\n"
+    manifest_bytes = _canonical_json_bytes(manifest) + b"\\n"
 
     # mkdir without exist_ok and exclusive file creation prevent accidental reuse.
     target_dir.mkdir(parents=True, exist_ok=False)
@@ -157,3 +161,19 @@ def run_offline_observer(*, input_path, output_dir):
         raise
 
     return manifest
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Write immutable OFFLINE_REPLAY MA observation evidence from a frozen JSON input."
+    )
+    parser.add_argument("--input", required=True, help="Frozen observer input JSON")
+    parser.add_argument("--output-dir", required=True, help="New output directory; must not already exist")
+    args = parser.parse_args(argv)
+    manifest = run_offline_observer(input_path=args.input, output_dir=args.output_dir)
+    print(json.dumps(manifest, sort_keys=True, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
