@@ -62,7 +62,7 @@ class TestMAOfflineObserver(unittest.TestCase):
 
     def test_end_to_end_writes_jsonl_and_manifest_with_hashes(self):
         output = self.root / "out-001"
-        manifest = run_offline_observer(input_path=self.input_path, output_dir=output)
+        manifest = run_offline_observer(input_path=self.input_path, output_dir=output, allowed_output_root=self.root)
         evidence = (output / "observations.jsonl").read_bytes()
         rows = [json.loads(line) for line in evidence.splitlines()]
         self.assertEqual(manifest["evidence_mode"], EVIDENCE_MODE)
@@ -76,7 +76,7 @@ class TestMAOfflineObserver(unittest.TestCase):
         self.payload["last_completed_m1_bar_close_server_epoch"] = 181
         self._write_input()
         output = self.root / "out-unresolved"
-        manifest = run_offline_observer(input_path=self.input_path, output_dir=output)
+        manifest = run_offline_observer(input_path=self.input_path, output_dir=output, allowed_output_root=self.root)
         rows = [json.loads(line) for line in (output / "observations.jsonl").read_text().splitlines()]
         self.assertEqual(manifest["observation_count"], 2)
         self.assertTrue(all(row["observation"]["alignment_status"] == "UNRESOLVED" for row in rows))
@@ -103,25 +103,25 @@ class TestMAOfflineObserver(unittest.TestCase):
         self.payload["observations"][1]["poll_sequence"] = 1
         self._write_input()
         with self.assertRaises(ValueError):
-            run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-sequence")
+            run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-sequence", allowed_output_root=self.root)
 
     def test_non_integer_trigger_time_is_rejected(self):
         self.payload["observations"][0]["trigger_time_server_epoch"] = "120"
         self._write_input()
         with self.assertRaises(ValueError):
-            run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-trigger")
+            run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-trigger", allowed_output_root=self.root)
 
     def test_boolean_server_offset_is_rejected(self):
         self.payload["server_utc_offset_seconds"] = True
         self._write_input()
         with self.assertRaises(ValueError):
-            run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-offset")
+            run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-offset", allowed_output_root=self.root)
 
     def test_deterministic_replay_has_identical_evidence_bytes(self):
         first = self.root / "out-first"
         second = self.root / "out-second"
-        run_offline_observer(input_path=self.input_path, output_dir=first)
-        run_offline_observer(input_path=self.input_path, output_dir=second)
+        run_offline_observer(input_path=self.input_path, output_dir=first, allowed_output_root=self.root)
+        run_offline_observer(input_path=self.input_path, output_dir=second, allowed_output_root=self.root)
         self.assertEqual(
             (first / "observations.jsonl").read_bytes(),
             (second / "observations.jsonl").read_bytes(),
@@ -134,6 +134,18 @@ class TestMAOfflineObserver(unittest.TestCase):
     def test_output_directory_cannot_be_an_ancestor_of_input(self):
         with self.assertRaises(ValueError):
             run_offline_observer(input_path=self.input_path, output_dir=self.root)
+
+    def test_output_directory_must_be_inside_explicit_allowed_root(self):
+        outside = Path(self.temp.name).parent / (Path(self.temp.name).name + "-outside")
+        with self.assertRaises(ValueError):
+            run_offline_observer(input_path=self.input_path, output_dir=outside, allowed_output_root=self.root)
+        self.assertFalse(outside.exists())
+
+    def test_missing_output_parent_is_not_created_implicitly(self):
+        missing_parent = self.root / "not-created" / "child"
+        with self.assertRaises(ValueError):
+            run_offline_observer(input_path=self.input_path, output_dir=missing_parent, allowed_output_root=self.root)
+        self.assertFalse((self.root / "not-created").exists())
 
     def test_observer_has_no_forbidden_imports_or_execution_calls(self):
         source = Path(__file__).parents[1] / "scripts" / "research" / "ma_offline_observer.py"
