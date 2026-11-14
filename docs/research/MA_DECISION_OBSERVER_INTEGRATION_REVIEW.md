@@ -67,18 +67,19 @@ A read-only data adapter, if ever proposed, must be reviewed separately. “Read
 
 ## 6. Current code-review findings
 
-The first standalone builder review identified two validation gaps. They are being corrected on this branch:
+The standalone builder review identified three validation gaps, now addressed in the research branch:
 
 1. UTC validation previously checked only the trailing `Z`, without parsing the timestamp. A malformed string ending in `Z` could pass.
-2. Snapshot validation previously accepted a declared completed bar that appeared earlier in the snapshot even when another bar intervened before the current bar.
+2. An empty timestamp string could fall back to a newly generated current timestamp instead of being rejected.
+3. Snapshot validation previously accepted a declared completed bar that appeared earlier in the snapshot even when another bar intervened before the current bar.
 
-Regression fixtures have been added for both cases. Local execution of the expanded suite is pending.
+Regression fixtures cover all three cases. The expanded local suite still needs to be rerun against the latest branch head before these changes are considered validated.
 
 ## 7. Acceptance gates before any forward shadow run
 
 All of the following are required:
 
-1. Builder and observer fixtures pass locally, including malformed UTC, bar adjacency, gaps, missing offsets, out-of-order bars, and hash integrity.
+1. Builder and observer fixtures pass locally, including malformed/empty UTC, bar adjacency, gaps, missing offsets, out-of-order bars, and hash integrity.
 2. A fake-input integration test proves the observer uses only the supplied snapshot and never queries MT5.
 3. A filesystem test proves output confinement, append-only behavior, and no overwrite.
 4. Static import/call-graph checks prove there is no trading API or live Runner import.
