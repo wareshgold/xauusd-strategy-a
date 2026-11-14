@@ -86,6 +86,6 @@ A separate research-only capture component and analyzer must have fixtures provi
 
 **Historical decision-time alignment: UNRESOLVED.**
 
-**Future timestamp capture: SPECIFIED, NOT IMPLEMENTED.**
+**Future timestamp capture: SPECIFIED; standalone research record builder and synthetic fixtures added. Not integrated with any Runner or MT5 process. Local fixture execution remains pending.**
 
 The next admissible step is to implement this schema in an isolated research-only capture path, add synthetic fixtures, and validate it without connecting to or mutating the live Runner/MT5 account.
