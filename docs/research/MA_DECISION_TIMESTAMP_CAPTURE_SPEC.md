@@ -86,6 +86,10 @@ A separate research-only capture component and analyzer must have fixtures provi
 
 **Historical decision-time alignment: UNRESOLVED.**
 
-**Future timestamp capture: SPECIFIED; standalone research record builder and synthetic fixtures added. Not integrated with any Runner or MT5 process. Local fixture execution remains pending.**
+**Future timestamp capture: SPECIFIED; standalone research record builder and synthetic fixtures added. Not integrated with any Runner or MT5 process.**
 
-The next admissible step is to implement this schema in an isolated research-only capture path, add synthetic fixtures, and validate it without connecting to or mutating the live Runner/MT5 account.
+The original 31-test MA validation run passed before the latest strict-validation hardening. Two additional regression fixtures now cover malformed UTC timestamps and an intervening bar that contradicts the declared last-completed-bar boundary. The expanded local suite must be rerun before those latest changes are considered validated.
+
+See [MA_DECISION_OBSERVER_INTEGRATION_REVIEW.md](MA_DECISION_OBSERVER_INTEGRATION_REVIEW.md) for the isolated observer architecture, evidence modes, safety controls, and acceptance gates.
+
+Historical alignment remains unresolved. Any future shadow observer records its own observations and must not be presented as exact telemetry from the production Runner.
