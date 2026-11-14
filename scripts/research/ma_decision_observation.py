@@ -45,12 +45,21 @@ def build_observation_record(
         raise ValueError("candidate_id and process_session_id are required")
     if isinstance(poll_sequence, bool) or not isinstance(poll_sequence, int) or poll_sequence < 0:
         raise ValueError("poll_sequence must be a non-negative integer")
-    if not isinstance(bars_snapshot, list) or not bars_snapshot:
-        raise ValueError("bars_snapshot must be a non-empty ordered list")
+    if not isinstance(bars_snapshot, list) or len(bars_snapshot) < 2:
+        raise ValueError("bars_snapshot must contain current and prior M1 bars")
+    if any(not isinstance(bar, dict) for bar in bars_snapshot):
+        raise ValueError("each bars_snapshot item must be a mapping")
 
     observed = decision_observed_at_utc or _utc_now()
     if not isinstance(observed, str) or not observed.endswith("Z"):
         raise ValueError("decision_observed_at_utc must be an ISO-8601 UTC string ending in Z")
+    try:
+        parsed_observed = datetime.fromisoformat(observed[:-1] + "+00:00")
+    except ValueError as exc:
+        raise ValueError("decision_observed_at_utc must be a valid ISO-8601 UTC timestamp") from exc
+    if parsed_observed.tzinfo is None or parsed_observed.utcoffset() != timezone.utc.utcoffset(parsed_observed):
+        raise ValueError("decision_observed_at_utc must identify UTC")
+
     monotonic = time.monotonic_ns() if decision_monotonic_ns is None else decision_monotonic_ns
     if isinstance(monotonic, bool) or not isinstance(monotonic, int) or monotonic < 0:
         raise ValueError("decision_monotonic_ns must be a non-negative integer")
@@ -72,10 +81,13 @@ def build_observation_record(
         and last_completed_m1_bar_close_server_epoch
             <= current_m1_bar_open_server_epoch
     )
+    # The snapshot must contain the current bar last and the immediately
+    # preceding observed bar must be the declared last completed bar. A gap
+    # between those two bars is permitted; a skipped intervening bar is not.
     snapshot_consistent = (
         strictly_ordered
         and times[-1] == current_m1_bar_open_server_epoch
-        and last_completed_m1_bar_open_server_epoch in times
+        and times[-2] == last_completed_m1_bar_open_server_epoch
     )
     alignment_status = (
         "READY_FOR_RESEARCH_ALIGNMENT"
