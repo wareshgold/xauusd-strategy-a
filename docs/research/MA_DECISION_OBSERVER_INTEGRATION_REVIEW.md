@@ -108,3 +108,10 @@ The first implementation slice is now present:
 This is intentionally narrower than a candidate observer: it records caller-supplied candidate contexts and does not implement or invoke candidate-detection logic. That avoids silently choosing detector semantics. It also does not implement a forward poll loop, live data adapter, MT5 access, or Runner instrumentation.
 
 The local test suite must be run after pulling the branch. Until that run is reviewed, implementation status is **CODED — LOCAL VALIDATION PENDING**. Even after tests pass, this component authorizes only offline evidence packaging, not a forward shadow run or any production integration.
+
+
+## 10. Output-root confinement hardening — local validation pending
+
+A follow-up review found that the first offline writer version created missing parent directories and did not enforce a caller-designated research output root. This was narrower than the intended filesystem-isolation guarantee. The research branch now requires an existing `allowed_output_root`, requires the output directory to be a strict descendant of that root, requires its immediate parent to exist already, and creates only the final output directory. The CLI exposes this as mandatory `--allowed-output-root`.
+
+Regression tests now cover an output path outside the allowed root and refusal to create missing parent directories. The full focused test suite must be rerun locally after pulling the latest branch head. This hardening does not authorize use of a live adapter or processing of historical Runner events as exact decision-time observations.
