@@ -50,7 +50,7 @@ def build_observation_record(
     if any(not isinstance(bar, dict) for bar in bars_snapshot):
         raise ValueError("each bars_snapshot item must be a mapping")
 
-    observed = decision_observed_at_utc or _utc_now()
+    observed = _utc_now() if decision_observed_at_utc is None else decision_observed_at_utc
     if not isinstance(observed, str) or not observed.endswith("Z"):
         raise ValueError("decision_observed_at_utc must be an ISO-8601 UTC string ending in Z")
     try:
