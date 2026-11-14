@@ -87,10 +87,14 @@ class FilterClassificationFixtures(unittest.TestCase):
         for key in ("F01", "F02", "F03", "F04", "F05", "F06", "F07", "F08", "F09", "F10", "F11", "F12", "F13"):
             self.assertFalse(states[key])
 
-    def test_missing_any_required_ma_makes_classification_unavailable(self):
+    def test_missing_long_period_ma_does_not_remove_baseline_population(self):
         ma = {f"{kind}{period}": 100.0 for kind in ("SMA", "EMA") for period in (20, 50, 100, 200)}
         ma["EMA200"] = None
-        self.assertIsNone(ANALYZER.classify("SELL", 99.0, ma))
+        states = ANALYZER.classify("SELL", 99.0, ma)
+        self.assertTrue(states["F00"])
+        self.assertIsNone(states["F08"])
+        self.assertTrue(states["F01"])
+        self.assertIsNone(states["F13"])
 
 
 if __name__ == "__main__":
