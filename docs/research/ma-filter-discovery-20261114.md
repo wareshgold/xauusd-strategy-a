@@ -81,7 +81,7 @@ The comparison script also records excluded winners/losers per filter in the gen
 
 1. Resolve/reconstruct the Runner candidate/decision timestamp and the exact information available at that moment. Do not substitute fill time or trigger-bar open time as if it were the decision timestamp.
 2. Establish whether a matching multi-month **Runner deal population** exists and can be aligned with its M1 history. Historical market data alone is insufficient to replay the realized Runner population.
-3. Validate the analyzer's M1 chronology, gap diagnostics, and exact completed-bar boundary behavior with synthetic fixtures; decide explicitly how MA windows should treat long data gaps before a larger study.
+3. Treat each detected M1 gap as a segment boundary: SMA/EMA are unavailable until a full period of contiguous observed bars has accumulated; EMA is reseeded from that segment's initial SMA. Validate this policy with synthetic fixtures before a larger study.
 4. Only after alignment and fixture correctness, run long-term Discovery on a frozen population; report per-filter sample sizes, rejected winners/losers, uncertainty intervals, daily/block-bootstrap stability, and multiple-comparison controls.
 5. Keep all candidate definitions and outputs research-only. No canonical selection or production change until source resolution, untouched validation, robustness/stability, and a fresh holdout are completed.
 
@@ -109,3 +109,15 @@ The analyzer has now been changed so:
 Added `tests/test_ma_filter_realized_population_fixtures.py` with nine synthetic tests covering SMA/EMA initialization, insufficient history, partial exits and net-cost aggregation, open positions, reversal ambiguity, unsupported direction, equality-neutral classification, and filter-specific MA warm-up availability.
 
 **Execution status:** These new tests have been committed but have not yet been run in the user's local worktree. Do not treat the analyzer hardening as test-passed until the local test command succeeds. Further fixtures are still needed for duplicate/out-of-order M1 timestamps, M1 gaps, and exact bar-boundary alignment before a long-term study.
+
+## 9. Explicit M1 gap-window policy — 2026-11-14
+
+The user selected the conservative **contiguous-window invalidation** policy for this research analyzer:
+
+- A detected M1 gap starts a new independent segment at the first observed bar after the gap.
+- SMA is unavailable until a full period of contiguous observed bars exists within that segment. No rolling window may span the gap.
+- EMA is also unavailable for the first period minus one bars of the new segment; it is then reseeded using that segment's full-period SMA. Recursive EMA state from before the gap is never carried across it.
+- No synthetic bars are inserted, and no elapsed-time or interpolation convention is introduced.
+- This is an MA research-data validity policy only. It is not a canonical Strategy A source rule and does not authorize a Runner change.
+
+Four synthetic fixtures cover SMA invalidation/recovery, EMA reseeding, multiple independent gaps, and invalid gap-index rejection. The local test suite must be run before treating this implementation as validated.
