@@ -96,3 +96,15 @@ Passing these gates authorizes only a research shadow data-collection experiment
 - MT5 server offset and DST behavior must be independently evidenced before UTC/server-time conversion.
 - Replay/fill/commission/spread/intrabar semantics remain separately blocked.
 - No MA period, type, or filter has been selected or made canonical.
+
+## 9. Implementation status — isolated offline recorder
+
+The first implementation slice is now present:
+
+- `scripts/research/ma_offline_observer.py` accepts only a frozen, explicit JSON input contract and emits `OFFLINE_REPLAY` JSONL plus a manifest.
+- `tests/test_ma_offline_observer.py` provides synthetic end-to-end and isolation fixtures.
+- `docs/research/MA_OFFLINE_OBSERVER_CONTRACT.md` defines the exact input schema, run command, output files, hashing, and limitations.
+
+This is intentionally narrower than a candidate observer: it records caller-supplied candidate contexts and does not implement or invoke candidate-detection logic. That avoids silently choosing detector semantics. It also does not implement a forward poll loop, live data adapter, MT5 access, or Runner instrumentation.
+
+The local test suite must be run after pulling the branch. Until that run is reviewed, implementation status is **CODED — LOCAL VALIDATION PENDING**. Even after tests pass, this component authorizes only offline evidence packaging, not a forward shadow run or any production integration.
