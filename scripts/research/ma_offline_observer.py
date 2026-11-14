@@ -127,7 +127,7 @@ def run_offline_observer(*, input_path, output_dir):
             "observation": record,
         })
 
-    jsonl_bytes = b"".join(_canonical_json_bytes(row) + b"\\n" for row in records)
+    jsonl_bytes = b"".join(_canonical_json_bytes(row) + bytes((10,)) for row in records)
     manifest = {
         "manifest_schema_version": MANIFEST_SCHEMA_VERSION,
         "evidence_mode": EVIDENCE_MODE,
@@ -147,7 +147,7 @@ def run_offline_observer(*, input_path, output_dir):
             })
         },
     }
-    manifest_bytes = _canonical_json_bytes(manifest) + b"\\n"
+    manifest_bytes = _canonical_json_bytes(manifest) + bytes((10,))
 
     # mkdir without exist_ok and exclusive file creation prevent accidental reuse.
     target_dir.mkdir(parents=True, exist_ok=False)
