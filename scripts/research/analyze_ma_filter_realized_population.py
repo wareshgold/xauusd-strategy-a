@@ -107,25 +107,43 @@ def fmt(v, digits=2):
     return f"{v:.{digits}f}"
 
 def classify(direction, close, ma):
+    """Return True/False per filter; None means that filter lacks MA history."""
     def side(key):
         x = ma[key]
-        if x is None or close == x: return 0
+        if x is None: return None
+        if close == x: return 0
         return 1 if (close > x if direction == "BUY" else close < x) else -1
+
     s = {k:side(k) for k in ma}
-    if any(v is None for v in ma.values()): return None
-    return {
-        "F00":True, "F01":s["SMA50"]==1, "F02":s["SMA100"]==1,
-        "F03":s["EMA50"]==1, "F04":s["EMA100"]==1,
-        "F05":s["SMA20"]==1, "F06":s["SMA200"]==1,
-        "F07":s["EMA20"]==1, "F08":s["EMA200"]==1,
-        "F09":s["SMA50"]==1 and s["SMA100"]==1,
-        "F10":s["EMA50"]==1 and s["EMA100"]==1,
-        "F11":s["SMA50"]==1 and s["SMA100"]==1 and
-              (ma["SMA50"] > ma["SMA100"] if direction=="BUY" else ma["SMA50"] < ma["SMA100"]),
-        "F12":s["EMA50"]==1 and s["EMA100"]==1 and
-              (ma["EMA50"] > ma["EMA100"] if direction=="BUY" else ma["EMA50"] < ma["EMA100"]),
-        "F13":any(s[k]==1 for k in ("SMA50","SMA100","EMA50","EMA100")),
+    def available(*keys):
+        return all(s[k] is not None for k in keys)
+
+    result = {"F00": True}
+    simple = {
+        "F01":"SMA50", "F02":"SMA100", "F03":"EMA50", "F04":"EMA100",
+        "F05":"SMA20", "F06":"SMA200", "F07":"EMA20", "F08":"EMA200",
     }
+    for fid, key in simple.items():
+        result[fid] = None if s[key] is None else s[key] == 1
+
+    result["F09"] = None if not available("SMA50", "SMA100") else s["SMA50"] == 1 and s["SMA100"] == 1
+    result["F10"] = None if not available("EMA50", "EMA100") else s["EMA50"] == 1 and s["EMA100"] == 1
+    result["F11"] = None if not available("SMA50", "SMA100") else (
+        s["SMA50"] == 1 and s["SMA100"] == 1 and
+        (ma["SMA50"] > ma["SMA100"] if direction == "BUY" else ma["SMA50"] < ma["SMA100"])
+    )
+    result["F12"] = None if not available("EMA50", "EMA100") else (
+        s["EMA50"] == 1 and s["EMA100"] == 1 and
+        (ma["EMA50"] > ma["EMA100"] if direction == "BUY" else ma["EMA50"] < ma["EMA100"])
+    )
+    keys = ("SMA50", "SMA100", "EMA50", "EMA100")
+    if any(s[k] == 1 for k in keys):
+        result["F13"] = True
+    elif available(*keys):
+        result["F13"] = False
+    else:
+        result["F13"] = None
+    return result
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
@@ -158,9 +176,6 @@ def main():
             continue
         values = {k:v[i] for k,v in ma.items()}
         states = classify(pos["direction"],closes[i],values)
-        if states is None:
-            unaligned += 1
-            continue
         aligned.append({**pos,"states":states})
     out = [
         "# MA Filter — realized-runner diagnostic",
@@ -172,15 +187,16 @@ def main():
         f"- Closed positions: {len(positions)}; open positions: {open_count}; ambiguous groups: {unresolved}",
         f"- Aligned closed positions: {len(aligned)}; unaligned: {unaligned}",
         "",
-        "| Filter | Definition | N passed | Win % | Net USD | PF | Avg USD | Max DD USD | Excluded winners | Excluded losers |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Filter | Definition | N passed | Unavailable | Win % | Net USD | PF | Avg USD | Max DD USD | Excluded winners | Excluded losers |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for fid,name in FILTERS.items():
-        passed = [r for r in aligned if r["states"][fid]]
-        rejected = [r for r in aligned if not r["states"][fid]]
+        passed = [r for r in aligned if r["states"][fid] is True]
+        rejected = [r for r in aligned if r["states"][fid] is False]
+        unavailable = [r for r in aligned if r["states"][fid] is None]
         m = stats(passed)
         ew,el = sum(r["net"]>0 for r in rejected),sum(r["net"]<0 for r in rejected)
-        out.append(f"| {fid} | {name} | {m['n']} | {fmt(m['win'])} | {fmt(m['net'])} | {fmt(m['pf'],3)} | {fmt(m['avg'],3)} | {fmt(m['dd'])} | {ew} | {el} |")
+        out.append(f"| {fid} | {name} | {m['n']} | {len(unavailable)} | {fmt(m['win'])} | {fmt(m['net'])} | {fmt(m['pf'],3)} | {fmt(m['avg'],3)} | {fmt(m['dd'])} | {ew} | {el} |")
     out += [
         "", "## Blocked definitions and replays", "",
         "| Item | Status | Reason |", "|---|---|---|",
