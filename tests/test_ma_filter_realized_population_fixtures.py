@@ -132,5 +132,28 @@ class FilterClassificationFixtures(unittest.TestCase):
         self.assertIsNone(states["F13"])
 
 
+class M1GapWindowFixtures(unittest.TestCase):
+    def test_sma_is_unavailable_until_full_contiguous_window_after_gap(self):
+        values = [1.0, 2.0, 3.0, 100.0, 101.0, 102.0, 103.0]
+        result = ANALYZER.moving_average(values, 3, gap_indices=[3])
+        self.assertEqual(result, [None, None, 2.0, None, None, 101.0, 102.0])
+
+    def test_ema_reseeds_after_gap_and_does_not_carry_pre_gap_state(self):
+        values = [1.0, 2.0, 3.0, 100.0, 101.0, 102.0, 103.0]
+        result = ANALYZER.moving_average(values, 3, exponential=True, gap_indices=[3])
+        self.assertEqual(result[:3], [None, None, 2.0])
+        self.assertEqual(result[3:6], [None, None, 101.0])
+        self.assertAlmostEqual(result[6], 102.0)
+
+    def test_multiple_gaps_start_independent_contiguous_segments(self):
+        values = list(map(float, range(1, 10)))
+        result = ANALYZER.moving_average(values, 2, gap_indices=[3, 7])
+        self.assertEqual(result, [None, 1.5, 2.5, None, 4.5, 5.5, 6.5, None, 8.5])
+
+    def test_invalid_gap_index_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "gap index"):
+            ANALYZER.moving_average([1.0, 2.0, 3.0], 2, gap_indices=[0])
+
+
 if __name__ == "__main__":
     unittest.main()
