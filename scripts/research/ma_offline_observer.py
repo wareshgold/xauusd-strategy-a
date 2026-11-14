@@ -52,6 +52,9 @@ def _load_and_validate_input(input_bytes):
     for key in ("run_id", "process_session_id", "source_revision"):
         if not isinstance(payload[key], str) or not payload[key].strip():
             raise ValueError(f"{key} must be a non-empty string")
+    offset = payload["server_utc_offset_seconds"]
+    if offset is not None and (isinstance(offset, bool) or not isinstance(offset, int)):
+        raise ValueError("server_utc_offset_seconds must be an integer or null")
     if not isinstance(payload["bars_snapshot"], list) or len(payload["bars_snapshot"]) < 2:
         raise ValueError("bars_snapshot must contain at least two bars")
     if not isinstance(payload["observations"], list) or not payload["observations"]:
