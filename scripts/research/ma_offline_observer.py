@@ -95,10 +95,10 @@ def run_offline_observer(*, input_path, output_dir):
     """
     source_path = Path(input_path).resolve(strict=True)
     target_dir = Path(output_dir).resolve()
-    if target_dir.exists():
-        raise FileExistsError(f"refusing to reuse existing output directory: {target_dir}")
     if target_dir == source_path.parent or target_dir in source_path.parents:
         raise ValueError("output directory cannot contain the input file")
+    if target_dir.exists():
+        raise FileExistsError(f"refusing to reuse existing output directory: {target_dir}")
     input_bytes = source_path.read_bytes()
     payload = _load_and_validate_input(input_bytes)
     input_hash = _sha256(input_bytes)
