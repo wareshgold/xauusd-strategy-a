@@ -111,6 +111,12 @@ class TestMAOfflineObserver(unittest.TestCase):
         with self.assertRaises(ValueError):
             run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-trigger")
 
+    def test_boolean_server_offset_is_rejected(self):
+        self.payload["server_utc_offset_seconds"] = True
+        self._write_input()
+        with self.assertRaises(ValueError):
+            run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-offset")
+
     def test_deterministic_replay_has_identical_evidence_bytes(self):
         first = self.root / "out-first"
         second = self.root / "out-second"
