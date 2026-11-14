@@ -44,7 +44,7 @@ The producer must capture the wall-clock and monotonic values at its own observa
 From the repository root, with the project Python environment:
 
 ```powershell
-& 'D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe' -m scripts.research.ma_offline_observer --input 'D:\path\to\frozen_fixture.json' --output-dir 'D:\path\to\new_research_output\run-001'
+& 'D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe' -m scripts.research.ma_offline_observer --input 'D:\path\to\frozen_fixture.json' --allowed-output-root 'D:\path\to\research_artifacts' --output-dir 'D:\path\to\research_artifacts\ma_observer\run-001'
 ```
 
 The output directory must not already exist and must be a strict descendant of an existing `--allowed-output-root`. Its immediate parent must already exist; the observer does not create parent directories. The caller should point `--allowed-output-root` at a dedicated research-only artifact directory, never at the repository root, Runner workspace, or MT5 data directory. The observer creates only:
