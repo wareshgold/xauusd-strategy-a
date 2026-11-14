@@ -87,7 +87,7 @@ class TestMAOfflineObserver(unittest.TestCase):
         sentinel = output / "keep.txt"
         sentinel.write_text("preserve", encoding="utf-8")
         with self.assertRaises(FileExistsError):
-            run_offline_observer(input_path=self.input_path, output_dir=output)
+            run_offline_observer(input_path=self.input_path, output_dir=output, allowed_output_root=self.root)
         self.assertEqual(sentinel.read_text(encoding="utf-8"), "preserve")
         self.assertEqual(list(output.iterdir()), [sentinel])
 
@@ -133,7 +133,7 @@ class TestMAOfflineObserver(unittest.TestCase):
 
     def test_output_directory_cannot_be_an_ancestor_of_input(self):
         with self.assertRaises(ValueError):
-            run_offline_observer(input_path=self.input_path, output_dir=self.root)
+            run_offline_observer(input_path=self.input_path, output_dir=self.root, allowed_output_root=self.root)
 
     def test_output_directory_must_be_inside_explicit_allowed_root(self):
         outside = Path(self.temp.name).parent / (Path(self.temp.name).name + "-outside")
