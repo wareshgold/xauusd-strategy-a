@@ -24,6 +24,30 @@ def deal(pid, ticket, entry, deal_type, time_msc, profit=0, commission=0, swap=0
     }
 
 
+class M1TimestampFixtures(unittest.TestCase):
+    def test_duplicate_m1_timestamp_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "strictly increasing"):
+            ANALYZER.inspect_m1_timestamps([0, 60, 60, 120])
+
+    def test_out_of_order_m1_timestamp_is_rejected_not_silently_sorted(self):
+        with self.assertRaisesRegex(ValueError, "strictly increasing"):
+            ANALYZER.inspect_m1_timestamps([0, 120, 60])
+
+    def test_m1_gap_is_reported_without_synthetic_fill_bars(self):
+        gaps = ANALYZER.inspect_m1_timestamps([0, 60, 180, 240])
+        self.assertEqual(gaps, [
+            {"index": 2, "previous": 60, "current": 180, "seconds": 120}
+        ])
+        self.assertEqual(len([0, 60, 180, 240]), 4)
+
+    def test_last_completed_bar_respects_exact_completion_boundary(self):
+        times = [0, 60, 120]
+        self.assertIsNone(ANALYZER.last_completed_m1_index(times, 59.999))
+        self.assertEqual(ANALYZER.last_completed_m1_index(times, 60), 0)
+        self.assertEqual(ANALYZER.last_completed_m1_index(times, 119.999), 0)
+        self.assertEqual(ANALYZER.last_completed_m1_index(times, 120), 1)
+
+
 class MovingAverageFixtures(unittest.TestCase):
     def test_sma_uses_full_period_seed_and_rolling_window(self):
         self.assertEqual(
