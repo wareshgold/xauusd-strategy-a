@@ -90,14 +90,21 @@ def _load_and_validate_input(input_bytes):
     return payload
 
 
-def run_offline_observer(*, input_path, output_dir):
+def run_offline_observer(*, input_path, output_dir, allowed_output_root):
     """Write one immutable JSONL evidence file and manifest into a new directory.
 
     output_dir must not exist. Only two files are created there:
     observations.jsonl and manifest.json. Existing output is never overwritten.
     """
     source_path = Path(input_path).resolve(strict=True)
+    root_dir = Path(allowed_output_root).resolve(strict=True)
+    if not root_dir.is_dir():
+        raise ValueError("allowed_output_root must be an existing directory")
     target_dir = Path(output_dir).resolve()
+    if target_dir == root_dir or root_dir not in target_dir.parents:
+        raise ValueError("output directory must be a strict descendant of allowed_output_root")
+    if not target_dir.parent.is_dir():
+        raise ValueError("output directory parent must already exist")
     if target_dir == source_path.parent or target_dir in source_path.parents:
         raise ValueError("output directory cannot contain the input file")
     if target_dir.exists():
@@ -153,7 +160,7 @@ def run_offline_observer(*, input_path, output_dir):
     manifest_bytes = _canonical_json_bytes(manifest) + bytes((10,))
 
     # mkdir without exist_ok and exclusive file creation prevent accidental reuse.
-    target_dir.mkdir(parents=True, exist_ok=False)
+    target_dir.mkdir(exist_ok=False)
     try:
         with (target_dir / "observations.jsonl").open("xb") as stream:
             stream.write(jsonl_bytes)
@@ -171,9 +178,13 @@ def main(argv=None):
         description="Write immutable OFFLINE_REPLAY MA observation evidence from a frozen JSON input."
     )
     parser.add_argument("--input", required=True, help="Frozen observer input JSON")
-    parser.add_argument("--output-dir", required=True, help="New output directory; must not already exist")
+    parser.add_argument("--output-dir", required=True, help="New output directory under --allowed-output-root")
+    parser.add_argument("--allowed-output-root", required=True, help="Existing research-only root directory")
     args = parser.parse_args(argv)
-    manifest = run_offline_observer(input_path=args.input, output_dir=args.output_dir)
+    manifest = run_offline_observer(
+        input_path=args.input, output_dir=args.output_dir,
+        allowed_output_root=args.allowed_output_root,
+    )
     print(json.dumps(manifest, sort_keys=True, indent=2))
     return 0
 
