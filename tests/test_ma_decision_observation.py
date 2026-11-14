@@ -90,6 +90,10 @@ class TestMADecisionObservation(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_observation_record(**dict(self.base, decision_observed_at_utc="not-a-timestampZ"))
 
+    def test_empty_timestamp_rejected_instead_of_replaced_with_now(self):
+        with self.assertRaises(ValueError):
+            build_observation_record(**dict(self.base, decision_observed_at_utc=""))
+
     def test_invalid_poll_sequence_rejected(self):
         with self.assertRaises(ValueError):
             build_observation_record(**dict(self.base, poll_sequence=-1))
