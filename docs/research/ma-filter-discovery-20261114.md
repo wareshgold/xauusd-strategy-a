@@ -94,3 +94,18 @@ The comparison script also records excluded winners/losers per filter in the gen
 - Shared runtime source SHA-256: `889155AC4E4DF6E4CE8B21B566415747DC017E9FB3919544D701A1EF80C40EE3`
 
 **Conclusion:** The one-week realized-population comparison is a useful Discovery lead, but it is not a validated MA-filter edge. The immediate blocker is decision-time alignment, followed by validation of the analysis script and availability of a matching longer-term Runner population.
+
+
+## 8. Analyzer validation hardening — 2026-11-14
+
+During preparation for a longer-history run, code review identified a population-accounting issue: the analyzer previously dropped a position from **every** filter, including F00 baseline, whenever any one of the eight MA series was still warming up. That would bias early-history baseline counts and make the baseline denominator depend on the longest MA.
+
+The analyzer has now been changed so:
+- F00 always retains every time-aligned closed position.
+- Each individual MA filter is marked unavailable only when its own required MA inputs are not initialized.
+- Composite filters are unavailable only when the inputs required by that composite are missing.
+- The report includes an explicit `Unavailable` count per filter rather than silently removing those positions from the full population.
+
+Added `tests/test_ma_filter_realized_population_fixtures.py` with nine synthetic tests covering SMA/EMA initialization, insufficient history, partial exits and net-cost aggregation, open positions, reversal ambiguity, unsupported direction, equality-neutral classification, and filter-specific MA warm-up availability.
+
+**Execution status:** These new tests have been committed but have not yet been run in the user's local worktree. Do not treat the analyzer hardening as test-passed until the local test command succeeds. Further fixtures are still needed for duplicate/out-of-order M1 timestamps, M1 gaps, and exact bar-boundary alignment before a long-term study.
