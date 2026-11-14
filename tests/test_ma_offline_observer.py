@@ -105,6 +105,12 @@ class TestMAOfflineObserver(unittest.TestCase):
         with self.assertRaises(ValueError):
             run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-sequence")
 
+    def test_non_integer_trigger_time_is_rejected(self):
+        self.payload["observations"][0]["trigger_time_server_epoch"] = "120"
+        self._write_input()
+        with self.assertRaises(ValueError):
+            run_offline_observer(input_path=self.input_path, output_dir=self.root / "out-trigger")
+
     def test_deterministic_replay_has_identical_evidence_bytes(self):
         first = self.root / "out-first"
         second = self.root / "out-second"
@@ -140,6 +146,7 @@ class TestMAOfflineObserver(unittest.TestCase):
                 called.append(name)
         self.assertFalse(any(name == "MetaTrader5" or name.startswith("MetaTrader5.") for name in imported))
         self.assertFalse(any("run_sp2l" in name.lower() or "runner" in name.lower() for name in imported))
+        self.assertNotIn("subprocess", imported)
         forbidden_calls = {"order_send", "order_check", "positions_get", "orders_get", "subprocess"}
         self.assertFalse(forbidden_calls.intersection(called))
 
