@@ -94,6 +94,17 @@ class FilterClassificationFixtures(unittest.TestCase):
         self.assertTrue(states["F00"])
         self.assertIsNone(states["F08"])
         self.assertTrue(states["F01"])
+        # EMA200 is not an input to F13; its missing value must not
+        # make this composite filter unavailable.
+        self.assertTrue(states["F13"])
+
+    def test_f13_is_unavailable_when_no_known_input_passes_and_one_is_missing(self):
+        ma = {
+            "SMA20": 100.0, "SMA50": 100.0, "SMA100": 100.0, "SMA200": 100.0,
+            "EMA20": 100.0, "EMA50": 100.0, "EMA100": None, "EMA200": 100.0,
+        }
+        # For SELL at 101, all known F13 inputs reject; EMA100 is unknown.
+        states = ANALYZER.classify("SELL", 101.0, ma)
         self.assertIsNone(states["F13"])
 
 
