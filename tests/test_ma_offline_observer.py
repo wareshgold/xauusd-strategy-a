@@ -96,7 +96,7 @@ class TestMAOfflineObserver(unittest.TestCase):
         self._write_input()
         output = self.root / "out-duplicate"
         with self.assertRaises(ValueError):
-            run_offline_observer(input_path=self.input_path, output_dir=output)
+            run_offline_observer(input_path=self.input_path, output_dir=output, allowed_output_root=self.root)
         self.assertFalse(output.exists())
 
     def test_non_increasing_poll_sequence_is_rejected(self):
