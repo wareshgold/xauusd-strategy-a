@@ -10,9 +10,8 @@ import argparse
 import csv
 import hashlib
 import json
-import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 try:
@@ -50,7 +49,13 @@ def write_records(path: Path, records, fields: tuple[str, ...]) -> int:
         writer = csv.DictWriter(f, fieldnames=list(fields), extrasaction="ignore")
         writer.writeheader()
         for record in records:
-            row = record._asdict() if hasattr(record, "_asdict") else dict(record)
+            if hasattr(record, "_asdict"):
+                row = record._asdict()
+            elif getattr(getattr(record, "dtype", None), "names", None):
+                row = {name: record[name].item() if hasattr(record[name], "item") else record[name]
+                       for name in record.dtype.names}
+            else:
+                row = dict(record)
             writer.writerow({k: row.get(k, "") for k in fields})
             count += 1
     return count
@@ -103,7 +108,10 @@ def main() -> int:
             d for d in deals
             if str(d.symbol) == args.symbol and int(d.magic) == args.magic
         ]
-        rates = mt5.copy_rates_range(args.symbol, mt5.TIMEFRAME_M1, args.start_utc, args.end_utc)
+        # Include a fixed warm-up buffer so EMA/SMA200 can be calculated at the
+        # first in-window entry without importing older/unverified datasets.
+        rates_start = args.start_utc - timedelta(minutes=250)
+        rates = mt5.copy_rates_range(args.symbol, mt5.TIMEFRAME_M1, rates_start, args.end_utc)
         if rates is None:
             raise SystemExit(f"copy_rates_range failed: {mt5.last_error()}")
 
@@ -125,8 +133,10 @@ def main() -> int:
             "account_currency": str(ai.currency),
             "symbol": args.symbol,
             "magic": args.magic,
-            "start_utc": args.start_utc.isoformat(),
+            "deals_start_utc": args.start_utc.isoformat(),
+            "m1_start_utc_including_warmup": rates_start.isoformat(),
             "end_utc_exclusive": args.end_utc.isoformat(),
+            "m1_warmup_minutes": 250,
             "deals_exported": deal_count,
             "m1_bars_exported": rate_count,
             "deals_sha256": sha256(deals_path),
