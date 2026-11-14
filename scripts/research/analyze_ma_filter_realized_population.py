@@ -38,6 +38,23 @@ def num(row, key):
 def integer(row, key):
     return int(num(row, key))
 
+def inspect_m1_timestamps(times):
+    """Require source order and report gaps; never sort or synthesize missing bars."""
+    gaps = []
+    for i in range(1, len(times)):
+        delta = times[i] - times[i - 1]
+        if delta <= 0:
+            raise ValueError("M1 timestamps must be strictly increasing (no duplicates or out-of-order bars)")
+        if delta > 60:
+            gaps.append({"index": i, "previous": times[i - 1], "current": times[i], "seconds": delta})
+    return gaps
+
+def last_completed_m1_index(times, timestamp):
+    """Index of the last bar whose 60-second interval ended at/before timestamp."""
+    completed = [t + 60 for t in times]
+    index = bisect.bisect_right(completed, timestamp) - 1
+    return index if index >= 0 else None
+
 def moving_average(values, period, exponential=False):
     out = [None] * len(values)
     if len(values) < period:
@@ -160,18 +177,17 @@ def main():
         raise SystemExit("INPUT_HASH_MISMATCH: raw exports differ from manifest")
     deals, bars = read_csv(dp), read_csv(bp)
     positions, open_count, unresolved = position_groups(deals)
-    bars.sort(key=lambda r:integer(r,"time"))
     times = [integer(r,"time") for r in bars]
+    gaps = inspect_m1_timestamps(times)
     closes = [num(r,"close") for r in bars]
-    completed = [t+60 for t in times]
     ma = {}
     for p in PERIODS:
         ma[f"SMA{p}"] = moving_average(closes,p)
         ma[f"EMA{p}"] = moving_average(closes,p,True)
     aligned, unaligned = [], 0
     for pos in positions:
-        i = bisect.bisect_right(completed,pos["entry_time"])-1
-        if i < 0:
+        i = last_completed_m1_index(times, pos["entry_time"])
+        if i is None:
             unaligned += 1
             continue
         values = {k:v[i] for k,v in ma.items()}
@@ -184,6 +200,7 @@ def main():
         "",
         f"- Deals SHA-256: {dh}", f"- M1 SHA-256: {bh}",
         f"- Raw deal rows: {len(deals)}; M1 bars: {len(bars)}",
+        f"- M1 gaps >60s: {len(gaps)}; largest gap: {max((g['seconds'] for g in gaps), default=0)}s",
         f"- Closed positions: {len(positions)}; open positions: {open_count}; ambiguous groups: {unresolved}",
         f"- Aligned closed positions: {len(aligned)}; unaligned: {unaligned}",
         "",
