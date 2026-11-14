@@ -47,7 +47,7 @@ From the repository root, with the project Python environment:
 & 'D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe' -m scripts.research.ma_offline_observer --input 'D:\path\to\frozen_fixture.json' --output-dir 'D:\path\to\new_research_output\run-001'
 ```
 
-The output directory must not already exist. The observer creates only:
+The output directory must not already exist and must be a strict descendant of an existing `--allowed-output-root`. Its immediate parent must already exist; the observer does not create parent directories. The caller should point `--allowed-output-root` at a dedicated research-only artifact directory, never at the repository root, Runner workspace, or MT5 data directory. The observer creates only:
 
 - `observations.jsonl` — one record per supplied observation, in input order
 - `manifest.json` — schema versions, evidence mode, source revision, input/output SHA-256 hashes, record count, and alignment-status counts
