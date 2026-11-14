@@ -218,6 +218,7 @@ def main():
         f"- Deals SHA-256: {dh}", f"- M1 SHA-256: {bh}",
         f"- Raw deal rows: {len(deals)}; M1 bars: {len(bars)}",
         f"- M1 gaps >60s: {len(gaps)}; largest gap: {max((g['seconds'] for g in gaps), default=0)}s",
+        "- MA gap policy: each M1 gap starts a new segment; SMA/EMA unavailable until a full contiguous period; EMA reseeded from segment SMA.",
         f"- Closed positions: {len(positions)}; open positions: {open_count}; ambiguous groups: {unresolved}",
         f"- Aligned closed positions: {len(aligned)}; unaligned: {unaligned}",
         "",
