@@ -108,7 +108,7 @@ The analyzer has now been changed so:
 
 Added `tests/test_ma_filter_realized_population_fixtures.py` with nine synthetic tests covering SMA/EMA initialization, insufficient history, partial exits and net-cost aggregation, open positions, reversal ambiguity, unsupported direction, equality-neutral classification, and filter-specific MA warm-up availability.
 
-**Execution status:** These new tests have been committed but have not yet been run in the user's local worktree. Do not treat the analyzer hardening as test-passed until the local test command succeeds. Further fixtures are still needed for duplicate/out-of-order M1 timestamps, M1 gaps, and exact bar-boundary alignment before a long-term study.
+**Execution status:** The user ran the analyzer fixture suite locally: all 14 tests passed, including duplicate/out-of-order timestamp rejection, gap reporting without synthetic bars, and exact completed-bar boundary alignment. Four additional gap-window policy fixtures have now been committed; they are pending a local run. Do not treat the new gap-window behavior as test-passed until those fixtures pass.
 
 ## 9. Explicit M1 gap-window policy — 2026-11-14
 
