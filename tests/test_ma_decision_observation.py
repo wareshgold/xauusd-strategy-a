@@ -53,6 +53,22 @@ class TestMADecisionObservation(unittest.TestCase):
         record = build_observation_record(**args)
         self.assertEqual(record["alignment_status"], "UNRESOLVED")
 
+    def test_snapshot_with_intervening_bar_after_declared_completed_bar_fails_closed(self):
+        args = dict(
+            self.base,
+            current_m1_bar_open_server_epoch=240,
+            last_completed_m1_bar_open_server_epoch=120,
+            last_completed_m1_bar_close_server_epoch=180,
+            bars_snapshot=[
+                {"time": 60, "open": 1.0, "high": 2.0, "low": 0.5, "close": 1.5},
+                {"time": 120, "open": 1.5, "high": 2.5, "low": 1.0, "close": 2.0},
+                {"time": 180, "open": 2.0, "high": 2.2, "low": 1.8, "close": 2.1},
+                {"time": 240, "open": 2.1, "high": 2.3, "low": 1.9, "close": 2.2},
+            ],
+        )
+        record = build_observation_record(**args)
+        self.assertEqual(record["alignment_status"], "UNRESOLVED")
+
     def test_snapshot_hash_changes_when_bar_changes(self):
         first = build_observation_record(**self.base)
         changed_bars = [dict(row) for row in self.base["bars_snapshot"]]
@@ -69,6 +85,10 @@ class TestMADecisionObservation(unittest.TestCase):
     def test_invalid_utc_label_rejected(self):
         with self.assertRaises(ValueError):
             build_observation_record(**dict(self.base, decision_observed_at_utc="2026-11-14T08:00:12+02:00"))
+
+    def test_malformed_timestamp_with_z_suffix_rejected(self):
+        with self.assertRaises(ValueError):
+            build_observation_record(**dict(self.base, decision_observed_at_utc="not-a-timestampZ"))
 
     def test_invalid_poll_sequence_rejected(self):
         with self.assertRaises(ValueError):
