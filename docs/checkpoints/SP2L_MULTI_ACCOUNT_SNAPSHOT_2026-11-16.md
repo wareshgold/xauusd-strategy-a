@@ -119,3 +119,29 @@ The following offline-only artifacts were added after the snapshot commit, on th
   - documents the contract and its limitations.
 
 **Validation status:** GitHub file presence and source contents were re-read. The 12 tests have **not** been executed in the user's local Python environment; do not report them as passing. The next step is to pull this research branch into a separate worktree and run the focused test command. The active Runner remains outside the worktree and unchanged.
+
+
+## 10. Local validation and V3.1 boundary audit update
+
+On 2026-11-16, the user ran the account identity isolation test module locally from the dedicated multi-account worktree:
+
+- Command target: `tests.test_sp2l_account_isolation_contract_research`
+- Result: `TEST_EXIT=0`
+- Result summary: `Ran 12 tests ... OK`
+- All 12 synthetic identity/namespace tests passed. This validates only the pure-Python helper; it does not validate MT5 identity extraction, terminal/process isolation, order ownership, recovery, or worker behavior.
+
+A read-only source-boundary audit was added:
+- `docs/research/V31_MULTI_ACCOUNT_BOUNDARY_AUDIT_2026-11-16.md`
+- Commit: `62b2bfe738968bf206b58c7f129e3488a1cf711d`
+
+Key source findings:
+- V3.1 and its imported runner share one process-level MT5 connection.
+- Existing startup enforces DEMO mode but does not compare broker/server/login against an independently configured expected account identity.
+- Symbol + magic scopes strategy ownership but does not prove account identity.
+- State files and event streams are runner/worktree scoped, not account scoped.
+- The base runner's state loader silently falls back to empty state on any load exception; that behavior must not be carried into a multi-account worker.
+- Existing startup recovery correctly distinguishes failed inventory queries from valid empty snapshots, but it only classifies by symbol + magic.
+- A shared OS runner lock coordinates worktrees; a future multi-account lock hierarchy must preserve duplicate-worker protection.
+- The prior Fati adapter contains the unresolved RR1/BE+5 path and must not be reused under the latest fixed-initial-SL constraint.
+
+No active Runner, MT5 terminal, account, order, or broker state was accessed or modified by this audit.
