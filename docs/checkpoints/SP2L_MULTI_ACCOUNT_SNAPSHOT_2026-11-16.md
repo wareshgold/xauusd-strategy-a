@@ -335,3 +335,17 @@ Commits:
 **Validation status:** the original 11 tests were locally validated before these three tests were added. The updated module now contains 14 tests and is pending a fresh local run after pulling the latest branch. Do not count the three new tests as passed yet.
 
 The new predicates model documented field semantics only. They do not query MT5, verify package version `5.0.6180`, establish history completeness, reconcile broker objects, or define partial-fill/execution behavior. No MT5 connection, broker action, account activation, or active Runner modification occurred.
+
+
+## 19. Python history position-filter fixtures — 14/14 locally validated
+
+After the operator pulled the research branch containing the three documentation-derived history-filter assertions, the updated focused test module was executed locally from the dedicated multi-account worktree on 2026-11-16:
+
+- Test module: `tests.test_sp2l_order_deal_position_linkage_facts_research`
+- Result: `TEST_EXIT=0`
+- Result summary: `Ran 14 tests in 0.001s — OK`
+- The 14 passing tests include the original 11 order/deal/position fact-model tests plus three synthetic assertions for the documented Python history `position=` filter mapping.
+
+This supersedes Section 18's pending-local-run status for the 14-test module. The result validates only the pure-Python synthetic fact model and documentation-derived predicates. It does not experimentally verify the installed MetaTrader5 Python package (previously reported as 5.0.6180), compiled-extension behavior, MT5 history results/completeness, broker-specific partial fills, or any reconciliation algorithm.
+
+No MT5 connection, broker query/action, account activation, order operation, or active V3.1 Runner modification occurred. The next possible offline step is to specify and test a read-only mocked history-adapter contract; any real package/terminal compatibility experiment remains outside scope unless separately authorized.
