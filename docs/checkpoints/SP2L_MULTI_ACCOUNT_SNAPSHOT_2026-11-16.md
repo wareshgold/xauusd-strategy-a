@@ -553,3 +553,26 @@ All 103 synthetic tests passed in the operator's local project virtual environme
 **Validation boundary:** pure-Python synthetic validation only. The stability model compares supplied counts and externally supplied fingerprints; it does not define or verify row serialization, ordering, field selection, or hash generation. Stable repeated observations do not prove history completeness, atomicity, or broker archive completeness. The completeness helper remains deliberately false and the recovery gate remains fail-closed absent independent completeness evidence.
 
 No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
+
+
+## 30. Evidence Manifest record model authored — local validation pending
+
+A new offline-only evidence-manifest record model was added:
+
+- `scripts/sp2l_evidence_manifest_research.py`
+  - commit: `72d69d0adb36255d4948388582fce08f787301e9`
+  - defines typed manifest and artifact records with opaque account/session references, declared server/time scope, package/build metadata, capture method/tool version, observation IDs, and artifact locators;
+  - validates required provenance fields, tuple shapes, unique IDs, nonnegative integer byte lengths, and SHA-256 digest shape;
+  - records artifact SHA-256 as a declaration about the exact referenced byte sequence; performs no filesystem access, byte reading, hashing, or digest verification.
+- `tests/test_sp2l_evidence_manifest_research.py`
+  - commit: `887464cc8db952aa37b873d594957e794d4c1cbf`
+  - 16 synthetic tests authored.
+- `docs/research/SP2L_EVIDENCE_MANIFEST_RESEARCH_2026-11-16.md`
+  - commit: `1dbcc5d05d08b799b3f841d3aea1b1fd94cfa745`
+  - documents exact-byte hash meaning, provenance scope, deferred serialization/signature decisions, and limitations.
+
+**Validation status:** the 16 tests are authored but have not yet been run in the operator's local environment. Do not count them as passing until a fresh local run succeeds.
+
+**Deferred by design:** manifest serialization/canonical JSON, self-hash/signature, trusted timestamping, storage immutability, raw MT5 row serialization/order/field selection, and semantic fingerprint generation remain undefined. A valid manifest record does not authenticate its claims, prove that artifact locators exist, or establish history completeness. It cannot set `history_completeness_verified=True`.
+
+No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
