@@ -375,3 +375,60 @@ def test_monitor_reports_expiry_as_information_and_telegram_failure(monkeypatch,
 def test_monitor_reads_up_to_2000_events_by_default(monkeypatch, tmp_path):
     monitor = load_monitor(monkeypatch, tmp_path)
     assert monitor._read_events.__defaults__ == (2000,)
+
+
+def test_control_center_separates_previous_session_errors_from_current_session(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    monkeypatch.setattr(monitor, "_runner_status", lambda: {
+        "pid": 2212, "pids": [2212, 12084], "alive": True,
+        "detail": "fixture runner active",
+    })
+    events = [
+        {
+            "ts_utc": "2026-11-16T06:18:07+00:00",
+            "event": "ORDER_RESULT",
+            "symbol": "XAUUSD.ecn",
+            "result": {"ok": False, "error": "old offset failure"},
+        },
+        {
+            "ts_utc": "2026-11-16T06:34:53+00:00",
+            "event": "START",
+            "canonical": False,
+        },
+        {
+            "ts_utc": "2026-11-16T06:34:54+00:00",
+            "event": "START_TELEGRAM",
+            "success": True,
+        },
+    ]
+    monitor.EVENTS.write_text(
+        "".join(json.dumps(event) + "\n" for event in events),
+        encoding="utf-8",
+    )
+
+    page = monitor._render()
+    current_section = page.split("هشدارها و خطاهای نشست فعلی", 1)[1].split("<details>", 1)[0]
+
+    assert "نشست فعلی: 0 خطا" in current_section
+    assert "ORDER_SEND_FAILED" not in current_section
+    assert "خطاهای تاریخی: 1" in page
+    assert "ORDER_SEND_FAILED" in page
+    assert "رویدادهای این نشست: 2" in page
+
+
+def test_control_center_labels_state_ids_as_non_live_inventory(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    monkeypatch.setattr(monitor, "_runner_status", lambda: {
+        "pid": 2212, "pids": [2212, 12084], "alive": True,
+        "detail": "fixture runner active",
+    })
+    monitor.EVENTS.write_text(
+        json.dumps({"ts_utc": "2026-11-16T06:34:53+00:00", "event": "START"}) + "\n",
+        encoding="utf-8",
+    )
+
+    page = monitor._render()
+
+    assert "موجودی زنده بروکر نیستند" in page
+    assert "MT5 NOT QUERIED" in page
+    assert "هیچ اتصال MT5" in page
