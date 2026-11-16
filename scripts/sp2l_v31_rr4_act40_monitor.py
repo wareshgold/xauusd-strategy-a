@@ -376,65 +376,166 @@ def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> 
 
 
 def _render() -> str:
+    """Persian-first control center; filesystem-only and explicitly session-scoped."""
     state = _read_json(STATE_FILE)
     events, event_health = _read_events_with_health()
     runner = _runner_status()
-    probe = _mt5_probe()
-    stats = _summary(events)
-    diagnostics = _build_diagnostics(events, runner, event_health)
+
+    # Split diagnostics at the latest START so old incidents cannot masquerade
+    # as current-session failures.
+    start_indexes = [i for i, item in enumerate(events) if item.get("event") == "START"]
+    if start_indexes:
+        start_index = start_indexes[-1]
+        previous_events = events[:start_index]
+        session_events = events[start_index:]
+        session_start = events[start_index].get("ts_utc")
+        session_label = _fmt_event_time(session_start) + " Tehran"
+    else:
+        previous_events = []
+        session_events = events
+        session_start = None
+        session_label = "رویداد START در پنجره خوانده‌شده پیدا نشد"
+
+    clean_health = {"malformed_lines": 0, "read_error": None}
+    session_diagnostics = _build_diagnostics(session_events, runner, event_health)
+    historical_diagnostics = _build_diagnostics(
+        previous_events, {"alive": True, "pid": None, "detail": "historical only"},
+        clean_health,
+    )
+    historical_diagnostics = [
+        item for item in historical_diagnostics
+        if item.get("code") not in {
+            "RUNNER_ROOT_NOT_EXPLICIT", "RUNNER_ROOT_UNAVAILABLE",
+            "STATE_FILE_UNAVAILABLE", "STATE_FILE_STALE",
+            "RUNNER_PROCESS_NOT_FOUND", "RUNNER_PROCESS_UNVERIFIED",
+        }
+    ]
 
     try:
         state_age = max(0, time.time() - STATE_FILE.stat().st_mtime)
-        state_health = f"state file updated {state_age:.0f}s ago"
+        state_age_label = f"{state_age:.0f} ثانیه قبل"
     except OSError:
-        state_health = "state file not created yet"
+        state_age = None
+        state_age_label = "فایل موجود نیست"
 
-    account = probe.get("account") or {}
-    tick = probe.get("tick") or {}
-    account_label = (
-        f"{account.get('account_type')} · {account.get('server')} · "
-        f"balance {account.get('balance', '—'):.2f} · equity {account.get('equity', '—'):.2f}"
-        if account else "unavailable"
-    )
-    runner_label = (
-        f"ACTIVE · PID {runner['pid']} · processes={','.join(str(pid) for pid in runner.get('pids', []))}"
-        if runner.get("alive") is True else
-        f"NOT FOUND · {runner['detail']}" if runner.get("alive") is False else
-        f"NOT VERIFIED · {runner['detail']}"
-    )
-    root_valid = RUNNER_ROOT.is_dir()
-    source_warning = (
-        " · WARNING: SP2L_RUNNER_ROOT is unset; defaulting to the monitor worktree"
-        if not _RUNNER_ROOT_ENV else
-        " · ERROR: configured Runner data root does not exist"
-        if not root_valid else ""
-    )
-    mt5_label = "NOT QUERIED (runner connection isolated)"
-    trade_label = "not queried"
-    tick_label = "not collected"
+    try:
+        event_stat = EVENTS.stat()
+        event_age = max(0, time.time() - event_stat.st_mtime)
+        event_age_label = f"{event_age:.0f} ثانیه قبل"
+        event_size = event_stat.st_size
+    except OSError:
+        event_age = None
+        event_age_label = "فایل موجود نیست"
+        event_size = 0
 
-    order_rows = "".join(
-        "<tr>" + "".join(f"<td>{_esc(v)}</td>" for v in (
-            o["ticket"], o["type"], f'{o["volume"]:.2f}',
-            f'{o["price"]:.2f}', f'{o["sl"]:.2f}', f'{o["tp"]:.2f}'
-        )) + "</tr>" for o in probe["orders"]
-    ) or '<tr><td colspan="6" class="dim">Not queried — MT5 is isolated from dashboard</td></tr>'
+    alive = runner.get("alive")
+    if alive is True:
+        runner_status = "در حال اجرا"
+        runner_class = "good"
+    elif alive is False:
+        runner_status = "متوقف"
+        runner_class = "bad"
+    else:
+        runner_status = "وضعیت تأیید نشده"
+        runner_class = "warn"
 
-    position_rows = "".join(
-        "<tr>" + "".join(f"<td>{_esc(v)}</td>" for v in (
-            p["ticket"], p["type"], f'{p["volume"]:.2f}',
-            f'{p["open"]:.2f}', f'{p["current"]:.2f}',
-            f'{p["sl"]:.2f}', f'{p["tp"]:.2f}', f'{p["profit"]:+.2f}', p["magic"]
-        )) + "</tr>" for p in probe["positions"]
-    ) or '<tr><td colspan="9" class="dim">Not queried — MT5 is isolated from dashboard</td></tr>'
+    if state_age is not None and state_age <= 90:
+        state_status, state_class = "تازه", "good"
+    elif state_age is None:
+        state_status, state_class = "ناموجود", "bad"
+    else:
+        state_status, state_class = "قدیمی", "warn"
+
+    if event_age is not None and event_age <= 180:
+        event_status, event_class = "به‌روز", "good"
+    elif event_age is None:
+        event_status, event_class = "ناموجود", "bad"
+    else:
+        event_status, event_class = "رویداد جدیدی ثبت نشده", "warn"
+
+    stats = _summary(session_events)
+    candidates = sum(1 for e in session_events if e.get("event") == "CANDIDATE")
+    attempts = sum(1 for e in session_events if e.get("event") == "ORDER_ATTEMPT")
+    blocked = sum(1 for e in session_events if e.get("event") == "EXECUTION_BLOCKED")
+    failed_order_results = sum(
+        1 for e in session_events
+        if e.get("event") == "ORDER_RESULT"
+        and isinstance(e.get("result"), dict)
+        and e["result"].get("ok") is False
+    )
+    current_counts = {
+        level: sum(1 for item in session_diagnostics if item["level"] == level)
+        for level in ("ERROR", "WARNING", "INFO")
+    }
+    history_counts = {
+        level: sum(1 for item in historical_diagnostics if item["level"] == level)
+        for level in ("ERROR", "WARNING", "INFO")
+    }
+
+    latest = session_events[-1] if session_events else (events[-1] if events else {})
+    latest_kind = latest.get("event", "هنوز رویدادی ثبت نشده")
+    latest_time = _fmt_event_time(latest.get("ts_utc")) + " تهران" if latest else "—"
+    latest_attempt = next(
+        (e for e in reversed(session_events) if e.get("event") == "ORDER_ATTEMPT"),
+        None,
+    )
+    if latest_attempt:
+        attempt_text = (
+            f"آخرین تلاش سفارش: {latest_attempt.get('direction', '—')} · "
+            f"Entry {latest_attempt.get('entry', '—')} · "
+            f"SL {latest_attempt.get('sl', '—')} · TP {latest_attempt.get('tp', '—')}"
+        )
+    else:
+        attempt_text = "از زمان آخرین شروع، هنوز هیچ تلاش سفارش ثبت نشده است."
+
+    def tracked_count(key):
+        value = state.get(key, [])
+        return len(value) if isinstance(value, (list, tuple, dict, set)) else 0
+
+    diagnostic_rows = ""
+    for item in reversed(session_diagnostics[-12:]):
+        diagnostic_rows += (
+            "<tr><td>" + _esc(item["time_tehran"]) + "</td><td>" +
+            _esc(item["level"]) + "</td><td><code>" + _esc(item["code"]) +
+            "</code></td><td>" + _esc(item["message"]) +
+            ("<div class='technical'>" + _esc(item["detail"]) + "</div>" if item["detail"] else "") +
+            "</td></tr>"
+        )
+    if not diagnostic_rows:
+        diagnostic_rows = (
+            "<tr><td colspan='4' class='good-text'>در رویدادهای نشست فعلی، خطا یا هشدار اجرایی ثبت نشده است.</td></tr>"
+        )
 
     event_rows = ""
-    for event in reversed(events[-40:]):
+    event_names = {
+        "START": "شروع Runner",
+        "START_TELEGRAM": "اعلان شروع تلگرام",
+        "STARTUP_BROKER_RECOVERY": "بازیابی وضعیت بروکر",
+        "SESSION_GATE": "بررسی ساعت بازار",
+        "CANDIDATE": "کاندیدای معاملاتی",
+        "ORDER_ATTEMPT": "تلاش برای ثبت سفارش",
+        "ORDER_RESULT": "نتیجه ثبت سفارش",
+        "EXECUTION_BLOCKED": "اجرای مسدودشده توسط Guard",
+        "TRAIL_UPDATE": "به‌روزرسانی Trailing",
+        "TRAIL_DEFERRED": "Trailing به تعویق افتاد",
+        "TELEGRAM_SIGNAL": "ارسال سیگنال تلگرام",
+        "TELEGRAM_DEAL_LIFECYCLE": "رویداد معامله",
+        "HEARTBEAT": "ضربان Runner",
+    }
+    for event in reversed(session_events[-12:]):
         kind = event.get("event", "?")
+        result = event.get("result") if isinstance(event.get("result"), dict) else {}
         detail = event.get("detail") or event.get("outcome") or ""
-        if kind == "ORDER_RESULT":
-            result = event.get("result") or {}
-            detail = f"ok={result.get('ok')} retcode={result.get('retcode')} order={result.get('order')}"
+        if kind == "ORDER_ATTEMPT":
+            detail = (
+                f"direction={event.get('direction')} entry={event.get('entry')} "
+                f"sl={event.get('sl')} tp={event.get('tp')} volume={event.get('volume')}"
+            )
+        elif kind == "ORDER_RESULT":
+            detail = (
+                f"ok={result.get('ok')} retcode={result.get('retcode')} "
+                f"order={result.get('order')} error={result.get('error')}"
+            )
         elif kind == "TRAIL_UPDATE":
             detail_parts = [
                 f"position={event.get('position')}",
@@ -445,9 +546,8 @@ def _render() -> str:
                 "retcode", "comment", "last_error", "attempt_number",
                 "retry_scheduled", "retry_max_attempts_per_bar",
             ):
-                value = event.get(field)
-                if value is not None:
-                    detail_parts.append(f"{field}={value}")
+                if event.get(field) is not None:
+                    detail_parts.append(f"{field}={event[field]}")
             detail = " · ".join(detail_parts)
         elif kind == "TELEGRAM_DEAL_LIFECYCLE":
             detail = (
@@ -455,90 +555,142 @@ def _render() -> str:
                 f"entry={event.get('entry')} net={event.get('net')}"
             )
         event_rows += (
-            "<tr><td>" + _esc(_fmt_event_time(event.get("ts_utc"))) + " Tehran" +
-            "</td><td>" + _esc(kind) + "</td><td>" +
-            _esc(event.get("symbol", "")) + "</td><td>" +
-            _esc(detail) + "</td></tr>"
+            "<tr><td>" + _esc(_fmt_event_time(event.get("ts_utc"))) + " Tehran</td><td>" +
+            _esc(event_names.get(kind, kind)) + "</td><td><code>" + _esc(kind) +
+            "</code></td><td class='technical'>" + _esc(detail) + "</td></tr>"
         )
     if not event_rows:
-        event_rows = '<tr><td colspan="4" class="dim">No V3.1 events recorded yet</td></tr>'
+        event_rows = "<tr><td colspan='4'>هنوز رویدادی ثبت نشده است.</td></tr>"
 
-    diagnostic_rows = "".join(
-        "<tr><td>" + _esc(item["time_tehran"]) + " Tehran</td><td>" +
-        _esc(item["level"]) + "</td><td>" + _esc(item["code"]) +
-        "</td><td>" + _esc(item["event"]) + "</td><td>" +
-        _esc(item["symbol"]) + "</td><td>" +
-        _esc("order=" + str(item["order"]) + " position=" + str(item["position"]) +
-             " deal=" + str(item["deal"])) + "</td><td>" +
-        _esc(item["message"] + (" · " + item["detail"] if item["detail"] else "")) +
-        "</td></tr>"
-        for item in diagnostics
-    ) or '<tr><td colspan="7" class="ok">No actionable error or warning detected in the latest readable event window.</td></tr>'
-    diagnostic_counts = {
-        level: sum(1 for item in diagnostics if item["level"] == level)
-        for level in ("ERROR", "WARNING", "INFO")
-    }
+    if historical_diagnostics:
+        history_text = (
+            f"خطاهای تاریخی: {history_counts['ERROR']} · "
+            f"هشدارهای تاریخی: {history_counts['WARNING']} · "
+            f"اطلاعات تاریخی: {history_counts['INFO']}"
+        )
+        history_rows = "".join(
+            "<tr><td>" + _esc(item["time_tehran"]) + "</td><td>" +
+            _esc(item["level"]) + "</td><td><code>" + _esc(item["code"]) +
+            "</code></td><td>" + _esc(item["message"]) + "</td></tr>"
+            for item in reversed(historical_diagnostics[-20:])
+        )
+        history_html = (
+            "<details><summary>" + _esc(history_text) +
+            " — برای مشاهده باز کن</summary><table><tr><th>زمان تهران</th>"
+            "<th>سطح</th><th>کد</th><th>شرح</th></tr>" + history_rows +
+            "</table></details>"
+        )
+    else:
+        history_html = "<p class='muted'>در پنجره رویدادهای قبل از نشست فعلی، تشخیص تاریخی ثبت نشده است.</p>"
+
     diagnostic_banner = (
-        f'Errors: {diagnostic_counts["ERROR"]} · Warnings: {diagnostic_counts["WARNING"]} · '
-        f'Informational: {diagnostic_counts["INFO"]} · malformed JSON: {event_health["malformed_lines"]}'
+        f"نشست فعلی: {current_counts['ERROR']} خطا · "
+        f"{current_counts['WARNING']} هشدار · {current_counts['INFO']} اطلاع"
+    )
+    state_ids_text = (
+        f"شناسه‌های ثبت‌شده در State: سفارش {tracked_count('orders')} · "
+        f"پوزیشن {tracked_count('positions')} · رویداد Deal {tracked_count('deal_events')}"
     )
 
-    cards = [
-        ("Signals", stats["signals"]),
-        ("Order results", stats["order_results"]),
-        ("Successful orders", stats["successful_orders"]),
-        ("Trail updates", stats["trail_updates"]),
-        ("Trail failures", stats["trail_failures"]),
-        ("Unique deal lifecycle events", stats["deal_lifecycle_events"]),
-        ("Duplicate lifecycle rows suppressed", stats["deal_lifecycle_duplicate_rows"]),
-        ("Net reported USD (unique deals)", f'{stats["net"]:+.2f}'),
-    ]
-    card_html = "".join(
-        f'<div class="card"><div class="label">{_esc(k)}</div><div class="value">{_esc(v)}</div></div>'
-        for k, v in cards
-    )
-    error = '<p class="warn">MT5 account, tick, orders and positions are intentionally not queried to protect the active runner connection.</p>'
-    return f"""<!doctype html><html><head><meta charset="utf-8">
+    return f"""<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8">
 <meta http-equiv="refresh" content="{REFRESH_SECONDS}">
-<title>SP2L V3.1 RR4 ACT40 Monitor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SP2L V3.1 — مرکز کنترل</title>
 <style>
-body{{margin:18px;background:#0d1117;color:#d7dee8;font:14px Consolas,monospace}}
-h1{{color:#8bd5ca}} h2{{color:#7aa2f7;font-size:15px;margin-top:22px}}
-.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}}
-.card{{background:#161b22;border:1px solid #30363d;padding:10px;border-radius:6px}}
-.label{{color:#8b949e;font-size:11px}} .value{{font-size:20px;margin-top:5px}}
-table{{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}}
-th,td{{border:1px solid #30363d;padding:5px;text-align:left}}
-th{{color:#8bd5ca;background:#161b22}} .ok{{color:#a8e6a3}}
-.warn{{color:#e3b341}} .bad{{color:#ff7b72}} .dim{{color:#8b949e}}
-</style></head><body>
-<h1>SP2L V3.1 — XAUUSD Forward Monitor</h1>
-<p class="dim">{VERSION} · RR4 / ACT40 / DIST40 · research-only · read-only · refresh {REFRESH_SECONDS}s</p>
-<h2>Session</h2>
-<table>
-<tr><th>Runner</th><td>{_esc(runner_label)}</td></tr>
-<tr><th>Data root</th><td>{_esc(str(RUNNER_ROOT))} · {_esc(RUNNER_ROOT_SOURCE)}{_esc(source_warning)}</td></tr>
-<tr><th>Event file</th><td>{_esc(_file_health(EVENTS))} · {_esc(str(EVENTS))}</td></tr>
-<tr><th>State file</th><td>{_esc(state_health)} · {_esc(str(STATE_FILE))}</td></tr>
-<tr><th>MT5</th><td>{_esc(mt5_label)} · Trade API {_esc(trade_label)}</td></tr>
-<tr><th>Account</th><td>{_esc(account_label)}</td></tr>
-<tr><th>Symbol tick</th><td>{_esc(tick_label)}</td></tr>
-<tr><th>State tracked IDs (not live inventory)</th><td>orders={len(state.get("orders", []))} · position IDs={len(state.get("positions", []))} · observed deal events={len(state.get("deal_events", []))} · Telegram-delivered deals={len(state.get("deals", []))}</td></tr>
-</table>
-{error}
-<h2>Automatic diagnostics — no manual log search</h2>
-<p class="warn">{_esc(diagnostic_banner)}</p>
-<table><tr><th>Tehran time</th><th>Level</th><th>Code</th><th>Source event</th><th>Symbol</th><th>Identifiers</th><th>What happened / technical detail</th></tr>{diagnostic_rows}</table>
-<p class="dim">Deferred operations and retry notices are warnings, not final failures. Execution-blocked events are informational unless a separate error is emitted.</p>
-<h2>Event counters (last {len(events)} available events)</h2><div class="grid">{card_html}</div>
-<h2>Pending orders — {SYMBOL}</h2>
-<table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Price</th><th>SL</th><th>TP</th></tr>{order_rows}</table>
-<h2>Live broker positions — {SYMBOL} (not queried)</h2>
-<table><tr><th>Ticket</th><th>Type</th><th>Volume</th><th>Open</th><th>Current</th><th>SL</th><th>TP</th><th>Profit</th><th>Magic</th></tr>{position_rows}</table>
-<h2>Latest 40 events</h2>
-<table><tr><th>Tehran time</th><th>Event</th><th>Symbol</th><th>Detail</th></tr>{event_rows}</table>
-<p class="dim">Read-only monitor: filesystem reads only; no MT5 initialize/shutdown, no order API, no state/event writes.</p>
-</body></html>"""
+:root{{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--panel2:#172438;--line:#26374d;--text:#e8eef7;--muted:#9aabc0;--blue:#8ab4f8;--green:#7bd6a6;--yellow:#f3c969;--red:#ff8585}}
+*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font:14px/1.7 "Segoe UI",Tahoma,Arial,sans-serif}}
+main{{max-width:1500px;margin:0 auto;padding:24px}}header{{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}}
+h1{{font-size:25px;margin:0;color:#fff}}h2{{font-size:17px;margin:0 0 14px;color:var(--blue)}}h3{{font-size:14px;margin:0 0 8px;color:var(--muted)}}
+.sub{{color:var(--muted);font-size:12px}}.pill{{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-weight:700}}
+.good{{color:var(--green);border-color:#285b47;background:#10291f}}.warn{{color:var(--yellow);border-color:#65532a;background:#2b2413}}.bad{{color:var(--red);border-color:#653535;background:#2c171a}}
+.panel{{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}}
+.grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}}
+.metric{{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;min-height:104px}}
+.metric .label{{font-size:12px;color:var(--muted)}}.metric .value{{font-size:24px;font-weight:750;margin-top:5px;direction:ltr;text-align:right;overflow-wrap:anywhere}}
+.metric .hint{{font-size:11px;color:var(--muted);margin-top:3px}}
+.status-grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}}
+.status-card{{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px}}
+.status-card .state{{font-size:18px;font-weight:700;margin-top:5px}}
+.two{{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}}
+.note{{border-right:3px solid var(--blue);background:#13243a;padding:12px 14px;border-radius:8px;color:#dbe8f8}}
+.good-text{{color:var(--green)}}.muted{{color:var(--muted)}}.warning-text{{color:var(--yellow)}}
+table{{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}}
+th,td{{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}}
+th{{color:var(--muted);font-weight:600;background:#111b2b}}tr:hover td{{background:#162338}}
+code,.technical{{direction:ltr;text-align:left;font:12px/1.6 Consolas,monospace;overflow-wrap:anywhere}}
+.technical{{color:#b5c4d7;margin-top:4px}}details{{margin-top:10px}}summary{{cursor:pointer;color:var(--yellow);padding:8px 0}}
+footer{{color:var(--muted);font-size:11px;margin:18px 0}}.tag{{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:3px 7px}}
+@media(max-width:900px){{.grid,.status-grid{{grid-template-columns:repeat(2,minmax(0,1fr))}}.two{{grid-template-columns:1fr}}}}
+@media(max-width:520px){{main{{padding:12px}}.grid,.status-grid{{grid-template-columns:1fr 1fr}}h1{{font-size:20px}}.metric .value{{font-size:20px}}}}
+</style></head><body><main>
+<header><div><h1>SP2L V3.1 — مرکز کنترل XAUUSD</h1>
+<div class="sub">{VERSION} · RR4 / ACT40 / DIST40 · فقط تحقیقاتی · فقط‌خواندنی · بروزرسانی هر {REFRESH_SECONDS} ثانیه</div></div>
+<span class="pill {runner_class}">Runner: {_esc(runner_status)}</span></header>
+
+<section class="panel">
+<h2>وضعیت کلی سیستم</h2>
+<div class="status-grid">
+<div class="status-card"><div class="label">پردازش Runner</div><div class="state {_esc(runner_class)}">{_esc(runner_status)}</div><div class="hint">PID: {_esc(runner.get('pid') or '—')} · همه پردازش‌ها: {_esc(','.join(str(x) for x in runner.get('pids', [])) or '—')}</div></div>
+<div class="status-card"><div class="label">فایل وضعیت Runner</div><div class="state {_esc(state_class)}">{_esc(state_status)}</div><div class="hint">آخرین تغییر: {_esc(state_age_label)}</div></div>
+<div class="status-card"><div class="label">فایل رویدادها</div><div class="state {_esc(event_class)}">{_esc(event_status)}</div><div class="hint">آخرین تغییر: {_esc(event_age_label)} · {_esc(f'{event_size:,}')} بایت</div></div>
+<div class="status-card"><div class="label">شروع نشست فعلی</div><div class="state">{_esc(session_label)}</div><div class="hint">رویدادهای این نشست: {_esc(len(session_events))}</div></div>
+</div>
+</section>
+
+<section class="panel">
+<h2>فعالیت از آخرین Restart</h2>
+<div class="grid">
+<div class="metric"><div class="label">کاندیداهای معاملاتی</div><div class="value">{candidates}</div><div class="hint">رویداد CANDIDATE</div></div>
+<div class="metric"><div class="label">تلاش‌های ثبت سفارش</div><div class="value">{attempts}</div><div class="hint">ORDER_ATTEMPT</div></div>
+<div class="metric"><div class="label">سفارش‌های موفق ثبت‌شده</div><div class="value">{stats['successful_orders']}</div><div class="hint">نتیجه موفق ORDER_RESULT</div></div>
+<div class="metric"><div class="label">موارد مسدودشده توسط Guard</div><div class="value">{blocked}</div><div class="hint">به‌تنهایی به معنی خطای نرم‌افزار نیست</div></div>
+<div class="metric"><div class="label">Trailing موفق ثبت‌شده</div><div class="value">{stats['trail_updates']}</div><div class="hint">رویدادهای موفق</div></div>
+<div class="metric"><div class="label">Trailing ناموفق ثبت‌شده</div><div class="value">{stats['trail_failures']}</div><div class="hint">رویدادهای ناموفق</div></div>
+<div class="metric"><div class="label">رویدادهای Deal یکتا</div><div class="value">{stats['deal_lifecycle_events']}</div><div class="hint">بر اساس رویدادهای قابل‌خواندن</div></div>
+<div class="metric"><div class="label">خالص گزارش‌شده</div><div class="value">{stats['net']:+.2f}</div><div class="hint">واحد حساب از این منبع تأیید نشده</div></div>
+</div>
+</section>
+
+<section class="two">
+<div class="panel">
+<h2>آخرین فعالیت</h2>
+<div class="note">{_esc(attempt_text)}</div>
+<p>آخرین رویداد: <b>{_esc(event_names.get(latest_kind, latest_kind))}</b></p>
+<p class="sub">{_esc(latest_time)}</p>
+<p class="sub">آخرین رویداد ثبت‌شده: <code>{_esc(latest_kind)}</code></p>
+</div>
+<div class="panel">
+<h2>اطلاعات حساب و معاملات باز</h2>
+<p class="warning-text">برای محافظت از اتصال MT5 Runner، این داشبورد عمداً به MT5 وصل نمی‌شود.</p>
+<p>موجودی حساب، Equity، سود شناور، سفارش‌های باز و پوزیشن‌های واقعی: <b>از این داشبورد قابل مشاهده نیست.</b></p>
+<p class="sub">{_esc(state_ids_text)} — این شناسه‌ها موجودی زنده بروکر نیستند.</p>
+<span class="tag">MT5 NOT QUERIED</span> <span class="tag">بدون API معاملاتی</span>
+</div>
+</section>
+
+<section class="panel">
+<h2>هشدارها و خطاهای نشست فعلی</h2>
+<p class="sub">{_esc(diagnostic_banner)}</p>
+<table><tr><th>زمان تهران</th><th>سطح</th><th>کد</th><th>شرح قابل‌فهم / جزئیات</th></tr>{diagnostic_rows}</table>
+{history_html}
+</section>
+
+<section class="panel">
+<h2>آخرین رویدادهای نشست فعلی</h2>
+<table><tr><th>زمان تهران</th><th>شرح</th><th>کد فنی</th><th>جزئیات</th></tr>{event_rows}</table>
+</section>
+
+<section class="panel">
+<h2>منبع داده و محدودیت‌ها</h2>
+<p>مسیر داده Runner: <code>{_esc(str(RUNNER_ROOT))}</code></p>
+<p>منبع مسیر: <code>{_esc(RUNNER_ROOT_SOURCE)}</code> · فایل JSONL سالم: {_esc(event_health.get('malformed_lines', 0))} خط خراب</p>
+<p>این داشبورد فقط State و Event فایل‌ها را می‌خواند؛ هیچ اتصال MT5، خواندن مستقیم پوزیشن بروکر، ارسال سفارش، تغییر SL/TP یا نوشتن در فایل‌های Runner انجام نمی‌دهد.</p>
+<p class="sub">آمار عملکرد فقط از رویدادهای ثبت‌شده در نشست فعلی و پنجره حداکثر {len(events)} رویداد قابل‌خواندن محاسبه می‌شود؛ این صفحه جایگزین گزارش رسمی تاریخچه حساب یا گزارش آماری اعتبارسنجی نیست.</p>
+</section>
+<footer>SP2L Research Monitor · Localhost only · Read-only filesystem observer · Dashboard refresh {REFRESH_SECONDS}s</footer>
+</main></body></html>"""
+
+
 
 
 @app.get("/")
