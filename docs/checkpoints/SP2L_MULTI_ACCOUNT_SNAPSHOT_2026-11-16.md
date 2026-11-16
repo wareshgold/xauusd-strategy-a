@@ -576,3 +576,20 @@ A new offline-only evidence-manifest record model was added:
 **Deferred by design:** manifest serialization/canonical JSON, self-hash/signature, trusted timestamping, storage immutability, raw MT5 row serialization/order/field selection, and semantic fingerprint generation remain undefined. A valid manifest record does not authenticate its claims, prove that artifact locators exist, or establish history completeness. It cannot set `history_completeness_verified=True`.
 
 No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
+
+
+## 31. Evidence Manifest — 119/119 local synthetic tests validated
+
+The operator pulled the Evidence Manifest model and ran all eight focused research test modules together:
+
+- Branch: `research/multi-account-foundation-rfc-20261116`
+- Local HEAD: `1ce8ee4bdf982ab793e183852b6b6cea1824fc26`
+- Test modules: read-only history adapter (17), paired history observation (8), history recovery gate (13), multi-account recovery contract (20), account isolation contract (12), history-completeness evidence classifier (18), repeated-observation stability (15), and evidence manifest (16).
+- Result: `TEST_EXIT=0`
+- Result summary: `Ran 119 tests in 0.008s — OK`
+
+This locally validates the new 16-test Evidence Manifest record model together with all 103 previously validated supporting tests.
+
+**Validation boundary:** synthetic, offline Python tests only. Manifest validation checks declared record shape and provenance fields; it does not read or hash artifacts, authenticate locators or claims, define canonical serialization, or prove history completeness. No production integration is authorized by this result.
+
+No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
