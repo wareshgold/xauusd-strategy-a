@@ -185,13 +185,14 @@ On 2026-11-16, the operator ran both research test modules together from the ded
 This supersedes the earlier pending-validation statements in Sections 10 and 11 for these two modules. The validation remains limited to pure-Python synthetic contracts. It does not prove MT5 account identity extraction, terminal/process isolation, broker order/position linkage, durable journal semantics, real recovery, worker behavior, or any trading edge. No MT5 connection, broker action, account onboarding, or active V3.1 Runner modification was performed as part of this test run.
 
 
-## 13. Broker-object ownership contract authored — local validation pending
+## 13. Broker-object ownership contract — 13 synthetic tests locally validated
 
-After the 32-test combined validation, a new offline-only broker-object ownership contract was added:
+After the 32-test combined validation, an offline-only broker-object ownership contract was added:
 
 - `scripts/sp2l_broker_object_ownership_contract_research.py`
 - `tests/test_sp2l_broker_object_ownership_contract_research.py`
 - `docs/research/SP2L_BROKER_OBJECT_OWNERSHIP_RESEARCH_2026-11-16.md`
+- `docs/research/SP2L_BROKER_OBJECT_OWNERSHIP_FIXTURES_2026-11-16.md`
 
 Source-aligned design:
 - Verify the supplied observed broker/server/opaque-login-reference against the expected account identity before inventory classification.
@@ -202,4 +203,21 @@ Source-aligned design:
 
 The source review confirmed that the existing V3.1 recovery helper currently filters by symbol + magic and stores ticket integers, while the V3.1 wrapper queries inventory from its process-level MT5 session. The new contract is not integrated into V3.1 or any worker.
 
-**Validation status:** 12 synthetic tests authored; local execution is pending. Do not report these 12 tests as passing until the operator runs them in the dedicated multi-account worktree. No MT5 connection, broker query/action, account activation, or active Runner modification occurred.
+**Local validation (operator-run, 2026-11-16):**
+- Branch: `research/multi-account-foundation-rfc-20261116`
+- Dedicated multi-account worktree; clean Git status was checked before execution.
+- Test module: `tests/test_sp2l_broker_object_ownership_contract_research.py`
+- Result: `TEST_EXIT=0`, `RESULT=PASS`
+- Result summary: `Ran 13 tests in 0.001s — OK`
+- All 13 named synthetic tests passed.
+
+This validates only the deterministic pure-Python ownership contract against synthetic observations. It does not validate MT5 account identity extraction, terminal/process isolation, actual broker inventory, order/deal/position linkage, partial fills, hedging/netting behavior, durable persistence, worker execution, or any trading edge. No MT5 connection, broker query/action, account activation, or active Runner modification occurred.
+
+## 14. Combined multi-account synthetic validation — 45 tests passed
+
+The operator's local validation evidence now covers three research test modules:
+- Account identity isolation: 12/12 passed.
+- Recovery, event isolation, and duplicate delivery: 20/20 passed.
+- Broker-object ownership: 13/13 passed.
+
+**Combined result:** 45/45 synthetic tests passed (32 + 13). This is offline contract/fixture validation only. It is not evidence of live or Demo MT5 isolation, broker behavior, production readiness, or a statistical trading edge. The active V3.1 Runner and all trading configuration remain outside scope and unchanged.
