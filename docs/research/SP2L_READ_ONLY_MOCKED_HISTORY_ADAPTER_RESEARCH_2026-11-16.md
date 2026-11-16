@@ -52,7 +52,7 @@ The result object distinguishes:
 - `PROVIDER_EXCEPTION`
 - `INVALID_RESULT_TYPE`
 
-If `last_error()` itself raises, only its exception class name is retained as diagnostic metadata; it is not represented as a broker error payload. Exception messages are not copied into the result.
+If `last_error()` itself raises, its exception class is stored separately in `last_error_exception_type`; `api_last_error` remains `None`. The error getter is called at most once for a failed query. Exception messages are not copied into the result.
 
 ## 6. Synthetic validation plan
 
@@ -68,7 +68,9 @@ Tests use a local fake provider and cover:
 9. independent order/deal calls;
 10. invalid identifiers rejected before provider invocation;
 11. no row filtering or reconciliation by the adapter;
-12. immutable tuple container and explicit query kind.
+12. immutable tuple container and explicit query kind;
+13. `last_error()` is read exactly once per failed query;
+14. a missing provider method is classified as a provider exception.
 
 Test module: `tests.test_sp2l_read_only_history_adapter_research`.
 
