@@ -183,3 +183,23 @@ On 2026-11-16, the operator ran both research test modules together from the ded
 - Breakdown: 12 account-isolation tests + 20 recovery/event/idempotency tests; all 32 passed.
 
 This supersedes the earlier pending-validation statements in Sections 10 and 11 for these two modules. The validation remains limited to pure-Python synthetic contracts. It does not prove MT5 account identity extraction, terminal/process isolation, broker order/position linkage, durable journal semantics, real recovery, worker behavior, or any trading edge. No MT5 connection, broker action, account onboarding, or active V3.1 Runner modification was performed as part of this test run.
+
+
+## 13. Broker-object ownership contract authored — local validation pending
+
+After the 32-test combined validation, a new offline-only broker-object ownership contract was added:
+
+- `scripts/sp2l_broker_object_ownership_contract_research.py`
+- `tests/test_sp2l_broker_object_ownership_contract_research.py`
+- `docs/research/SP2L_BROKER_OBJECT_OWNERSHIP_RESEARCH_2026-11-16.md`
+
+Source-aligned design:
+- Verify the supplied observed broker/server/opaque-login-reference against the expected account identity before inventory classification.
+- Scope object keys by account key + object kind + ticket; ORDER and POSITION ticket namespaces remain distinct.
+- Apply exact symbol + magic only within the already verified account session.
+- Ignore well-formed objects outside the worker's symbol + magic scope; halt on malformed objects or conflicting duplicate object keys.
+- Do not infer order.position_id / deal.position_id / position.ticket-or-identifier equivalence or implement order-to-position linkage.
+
+The source review confirmed that the existing V3.1 recovery helper currently filters by symbol + magic and stores ticket integers, while the V3.1 wrapper queries inventory from its process-level MT5 session. The new contract is not integrated into V3.1 or any worker.
+
+**Validation status:** 12 synthetic tests authored; local execution is pending. Do not report these 12 tests as passing until the operator runs them in the dedicated multi-account worktree. No MT5 connection, broker query/action, account activation, or active Runner modification occurred.
