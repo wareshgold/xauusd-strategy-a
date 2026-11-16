@@ -89,7 +89,7 @@ def test_rr4_act40_monitor_renders_full_tehran_timestamp(monkeypatch, tmp_path):
     page = monitor._render()
 
     assert "2026-11-03 11:31:00 Tehran" in page
-    assert "<th>Tehran time</th>" in page
+    assert "<th>Tehran time / زمان تهران</th>" in page
 
 
 def test_rr4_act40_monitor_uses_explicit_runner_root(monkeypatch, tmp_path):
