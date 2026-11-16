@@ -57,3 +57,26 @@ def same_position_lifecycle(left: PositionFact, right: PositionFact) -> bool:
     It deliberately does not compare POSITION_TICKET or symbol.
     """
     return left.position_identifier == right.position_identifier
+
+
+
+def history_order_matches_position_identifier(
+    order: OrderFact, position_identifier: int
+) -> bool:
+    """Model the documented history_orders_get(position=...) field filter.
+
+    MQL5 documents this filter against ORDER_POSITION_ID. This pure predicate
+    is not a call to, or runtime verification of, the MetaTrader5 Python API.
+    """
+    return order.order_position_id == position_identifier
+
+
+def history_deal_matches_position_identifier(
+    deal: DealFact, position_identifier: int
+) -> bool:
+    """Model the documented history_deals_get(position=...) field filter.
+
+    MQL5 documents this filter against DEAL_POSITION_ID. This pure predicate
+    is not a call to, or runtime verification of, the MetaTrader5 Python API.
+    """
+    return deal.deal_position_id == position_identifier
