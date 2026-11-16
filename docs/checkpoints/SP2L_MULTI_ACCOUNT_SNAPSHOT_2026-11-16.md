@@ -410,3 +410,29 @@ Commits:
 **Interpretation boundary:** two empty tuples mean only that both query calls returned recognized empty responses. They do not prove complete history, absence of a position, or permission to bootstrap recovery. The pair layer does not define order/deal linkage, partial-fill behavior, broker semantics, recovery disposition, or execution rules.
 
 No MT5 import, terminal initialization, broker query/action, account activation, order operation, or active V3.1 Runner modification occurred. The new layer is not integrated into a worker or recovery path.
+
+
+## 23. History-to-recovery gate authored — local validation pending
+
+The paired Order/Deal observation is now connected to the existing offline recovery fixture through a separate fail-closed gate:
+
+- `scripts/sp2l_history_recovery_gate_research.py`
+  - requires a typed pair and validates both embedded query results, query kinds, matching position identifiers, and consistency between the pair status and each independent query status;
+  - halts if either query failed, the pair is malformed/forged, or the pair's status contradicts its component outcomes;
+  - also halts unless `history_completeness_verified=True` is explicitly supplied from an independent evidence source;
+  - only after those checks delegates to the existing recovery contract.
+- `tests/test_sp2l_history_recovery_gate_research.py`
+  - 13 synthetic tests authored, including error propagation, empty-pair insufficiency, explicit independent completeness gate, existing recovery fail-closed conditions, wrong pair type, malformed embedded result, and forged pair status.
+- `docs/research/SP2L_HISTORY_RECOVERY_GATE_RESEARCH_2026-11-16.md`
+  - specifies gate order and interpretation boundaries.
+
+Commits:
+- Initial gate module: `2feb843b3b883dc9036ad28ef79f5f94aea29b16`
+- Initial tests: `d6903178e19ecdce911f59339ffd38e456a9a1bd`
+- Documentation: `ca2f8469e8850d5412b2898732eddc765004c5db`
+- Gate hardening: `6707938d007aab9268f5b691927ed86fa4d139cb`
+- Malformed-evidence tests: `b1736ba7b4c8ca33bdbb6d04557680eabc02c4fa`
+
+**Validation status:** 13 new tests are authored but not yet run locally. Do not count them as passed until operator validation.
+
+**Important:** the gate does not calculate or establish history completeness. Two empty tuples are not a completeness proof. The explicit completeness flag must ultimately be backed by a separately specified, source-aligned protocol; until then, no real caller may infer it from query success or emptiness. No production recovery path, MT5 connection, terminal initialization, broker query/action, account activation, order operation, or active V3.1 Runner modification is included.
