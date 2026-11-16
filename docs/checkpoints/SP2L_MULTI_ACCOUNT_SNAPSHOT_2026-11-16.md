@@ -383,3 +383,30 @@ After the operator pulled branch `research/multi-account-foundation-rfc-20261116
 This supersedes Section 20's pending-local-validation status. The result validates only the pure-Python injected-provider adapter contract. It does not experimentally verify the installed MetaTrader5 Python package (previously reported as 5.0.6180), compiled-extension behavior, actual MT5 history queries or completeness, broker-specific partial-fill representation, account/terminal isolation, or any reconciliation algorithm.
 
 No MT5 connection, terminal initialization, broker query/action, account activation, order operation, or active V3.1 Runner modification occurred. The adapter remains research-only and is not integrated into a trading worker. A real package/terminal compatibility experiment requires separate explicit authorization.
+
+
+## 22. Paired order/deal history observation contract authored
+
+After the operator validated the read-only injected-provider adapter (17/17 tests), a narrow offline observation-pair layer was added:
+
+- `scripts/sp2l_history_pair_observation_research.py`
+  - pairs one ORDERS result and one DEALS result under the same position lifecycle identifier;
+  - rejects wrong result types, swapped query kinds, and mismatched identifiers;
+  - reports `BOTH_RESPONSES_VALID` only when both independent results are EMPTY or NON_EMPTY;
+  - reports `AT_LEAST_ONE_QUERY_FAILED` if either result is ERROR;
+  - preserves both result objects and their raw rows independently; performs no merge, filtering, deduplication, or reconciliation.
+- `tests/test_sp2l_history_pair_observation_research.py`
+  - 8 synthetic tests authored for empty/empty, non-empty/empty in both directions, independent query failures, mismatched identifiers, and swapped query kinds.
+- `docs/research/SP2L_HISTORY_PAIR_OBSERVATION_RESEARCH_2026-11-16.md`
+  - defines the paired-observation contract and interpretation limits.
+
+Commits:
+- Module: `766ab918f3b376db5fb6b6993b09dacf934f542a`
+- Tests: `851cdcb6cc98f04cad8fde2ba903490173d9957d`
+- Documentation: `6ff3180c3f31a4384e47ea2601e2696834681efd`
+
+**Validation status:** the 8 new tests are authored but have not yet been run in the operator's local environment. Do not count them as passed until the focused local run succeeds.
+
+**Interpretation boundary:** two empty tuples mean only that both query calls returned recognized empty responses. They do not prove complete history, absence of a position, or permission to bootstrap recovery. The pair layer does not define order/deal linkage, partial-fill behavior, broker semantics, recovery disposition, or execution rules.
+
+No MT5 import, terminal initialization, broker query/action, account activation, order operation, or active V3.1 Runner modification occurred. The new layer is not integrated into a worker or recovery path.
