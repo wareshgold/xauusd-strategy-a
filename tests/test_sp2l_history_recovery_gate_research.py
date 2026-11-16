@@ -7,6 +7,11 @@ from scripts.sp2l_history_pair_observation_research import (
     HistoryPairObservation,
     HistoryPairStatus,
 )
+from scripts.sp2l_read_only_history_adapter_research import (
+    HistoryQueryKind,
+    HistoryQueryResult,
+    HistoryQueryStatus,
+)
 from scripts.sp2l_multi_account_recovery_contract_research import (
     RecoveryDisposition,
     RecoveryObservation,
@@ -31,10 +36,23 @@ def observation(**overrides):
 
 def pair(status):
     # The recovery gate tests only the paired observation status contract.
+    query_status = (
+        HistoryQueryStatus.EMPTY
+        if status is HistoryPairStatus.BOTH_RESPONSES_VALID
+        else HistoryQueryStatus.ERROR
+    )
     return HistoryPairObservation(
         position_identifier=9001,
-        orders=None,  # type: ignore[arg-type]
-        deals=None,   # type: ignore[arg-type]
+        orders=HistoryQueryResult(
+            query_kind=HistoryQueryKind.ORDERS,
+            position_identifier=9001,
+            status=query_status,
+        ),
+        deals=HistoryQueryResult(
+            query_kind=HistoryQueryKind.DEALS,
+            position_identifier=9001,
+            status=query_status,
+        ),
         status=status,
     )
 
@@ -158,6 +176,52 @@ class TestHistoryRecoveryGateResearch(unittest.TestCase):
                 history_pair=object(),  # type: ignore[arg-type]
                 history_completeness_verified=True,
             )
+
+    def test_forged_pair_with_missing_order_result_halts(self):
+        malformed = HistoryPairObservation(
+            position_identifier=9001,
+            orders=None,  # type: ignore[arg-type]
+            deals=HistoryQueryResult(
+                query_kind=HistoryQueryKind.DEALS,
+                position_identifier=9001,
+                status=HistoryQueryStatus.EMPTY,
+            ),
+            status=HistoryPairStatus.BOTH_RESPONSES_VALID,
+        )
+        self.assertIs(
+            decide_recovery_with_history_evidence(
+                state_status=StateStatus.MISSING,
+                observation=observation(),
+                history_pair=malformed,
+                history_completeness_verified=True,
+            ),
+            RecoveryDisposition.HALT,
+        )
+
+    def test_forged_pair_status_cannot_hide_failed_query(self):
+        malformed = HistoryPairObservation(
+            position_identifier=9001,
+            orders=HistoryQueryResult(
+                query_kind=HistoryQueryKind.ORDERS,
+                position_identifier=9001,
+                status=HistoryQueryStatus.ERROR,
+            ),
+            deals=HistoryQueryResult(
+                query_kind=HistoryQueryKind.DEALS,
+                position_identifier=9001,
+                status=HistoryQueryStatus.EMPTY,
+            ),
+            status=HistoryPairStatus.BOTH_RESPONSES_VALID,
+        )
+        self.assertIs(
+            decide_recovery_with_history_evidence(
+                state_status=StateStatus.MISSING,
+                observation=observation(),
+                history_pair=malformed,
+                history_completeness_verified=True,
+            ),
+            RecoveryDisposition.HALT,
+        )
 
 
 if __name__ == "__main__":
