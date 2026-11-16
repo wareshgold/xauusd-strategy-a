@@ -253,3 +253,26 @@ No linkage adapter or reconciliation algorithm was implemented. No MT5 connectio
 ### Next gate
 
 Convert only unambiguous source-confirmed field relationships into pure-Python fixtures/tests. Keep Python history-query parameter semantics and broker-specific partial-fill behavior unresolved until independently verified. A read-only mocked adapter remains the next possible engineering step; no live or Demo MT5 experiment is authorized by this snapshot.
+
+
+## 16. MT5 linkage fact model and synthetic tests authored
+
+A deliberately narrow pure-Python fact model and focused tests were added after the source research:
+
+- `scripts/sp2l_order_deal_position_linkage_facts_research.py`
+  - preserves `POSITION_TICKET` and `POSITION_IDENTIFIER` as separate fields;
+  - preserves `ORDER_TICKET`, `ORDER_POSITION_ID`, `DEAL_TICKET`, `DEAL_ORDER`, and `DEAL_POSITION_ID` without aliasing;
+  - retains order state, filling policy, volume fields, and Close By's opposite-position identifier as independent raw facts;
+  - includes only a lifecycle comparison using `POSITION_IDENTIFIER`; no broker reconciliation or history query.
+- `tests/test_sp2l_order_deal_position_linkage_facts_research.py`
+  - 11 synthetic tests authored for explicit order/deal references, stable lifecycle identity, ticket replacement, netting reversal, same-symbol hedging positions, multiple deals, Close By, and raw partial-fill field preservation.
+
+**Validation status:** authored on GitHub and pending local execution. These 11 tests are not counted in the previously operator-validated 45/45 result. No Python test runner was executed by this GitHub-only change. No broker, MT5 terminal, history API, active Runner, account, or order was accessed or modified.
+
+The tests intentionally do not settle:
+- Python `history_orders_get(position=...)` / `history_deals_get(position=...)` parameter meaning;
+- broker-specific partial-fill history representation or cardinality;
+- callback ordering, deduplication/replay semantics, or durable reconciliation;
+- actual account margin mode, terminal/process isolation, or broker field availability.
+
+The fixture document's implementation status is updated to distinguish authored tests from locally validated tests. The next gate is the operator-run focused test command in the dedicated multi-account worktree. Only after that result is reviewed should a read-only mocked history adapter be considered.
