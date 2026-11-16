@@ -432,3 +432,23 @@ def test_control_center_labels_state_ids_as_non_live_inventory(monkeypatch, tmp_
     assert "موجودی زنده بروکر نیستند" in page
     assert "MT5 NOT QUERIED" in page
     assert "هیچ اتصال MT5" in page
+
+
+
+def test_control_center_uses_partial_refresh_without_resetting_scroll(monkeypatch, tmp_path):
+    monitor = load_monitor(monkeypatch, tmp_path)
+    monkeypatch.setattr(monitor, "_runner_status", lambda: {
+        "pid": 2212, "pids": [2212, 12084], "alive": True,
+        "detail": "fixture runner active",
+    })
+
+    page = monitor._render()
+
+    assert 'http-equiv="refresh"' not in page
+    assert "REFRESH_SECONDS = 15" in monitor.__dict__.get("__file__", "") or monitor.REFRESH_SECONDS == 15
+    assert "به‌روزرسانی خودکار: هر ۱۵ ثانیه" in page
+    assert 'fetch("/", { cache: "no-store" })' in page
+    assert "window.setInterval(refreshDashboard, intervalMs)" in page
+    assert "window.scrollTo(0, scrollY)" in page
+    assert "detailsState" in page
+    assert "if (document.hidden || inFlight) return;" in page
