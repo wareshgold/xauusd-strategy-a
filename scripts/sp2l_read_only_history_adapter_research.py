@@ -57,6 +57,7 @@ class HistoryQueryResult:
     failure_code: HistoryFailureCode | None = None
     api_last_error: Any = None
     diagnostic_exception_type: str | None = None
+    last_error_exception_type: str | None = None
 
 
 class ReadOnlyHistoryAdapterResearch:
@@ -111,8 +112,9 @@ class ReadOnlyHistoryAdapterResearch:
                 position_identifier=position_identifier,
                 status=HistoryQueryStatus.ERROR,
                 failure_code=HistoryFailureCode.PROVIDER_EXCEPTION,
-                api_last_error=self._read_last_error(),
+                api_last_error=self._read_last_error()[0],
                 diagnostic_exception_type=type(exc).__name__,
+                last_error_exception_type=self._read_last_error()[1],
             )
 
         if raw is None:
@@ -121,7 +123,8 @@ class ReadOnlyHistoryAdapterResearch:
                 position_identifier=position_identifier,
                 status=HistoryQueryStatus.ERROR,
                 failure_code=HistoryFailureCode.API_RETURNED_NONE,
-                api_last_error=self._read_last_error(),
+                api_last_error=self._read_last_error()[0],
+                last_error_exception_type=self._read_last_error()[1],
             )
 
         # The documented Python API returns a tuple (including an empty tuple).
@@ -146,9 +149,9 @@ class ReadOnlyHistoryAdapterResearch:
             records=raw,
         )
 
-    def _read_last_error(self) -> Any:
+    def _read_last_error(self) -> tuple[Any, str | None]:
         try:
-            return self._provider.last_error()
+            return self._provider.last_error(), None
         except Exception as exc:
-            # Preserve only the exception type; do not fabricate an API error.
-            return {"last_error_unavailable_exception_type": type(exc).__name__}
+            # Keep API error payload empty; report getter failure separately.
+            return None, type(exc).__name__
