@@ -102,29 +102,30 @@ class ReadOnlyHistoryAdapterResearch:
         position_identifier: int,
     ) -> HistoryQueryResult:
         self._validate_position_identifier(position_identifier)
-        method = getattr(self._provider, method_name)
-
         try:
+            method = getattr(self._provider, method_name)
             raw = method(position=position_identifier)
         except Exception as exc:
+            last_error, last_error_exception_type = self._read_last_error()
             return HistoryQueryResult(
                 query_kind=kind,
                 position_identifier=position_identifier,
                 status=HistoryQueryStatus.ERROR,
                 failure_code=HistoryFailureCode.PROVIDER_EXCEPTION,
-                api_last_error=self._read_last_error()[0],
+                api_last_error=last_error,
                 diagnostic_exception_type=type(exc).__name__,
-                last_error_exception_type=self._read_last_error()[1],
+                last_error_exception_type=last_error_exception_type,
             )
 
         if raw is None:
+            last_error, last_error_exception_type = self._read_last_error()
             return HistoryQueryResult(
                 query_kind=kind,
                 position_identifier=position_identifier,
                 status=HistoryQueryStatus.ERROR,
                 failure_code=HistoryFailureCode.API_RETURNED_NONE,
-                api_last_error=self._read_last_error()[0],
-                last_error_exception_type=self._read_last_error()[1],
+                api_last_error=last_error,
+                last_error_exception_type=last_error_exception_type,
             )
 
         # The documented Python API returns a tuple (including an empty tuple).
