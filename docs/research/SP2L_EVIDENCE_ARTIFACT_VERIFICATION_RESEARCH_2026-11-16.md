@@ -15,8 +15,8 @@ This makes the resolution decision visible and separate from verification.
 ## Verification behavior
 
 For every manifest artifact, the verifier:
-1. opens the supplied path in binary read mode;
-2. confirms the opened object is a regular file;
+1. inspects the supplied path and rejects non-regular filesystem objects before opening (important on Windows, where opening a directory as `rb` may raise `PermissionError`);
+2. opens the path in binary read mode and independently confirms the opened descriptor is still a regular file (guarding against ordinary path replacement between inspection and open);
 3. streams bytes in 1 MiB chunks into SHA-256 while counting exact bytes;
 4. compares file-descriptor metadata before and after reading to detect ordinary concurrent file changes;
 5. compares observed byte length and SHA-256 against the manifest declaration.
