@@ -576,7 +576,7 @@ def _render() -> str:
         )
         history_html = (
             "<details><summary>" + _esc(history_text) +
-            " — برای مشاهده باز کن</summary><table><tr><th>زمان تهران</th>"
+            " — برای مشاهده باز کن</summary><table><tr><th>Tehran time / زمان تهران</th>"
             "<th>سطح</th><th>کد</th><th>شرح</th></tr>" + history_rows +
             "</table></details>"
         )
@@ -671,13 +671,13 @@ footer{{color:var(--muted);font-size:11px;margin:18px 0}}.tag{{font-size:11px;co
 <section class="panel">
 <h2>هشدارها و خطاهای نشست فعلی</h2>
 <p class="sub">{_esc(diagnostic_banner)}</p>
-<table><tr><th>زمان تهران</th><th>سطح</th><th>کد</th><th>شرح قابل‌فهم / جزئیات</th></tr>{diagnostic_rows}</table>
+<table><tr><th>Tehran time / زمان تهران</th><th>سطح</th><th>کد</th><th>شرح قابل‌فهم / جزئیات</th></tr>{diagnostic_rows}</table>
 {history_html}
 </section>
 
 <section class="panel">
 <h2>آخرین رویدادهای نشست فعلی</h2>
-<table><tr><th>زمان تهران</th><th>شرح</th><th>کد فنی</th><th>جزئیات</th></tr>{event_rows}</table>
+<table><tr><th>Tehran time / زمان تهران</th><th>شرح</th><th>کد فنی</th><th>جزئیات</th></tr>{event_rows}</table>
 </section>
 
 <section class="panel">
@@ -702,23 +702,56 @@ def index() -> Response:
 def api_status():
     events, event_health = _read_events_with_health()
     runner = _runner_status()
-    diagnostics = _build_diagnostics(events, runner, event_health)
+    start_indexes = [i for i, item in enumerate(events) if item.get("event") == "START"]
+    if start_indexes:
+        start_index = start_indexes[-1]
+        previous_events = events[:start_index]
+        session_events = events[start_index:]
+        session_start = events[start_index].get("ts_utc")
+    else:
+        previous_events = []
+        session_events = events
+        session_start = None
+
+    session_diagnostics = _build_diagnostics(session_events, runner, event_health)
+    historical_diagnostics = _build_diagnostics(
+        previous_events, {"alive": True, "pid": None, "detail": "historical only"},
+        {"malformed_lines": 0, "read_error": None},
+    )
+    historical_diagnostics = [
+        item for item in historical_diagnostics
+        if item.get("code") not in {
+            "RUNNER_ROOT_NOT_EXPLICIT", "RUNNER_ROOT_UNAVAILABLE",
+            "STATE_FILE_UNAVAILABLE", "STATE_FILE_STALE",
+            "RUNNER_PROCESS_NOT_FOUND", "RUNNER_PROCESS_UNVERIFIED",
+        }
+    ]
     try:
         state_age = time.time() - STATE_FILE.stat().st_mtime
     except OSError:
         state_age = None
     return jsonify({
         "version": VERSION,
+        "dashboard_version": "CONTROL_CENTER_20261116",
         "runner": runner,
         "state": _read_json(STATE_FILE),
         "state_age_seconds": state_age,
-        "stats": _summary(events),
+        "stats": _summary(session_events),
+        "all_readable_window_stats": _summary(events),
         "mt5": {"queried": False, "reason": "MT5 isolated; filesystem-only monitor"},
         "event_count_read": len(events),
+        "current_session_event_count": len(session_events),
+        "historical_event_count": len(previous_events),
+        "session_start_utc": session_start,
         "event_read_health": event_health,
-        "diagnostics": diagnostics,
+        "diagnostics": session_diagnostics,
+        "historical_diagnostics": historical_diagnostics,
         "diagnostic_counts": {
-            level: sum(1 for item in diagnostics if item["level"] == level)
+            level: sum(1 for item in session_diagnostics if item["level"] == level)
+            for level in ("ERROR", "WARNING", "INFO")
+        },
+        "historical_diagnostic_counts": {
+            level: sum(1 for item in historical_diagnostics if item["level"] == level)
             for level in ("ERROR", "WARNING", "INFO")
         },
         "data_root": str(RUNNER_ROOT),
@@ -729,7 +762,6 @@ def api_status():
         "events_health": _file_health(EVENTS),
         "state_health": _file_health(STATE_FILE),
     })
-
 
 def main() -> None:
     print(f"SP2L V3.1 read-only monitor: http://127.0.0.1:{PORT}", flush=True)
