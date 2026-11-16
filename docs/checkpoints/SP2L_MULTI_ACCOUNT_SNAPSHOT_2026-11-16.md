@@ -221,3 +221,35 @@ The operator's local validation evidence now covers three research test modules:
 - Broker-object ownership: 13/13 passed.
 
 **Combined result:** 45/45 synthetic tests passed (32 + 13). This is offline contract/fixture validation only. It is not evidence of live or Demo MT5 isolation, broker behavior, production readiness, or a statistical trading edge. The active V3.1 Runner and all trading configuration remain outside scope and unchanged.
+
+
+## 15. MT5 order/deal/position linkage — source research and synthetic fixtures authored
+
+After the 45-test synthetic validation, official MQL5 documentation was reviewed and two offline research documents were added:
+
+- `docs/research/SP2L_ORDER_DEAL_POSITION_LINKAGE_RESEARCH_2026-11-16.md`
+- `docs/research/SP2L_ORDER_DEAL_POSITION_LINKAGE_FIXTURES_2026-11-16.md`
+
+### Source-confirmed field distinctions
+
+- `DEAL_ORDER` references an order ticket.
+- `ORDER_POSITION_ID` and `DEAL_POSITION_ID` refer to a position identifier.
+- `POSITION_IDENTIFIER` is documented as stable through the position lifecycle.
+- `POSITION_TICKET` is a distinct current ticket and may change during server service operations; on netting reversal, MQL5 documents that the identifier remains while the ticket is replaced.
+- Netting permits one position per symbol; hedging permits multiple same-symbol positions.
+- Fill policy (FOK/IOC/RETURN), order state and volume fields affect partial execution interpretation.
+- Trade transaction arrival order is not guaranteed; one request can produce multiple transactions.
+- Close By exposes a separate opposite-position reference.
+
+### Explicit unresolved items
+
+- The Python Integration documentation describes `history_orders_get(position=...)` and `history_deals_get(position=...)` using “position ticket” wording while describing filters on `ORDER_POSITION_ID` and `DEAL_POSITION_ID`. The mapping to ticket versus identifier must be verified against the installed Python binding; no assumption is frozen.
+- Partial-fill history representation may differ by filling policy, broker and execution mode. No one-order/one-deal cardinality rule is adopted.
+- Broker-specific service operations, account margin mode and actual field availability have not been observed.
+- The synthetic fixture plan is authored documentation, not executed tests; no additional test-pass count is claimed.
+
+No linkage adapter or reconciliation algorithm was implemented. No MT5 connection, broker query/action, account activation, or active V3.1 Runner modification occurred. This work does not establish trading semantics or a statistical edge.
+
+### Next gate
+
+Convert only unambiguous source-confirmed field relationships into pure-Python fixtures/tests. Keep Python history-query parameter semantics and broker-specific partial-fill behavior unresolved until independently verified. A read-only mocked adapter remains the next possible engineering step; no live or Demo MT5 experiment is authorized by this snapshot.
