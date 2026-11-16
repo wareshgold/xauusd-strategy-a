@@ -150,4 +150,9 @@ Python Integration documentation states history retrieval functions return `None
 
 ## Fixture review status
 
-These are a fixture specification, not executed tests. No implementation or test-pass claim is made. Next step is to turn only the unambiguous source assertions into pure-Python tests, while leaving the Python history-query ambiguity and broker-specific partial-fill representation as explicit unresolved cases.
+The original A–J fixture plan is now represented by a narrow pure-Python fact model and 11 synthetic tests:
+- Model: `scripts/sp2l_order_deal_position_linkage_facts_research.py`
+- Tests: `tests/test_sp2l_order_deal_position_linkage_facts_research.py`
+- Test cases cover explicit order/deal references, position ticket versus identifier, ticket replacement, netting reversal, same-symbol hedging positions, multiple deals per lifecycle, Close By's opposite reference, and preservation of raw partial-fill fields.
+
+**Execution status:** tests are authored but have not yet been run in the operator's local environment. No test-pass claim is made. The model does not query history, reconcile broker objects, infer ticket aliases, or decide partial-fill semantics. Python history-query parameter meaning, broker-specific partial-fill representation, callback ordering, and durable reconciliation remain unresolved.
