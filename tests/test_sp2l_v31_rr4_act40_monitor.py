@@ -445,7 +445,7 @@ def test_control_center_uses_partial_refresh_without_resetting_scroll(monkeypatc
     page = monitor._render()
 
     assert 'http-equiv="refresh"' not in page
-    assert "REFRESH_SECONDS = 15" in monitor.__dict__.get("__file__", "") or monitor.REFRESH_SECONDS == 15
+    assert monitor.REFRESH_SECONDS == 15
     assert "به‌روزرسانی خودکار: هر ۱۵ ثانیه" in page
     assert 'fetch("/", { cache: "no-store" })' in page
     assert "window.setInterval(refreshDashboard, intervalMs)" in page
