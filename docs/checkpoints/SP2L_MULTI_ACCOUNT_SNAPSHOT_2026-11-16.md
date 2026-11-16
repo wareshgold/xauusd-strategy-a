@@ -276,3 +276,40 @@ The tests intentionally do not settle:
 - actual account margin mode, terminal/process isolation, or broker field availability.
 
 The fixture document's implementation status is updated to distinguish authored tests from locally validated tests. The next gate is the operator-run focused test command in the dedicated multi-account worktree. Only after that result is reviewed should a read-only mocked history adapter be considered.
+
+
+## 17. Python MT5 history position-filter source resolution
+
+After the operator locally validated the 11 Order–Deal–Position fact-model tests (11/11, `TEST_EXIT=0`), official source research was extended to the Python history query parameter ambiguity.
+
+Added:
+- `docs/research/SP2L_PYTHON_HISTORY_POSITION_FILTER_SOURCE_RESOLUTION_2026-11-16.md`
+- Commit: `08c81db9b19ab2a30f71231ef6bc336eb812cd06`
+
+### Documentation-level conclusion
+
+The official Python Integration pages describe:
+- `history_orders_get(position=x)` as filtering `ORDER_POSITION_ID == x`;
+- `history_deals_get(position=x)` as filtering `DEAL_POSITION_ID == x`.
+
+The official MQL5 Position Properties reference defines `POSITION_IDENTIFIER` as the stable lifecycle identifier represented in those order/deal fields, while `POSITION_TICKET` is a separate current ticket that may change. The official MQL5 book's Python integration chapter explicitly calls the history argument a `POSITION_ID` and says it filters the corresponding `ORDER_POSITION_ID` / `DEAL_POSITION_ID` field.
+
+**Research conclusion:** at documentation level, the intended Python history `position=` key is the position lifecycle identifier (`POSITION_IDENTIFIER`), not the current `POSITION_TICKET`. The Python Integration pages' “position ticket” wording is imprecise; the named filter fields and the official book clarify the intended semantic key.
+
+### Remaining implementation boundary
+
+- The installed MetaTrader5 Python package previously reported as `5.0.6180` has not been experimentally tested for this behavior.
+- No compiled extension implementation was inspected.
+- No query was issued to MT5 and no recorded result was tested with deliberately different `POSITION_TICKET` and `POSITION_IDENTIFIER` values.
+- This source conclusion does not validate history completeness, broker behavior, or a reconciliation algorithm.
+
+The 11 Order–Deal–Position fact-model tests were locally run by the operator:
+- `TEST_EXIT=0`
+- `Ran 11 tests`
+- `OK`
+
+This validates only the pure-Python synthetic fact model. It does not validate the Python package's history filter implementation.
+
+### Next gate
+
+Add synthetic fixture assertions for the documentation-derived mapping, then review a narrow read-only mocked history adapter contract. Keep package-specific compatibility, history completeness, partial-fill representation, and broker behavior explicitly unverified. No MT5 initialization, broker query/action, account activation, or active Runner modification occurred.
