@@ -349,3 +349,23 @@ After the operator pulled the research branch containing the three documentation
 This supersedes Section 18's pending-local-run status for the 14-test module. The result validates only the pure-Python synthetic fact model and documentation-derived predicates. It does not experimentally verify the installed MetaTrader5 Python package (previously reported as 5.0.6180), compiled-extension behavior, MT5 history results/completeness, broker-specific partial fills, or any reconciliation algorithm.
 
 No MT5 connection, broker query/action, account activation, order operation, or active V3.1 Runner modification occurred. The next possible offline step is to specify and test a read-only mocked history-adapter contract; any real package/terminal compatibility experiment remains outside scope unless separately authorized.
+
+
+## 20. Read-only mocked history adapter contract authored
+
+An offline-only injected-provider adapter and synthetic test module were added:
+
+- `scripts/sp2l_read_only_history_adapter_research.py`
+  - accepts an injected provider exposing the documented order/deal history method shape and `last_error()`;
+  - passes the source-resolved position lifecycle identifier as the `position=` argument;
+  - distinguishes non-empty tuple, valid empty tuple, `None` failure sentinel, provider exception, and unexpected result type;
+  - preserves raw records and opaque API error payloads without rewriting or reconciling them;
+  - has no MetaTrader5 import and performs no terminal, broker, filesystem, or Runner operations.
+- `tests/test_sp2l_read_only_history_adapter_research.py`
+  - 17 synthetic tests authored, including empty versus `None`, order/deal call separation, exact identifier argument, raw row preservation, error capture, invalid input rejection, missing provider method, and single-read `last_error()` behavior.
+- `docs/research/SP2L_READ_ONLY_MOCKED_HISTORY_ADAPTER_RESEARCH_2026-11-16.md`
+  - documents source alignment, result states, failure boundaries, non-goals, and validation limits.
+
+**Validation status:** implementation and 17 tests are committed on this research branch but have not yet been executed in the operator's local environment. Do not report these tests as passing until the operator runs them. This is an injected fake-provider contract, not an installed-package compatibility test. It does not prove history completeness, broker behavior, account isolation, partial-fill semantics, or order/deal/position reconciliation.
+
+No MetaTrader5 import, terminal initialization, broker query/action, account activation, order operation, or active V3.1 Runner modification was performed. The next step is a focused local synthetic test run from the dedicated multi-account worktree.
