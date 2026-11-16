@@ -13,6 +13,8 @@ from scripts.sp2l_order_deal_position_linkage_facts_research import (
     OrderFact,
     PositionFact,
     same_position_lifecycle,
+    history_order_matches_position_identifier,
+    history_deal_matches_position_identifier,
 )
 
 
@@ -84,6 +86,32 @@ class TestOrderDealPositionLinkageFactsResearch(unittest.TestCase):
     def test_missing_order_position_id_is_preserved_as_missing(self):
         order = OrderFact(order_ticket=8001)
         self.assertIsNone(order.order_position_id)
+
+    def test_history_order_filter_uses_position_identifier_not_current_ticket(self):
+        position = PositionFact("XAUUSD.ecn", 7001, 9001)
+        order = OrderFact(8001, order_position_id=9001)
+        self.assertTrue(
+            history_order_matches_position_identifier(order, position.position_identifier)
+        )
+        self.assertFalse(
+            history_order_matches_position_identifier(order, position.position_ticket)
+        )
+
+    def test_history_deal_filter_uses_position_identifier_not_current_ticket(self):
+        position = PositionFact("XAUUSD.ecn", 7001, 9001)
+        deal = DealFact(6001, 8001, deal_position_id=9001)
+        self.assertTrue(
+            history_deal_matches_position_identifier(deal, position.position_identifier)
+        )
+        self.assertFalse(
+            history_deal_matches_position_identifier(deal, position.position_ticket)
+        )
+
+    def test_history_filter_does_not_match_unrelated_identifier(self):
+        order = OrderFact(8001, order_position_id=9001)
+        deal = DealFact(6001, 8001, deal_position_id=9001)
+        self.assertFalse(history_order_matches_position_identifier(order, 9002))
+        self.assertFalse(history_deal_matches_position_identifier(deal, 9002))
 
     def test_lifecycle_comparison_does_not_require_same_symbol(self):
         first = PositionFact("XAUUSD.ecn", 7001, 9001)
