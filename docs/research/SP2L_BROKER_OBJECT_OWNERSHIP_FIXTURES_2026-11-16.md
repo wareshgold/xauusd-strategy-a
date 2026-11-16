@@ -18,7 +18,7 @@ Reviewed source on branch `research/multi-account-foundation-rfc-20261116`:
 1. The audited runner process has one MT5 connection lifecycle. The account context is process/session-wide; the MT5 order, position, and deal records themselves do not carry the internal `account_key` namespace used by this research design.
 2. Existing V3.1 active inventory recovery requires exact symbol + magic, but the resulting state stores bare integer tickets in separate sets. That is safe only inside the already isolated runner/account context; it is insufficient as a cross-account persistence key.
 3. Existing legacy lifecycle paths can allow a previously tracked order ticket to bypass a magic mismatch check. A new multi-account worker must never let a tracked ticket override failed account identity, symbol, or magic ownership checks.
-4. Source reads explicit relationship fields including order `position_id`, deal `order`, and deal `position_id`. This research contract checks only that an explicit supplied reference matches one unique target in the same verified account/symbol/magic scope.
+4. Source reads explicit relationship fields including order `position_id`, deal `order`, and deal `position_id`; however, this first ownership contract deliberately does **not** implement relationship resolution. Those fields are retained as a source-audit observation only.
 5. Source-level references do not settle broker fill semantics, whether a pending order's position link is populated at every lifecycle stage, partial fills, netting/hedging behavior, or whether a given deal opens/closes a position. Those remain unresolved and are not encoded here.
 6. Current runner startup recovery uses active orders/positions and does not prove account identity independently. The account identity contract from the previous step remains a prerequisite before any inventory may be trusted.
 
@@ -30,13 +30,13 @@ Reviewed source on branch `research/multi-account-foundation-rfc-20261116`:
 - Ownership classification requiring verified account context, exact account namespace, valid ticket, exact symbol, and exact magic.
 - Missing identity/object fields fail closed; explicit symbol or magic mismatch is foreign.
 - Tracked ticket presence never overrides an ownership mismatch.
-- Explicit link checks for only the source-observed fields `order.position_id`, `deal.order`, and `deal.position_id`.
-- Missing target references remain unresolved; conflicting/duplicate target observations are ambiguous or halt.
-- No inference from timestamps, comments, magic alone, ticket proximity, or assumed fill lifecycle.
+- Account-scoped object identity for active ORDER and POSITION records; order and position ticket namespaces remain distinct.
+- Inventory is classified only after exact account identity verification. Missing/malformed object fields and conflicting duplicate object keys halt classification; symbol/magic mismatches are counted as foreign.
+- No order-to-position or deal-to-order relationship resolution is implemented in this phase. No inference from timestamps, comments, ticket proximity, or assumed fill lifecycle.
 
 ## Synthetic tests
 
-`tests/test_sp2l_broker_object_ownership_contract_research.py` covers ownership, namespace collisions, invalid/missing fields, explicit link validation, unresolved references, mismatches, duplicate targets, and unverified identity.
+`tests/test_sp2l_broker_object_ownership_contract_research.py` covers exact identity verification, symbol/magic ownership, account/kind/ticket namespace collisions, malformed inventory, duplicate observations, and verified empty inventory.
 
 Run from the multi-account worktree:
 
@@ -48,4 +48,4 @@ Run from the multi-account worktree:
 
 Passing these tests validates only a deterministic pure-Python contract against synthetic observations. It does not validate MT5 account identity extraction, terminal/process isolation, actual broker field availability, order/deal/position linkage, partial fills, hedging/netting behavior, durable persistence, or worker execution.
 
-Before a worker skeleton is considered, next source-resolution tasks are to document broker/account mode assumptions from authoritative MT5 sources and design mocked adapter fixtures for incomplete/failed inventory snapshots. No live/demo connection experiment is authorized by this document.
+Before any worker skeleton is considered, next research tasks are to design a separate, source-bounded explicit-linkage contract for order/position/deal references and mocked adapter fixtures for unavailable/partial inventory snapshots. Broker fill semantics and account margin mode remain unresolved. No live/demo connection experiment is authorized by this document.
