@@ -369,3 +369,17 @@ An offline-only injected-provider adapter and synthetic test module were added:
 **Validation status:** implementation and 17 tests are committed on this research branch but have not yet been executed in the operator's local environment. Do not report these tests as passing until the operator runs them. This is an injected fake-provider contract, not an installed-package compatibility test. It does not prove history completeness, broker behavior, account isolation, partial-fill semantics, or order/deal/position reconciliation.
 
 No MetaTrader5 import, terminal initialization, broker query/action, account activation, order operation, or active V3.1 Runner modification was performed. The next step is a focused local synthetic test run from the dedicated multi-account worktree.
+
+
+## 21. Read-only mocked history adapter — 17/17 locally validated
+
+After the operator pulled branch `research/multi-account-foundation-rfc-20261116` at HEAD `be71b936fba4d7dc6c4a9d117d4035c5c29c3ef8`, the focused adapter test module was executed locally from the dedicated multi-account worktree:
+
+- Test module: `tests.test_sp2l_read_only_history_adapter_research`
+- Result: `TEST_EXIT=0`
+- Result summary: `Ran 17 tests in 0.001s — OK`
+- All 17 named synthetic tests passed, covering exact position-identifier arguments, separate order/deal calls, empty tuple versus `None`, provider exceptions, `last_error()` handling, invalid identifiers, unexpected result types, immutable tuple container, and raw-row preservation without filtering/reconciliation.
+
+This supersedes Section 20's pending-local-validation status. The result validates only the pure-Python injected-provider adapter contract. It does not experimentally verify the installed MetaTrader5 Python package (previously reported as 5.0.6180), compiled-extension behavior, actual MT5 history queries or completeness, broker-specific partial-fill representation, account/terminal isolation, or any reconciliation algorithm.
+
+No MT5 connection, terminal initialization, broker query/action, account activation, order operation, or active V3.1 Runner modification occurred. The adapter remains research-only and is not integrated into a trading worker. A real package/terminal compatibility experiment requires separate explicit authorization.
