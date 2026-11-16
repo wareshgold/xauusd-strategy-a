@@ -101,3 +101,21 @@ A shared candidate population may be considered only as immutable input. Account
 SOURCE RESOLUTION → SYNTHETIC FIXTURES → FROZEN INTERFACES → DEV → UNTOUCHED VALIDATION → ROBUSTNESS/STABILITY → FRESH HOLDOUT → PRODUCTION.
 
 The active V3.1 Runner remains untouched throughout this snapshot and initial research development.
+
+
+## 9. Initial implementation after snapshot capture
+
+The following offline-only artifacts were added after the snapshot commit, on the same research branch:
+
+- `scripts/sp2l_account_isolation_contract_research.py`
+  - blob SHA: `a043d913cfa07a3082139ba847c17c89122c916f`
+  - exact broker/server/opaque-login-reference match; fail-closed mismatch; no identity values echoed in exception text;
+  - deterministic account-scoped state namespace and account-scoped candidate idempotency key;
+  - no MT5, network, filesystem, Telegram, or Runner imports.
+- `tests/test_sp2l_account_isolation_contract_research.py`
+  - blob SHA: `03a9d8bba8c7764d625dbaa5b797406d3b799a9e`
+  - 12 synthetic unit tests authored.
+- `docs/research/SP2L_ACCOUNT_IDENTITY_ISOLATION_RESEARCH.md`
+  - documents the contract and its limitations.
+
+**Validation status:** GitHub file presence and source contents were re-read. The 12 tests have **not** been executed in the user's local Python environment; do not report them as passing. The next step is to pull this research branch into a separate worktree and run the focused test command. The active Runner remains outside the worktree and unchanged.
