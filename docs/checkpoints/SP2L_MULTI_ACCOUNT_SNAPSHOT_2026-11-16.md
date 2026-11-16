@@ -436,3 +436,24 @@ Commits:
 **Validation status:** 13 new tests are authored but not yet run locally. Do not count them as passed until operator validation.
 
 **Important:** the gate does not calculate or establish history completeness. Two empty tuples are not a completeness proof. The explicit completeness flag must ultimately be backed by a separately specified, source-aligned protocol; until then, no real caller may infer it from query success or emptiness. No production recovery path, MT5 connection, terminal initialization, broker query/action, account activation, order operation, or active V3.1 Runner modification is included.
+
+
+## 24. History-to-recovery gate — 70/70 synthetic tests locally validated
+
+On 2026-11-16, the operator ran the five focused research test modules together from the dedicated multi-account worktree on branch `research/multi-account-foundation-rfc-20261116`:
+
+- Reported HEAD: `f427f46d38dda92146bc51f3698dc98329dc2c68`
+- Test modules:
+  - `tests.test_sp2l_read_only_history_adapter_research` — 17 tests
+  - `tests.test_sp2l_history_pair_observation_research` — 8 tests
+  - `tests.test_sp2l_history_recovery_gate_research` — 13 tests
+  - `tests.test_sp2l_multi_account_recovery_contract_research` — 20 tests
+  - `tests.test_sp2l_account_isolation_contract_research` — 12 tests
+- Result: `TEST_EXIT=0`
+- Result summary: `Ran 70 tests in 0.005s — OK`
+
+All 70 tests passed. This supersedes Section 23's pending-local-validation status for the history-to-recovery gate and jointly revalidates the four supporting contract suites in the same run.
+
+**Validation boundary:** this is local pure-Python synthetic validation only. It does not verify the installed MetaTrader5 Python package, actual MT5 history queries, broker history completeness, account/terminal isolation, real recovery, order/deal reconciliation, partial-fill behavior, or worker/runtime behavior. In particular, the independent history-completeness assertion remains an unresolved evidence requirement; successful or empty history responses alone do not establish completeness.
+
+No MT5 connection, terminal initialization, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
