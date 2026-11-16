@@ -593,3 +593,25 @@ This locally validates the new 16-test Evidence Manifest record model together w
 **Validation boundary:** synthetic, offline Python tests only. Manifest validation checks declared record shape and provenance fields; it does not read or hash artifacts, authenticate locators or claims, define canonical serialization, or prove history completeness. No production integration is authorized by this result.
 
 No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
+
+
+## 32. Evidence Manifest ↔ History Observation linkage authored — local validation pending
+
+An offline metadata-linkage layer was added:
+
+- `scripts/sp2l_evidence_manifest_linkage_research.py`
+  - commit: `dc946065c487cf73c3965a26a132689e97b1101b`
+  - validates a manifest record, supplied observation fingerprints and their underlying scoped history evidence;
+  - requires supplied observation IDs to be a subset of the manifest's declared observation IDs;
+  - checks account identity reference, terminal session reference, server, date interval, time basis/source, package version, and terminal build;
+  - returns explicit invalid-manifest, invalid-observation, unlisted-observation, scope-mismatch, or linked-for-declared-scope outcomes.
+- `tests/test_sp2l_evidence_manifest_linkage_research.py`
+  - commit: `7b5a02353a0c2b8ac8354731c4946641d18a8fce`
+  - 14 synthetic tests authored.
+- `docs/research/SP2L_EVIDENCE_MANIFEST_LINKAGE_RESEARCH_2026-11-16.md`
+  - commit: `f17841c1ff1649fc2c3cc4cecd9d2d8faeb607c5`
+  - defines linkage outcomes and non-claims.
+
+**Validation status:** 14 tests authored, not yet run locally. This is metadata linkage only; artifact bytes, locators, hashes, signatures, authenticity, and completeness are not verified. Artifact role names remain operator-declared and no required role schema is inferred. No production or recovery integration is introduced.
+
+No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
