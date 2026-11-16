@@ -676,3 +676,22 @@ The initial run exposed a Windows-specific directory classification issue: openi
 **Validation boundary:** local pure-Python synthetic tests only. Artifact verification confirms that bytes read from explicitly caller-resolved local paths match manifest-declared byte lengths and SHA-256 digests. It does not prove file origin, capture time, semantic correspondence to history observations, manifest authenticity, immutability, or broker history completeness. The verifier remains research-only and is not integrated into recovery, MT5, account workers, or the active V3.1 Runner.
 
 No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
+
+
+
+## 36. Artifact-to-Observation Binding source resolution — contract unresolved
+
+A source-aligned audit was recorded:
+
+- `docs/research/SP2L_ARTIFACT_TO_OBSERVATION_BINDING_SOURCE_RESOLUTION_2026-11-16.md`
+  - commit: `197c0a437369ae76164a22e1782cbf8419357dc5`
+  - audits the manifest, manifest-observation linkage, exact-byte verifier, history fingerprint/stability model, paired ORDERS/DEALS observations, history evidence protocol, and existing export/reconciliation examples.
+- Finding: current manifest observation IDs are manifest-level; artifact roles are arbitrary declarations; no per-artifact observation ID, query kind, API invocation identity, or source-defined payload serialization/binding is present.
+- The history fingerprint carries separate ORDERS/DEALS payload SHA-256 declarations, but raw-row serialization, ordering, field selection, and hash generation remain intentionally unresolved.
+- Existing live MT5 reconciliation and candle-export contracts are different acquisition domains and do not supply the missing history-artifact binding semantics.
+
+**Disposition:** `BINDING_CONTRACT_UNRESOLVED`.
+
+No binding dataclass, role vocabulary, cardinality rule, serialization algorithm, or semantic pass/fail classifier was implemented. The next gate is to identify the actual history-artifact capture producer or obtain an authoritative capture specification, inspect its exact schema/write sequence, and only then derive synthetic fixtures.
+
+**Boundary:** repository/source inspection only. No MT5 import/initialization, terminal connection, broker query/action, local runtime evidence access, account activation, order operation, recovery integration, or active V3.1 Runner modification occurred.
