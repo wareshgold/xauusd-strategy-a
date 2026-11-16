@@ -319,7 +319,7 @@ def test_separate_monitor_and_runner_worktrees_are_not_a_warning(monkeypatch, tm
 
     assert "WARNING: monitor and runner data roots differ" not in page
     assert "RUNNER_ROOT_NOT_EXPLICIT" not in {item["code"] for item in diagnostics}
-    assert "ACTIVE · PID 11352 · processes=11352,9088" in page
+    assert "PID: 11352 · همه پردازش‌ها: 11352,9088" in page
     assert "RUNNER_LOCK_UNAVAILABLE" not in {item["code"] for item in diagnostics}
 
 
