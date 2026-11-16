@@ -111,10 +111,25 @@ class TestReadOnlyHistoryAdapterResearch(unittest.TestCase):
             BrokenLastErrorProvider(orders=None)
         ).history_orders(position_identifier=9001)
         self.assertEqual(result.failure_code, HistoryFailureCode.API_RETURNED_NONE)
-        self.assertEqual(
-            result.api_last_error,
-            {"last_error_unavailable_exception_type": "LookupError"},
+        self.assertIsNone(result.api_last_error)
+        self.assertEqual(result.last_error_exception_type, "LookupError")
+
+    def test_last_error_is_read_exactly_once_for_none_result(self):
+        class CountingErrorProvider(FakeHistoryProvider):
+            def __init__(self):
+                super().__init__(orders=None)
+                self.error_reads = 0
+
+            def last_error(self):
+                self.error_reads += 1
+                return (1003, "single read")
+
+        provider = CountingErrorProvider()
+        result = ReadOnlyHistoryAdapterResearch(provider).history_orders(
+            position_identifier=9001
         )
+        self.assertEqual(provider.error_reads, 1)
+        self.assertEqual(result.api_last_error, (1003, "single read"))
 
     def test_non_tuple_result_is_rejected_instead_of_coerced(self):
         result = ReadOnlyHistoryAdapterResearch(
@@ -123,6 +138,21 @@ class TestReadOnlyHistoryAdapterResearch(unittest.TestCase):
         self.assertEqual(result.status, HistoryQueryStatus.ERROR)
         self.assertEqual(result.failure_code, HistoryFailureCode.INVALID_RESULT_TYPE)
         self.assertEqual(result.diagnostic_exception_type, "list")
+
+    def test_missing_provider_method_is_a_provider_exception(self):
+        class OrdersOnlyProvider:
+            def history_orders_get(self, *, position):
+                return ()
+
+            def last_error(self):
+                return (0, "No error")
+
+        result = ReadOnlyHistoryAdapterResearch(
+            OrdersOnlyProvider()
+        ).history_deals(position_identifier=9001)
+        self.assertEqual(result.status, HistoryQueryStatus.ERROR)
+        self.assertEqual(result.failure_code, HistoryFailureCode.PROVIDER_EXCEPTION)
+        self.assertEqual(result.diagnostic_exception_type, "AttributeError")
 
     def test_order_and_deal_queries_are_separate_calls(self):
         provider = FakeHistoryProvider(orders=(), deals=())
