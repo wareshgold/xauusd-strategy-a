@@ -499,3 +499,16 @@ A pure-Python classifier and synthetic test module were added from the research 
 **Validation status:** the 18 tests are authored but have not yet been run in the operator's local environment. Do not count them as passing until the operator reports the local result.
 
 **Boundary:** this is a classifier over injected/captured synthetic data, not an MT5 adapter or runtime experiment. It does not prove atomicity, full lifecycle coverage, broker archive completeness, installed-package compatibility, or order/deal reconciliation. It is not integrated into the recovery gate and cannot authorize recovery. No MT5 connection, broker action, account activation, or active V3.1 Runner modification occurred.
+
+
+## 27. History-completeness evidence classifier — 88/88 local tests validated
+
+The operator ran all six focused research test modules on branch `research/multi-account-foundation-rfc-20261116`:
+
+- Reported HEAD: `7ebb76e7b1807824baee8237747e8218144fec75`
+- Test modules: adapter (17), pair observation (8), recovery gate (13), recovery contract (20), account isolation (12), completeness evidence classifier (18).
+- Result: `TEST_EXIT=0`; `Ran 88 tests in 0.005s — OK`.
+
+This validates the classifier's synthetic behavior and the supporting contracts together. The classifier only reports API-observation consistency; it cannot prove broker archive completeness and its completeness helper remains deliberately false.
+
+**Boundary:** local pure-Python synthetic tests only. No installed-package compatibility, MT5 runtime, broker archive, actual account history, production recovery, or Runner behavior was tested.
