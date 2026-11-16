@@ -7,100 +7,116 @@ from scripts.sp2l_v3_1_signal_observability_research import (
 
 
 class SignalObservabilityResearchTests(unittest.TestCase):
-    def setUp(self):
-        self.events = []
-        self.runner = SimpleNamespace(
-            rates=lambda symbol, count=10: [1, 2, 3],
-            find_latest_candidate=lambda data, symbol: None,
+    def make_runner(self, rates=None, finder=None):
+        return SimpleNamespace(
+            rates=rates or (lambda symbol, count=10: [1, 2, 3]),
+            find_latest_candidate=finder or (lambda data, symbol: None),
         )
-        self.restore = install_signal_observability(
-            self.runner, self.events.append
-        )
-
-    def tearDown(self):
-        self.restore()
 
     def test_rates_ok_preserves_return_value_and_emits_row_count(self):
-        result = self.runner.rates("XAUUSD.ecn", 30)
-        self.assertEqual(result, [1, 2, 3])
-        self.assertEqual(self.events[-1]["event"], "RATES_OK")
-        self.assertEqual(self.events[-1]["row_count"], 3)
+        events = []
+        runner = self.make_runner()
+        restore = install_signal_observability(runner, events.append)
+        try:
+            result = runner.rates("XAUUSD.ecn", 30)
+            self.assertEqual(result, [1, 2, 3])
+            self.assertEqual(events[-1]["event"], "RATES_OK")
+            self.assertEqual(events[-1]["row_count"], 3)
+        finally:
+            restore()
 
     def test_rates_none_is_explicitly_unresolved(self):
-        self.runner.rates = lambda symbol, count=10: None
-        # Reinstall around the replacement to model the original callable.
-        self.restore()
-        self.restore = install_signal_observability(
-            self.runner, self.events.append
-        )
-        self.assertIsNone(self.runner.rates("XAUUSD.ecn"))
-        event = self.events[-1]
-        self.assertEqual(event["event"], "RATES_UNAVAILABLE")
-        self.assertIn("UPSTREAM_CAUSE_UNRESOLVED", event["interpretation"])
+        events = []
+        runner = self.make_runner(rates=lambda symbol, count=10: None)
+        restore = install_signal_observability(runner, events.append)
+        try:
+            self.assertIsNone(runner.rates("XAUUSD.ecn"))
+            event = events[-1]
+            self.assertEqual(event["event"], "RATES_UNAVAILABLE")
+            self.assertIn("UPSTREAM_CAUSE_UNRESOLVED", event["interpretation"])
+        finally:
+            restore()
 
     def test_rates_exception_is_logged_and_reraised(self):
+        events = []
         def fail(symbol, count=10):
             raise RuntimeError("synthetic rates failure")
-        self.runner.rates = fail
-        self.restore()
-        self.restore = install_signal_observability(
-            self.runner, self.events.append
-        )
-        with self.assertRaisesRegex(RuntimeError, "synthetic rates failure"):
-            self.runner.rates("XAUUSD.ecn")
-        self.assertEqual(self.events[-1]["event"], "RATES_ERROR")
+        runner = self.make_runner(rates=fail)
+        restore = install_signal_observability(runner, events.append)
+        try:
+            with self.assertRaisesRegex(RuntimeError, "synthetic rates failure"):
+                runner.rates("XAUUSD.ecn")
+            self.assertEqual(events[-1]["event"], "RATES_ERROR")
+        finally:
+            restore()
 
     def test_candidate_none_is_not_claimed_as_no_pattern(self):
-        self.assertIsNone(
-            self.runner.find_latest_candidate([1, 2], "XAUUSD.ecn")
-        )
-        event = self.events[-1]
-        self.assertEqual(event["event"], "CANDIDATE_NONE")
-        self.assertIn("does not distinguish", event["interpretation"])
+        events = []
+        runner = self.make_runner()
+        restore = install_signal_observability(runner, events.append)
+        try:
+            self.assertIsNone(
+                runner.find_latest_candidate([1, 2], "XAUUSD.ecn")
+            )
+            event = events[-1]
+            self.assertEqual(event["event"], "CANDIDATE_NONE")
+            self.assertIn("does not distinguish", event["interpretation"])
+        finally:
+            restore()
 
     def test_candidate_found_records_trigger_time(self):
+        events = []
         candidate = {"trigger_time": 12345, "direction": "SELL"}
-        self.runner.find_latest_candidate = lambda data, symbol: candidate
-        self.restore()
-        self.restore = install_signal_observability(
-            self.runner, self.events.append
+        runner = self.make_runner(
+            finder=lambda data, symbol: candidate
         )
-        self.assertIs(
-            self.runner.find_latest_candidate([1, 2], "XAUUSD.ecn"),
-            candidate,
-        )
-        self.assertEqual(self.events[-1]["event"], "CANDIDATE_FOUND")
-        self.assertEqual(self.events[-1]["trigger_time"], 12345)
+        restore = install_signal_observability(runner, events.append)
+        try:
+            self.assertIs(
+                runner.find_latest_candidate([1, 2], "XAUUSD.ecn"),
+                candidate,
+            )
+            self.assertEqual(events[-1]["event"], "CANDIDATE_FOUND")
+            self.assertEqual(events[-1]["trigger_time"], 12345)
+        finally:
+            restore()
 
     def test_candidate_exception_is_logged_and_reraised(self):
+        events = []
         def fail(data, symbol):
             raise ValueError("synthetic finder failure")
-        self.runner.find_latest_candidate = fail
-        self.restore()
-        self.restore = install_signal_observability(
-            self.runner, self.events.append
-        )
-        with self.assertRaisesRegex(ValueError, "synthetic finder failure"):
-            self.runner.find_latest_candidate([1], "XAUUSD.ecn")
-        self.assertEqual(self.events[-1]["event"], "CANDIDATE_ERROR")
+        runner = self.make_runner(finder=fail)
+        restore = install_signal_observability(runner, events.append)
+        try:
+            with self.assertRaisesRegex(ValueError, "synthetic finder failure"):
+                runner.find_latest_candidate([1], "XAUUSD.ecn")
+            self.assertEqual(events[-1]["event"], "CANDIDATE_ERROR")
+        finally:
+            restore()
 
     def test_restore_is_idempotent(self):
-        wrapped_rates = self.runner.rates
-        self.restore()
-        self.restore()
-        self.assertIsNot(self.runner.rates, wrapped_rates)
-        self.assertEqual(self.runner.rates("XAUUSD.ecn"), [1, 2, 3])
+        events = []
+        runner = self.make_runner()
+        original_rates = runner.rates
+        restore = install_signal_observability(runner, events.append)
+        wrapped_rates = runner.rates
+        self.assertIsNot(wrapped_rates, original_rates)
+        restore()
+        restore()
+        self.assertIs(runner.rates, original_rates)
+        self.assertEqual(runner.rates("XAUUSD.ecn"), [1, 2, 3])
 
     def test_observation_does_not_change_candidate_return(self):
+        events = []
         marker = {"trigger_time": 99}
-        self.runner.find_latest_candidate = lambda data, symbol: marker
-        self.restore()
-        self.restore = install_signal_observability(
-            self.runner, self.events.append
-        )
-        self.assertIs(
-            self.runner.find_latest_candidate([1], "XAUUSD.ecn"), marker
-        )
+        runner = self.make_runner(finder=lambda data, symbol: marker)
+        restore = install_signal_observability(runner, events.append)
+        try:
+            self.assertIs(
+                runner.find_latest_candidate([1], "XAUUSD.ecn"), marker
+            )
+        finally:
+            restore()
 
 
 if __name__ == "__main__":
