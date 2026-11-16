@@ -37,7 +37,15 @@ A Persian-first, read-only operational view for the V3.1 XAUUSD Demo forward run
 - File freshness: filesystem modification time. A quiet event file is not by itself proof that the Runner is stalled; state freshness and process status are shown separately.
 - Current-session errors are computed after the latest START. Earlier diagnostics are shown under historical diagnostics.
 
-## Dashboard refresh behavior\n\n- Automatically updates every 15 seconds without a full browser-page reload.\n- Replaces dashboard content in place and restores the current scroll position.\n- Preserves expanded/collapsed historical-diagnostics details.\n- Skips refresh while the browser tab is hidden and prevents overlapping requests.\n- A temporary fetch failure leaves the current page visible and retries on the next interval.\n\n## Local run
+## Dashboard refresh behavior
+
+- Automatically updates every 15 seconds without a full browser-page reload.
+- Replaces dashboard content in place and restores the current scroll position.
+- Preserves expanded/collapsed historical-diagnostics details.
+- Skips refresh while the browser tab is hidden and prevents overlapping requests.
+- A temporary fetch failure leaves the current page visible and retries on the next interval.
+
+## Local run
 
 Use the existing read-only monitor worktree and point it at the active Runner worktree:
 
