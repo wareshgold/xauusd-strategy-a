@@ -536,3 +536,20 @@ A separate, offline stability comparison layer was added:
 **Interpretation boundary:** STABLE_ACROSS_OBSERVATIONS means only that supplied counts and external fingerprints match across two distinct observations of the same declared scope. It does not prove either snapshot is complete, calls are atomic, or the broker archive has no additional records. The completeness helper deliberately always returns false.
 
 **Validation status:** 15 tests authored; local execution pending. No MT5 connection, terminal initialization, broker action, production recovery integration, account activation, or active V3.1 Runner modification occurred.
+
+
+## 29. Repeated history-observation stability — 103/103 local tests validated
+
+After the Section 28 stability model was pulled into the dedicated multi-account worktree, the operator ran all seven focused research test modules together:
+
+- Branch: `research/multi-account-foundation-rfc-20261116`
+- Local HEAD reported after pull: `8811c5577f0558dd8f81d53cac870780541fd68c`
+- Test modules: read-only history adapter (17), paired history observation (8), history recovery gate (13), multi-account recovery contract (20), account isolation contract (12), history-completeness evidence classifier (18), and repeated-observation stability (15).
+- Result: `TEST_EXIT=0`
+- Result summary: `Ran 103 tests in 0.007s — OK`
+
+All 103 synthetic tests passed in the operator's local project virtual environment. This supersedes Section 28's pending-local-validation status for the 15-test stability module and jointly revalidates the six supporting modules in the same run.
+
+**Validation boundary:** pure-Python synthetic validation only. The stability model compares supplied counts and externally supplied fingerprints; it does not define or verify row serialization, ordering, field selection, or hash generation. Stable repeated observations do not prove history completeness, atomicity, or broker archive completeness. The completeness helper remains deliberately false and the recovery gate remains fail-closed absent independent completeness evidence.
+
+No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
