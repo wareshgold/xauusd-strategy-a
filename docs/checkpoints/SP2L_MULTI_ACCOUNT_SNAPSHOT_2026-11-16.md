@@ -166,3 +166,20 @@ Added three research-only artifacts:
   - records fixture intent, limitations, and local validation command.
 
 **Validation status:** these 20 tests are authored but not yet run locally. They must not be reported as passing until the operator supplies the local result. No active Runner or MT5 instance was accessed or changed.
+
+
+## 12. Combined local validation — 32 synthetic tests passed
+
+On 2026-11-16, the operator ran both research test modules together from the dedicated multi-account worktree using the project virtual environment:
+
+- Worktree: `D:\\Mirzaei\\Private\\1\\xauusd-strategy-a-multi-account-foundation-20261116`
+- Python: project venv at `D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe`
+- Test modules:
+  - `tests/test_sp2l_account_isolation_contract_research.py`
+  - `tests/test_sp2l_multi_account_recovery_contract_research.py`
+- Import resolution: temporary test launcher inserted the worktree root into `sys.path`; no project source or test files were changed for this fix.
+- Result: `EXIT_CODE=0`
+- Result summary: `Ran 32 tests in 0.015s — OK`
+- Breakdown: 12 account-isolation tests + 20 recovery/event/idempotency tests; all 32 passed.
+
+This supersedes the earlier pending-validation statements in Sections 10 and 11 for these two modules. The validation remains limited to pure-Python synthetic contracts. It does not prove MT5 account identity extraction, terminal/process isolation, broker order/position linkage, durable journal semantics, real recovery, worker behavior, or any trading edge. No MT5 connection, broker action, account onboarding, or active V3.1 Runner modification was performed as part of this test run.
