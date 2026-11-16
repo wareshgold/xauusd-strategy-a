@@ -457,3 +457,22 @@ All 70 tests passed. This supersedes Section 23's pending-local-validation statu
 **Validation boundary:** this is local pure-Python synthetic validation only. It does not verify the installed MetaTrader5 Python package, actual MT5 history queries, broker history completeness, account/terminal isolation, real recovery, order/deal reconciliation, partial-fill behavior, or worker/runtime behavior. In particular, the independent history-completeness assertion remains an unresolved evidence requirement; successful or empty history responses alone do not establish completeness.
 
 No MT5 connection, terminal initialization, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
+
+
+## 25. History-completeness evidence protocol — source-aligned research draft
+
+After the 70/70 synthetic validation, a research-only protocol draft was added:
+
+- `docs/research/SP2L_HISTORY_COMPLETENESS_EVIDENCE_PROTOCOL_RESEARCH_2026-11-16.md`
+- Commit: `b1d7e72e0a2f7abf6d51b81a262cba4fde0b97e1`
+
+The draft maps the documented Python history APIs:
+- `history_orders_get(date_from, date_to)` and `history_deals_get(date_from, date_to)`;
+- corresponding `history_orders_total(date_from, date_to)` and `history_deals_total(date_from, date_to)`;
+- MQL5 `HistorySelect(from_date, to_date)`, documented for a specified period of server time.
+
+It proposes preserving the four API observations independently, distinguishing `None` errors from valid empty collections, and treating total-versus-row-count disagreement as an inconsistency. Matching counts are described only as API-level consistency for the requested scope.
+
+**Critical limitation:** the official documentation reviewed does not provide an independent guarantee that the terminal has every record in the broker's backend archive, nor an atomic-snapshot guarantee across the four calls. Therefore API-only evidence cannot currently set `history_completeness_verified=True`. Absolute history completeness remains unresolved; the existing recovery gate remains fail-closed.
+
+The draft does not implement an adapter, query MT5, verify the installed package, establish server-time conversion semantics for the installed environment, reconcile orders/deals, or authorize production recovery. No MT5 connection, broker action, account activation, or active V3.1 Runner modification occurred.
