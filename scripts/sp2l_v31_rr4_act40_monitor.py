@@ -34,7 +34,7 @@ STATE_FILE = RUNTIME / "sp2l_v3_1_xauusd_rr4_act40_forward_state.json"
 EVENTS = ARTIFACTS / "SP2L_V3_1_XAUUSD_RR4_ACT40_FORWARD_EVENTS.jsonl"
 RUNNER_LOCK = RUNTIME / "sp2l_multi_symbol_forward_runner.lock"
 PORT = int(os.getenv("SP2L_DASHBOARD_PORT", "8791"))
-REFRESH_SECONDS = 5
+REFRESH_SECONDS = 15
 SYMBOL = "XAUUSD.ecn"
 VERSION = "SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101"
 # Iran uses UTC+03:30 year-round in the 2026 operating period.
@@ -593,7 +593,7 @@ def _render() -> str:
     )
 
     return f"""<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8">
-<meta http-equiv="refresh" content="{REFRESH_SECONDS}">
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SP2L V3.1 — مرکز کنترل</title>
 <style>
@@ -624,8 +624,9 @@ footer{{color:var(--muted);font-size:11px;margin:18px 0}}.tag{{font-size:11px;co
 @media(max-width:520px){{main{{padding:12px}}.grid,.status-grid{{grid-template-columns:1fr 1fr}}h1{{font-size:20px}}.metric .value{{font-size:20px}}}}
 </style></head><body><main>
 <header><div><h1>SP2L V3.1 — مرکز کنترل XAUUSD</h1>
-<div class="sub">{VERSION} · RR4 / ACT40 / DIST40 · فقط تحقیقاتی · فقط‌خواندنی · بروزرسانی هر {REFRESH_SECONDS} ثانیه</div></div>
-<span class="pill {runner_class}">Runner: {_esc(runner_status)}</span></header>
+<div class="sub">{VERSION} · RR4 / ACT40 / DIST40 · فقط تحقیقاتی · فقط‌خواندنی · بروزرسانی خودکار هر {REFRESH_SECONDS} ثانیه</div></div>
+<span class="pill {runner_class}">Runner: {_esc(runner_status)}</span>
+<span class="tag" id="refresh-status">به‌روزرسانی خودکار: هر ۱۵ ثانیه</span></header>
 
 <section class="panel">
 <h2>وضعیت کلی سیستم</h2>
@@ -687,8 +688,63 @@ footer{{color:var(--muted);font-size:11px;margin:18px 0}}.tag{{font-size:11px;co
 <p>این داشبورد فقط State و Event فایل‌ها را می‌خواند؛ هیچ اتصال MT5، خواندن مستقیم پوزیشن بروکر، ارسال سفارش، تغییر SL/TP یا نوشتن در فایل‌های Runner انجام نمی‌دهد.</p>
 <p class="sub">آمار عملکرد فقط از رویدادهای ثبت‌شده در نشست فعلی و پنجره حداکثر {len(events)} رویداد قابل‌خواندن محاسبه می‌شود؛ این صفحه جایگزین گزارش رسمی تاریخچه حساب یا گزارش آماری اعتبارسنجی نیست.</p>
 </section>
-<footer>SP2L Research Monitor · Localhost only · Read-only filesystem observer · Dashboard refresh {REFRESH_SECONDS}s</footer>
-</main></body></html>"""
+<footer>SP2L Research Monitor · Localhost only · Read-only filesystem observer · Dashboard auto-update {REFRESH_SECONDS}s · no page reload</footer>
+</main>
+<script>
+(() => {
+    const intervalMs = 15000;
+    let inFlight = false;
+
+    async function refreshDashboard() {
+        if (document.hidden || inFlight) return;
+        inFlight = true;
+        const scrollY = window.scrollY;
+        const detailsState = Array.from(
+            document.querySelectorAll("main details"),
+            item => item.open
+        );
+
+        try {
+            const response = await fetch("/", { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+            const html = await response.text();
+            const nextDocument = new DOMParser().parseFromString(html, "text/html");
+            const nextMain = nextDocument.querySelector("main");
+            const currentMain = document.querySelector("main");
+            if (!nextMain || !currentMain) {
+                throw new Error("Dashboard content not found");
+            }
+
+            currentMain.replaceChildren(
+                ...Array.from(nextMain.childNodes, node => document.importNode(node, true))
+            );
+            document.querySelectorAll("main details").forEach((item, index) => {
+                item.open = Boolean(detailsState[index]);
+            });
+            window.scrollTo(0, scrollY);
+
+            const status = document.getElementById("refresh-status");
+            if (status) {
+                status.textContent = "آخرین بروزرسانی: " +
+                    new Date().toLocaleTimeString("fa-IR");
+            }
+        } catch (error) {
+            const status = document.getElementById("refresh-status");
+            if (status) {
+                status.textContent = "خطا در بروزرسانی؛ تلاش مجدد در نوبت بعد";
+                status.title = String(error);
+            }
+        } finally {
+            inFlight = false;
+        }
+    }
+
+    window.setInterval(refreshDashboard, intervalMs);
+})();
+</script>
+</body></html>"""
 
 
 
