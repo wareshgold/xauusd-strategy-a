@@ -375,6 +375,61 @@ def _build_diagnostics(events: list[dict], runner: dict, event_health: dict) -> 
     return list(reversed(items[-100:]))
 
 
+_REFRESH_SCRIPT = r"""<script>
+(() => {
+    const intervalMs = 15000;
+    let inFlight = false;
+
+    async function refreshDashboard() {
+        if (document.hidden || inFlight) return;
+        inFlight = true;
+        const scrollY = window.scrollY;
+        const detailsState = Array.from(
+            document.querySelectorAll("main details"),
+            item => item.open
+        );
+
+        try {
+            const response = await fetch("/", { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+            const html = await response.text();
+            const nextDocument = new DOMParser().parseFromString(html, "text/html");
+            const nextMain = nextDocument.querySelector("main");
+            const currentMain = document.querySelector("main");
+            if (!nextMain || !currentMain) {
+                throw new Error("Dashboard content not found");
+            }
+
+            currentMain.replaceChildren(
+                ...Array.from(nextMain.childNodes, node => document.importNode(node, true))
+            );
+            document.querySelectorAll("main details").forEach((item, index) => {
+                item.open = Boolean(detailsState[index]);
+            });
+            window.scrollTo(0, scrollY);
+
+            const status = document.getElementById("refresh-status");
+            if (status) {
+                status.textContent = "آخرین بروزرسانی: " +
+                    new Date().toLocaleTimeString("fa-IR");
+            }
+        } catch (error) {
+            const status = document.getElementById("refresh-status");
+            if (status) {
+                status.textContent = "خطا در بروزرسانی؛ تلاش مجدد در نوبت بعد";
+                status.title = String(error);
+            }
+        } finally {
+            inFlight = false;
+        }
+    }
+
+    window.setInterval(refreshDashboard, intervalMs);
+})();
+</script>"""
+
 def _render() -> str:
     """Persian-first control center; filesystem-only and explicitly session-scoped."""
     state = _read_json(STATE_FILE)
@@ -690,60 +745,7 @@ footer{{color:var(--muted);font-size:11px;margin:18px 0}}.tag{{font-size:11px;co
 </section>
 <footer>SP2L Research Monitor · Localhost only · Read-only filesystem observer · Dashboard auto-update {REFRESH_SECONDS}s · no page reload</footer>
 </main>
-<script>
-(() => {
-    const intervalMs = 15000;
-    let inFlight = false;
-
-    async function refreshDashboard() {
-        if (document.hidden || inFlight) return;
-        inFlight = true;
-        const scrollY = window.scrollY;
-        const detailsState = Array.from(
-            document.querySelectorAll("main details"),
-            item => item.open
-        );
-
-        try {
-            const response = await fetch("/", { cache: "no-store" });
-            if (!response.ok) {
-                throw new Error("HTTP " + response.status);
-            }
-            const html = await response.text();
-            const nextDocument = new DOMParser().parseFromString(html, "text/html");
-            const nextMain = nextDocument.querySelector("main");
-            const currentMain = document.querySelector("main");
-            if (!nextMain || !currentMain) {
-                throw new Error("Dashboard content not found");
-            }
-
-            currentMain.replaceChildren(
-                ...Array.from(nextMain.childNodes, node => document.importNode(node, true))
-            );
-            document.querySelectorAll("main details").forEach((item, index) => {
-                item.open = Boolean(detailsState[index]);
-            });
-            window.scrollTo(0, scrollY);
-
-            const status = document.getElementById("refresh-status");
-            if (status) {
-                status.textContent = "آخرین بروزرسانی: " +
-                    new Date().toLocaleTimeString("fa-IR");
-            }
-        } catch (error) {
-            const status = document.getElementById("refresh-status");
-            if (status) {
-                status.textContent = "خطا در بروزرسانی؛ تلاش مجدد در نوبت بعد";
-                status.title = String(error);
-            }
-        } finally {
-            inFlight = false;
-        }
-    }
-
-    window.setInterval(refreshDashboard, intervalMs);
-})();
-</script>
+{_REFRESH_SCRIPT}
 </body></html>"""
 
 
