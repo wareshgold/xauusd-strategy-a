@@ -632,3 +632,28 @@ The 14 new linkage tests passed, covering matching scope, listed/unlisted observ
 **Validation boundary:** offline synthetic tests only. A `LINKED_FOR_DECLARED_SCOPE` result establishes metadata agreement for the supplied observations; it does not verify artifact existence, artifact byte length or digest, content-to-observation correspondence, manifest authenticity, or history completeness. It does not authorize recovery or production integration.
 
 No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
+
+
+## 34. Exact-byte Evidence Artifact Verification authored — local validation pending
+
+An offline filesystem verifier was added:
+
+- `scripts/sp2l_evidence_artifact_verification_research.py`
+  - commit: `297d86298acb8e5eb87fcea28178b9af9eb80fb9`
+  - accepts an explicit caller-supplied mapping of `artifact_id -> local path`;
+  - deliberately does not interpret manifest locator strings or invent URI/root/path-resolution semantics;
+  - opens files read-only in binary mode, requires regular files, streams exact bytes in 1 MiB chunks, computes SHA-256, counts bytes, and compares descriptor metadata before/after reading;
+  - reports per-artifact missing path, missing file, non-regular file, read error, changed-during-read, byte-length mismatch, digest mismatch, or exact-byte verification;
+  - overall success requires every manifest artifact to verify.
+- `tests/test_sp2l_evidence_artifact_verification_research.py`
+  - commit: `2de44470b6be06dec25aeb08bb7ef261bcb39867`
+  - 16 synthetic filesystem tests authored.
+- `docs/research/SP2L_EVIDENCE_ARTIFACT_VERIFICATION_RESEARCH_2026-11-16.md`
+  - commit: `82e4c842922425394b7d56eabff5c12a0fc33872`
+  - documents exact-byte behavior, explicit path resolution, outcomes, and limitations.
+
+**Validation status:** 16 tests authored; local execution pending. Expected focused-suite total is 149 tests (the previously validated 133 plus 16 new artifact-verification tests).
+
+**Interpretation boundary:** successful verification means only that bytes read from the caller-supplied local paths matched the manifest's declared byte lengths and SHA-256 digests. It does not prove file origin, capture time, semantic correspondence to an observation, manifest authenticity, immutability, or history completeness. Before/after file metadata checks are not an atomic snapshot or a defense against every adversarial filesystem race. This layer is not integrated into recovery, MT5, account workers, or the active Runner.
+
+No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
