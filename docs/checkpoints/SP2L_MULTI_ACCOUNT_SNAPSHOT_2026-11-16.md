@@ -615,3 +615,20 @@ An offline metadata-linkage layer was added:
 **Validation status:** 14 tests authored, not yet run locally. This is metadata linkage only; artifact bytes, locators, hashes, signatures, authenticity, and completeness are not verified. Artifact role names remain operator-declared and no required role schema is inferred. No production or recovery integration is introduced.
 
 No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
+
+
+## 33. Evidence Manifest ↔ History Observation linkage — 133/133 local tests validated
+
+The operator pulled the linkage implementation and ran all nine focused research test modules:
+
+- Branch: `research/multi-account-foundation-rfc-20261116`
+- Local HEAD: `981beaf5ea4882a88fcba27a5f3a9bd15ffc3b74`
+- Test modules: read-only history adapter (17), paired history observation (8), history recovery gate (13), multi-account recovery contract (20), account isolation contract (12), history-completeness evidence classifier (18), repeated-observation stability (15), evidence manifest (16), and evidence-manifest linkage (14).
+- Result: `TEST_EXIT=0`
+- Result summary: `Ran 133 tests in 0.008s — OK`
+
+The 14 new linkage tests passed, covering matching scope, listed/unlisted observation IDs, account/session/server/interval/time-basis/package mismatches, invalid history evidence, and duplicate IDs.
+
+**Validation boundary:** offline synthetic tests only. A `LINKED_FOR_DECLARED_SCOPE` result establishes metadata agreement for the supplied observations; it does not verify artifact existence, artifact byte length or digest, content-to-observation correspondence, manifest authenticity, or history completeness. It does not authorize recovery or production integration.
+
+No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
