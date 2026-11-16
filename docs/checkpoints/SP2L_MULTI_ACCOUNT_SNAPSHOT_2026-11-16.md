@@ -145,3 +145,24 @@ Key source findings:
 - The prior Fati adapter contains the unresolved RR1/BE+5 path and must not be reused under the latest fixed-initial-SL constraint.
 
 No active Runner, MT5 terminal, account, order, or broker state was accessed or modified by this audit.
+
+
+## 11. Recovery, event-isolation, and duplicate-delivery fixtures authored
+
+Added three research-only artifacts:
+
+- `scripts/sp2l_multi_account_recovery_contract_research.py`
+  - commit: `88349fc1cfe2a13e3628644a297ee81be43fa7f5`
+  - explicit state classifications: missing / valid / corrupt / incompatible;
+  - fail-closed recovery disposition for unverified account identity, unavailable inventory, incomplete event journal, and ambiguous linkage;
+  - missing state may bootstrap only against verified empty inventory and complete observations;
+  - account-scoped event keys and per-account candidate-delivery classification;
+  - pure Python; no MT5, filesystem, network, Telegram, or Runner imports.
+- `tests/test_sp2l_multi_account_recovery_contract_research.py`
+  - commit: `b9235501e5ab62237c498717c03ddcd55f8bb485`
+  - 20 synthetic tests authored across state classification, recovery halts, event namespace isolation, and duplicate candidate delivery.
+- `docs/research/SP2L_MULTI_ACCOUNT_RECOVERY_FIXTURES_2026-11-16.md`
+  - commit: `b645b68b2d9662cfdbf1c6d05863e31d1b419412`
+  - records fixture intent, limitations, and local validation command.
+
+**Validation status:** these 20 tests are authored but not yet run locally. They must not be reported as passing until the operator supplies the local result. No active Runner or MT5 instance was accessed or changed.
