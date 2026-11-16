@@ -156,3 +156,25 @@ The original A–J fixture plan is now represented by a narrow pure-Python fact 
 - Test cases cover explicit order/deal references, position ticket versus identifier, ticket replacement, netting reversal, same-symbol hedging positions, multiple deals per lifecycle, Close By's opposite reference, and preservation of raw partial-fill fields.
 
 **Execution status:** tests are authored but have not yet been run in the operator's local environment. No test-pass claim is made. The model does not query history, reconcile broker objects, infer ticket aliases, or decide partial-fill semantics. Python history-query parameter meaning, broker-specific partial-fill representation, callback ordering, and durable reconciliation remain unresolved.
+
+
+
+## Fixture K — Python history `position=` filter key (documentation-derived)
+
+This fixture models the documented field filter only. It does not call or emulate the compiled MetaTrader5 Python extension.
+
+| Observed fact | Synthetic value |
+|---|---:|
+| Current `POSITION_TICKET` | 7001 |
+| Stable `POSITION_IDENTIFIER` | 9001 |
+| Order `ORDER_POSITION_ID` | 9001 |
+| Deal `DEAL_POSITION_ID` | 9001 |
+
+**Expected assertions:**
+- The documented orders-history filter matches the supplied value against `ORDER_POSITION_ID`.
+- The documented deals-history filter matches the supplied value against `DEAL_POSITION_ID`.
+- With deliberately different values (7001 vs 9001), the documented field match is 9001, not the current position ticket 7001.
+- A different identifier (for example 9002) does not match either record.
+- These are source-derived predicate tests, not package-version compatibility tests and not broker evidence.
+
+Source basis: official Python Integration pages for `history_orders_get` and `history_deals_get`, official Position Properties, `HistorySelectByPosition`, and MQL5 book section 7.9.15. See `docs/research/SP2L_PYTHON_HISTORY_POSITION_FILTER_SOURCE_RESOLUTION_2026-11-16.md`.
