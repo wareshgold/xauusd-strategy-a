@@ -476,3 +476,26 @@ It proposes preserving the four API observations independently, distinguishing `
 **Critical limitation:** the official documentation reviewed does not provide an independent guarantee that the terminal has every record in the broker's backend archive, nor an atomic-snapshot guarantee across the four calls. Therefore API-only evidence cannot currently set `history_completeness_verified=True`. Absolute history completeness remains unresolved; the existing recovery gate remains fail-closed.
 
 The draft does not implement an adapter, query MT5, verify the installed package, establish server-time conversion semantics for the installed environment, reconcile orders/deals, or authorize production recovery. No MT5 connection, broker action, account activation, or active V3.1 Runner modification occurred.
+
+
+## 26. History-completeness evidence classifier authored — local validation pending
+
+A pure-Python classifier and synthetic test module were added from the research protocol in Section 25:
+
+- `scripts/sp2l_history_completeness_evidence_research.py`
+  - commit: `aff5ab1276113bf830b9670a620676f0925052dd`
+  - accepts already-captured ORDERS and DEALS total/collection observations; makes no API calls;
+  - requires explicit account/session/server/time-scope provenance, observed package/build metadata, and a SHA-256 manifest reference;
+  - distinguishes a valid empty tuple from a missing collection (`None`) and captured query errors;
+  - detects invalid counts, wrong query kinds, invalid collection shapes, and total-versus-row-count mismatches;
+  - returns only descriptive dispositions: INVALID_SCOPE, QUERY_FAILED, COUNT_MISMATCH, or OBSERVED_CONSISTENT_FOR_SCOPE;
+  - its completeness helper deliberately always returns false. Matching counts cannot set the independent completeness assertion required by the recovery gate.
+- `tests/test_sp2l_history_completeness_evidence_research.py`
+  - commit: `ab9cc9ba3eb3bc727aff2738eeba2b0217dd92ee`
+  - 18 synthetic tests authored for matching and empty counts, count mismatches, API errors, invalid shapes/counts, scope provenance, opaque error preservation, and the invariant that absolute completeness remains unproven.
+- `docs/research/SP2L_HISTORY_COMPLETENESS_EVIDENCE_MODEL_RESEARCH_2026-11-16.md`
+  - commit: `67e027015d367c22a2ab439281a1951eae44a388`
+
+**Validation status:** the 18 tests are authored but have not yet been run in the operator's local environment. Do not count them as passing until the operator reports the local result.
+
+**Boundary:** this is a classifier over injected/captured synthetic data, not an MT5 adapter or runtime experiment. It does not prove atomicity, full lifecycle coverage, broker archive completeness, installed-package compatibility, or order/deal reconciliation. It is not integrated into the recovery gate and cannot authorize recovery. No MT5 connection, broker action, account activation, or active V3.1 Runner modification occurred.
