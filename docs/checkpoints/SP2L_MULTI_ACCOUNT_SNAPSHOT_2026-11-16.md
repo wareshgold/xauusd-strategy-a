@@ -512,3 +512,27 @@ The operator ran all six focused research test modules on branch `research/multi
 This validates the classifier's synthetic behavior and the supporting contracts together. The classifier only reports API-observation consistency; it cannot prove broker archive completeness and its completeness helper remains deliberately false.
 
 **Boundary:** local pure-Python synthetic tests only. No installed-package compatibility, MT5 runtime, broker archive, actual account history, production recovery, or Runner behavior was tested.
+
+
+## 28. Repeated history-observation stability model authored — local validation pending
+
+A separate, offline stability comparison layer was added:
+
+- `scripts/sp2l_history_stability_research.py`
+  - commit: `fc9762d304f9d923485e37ec3f5ebe3f31db3736`
+  - compares two independently captured observations only after each passes the Section 26 API-consistency classifier;
+  - requires distinct observation IDs and observed-at values;
+  - requires matching account/session/server, interval, time basis/source, package version, and terminal build;
+  - compares order/deal counts and externally supplied payload SHA-256 fingerprints;
+  - distinguishes invalid observations, insufficient distinct observations, scope mismatch, fingerprint-method mismatch, changed observations, and stable observations.
+- `tests/test_sp2l_history_stability_research.py`
+  - commit: `53da2310c0304e0b1b20a194f51f6c9b29d0a150`
+  - 15 synthetic tests authored.
+- `docs/research/SP2L_HISTORY_STABILITY_RESEARCH_2026-11-16.md`
+  - commit: `6b1f48ac3d360b6a3cc4de373af2febca149b626`
+
+**Important unresolved input:** the model intentionally does not define raw-row serialization, ordering, field selection, or hashing. The fingerprint algorithm is externally declared and must match across observations. The model does not recompute/verify supplied hashes. This prevents silently inventing data canonicalization or row semantics.
+
+**Interpretation boundary:** STABLE_ACROSS_OBSERVATIONS means only that supplied counts and external fingerprints match across two distinct observations of the same declared scope. It does not prove either snapshot is complete, calls are atomic, or the broker archive has no additional records. The completeness helper deliberately always returns false.
+
+**Validation status:** 15 tests authored; local execution pending. No MT5 connection, terminal initialization, broker action, production recovery integration, account activation, or active V3.1 Runner modification occurred.
