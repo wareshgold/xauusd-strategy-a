@@ -84,6 +84,15 @@ def _verify_one(artifact, path_value: object) -> EvidenceArtifactVerificationRes
 
     try:
         path = Path(os.fspath(path_value))
+        # Check the path before opening it: on Windows, opening a directory
+        # as "rb" can fail with PermissionError before fstat is reachable.
+        path_info = path.stat()
+        if not stat.S_ISREG(path_info.st_mode):
+            return EvidenceArtifactVerificationResult(
+                artifact.artifact_id,
+                EvidenceArtifactVerificationDisposition.NOT_REGULAR_FILE,
+            )
+
         with path.open("rb") as stream:
             before = os.fstat(stream.fileno())
             if not stat.S_ISREG(before.st_mode):
