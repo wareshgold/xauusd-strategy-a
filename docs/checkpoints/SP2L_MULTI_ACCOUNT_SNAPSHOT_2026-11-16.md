@@ -313,3 +313,25 @@ This validates only the pure-Python synthetic fact model. It does not validate t
 ### Next gate
 
 Add synthetic fixture assertions for the documentation-derived mapping, then review a narrow read-only mocked history adapter contract. Keep package-specific compatibility, history completeness, partial-fill representation, and broker behavior explicitly unverified. No MT5 initialization, broker query/action, account activation, or active Runner modification occurred.
+
+
+## 18. Documentation-derived Python history filter fixture added
+
+Following the source resolution in Section 17, the research branch now contains an additional pure-Python fixture layer:
+
+- `scripts/sp2l_order_deal_position_linkage_facts_research.py`
+  - adds explicit predicates for the documented `ORDER_POSITION_ID` and `DEAL_POSITION_ID` history filter keys;
+  - predicates are labeled as documentation-derived models, not calls to or verification of the compiled Python extension.
+- `tests/test_sp2l_order_deal_position_linkage_facts_research.py`
+  - adds three synthetic tests proving that, when `POSITION_TICKET=7001` and `POSITION_IDENTIFIER=9001`, the documented order/deal field filters match 9001 and do not match 7001 or an unrelated identifier.
+- `docs/research/SP2L_ORDER_DEAL_POSITION_LINKAGE_FIXTURES_2026-11-16.md`
+  - adds Fixture K and records the source boundary.
+
+Commits:
+- Model: `897a130faf319a36f592bb730ced4954db103a03`
+- Tests: `f7e604eee94d06eea9723aa33766362c8caff8c2`
+- Fixture documentation: `895782bbb2d6c39b92efb899c70f22682280fade`
+
+**Validation status:** the original 11 tests were locally validated before these three tests were added. The updated module now contains 14 tests and is pending a fresh local run after pulling the latest branch. Do not count the three new tests as passed yet.
+
+The new predicates model documented field semantics only. They do not query MT5, verify package version `5.0.6180`, establish history completeness, reconcile broker objects, or define partial-fill/execution behavior. No MT5 connection, broker action, account activation, or active Runner modification occurred.
