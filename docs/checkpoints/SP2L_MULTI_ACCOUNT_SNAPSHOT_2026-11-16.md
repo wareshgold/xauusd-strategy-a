@@ -657,3 +657,22 @@ An offline filesystem verifier was added:
 **Interpretation boundary:** successful verification means only that bytes read from the caller-supplied local paths matched the manifest's declared byte lengths and SHA-256 digests. It does not prove file origin, capture time, semantic correspondence to an observation, manifest authenticity, immutability, or history completeness. Before/after file metadata checks are not an atomic snapshot or a defense against every adversarial filesystem race. This layer is not integrated into recovery, MT5, account workers, or the active Runner.
 
 No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
+
+
+
+## 35. Exact-byte Evidence Artifact Verification — 149/149 local synthetic tests validated
+
+The operator pulled the cross-platform directory-classification correction and reran all ten focused research test modules together:
+
+- Branch: `research/multi-account-foundation-rfc-20261116`
+- Local HEAD: `3f513a0e7d1b591b55719b53746878f3e1cd01ee`
+- Pull: fast-forward from `9a2f850a` to `3f513a0e`, exit 0.
+- Test modules: read-only history adapter (17), paired history observation (8), history recovery gate (13), multi-account recovery contract (20), account isolation contract (12), history-completeness evidence classifier (18), repeated-observation stability (15), evidence manifest (16), evidence-manifest linkage (14), and exact-byte artifact verification (16).
+- Result: `TEST_EXIT=0`
+- Result summary: `Ran 149 tests in 0.051s — OK`
+
+The initial run exposed a Windows-specific directory classification issue: opening a directory as binary may raise `PermissionError` before descriptor inspection. The verifier was corrected to inspect the path before opening and still verify the opened descriptor is a regular file. The directory test remains intact and now passes.
+
+**Validation boundary:** local pure-Python synthetic tests only. Artifact verification confirms that bytes read from explicitly caller-resolved local paths match manifest-declared byte lengths and SHA-256 digests. It does not prove file origin, capture time, semantic correspondence to history observations, manifest authenticity, immutability, or broker history completeness. The verifier remains research-only and is not integrated into recovery, MT5, account workers, or the active V3.1 Runner.
+
+No MT5 import/initialization, terminal connection, broker query/action, account activation, order operation, production recovery integration, or active V3.1 Runner modification occurred.
