@@ -5,7 +5,7 @@
 - Scope: GitHub repository static inventory only
 - Branch inspected: `research/architecture-consolidation-plan-20261117`
 - Planning base: `research/sp2l-starnet-engine-integration-20261007` at `befec09c752e8d7ba9d10ff75d4e39ad5351c853`
-- Inventory commit: pending (this file)
+- Inventory commit: `ad468f6d544609d291139de630ba73d37d06a0e7` (initial creation; this metadata correction is a subsequent commit)
 - Runtime code executed: NO
 - Tests executed: NO
 - MT5/broker/terminal accessed: NO
@@ -207,4 +207,4 @@ Phase 0 remains OPEN until each proposed move/merge has known importers, test re
 
 ## 10. Next safe action
 
-Continue with a static dependency/entrypoint pass on this same GitHub branch. Start with the 90-module Factory package and its 46 directly related tests, then map the four Factory/StarNet entrypoints and their telemetry files. Do not modify runtime code. Publish the resulting dependency matrix before proposing any code change.
+Continue with a static dependency/entrypoint pass on this same GitHub branch. Start with the 90-module Factory package and the approximately 46 filename-matched Factory/research test candidates (lexical grouping only; importer relevance remains unverified), then map the four Factory/StarNet entrypoints and their telemetry files. Do not modify runtime code. Publish the resulting dependency matrix before proposing any code change.
