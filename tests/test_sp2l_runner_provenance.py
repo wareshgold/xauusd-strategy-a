@@ -132,7 +132,7 @@ class RunnerProvenanceTests(unittest.TestCase):
     def test_existing_corrupt_json_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "events.jsonl"
-            path.write_text('{"bad":true}\\n', encoding="utf-8")
+            path.write_text('{"bad":true}\n', encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "invalid provenance sequence"):
                 verify_event_log(path)
 
