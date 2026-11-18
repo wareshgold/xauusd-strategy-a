@@ -102,5 +102,40 @@ class RunnerProvenanceTests(unittest.TestCase):
                 verify_event_log(log.path)
 
 
+    def test_multiple_appends_keep_contiguous_sequence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = ProvenanceEventLog(Path(tmp) / "events.jsonl")
+            run_started(log, self.identity)
+            position_linked(
+                log, self.identity, position_id=123456, symbol="XAUUSD.ecn",
+                magic=26092301,
+            )
+            log.append("POSITION_CLOSED", {"position_id": 123456, "net": 1.25})
+            result = verify_event_log(log.path)
+            self.assertEqual(result["event_count"], 3)
+
+    def test_invalid_non_finite_config_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "non-finite"):
+            make_run_identity(
+                runner_id="SP2L", runner_version="v1",
+                git_commit="7cd57892de63773db24809cb98bedba93df8f5f0",
+                config={"tp_r": float("nan")},
+            )
+
+    def test_invalid_git_commit_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "git_commit"):
+            make_run_identity(
+                runner_id="SP2L", runner_version="v1",
+                git_commit="not-a-commit", config={},
+            )
+
+    def test_existing_corrupt_json_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "events.jsonl"
+            path.write_text('{"bad":true}\\n', encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "invalid provenance sequence"):
+                verify_event_log(path)
+
+
 if __name__ == "__main__":
     unittest.main()
