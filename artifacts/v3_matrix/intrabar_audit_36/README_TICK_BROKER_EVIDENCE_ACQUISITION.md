@@ -10,6 +10,8 @@ The original V3 RR2/TRAIL4 forward event stream records:
 - Symbol: `XAUUSD.ecn`
 - Runner start: 2026-10-01
 
+Identity source: `artifacts/forward-test/SP2L_V3_XAUUSD_RR2_TRAIL4_FORWARD_EVENTS.jsonl` in branch `docs/v31-broker-sl-evidence-telemetry-20261108`, blob SHA `8d5b648fb5ffec32db813bedf575f4a8e516d279`. Its START event records login/server/symbol/config; no credentials are included.
+
 The M1 intrabar audit covers 2026-10-01T01:00:00Z through 2026-10-05T15:01:00Z. This acquisition requests the wider half-open interval **[2026-10-01T00:00:00Z, 2026-10-06T00:00:00Z)** so the first and last observed windows are not clipped.
 
 The script refuses to write any files unless MT5 reports the exact account login and server above. This is specifically intended to prevent collecting from a different terminal/account. It also refuses to overwrite existing evidence files.
@@ -38,12 +40,21 @@ if (!(Test-Path $Base)) { throw "Base repo missing: $Base" }
 if (!(Test-Path $Python)) { throw "Python venv missing: $Python" }
 if (!(Test-Path $Terminal)) { throw "MT5 terminal missing: $Terminal" }
 
-git -C $Base fetch origin $Branch
+git -C $Base fetch origin "+refs/heads/$Branch:refs/remotes/origin/$Branch"
 if ($LASTEXITCODE -ne 0) { throw "git fetch failed" }
 
 if (!(Test-Path $Repo)) {
     git -C $Base worktree add $Repo "origin/$Branch"
     if ($LASTEXITCODE -ne 0) { throw "worktree add failed" }
+} else {
+    $ActualHead = (git -C $Repo rev-parse HEAD).Trim()
+    $ExpectedHead = (git -C $Base rev-parse "refs/remotes/origin/$Branch").Trim()
+    if ($LASTEXITCODE -ne 0 -or $ActualHead -ne $ExpectedHead) {
+        throw "Existing worktree does not match the verified acquisition branch HEAD; preserving it and stopping."
+    }
+    if (!(Test-Path (Join-Path $Repo "scripts\\acquire_v3_36_tick_broker_evidence.py"))) {
+        throw "Acquisition script missing from existing worktree; preserving it and stopping."
+    }
 }
 
 $Out = Join-Path $Repo "data\raw\v3_36_intrabar_evidence"
