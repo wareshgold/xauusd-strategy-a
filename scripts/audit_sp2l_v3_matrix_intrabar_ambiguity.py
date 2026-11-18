@@ -99,10 +99,9 @@ def bars_for_trade(trade:Trade,bars:list[Bar]):
     # Mirrors legacy scan window only: entry minute excluded, exit minute included.
     em=trade.entry_time-trade.entry_time%60; xm=trade.exit_time-trade.exit_time%60
     chosen=[b for b in bars if em<b.time<=xm]
-    missing=0
-    for left,right in zip(chosen,chosen[1:]):
-        delta=right.time-left.time
-        if delta>60: missing+=delta//60-1
+    expected=max(0,(xm-(em+60))//60+1)
+    # Count missing expected minute bars, including gaps at either edge.
+    missing=max(0,expected-len(chosen))
     return chosen,missing,any(b.time==em for b in bars),any(b.time==xm for b in bars)
 
 def inspect_variant(t:Trade,bars:list[Bar],rr:int,act_pips:int,trail_pips:int,two_x:bool):
@@ -148,9 +147,13 @@ def inspect_variant(t:Trade,bars:list[Bar],rr:int,act_pips:int,trail_pips:int,tw
         # Legacy high/low stop update is mirrored solely to detect path ambiguity.
         if act_hit: sl=candidate_sl
     all_flags=set(first_flags)
+    entry_partial=(t.entry_time%60)!=0
+    exit_partial=(t.exit_time%60)!=0
     if gaps: all_flags.add("M1_GAP_IN_REPLAY_WINDOW")
     if not entry_bar: all_flags.add("ENTRY_MINUTE_BAR_MISSING")
     if not exit_bar: all_flags.add("EXIT_MINUTE_BAR_MISSING")
+    if entry_partial: all_flags.add("ENTRY_MINUTE_PARTIAL_EXCLUDED")
+    if exit_partial: all_flags.add("EXIT_MINUTE_PARTIAL_INCLUDED_AS_WHOLE_BAR")
     if first_time is None: all_flags.add("NO_EXIT_LEVEL_TOUCH_IN_OBSERVED_WINDOW")
     if {"SAME_BAR_TP_AND_PRE_UPDATE_SL","UPDATED_TRAIL_SL_TOUCHED_SAME_BAR","2X_AND_EXIT_LEVEL_SAME_BAR"} & all_flags:
         classification="AMBIGUOUS"
@@ -161,6 +164,7 @@ def inspect_variant(t:Trade,bars:list[Bar],rr:int,act_pips:int,trail_pips:int,tw
     return {
       "position_id":t.position_id,"direction":t.direction,"RR":rr,"ACT_PIPS":act_pips,"TRAIL_PIPS":trail_pips,"2X":"ON" if two_x else "OFF",
       "bars_inspected":len(selected),"missing_minutes":gaps,"entry_minute_bar_present":entry_bar,"exit_minute_bar_present":exit_bar,
+      "entry_minute_partial":entry_partial,"exit_minute_partial":exit_partial,
       "first_candidate_bar_utc":iso(first_time),"first_candidate_flags":"|".join(sorted(first_flags)),
       "ambiguity_flags":"|".join(sorted(all_flags)),"classification":classification,
       "has_same_bar_tp_sl":sltp_time is not None,"has_trail_update_and_touch_same_bar":trail_same_time is not None,
