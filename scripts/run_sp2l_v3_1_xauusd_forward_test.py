@@ -292,7 +292,7 @@ from datetime import datetime, timezone
 from sp2l_deal_lifecycle_dedupe import claim_deal_lifecycle_event
 from sp2l_v31_startup_recovery import recover_owned_broker_inventory
 from sp2l_runner_provenance import (
-    ProvenanceEventLog, make_run_identity, position_linked, run_started,
+    ProvenanceEventLog, append_required_event, make_run_identity, position_linked, run_started,
     verify_event_log, write_run_manifest, is_current_run_entry_deal,
 )
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
@@ -427,7 +427,7 @@ def _provenance_result_fields(result):
     if not isinstance(result, dict):
         return {"result_type": type(result).__name__, "result_repr": repr(result)[:1000]}
     allowed = ("ok", "dry_run", "order", "deal", "retcode", "comment",
-               "reason", "error", "request_id")
+               "reason", "error", "request_id", "outcome")
     return {key: result.get(key) for key in allowed if key in result}
 
 
@@ -435,7 +435,7 @@ def _append_order_intent(candidate, magic):
     if _PROVENANCE_LOG is None or _PROVENANCE_IDENTITY is None:
         raise _ProvenanceFatal("ORDER_BLOCKED: provenance is not initialized")
     try:
-        _PROVENANCE_LOG.append("ORDER_INTENT", {
+        append_required_event(_PROVENANCE_LOG, "ORDER_INTENT", {
             "run_id": _PROVENANCE_IDENTITY["run_id"],
             "config_id": _PROVENANCE_IDENTITY["config_id"],
             "config_hash_sha256": _PROVENANCE_IDENTITY["config_hash_sha256"],
@@ -457,7 +457,7 @@ def _append_order_intent(candidate, magic):
 
 def _append_order_result(candidate, result, magic):
     try:
-        _PROVENANCE_LOG.append("ORDER_RESULT", {
+        append_required_event(_PROVENANCE_LOG, "ORDER_RESULT", {
             "run_id": _PROVENANCE_IDENTITY["run_id"],
             "config_id": _PROVENANCE_IDENTITY["config_id"],
             "signal_id": str(candidate.get("signal_id", "")),
