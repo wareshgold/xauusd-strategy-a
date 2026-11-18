@@ -184,7 +184,9 @@ and V3.1 broker-inventory recovery have succeeded — and before the generic
 runner emits START or enters its poll loop — the wrapper:
 
 1. Reads the exact Git HEAD from the repository containing the executing
-   runner and requires a clean worktree (including untracked files). It refuses
+   runner and requires a clean source worktree (including untracked source files).
+   Generated artifacts under artifacts/forward-test and runtime are excluded
+   from this source-cleanliness check. It refuses
    to claim a clean commit identity if source differs from HEAD.
 2. Captures the effective V3.1 strategy settings, runtime environment values,
    resolved MT5 symbol names and symbol metadata, selected terminal path,
@@ -237,8 +239,8 @@ signature.
 
 ### Validation and deployment boundary
 
-This branch adds deterministic tests for current-run entry eligibility,
-restart attribution, and multiple partial fills. CI compiles the V3.1 wrapper
+This branch adds deterministic tests for required-write failure handling,
+current-run entry eligibility, restart attribution, and multiple partial fills. CI compiles the V3.1 wrapper
 and provenance modules and runs the isolated provenance unit suite.
 
 This remains a research integration proposal. It has not been merged or
