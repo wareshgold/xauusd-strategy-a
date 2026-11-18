@@ -35,7 +35,7 @@ PowerShell:
 python scripts/research_replay_36_path_bounds.py --trades artifacts/v3_matrix/SP2L_V3_ACTUAL_FORWARD_TRAILING_MATRIX_V3_20261005T074420Z_TRADES.csv --m1 artifacts/v3_matrix/XAUUSD_ECN_M1_20261001_20261006.csv --out artifacts/v3_matrix/offline_36_path_bounds
 
 Synthetic tests:
-python -m unittest tests.test_offline_36_path_bounds -v
+python -m unittest discover -s tests -p test_offline_36_path_bounds.py -v
 
 Outputs: trade_results.csv, scenario_summary.csv, path_ambiguities.csv, manifest.json.
 All outputs are research-only, noncanonical, and must not be used for production BUY/SELL decisions.
