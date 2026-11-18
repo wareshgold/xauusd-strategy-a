@@ -73,3 +73,100 @@ The append-only local evidence log is the primary link source.
   signature against an attacker able to rewrite the entire file and recompute it.
 - Broker history may not expose every historical SL/TP request/response. This
   provenance feature does not solve missing broker-side records.
+
+
+## V3.1 XAUUSD integration mapping (source inspection, not connected)
+
+Inspected source files at the current research base:
+- `scripts/run_sp2l_v3_1_xauusd_forward_test.py`
+- `scripts/sp2l_v3_1_rr4_act40_config.py`
+- `scripts/run_sp2l_author_replica_multi_symbol_forward_test.py`
+
+The wrapper delegates to the generic runner and monkey-patches selected functions.
+The following values are source-confirmed effective V3.1 settings at those source
+revisions; runtime environment and broker-resolved values must still be captured
+at process startup, not assumed from this table.
+
+| Field | V3.1 source value | Provenance |
+|---|---:|---|
+| runner_id | `SP2L_V3_1_XAUUSD` | stable proposed identity |
+| runner_version | `SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101` | `cfg.VERSION` |
+| base symbol | `XAUUSD` | wrapper/config |
+| timeframe | `M1` | generic runner |
+| P-Gap price | `1.0` | `cfg.P_GAP_PRICE` |
+| spike multiplier | `1.5` | `cfg.SPIKE_MULTIPLIER` |
+| max SL distance | `10.0` | `cfg.MAX_SL_DISTANCE` |
+| TP multiple | `4.0R` | `cfg.TP_R` |
+| trailing distance | `0.40` price | `TRAIL_PIPS=4.0`, `XAU_PIP_SIZE_PRICE=0.1` |
+| activation threshold | `0.40` price | same `TRAIL_DISTANCE_PRICE` used by activation check |
+| order mode | `PENDING_LIMIT_RESEARCH` | `cfg.ORDER_MODE` |
+| SL anchor label | `SPIKE_CANDLE_EXTREME_RESEARCH` | `cfg.SL_ANCHOR` |
+| pending TTL | `30.0` minutes | `cfg.PENDING_TTL_MINUTES` |
+| session policy | all market hours | wrapper overrides session function |
+| base volume | `0.01` | `cfg.VOLUME` |
+| magic base | `26092300` | wrapper |
+| XAU slot magic | `26092301` | generic rule: base + index + 1 |
+| execution flags | defaults set to `true/true` | wrapper `setdefault`; DEMO-only guard remains enforced |
+
+Important effective-value distinctions:
+- The generic runner's default London/New York session window is overridden by
+  the V3.1 wrapper's all-market-hours function. Hash the effective override,
+  not the unused generic defaults.
+- `POLL_SECONDS`, `SP2L_PENDING_SERVER_OFFSET_HOURS`, terminal path, and
+  broker-resolved symbol metadata are runtime values. Capture their actual
+  effective values. The pinned server offset must never be invented or omitted
+  from the runtime evidence if execution depends on it.
+- The resolved symbol (for example `XAUUSD.ecn`), point, digits, pip size and
+  method, trade mode, and volume min/max/step come from MT5 at runtime.
+- Do not include credentials, Telegram tokens, passwords, or other secrets in
+  the config snapshot. Account login/server may be stored separately in a
+  restricted run-context record if the operator approves.
+
+### Safe hook locations
+
+1. After MT5 demo guard, symbol resolution, singleton runner lock, and startup
+   recovery have succeeded — but before the existing `START` event and before
+   entering the polling loop — create the per-run manifest and
+   `RUNNER_STARTED` event. Any manifest/log failure aborts before order flow.
+2. Before `execute_candidate`, append and fsync an `ORDER_INTENT` event
+   containing run_id, signal_id, symbol, direction, magic and theoretical
+   levels. If this write fails, do not call the execution function.
+3. After the gateway result, append `ORDER_RESULT` with returned order/deal
+   tickets and the broker result. If evidence persistence fails after broker
+   acknowledgement, stop the runner and require reconciliation; do not silently
+   continue as if the order were fully evidenced.
+4. In the history-deal observer, use the broker's actual `deal.position_id`,
+   `deal.order`, and `deal.ticket` to link entry deals. Never assume an order
+   ticket is a position ID. Partial fills may create multiple entry deals for
+   one position; preserve every deal/order relationship.
+5. Preserve the existing `signal_orders` and `position_orders` correlations
+   as supporting evidence, but do not infer a missing broker identifier.
+
+### Restart and legacy-position rule
+
+A process restart creates a new run_id, but an already-open position retains
+the provenance of the run that opened it. Therefore:
+- Keep a durable index from order/deal/position identifiers to the original
+  run_id and manifest.
+- On restart, recover links from the provenance index and broker history.
+- Do not re-label an older position with the newly started run_id merely
+  because it shares the same magic number.
+- If an existing position predates instrumentation or cannot be reconciled,
+  label it `PRE_PROVENANCE_UNATTRIBUTED` / `UNRESOLVED_LINK`; never guess.
+- Record later management activity under the managing run separately from
+  entry provenance. Do not overwrite the original entry config identity.
+
+### Remaining integration blockers
+
+- The current V3.1 runner source does not yet import or call this module.
+- The effective Git commit and dirty-worktree state are not currently captured
+  by the wrapper. Integration must prove the exact executing source revision;
+  a dirty or unknown build must be blocked from claiming a clean commit identity.
+- Position/deal reconciliation across restart, partial fills, and broker history
+  needs synthetic fixtures before wiring.
+- The event log currently assumes one writer. Use a unique per-run file and the
+  existing singleton lock, or implement an explicit cross-process lock before
+  any multi-writer deployment.
+- The MT5 comment token is not integrated. Inspect the gateway request builder
+  first; adding a comment is optional and must not alter execution behavior.
+- No production or live-account use is authorized by this design.
