@@ -15,6 +15,8 @@ from sp2l_runner_provenance import (
     write_run_manifest,
     validate_run_identity,
     is_current_run_entry_deal,
+    append_required_event,
+    ProvenancePersistenceError,
 )
 
 
@@ -197,6 +199,14 @@ class RunnerProvenanceTests(unittest.TestCase):
         self.assertFalse(is_current_run_entry_deal(**{**common, "magic": 999}))
         self.assertFalse(is_current_run_entry_deal(**{**common, "position_id": 0}))
         self.assertFalse(is_current_run_entry_deal(**{**common, "entry_code": 1}))
+
+    def test_required_event_append_fails_closed(self):
+        class BrokenLog:
+            def append(self, event_type, fields):
+                raise OSError("disk full")
+
+        with self.assertRaisesRegex(ProvenancePersistenceError, "disk full"):
+            append_required_event(BrokenLog(), "ORDER_INTENT", {"signal_id": "s1"})
 
     def test_non_object_event_record_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
