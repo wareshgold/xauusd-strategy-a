@@ -122,8 +122,8 @@ def validate_run_identity(identity: Mapping[str, Any]) -> None:
 
 
 def mt5_comment_token(identity: Mapping[str, Any]) -> str:
-    validate_run_identity(identity)
     """Compact correlation hint only; never treat broker comment as authority."""
+    validate_run_identity(identity)
     run_short = str(identity["run_id"])[:8]
     cfg_short = str(identity["config_hash_sha256"])[:8]
     token = f"S2L:{run_short}:{cfg_short}"
