@@ -101,6 +101,13 @@ def main() -> int:
             ticks_path = out / "XAUUSD_ECN_TICKS_20261001_20261006.csv.gz"
             orders_path = out / "MT5_HISTORY_ORDERS_20261001_20261006.json"
             deals_path = out / "MT5_HISTORY_DEALS_20261001_20261006.json"
+            manifest_path = out / "MT5_EVIDENCE_MANIFEST_20261001_20261006.json"
+            existing = [x for x in (ticks_path, orders_path, deals_path, manifest_path) if x.exists()]
+            if existing:
+                raise FileExistsError(
+                    "REFUSING_TO_OVERWRITE_EXISTING_EVIDENCE: "
+                    + ", ".join(str(x) for x in existing)
+                )
 
             tick_count = valid_quotes = missing_quotes = crossed_quotes = 0
             out_of_order = duplicate_msc = 0
@@ -226,7 +233,6 @@ def main() -> int:
                 "trading_actions_taken": False,
                 "forward_runner_touched": False,
             }
-            manifest_path = out / "MT5_EVIDENCE_MANIFEST_20261001_20261006.json"
             manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
             print(json.dumps({
