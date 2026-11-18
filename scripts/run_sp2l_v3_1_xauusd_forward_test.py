@@ -316,7 +316,8 @@ def _git_source_identity():
         check=True, capture_output=True, text=True, timeout=10,
     ).stdout.strip().lower()
     status = subprocess.run(
-        ["git", "-C", root, "status", "--porcelain", "--untracked-files=all"],
+        ["git", "-C", root, "status", "--porcelain", "--untracked-files=all",
+         "--", ".", ":(exclude)artifacts/forward-test/**", ":(exclude)runtime/**"],
         check=True, capture_output=True, text=True, timeout=10,
     ).stdout
     if status.strip():
