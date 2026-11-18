@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 SCHEMA_VERSION = 1
+_HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def _utc_now() -> str:
@@ -74,8 +75,7 @@ def make_run_identity(
             raise ValueError(f"{field} must be a non-empty string")
     if not re.fullmatch(r"[0-9a-fA-F]{7,40}", git_commit):
         raise ValueError("git_commit must be a 7-40 character hexadecimal commit")
-    snapshot = dict(config)
-    _validate_json_value(snapshot)
+    snapshot = json.loads(canonical_json(dict(config)))
     config_hash = sha256_json(snapshot)
     identity = {
         "schema_version": SCHEMA_VERSION,
@@ -93,7 +93,36 @@ def make_run_identity(
     return identity
 
 
+def validate_run_identity(identity: Mapping[str, Any]) -> None:
+    """Reject mutated or internally inconsistent identity snapshots."""
+    if not isinstance(identity, Mapping):
+        raise TypeError("identity must be a mapping")
+    required = (
+        "schema_version", "run_id", "runner_id", "runner_version",
+        "git_commit", "started_at_utc", "config_id",
+        "config_hash_sha256", "config_snapshot",
+    )
+    if any(key not in identity for key in required):
+        raise ValueError("incomplete runner identity")
+    if identity["schema_version"] != SCHEMA_VERSION:
+        raise ValueError("unsupported runner identity schema")
+    if not re.fullmatch(r"[0-9a-f]{32}", str(identity["run_id"])):
+        raise ValueError("invalid run_id")
+    if not re.fullmatch(r"[0-9a-f]{7,40}", str(identity["git_commit"])):
+        raise ValueError("invalid git_commit")
+    _validate_json_value(identity["config_snapshot"])
+    actual_hash = sha256_json(identity["config_snapshot"])
+    if not _HASH_RE.fullmatch(str(identity["config_hash_sha256"])):
+        raise ValueError("invalid config_hash_sha256")
+    if actual_hash != identity["config_hash_sha256"]:
+        raise ValueError("config snapshot no longer matches config_hash_sha256")
+    expected_id = f"CFG_{actual_hash[:12].upper()}"
+    if identity["config_id"] != expected_id:
+        raise ValueError("config_id does not match config hash")
+
+
 def mt5_comment_token(identity: Mapping[str, Any]) -> str:
+    validate_run_identity(identity)
     """Compact correlation hint only; never treat broker comment as authority."""
     run_short = str(identity["run_id"])[:8]
     cfg_short = str(identity["config_hash_sha256"])[:8]
@@ -105,6 +134,7 @@ def mt5_comment_token(identity: Mapping[str, Any]) -> str:
 
 def write_run_manifest(path: str | Path, identity: Mapping[str, Any]) -> None:
     """Create once; never overwrite an existing run manifest."""
+    validate_run_identity(identity)
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     payload = canonical_json(dict(identity)) + "\n"
@@ -148,7 +178,13 @@ class ProvenanceEventLog:
                     record = json.loads(line)
                 except json.JSONDecodeError as exc:
                     raise ValueError(f"invalid provenance JSON at line {line_number}") from exc
+                if not isinstance(record, dict):
+                    raise ValueError(f"invalid provenance record at line {line_number}")
                 event_hash = record.pop("event_hash_sha256", None)
+                if not isinstance(event_hash, str) or not _HASH_RE.fullmatch(event_hash):
+                    raise ValueError(f"invalid provenance event hash at line {line_number}")
+                if record.get("schema_version") != SCHEMA_VERSION:
+                    raise ValueError(f"unsupported provenance schema at line {line_number}")
                 if record.get("sequence") != sequence + 1:
                     raise ValueError(f"invalid provenance sequence at line {line_number}")
                 if record.get("previous_event_hash_sha256") != previous:
@@ -185,6 +221,7 @@ class ProvenanceEventLog:
 
 
 def run_started(log: ProvenanceEventLog, identity: Mapping[str, Any]) -> dict[str, Any]:
+    validate_run_identity(identity)
     return log.append("RUNNER_STARTED", {"identity": dict(identity)})
 
 
@@ -200,6 +237,7 @@ def position_linked(
     broker_comment: str | None = None,
 ) -> dict[str, Any]:
     """Link observed broker identifiers to the immutable run/config identity."""
+    validate_run_identity(identity)
     if int(position_id) <= 0 or int(magic) < 0 or not symbol:
         raise ValueError("invalid position_id, magic, or symbol")
     return log.append("POSITION_LINKED", {
