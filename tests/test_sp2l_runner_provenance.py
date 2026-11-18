@@ -13,6 +13,7 @@ from sp2l_runner_provenance import (
     run_started,
     verify_event_log,
     write_run_manifest,
+    validate_run_identity,
 )
 
 
@@ -134,6 +135,32 @@ class RunnerProvenanceTests(unittest.TestCase):
             path = Path(tmp) / "events.jsonl"
             path.write_text('{"bad":true}\n', encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "invalid provenance sequence"):
+                verify_event_log(path)
+
+
+    def test_nested_config_is_copied_into_snapshot(self):
+        original = {"risk": {"tp_r": 4.0}}
+        identity = make_run_identity(
+            runner_id="SP2L", runner_version="v1",
+            git_commit="7cd57892de63773db24809cb98bedba93df8f5f0",
+            config=original,
+        )
+        original["risk"]["tp_r"] = 2.0
+        validate_run_identity(identity)
+        self.assertEqual(identity["config_snapshot"]["risk"]["tp_r"], 4.0)
+
+    def test_mutated_identity_snapshot_is_rejected(self):
+        identity = dict(self.identity)
+        identity["config_snapshot"] = dict(self.identity["config_snapshot"])
+        identity["config_snapshot"]["tp_r"] = 3.0
+        with self.assertRaisesRegex(ValueError, "no longer matches"):
+            validate_run_identity(identity)
+
+    def test_non_object_event_record_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "events.jsonl"
+            path.write_text('[]\\n', encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "invalid provenance record"):
                 verify_event_log(path)
 
 
