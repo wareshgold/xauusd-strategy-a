@@ -862,7 +862,19 @@ def _validate_execution_clock(symbol: str) -> None:
 def _guarded_execute_candidate(candidate: dict, magic: int) -> dict:
     _validate_execution_clock(str(candidate.get("symbol", "")))
     _append_order_intent(candidate, magic)
-    result = _original_execute_candidate(candidate, magic)
+    try:
+        result = _original_execute_candidate(candidate, magic)
+    except Exception as exc:
+        # The gateway may have failed after the broker accepted the request.
+        # Persist the uncertainty, then stop instead of retrying or continuing.
+        _append_order_result(candidate, {
+            "ok": False, "outcome": "UNKNOWN_AFTER_GATEWAY_EXCEPTION",
+            "error": f"{type(exc).__name__}: {exc}",
+        }, magic)
+        raise _ProvenanceFatal(
+            "RUNNER_STOPPED: gateway raised during order execution; "
+            "broker reconciliation required"
+        ) from exc
     _append_order_result(candidate, result, magic)
     return result
 
@@ -936,11 +948,18 @@ def _v3_main():
         _MT5_TERMINAL_PATH_USED = original_resolve_terminal_path()
         return _MT5_TERMINAL_PATH_USED
     runner._resolve_terminal_path = _capture_terminal_path
+    original_resolve_terminal_path = runner._resolve_terminal_path
+    def _capture_terminal_path():
+        global _MT5_TERMINAL_PATH_USED
+        _MT5_TERMINAL_PATH_USED = original_resolve_terminal_path()
+        return _MT5_TERMINAL_PATH_USED
+    runner._resolve_terminal_path = _capture_terminal_path
     try:
         _original_main()
     finally:
         runner.load_state, runner.reconcile_state_from_events = original_load, original_reconcile
         runner.find_latest_candidate = original_find
+        runner._resolve_terminal_path = original_resolve_terminal_path
         runner._resolve_terminal_path = original_resolve_terminal_path
 
 
