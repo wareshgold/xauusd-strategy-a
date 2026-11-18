@@ -413,10 +413,10 @@ def _initialize_runner_provenance(configs):
         started_at_utc=_RUN_STARTED_UTC.isoformat(timespec="microseconds").replace("+00:00", "Z"),
     )
     provenance_root = runner.ARTIFACTS / "runner_provenance"
-    run_dir = provenance_root / "runs" / identity["run_id"]
-    run_dir.mkdir(parents=True, exist_ok=False)
     log = ProvenanceEventLog(provenance_root / "events.jsonl")
     verify_event_log(log.path)
+    run_dir = provenance_root / "runs" / identity["run_id"]
+    run_dir.mkdir(parents=True, exist_ok=False)
     write_run_manifest(run_dir / "manifest.json", identity)
     run_started(log, identity)
     _PROVENANCE_IDENTITY = identity
@@ -711,7 +711,6 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
         deal_epoch = int(getattr(deal, "time", 0) or 0)
         position = int(getattr(deal, "position_id", 0) or 0)
         deal_magic = int(getattr(deal, "magic", 0) or 0)
-        is_entry = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
         if (is_current_run_entry_deal(
                 deal_time=deal_epoch,
                 run_started_epoch=int(_RUN_STARTED_UTC.timestamp()),
