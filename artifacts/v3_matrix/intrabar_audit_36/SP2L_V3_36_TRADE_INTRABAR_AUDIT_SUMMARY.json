@@ -1,0 +1,36 @@
+{
+  "purpose": "OFFLINE_INTRABAR_AMBIGUITY_AUDIT_ONLY",
+  "research_only": true,
+  "canonical": false,
+  "trade_count": 36,
+  "buy_count": 18,
+  "sell_count": 18,
+  "m1_bar_count": 3600,
+  "m1_first_utc": "2026-10-01T01:00:00+00:00",
+  "m1_last_utc": "2026-10-05T15:01:00+00:00",
+  "variant_count": 600,
+  "audit_rows": 21600,
+  "classification_counts": {
+    "AMBIGUOUS": 18120,
+    "SINGLE_LEVEL_TOUCH_ORDER_NOT_PROVEN": 1080,
+    "NO_LEVEL_TOUCH_OBSERVED": 2400
+  },
+  "ambiguity_flag_counts": {
+    "ENTRY_MINUTE_PARTIAL_EXCLUDED": 21600,
+    "EXIT_MINUTE_PARTIAL_INCLUDED_AS_WHOLE_BAR": 21000,
+    "TRAIL_ACTIVATION_LEVEL_TOUCHED": 17040,
+    "UPDATED_TRAIL_SL_TOUCHED_SAME_BAR": 17040,
+    "TP_LEVEL_TOUCHED": 600,
+    "PRE_UPDATE_SL_LEVEL_TOUCHED": 2160,
+    "2X_AND_EXIT_LEVEL_SAME_BAR": 1470,
+    "2X_LEVEL_TOUCHED": 2490,
+    "NO_EXIT_LEVEL_TOUCH_IN_OBSERVED_WINDOW": 2400
+  },
+  "execution_semantics": "NOT_MODELED",
+  "fees_and_slippage": "NOT_MODELED",
+  "pnl_or_performance_metrics": "NOT_COMPUTED",
+  "intrabar_ordering": "UNRESOLVED_WHERE_MULTIPLE_LEVELS_TOUCH_WITHIN_ONE_M1_BAR",
+  "entry_minute_policy": "EXCLUDED_TO_MIRROR_LEGACY_WINDOW; PARTIAL_MINUTE_NOT_RECONSTRUCTED",
+  "exit_minute_policy": "WHOLE_EXIT_MINUTE_INCLUDED_FOR_DIAGNOSTIC_ONLY; POST_EXIT_TICKS_CANNOT_BE_SEPARATED",
+  "two_x_policy": "LEVEL_TOUCH_ONLY; NO_FILL_OR_SIZE_OR_AVERAGE_PRICE_ASSUMED"
+}
