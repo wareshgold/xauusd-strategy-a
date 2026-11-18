@@ -1,6 +1,6 @@
 # Runner / Position Provenance — Research Design
 
-Status: research-only prototype; not wired into any MT5 runner.
+Status: research-only V3.1 integration implemented on branch research/v31-runner-provenance-integration-20261118; not merged, not deployed, and not enabled in the active Runner.
 
 ## Purpose
 
@@ -170,3 +170,80 @@ the provenance of the run that opened it. Therefore:
 - The MT5 comment token is not integrated. Inspect the gateway request builder
   first; adding a comment is optional and must not alter execution behavior.
 - No production or live-account use is authorized by this design.
+
+
+## V3.1 integration implementation — research branch
+
+The V3.1 wrapper now wires the helper into its own lifecycle. The generic
+author-replica runner and the strategy/config geometry are not modified.
+
+### Startup boundary
+
+After the existing DEMO guard, symbol resolution, singleton lock, state load,
+and V3.1 broker-inventory recovery have succeeded — and before the generic
+runner emits START or enters its poll loop — the wrapper:
+
+1. Reads the exact Git HEAD from the repository containing the executing
+   runner and requires a clean worktree (including untracked files). It refuses
+   to claim a clean commit identity if source differs from HEAD.
+2. Captures the effective V3.1 strategy settings, runtime environment values,
+   resolved MT5 symbol names and symbol metadata, selected terminal path,
+   poll interval, pinned server offset, execution flags, MT5 version, and
+   account trade mode. Credentials, account login, server identity, and
+   Telegram secrets are deliberately excluded.
+3. Creates a unique run directory and create-once manifest.json.
+4. Verifies the existing shared event chain and appends/fsyncs RUNNER_STARTED.
+
+Any failure in these steps aborts startup before the entry loop.
+
+### Order evidence and fail-closed behavior
+
+- ORDER_INTENT is appended and fsynced immediately before the existing
+  execute_candidate gateway call. Failure blocks the order.
+- ORDER_RESULT records the returned gateway result and broker order/deal
+  tickets. If the gateway raises, the wrapper records an unknown outcome and
+  stops because broker acknowledgement may be ambiguous.
+- If result persistence fails after the gateway returns, the process stops
+  and requires broker reconciliation. It does not continue as if the order
+  were evidenced.
+- No MT5 comment token was added; gateway request construction and execution
+  semantics remain unchanged.
+
+### Position and restart attribution
+
+The V3.1 tracked-deal observer links only an observed DEAL_ENTRY_IN deal
+whose timestamp is strictly later than the current process start, whose magic
+matches the V3.1 symbol slot, and whose actual position_id is positive.
+Every partial-fill deal is preserved as its own POSITION_LINKED event; the
+broker order ticket is never substituted for a position ID.
+
+The shared artifacts/forward-test/runner_provenance/events.jsonl log preserves
+links across restarts. A restarted process does not relabel pre-existing
+positions as belonging to its new run. Existing positions whose original
+entry predates instrumentation remain unattributed unless independently
+reconciled from retained evidence.
+
+### Evidence locations
+
+- Per-run manifest:
+  artifacts/forward-test/runner_provenance/runs/<run_id>/manifest.json
+- Shared append-only event chain:
+  artifacts/forward-test/runner_provenance/events.jsonl
+
+The existing singleton runner lock is the single-writer guard for the shared
+event chain. Each append is flushed and fsynced. Startup verifies the full
+prior chain before extending it. The chain is tamper-evident, not a digital
+signature.
+
+### Validation and deployment boundary
+
+This branch adds deterministic tests for current-run entry eligibility,
+restart attribution, and multiple partial fills. CI compiles the V3.1 wrapper
+and provenance modules and runs the isolated provenance unit suite.
+
+This remains a research integration proposal. It has not been merged or
+deployed, does not change the active V3.1 process, and is not authorization
+for live-account use. Before any operator deployment, verify the target
+worktree is clean, the exact checked-out commit matches the intended PR head,
+and the evidence directory is writable and retained. Do not retrofit
+pre-instrumentation positions by guessing.
