@@ -28,6 +28,7 @@ For each of 36 trades × 600 legacy parameter combinations = 21,600 audit rows:
 - trailing activation/update and updated trailing SL touch occur in one M1 bar;
 - 2X level touch, without assuming fill, size change, or weighted entry;
 - missing M1 minutes and missing entry/exit minute bars;
+- partial entry minutes excluded and partial exit minutes included as whole OHLC bars, both explicitly flagged;
 - first possible exit-level-touch bar under the legacy OHLC scan window.
 
 The scan stops at the first possible exit-touch bar because subsequent bars are
