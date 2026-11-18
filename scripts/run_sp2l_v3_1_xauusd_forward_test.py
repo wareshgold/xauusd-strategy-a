@@ -687,6 +687,29 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
     run_started_epoch = int(_RUN_STARTED_UTC.timestamp())
     for deal in deals:
         ticket=int(deal.ticket)
+        # New entry provenance is assigned only to fills observed after this
+        # process started. Existing positions retain their original run link.
+        deal_epoch = int(getattr(deal, "time", 0) or 0)
+        position = int(getattr(deal, "position_id", 0) or 0)
+        deal_magic = int(getattr(deal, "magic", 0) or 0)
+        is_entry = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
+        if (is_entry and position > 0 and deal_magic == int(magic)
+                and deal_epoch > int(_RUN_STARTED_UTC.timestamp())
+                and ticket not in _PROVENANCE_LINKED_DEALS):
+            try:
+                position_linked(
+                    _PROVENANCE_LOG, _PROVENANCE_IDENTITY,
+                    position_id=position, symbol=symbol, magic=deal_magic,
+                    order_ticket=int(getattr(deal, "order", 0) or 0) or None,
+                    deal_ticket=ticket,
+                    broker_comment=str(getattr(deal, "comment", "") or "") or None,
+                )
+            except Exception as exc:
+                raise _ProvenanceFatal(
+                    "RUNNER_STOPPED: POSITION_LINKED persistence failed; "
+                    f"manual broker reconciliation required: {type(exc).__name__}: {exc}"
+                ) from exc
+            _PROVENANCE_LINKED_DEALS.add(ticket)
         if ticket in state["deals"]:
             continue
         deal_epoch = int(getattr(deal, "time", 0) or 0)
@@ -838,7 +861,10 @@ def _validate_execution_clock(symbol: str) -> None:
 
 def _guarded_execute_candidate(candidate: dict, magic: int) -> dict:
     _validate_execution_clock(str(candidate.get("symbol", "")))
-    return _original_execute_candidate(candidate, magic)
+    _append_order_intent(candidate, magic)
+    result = _original_execute_candidate(candidate, magic)
+    _append_order_result(candidate, result, magic)
+    return result
 
 runner.execute_candidate = _guarded_execute_candidate
 
@@ -904,11 +930,18 @@ def _v3_main():
     runner.load_state = lambda: _fresh_v3_state()
     runner.reconcile_state_from_events = lambda state: None
     runner.find_latest_candidate = _forward_session_find
+    original_resolve_terminal_path = runner._resolve_terminal_path
+    def _capture_terminal_path():
+        global _MT5_TERMINAL_PATH_USED
+        _MT5_TERMINAL_PATH_USED = original_resolve_terminal_path()
+        return _MT5_TERMINAL_PATH_USED
+    runner._resolve_terminal_path = _capture_terminal_path
     try:
         _original_main()
     finally:
         runner.load_state, runner.reconcile_state_from_events = original_load, original_reconcile
         runner.find_latest_candidate = original_find
+        runner._resolve_terminal_path = original_resolve_terminal_path
 
 
 runner.main=_v3_main
