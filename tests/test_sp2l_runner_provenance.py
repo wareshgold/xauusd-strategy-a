@@ -134,7 +134,7 @@ class RunnerProvenanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "events.jsonl"
             path.write_text('{"bad":true}\n', encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "invalid provenance sequence"):
+            with self.assertRaisesRegex(ValueError, "invalid provenance event hash"):
                 verify_event_log(path)
 
 
@@ -159,7 +159,7 @@ class RunnerProvenanceTests(unittest.TestCase):
     def test_non_object_event_record_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "events.jsonl"
-            path.write_text('[]\\n', encoding="utf-8")
+            path.write_text('[]\n', encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "invalid provenance record"):
                 verify_event_log(path)
 
