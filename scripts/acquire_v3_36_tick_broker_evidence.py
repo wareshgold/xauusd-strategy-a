@@ -109,6 +109,19 @@ def main() -> int:
                     + ", ".join(str(x) for x in existing)
                 )
 
+            # Query broker history before writing the tick artifact so a history
+            # query failure cannot leave a seemingly complete tick package.
+            orders = mt5.history_orders_get(start, end)
+            if orders is None:
+                raise RuntimeError(f"history_orders_get failed: {mt5.last_error()}")
+            deals = mt5.history_deals_get(start, end)
+            if deals is None:
+                raise RuntimeError(f"history_deals_get failed: {mt5.last_error()}")
+
+            ticks_partial = ticks_path.with_name(ticks_path.name + ".partial")
+            if ticks_partial.exists():
+                raise FileExistsError(f"REFUSING_TO_OVERWRITE_PARTIAL_TICK_FILE: {ticks_partial}")
+
             tick_count = valid_quotes = missing_quotes = crossed_quotes = 0
             out_of_order = duplicate_msc = 0
             first_tick = last_tick = None
@@ -116,7 +129,7 @@ def main() -> int:
             daily_counts = {}
 
             # mtime=0 makes the compressed raw tick artifact reproducible.
-            with ticks_path.open("wb") as raw:
+            with ticks_partial.open("wb") as raw:
                 with gzip.GzipFile(fileobj=raw, mode="wb", filename="", mtime=0) as gz:
                     import io
                     text = io.TextIOWrapper(gz, encoding="utf-8", newline="", write_through=True)
@@ -166,12 +179,7 @@ def main() -> int:
                     text.flush()
                     text.detach()
 
-            orders = mt5.history_orders_get(start, end)
-            if orders is None:
-                raise RuntimeError(f"history_orders_get failed: {mt5.last_error()}")
-            deals = mt5.history_deals_get(start, end)
-            if deals is None:
-                raise RuntimeError(f"history_deals_get failed: {mt5.last_error()}")
+            ticks_partial.replace(ticks_path)
 
             order_rows = [
                 json_safe(x) for x in orders
