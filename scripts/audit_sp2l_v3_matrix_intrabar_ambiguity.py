@@ -147,6 +147,10 @@ def inspect_variant(t:Trade,bars:list[Bar],rr:int,act_pips:int,trail_pips:int,tw
         # Legacy high/low stop update is mirrored solely to detect path ambiguity.
         if act_hit: sl=candidate_sl
     all_flags=set(first_flags)
+    # Preserve a 2X level-touch observed before the first candidate exit, even
+    # when it occurred on an earlier bar and is therefore absent from first_flags.
+    # This is diagnostic only: it does not imply an order fill or position change.
+    if e2_time is not None: all_flags.add("2X_LEVEL_TOUCHED")
     entry_partial=(t.entry_time%60)!=0
     exit_partial=(t.exit_time%60)!=0
     if gaps: all_flags.add("M1_GAP_IN_REPLAY_WINDOW")
