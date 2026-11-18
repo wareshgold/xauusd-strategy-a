@@ -18,10 +18,18 @@ class SyntheticAuditTests(unittest.TestCase):
         self.assertTrue(row["has_trail_update_and_touch_same_bar"])
 
     def test_2x_is_touch_not_fill(self):
-        bars=[Bar(180,100.0,100.2,99.4,99.8),Bar(240,99.8,100.0,99.7,99.9)]
+        # Include the entry-minute bar so this fixture tests 2X touch semantics,
+        # not missing-entry-bar coverage.
+        bars=[
+            Bar(120,100.0,100.1,99.9,100.0),
+            Bar(180,100.0,100.2,99.4,99.8),
+            Bar(240,99.8,100.0,99.7,99.9),
+        ]
         row=inspect_variant(self.trade,bars,4,0,0,True)
         self.assertTrue(row["has_2x_touch_before_first_candidate"])
         self.assertEqual(row["classification"],"NO_LEVEL_TOUCH_OBSERVED")
+        self.assertIn("2X_LEVEL_TOUCHED",row["ambiguity_flags"])
+        self.assertNotIn("ENTRY_MINUTE_BAR_MISSING",row["ambiguity_flags"])
 
     def test_gap_is_reported(self):
         bars=[Bar(180,100.0,100.2,99.8,100.0),Bar(300,100.0,100.2,99.8,100.0)]
@@ -30,8 +38,17 @@ class SyntheticAuditTests(unittest.TestCase):
         self.assertEqual(row["classification"],"DATA_GAP_OR_COVERAGE_LIMIT")
 
     def test_partial_entry_and_exit_minutes_are_explicit(self):
-        bars=[Bar(180,100.0,100.2,99.8,100.0),Bar(240,100.0,100.2,99.8,100.0)]
-        row=inspect_variant(self.trade,bars,4,0,0,False)
+        # 135s and 255s are inside their respective minutes; include the
+        # entry-minute bar to distinguish partial-minute policy from missing data.
+        trade=Trade(62458477,"BUY",100.0,99.0,135,255,99.5)
+        bars=[
+            Bar(120,100.0,100.1,99.9,100.0),
+            Bar(180,100.0,100.2,99.8,100.0),
+            Bar(240,100.0,100.2,99.8,100.0),
+        ]
+        row=inspect_variant(trade,bars,4,0,0,False)
+        self.assertTrue(row["entry_minute_bar_present"])
+        self.assertTrue(row["exit_minute_bar_present"])
         self.assertTrue(row["entry_minute_partial"])
         self.assertTrue(row["exit_minute_partial"])
         self.assertIn("ENTRY_MINUTE_PARTIAL_EXCLUDED",row["ambiguity_flags"])
