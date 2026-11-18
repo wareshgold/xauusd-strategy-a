@@ -381,6 +381,16 @@ def _initialize_runner_provenance(configs):
             "allow_real_execution": os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true",
             "base_symbols": list(runner.BASE_SYMBOLS),
             "timeframe_constant": int(runner.TIMEFRAME),
+            "effective_environment": {
+                key: os.getenv(key, "")
+                for key in (
+                    "SP2L_SYMBOLS", "SP2L_MAGIC_BASE", "SP2L_P_GAP_PRICE",
+                    "SP2L_SPIKE_MULTIPLIER", "SP2L_MAX_SL_DISTANCE",
+                    "SP2L_TP_R", "SP2L_VOLUME", "SP2L_POLL_SECONDS",
+                    "SP2L_PENDING_TTL_MINUTES", "MT5_FORWARD_ORDER_MODE",
+                    "SP2L_PENDING_SERVER_OFFSET_HOURS",
+                )
+            },
             "account_trade_mode": int(getattr(account, "trade_mode", -1)),
             "mt5_version": list(mt5.version() or ()),
             "symbols": symbol_snapshots,
