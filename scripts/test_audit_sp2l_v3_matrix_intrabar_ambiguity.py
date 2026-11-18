@@ -29,6 +29,14 @@ class SyntheticAuditTests(unittest.TestCase):
         self.assertIn("M1_GAP_IN_REPLAY_WINDOW",row["ambiguity_flags"])
         self.assertEqual(row["classification"],"DATA_GAP_OR_COVERAGE_LIMIT")
 
+    def test_partial_entry_and_exit_minutes_are_explicit(self):
+        bars=[Bar(180,100.0,100.2,99.8,100.0),Bar(240,100.0,100.2,99.8,100.0)]
+        row=inspect_variant(self.trade,bars,4,0,0,False)
+        self.assertTrue(row["entry_minute_partial"])
+        self.assertTrue(row["exit_minute_partial"])
+        self.assertIn("ENTRY_MINUTE_PARTIAL_EXCLUDED",row["ambiguity_flags"])
+        self.assertIn("EXIT_MINUTE_PARTIAL_INCLUDED_AS_WHOLE_BAR",row["ambiguity_flags"])
+
     def test_whitelist_count(self):
         self.assertEqual(len(EXPECTED_IDS),36)
 
