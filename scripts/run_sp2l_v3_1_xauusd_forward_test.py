@@ -954,12 +954,6 @@ def _v3_main():
         _MT5_TERMINAL_PATH_USED = original_resolve_terminal_path()
         return _MT5_TERMINAL_PATH_USED
     runner._resolve_terminal_path = _capture_terminal_path
-    original_resolve_terminal_path = runner._resolve_terminal_path
-    def _capture_terminal_path():
-        global _MT5_TERMINAL_PATH_USED
-        _MT5_TERMINAL_PATH_USED = original_resolve_terminal_path()
-        return _MT5_TERMINAL_PATH_USED
-    runner._resolve_terminal_path = _capture_terminal_path
     try:
         _original_main()
     finally:
