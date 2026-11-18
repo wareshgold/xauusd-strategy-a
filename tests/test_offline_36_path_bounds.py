@@ -9,7 +9,7 @@ def bar(ts,o,h,l,c):
 
 class ReplayTests(unittest.TestCase):
     def test_entry_minute_excluded(self):
-        r=simulate_path(trade(entry_time=90),[bar(60,100,102,98,100),bar(120,100,100.5,99.5,100)],2,10,10,"ADVERSE_FIRST")
+        r=simulate_path(trade(entry_time=90),[bar(60,100,102,98,100),bar(120,100,100.05,99.95,100)],2,10,0,"ADVERSE_FIRST")
         self.assertEqual(r["status"],"END_OF_DATA")
     def test_initial_stop(self):
         r=simulate_path(trade(),[bar(120,100,100.2,98.8,99.2)],2,10,10,"ADVERSE_FIRST")
