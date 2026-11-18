@@ -354,6 +354,9 @@ def _initialize_runner_provenance(configs):
             "trade_freeze_level": int(getattr(info, "trade_freeze_level", 0) or 0),
         })
     account = mt5.account_info()
+    terminal_info = mt5.terminal_info()
+    if terminal_info is None or not str(getattr(terminal_info, "path", "") or "").strip():
+        raise RuntimeError("cannot capture the actual initialized MT5 terminal path")
     config_snapshot = {
         "strategy_config": {
             "symbol_base": cfg.SYMBOL_BASE,
@@ -374,7 +377,12 @@ def _initialize_runner_provenance(configs):
             "magic_base": int(os.environ["SP2L_MAGIC_BASE"]),
         },
         "runtime": {
-            "terminal_path_used": _MT5_TERMINAL_PATH_USED,
+            "terminal_path_requested": _MT5_TERMINAL_PATH_USED,
+            "terminal_path_actual": str(terminal_info.path),
+            "terminal_data_path": str(getattr(terminal_info, "data_path", "") or ""),
+            "terminal_name": str(getattr(terminal_info, "name", "") or ""),
+            "terminal_company": str(getattr(terminal_info, "company", "") or ""),
+            "terminal_build": int(getattr(terminal_info, "build", 0) or 0),
             "poll_seconds": float(runner.POLL_SECONDS),
             "pending_server_offset_hours": os.getenv("SP2L_PENDING_SERVER_OFFSET_HOURS", ""),
             "live_trading_enable": os.getenv("LIVE_TRADING_ENABLE", "false").lower() == "true",
@@ -969,7 +977,6 @@ def _v3_main():
     finally:
         runner.load_state, runner.reconcile_state_from_events = original_load, original_reconcile
         runner.find_latest_candidate = original_find
-        runner._resolve_terminal_path = original_resolve_terminal_path
         runner._resolve_terminal_path = original_resolve_terminal_path
 
 
