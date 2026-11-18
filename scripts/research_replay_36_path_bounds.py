@@ -38,7 +38,7 @@ def parse_utc(value: str) -> int:
     return int(dt.astimezone(timezone.utc).timestamp())
 
 def load_trades(path: Path):
-    selected={}; baseline_rows=0; excluded=set()
+    selected={}; baseline_rows=0; excluded=set(); baseline_ids=set()
     with path.open("r",encoding="utf-8-sig",newline="") as fh:
         reader=csv.DictReader(fh)
         required={"variant","position_id","direction","weighted_entry","final_sl","entry_time","entry2_filled","total_entries"}
@@ -46,7 +46,7 @@ def load_trades(path: Path):
         if missing: raise ValueError(f"Trade fixture missing columns: {sorted(missing)}")
         for row in reader:
             if row.get("variant")!="NO_TRAILING_RR1": continue
-            baseline_rows+=1; pid=int(row["position_id"])
+            baseline_rows+=1; pid=int(row["position_id"]); baseline_ids.add(pid)
             if pid in EXCLUDED_KNOWN: excluded.add(pid)
             if pid not in EXPECTED_IDS: continue
             if pid in selected: raise ValueError(f"Duplicate baseline position_id: {pid}")
@@ -60,6 +60,13 @@ def load_trades(path: Path):
             selected[pid]={"position_id":pid,"direction":direction,"entry":entry,"sl":sl,
                            "risk":risk,"entry_time":int(float(row["entry_time"])),
                            "source_variant":"NO_TRAILING_RR1"}
+    expected_baseline_ids=EXPECTED_IDS|EXCLUDED_KNOWN
+    if baseline_rows!=38 or baseline_ids!=expected_baseline_ids:
+        raise ValueError(
+            f"Baseline population mismatch; rows={baseline_rows}, "
+            f"missing={sorted(expected_baseline_ids-baseline_ids)}, "
+            f"unexpected={sorted(baseline_ids-expected_baseline_ids)}"
+        )
     if set(selected)!=EXPECTED_IDS:
         raise ValueError(f"Whitelist mismatch; missing={sorted(EXPECTED_IDS-set(selected))}")
     trades=sorted(selected.values(),key=lambda x:(x["entry_time"],x["position_id"]))
