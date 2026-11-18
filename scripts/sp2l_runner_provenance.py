@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Any, Mapping
 
 SCHEMA_VERSION = 1
-_HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def _utc_now() -> str:
@@ -178,11 +177,10 @@ class ProvenanceEventLog:
         complete = {**record, "event_hash_sha256": event_hash}
         line = canonical_json(complete) + "\n"
         fd = os.open(str(self.path), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
-        try:
-            with os.fdopen(fd, "a", encoding="utf-8", newline="\n") as stream:
-                stream.write(line)
-                stream.flush()
-                os.fsync(stream.fileno())
+        with os.fdopen(fd, "a", encoding="utf-8", newline="\\n") as stream:
+            stream.write(line)
+            stream.flush()
+            os.fsync(stream.fileno())
         return complete
 
 
