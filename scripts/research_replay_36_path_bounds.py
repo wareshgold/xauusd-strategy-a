@@ -112,11 +112,18 @@ def simulate_path(trade,bars,rr,activation_pips,trail_pips,scenario):
         if ts<=entry_minute:
             previous_time=ts
             continue
-        if started and previous_time is not None and ts-previous_time>60:
+        if previous_time is not None and ts-previous_time>60:
             return {"status":"DATA_GAP_CENSOR","reason":"DATA_GAP_CENSOR","exit_q":None,
                     "exit_price_proxy":None,"realized_R":None,"gross_usd_proxy":None,
                     "active":active,"mfe_price":mfe_q,"gap_seconds":ts-previous_time}
-        started=True
+        if not started:
+            # The first complete post-entry minute should immediately follow the
+            # excluded entry minute. Never bridge a missing interval.
+            if ts-entry_minute>60:
+                return {"status":"DATA_GAP_CENSOR","reason":"DATA_GAP_CENSOR","exit_q":None,
+                        "exit_price_proxy":None,"realized_R":None,"gross_usd_proxy":None,
+                        "active":active,"mfe_price":mfe_q,"gap_seconds":ts-entry_minute}
+            started=True
         # First complete post-entry minute is the first observable bar; no entry-minute path is inferred.
         q_open=(bar["open"]-entry)*side; q_high=(bar["high"]-entry)*side
         q_low=(bar["low"]-entry)*side; q_close=(bar["close"]-entry)*side
