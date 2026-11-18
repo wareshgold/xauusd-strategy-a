@@ -4,13 +4,16 @@ on:
   push:
     branches:
       - research/runner-provenance-identity-20261118
+      - research/v31-runner-provenance-integration-20261118
     paths:
       - "scripts/sp2l_runner_provenance.py"
+      - "scripts/run_sp2l_v3_1_xauusd_forward_test.py"
       - "tests/test_sp2l_runner_provenance.py"
       - ".github/workflows/runner-provenance-tests.yml"
   pull_request:
     paths:
       - "scripts/sp2l_runner_provenance.py"
+      - "scripts/run_sp2l_v3_1_xauusd_forward_test.py"
       - "tests/test_sp2l_runner_provenance.py"
       - ".github/workflows/runner-provenance-tests.yml"
 
@@ -29,7 +32,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile
-        run: python -m py_compile scripts/sp2l_runner_provenance.py tests/test_sp2l_runner_provenance.py
+        run: python -m py_compile scripts/sp2l_runner_provenance.py scripts/run_sp2l_v3_1_xauusd_forward_test.py tests/test_sp2l_runner_provenance.py
       - name: Run isolated unit tests
         env:
           PYTHONPATH: scripts

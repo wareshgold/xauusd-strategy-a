@@ -14,6 +14,9 @@ from sp2l_runner_provenance import (
     verify_event_log,
     write_run_manifest,
     validate_run_identity,
+    is_current_run_entry_deal,
+    append_required_event,
+    ProvenancePersistenceError,
 )
 
 
@@ -155,6 +158,55 @@ class RunnerProvenanceTests(unittest.TestCase):
         identity["config_snapshot"]["tp_r"] = 3.0
         with self.assertRaisesRegex(ValueError, "no longer matches"):
             validate_run_identity(identity)
+
+    def test_partial_fills_link_to_same_position_without_ticket_assumptions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = ProvenanceEventLog(Path(tmp) / "events.jsonl")
+            run_started(log, self.identity)
+            position_linked(
+                log, self.identity, position_id=777, symbol="XAUUSD.ecn",
+                magic=26092301, order_ticket=1001, deal_ticket=2001,
+            )
+            position_linked(
+                log, self.identity, position_id=777, symbol="XAUUSD.ecn",
+                magic=26092301, order_ticket=1001, deal_ticket=2002,
+            )
+            result = verify_event_log(log.path)
+            self.assertEqual(result["event_count"], 3)
+
+    def test_restart_does_not_relabel_preexisting_entry(self):
+        common = {
+            "run_started_epoch": 1000,
+            "magic": 26092301,
+            "expected_magic": 26092301,
+            "position_id": 777,
+            "entry_code": 0,
+            "entry_in_code": 0,
+        }
+        self.assertFalse(is_current_run_entry_deal(deal_time=999, **common))
+        self.assertTrue(is_current_run_entry_deal(deal_time=1001, **common))
+
+    def test_only_owned_entry_deals_with_real_position_ids_are_linkable(self):
+        common = {
+            "deal_time": 1001,
+            "run_started_epoch": 1000,
+            "magic": 26092301,
+            "expected_magic": 26092301,
+            "position_id": 777,
+            "entry_code": 0,
+            "entry_in_code": 0,
+        }
+        self.assertFalse(is_current_run_entry_deal(**{**common, "magic": 999}))
+        self.assertFalse(is_current_run_entry_deal(**{**common, "position_id": 0}))
+        self.assertFalse(is_current_run_entry_deal(**{**common, "entry_code": 1}))
+
+    def test_required_event_append_fails_closed(self):
+        class BrokenLog:
+            def append(self, event_type, fields):
+                raise OSError("disk full")
+
+        with self.assertRaisesRegex(ProvenancePersistenceError, "disk full"):
+            append_required_event(BrokenLog(), "ORDER_INTENT", {"signal_id": "s1"})
 
     def test_non_object_event_record_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

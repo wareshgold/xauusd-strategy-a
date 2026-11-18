@@ -220,9 +220,28 @@ class ProvenanceEventLog:
         return complete
 
 
+class ProvenancePersistenceError(RuntimeError):
+    """A required evidence event could not be durably appended."""
+
+
+def append_required_event(
+    log: ProvenanceEventLog,
+    event_type: str,
+    fields: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Append a required event or raise; callers must fail closed on error."""
+    try:
+        return log.append(event_type, fields)
+    except Exception as exc:
+        raise ProvenancePersistenceError(
+            f"required provenance event {event_type!r} failed: "
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
+
+
 def run_started(log: ProvenanceEventLog, identity: Mapping[str, Any]) -> dict[str, Any]:
     validate_run_identity(identity)
-    return log.append("RUNNER_STARTED", {"identity": dict(identity)})
+    return append_required_event(log, "RUNNER_STARTED", {"identity": dict(identity)})
 
 
 def position_linked(
@@ -240,7 +259,7 @@ def position_linked(
     validate_run_identity(identity)
     if int(position_id) <= 0 or int(magic) < 0 or not symbol:
         raise ValueError("invalid position_id, magic, or symbol")
-    return log.append("POSITION_LINKED", {
+    return append_required_event(log, "POSITION_LINKED", {
         "run_id": identity["run_id"],
         "runner_id": identity["runner_id"],
         "runner_version": identity["runner_version"],
@@ -255,6 +274,33 @@ def position_linked(
         # Retained as an untrusted hint, not used to establish provenance.
         "broker_comment": broker_comment,
     })
+
+
+def is_current_run_entry_deal(
+    *,
+    deal_time: int,
+    run_started_epoch: int,
+    magic: int,
+    expected_magic: int,
+    position_id: int,
+    entry_code: int,
+    entry_in_code: int,
+) -> bool:
+    """Accept only an observed entry fill from this run and its owned magic.
+
+    The strict time boundary intentionally leaves pre-existing/recovered
+    positions attributed to their original run (or unresolved), never the
+    process that happens to manage them after a restart.
+    """
+    try:
+        return (
+            int(deal_time) > int(run_started_epoch)
+            and int(magic) == int(expected_magic)
+            and int(position_id) > 0
+            and int(entry_code) == int(entry_in_code)
+        )
+    except (TypeError, ValueError, OverflowError):
+        return False
 
 
 def verify_event_log(path: str | Path) -> dict[str, Any]:
