@@ -257,6 +257,33 @@ def position_linked(
     })
 
 
+def is_current_run_entry_deal(
+    *,
+    deal_time: int,
+    run_started_epoch: int,
+    magic: int,
+    expected_magic: int,
+    position_id: int,
+    entry_code: int,
+    entry_in_code: int,
+) -> bool:
+    """Accept only an observed entry fill from this run and its owned magic.
+
+    The strict time boundary intentionally leaves pre-existing/recovered
+    positions attributed to their original run (or unresolved), never the
+    process that happens to manage them after a restart.
+    """
+    try:
+        return (
+            int(deal_time) > int(run_started_epoch)
+            and int(magic) == int(expected_magic)
+            and int(position_id) > 0
+            and int(entry_code) == int(entry_in_code)
+        )
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
 def verify_event_log(path: str | Path) -> dict[str, Any]:
     """Verify the complete hash chain and return a compact integrity summary."""
     log = ProvenanceEventLog(path)
