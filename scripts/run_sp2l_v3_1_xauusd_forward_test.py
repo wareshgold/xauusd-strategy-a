@@ -293,7 +293,7 @@ from sp2l_deal_lifecycle_dedupe import claim_deal_lifecycle_event
 from sp2l_v31_startup_recovery import recover_owned_broker_inventory
 from sp2l_runner_provenance import (
     ProvenanceEventLog, make_run_identity, position_linked, run_started,
-    verify_event_log, write_run_manifest,
+    verify_event_log, write_run_manifest, is_current_run_entry_deal,
 )
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
@@ -693,9 +693,15 @@ def _run_scoped_symbol_lifecycle(cfg_runtime, state):
         position = int(getattr(deal, "position_id", 0) or 0)
         deal_magic = int(getattr(deal, "magic", 0) or 0)
         is_entry = int(getattr(deal, "entry", -1)) == mt5.DEAL_ENTRY_IN
-        if (is_entry and position > 0 and deal_magic == int(magic)
-                and deal_epoch > int(_RUN_STARTED_UTC.timestamp())
-                and ticket not in _PROVENANCE_LINKED_DEALS):
+        if (is_current_run_entry_deal(
+                deal_time=deal_epoch,
+                run_started_epoch=int(_RUN_STARTED_UTC.timestamp()),
+                magic=deal_magic,
+                expected_magic=int(magic),
+                position_id=position,
+                entry_code=int(getattr(deal, "entry", -1)),
+                entry_in_code=mt5.DEAL_ENTRY_IN,
+            ) and ticket not in _PROVENANCE_LINKED_DEALS):
             try:
                 position_linked(
                     _PROVENANCE_LOG, _PROVENANCE_IDENTITY,
