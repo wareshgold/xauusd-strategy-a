@@ -28,6 +28,9 @@ class ReplayTests(unittest.TestCase):
     def test_data_gap_censors(self):
         r=simulate_path(trade(),[bar(120,100,100.2,99.8,100),bar(300,100,100.2,99.8,100)],2,10,10,"ADVERSE_FIRST")
         self.assertEqual(r["status"],"DATA_GAP_CENSOR"); self.assertIsNone(r["realized_R"])
+    def test_missing_first_post_entry_minute_censors(self):
+        r=simulate_path(trade(entry_time=65),[bar(180,100,100.2,99.8,100)],2,10,10,"ADVERSE_FIRST")
+        self.assertEqual(r["status"],"DATA_GAP_CENSOR")
     def test_unresolved_remains_in_counts(self):
         rows=[{"status":"RESOLVED","realized_R":1.0,"gross_usd_proxy":1.0},
               {"status":"RESOLVED","realized_R":-1.0,"gross_usd_proxy":-1.0},
