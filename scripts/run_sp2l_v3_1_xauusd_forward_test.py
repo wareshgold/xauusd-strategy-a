@@ -7,6 +7,7 @@ as observed facts; no canonical production decision is made here.
 from __future__ import annotations
 import os
 import time
+import subprocess
 from datetime import timedelta
 from sp2l_trailing_rules import (
     normalize_trailing_sl,
@@ -290,8 +291,167 @@ runner.monitor_position_lifecycle=trail_positions
 from datetime import datetime, timezone
 from sp2l_deal_lifecycle_dedupe import claim_deal_lifecycle_event
 from sp2l_v31_startup_recovery import recover_owned_broker_inventory
+from sp2l_runner_provenance import (
+    ProvenanceEventLog, make_run_identity, position_linked, run_started,
+    verify_event_log, write_run_manifest,
+)
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
+
+# The existing singleton runner lock guarantees one provenance writer.
+_PROVENANCE_IDENTITY = None
+_PROVENANCE_LOG = None
+_PROVENANCE_LINKED_DEALS = set()
+_MT5_TERMINAL_PATH_USED = None
+
+
+class _ProvenanceFatal(SystemExit):
+    """Abort the process when evidence persistence fails around broker execution."""
+
+
+def _git_source_identity():
+    root = str(runner.ROOT)
+    commit = subprocess.run(
+        ["git", "-C", root, "rev-parse", "HEAD"],
+        check=True, capture_output=True, text=True, timeout=10,
+    ).stdout.strip().lower()
+    status = subprocess.run(
+        ["git", "-C", root, "status", "--porcelain", "--untracked-files=all"],
+        check=True, capture_output=True, text=True, timeout=10,
+    ).stdout
+    if status.strip():
+        raise RuntimeError("provenance requires a clean source worktree")
+    if len(commit) != 40 or any(ch not in "0123456789abcdef" for ch in commit):
+        raise RuntimeError("could not establish exact source commit")
+    return commit
+
+
+def _initialize_runner_provenance(configs):
+    global _PROVENANCE_IDENTITY, _PROVENANCE_LOG
+    if _PROVENANCE_IDENTITY is not None:
+        raise RuntimeError("runner provenance initialized more than once")
+    commit = _git_source_identity()
+    symbol_snapshots = []
+    for item in configs:
+        symbol = str(item["symbol"])
+        info = mt5.symbol_info(symbol)
+        if info is None:
+            raise RuntimeError(f"cannot snapshot MT5 symbol metadata for {symbol}")
+        symbol_snapshots.append({
+            "resolved_symbol": symbol,
+            "magic": int(item["magic"]),
+            "volume": float(item["volume"]),
+            "pip_size": float(item["pip_size"]),
+            "pip_method": str(item.get("pip_method", "")),
+            "point": float(getattr(info, "point", 0.0) or 0.0),
+            "digits": int(getattr(info, "digits", 0) or 0),
+            "trade_tick_size": float(getattr(info, "trade_tick_size", 0.0) or 0.0),
+            "trade_mode": int(getattr(info, "trade_mode", -1)),
+            "volume_min": float(getattr(info, "volume_min", 0.0) or 0.0),
+            "volume_max": float(getattr(info, "volume_max", 0.0) or 0.0),
+            "volume_step": float(getattr(info, "volume_step", 0.0) or 0.0),
+            "trade_stops_level": int(getattr(info, "trade_stops_level", 0) or 0),
+            "trade_freeze_level": int(getattr(info, "trade_freeze_level", 0) or 0),
+        })
+    account = mt5.account_info()
+    config_snapshot = {
+        "strategy_config": {
+            "symbol_base": cfg.SYMBOL_BASE,
+            "timeframe": cfg.TIMEFRAME_NAME,
+            "p_gap_price": float(cfg.P_GAP_PRICE),
+            "spike_multiplier": float(cfg.SPIKE_MULTIPLIER),
+            "max_sl_distance": float(cfg.MAX_SL_DISTANCE),
+            "tp_r": float(cfg.TP_R),
+            "volume_default": float(cfg.VOLUME),
+            "order_mode": str(cfg.ORDER_MODE),
+            "sl_anchor": str(cfg.SL_ANCHOR),
+            "pending_ttl_minutes": float(cfg.PENDING_TTL_MINUTES),
+            "session_policy": "V3_ALL_MARKET_HOURS",
+            "trailing_pips": float(cfg.TRAIL_PIPS),
+            "xau_pip_size_price": float(cfg.XAU_PIP_SIZE_PRICE),
+            "trailing_distance_price": float(cfg.TRAIL_DISTANCE_PRICE),
+            "trailing_activation_price": float(cfg.TRAIL_DISTANCE_PRICE),
+            "magic_base": int(os.environ["SP2L_MAGIC_BASE"]),
+        },
+        "runtime": {
+            "terminal_path_used": _MT5_TERMINAL_PATH_USED,
+            "poll_seconds": float(runner.POLL_SECONDS),
+            "pending_server_offset_hours": os.getenv("SP2L_PENDING_SERVER_OFFSET_HOURS", ""),
+            "live_trading_enable": os.getenv("LIVE_TRADING_ENABLE", "false").lower() == "true",
+            "allow_real_execution": os.getenv("ALLOW_REAL_EXECUTION", "false").lower() == "true",
+            "base_symbols": list(runner.BASE_SYMBOLS),
+            "timeframe_constant": int(runner.TIMEFRAME),
+            "account_trade_mode": int(getattr(account, "trade_mode", -1)),
+            "mt5_version": list(mt5.version() or ()),
+            "symbols": symbol_snapshots,
+        },
+    }
+    identity = make_run_identity(
+        runner_id="SP2L_V3_1_XAUUSD",
+        runner_version=str(cfg.VERSION),
+        git_commit=commit,
+        config=config_snapshot,
+        started_at_utc=_RUN_STARTED_UTC.isoformat(timespec="microseconds").replace("+00:00", "Z"),
+    )
+    provenance_root = runner.ARTIFACTS / "runner_provenance"
+    run_dir = provenance_root / "runs" / identity["run_id"]
+    run_dir.mkdir(parents=True, exist_ok=False)
+    log = ProvenanceEventLog(provenance_root / "events.jsonl")
+    verify_event_log(log.path)
+    write_run_manifest(run_dir / "manifest.json", identity)
+    run_started(log, identity)
+    _PROVENANCE_IDENTITY = identity
+    _PROVENANCE_LOG = log
+
+
+def _provenance_result_fields(result):
+    if not isinstance(result, dict):
+        return {"result_type": type(result).__name__, "result_repr": repr(result)[:1000]}
+    allowed = ("ok", "dry_run", "order", "deal", "retcode", "comment",
+               "reason", "error", "request_id")
+    return {key: result.get(key) for key in allowed if key in result}
+
+
+def _append_order_intent(candidate, magic):
+    if _PROVENANCE_LOG is None or _PROVENANCE_IDENTITY is None:
+        raise _ProvenanceFatal("ORDER_BLOCKED: provenance is not initialized")
+    try:
+        _PROVENANCE_LOG.append("ORDER_INTENT", {
+            "run_id": _PROVENANCE_IDENTITY["run_id"],
+            "config_id": _PROVENANCE_IDENTITY["config_id"],
+            "config_hash_sha256": _PROVENANCE_IDENTITY["config_hash_sha256"],
+            "signal_id": str(candidate.get("signal_id", "")),
+            "symbol": str(candidate.get("symbol", "")),
+            "direction": str(candidate.get("direction", "")),
+            "magic": int(magic),
+            "theoretical_entry": float(candidate["theoretical_entry"]),
+            "theoretical_sl": float(candidate["sl"]),
+            "theoretical_tp": float(candidate["tp"]),
+            "volume": float(candidate.get("volume", cfg.VOLUME)),
+            "trigger_time": int(candidate.get("trigger_time", 0)),
+        })
+    except Exception as exc:
+        raise _ProvenanceFatal(
+            f"ORDER_BLOCKED: ORDER_INTENT persistence failed: {type(exc).__name__}: {exc}"
+        ) from exc
+
+
+def _append_order_result(candidate, result, magic):
+    try:
+        _PROVENANCE_LOG.append("ORDER_RESULT", {
+            "run_id": _PROVENANCE_IDENTITY["run_id"],
+            "config_id": _PROVENANCE_IDENTITY["config_id"],
+            "signal_id": str(candidate.get("signal_id", "")),
+            "symbol": str(candidate.get("symbol", "")),
+            "magic": int(magic),
+            "gateway_result": _provenance_result_fields(result),
+        })
+    except Exception as exc:
+        raise _ProvenanceFatal(
+            "RUNNER_STOPPED: ORDER_RESULT persistence failed after gateway return; "
+            f"manual broker reconciliation required: {type(exc).__name__}: {exc}"
+        ) from exc
+
 
 def _fresh_v3_state():
     return {"seen": {}, "notified": set(), "deals": set(), "deal_events": set(), "orders": set(),
