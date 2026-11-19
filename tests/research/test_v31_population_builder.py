@@ -8,6 +8,10 @@ sys.modules[spec.name] = builder
 spec.loader.exec_module(builder)
 
 class GapSegmentationTests(unittest.TestCase):
+    def test_pinned_config_loads_and_has_expected_version(self):
+        cfg = builder.load_config()
+        self.assertEqual(cfg.VERSION, "SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101")
+
     def test_splits_at_any_missing_minute_and_preserves_rows(self):
         bars = [{"time":t} for t in (60,120,180,600,660,900)]
         segments,gaps = builder.split_segments(bars)
