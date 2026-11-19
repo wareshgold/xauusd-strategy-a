@@ -84,17 +84,25 @@ The full replay is blocked until the following are located, validated and SHA-pi
 4. Actual broker contract metadata and execution-cost assumptions.
 5. SHA-256 values for every input, source file, configuration and output.
 
-Known repository documentation describes an M1 interval from 2026-08-10 through 2026-11-09 with 89,866 bars and 66 timestamp gaps; the CSV.GZ source itself is not stored in the repository. This is not a complete interval. Never interpolate missing candles or allow signal/entry searches to bridge data gaps. Gap-exposed trades must be excluded or explicitly classified as ambiguous according to a frozen policy.
+A pre-existing acquisition/population workflow was found on branch `research/three-month-management-matrix-20261109`, including `docs/SP2L_THREE_MONTH_MT5_EXPORT.md` and `docs/SP2L_V31_THREE_MONTH_ENTRY_POPULATION.md`. That documentation declares the expected M1 CSV.GZ SHA-256 as:
 
-## 8. Next work — in order
+`daf4eb26c47ef0dadc045c76b9a72b667751e1eac315697a6b024e81e355c402`
 
-1. Verify the exact branch/PR head and inspect the matrix implementation, tests and workflow as committed.
-2. Audit repository and available user files for the exact M1 CSV.GZ, frozen entry population/manifest, Tick data and broker specifications. Do not substitute similarly named or partial files.
-3. Produce a source-evidence inventory with path, date coverage, row/tick counts, gaps, file size and SHA-256. Stop if required evidence cannot be bound to the same frozen population.
+It declares 89,866 bars from `2026-08-10T01:00:00Z` through `2026-11-09T07:43:00Z`, with 66 timestamp gaps. These are documented source claims; the raw gzip bytes were not found in the inspected GitHub tree or Library search, so the hash has not yet been independently recomputed in this phase. Do not treat the source as available until the exact file is found and hashed.
+
+Older monthly files and the 30-day M1/462-entry Discovery population are not substitutes for the three-month source. Prior monthly manifests include incomplete counts and unverified historical session-calendar applicability. Do not concatenate, relabel, interpolate or silently repair those files.
+
+## 8. Next work — current position
+
+1. **Completed:** verify the current branch/PR head and inspect the matrix implementation, tests and workflow as committed.
+2. **Completed as a read-only repository/library audit:** locate the prior three-month acquisition/population documentation and record its declared source identity. The exact raw M1 gzip, frozen three-month entry CSV/manifest, Tick ALL corpus and broker evidence remain unlocated/unverified.
+3. **Current next action:** search the Factory PC for the exact M1 SHA above and the three-month frozen-entry manifest; hash candidates before use. Record path, file size, date coverage, row/tick counts, gaps and SHA-256. Stop if the evidence cannot be bound to one frozen population.
 4. Specify and test the offline replay contract: entry/initial-SL semantics, costs, position sizing, concurrent risk, trailing event ordering, intrabar ambiguity and gap policy.
 5. Implement replay and metrics only after evidence and semantics are frozen; then test on fixtures and run Development/Validation.
 6. Freeze candidate rules before opening Fresh Holdout; report all three rankings and robustness results with reproducible manifests.
 7. Present findings for user review. No automatic promotion or canonical decision.
+
+Supporting audit: `research/capital_matrix/EVIDENCE_INVENTORY_2026-11-19.md`.
 
 ## 9. Safety and non-goals
 
@@ -105,4 +113,4 @@ Known repository documentation describes an M1 interval from 2026-08-10 through 
 - No automatic promotion. Do not merge PR #422 without explicit user approval.
 - Preserve existing local changes and user data; do not perform destructive Git or filesystem operations.
 
-**Resume point:** Step 1 above — verify the branch/PR head and committed artifacts, then perform a read-only audit of historical input evidence.
+**Resume point:** read-only local search for the declared three-month M1 source SHA and frozen-entry artifacts. No MT5 connection or new acquisition is authorized by this snapshot.
