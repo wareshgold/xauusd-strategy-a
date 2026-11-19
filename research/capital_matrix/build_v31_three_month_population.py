@@ -5,7 +5,7 @@ Every timestamp discontinuity >60 seconds splits the input into independent segm
 neither setup detection nor entry search can cross a gap.
 """
 from __future__ import annotations
-import argparse, csv, gzip, hashlib, importlib.util, json, math
+import argparse, csv, gzip, hashlib, importlib.util, json, math, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -29,6 +29,7 @@ def load_config():
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load pinned config: {CFG_PATH}")
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
@@ -116,8 +117,8 @@ def main():
         raise ValueError("only the audited three-month M1 SHA is accepted")
     source=Path(args.m1_csv_gz).resolve()
     outdir=Path(args.output_dir).resolve()
-    if outdir.exists() and any(outdir.iterdir()):
-        raise FileExistsError(f"output directory is not empty: {outdir}")
+    if outdir.exists() and (not outdir.is_dir() or any(outdir.iterdir())):
+        raise FileExistsError(f"output directory is not empty or is not a directory: {outdir}")
     outdir.mkdir(parents=True,exist_ok=True)
     bars,source_sha,source_bytes=load_bars(source,args.m1_sha256)
     segments,gaps=split_segments(bars)
@@ -132,8 +133,7 @@ def main():
     cfg_sha=sha256_bytes(CFG_PATH.read_bytes())
     month_counts={}
     for row in population:
-        month=row["entry_time_utc"][:7]
-        key=f"{month}:{row['direction']}"
+        key=f'{row["entry_time_utc"][:7]}:{row["direction"]}'
         month_counts[key]=month_counts.get(key,0)+1
     manifest={
         "research_only":True,"canonical":False,"symbol":args.symbol,"timeframe":"M1",
@@ -156,7 +156,8 @@ def main():
         "mt5_accessed":False,"runner_accessed":False,"orders_possible":False
     }
     manifest_path=outdir/"SP2L_V31_THREE_MONTH_FROZEN_ENTRIES_MANIFEST.json"
-    with manifest_path.open("x",encoding="utf-8") as f: json.dump(manifest,f,indent=2,ensure_ascii=False); f.write("\n")
+    with manifest_path.open("x",encoding="utf-8") as f:
+        json.dump(manifest,f,indent=2,ensure_ascii=False); f.write("\\n")
     print(json.dumps({"status":"COMPLETE","rows":len(population),"csv":str(csv_path),
       "csv_sha256":csv_sha,"manifest":str(manifest_path),"source_sha256":source_sha,
       "source_rows":len(bars),"gap_count":len(gaps),"segments":len(segments),
