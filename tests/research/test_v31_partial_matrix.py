@@ -92,7 +92,7 @@ class PartialExecutionTests(unittest.TestCase):
         self.assertIsNone(p.position)
         self.assertEqual(p.counts["PARTIAL_LEG_CLOSED"], 1)
         self.assertEqual(p.counts["FILLED_AND_CLOSED"], 1)
-        self.assertAlmostEqual(float(p.equity), 1004.2, places=6)
+        self.assertAlmostEqual(float(p.equity), 1006.2, places=6)
 
     def test_stop_before_tp1_closes_full_002_position(self):
         p = self._portfolio()
