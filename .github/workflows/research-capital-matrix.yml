@@ -1,0 +1,22 @@
+name: Research - Capital Management Matrix
+
+on:
+  pull_request:
+    paths:
+      - 'research/capital_matrix/**'
+      - 'tests/research/test_capital_matrix.py'
+      - '.github/workflows/research-capital-matrix.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  capital-matrix-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run focused offline tests
+        run: python -m unittest discover -s tests -p 'test_capital_matrix.py' -v
