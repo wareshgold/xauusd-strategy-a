@@ -27,6 +27,7 @@ $Branch = 'research/capital-management-matrix-20261119'
 $Python = 'D:\Mirzaei\Private\1\xauusd-strategy-a\.venv\Scripts\python.exe'
 $Evidence = 'D:\Mirzaei\Private\1\sp2l-evidence\development\v31-three-month-population-gap-isolated'
 $Raw = 'D:\SP2L_RESEARCH_DATA\20261109'
+$SymbolSpecs = Join-Path $Raw 'XAUUSD_ecn_20260809_20261110_symbol_specs.json'
 $Out = 'D:\Mirzaei\Private\1\sp2l-evidence\development\capital-matrix-replay-v1-2s'
 $Log = Join-Path $env:TEMP 'sp2l_capital_matrix_replay.log'
 
@@ -42,6 +43,7 @@ if (Test-Path $Out) { throw "STOP: output directory already exists: $Out" }
   --population-manifest "$Evidence\SP2L_V31_THREE_MONTH_FROZEN_ENTRIES_MANIFEST.json" `
   --m1-csv-gz "$Raw\XAUUSD_ecn_20260809_20261110_M1.csv.gz" `
   --ticks-csv-gz "$Raw\XAUUSD_ecn_20260809_20261110_ticks.csv.gz" `
+  --symbol-specs $SymbolSpecs `
   --output-dir $Out *> $Log
 $Exit = $LASTEXITCODE
 
