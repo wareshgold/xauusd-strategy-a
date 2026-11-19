@@ -178,13 +178,14 @@ def fill_pending(p: Portfolio, now_ms: int, bid: float, ask: float):
     direction = row["direction"]
     theoretical = float(row["entry_proxy"])
     fillable = ask <= theoretical if direction == "BUY" else bid >= theoretical
+    if now_ms >= q["expires_ms"]:
+        emit_candidate(p, row, "UNFILLED_EXPIRED",
+                       submission_time_utc=datetime.fromtimestamp(q["submit_ms"]/1000, timezone.utc).isoformat(),
+                       expiry_time_utc=datetime.fromtimestamp(q["expires_ms"]/1000, timezone.utc).isoformat())
+        p.pending = None
+        p.state = "FLAT"
+        return
     if not fillable:
-        if now_ms >= q["expires_ms"]:
-            emit_candidate(p, row, "UNFILLED_EXPIRED",
-                           submission_time_utc=datetime.fromtimestamp(q["submit_ms"]/1000, timezone.utc).isoformat(),
-                           expiry_time_utc=datetime.fromtimestamp(q["expires_ms"]/1000, timezone.utc).isoformat())
-            p.pending = None
-            p.state = "FLAT"
         return
     fill = ask if direction == "BUY" else bid
     stop = float(row["sl_initial"])
@@ -222,7 +223,7 @@ def fill_pending(p: Portfolio, now_ms: int, bid: float, ask: float):
         "theoretical_entry":theoretical, "sl":stop, "tp":target,
         "initial_risk":risk, "favorable_extreme":theoretical,
         "trail_active":False, "is_runner":is_runner,
-        "submission_ms":q["submit_ms"],
+        "submission_ms":q["submit_ms"], "gap_exposed":False,
     }
     p.pending = None
     p.state = "OPEN"
@@ -280,7 +281,7 @@ def close_position(p: Portfolio, now_ms: int, exit_price: float, reason: str):
         "exit_price":exit_price, "exit_reason":reason, "lots":pos["lots"],
         "gross_pnl_usd":float(pnl), "r_multiple":r_multiple,
         "equity_before":float(before), "equity_after":float(p.equity),
-        "trail_activated":pos["trail_active"],
+        "trail_activated":pos["trail_active"], "tick_gap_exposed":pos["gap_exposed"],
         "commission":"NOT_PROVIDED", "swap":"NOT_PROVIDED",
         "slippage":"NOT_CALIBRATED",
     }
@@ -329,6 +330,7 @@ def run_replay(entries, bars, tick_path: Path, latency_seconds: float):
                 raise ValueError(f"invalid or out-of-order tick at line {line}")
             if previous_tick_ms is not None and now_ms-previous_tick_ms > 60_000:
                 gaps_gt_60 += 1
+            gap_now = previous_tick_ms is not None and now_ms-previous_tick_ms > 60_000
             previous_ms = previous_tick_ms = now_ms
             tick_count += 1
             while bar_i < len(bars) and (bars[bar_i]["time"]+60)*1000 <= now_ms:
@@ -338,6 +340,8 @@ def run_replay(entries, bars, tick_path: Path, latency_seconds: float):
                     process_bar_close(p, bar, close_ms, bid, ask)
                 bar_i += 1
             for p in portfolios:
+                if gap_now and p.position:
+                    p.position["gap_exposed"] = True
                 process_candidate_due(p, entries, now_ms, bid, ask, latency_ms)
                 process_tick(p, now_ms, bid, ask)
     # Anything still open/pending at end of source is censored, never force-closed.
