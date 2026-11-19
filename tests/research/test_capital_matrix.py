@@ -56,7 +56,12 @@ class CapitalMatrixTests(unittest.TestCase):
         )
         self.assertEqual(len(legs), 2)
         self.assertEqual(sum(x.requested_risk_usd for x in legs), Decimal("5"))
-        self.assertEqual(sum(x.actual_risk_usd for x in legs), Decimal("5.00"))
+        # Each $2.50 leg can only be sized in 0.01-lot increments.
+        # At $100 risk per lot, each leg rounds down to 0.02 lots = $2 risk.
+        # The $1 aggregate remainder is intentionally left unused, never rounded up.
+        self.assertEqual([x.volume_lots for x in legs], [Decimal("0.02"), Decimal("0.02")])
+        self.assertEqual(sum(x.actual_risk_usd for x in legs), Decimal("4.00"))
+        self.assertLessEqual(sum(x.actual_risk_usd for x in legs), Decimal("5"))
 
     def test_volume_is_rounded_down_and_never_over_budget(self):
         leg = size_leg(
