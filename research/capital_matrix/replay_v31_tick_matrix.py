@@ -222,9 +222,9 @@ def fill_pending(p: Portfolio, now_ms: int, bid: float, ask: float):
     p.position = {
         "row":row, "fill_ms":now_ms, "fill_price":fill, "lots":lots,
         "theoretical_entry":theoretical, "sl":stop, "tp":target,
-        "initial_risk":risk, "favorable_extreme":theoretical,
+        "initial_risk":risk, "actual_initial_risk_price":abs(fill-stop), "favorable_extreme":fill,
         "trail_active":False, "is_runner":is_runner,
-        "submission_ms":q["submit_ms"], "gap_exposed":False,
+        "submission_ms":q["submit_ms"], "gap_exposed":False,\n        "requested_risk_usd":float(sized.requested_risk_usd),\n        "sizing_actual_risk_usd":float(sized.actual_risk_usd),
     }
     p.pending = None
     p.state = "OPEN"
@@ -239,10 +239,10 @@ def process_bar_close(p: Portfolio, bar: dict, close_ms: int, bid: float, ask: f
     direction = pos["row"]["direction"]
     if direction == "BUY":
         pos["favorable_extreme"] = max(pos["favorable_extreme"], bar["high"])
-        move = pos["favorable_extreme"] - pos["theoretical_entry"]
+        move = pos["favorable_extreme"] - pos["fill_price"]
     else:
         pos["favorable_extreme"] = min(pos["favorable_extreme"], bar["low"])
-        move = pos["theoretical_entry"] - pos["favorable_extreme"]
+        move = pos["fill_price"] - pos["favorable_extreme"]
     if move + 1e-12 < TRAIL_ACTIVATION:
         return
     pos["trail_active"] = True
@@ -269,7 +269,7 @@ def close_position(p: Portfolio, now_ms: int, exit_price: float, reason: str):
            BROKER.tick_value_per_lot * Decimal(str(pos["lots"])))
     before = p.equity
     p.equity += pnl
-    r_multiple = signed / pos["initial_risk"] if pos["initial_risk"] else 0.0
+    actual_risk_price = pos["actual_initial_risk_price"]\n    r_multiple = signed / actual_risk_price if actual_risk_price else 0.0\n    theoretical_r_multiple = signed / pos["initial_risk"] if pos["initial_risk"] else 0.0\n    actual_risk_usd = (Decimal(str(actual_risk_price)) / BROKER.tick_size *\n                       BROKER.tick_value_per_lot * Decimal(str(pos["lots"])))
     out = {
         "run_id":p.run.run_id, "family":p.run.family.value,
         "candidate_entry_time_utc":row["entry_time_utc"], "direction":direction,
@@ -280,7 +280,7 @@ def close_position(p: Portfolio, now_ms: int, exit_price: float, reason: str):
         "initial_sl":float(row["sl_initial"]), "final_sl":pos["sl"],
         "tp":pos["tp"], "exit_time_utc":datetime.fromtimestamp(now_ms/1000, timezone.utc).isoformat(),
         "exit_price":exit_price, "exit_reason":reason, "lots":pos["lots"],
-        "gross_pnl_usd":float(pnl), "r_multiple":r_multiple,
+        "gross_pnl_usd":float(pnl), "r_multiple":r_multiple,\n        "theoretical_r_multiple":theoretical_r_multiple,\n        "requested_risk_usd":pos["requested_risk_usd"],\n        "sizing_actual_risk_usd":pos["sizing_actual_risk_usd"],\n        "fill_based_initial_risk_usd":float(actual_risk_usd),
         "equity_before":float(before), "equity_after":float(p.equity),
         "trail_activated":pos["trail_active"], "tick_gap_exposed":pos["gap_exposed"],
         "commission":"NOT_PROVIDED", "swap":"NOT_PROVIDED",
