@@ -10,6 +10,7 @@ import argparse
 import csv
 import gzip
 import hashlib
+import heapq
 import json
 import math
 from dataclasses import dataclass, field
@@ -320,6 +321,14 @@ def run_replay(entries, bars, tick_path: Path, latency_seconds: float):
     gaps_gt_60 = 0
     previous_tick_ms = None
     first_tick_ms = None
+    # Heap schedules each portfolio's next candidate once; flat portfolios are
+    # not scanned on every one of the 31.8m ticks.
+    due_heap = []
+    for idx, p in enumerate(portfolios):
+        first_due = (parse_utc_epoch(entries[0]["entry_time_utc"])*1000
+                     + 60_000 + latency_ms)
+        heapq.heappush(due_heap, (first_due, idx))
+    active = {}
     with gzip.open(tick_path, "rt", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         if reader.fieldnames != TICK_FIELDS:
@@ -339,14 +348,43 @@ def run_replay(entries, bars, tick_path: Path, latency_seconds: float):
             while bar_i < len(bars) and (bars[bar_i]["time"]+60)*1000 <= now_ms:
                 bar = bars[bar_i]
                 close_ms = (bar["time"]+60)*1000
-                for p in portfolios:
+                for p in active.values():
                     process_bar_close(p, bar, close_ms, bid, ask)
                 bar_i += 1
-            for p in portfolios:
+            # Resolve all existing exposure on this quote before new submissions.
+            for idx, p in list(active.items()):
                 if gap_now and p.position:
                     p.position["gap_exposed"] = True
-                process_candidate_due(p, entries, now_ms, bid, ask, latency_ms)
                 process_tick(p, now_ms, bid, ask)
+                if p.state == "FLAT":
+                    del active[idx]
+            # Submit candidates only on the first quote at/after the declared
+            # completed-bar + polling-latency timestamp.
+            while due_heap and due_heap[0][0] <= now_ms:
+                _, idx = heapq.heappop(due_heap)
+                p = portfolios[idx]
+                row = entries[p.entry_index]
+                p.entry_index += 1
+                if p.state != "FLAT":
+                    emit_candidate(p, row, "REJECTED_EXPOSURE_BUSY",
+                                   rejection_reason="MAX_OPEN_POSITIONS_1")
+                else:
+                    direction = row["direction"]
+                    entry = float(row["entry_proxy"])
+                    placeable = entry < ask if direction == "BUY" else entry > bid
+                    if not placeable:
+                        emit_candidate(p, row, "REJECTED_NOT_PLACEABLE",
+                                       rejection_reason="LIMIT_ENTRY_NOT_PLACEABLE_AT_SUBMISSION_QUOTE",
+                                       submission_time_utc=datetime.fromtimestamp(now_ms/1000, timezone.utc).isoformat())
+                    else:
+                        p.pending = {"row":row, "submit_ms":now_ms,
+                                     "expires_ms":now_ms + int(PENDING_TTL_SECONDS*1000)}
+                        p.state = "PENDING"
+                        active[idx] = p
+                if p.entry_index < len(entries):
+                    next_due = (parse_utc_epoch(entries[p.entry_index]["entry_time_utc"])*1000
+                                + 60_000 + latency_ms)
+                    heapq.heappush(due_heap, (next_due, idx))
     # Candidates whose scheduled submission lies beyond the last available tick
     # cannot be evaluated and must remain explicitly censored.
     last_ms = previous_ms
