@@ -175,7 +175,7 @@ def fill_pending(p, now_ms, bid, ask):
 
 def process_bar_close(p, bar, bid, ask):
     pos = p.position
-    if not pos or not pos["is_runner"] or not pos["first_done"]:
+    if not pos or not pos["is_runner"]:
         return
     if bar["time"]*1000 <= pos["fill_ms"]:
         return
