@@ -6,6 +6,7 @@ on:
       - 'research/capital_matrix/**'
       - 'tests/research/test_capital_matrix.py'
       - 'tests/research/test_v31_population_builder.py'
+      - 'tests/research/test_v31_tick_replay.py'
       - '.github/workflows/research-capital-matrix.yml'
 
 permissions:
@@ -20,4 +21,4 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run focused offline tests
-        run: python -m unittest tests.research.test_capital_matrix tests.research.test_v31_population_builder -v
+        run: python -m unittest tests.research.test_capital_matrix tests.research.test_v31_population_builder tests.research.test_v31_tick_replay -v
