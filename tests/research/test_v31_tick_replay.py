@@ -1,10 +1,14 @@
 import unittest
+import csv
+import gzip
+import tempfile
+from pathlib import Path
 from datetime import datetime, timezone
 
 from research.capital_matrix.matrix import build_matrix, Family
 from research.capital_matrix.replay_v31_tick_matrix import (
     Portfolio, round_price, parse_utc_epoch, process_candidate_due,
-    fill_pending, LATENCY_SECONDS,
+    fill_pending, LATENCY_SECONDS, run_replay,
 )
 
 
@@ -54,6 +58,30 @@ class ReplayContractTests(unittest.TestCase):
         self.assertEqual(parse_utc_epoch("1970-01-01T00:00:00Z"), 0)
         with self.assertRaises(ValueError):
             parse_utc_epoch("1970-01-01T00:00:00")
+
+    def test_stream_replay_executes_first_fixed_tp_on_quote_sides(self):
+        ts = 1767225600
+        row = {"entry_time_utc":"2026-01-01T00:00:00Z","direction":"BUY",
+               "entry_proxy":"4000","sl_initial":"3998","risk_price":"2",
+               "target":"4008"}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ticks.csv.gz"
+            ticks = [
+                [ts*1000+62000,"2026-01-01T00:01:02Z",3999.0,4001.0,0,0,0],
+                [ts*1000+63000,"2026-01-01T00:01:03Z",3998.5,3999.5,0,0,0],
+                [ts*1000+64000,"2026-01-01T00:01:04Z",4002.1,4002.2,0,0,0],
+            ]
+            with gzip.open(path,"wt",encoding="utf-8",newline="") as f:
+                w=csv.writer(f);w.writerow(["time_msc","time_utc","bid","ask","last","volume","flags"]);w.writerows(ticks)
+            portfolios,stats=run_replay([row],[],path,2.0)
+        first=portfolios[0]
+        closed=[x for x in first.rows if x.get("status")=="FILLED_AND_CLOSED"]
+        self.assertEqual(len(closed),1)
+        self.assertEqual(closed[0]["exit_reason"],"TP")
+        self.assertEqual(closed[0]["fill_price"],3999.5)
+        self.assertEqual(closed[0]["exit_price"],4002.1)
+        self.assertAlmostEqual(closed[0]["gross_pnl_usd"],2.6,places=6)
+        self.assertEqual(stats["tick_rows"],3)
 
 
 if __name__ == "__main__":
