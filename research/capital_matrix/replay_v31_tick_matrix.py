@@ -25,7 +25,7 @@ from research.capital_matrix.matrix import (
 EXPECTED_TICK_SHA256 = "8fb7589922980df0bf0cf4ffe1babf6ad82768bedac784bf62ffa2a9d698386f"
 EXPECTED_POPULATION_SHA256 = "f29879c837938e22a851dd967a33740ea7f4b781e741f4119a2dd25ef4c598c5"
 EXPECTED_M1_SHA256 = "daf4eb26c47ef0dadc045c76b9a72b667751e1eac315697a6b024e81e355c402"
-EXPECTED_MANIFEST_SHA256 = "0919987a69fbc403d064113c999664c5e4da309c3d9989254c300f2723fcbd09"
+EXPECTED_MANIFEST_SHA256 = "0919987a69fbc403d064113c999664c5e4da309c3d9989254c300f2723fcbd09"\nEXPECTED_SYMBOL_SPECS_SHA256 = "2d103be895df2f034f5d45442cdaf500764e01cab0ba841455be5d2ea2a8fe10"
 TICK_FIELDS = ["time_msc", "time_utc", "bid", "ask", "last", "volume", "flags"]
 POP_FIELDS = ["strategy","variant","direction","setup_time_utc","entry_time_utc",
               "entry_proxy","sl_initial","target","risk_price","exit_time_utc",
@@ -459,7 +459,7 @@ def main():
     ap.add_argument("--population-sha256",default=EXPECTED_POPULATION_SHA256)
     ap.add_argument("--manifest-sha256",default=EXPECTED_MANIFEST_SHA256)
     ap.add_argument("--m1-sha256",default=EXPECTED_M1_SHA256)
-    ap.add_argument("--ticks-sha256",default=EXPECTED_TICK_SHA256)
+    ap.add_argument("--ticks-sha256",default=EXPECTED_TICK_SHA256)\n    ap.add_argument("--symbol-specs-sha256",default=EXPECTED_SYMBOL_SPECS_SHA256)
     args=ap.parse_args()
     if args.latency_seconds < 0 or args.latency_seconds > 30:
         raise ValueError("latency must be between 0 and 30 seconds")
@@ -511,9 +511,9 @@ def main():
                            "Slippage not calibrated","Historical broker stop-level not provided; trailing placement assumes zero minimum stop distance"],
         "input_sha256":{
             "population":args.population_sha256,"population_manifest":args.manifest_sha256,
-            "m1":args.m1_sha256,"ticks":args.ticks_sha256,
+            "m1":args.m1_sha256,"ticks":args.ticks_sha256,\n            "symbol_specs":args.symbol_specs_sha256,
         },
-        "tick_stats":stats,"output_sha256":output_hashes,
+        "code_sha256":code_hashes,\n        "broker_contract":{"symbol":"XAUUSD.ecn","digits":2,"tick_size":0.01,\n            "tick_value_per_lot_usd":1.0,"volume_min":0.01,"volume_step":0.01,\n            "volume_max":100.0,"metadata_sha256":args.symbol_specs_sha256},\n        "tick_stats":stats,"output_sha256":output_hashes,
         "replay_note":"This is an explicitly assumed historical execution replay, not proof of actual historical broker fills. Entry submission time is approximated from the completed trigger bar plus declared latency.",
     }
     manifest_out=outdir/"SP2L_CAPITAL_MATRIX_REPLAY_MANIFEST.json"
