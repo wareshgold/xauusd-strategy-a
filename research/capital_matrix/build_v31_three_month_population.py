@@ -157,7 +157,7 @@ def main():
     }
     manifest_path=outdir/"SP2L_V31_THREE_MONTH_FROZEN_ENTRIES_MANIFEST.json"
     with manifest_path.open("x",encoding="utf-8") as f:
-        json.dump(manifest,f,indent=2,ensure_ascii=False); f.write("\\n")
+        json.dump(manifest,f,indent=2,ensure_ascii=False); f.write("\n")
     print(json.dumps({"status":"COMPLETE","rows":len(population),"csv":str(csv_path),
       "csv_sha256":csv_sha,"manifest":str(manifest_path),"source_sha256":source_sha,
       "source_rows":len(bars),"gap_count":len(gaps),"segments":len(segments),
