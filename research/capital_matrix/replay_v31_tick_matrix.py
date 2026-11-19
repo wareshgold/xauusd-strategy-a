@@ -274,7 +274,10 @@ def close_position(p: Portfolio, now_ms: int, exit_price: float, reason: str):
     actual_risk_price = pos["actual_initial_risk_price"]
     r_multiple = signed / actual_risk_price if actual_risk_price else 0.0
     theoretical_r_multiple = signed / pos["initial_risk"] if pos["initial_risk"] else 0.0
-    actual_risk_usd = (Decimal(str(actual_risk_price)) / BROKER.tick_size *\n                       BROKER.tick_value_per_lot * Decimal(str(pos["lots"])))
+    actual_risk_usd = (
+        Decimal(str(actual_risk_price)) / BROKER.tick_size *
+        BROKER.tick_value_per_lot * Decimal(str(pos["lots"]))
+    )
     out = {
         "run_id":p.run.run_id, "family":p.run.family.value,
         "candidate_entry_time_utc":row["entry_time_utc"], "direction":direction,
