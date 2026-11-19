@@ -25,6 +25,20 @@ SIZING_MODES = ("COMPOUND", "FIXED_BASE")
 RUNNER_VERSION = "SP2L_V3_1_XAUUSD_RR4_ACT40_TRAIL40_20261101"
 
 
+@dataclass(frozen=True, slots=True)
+class RunnerProfile:
+    version: str = RUNNER_VERSION
+    take_profit_r: Decimal = Decimal("4")
+    trail_activation_price: Decimal = Decimal("0.40")
+    trail_distance_price: Decimal = Decimal("0.40")
+    sl_anchor: str = "SPIKE_CANDLE_EXTREME_RESEARCH"
+    max_initial_sl_distance: Decimal = Decimal("10")
+    order_mode: str = "PENDING_LIMIT_RESEARCH"
+
+
+V31_RUNNER_PROFILE = RunnerProfile()
+
+
 class Family(StrEnum):
     FIXED_TP = "FIXED_TP"
     DUAL_INDEPENDENT = "DUAL_INDEPENDENT"
@@ -43,6 +57,7 @@ class RunSpec:
     tp2_r: Decimal | None = None
     volume_lots: Decimal | None = None
     runner_version: str | None = None
+    runner_profile: RunnerProfile | None = None
 
     @property
     def is_fixed_volume_reference(self) -> bool:
@@ -71,7 +86,7 @@ def build_matrix() -> tuple[RunSpec, ...]:
     runs.append(RunSpec(
         run_id="RUNNER_EXACT_001LOT", family=Family.EXACT_RUNNER,
         sizing_mode=None, risk_fraction=None, volume_lots=Decimal("0.01"),
-        runner_version=RUNNER_VERSION,
+        runner_version=RUNNER_VERSION, runner_profile=V31_RUNNER_PROFILE,
     ))
     for mode in SIZING_MODES:
         for risk in RISK_LEVELS:
@@ -79,7 +94,7 @@ def build_matrix() -> tuple[RunSpec, ...]:
                 run_id=f"RUNNER_NORMALIZED_{mode}_{int(risk * 10000):04d}",
                 family=Family.NORMALIZED_RUNNER, sizing_mode=mode,
                 risk_fraction=risk, tp_r=Decimal("4"),
-                runner_version=RUNNER_VERSION,
+                runner_version=RUNNER_VERSION, runner_profile=V31_RUNNER_PROFILE,
             ))
     result = tuple(runs)
     if len(result) != 89 or len({r.run_id for r in result}) != 89:
