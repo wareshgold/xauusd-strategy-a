@@ -5,6 +5,7 @@ on:
     paths:
       - 'research/capital_matrix/**'
       - 'tests/research/test_capital_matrix.py'
+      - 'tests/research/test_v31_population_builder.py'
       - '.github/workflows/research-capital-matrix.yml'
 
 permissions:
@@ -19,4 +20,4 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run focused offline tests
-        run: python -m unittest discover -s tests -p 'test_capital_matrix.py' -v
+        run: python -m unittest tests.research.test_capital_matrix tests.research.test_v31_population_builder -v
