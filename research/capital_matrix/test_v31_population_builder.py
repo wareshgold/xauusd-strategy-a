@@ -1,10 +1,11 @@
-import gzip, importlib.util, tempfile, unittest
+import importlib.util, sys, unittest
 from pathlib import Path
-from datetime import datetime, timezone
 
 SCRIPT = Path(__file__).resolve().parents[1] / "build_v31_three_month_population.py"
 spec = importlib.util.spec_from_file_location("population_builder", SCRIPT)
-builder = importlib.util.module_from_spec(spec); spec.loader.exec_module(builder)
+builder = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = builder
+spec.loader.exec_module(builder)
 
 class GapSegmentationTests(unittest.TestCase):
     def test_splits_at_any_missing_minute_and_preserves_rows(self):
