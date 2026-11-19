@@ -21,6 +21,10 @@ class CapitalMatrixTests(unittest.TestCase):
         runs = build_matrix()
         self.assertEqual(len(runs), 89)
         self.assertEqual(len({r.run_id for r in runs}), 89)
+        exact = next(r for r in runs if r.family is Family.EXACT_RUNNER)
+        self.assertEqual(exact.runner_profile.trail_activation_price, Decimal("0.40"))
+        self.assertEqual(exact.runner_profile.trail_distance_price, Decimal("0.40"))
+        self.assertEqual(exact.runner_profile.take_profit_r, Decimal("4"))
         self.assertEqual(matrix_counts(runs), {
             "FIXED_TP": 40, "DUAL_INDEPENDENT": 40,
             "EXACT_RUNNER": 1, "NORMALIZED_RUNNER": 8, "TOTAL": 89,
