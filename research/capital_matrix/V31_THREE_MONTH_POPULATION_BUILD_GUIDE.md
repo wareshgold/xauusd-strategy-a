@@ -16,9 +16,10 @@ This is a research replica, not canonical Strategy A source confirmation. The po
 
 ## Local run
 
-From the capital-matrix worktree after pulling the branch:
+After pulling the branch into the capital-matrix worktree:
 
 ```powershell
+Set-Location D:\\Mirzaei\\Private\\1\\xauusd-capital-matrix-20261119
 $py = "D:\\Mirzaei\\Private\\1\\xauusd-strategy-a\\.venv\\Scripts\\python.exe"
 $src = "D:\\SP2L_RESEARCH_DATA\\20261109\\XAUUSD_ecn_20260809_20261110_M1.csv.gz"
 $out = "D:\\Mirzaei\\Private\\1\\sp2l-evidence\\development\\v31-three-month-population-gap-isolated"
