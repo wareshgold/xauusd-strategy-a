@@ -319,6 +319,7 @@ def run_replay(entries, bars, tick_path: Path, latency_seconds: float):
     previous_ms = -1
     gaps_gt_60 = 0
     previous_tick_ms = None
+    first_tick_ms = None
     with gzip.open(tick_path, "rt", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         if reader.fieldnames != TICK_FIELDS:
@@ -331,6 +332,8 @@ def run_replay(entries, bars, tick_path: Path, latency_seconds: float):
             if previous_tick_ms is not None and now_ms-previous_tick_ms > 60_000:
                 gaps_gt_60 += 1
             gap_now = previous_tick_ms is not None and now_ms-previous_tick_ms > 60_000
+            if first_tick_ms is None:
+                first_tick_ms = now_ms
             previous_ms = previous_tick_ms = now_ms
             tick_count += 1
             while bar_i < len(bars) and (bars[bar_i]["time"]+60)*1000 <= now_ms:
@@ -344,9 +347,15 @@ def run_replay(entries, bars, tick_path: Path, latency_seconds: float):
                     p.position["gap_exposed"] = True
                 process_candidate_due(p, entries, now_ms, bid, ask, latency_ms)
                 process_tick(p, now_ms, bid, ask)
-    # Anything still open/pending at end of source is censored, never force-closed.
+    # Candidates whose scheduled submission lies beyond the last available tick
+    # cannot be evaluated and must remain explicitly censored.
     last_ms = previous_ms
     for p in portfolios:
+        while p.entry_index < len(entries):
+            row = entries[p.entry_index]
+            emit_candidate(p, row, "AMBIGUOUS_DATA",
+                           ambiguity="NO_TICK_AT_OR_AFTER_SCHEDULED_SUBMISSION")
+            p.entry_index += 1
         if p.pending:
             emit_candidate(p, p.pending["row"], "AMBIGUOUS_DATA",
                            ambiguity="TICK_SOURCE_ENDED_BEFORE_PENDING_RESOLUTION")
@@ -359,7 +368,7 @@ def run_replay(entries, bars, tick_path: Path, latency_seconds: float):
                            last_tick_utc=datetime.fromtimestamp(last_ms/1000, timezone.utc).isoformat())
             p.position = None
     return portfolios, {"tick_rows":tick_count,"tick_gaps_gt_60s":gaps_gt_60,
-                        "first_tick_ms":None,"last_tick_ms":last_ms,
+                        "first_tick_ms":first_tick_ms,"last_tick_ms":last_ms,
                         "latency_seconds":latency_seconds}
 
 
@@ -444,12 +453,12 @@ def main():
             "portfolio_exposure_limit":1,
             "entry_sl_tp":"theoretical broker-submitted levels retained",
             "exit_quotes":"BUY exits use Bid; SELL exits use Ask",
-            "trailing":"completed M1 bar only; activation 0.40; distance 0.40",
+            "trailing":"completed M1 bar only; activation 0.40; distance 0.40; broker minimum stop distance unavailable and assumed zero",
             "same_tick_sl_tp":"SL prioritized conservatively",
             "end_of_source":"open/pending positions censored, not force-closed",
         },
         "cost_limitations":["Commission not provided","Swap not provided",
-                           "Slippage not calibrated","Historical broker stop-level not provided"],
+                           "Slippage not calibrated","Historical broker stop-level not provided; trailing placement assumes zero minimum stop distance"],
         "input_sha256":{
             "population":args.population_sha256,"population_manifest":args.manifest_sha256,
             "m1":args.m1_sha256,"ticks":args.ticks_sha256,
