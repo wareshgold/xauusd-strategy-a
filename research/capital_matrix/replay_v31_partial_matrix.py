@@ -161,7 +161,7 @@ def fill_pending(p, now_ms, bid, ask):
         "row": row, "fill_ms": now_ms, "fill_price": fill,
         "theoretical_entry": theoretical, "initial_sl": stop, "sl": stop,
         "tp1": tp1, "tp2": tp2, "first_lots": float(sizing.leg_lots),
-        "remaining_lots": float(sizing.leg_lots), "first_done": False,
+        "remaining_lots": float(sizing.total_lots), "first_done": False,
         "actual_initial_risk_price": abs(fill-stop),
         "requested_risk_usd": float(sizing.requested_risk_usd),
         "sizing_actual_risk_usd": float(sizing.actual_risk_usd),
