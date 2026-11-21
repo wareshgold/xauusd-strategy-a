@@ -87,6 +87,8 @@ def build_tick_index(tick_path: Path, index_path: Path, expected_rows: int):
             if first is None:
                 first = now
             previous = last = now
+            if count % 5_000_000 == 0:
+                print(f"[TICK INDEX] {count:,}/{expected_rows:,} rows", flush=True)
     if count != expected_rows:
         raise ValueError(f"tick row count mismatch: expected {expected_rows}, got {count}")
     ticks.flush()
@@ -393,6 +395,7 @@ def main():
     if not scratch.is_dir():
         raise FileNotFoundError(f"scratch root must already exist: {scratch}")
 
+    print("[1/3] Validating source hashes and manifests...", flush=True)
     tick_sha = sha256_file(tick_path)
     source_files = {}
     manifests = {}
@@ -435,15 +438,28 @@ def main():
     all_metrics = []
     with tempfile.TemporaryDirectory(prefix="sp2l-trade-behavior-", dir=scratch) as temp:
         index_path = Path(temp) / "ticks.bin"
+        print(f"[2/3] Building tick index from {expected_rows:,} source rows...", flush=True)
         ticks, tick_index_stats = build_tick_index(tick_path, index_path, expected_rows)
+        print(f"[2/3] Tick index complete: {tick_index_stats}", flush=True)
+        dataset_number = 0
         for family, spec in FAMILIES.items():
             for latency in LATENCIES:
+                dataset_number += 1
                 folder = base / spec["directory"].format(latency=latency)
                 rows = []
-                summaries.append(analyze_dataset(
+                print(f"[3/3] Dataset {dataset_number}/6 START: {family} {latency}", flush=True)
+                summary = analyze_dataset(
                     ticks, family, latency, folder / spec["detail"],
-                    folder / spec["manifest"], rows))
+                    folder / spec["manifest"], rows)
+                summaries.append(summary)
                 all_metrics.extend(rows)
+                print(
+                    f"[3/3] Dataset {dataset_number}/6 DONE: {family} {latency} | "
+                    f"trades={summary['behavior_trades']:,} "
+                    f"analyzed={summary.get('analyzed_trades', 0):,} "
+                    f"quarantined={summary.get('quarantined_trades', 0):,}",
+                    flush=True,
+                )
         del ticks
 
     if all_metrics:
