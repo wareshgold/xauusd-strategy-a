@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import unittest
+import tempfile
+from pathlib import Path
+
 
 import numpy as np
 
 from research.capital_matrix.trade_behavior_analyzer import (
-    TICK_DTYPE, compute_path_metrics, reconstruct_fill,
+    TICK_DTYPE, compute_path_metrics, reconstruct_fill, _write_dataset_csv,
 )
 
 
@@ -83,6 +86,25 @@ class TradeBehaviorAnalyzerTests(unittest.TestCase):
     def test_missing_fill_tick_is_not_guessed(self):
         data = ticks([(1000, 10000, 10002), (2000, 10001, 10003)])
         self.assertIsNone(reconstruct_fill(data, 1500, "BUY", 10000))
+
+
+    def test_dataset_csv_is_written_as_a_separate_hashed_artifact(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp)
+            rows = [
+                {"family": "MATRIX49", "latency": "0s", "trade_id": "a", "mfe_r": 1.25},
+                {"family": "MATRIX49", "latency": "0s", "trade_id": "b", "mfe_r": 0.5},
+            ]
+            result = _write_dataset_csv(output, "MATRIX49", "0s", rows)
+            target = output / "SP2L_TRADE_BEHAVIOR_METRICS_MATRIX49_0s.csv"
+            self.assertTrue(target.is_file())
+            self.assertEqual(result["rows"], 2)
+            self.assertEqual(len(result["sha256"]), 64)
+            with target.open(encoding="utf-8", newline="") as stream:
+                self.assertEqual(len(list(__import__("csv").DictReader(stream))), 2)
+            with self.assertRaises(FileExistsError):
+                _write_dataset_csv(output, "MATRIX49", "0s", rows)
+
 
 
 if __name__ == "__main__":
