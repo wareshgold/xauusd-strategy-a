@@ -131,7 +131,9 @@ def compute_path_metrics(ticks, direction: str, fill_ticks: int, risk_ticks: int
     gap_right = min(len(times), right + 1)
     gap_times = times[gap_left:gap_right]
     diffs = np.diff(gap_times)
-    gap_mask = diffs > GAP_MS
+    gap_mask = ((diffs > GAP_MS) &
+                (gap_times[1:] > start_ms) &
+                (gap_times[:-1] < end_ms))
     gap_count = int(np.count_nonzero(gap_mask))
     start_present = bool(np.any(times[left:right] == start_ms))
     end_present = bool(np.any(times[left:right] == end_ms))
@@ -390,6 +392,7 @@ def main():
     if not scratch.is_dir():
         raise FileNotFoundError(f"scratch root must already exist: {scratch}")
 
+    tick_sha = sha256_file(tick_path)
     source_files = {}
     manifests = {}
     for family, spec in FAMILIES.items():
@@ -400,7 +403,7 @@ def main():
             if not detail.is_file() or not manifest_path.is_file():
                 raise FileNotFoundError(f"missing source detail/manifest: {folder}")
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            if manifest.get("input_sha256", {}).get("ticks") != sha256_file(tick_path):
+            if manifest.get("input_sha256", {}).get("ticks") != tick_sha:
                 raise ValueError(f"{family}/{latency}: tick source SHA differs")
             source_files[f"{family}_{latency}"] = {
                 "detail": str(detail), "detail_sha256": sha256_file(detail),
@@ -421,7 +424,7 @@ def main():
     expected_rows = int(reference["tick_stats"]["tick_rows"])
     if expected_rows != 31_852_364:
         raise ValueError(f"unexpected tick row count: {expected_rows}")
-    if sha256_file(tick_path) != reference["input_sha256"]["ticks"]:
+    if tick_sha != reference["input_sha256"]["ticks"]:
         raise ValueError("tick source SHA mismatch")
 
     output.mkdir(parents=True, exist_ok=False)
