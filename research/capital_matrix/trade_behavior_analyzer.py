@@ -109,7 +109,8 @@ def reconstruct_fill(ticks, fill_ms: int, direction: str, theoretical_ticks: int
 
 
 def compute_path_metrics(ticks, direction: str, fill_ticks: int, risk_ticks: int,
-                         start_ms: int, end_ms: int, thresholds=(0.5, 1.0, 2.0)):
+                         start_ms: int, end_ms: int,
+                         thresholds=(0.5, 1.0, 2.0, -0.5, -1.0)):
     times = ticks["time_msc"]
     left = int(np.searchsorted(times, start_ms, side="left"))
     right = int(np.searchsorted(times, end_ms, side="right"))
