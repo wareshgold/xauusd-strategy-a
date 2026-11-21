@@ -283,6 +283,9 @@ def read_groups(detail_path: Path, family: str):
             "source_statuses": "+".join(sorted(statuses)),
             "censored_reason": ambiguous_rows[0].get("ambiguity", "") if ambiguous_rows else "",
         })
+    # The grouped raw replay rows are no longer needed once normalized records exist.
+    groups.clear()
+    del groups
     return records, status_counts, excluded
 
 
