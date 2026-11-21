@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import csv
 import gzip
+import gc
 import hashlib
 import json
 import math
@@ -377,6 +378,36 @@ def analyze_dataset(ticks, family, latency, detail_path, manifest_path, output_r
     return summary
 
 
+def _atomic_json(path: Path, payload: dict):
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                         encoding="utf-8")
+    temporary.replace(path)
+
+
+def _write_dataset_csv(output: Path, family: str, latency: str, rows: list[dict]):
+    """Write one dataset atomically; never retain all six datasets in RAM."""
+    filename = f"SP2L_TRADE_BEHAVIOR_METRICS_{family}_{latency}.csv"
+    destination = output / filename
+    temporary = output / (filename + ".tmp")
+    if destination.exists() or temporary.exists():
+        raise FileExistsError(f"dataset output already exists: {destination}")
+    if rows:
+        fields = sorted({key for row in rows for key in row})
+        with temporary.open("x", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
+            writer.writeheader()
+            writer.writerows(rows)
+    else:
+        temporary.write_text("", encoding="utf-8")
+    temporary.replace(destination)
+    return {
+        "file": filename,
+        "rows": len(rows),
+        "sha256": sha256_file(destination),
+    }
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--evidence-base", required=True, type=Path,
@@ -418,7 +449,6 @@ def main():
     for key, manifest in manifests.items():
         if manifest.get("input_sha256") != reference.get("input_sha256"):
             raise ValueError(f"{key}: input hashes differ from MATRIX49_0s")
-        # Each family has its own replay source code hashes, so compare within family.
     for family in FAMILIES:
         ref = manifests[f"{family}_0s"]
         for latency in ("2s", "5s"):
@@ -432,10 +462,22 @@ def main():
         raise ValueError("tick source SHA mismatch")
 
     output.mkdir(parents=True, exist_ok=False)
+    checkpoint_path = output / "SP2L_TRADE_BEHAVIOR_PROGRESS.json"
     summaries = []
-    metrics_path = output / "SP2L_TRADE_BEHAVIOR_METRICS.csv"
-    summary_path = output / "SP2L_TRADE_BEHAVIOR_SUMMARY.csv"
-    all_metrics = []
+    dataset_outputs = []
+    checkpoint = {
+        "status": "IN_PROGRESS",
+        "research_only": True,
+        "canonical": False,
+        "mt5_accessed": False,
+        "runner_accessed": False,
+        "tick_source_sha256": tick_sha,
+        "completed_datasets": [],
+        "current_dataset": None,
+        "note": "IN_PROGRESS is never a complete analysis; only the final manifest can mark COMPLETE.",
+    }
+    _atomic_json(checkpoint_path, checkpoint)
+
     with tempfile.TemporaryDirectory(prefix="sp2l-trade-behavior-", dir=scratch) as temp:
         index_path = Path(temp) / "ticks.bin"
         print(f"[2/3] Building tick index from {expected_rows:,} source rows...", flush=True)
@@ -445,29 +487,46 @@ def main():
         for family, spec in FAMILIES.items():
             for latency in LATENCIES:
                 dataset_number += 1
+                dataset_key = f"{family}_{latency}"
                 folder = base / spec["directory"].format(latency=latency)
                 rows = []
+                checkpoint["current_dataset"] = dataset_key
+                checkpoint["current_dataset_state"] = "STARTED"
+                checkpoint["tick_index_stats"] = tick_index_stats
+                _atomic_json(checkpoint_path, checkpoint)
                 print(f"[3/3] Dataset {dataset_number}/6 START: {family} {latency}", flush=True)
+
                 summary = analyze_dataset(
                     ticks, family, latency, folder / spec["detail"],
                     folder / spec["manifest"], rows)
+                dataset_output = _write_dataset_csv(output, family, latency, rows)
                 summaries.append(summary)
-                all_metrics.extend(rows)
+                dataset_outputs.append({"dataset": dataset_key, **dataset_output})
                 print(
                     f"[3/3] Dataset {dataset_number}/6 DONE: {family} {latency} | "
                     f"trades={summary['behavior_trades']:,} "
                     f"analyzed={summary.get('analyzed_trades', 0):,} "
-                    f"quarantined={summary.get('quarantined_trades', 0):,}",
+                    f"quarantined={summary.get('quarantined_trades', 0):,} "
+                    f"csv_rows={len(rows):,}",
                     flush=True,
                 )
+
+                checkpoint["completed_datasets"].append({
+                    "dataset": dataset_key,
+                    "rows": len(rows),
+                    "csv": dataset_output["file"],
+                    "sha256": dataset_output["sha256"],
+                })
+                checkpoint["current_dataset"] = None
+                checkpoint["current_dataset_state"] = "DONE"
+                _atomic_json(checkpoint_path, checkpoint)
+
+                # Drop the per-dataset objects before loading the next replay.
+                del rows, summary, dataset_output
+                gc.collect()
         del ticks
 
-    if all_metrics:
-        fields = sorted({k for row in all_metrics for k in row})
-        with metrics_path.open("x", encoding="utf-8", newline="") as stream:
-            writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
-            writer.writeheader()
-            writer.writerows(all_metrics)
+    summary_path = output / "SP2L_TRADE_BEHAVIOR_SUMMARY.csv"
     with summary_path.open("x", encoding="utf-8", newline="") as stream:
         fields = list(summaries[0])
         writer = csv.DictWriter(stream, fieldnames=fields)
@@ -498,15 +557,24 @@ def main():
             "censored": "Open positions are measured only through last observed tick and have no exit_R or final giveback.",
         },
         "summary": summaries,
-        "metrics_csv": metrics_path.name, "metrics_csv_sha256": sha256_file(metrics_path),
-        "summary_csv": summary_path.name, "summary_csv_sha256": sha256_file(summary_path),
+        "dataset_metrics_files": dataset_outputs,
+        "summary_csv": summary_path.name,
+        "summary_csv_sha256": sha256_file(summary_path),
     }
-    (output / "SP2L_TRADE_BEHAVIOR_MANIFEST.json").write_text(
-        json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    manifest_path = output / "SP2L_TRADE_BEHAVIOR_MANIFEST.json"
+    _atomic_json(manifest_path, report)
+    checkpoint["status"] = "COMPLETE"
+    checkpoint["current_dataset"] = None
+    checkpoint["completed_datasets_count"] = len(dataset_outputs)
+    checkpoint["manifest"] = manifest_path.name
+    checkpoint["manifest_sha256"] = sha256_file(manifest_path)
+    _atomic_json(checkpoint_path, checkpoint)
     print(json.dumps({
         "status": report["status"], "summary": summaries,
-        "metrics_csv": str(metrics_path), "metrics_sha256": report["metrics_csv_sha256"],
-        "summary_csv": str(summary_path), "manifest": str(output / "SP2L_TRADE_BEHAVIOR_MANIFEST.json"),
+        "dataset_metrics_files": dataset_outputs,
+        "summary_csv": str(summary_path),
+        "manifest": str(manifest_path),
+        "checkpoint": str(checkpoint_path),
     }, indent=2, ensure_ascii=False))
 
 
