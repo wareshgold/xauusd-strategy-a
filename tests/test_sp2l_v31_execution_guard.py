@@ -7,6 +7,11 @@ import pytest
 from scripts.sp2l_v31_execution_guard import validate_mt5_identity
 
 
+@pytest.fixture(autouse=True)
+def enable_v31_guard(monkeypatch):
+    monkeypatch.setenv("SP2L_V31_IDENTITY_GUARD", "true")
+
+
 def fake_mt5(*, login=853018, server="OtetGroup-MT5", trade_mode=0,
              terminal_path=r"C:\Program Files\Otet Group MT5 Terminal",
              symbol_mode=4):
@@ -54,3 +59,8 @@ def test_non_openable_symbol_fails_closed(mode):
 def test_unapproved_symbol_fails_closed():
     with pytest.raises(RuntimeError, match="unexpected symbol"):
         validate_mt5_identity(fake_mt5(), symbol="EURUSD")
+
+
+def test_guard_is_opt_in_for_non_v31_gateway_consumers(monkeypatch):
+    monkeypatch.setenv("SP2L_V31_IDENTITY_GUARD", "false")
+    validate_mt5_identity(fake_mt5(login=1, server="other", trade_mode=1))
