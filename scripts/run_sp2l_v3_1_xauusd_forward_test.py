@@ -26,6 +26,7 @@ import MetaTrader5 as mt5
 import sp2l_v3_1_rr4_act40_config as cfg
 
 os.environ["SP2L_SYMBOLS"]="XAUUSD"
+os.environ["SP2L_V31_IDENTITY_GUARD"]="true"
 os.environ["SP2L_MAGIC_BASE"]="26092300"  # XAUUSD slot => V3.1 magic 26092301; V3 remains 26092201.
 os.environ["SP2L_P_GAP_PRICE"]=str(cfg.P_GAP_PRICE)
 os.environ["SP2L_SPIKE_MULTIPLIER"]=str(cfg.SPIKE_MULTIPLIER)
