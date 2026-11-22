@@ -1156,6 +1156,7 @@ def main() -> None:
 
     lock_acquired = False
     try:
+        gateway.validate_mt5_identity(mt5, require_execution=False)
         account = mt5.account_info()
         if account is None or int(account.trade_mode) != 0:
             raise RuntimeError("DEMO-ONLY GUARD: a DEMO MT5 account is required")
