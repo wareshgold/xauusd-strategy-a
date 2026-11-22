@@ -345,8 +345,7 @@ def execute_signal(signal: Signal) -> dict:
                     "trade_mode_name": SYMBOL_TRADE_MODE_NAMES.get(trade_mode, "UNKNOWN") if trade_mode is not None else "UNAVAILABLE"}
 
         validate_mt5_identity(mt5, symbol=SYMBOL, require_execution=True)
-        validate_mt5_identity(mt5, symbol=SYMBOL, require_execution=True)
-    result = mt5.order_send(request)
+        result = mt5.order_send(request)
         if result is None:
             return {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
 
@@ -489,6 +488,7 @@ def execute_signal(signal: Signal) -> dict:
             else "UNAVAILABLE",
         }
 
+    validate_mt5_identity(mt5, symbol=SYMBOL, require_execution=True)
     result = mt5.order_send(request)
     if result is None:
         return {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
