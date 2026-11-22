@@ -9,7 +9,7 @@ from pathlib import PureWindowsPath
 
 EXPECTED_LOGIN = 853018
 EXPECTED_SERVER = "OtetGroup-MT5"
-EXPECTED_TERMINAL_ROOT = PureWindowsPath(r"C:\\Program Files\\Otet Group MT5 Terminal")
+EXPECTED_TERMINAL_ROOT = PureWindowsPath(r"C:\Program Files\Otet Group MT5 Terminal")
 EXPECTED_SYMBOL = "XAUUSD.ecn"
 OPENABLE_SYMBOL_TRADE_MODES = {1, 2, 4}
 
