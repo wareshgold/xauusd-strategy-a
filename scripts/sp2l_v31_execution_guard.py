@@ -19,7 +19,13 @@ def _norm_windows_path(value: str) -> str:
 
 
 def validate_mt5_identity(mt5, *, symbol: str | None = None, require_execution: bool = False) -> None:
-    """Raise RuntimeError unless MT5 is attached to the explicitly approved DEMO."""
+    """Raise RuntimeError unless MT5 is attached to the explicitly approved DEMO.
+
+    The V3.1 wrapper explicitly enables this guard. Other gateway consumers
+    retain their pre-existing account policy unless they opt into this scope.
+    """
+    if os.getenv("SP2L_V31_IDENTITY_GUARD", "false").strip().lower() != "true":
+        return
     if require_execution:
         if os.getenv("LIVE_TRADING_ENABLE", "false").strip().lower() != "true":
             raise RuntimeError("EXECUTION_GUARD: LIVE_TRADING_ENABLE is not true")
