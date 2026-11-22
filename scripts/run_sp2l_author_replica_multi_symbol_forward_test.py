@@ -796,6 +796,7 @@ def _cancel_pending_order(order, state: dict) -> None:
         if account is None or int(account.trade_mode) != 0:
             result = {"ok": False, "reason": "DEMO_ACCOUNT_REQUIRED"}
         else:
+            gateway.validate_mt5_identity(mt5, symbol=symbol, require_execution=True)
             send = mt5.order_send(cancel_request)
             if send is None:
                 result = {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
@@ -1109,6 +1110,7 @@ def run_banner_only() -> int:
     if not initialized:
         raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
     try:
+        gateway.validate_mt5_identity(mt5, require_execution=False)
         account = mt5.account_info()
         if account is None or int(account.trade_mode) != 0:
             raise RuntimeError("DEMO-ONLY GUARD: a DEMO MT5 account is required")
