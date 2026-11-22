@@ -26,6 +26,7 @@ import MetaTrader5 as mt5
 import sp2l_v3_1_rr4_act40_config as cfg
 
 os.environ["SP2L_SYMBOLS"]="XAUUSD"
+os.environ["SP2L_V31_IDENTITY_GUARD"]="true"
 os.environ["SP2L_MAGIC_BASE"]="26092300"  # XAUUSD slot => V3.1 magic 26092301; V3 remains 26092201.
 os.environ["SP2L_P_GAP_PRICE"]=str(cfg.P_GAP_PRICE)
 os.environ["SP2L_SPIKE_MULTIPLIER"]=str(cfg.SPIKE_MULTIPLIER)
@@ -36,8 +37,8 @@ os.environ["MT5_FORWARD_ORDER_MODE"]=cfg.ORDER_MODE
 os.environ["SP2L_PENDING_TTL_MINUTES"]=str(cfg.PENDING_TTL_MINUTES)
 # Server UTC offset must be explicitly pinned by the operator for this run.
 # No historical/default UTC offset is assumed; expiry and order submission fail closed without it.
-os.environ.setdefault("LIVE_TRADING_ENABLE","true")
-os.environ.setdefault("ALLOW_REAL_EXECUTION","true")
+os.environ.setdefault("LIVE_TRADING_ENABLE","false")
+os.environ.setdefault("ALLOW_REAL_EXECUTION","false")
 
 import run_sp2l_author_replica_multi_symbol_forward_test as runner
 from sp2l_history_query_failure_log import HistoryQueryFailureLogGate
@@ -218,6 +219,9 @@ def trail_positions(cfg_runtime,state):
 
         request={"action":mt5.TRADE_ACTION_SLTP,"symbol":symbol,
                  "position":ticket,"sl":float(new_sl),"tp":tp}
+        runner.gateway.validate_mt5_identity(
+            mt5, symbol=symbol, require_execution=True
+        )
         send=mt5.order_send(request)
         retcode=int(send.retcode) if send else None
         ok=bool(send and retcode==mt5.TRADE_RETCODE_DONE)

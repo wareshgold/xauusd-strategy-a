@@ -19,6 +19,11 @@ from pathlib import Path
 import MetaTrader5 as mt5
 
 try:
+    from sp2l_v31_execution_guard import validate_mt5_identity
+except ModuleNotFoundError:
+    from scripts.sp2l_v31_execution_guard import validate_mt5_identity
+
+try:
     from live_journal import record_market_snapshot, record_signal, record_trade, read_jsonl, SIGNALS
     from telegram_client import send_telegram_message
 except ModuleNotFoundError:
@@ -112,6 +117,7 @@ def telegram_send(text: str) -> bool:
 def mt5_initialize() -> None:
     if not mt5.initialize():
         raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+    validate_mt5_identity(mt5, symbol=SYMBOL, require_execution=False)
     if not mt5.symbol_select(SYMBOL, True):
         raise RuntimeError(f"symbol_select failed: {mt5.last_error()}")
 
@@ -338,6 +344,7 @@ def execute_signal(signal: Signal) -> dict:
             return {"ok": False, "reason": "SYMBOL_NOT_OPENABLE", "symbol_trade_mode": trade_mode,
                     "trade_mode_name": SYMBOL_TRADE_MODE_NAMES.get(trade_mode, "UNKNOWN") if trade_mode is not None else "UNAVAILABLE"}
 
+        validate_mt5_identity(mt5, symbol=SYMBOL, require_execution=True)
         result = mt5.order_send(request)
         if result is None:
             return {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
@@ -363,6 +370,7 @@ def execute_signal(signal: Signal) -> dict:
                         "magic": MAGIC,
                         "comment": "SP2L-SL-VERIFY-FAIL"[:31],
                     }
+                    validate_mt5_identity(mt5, symbol=SYMBOL, require_execution=True)
                     cancel_result = mt5.order_send(cancel_request)
                     return {
                         "ok": False,
@@ -480,6 +488,7 @@ def execute_signal(signal: Signal) -> dict:
             else "UNAVAILABLE",
         }
 
+    validate_mt5_identity(mt5, symbol=SYMBOL, require_execution=True)
     result = mt5.order_send(request)
     if result is None:
         return {"ok": False, "reason": "ORDER_SEND_NONE", "last_error": mt5.last_error()}
