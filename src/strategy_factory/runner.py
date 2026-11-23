@@ -20,7 +20,9 @@ from .snapshot import ReadinessSnapshot
 from .test_contract import DatasetRole, HistoricalTestSpec
 
 
-def _observe_local_dataset(adapter, artifact, expected_sha256: str) -> tuple[str, int]:
+def _observe_local_dataset(
+    adapter, artifact, expected_sha256: str, *, verify_identity: bool = True
+) -> tuple[str, int]:
     """Independently hash the exact local file bound to a dataset-backed job."""
     if artifact is None:
         raise ResearchJobRunnerError(
@@ -45,18 +47,19 @@ def _observe_local_dataset(adapter, artifact, expected_sha256: str) -> tuple[str
     raw = path.read_bytes()
     observed_sha256 = hashlib.sha256(raw).hexdigest()
     observed_size = len(raw)
-    if observed_sha256 != expected_sha256:
-        raise ResearchJobRunnerError(
-            "local dataset bytes do not match the runner-declared SHA-256"
-        )
-    if observed_sha256 != artifact.content_sha256:
-        raise ResearchJobRunnerError(
-            "local dataset bytes do not match the registered artifact SHA-256"
-        )
-    if observed_size != artifact.byte_size:
-        raise ResearchJobRunnerError(
-            "local dataset byte size does not match the registered artifact"
-        )
+    if verify_identity:
+        if observed_sha256 != expected_sha256:
+            raise ResearchJobRunnerError(
+                "local dataset bytes do not match the runner-declared SHA-256"
+            )
+        if observed_sha256 != artifact.content_sha256:
+            raise ResearchJobRunnerError(
+                "local dataset bytes do not match the registered artifact SHA-256"
+            )
+        if observed_size != artifact.byte_size:
+            raise ResearchJobRunnerError(
+                "local dataset byte size does not match the registered artifact"
+            )
     return observed_sha256, observed_size
 
 
@@ -155,7 +158,7 @@ class ResearchJobRunner:
             raise ResearchJobRunnerError("readiness snapshot is invalid") from exc
 
         from .synthetic import SyntheticExecutionAdapter
-        is_synthetic = type(adapter) is SyntheticExecutionAdapter
+        is_synthetic = isinstance(adapter, SyntheticExecutionAdapter)
         if is_synthetic and (
             purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
             or spec.dataset.role is not DatasetRole.DEVELOPMENT
@@ -201,6 +204,10 @@ class ResearchJobRunner:
         try:
             receipt = adapter.execute(spec)
             validate_adapter_output(spec=spec, receipt=receipt)
+            if is_synthetic and type(adapter) is not SyntheticExecutionAdapter:
+                raise ResearchJobRunnerError(
+                    "execution adapter failed: synthetic adapter subclasses are not trusted"
+                )
             from .synthetic import SyntheticExecutionAdapter
             if receipt.receipt_schema_version != 2:
                 raise ResearchJobRunnerError(
@@ -213,7 +220,10 @@ class ResearchJobRunner:
                     )
             else:
                 post_execution_observation = _observe_local_dataset(
-                    adapter, observed_artifact, observed_content_sha256
+                    adapter,
+                    observed_artifact,
+                    observed_content_sha256,
+                    verify_identity=False,
                 )
                 if post_execution_observation != pre_execution_observation:
                     raise ResearchJobRunnerError(

@@ -37,6 +37,10 @@ class FakeAdapter:
     def __init__(self, dataset_path: Path):
         self.dataset_path = dataset_path
 
+    @property
+    def dataset_artifact_path(self) -> Path:
+        return self.dataset_path
+
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
         metrics = ResearchMetrics(
             trades=2,

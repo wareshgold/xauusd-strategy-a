@@ -351,7 +351,7 @@ def test_runner_rejects_dataset_mutated_during_adapter_execution():
             return receipt
 
     try:
-        with pytest.raises(ResearchJobRunnerError, match="changed during adapter execution"):
+        with pytest.raises(ResearchJobRunnerError, match="local dataset artifact changed during adapter execution"):
             run_job(runner, job, spec, MutatingAdapter())
     finally:
         DATASET_PATH.write_bytes(DATASET_BYTES)
