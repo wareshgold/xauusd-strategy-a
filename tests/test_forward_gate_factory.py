@@ -128,6 +128,11 @@ def _fixture(tmp_path: Path):
 
     class Adapter:
         engine_revision = "HOLDOUT-TEST"
+
+        @property
+        def dataset_artifact_path(self):
+            return path
+
         def execute(self, spec):
             observed_sha = hashlib.sha256(path.read_bytes()).hexdigest()
             return build_execution_receipt(
