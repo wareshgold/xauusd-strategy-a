@@ -36,7 +36,8 @@ def test_synthetic_e2e_persists_real_lifecycle_and_isolated_dashboard_snapshot(t
     ]
     assert report["worker_state"] == "COMPLETED"
     assert report["worker_output_artifact"] == report["evidence_id"]
-    assert report["dataset_content_sha256"]
+    assert report["synthetic_fixture_content_sha256"]
+    assert "dataset_content_sha256" not in report
     assert status["workers"][0]["job_id"] == report["run_id"]
     assert status["workers"][0]["state"] == "COMPLETED"
     assert audit["status"] == "CONSISTENT"

@@ -1,9 +1,11 @@
 import hashlib
+from pathlib import Path
+import tempfile
 
 import pytest
 
 from strategy_factory.adapter import build_execution_receipt
-from strategy_factory.datasets import DatasetRegistry, fingerprint_dataset
+from strategy_factory.datasets import DatasetArtifact, DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
@@ -21,6 +23,16 @@ from strategy_factory.usage import DatasetUsageLedger
 
 DATASET_BYTES = b"controlled dataset bytes for receipt contract tests"
 DATASET_SHA256 = hashlib.sha256(DATASET_BYTES).hexdigest()
+
+DATASET_PATH = Path(tempfile.gettempdir()) / "sp2l_factory_runner_dataset_contract_test.bin"
+DATASET_PATH.write_bytes(DATASET_BYTES)
+DATASET_ARTIFACT = DatasetArtifact(
+    artifact_id="TEST-DATASET-ARTIFACT-1",
+    location=str(DATASET_PATH.resolve()),
+    content_sha256=DATASET_SHA256,
+    byte_size=len(DATASET_BYTES),
+    format="binary",
+)
 
 METRICS = ResearchMetrics(
     10, 10, 6, 4, 0, 0.6, 2.5, 1.4, 1.2, 6.0, -3.5
@@ -56,7 +68,7 @@ def make_spec_and_job():
 def make_runner():
     registry = DatasetRegistry()
     spec, _ = make_spec_and_job()
-    registry.register(spec.dataset, content_fingerprint=DATASET_SHA256)
+    registry.register(spec.dataset, content_fingerprint=DATASET_SHA256, artifact=DATASET_ARTIFACT)
     usage = DatasetUsageLedger(registry)
     runs = ResearchRunLedger(registry, usage)
     evidence = EvidenceLedger(runs)
@@ -95,11 +107,16 @@ def run_job(runner, job, spec, adapter):
         adapter=adapter,
         snapshot=make_snapshot(spec),
         observed_content_sha256=DATASET_SHA256,
+        observed_artifact=DATASET_ARTIFACT,
     )
 
 
 class FakeAdapter:
     engine_revision = "ENGINE-1"
+
+    @property
+    def dataset_artifact_path(self):
+        return DATASET_PATH
 
     def __init__(self, *, metrics=METRICS, execution_id="EX-1"):
         self.metrics = metrics
@@ -306,3 +323,49 @@ def test_runner_rejects_dataset_digest_mismatch():
             )
     with pytest.raises(ResearchJobRunnerError, match="dataset_content_sha256"):
         run_job(runner, job, spec, MismatchedAdapter())
+
+
+def test_runner_rejects_adapter_without_local_dataset_path():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+    delegate = FakeAdapter()
+
+    class AdapterWithoutPath:
+        engine_revision = delegate.engine_revision
+
+        def execute(self, source_spec):
+            return delegate.execute(source_spec)
+
+    with pytest.raises(ResearchJobRunnerError, match="must expose dataset_artifact_path"):
+        run_job(runner, job, spec, AdapterWithoutPath())
+
+
+def test_runner_rejects_dataset_mutated_during_adapter_execution():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+
+    class MutatingAdapter(FakeAdapter):
+        def execute(self, source_spec):
+            receipt = super().execute(source_spec)
+            DATASET_PATH.write_bytes(b"mutated during execution")
+            return receipt
+
+    try:
+        with pytest.raises(ResearchJobRunnerError, match="changed during adapter execution"):
+            run_job(runner, job, spec, MutatingAdapter())
+    finally:
+        DATASET_PATH.write_bytes(DATASET_BYTES)
+
+
+def test_runner_rejects_artifact_path_mismatch():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+
+    class WrongPathAdapter(FakeAdapter):
+        @property
+        def dataset_artifact_path(self):
+            return DATASET_PATH.parent / "not-the-registered-dataset.bin"
+
+    with pytest.raises(ResearchJobRunnerError, match="must resolve to existing local files"):
+        run_job(runner, job, spec, WrongPathAdapter())
+

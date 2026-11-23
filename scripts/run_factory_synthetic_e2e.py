@@ -214,7 +214,7 @@ def run_synthetic_e2e(
         "strategy_revision": spec.strategy_revision,
         "dataset_id": spec.dataset.dataset_id,
         "dataset_fingerprint": dataset_fingerprint,
-        "dataset_content_sha256": content_sha256,
+        "synthetic_fixture_content_sha256": content_sha256,
         "result_accepted": bool(result.get("accepted")),
         "evidence_id": record.evidence_id,
         "provenance_status": record.provenance_status.value,
