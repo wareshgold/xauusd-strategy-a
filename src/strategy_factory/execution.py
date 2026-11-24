@@ -13,6 +13,36 @@ class ExecutionContractError(ValueError):
 
 
 @dataclass(frozen=True)
+class ExecutionArtifact:
+    """A local artifact produced by an execution and independently observed by the Runner."""
+
+    artifact_id: str
+    artifact_role: str
+    local_path: str
+    content_sha256: str
+    byte_size: int
+
+    def validate(self) -> None:
+        if not self.artifact_id or not self.artifact_role or not self.local_path:
+            raise ExecutionContractError("execution output artifact identity is incomplete")
+        if (not isinstance(self.content_sha256, str) or len(self.content_sha256) != 64 or
+                any(ch not in "0123456789abcdef" for ch in self.content_sha256)):
+            raise ExecutionContractError("execution output artifact SHA-256 is invalid")
+        if isinstance(self.byte_size, bool) or not isinstance(self.byte_size, int) or self.byte_size < 0:
+            raise ExecutionContractError("execution output artifact byte size is invalid")
+
+    def as_dict(self) -> dict[str, Any]:
+        self.validate()
+        return {
+            "artifact_id": self.artifact_id,
+            "artifact_role": self.artifact_role,
+            "local_path": self.local_path,
+            "content_sha256": self.content_sha256,
+            "byte_size": self.byte_size,
+        }
+
+
+@dataclass(frozen=True)
 class ExecutionReceipt:
     """Immutable declaration of how one historical test was actually executed.
 
@@ -31,6 +61,7 @@ class ExecutionReceipt:
     metrics: ResearchMetrics
     receipt_schema_version: int = 1
     dataset_content_sha256: str | None = None
+    output_artifact: ExecutionArtifact | None = None
 
     def validate(self) -> None:
         required = (
@@ -52,6 +83,10 @@ class ExecutionReceipt:
             digest = self.dataset_content_sha256
             if not isinstance(digest, str) or len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
                 raise ExecutionContractError("dataset_content_sha256 must be a lowercase SHA-256 hex digest or null")
+        if self.output_artifact is not None:
+            if not isinstance(self.output_artifact, ExecutionArtifact):
+                raise ExecutionContractError("execution output artifact must use the typed artifact contract")
+            self.output_artifact.validate()
         if not self.completed:
             raise ExecutionContractError("incomplete execution cannot produce accepted evidence")
         self.metrics.validate()
@@ -71,6 +106,8 @@ class ExecutionReceipt:
         }
         if self.receipt_schema_version == 2:
             payload["dataset_content_sha256"] = self.dataset_content_sha256
+        if self.output_artifact is not None:
+            payload["output_artifact"] = self.output_artifact.as_dict()
         return payload
 
 
