@@ -108,6 +108,26 @@ class StabilityFactory:
             dataset_artifact_id=context.dataset_artifact_id,
         )
 
+        if context.source_record.output_artifact_id is None:
+            raise StabilityFactoryError("upstream Research Record has no bound Discovery output artifact")
+        if context.source_record.output_artifact_role != "DISCOVERY_MATRIX_JSON":
+            raise StabilityFactoryError("upstream output artifact is not a Discovery matrix JSON")
+        if context.handoff.source_output_artifact_id != context.source_record.output_artifact_id:
+            raise StabilityFactoryError("handoff Discovery artifact id does not match upstream Research Record")
+        if context.handoff.source_output_artifact_sha256 != context.source_record.output_artifact_sha256:
+            raise StabilityFactoryError("handoff Discovery artifact SHA does not match upstream Research Record")
+        try:
+            discovery_path = Path(context.discovery_json_path).expanduser().resolve(strict=True)
+        except (OSError, TypeError, ValueError) as exc:
+            raise StabilityFactoryError("Discovery JSON must be an existing local file") from exc
+        if str(discovery_path) != context.source_record.output_artifact_path:
+            raise StabilityFactoryError("Stability Discovery JSON path does not match upstream Research Record")
+        discovery_raw = discovery_path.read_bytes()
+        if hashlib.sha256(discovery_raw).hexdigest() != context.source_record.output_artifact_sha256:
+            raise StabilityFactoryError("Stability Discovery JSON SHA does not match upstream Research Record")
+        if len(discovery_raw) != context.source_record.output_artifact_byte_size:
+            raise StabilityFactoryError("Stability Discovery JSON size does not match upstream Research Record")
+
         artifact_path = Path(context.dataset_artifact_path)
         if not artifact_path.is_file():
             raise StabilityFactoryError(f"dataset artifact not found: {artifact_path}")
@@ -146,6 +166,9 @@ class StabilityFactory:
             dataset_artifact_path=artifact_path,
             expected_dataset_content_sha256=context.dataset_content_sha256,
             expected_dataset_artifact_id=context.dataset_artifact_id,
+            expected_discovery_artifact_id=context.source_record.output_artifact_id,
+            expected_discovery_content_sha256=context.source_record.output_artifact_sha256,
+            expected_discovery_byte_size=context.source_record.output_artifact_byte_size,
             variant_name=context.variant_name,
             segments=context.segments,
             python_executable=context.python_executable,
