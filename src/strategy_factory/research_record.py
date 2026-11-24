@@ -108,6 +108,8 @@ class ResearchRecord:
             data = dict(values)
             data["provenance_status"] = ResearchProvenanceStatus(data["provenance_status"])
             data["provenance_reasons"] = tuple(data["provenance_reasons"])
+            if "input_artifacts" in data:
+                data["input_artifacts"] = tuple(ExecutionArtifact(**item) for item in data["input_artifacts"])
             record = cls(**data)
         except (KeyError, TypeError, ValueError) as exc:
             raise ResearchRecordError("invalid serialized research record") from exc
