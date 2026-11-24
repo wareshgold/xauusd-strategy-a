@@ -81,7 +81,7 @@ class ExecutionReceipt:
             raise ExecutionContractError("receipt_schema_version must be 1, 2, or 3")
         if self.receipt_schema_version == 1 and self.dataset_content_sha256 is not None:
             raise ExecutionContractError("legacy receipt schema v1 cannot carry dataset_content_sha256")
-        if self.receipt_schema_version == 2 and self.dataset_content_sha256 is not None:
+        if self.receipt_schema_version in {2, 3} and self.dataset_content_sha256 is not None:
             digest = self.dataset_content_sha256
             if not isinstance(digest, str) or len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
                 raise ExecutionContractError("dataset_content_sha256 must be a lowercase SHA-256 hex digest or null")
@@ -113,7 +113,7 @@ class ExecutionReceipt:
             "metrics": self.metrics.as_dict(),
             "receipt_schema_version": self.receipt_schema_version,
         }
-        if self.receipt_schema_version == 2:
+        if self.receipt_schema_version in {2, 3}:
             payload["dataset_content_sha256"] = self.dataset_content_sha256
         if self.receipt_schema_version == 3:
             payload["output_artifact"] = self.output_artifact.as_dict()
