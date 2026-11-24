@@ -159,7 +159,11 @@ class ResearchJobRunner:
 
         from .synthetic import SyntheticExecutionAdapter
         is_synthetic = isinstance(adapter, SyntheticExecutionAdapter)
-        if type(adapter) is SyntheticExecutionAdapter and (
+        if is_synthetic and type(adapter) is not SyntheticExecutionAdapter:
+            raise ResearchJobRunnerError(
+                "synthetic adapter subclasses are not trusted"
+            )
+        if is_synthetic and (
             purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
             or spec.dataset.role is not DatasetRole.DEVELOPMENT
         ):
@@ -202,10 +206,6 @@ class ResearchJobRunner:
             ) from exc
 
         try:
-            if is_synthetic and type(adapter) is not SyntheticExecutionAdapter:
-                raise ResearchJobRunnerError(
-                    "execution adapter failed: synthetic adapter subclasses are not trusted"
-                )
             receipt = adapter.execute(spec)
             validate_adapter_output(spec=spec, receipt=receipt)
             from .synthetic import SyntheticExecutionAdapter
