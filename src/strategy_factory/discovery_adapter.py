@@ -62,6 +62,29 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError(f"M1 dataset artifact not found: {path}")
         return hashlib.sha256(path.read_bytes()).hexdigest()
 
+    @property
+    def input_artifacts(self) -> tuple[ExecutionArtifact, ...]:
+        """Expose the frozen V3 entry population as an independently observed secondary input."""
+        if self.entry_population_artifact_path is None:
+            return ()
+        if not self.entry_population_sha256:
+            raise DiscoveryAdapterError("frozen entry population SHA-256 is required")
+        try:
+            path = Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)
+            raw = path.read_bytes()
+        except OSError as exc:
+            raise DiscoveryAdapterError("frozen entry population must be an existing local file") from exc
+        digest = hashlib.sha256(raw).hexdigest()
+        if digest != self.entry_population_sha256.lower():
+            raise DiscoveryAdapterError("frozen entry population SHA-256 does not match its declared identity")
+        return (ExecutionArtifact(
+            artifact_id=f"FROZEN-V3-ENTRY-CSV-{digest}",
+            artifact_role="FROZEN_V3_ENTRY_CSV",
+            local_path=str(path),
+            content_sha256=digest,
+            byte_size=len(raw),
+        ),)
+
     def _command(self) -> list[str]:
         command = [
             self.python_executable,
@@ -245,4 +268,5 @@ class DiscoveryMatrixAdapter:
                 content_sha256=observed_matrix_sha256,
                 byte_size=len(matrix_raw),
             ),
+            input_artifacts=self.input_artifacts,
         )
