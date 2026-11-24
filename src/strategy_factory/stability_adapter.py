@@ -46,7 +46,7 @@ class StabilityMatrixAdapter:
             raise StabilityAdapterError(f"dataset artifact not found: {path}")
         return hashlib.sha256(path.read_bytes()).hexdigest()
 
-    def _validate_inputs(self) -> tuple[dict, str, str]:
+    def _validate_inputs(self) -> tuple[dict, str, str, Path]:
         if not self.script_path.is_file():
             raise StabilityAdapterError(f"stability script not found: {self.script_path}")
         if not self.discovery_json_path.is_file():
@@ -90,11 +90,11 @@ class StabilityMatrixAdapter:
             raise StabilityAdapterError("variant_name is required")
         if self.segments < 2:
             raise StabilityAdapterError("segments must be >= 2")
-        return payload, actual_sha, discovery_sha
+        return payload, actual_sha, discovery_sha, discovery_path
 
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
         spec.validate()
-        payload, dataset_sha, discovery_sha = self._validate_inputs()
+        payload, dataset_sha, discovery_sha, discovery_path = self._validate_inputs()
 
         completed = subprocess.run(
             [
@@ -115,7 +115,7 @@ class StabilityMatrixAdapter:
                 "Stability Matrix failed: "
                 + (completed.stderr.strip() or completed.stdout.strip())
             )
-        post_discovery_raw = Path(self.discovery_json_path).read_bytes()
+        post_discovery_raw = discovery_path.read_bytes()
         if (hashlib.sha256(post_discovery_raw).hexdigest() != discovery_sha or
                 len(post_discovery_raw) != self.expected_discovery_byte_size):
             raise StabilityAdapterError("Discovery JSON changed while Stability was running")
@@ -191,7 +191,7 @@ class StabilityMatrixAdapter:
 
         input_payload = {
             "spec": spec.as_dict(),
-            "discovery_json": str(self.discovery_json_path),
+            "discovery_json": str(discovery_path),
             "discovery_artifact_id": self.expected_discovery_artifact_id,
             "discovery_sha256": discovery_sha,
             "discovery_byte_size": self.expected_discovery_byte_size,
