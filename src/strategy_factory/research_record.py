@@ -212,6 +212,11 @@ class ResearchRecord:
                 cls._payload(binding_payload)
             ).hexdigest()
 
+        if dataset_binding_fingerprint and record_revision not in (None, "RESEARCH-RECORD-2"):
+            raise ResearchRecordError("dataset-bound records require RESEARCH-RECORD-2")
+        if not dataset_binding_fingerprint and record_revision == "RESEARCH-RECORD-2":
+            raise ResearchRecordError("RESEARCH-RECORD-2 requires a complete dataset binding")
+
         record = cls(
             record_revision=record_revision or ("RESEARCH-RECORD-2" if dataset_binding_fingerprint else "RESEARCH-RECORD-1"),
             run_id=run.run_id,
