@@ -254,10 +254,12 @@ class ResearchJobRunner:
             receipt = _observe_execution_output_artifact(receipt)
             validate_adapter_output(spec=spec, receipt=receipt)
             from .synthetic import SyntheticExecutionAdapter
-            if receipt.receipt_schema_version != 2:
+            if receipt.receipt_schema_version not in {2, 3}:
                 raise ResearchJobRunnerError(
                     "LEGACY_UNVERIFIED: schema-v1 receipts cannot be promoted to dataset-verified evidence"
                 )
+            if receipt.receipt_schema_version == 3 and receipt.output_artifact is None:
+                raise ResearchJobRunnerError("schema-v3 receipt requires a produced output artifact")
             if is_synthetic:
                 if receipt.dataset_content_sha256 is not None:
                     raise ResearchJobRunnerError(
@@ -267,7 +269,7 @@ class ResearchJobRunner:
                 raise ResearchJobRunnerError(
                     "execution receipt dataset_content_sha256 does not match runner-observed dataset bytes"
                 )
-            expected_result_revision = "RECEIPT_METRICS_V2"
+            expected_result_revision = f"RECEIPT_METRICS_V{receipt.receipt_schema_version}"
             if result_revision is not None and result_revision != expected_result_revision:
                 raise ResearchJobRunnerError(
                     "result_revision does not match the execution receipt schema"
