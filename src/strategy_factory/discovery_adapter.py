@@ -236,7 +236,7 @@ class DiscoveryMatrixAdapter:
             engine_revision=self.engine_revision,
             input_fingerprint=input_fingerprint,
             metrics=metrics,
-            receipt_schema_version=2,
+            receipt_schema_version=3,
             dataset_content_sha256=expected_dataset_sha256,
             output_artifact=ExecutionArtifact(
                 artifact_id=f"DISCOVERY-MATRIX-{spec.test_id}-{self.variant_name}",
