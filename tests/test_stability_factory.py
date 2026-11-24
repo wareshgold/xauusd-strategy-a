@@ -167,6 +167,22 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
     assert handoff.source_output_artifact_id == upstream_result.record.output_artifact_id
     assert handoff.source_output_artifact_sha256 == upstream_result.record.output_artifact_sha256
     assert handoff.source_output_artifact_byte_size == upstream_result.record.output_artifact_byte_size
+    from strategy_factory.research_record import ResearchRecordError
+    with pytest.raises(ResearchRecordError, match="output artifact binding fingerprint mismatch"):
+        replace(upstream_result.record, output_artifact_sha256="f" * 64).validate()
+
+    from strategy_factory.handoff import ResearchHandoffError, validate_evidence_bound_handoff
+    bad_handoff = replace(handoff, source_output_artifact_sha256="0" * 64, fingerprint="")
+    bad_fingerprint = hashlib.sha256(json.dumps(
+        bad_handoff.as_dict(include_fingerprint=False), sort_keys=True,
+        separators=(",", ":"), ensure_ascii=True,
+    ).encode("utf-8")).hexdigest()
+    bad_handoff = replace(bad_handoff, fingerprint=bad_fingerprint)
+    with pytest.raises(ResearchHandoffError, match="output artifact SHA does not match research record"):
+        validate_evidence_bound_handoff(
+            handoff=bad_handoff, record=upstream_result.record,
+            source_event=events.for_job(job.job_id)[0],
+        )
 
     # The adapter is monkeypatched: no MT5 path or exporter is available here.
     class FakeStabilityAdapter:
