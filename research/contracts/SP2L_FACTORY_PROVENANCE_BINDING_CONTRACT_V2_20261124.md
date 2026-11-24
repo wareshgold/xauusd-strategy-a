@@ -1,6 +1,6 @@
 # SP2L Factory — Provenance Binding Contract v2
 
-**Status:** DESIGN BASELINE — PARTIALLY IMPLEMENTED (Research Record v2 only)  
+**Status:** DESIGN BASELINE — PARTIALLY IMPLEMENTED (Research Record v2 + Discovery output artifact lineage)  
 **Date:** 2026-11-24  
 **Repository baseline:** `978f56f74060938b828c08e09d9455cca6be55e0`  
 **Branch:** `research/provenance-binding-v2-contract-20261124`  
@@ -231,7 +231,24 @@ The Research Record should carry verifiable references to:
 
 Adding copied fields is not sufficient: every reference must be resolved and compared with its authoritative source object.
 
-### 4.6 Lifecycle Event
+### 4.6 Produced and secondary artifacts
+
+A produced local artifact may become a secondary input to a downstream Factory station. Its identity must not be inferred from a filename or supplied SHA alone.
+
+The implemented bounded contract uses a typed execution output artifact containing:
+
+- Stable artifact ID and role.
+- Local path.
+- Content SHA-256.
+- Byte size.
+
+The adapter declares the produced artifact in its Receipt. After execution, the Runner independently resolves and observes the local file and rejects a missing file, digest mismatch, or byte-size mismatch. The normalized observation is carried into Evidence and Research Record v2. The Record fingerprint binds the output artifact identity to the upstream Dataset Binding. Handoff copies and validates the source output artifact ID, role, digest, and size against that Record.
+
+For Discovery → Stability, the source output is the Discovery Matrix JSON. Stability requires the exact source Record and Handoff, checks the resolved input path and byte identity before execution, and checks the same SHA and byte size again after the Stability subprocess completes. The exact observed Discovery SHA, artifact ID, and size are included in the Stability execution input fingerprint. Stability's own matrix JSON is also declared as a produced artifact for the next station.
+
+This is local-file provenance, not cryptographic proof that arbitrary Adapter code consumed only the declared bytes. The Adapter remains a trusted-code boundary. Modify-and-restore between observations and unobserved external inputs remain limitations. Secondary inputs beyond the explicitly bound Discovery JSON require their own declared bindings; they are not implicitly covered.
+
+### 4.7 Lifecycle Event
 
 A valid completion event must be bound to the same Job, Run, Research Record, station, and output artifact.
 
@@ -420,7 +437,7 @@ The source review at the baseline identifies the following areas for targeted en
 2. **Partially addressed on this branch:** for Research Record v2, Handoff construction inherits Dataset SHA and Artifact ID from the immutable Research Record, rejects conflicting caller declarations, and validates equality against the source record. Route-specific destination Dataset policy still requires a full audit.
 3. Freeze authority is not represented by a separately verified human-authorized Freeze Record in the inspected Research Record model.
 4. Dataset Registry and Research Record Ledger are in-memory; durability is not established.
-5. Stability consumes a secondary Discovery JSON input that is not covered by the single-artifact observation contract.
+5. **Partially addressed on this branch:** Discovery Matrix JSON is now declared as a typed produced artifact, Runner-observed after execution, recorded in Research Record v2, carried through Handoff, and checked before/after Stability. Other secondary inputs and a complete route-wide artifact policy remain open.
 6. Holdout prior-use/role/purpose enforcement and temporal independence require a complete call-path audit before any code change.
 7. Failure and retry semantics for Run/Usage/Lifecycle records require explicit source-level mapping.
 8. Evidence integrity and duplicate/version classification must remain separate from Research Run and Dataset Binding lineage; do not duplicate or override the Evidence Integrity Monitor's responsibility.
@@ -480,18 +497,21 @@ This design record is ready for implementation review only when:
 
 ## 17. Implementation status at branch checkpoint
 
-The first bounded implementation package has been applied on this branch:
+The bounded implementation packages applied on this branch are:
 
 - `ResearchRecord` supports a versioned `RESEARCH-RECORD-2` representation.
 - Dataset-backed real executions pass the Runner-observed artifact, content SHA-256, and Receipt into Research Record construction.
 - Record v2 stores the DatasetArtifact ID, observed SHA-256, byte size, Receipt fingerprint, and Dataset Binding fingerprint.
 - The Dataset Binding fingerprint is derived from a versioned payload containing Dataset ID, role, data revision, Dataset fingerprint, Artifact ID, content SHA-256, and byte size.
 - Handoff construction for v2 records inherits the source Dataset SHA and Artifact ID and rejects any conflicting caller-supplied values; the shared validator checks these fields against the source Research Record.
+- Execution Receipts may declare a typed local output artifact. The Runner independently observes its SHA-256 and byte size after execution and normalizes its resolved path before Evidence and Research Record construction.
+- Research Record v2 binds the produced artifact ID, role, resolved path, SHA-256, and byte size to the Dataset Binding fingerprint. Handoff carries the artifact ID, role, SHA-256, and byte size and validates them against the source Record.
+- Discovery Matrix JSON is now the explicit produced artifact for Discovery. Stability requires that exact path and identity, verifies it before execution and again after subprocess completion, and includes the observed identity in its input fingerprint. Stability Matrix JSON is declared as its own produced artifact.
 - Synthetic infrastructure records without a real observed artifact remain on the legacy Research Record v1 representation; synthetic fixture hashes are not relabeled as real Dataset observations.
-- Focused tests were added for v2 fields, tampering detection, and serialized round-trip.
+- Focused tests cover v2 fields, dataset and output-artifact tampering, serialization round-trip, Handoff inheritance, Discovery input drift before and during Stability execution, and output artifact observation.
 
 **Validation state at commit `a9aea26dec1a3c6428faf26a95682bc0417df60b`:** all four remote workflows completed successfully: Factory Research Tests; Full Repository Test Suite (`911 passed in 7.24s`); Factory Journal Lock Cross-Platform Tests (Windows and Ubuntu); and SP2L forensic deterministic checks. No local test execution is claimed.
 
-**Not yet implemented:** route-specific Dataset transition policy enforcement beyond current station checks, human-authorized Freeze Record, Holdout independence gates, secondary-input observation, and durable ledger storage.
+**Not yet implemented:** route-specific Dataset transition policy enforcement beyond current station checks, human-authorized Freeze Record, Holdout independence gates, bindings for secondary inputs other than the Discovery JSON path described above, and durable ledger storage.
 
 **Current status: PARTIAL IMPLEMENTATION. NOT CANONICAL. NOT PRODUCTION AUTHORITY.**
