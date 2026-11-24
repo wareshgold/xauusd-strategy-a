@@ -10,6 +10,7 @@ from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner, ResearchJobRunnerError
+from strategy_factory.research_record import ResearchRecordError
 from strategy_factory.snapshot import ReadinessSnapshot
 from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
 from strategy_factory.test_contract import (
@@ -457,7 +458,7 @@ def test_runner_research_record_v2_rejects_dataset_binding_tampering(dataset_fix
         make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
     )
 
-    with pytest.raises(Exception, match="dataset binding fingerprint mismatch"):
+    with pytest.raises(ResearchRecordError, match="dataset binding fingerprint mismatch"):
         replace(result.record, dataset_content_sha256="b" * 64).validate()
 
 
