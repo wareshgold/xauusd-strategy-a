@@ -24,6 +24,7 @@ from strategy_factory.usage import DatasetUsageLedger
 DATASET_BYTES = b"controlled dataset bytes for receipt contract tests"
 DATASET_SHA256 = hashlib.sha256(DATASET_BYTES).hexdigest()
 
+
 @pytest.fixture
 def dataset_fixture(tmp_path):
     dataset_path = tmp_path / "dataset.bin"
@@ -36,6 +37,7 @@ def dataset_fixture(tmp_path):
         format="binary",
     )
     return dataset_path, artifact
+
 
 METRICS = ResearchMetrics(
     10, 10, 6, 4, 0, 0.6, 2.5, 1.4, 1.2, 6.0, -3.5
@@ -387,6 +389,7 @@ def test_runner_rejects_artifact_path_mismatch(dataset_fixture):
 
     with pytest.raises(ResearchJobRunnerError, match="must resolve to existing local files"):
         run_job(runner, job, spec, WrongPathAdapter(dataset_path), artifact)
+
 
 def test_runner_rejects_synthetic_adapter_subclass_before_ledger_writes(dataset_fixture):
     dataset_path, artifact = dataset_fixture
