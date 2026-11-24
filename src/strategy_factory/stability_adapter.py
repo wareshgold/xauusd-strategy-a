@@ -200,9 +200,7 @@ class StabilityMatrixAdapter:
             "variant_name": self.variant_name,
             "segments": self.segments,
             "stability_json": str(result_path),
-            "stability_sha256": hashlib.sha256(
-                result_path.read_bytes()
-            ).hexdigest(),
+            "stability_sha256": result_sha256,
         }
         input_fingerprint = hashlib.sha256(
             json.dumps(
