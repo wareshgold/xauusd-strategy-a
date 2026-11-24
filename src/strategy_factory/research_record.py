@@ -197,6 +197,15 @@ class ResearchRecord:
                 raise ResearchRecordError("dataset binding SHA does not match observed artifact")
             if receipt.receipt_schema_version != 2 or receipt.dataset_content_sha256 != observed_content_sha256:
                 raise ResearchRecordError("dataset binding receipt does not match observed SHA-256")
+            if (receipt.strategy_revision != run.strategy_revision or
+                    receipt.execution_semantics is not run.execution_semantics):
+                raise ResearchRecordError("dataset binding receipt does not match research run")
+            if evidence.result.get("execution_id") != receipt.execution_id:
+                raise ResearchRecordError("dataset binding receipt does not match research evidence")
+            if evidence.result.get("dataset_content_sha256") != observed_content_sha256:
+                raise ResearchRecordError("dataset binding SHA does not match research evidence")
+            if evidence.result.get("receipt_schema_version") != receipt.receipt_schema_version:
+                raise ResearchRecordError("dataset binding receipt schema does not match research evidence")
             artifact_id = observed_artifact.artifact_id
             byte_size = observed_artifact.byte_size
             content_sha256 = observed_content_sha256
