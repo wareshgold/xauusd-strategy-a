@@ -98,6 +98,9 @@ def validate_evidence_acceptance(
         if receipt.receipt_schema_version == 3:
             if evidence.result.get("output_artifact") != receipt.output_artifact.as_dict():
                 raise ResearchRunError("schema-v3 evidence output artifact does not match execution receipt")
+            expected_inputs = [artifact.as_dict() for artifact in receipt.input_artifacts]
+            if evidence.result.get("input_artifacts", []) != expected_inputs:
+                raise ResearchRunError("schema-v3 evidence input artifacts do not match execution receipt")
 
 
 def evidence_acceptance_gate(
