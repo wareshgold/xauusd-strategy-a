@@ -476,3 +476,63 @@ def test_runner_research_record_v2_round_trips_serialized_binding(dataset_fixtur
     assert restored.dataset_content_sha256 == DATASET_SHA256
     assert restored.dataset_artifact_id == artifact.artifact_id
     assert restored.dataset_byte_size == len(DATASET_BYTES)
+
+
+def _completed_event_for_record(result, job):
+    from strategy_factory.job_events import FactoryJobEventLedger
+
+    events = FactoryJobEventLedger(path=None)
+    events.append(
+        event_type="COMPLETED",
+        job_id=result.record.run_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+        output_artifact=result.record.evidence_id,
+        research_run_fingerprint=result.record.run_fingerprint,
+    )
+    return events
+
+
+def test_handoff_v2_inherits_dataset_binding_from_research_record(dataset_fixture):
+    from strategy_factory.handoff import build_research_handoff
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+    events = _completed_event_for_record(result, job)
+
+    handoff = build_research_handoff(
+        events=events,
+        job_id=result.record.run_id,
+        source_station="discovery",
+        destination_station="stability",
+        record=result.record,
+    )
+
+    assert handoff.dataset_content_sha256 == result.record.dataset_content_sha256
+    assert handoff.dataset_artifact_id == result.record.dataset_artifact_id
+    handoff.validate()
+
+
+def test_handoff_v2_rejects_dataset_binding_substitution(dataset_fixture):
+    from strategy_factory.handoff import ResearchHandoffError, build_research_handoff
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+    events = _completed_event_for_record(result, job)
+
+    with pytest.raises(ResearchHandoffError, match="conflicts with research record binding"):
+        build_research_handoff(
+            events=events,
+            job_id=result.record.run_id,
+            source_station="discovery",
+            destination_station="stability",
+            record=result.record,
+            dataset_content_sha256="b" * 64,
+        )
