@@ -49,6 +49,10 @@ class ResearchHandoff:
     source_event_fingerprint: str
     detail: str
     fingerprint: str
+    source_output_artifact_id: str | None = None
+    source_output_artifact_role: str | None = None
+    source_output_artifact_sha256: str | None = None
+    source_output_artifact_byte_size: int | None = None
 
     def as_dict(self, *, include_fingerprint: bool = True) -> dict[str, Any]:
         value = {
@@ -64,6 +68,13 @@ class ResearchHandoff:
             "source_event_fingerprint": self.source_event_fingerprint,
             "detail": self.detail,
         }
+        if self.source_output_artifact_id is not None:
+            value.update({
+                "source_output_artifact_id": self.source_output_artifact_id,
+                "source_output_artifact_role": self.source_output_artifact_role,
+                "source_output_artifact_sha256": self.source_output_artifact_sha256,
+                "source_output_artifact_byte_size": self.source_output_artifact_byte_size,
+            })
         if include_fingerprint:
             value["fingerprint"] = self.fingerprint
         return value
@@ -75,6 +86,20 @@ class ResearchHandoff:
             raise ResearchHandoffError("research handoff route is not declared")
         if len(self.job_fingerprint) != 64 or len(self.source_event_fingerprint) != 64:
             raise ResearchHandoffError("handoff fingerprints must be SHA-256")
+        output_values = (self.source_output_artifact_id, self.source_output_artifact_role,
+                         self.source_output_artifact_sha256, self.source_output_artifact_byte_size)
+        if any(value is not None for value in output_values):
+            if any(value is None for value in output_values):
+                raise ResearchHandoffError("handoff source output artifact binding is incomplete")
+            if not self.source_output_artifact_id or not self.source_output_artifact_role:
+                raise ResearchHandoffError("handoff source output artifact identity is invalid")
+            if (not isinstance(self.source_output_artifact_sha256, str) or
+                    len(self.source_output_artifact_sha256) != 64 or
+                    any(ch not in "0123456789abcdef" for ch in self.source_output_artifact_sha256)):
+                raise ResearchHandoffError("handoff source output artifact SHA-256 is invalid")
+            if (isinstance(self.source_output_artifact_byte_size, bool) or
+                    not isinstance(self.source_output_artifact_byte_size, int) or self.source_output_artifact_byte_size < 0):
+                raise ResearchHandoffError("handoff source output artifact byte size is invalid")
         expected = hashlib.sha256(
             _canonical(self.as_dict(include_fingerprint=False)).encode("utf-8")
         ).hexdigest()
@@ -94,6 +119,20 @@ def validate_evidence_bound_handoff(*, handoff: ResearchHandoff, record: Researc
         raise ResearchHandoffError("source event is not bound to research run")
     if handoff.output_artifact != record.evidence_id:
         raise ResearchHandoffError("handoff artifact does not match research evidence_id")
+    if record.output_artifact_id is not None:
+        if handoff.source_output_artifact_id != record.output_artifact_id:
+            raise ResearchHandoffError("handoff output artifact id does not match research record")
+        if handoff.source_output_artifact_role != record.output_artifact_role:
+            raise ResearchHandoffError("handoff output artifact role does not match research record")
+        if handoff.source_output_artifact_sha256 != record.output_artifact_sha256:
+            raise ResearchHandoffError("handoff output artifact SHA does not match research record")
+        if handoff.source_output_artifact_byte_size != record.output_artifact_byte_size:
+            raise ResearchHandoffError("handoff output artifact size does not match research record")
+    elif any(value is not None for value in (
+        handoff.source_output_artifact_id, handoff.source_output_artifact_role,
+        handoff.source_output_artifact_sha256, handoff.source_output_artifact_byte_size,
+    )):
+        raise ResearchHandoffError("handoff declares an output artifact absent from research record")
     if handoff.source_event_fingerprint != source_event.event_fingerprint:
         raise ResearchHandoffError("handoff source event does not match declared source event")
     if source_event.event_type != "COMPLETED":
@@ -185,6 +224,10 @@ def build_research_handoff(
         dataset_content_sha256=dataset_content_sha256,
         dataset_artifact_id=dataset_artifact_id,
         source_event_fingerprint=event.event_fingerprint,
+        source_output_artifact_id=record.output_artifact_id if record is not None else None,
+        source_output_artifact_role=record.output_artifact_role if record is not None else None,
+        source_output_artifact_sha256=record.output_artifact_sha256 if record is not None else None,
+        source_output_artifact_byte_size=record.output_artifact_byte_size if record is not None else None,
         detail=detail,
         fingerprint="",
     )
