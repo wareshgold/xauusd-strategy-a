@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from strategy_factory.adapter import build_execution_receipt
+from strategy_factory.execution import ExecutionArtifact
 from strategy_factory.datasets import DatasetArtifact, DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.jobs import ResearchJobSpec
@@ -578,3 +579,29 @@ def test_research_record_v2_rejects_receipt_not_bound_to_observed_dataset(datase
             observed_artifact=artifact,
             observed_content_sha256=DATASET_SHA256,
         )
+
+
+def test_runner_independently_rejects_output_artifact_digest_mismatch(dataset_fixture):
+    from dataclasses import replace
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    output_path = dataset_path.parent / "discovery-output.json"
+    output_path.write_bytes(b'{"research_only":true}')
+
+    class WrongOutputAdapter(FakeAdapter):
+        def execute(self, declared_spec):
+            receipt = super().execute(declared_spec)
+            return replace(
+                receipt,
+                output_artifact=ExecutionArtifact(
+                    artifact_id="DISCOVERY-OUT-1",
+                    artifact_role="DISCOVERY_MATRIX_JSON",
+                    local_path=str(output_path),
+                    content_sha256="0" * 64,
+                    byte_size=output_path.stat().st_size,
+                ),
+            )
+
+    with pytest.raises(ResearchJobRunnerError, match="output artifact SHA-256 does not match Runner observation"):
+        run_job(make_runner(artifact), job, spec, WrongOutputAdapter(dataset_path), artifact)
