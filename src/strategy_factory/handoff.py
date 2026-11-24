@@ -104,6 +104,11 @@ def validate_evidence_bound_handoff(*, handoff: ResearchHandoff, record: Researc
         raise ResearchHandoffError("source event station does not match handoff source station")
     if source_event.output_artifact != record.evidence_id:
         raise ResearchHandoffError("source event artifact does not match research evidence_id")
+    if record.record_revision == "RESEARCH-RECORD-2":
+        if handoff.dataset_content_sha256 != record.dataset_content_sha256:
+            raise ResearchHandoffError("handoff dataset SHA does not match research record binding")
+        if handoff.dataset_artifact_id != record.dataset_artifact_id:
+            raise ResearchHandoffError("handoff artifact id does not match research record binding")
     if dataset_content_sha256 is not None and handoff.dataset_content_sha256 != dataset_content_sha256:
         raise ResearchHandoffError("handoff dataset SHA does not match declared dataset SHA")
     if dataset_artifact_id is not None and handoff.dataset_artifact_id != dataset_artifact_id:
@@ -124,6 +129,18 @@ def build_research_handoff(
 ) -> ResearchHandoff:
     if (source_station, destination_station) not in HANDOFF_ROUTES:
         raise ResearchHandoffError("research handoff route is not declared")
+
+    if record is not None:
+        record.validate()
+        if record.run_id != job_id:
+            raise ResearchHandoffError("handoff job_id does not match research record run_id")
+        if record.record_revision == "RESEARCH-RECORD-2":
+            if dataset_content_sha256 and dataset_content_sha256 != record.dataset_content_sha256:
+                raise ResearchHandoffError("declared handoff dataset SHA conflicts with research record binding")
+            if dataset_artifact_id and dataset_artifact_id != record.dataset_artifact_id:
+                raise ResearchHandoffError("declared handoff artifact id conflicts with research record binding")
+            dataset_content_sha256 = record.dataset_content_sha256
+            dataset_artifact_id = record.dataset_artifact_id
 
     job_events = events.for_job(job_id)
     # A contradictory terminal history must never be promoted through a
