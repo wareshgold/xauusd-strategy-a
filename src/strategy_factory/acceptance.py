@@ -18,12 +18,12 @@ def _validate_receipt_dataset_identity(
     adapter: object | None,
     purpose: str | None,
 ) -> None:
-    if receipt.receipt_schema_version != 2:
+    if receipt.receipt_schema_version not in {2, 3}:
         return
 
     if dataset_provenance is None or adapter is None or purpose is None:
         raise ResearchRunError(
-            "schema-v2 acceptance requires independent dataset provenance, adapter identity, and purpose"
+            "schema-v2/v3 acceptance requires independent dataset provenance, adapter identity, and purpose"
         )
     if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
         raise ResearchRunError("dataset provenance is not PASS")
@@ -85,15 +85,19 @@ def validate_evidence_acceptance(
         raise ResearchRunError("evidence run fingerprint does not match research run")
     if receipt.metrics != evidence.metrics:
         raise ResearchRunError("execution receipt metrics do not match evidence metrics")
-    if receipt.receipt_schema_version == 2:
-        if evidence.result_revision != "RECEIPT_METRICS_V2":
-            raise ResearchRunError("schema-v2 receipt requires RECEIPT_METRICS_V2 evidence")
-        if evidence.result.get("receipt_schema_version") != 2:
+    if receipt.receipt_schema_version in {2, 3}:
+        expected_revision = f"RECEIPT_METRICS_V{receipt.receipt_schema_version}"
+        if evidence.result_revision != expected_revision:
+            raise ResearchRunError(f"schema-v{receipt.receipt_schema_version} receipt requires {expected_revision} evidence")
+        if evidence.result.get("receipt_schema_version") != receipt.receipt_schema_version:
             raise ResearchRunError("evidence receipt_schema_version does not match execution receipt")
         if "dataset_content_sha256" not in evidence.result:
             raise ResearchRunError("schema-v2 evidence is missing dataset_content_sha256")
         if evidence.result.get("dataset_content_sha256") != receipt.dataset_content_sha256:
             raise ResearchRunError("evidence dataset_content_sha256 does not match execution receipt")
+        if receipt.receipt_schema_version == 3:
+            if evidence.result.get("output_artifact") != receipt.output_artifact.as_dict():
+                raise ResearchRunError("schema-v3 evidence output artifact does not match execution receipt")
 
 
 def evidence_acceptance_gate(
@@ -170,6 +174,6 @@ def evidence_acceptance_gate(
             "execution_id": receipt.execution_id,
             "evidence_id": evidence.evidence_id,
             "execution_semantics": receipt.execution_semantics.value,
-            "dataset_verified": receipt.receipt_schema_version == 2 and receipt.dataset_content_sha256 is not None,
+            "dataset_verified": receipt.receipt_schema_version in {2, 3} and receipt.dataset_content_sha256 is not None,
         },
     )
