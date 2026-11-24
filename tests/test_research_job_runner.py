@@ -344,7 +344,7 @@ def test_runner_rejects_dataset_digest_mismatch(dataset_fixture):
                 receipt.input_fingerprint,
                 receipt.completed,
                 receipt.metrics,
-                receipt_schema_version=3,
+                receipt_schema_version=2,
                 dataset_content_sha256="b" * 64,
             )
     with pytest.raises(ResearchJobRunnerError, match="dataset_content_sha256"):
@@ -594,6 +594,7 @@ def test_runner_independently_rejects_output_artifact_digest_mismatch(dataset_fi
             receipt = super().execute(declared_spec)
             return replace(
                 receipt,
+                receipt_schema_version=3,
                 output_artifact=ExecutionArtifact(
                     artifact_id="DISCOVERY-OUT-1",
                     artifact_role="DISCOVERY_MATRIX_JSON",
