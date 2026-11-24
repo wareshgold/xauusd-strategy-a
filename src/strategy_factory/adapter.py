@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Mapping, Protocol
 
 from .execution import ExecutionContractError, ExecutionReceipt
@@ -15,6 +16,7 @@ class ExecutionAdapter(Protocol):
     """
 
     engine_revision: str
+    dataset_artifact_path: str | Path
 
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
         ...
