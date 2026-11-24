@@ -377,6 +377,27 @@ def test_runner_rejects_dataset_mutated_during_adapter_execution(dataset_fixture
         dataset_path.write_bytes(DATASET_BYTES)
 
 
+
+def test_runner_rejects_dataset_mutated_before_adapter_exception(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    runner = make_runner(artifact)
+
+    class MutatingFailingAdapter(FakeAdapter):
+        def execute(self, source_spec):
+            dataset_path.write_bytes(b"mutated before adapter failure")
+            raise RuntimeError("adapter failed after mutation")
+
+    try:
+        with pytest.raises(
+            ResearchJobRunnerError,
+            match="local dataset artifact changed during adapter execution",
+        ):
+            run_job(runner, job, spec, MutatingFailingAdapter(dataset_path), artifact)
+    finally:
+        dataset_path.write_bytes(DATASET_BYTES)
+
+
 def test_runner_rejects_artifact_path_mismatch(dataset_fixture):
     dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
