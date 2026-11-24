@@ -77,14 +77,21 @@ class ExecutionReceipt:
             raise ExecutionContractError("execution receipt identity is incomplete")
         if not isinstance(self.execution_semantics, ExecutionSemantics):
             raise ExecutionContractError("execution_semantics must be explicit")
-        if isinstance(self.receipt_schema_version, bool) or not isinstance(self.receipt_schema_version, int) or self.receipt_schema_version not in {1, 2}:
-            raise ExecutionContractError("receipt_schema_version must be 1 or 2")
+        if isinstance(self.receipt_schema_version, bool) or not isinstance(self.receipt_schema_version, int) or self.receipt_schema_version not in {1, 2, 3}:
+            raise ExecutionContractError("receipt_schema_version must be 1, 2, or 3")
         if self.receipt_schema_version == 1 and self.dataset_content_sha256 is not None:
             raise ExecutionContractError("legacy receipt schema v1 cannot carry dataset_content_sha256")
         if self.receipt_schema_version == 2 and self.dataset_content_sha256 is not None:
             digest = self.dataset_content_sha256
             if not isinstance(digest, str) or len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
                 raise ExecutionContractError("dataset_content_sha256 must be a lowercase SHA-256 hex digest or null")
+        if self.receipt_schema_version == 2 and self.output_artifact is not None:
+            raise ExecutionContractError("receipt schema v2 cannot carry output_artifact")
+        if self.receipt_schema_version == 3:
+            if self.dataset_content_sha256 is None:
+                raise ExecutionContractError("receipt schema v3 requires dataset_content_sha256")
+            if self.output_artifact is None:
+                raise ExecutionContractError("receipt schema v3 requires output_artifact")
         if self.output_artifact is not None:
             if not isinstance(self.output_artifact, ExecutionArtifact):
                 raise ExecutionContractError("execution output artifact must use the typed artifact contract")
@@ -108,7 +115,7 @@ class ExecutionReceipt:
         }
         if self.receipt_schema_version == 2:
             payload["dataset_content_sha256"] = self.dataset_content_sha256
-        if self.output_artifact is not None:
+        if self.receipt_schema_version == 3:
             payload["output_artifact"] = self.output_artifact.as_dict()
         return payload
 
