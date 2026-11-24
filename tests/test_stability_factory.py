@@ -238,6 +238,9 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
     result = StabilityFactory(stability_runner).prepare_and_run(context)
     assert result.result.accepted is True
     assert result.result.dataset_provenance.status.value == "PASS"
+    assert upstream_result.receipt.receipt_schema_version == 3
+    assert upstream_result.receipt.as_dict()["dataset_content_sha256"] == sha
+    assert upstream_result.receipt.as_dict()["output_artifact"]["artifact_role"] == "DISCOVERY_MATRIX_JSON"
     assert upstream_result.record.output_artifact_role == "DISCOVERY_MATRIX_JSON"
     assert upstream_result.record.output_artifact_sha256 == hashlib.sha256(discovery_path.read_bytes()).hexdigest()
 
