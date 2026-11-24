@@ -217,7 +217,14 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
     result = StabilityFactory(stability_runner).prepare_and_run(context)
     assert result.result.accepted is True
     assert result.result.dataset_provenance.status.value == "PASS"
-    assert result.result.record.output_artifact_role == "STABILITY_MATRIX_JSON" if hasattr(result.result.record, "output_artifact_role") else True
+    assert upstream_result.record.output_artifact_role == "DISCOVERY_MATRIX_JSON"
+    assert upstream_result.record.output_artifact_sha256 == hashlib.sha256(discovery_path.read_bytes()).hexdigest()
+
+    original_discovery = discovery_path.read_bytes()
+    discovery_path.write_bytes(original_discovery + b" ")
+    with pytest.raises(StabilityFactoryError, match="Discovery JSON SHA"):
+        StabilityFactory(stability_runner).prepare_and_run(context)
+    discovery_path.write_bytes(original_discovery)
 
     drifted = replace(
         context,
@@ -253,78 +260,3 @@ def test_stability_factory_blocks_dataset_mismatch(tmp_path):
         fingerprint="0" * 64,
     )
     assert bad.dataset_content_sha256 != sha
-
-
-def test_stability_factory_rejects_discovery_json_drift_against_source_record(tmp_path):
-    # The Factory must reject a changed secondary input before starting Stability.
-    raw = b'{"research_only":true,"dataset_provenance":{"content_sha256":"'
-    dataset_path = tmp_path / "m1.json"
-    dataset_path.write_bytes(b"dataset")
-    discovery_path = tmp_path / "discovery.json"
-    discovery_path.write_bytes(raw + hashlib.sha256(b"dataset").hexdigest().encode() + b'","artifact_id":"MT5-M1-TEST"}}')
-
-    sha = hashlib.sha256(b"dataset").hexdigest()
-    dataset = TestDataset(
-        dataset_id="MT5-STABILITY-DRIFT",
-        role=DatasetRole.DEVELOPMENT,
-        data_revision="MT5-M1-TEST",
-        start="2026-10-05T00:00:00Z",
-        end="2026-10-07T05:30:00Z",
-        source="MT5:XAUUSD.ecn:M1",
-    )
-    spec = HistoricalTestSpec(
-        test_id="STABILITY_DRIFT_TEST",
-        strategy_id="SP2L-A",
-        strategy_revision="REV-TEST",
-        dataset=dataset,
-        execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH,
-        parameters={"research_only": True},
-    )
-    from strategy_factory.research_record import ResearchRecord
-    from strategy_factory.handoff import ResearchHandoff
-    source = ResearchRecord(
-        record_revision="RESEARCH-RECORD-2", run_id="DISCOVERY-DRIFT",
-        run_fingerprint="a"*64, evidence_id="E", evidence_fingerprint="b"*64,
-        snapshot_fingerprint="c"*64, audit_fingerprint="d"*64, strategy_id="SP2L-A",
-        strategy_revision="REV-TEST", manifest_revision="MANIFEST", dataset_id=dataset.dataset_id,
-        dataset_role=DatasetRole.DEVELOPMENT.value, data_revision="MT5-M1-TEST",
-        dataset_fingerprint="e"*64, execution_semantics=ExecutionSemantics.BAR_CLOSE_RESEARCH.value,
-        provenance_status=module.ResearchProvenanceStatus.PASS, provenance_reasons=(), fingerprint="f"*64,
-        dataset_content_sha256=sha, dataset_artifact_id="MT5-M1-TEST", dataset_byte_size=7,
-        execution_receipt_fingerprint="1"*64, dataset_binding_fingerprint="2"*64,
-        output_artifact_id="DISCOVERY-MATRIX-STABILITY_DRIFT_TEST-RR2_ACT10_D2",
-        output_artifact_role="DISCOVERY_MATRIX_JSON", output_artifact_path=str(discovery_path.resolve()),
-        output_artifact_sha256=hashlib.sha256(discovery_path.read_bytes()).hexdigest(),
-        output_artifact_byte_size=discovery_path.stat().st_size,
-        output_artifact_binding_fingerprint="3"*64,
-    )
-    handoff = ResearchHandoff(
-        handoff_revision="RESEARCH-HANDOFF-1", handoff_id="H", job_id="DISCOVERY-DRIFT",
-        job_fingerprint="4"*64, source_station="discovery", destination_station="stability",
-        output_artifact="E", dataset_content_sha256=sha, dataset_artifact_id="MT5-M1-TEST",
-        source_event_fingerprint="5"*64, detail="test", fingerprint="6"*64,
-        source_output_artifact_id=source.output_artifact_id,
-        source_output_artifact_role=source.output_artifact_role,
-        source_output_artifact_sha256=source.output_artifact_sha256,
-        source_output_artifact_byte_size=source.output_artifact_byte_size,
-    )
-    discovery_path.write_bytes(discovery_path.read_bytes() + b" ")
-    context = StabilityFactoryContext(
-        spec=spec, manifest_revision="MANIFEST", job_id="STABILITY-DRIFT",
-        readiness_snapshot=_snapshot(spec), handoff=handoff, source_record=source,
-        source_event=module.FactoryJobEvent(
-            sequence=1, event_type="COMPLETED", job_id="DISCOVERY-DRIFT",
-            job_fingerprint="4"*64, worker_id="worker", station="discovery",
-            phase="DISCOVERY", detail="done", output_artifact="E",
-            research_run_fingerprint="a"*64, occurred_utc="2026-10-07T00:00:00+00:00",
-            event_fingerprint="7"*64,
-        ),
-        discovery_json_path=discovery_path, dataset_artifact_path=dataset_path,
-        dataset_artifact_id="MT5-M1-TEST", dataset_content_sha256=sha,
-        stability_script=tmp_path / "stability.py",
-    )
-    class NeverRun:
-        def run(self, **kwargs):
-            raise AssertionError("Stability must not run after secondary artifact drift")
-    with pytest.raises(StabilityFactoryError, match="Discovery JSON SHA"):
-        StabilityFactory(NeverRun()).prepare_and_run(context)
