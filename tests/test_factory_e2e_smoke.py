@@ -224,12 +224,14 @@ def test_synthetic_factory_brain_rejects_adapter_semantics_drift():
         evidence_id="SYNTH-EVIDENCE-DRIFT",
     )
 
-    with pytest.raises(Exception, match="execution adapter failed"):
+    with pytest.raises(Exception, match="synthetic adapter subclasses are not trusted"):
         orchestrator.run_next(
             worker_id="W01",
             execute=build_runner_executor(runner, context),
         )
 
+    assert runner.runs.entries() == ()
+    assert runner.runs.usage_ledger.entries() == ()
     assert [e.event_type for e in events.entries()] == [
         "QUEUED",
         "DISPATCHED",
