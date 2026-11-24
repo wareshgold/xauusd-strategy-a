@@ -216,7 +216,7 @@ class StabilityMatrixAdapter:
             engine_revision=self.engine_revision,
             input_fingerprint=input_fingerprint,
             metrics=metrics,
-            receipt_schema_version=2,
+            receipt_schema_version=3,
             dataset_content_sha256=dataset_sha,
             output_artifact=ExecutionArtifact(
                 artifact_id=f"STABILITY-MATRIX-{spec.test_id}-{self.variant_name}",
