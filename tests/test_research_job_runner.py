@@ -552,3 +552,29 @@ def test_research_record_v2_rejects_malformed_binding_field_types(dataset_fixtur
 
     with pytest.raises(ResearchRecordError, match="SHA-256 is invalid"):
         replace(result.record, dataset_content_sha256=123).validate()
+
+
+def test_research_record_v2_rejects_receipt_not_bound_to_observed_dataset(dataset_fixture):
+    from dataclasses import replace
+    from strategy_factory.research_record import ResearchRecord
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+    mismatched_receipt = replace(
+        result.receipt, dataset_content_sha256="b" * 64
+    )
+
+    with pytest.raises(ResearchRecordError, match="receipt does not match observed SHA-256"):
+        ResearchRecord.from_components(
+            result.run,
+            result.evidence,
+            result.snapshot,
+            result.audit,
+            result.provenance,
+            receipt=mismatched_receipt,
+            observed_artifact=artifact,
+            observed_content_sha256=DATASET_SHA256,
+        )
