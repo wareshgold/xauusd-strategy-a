@@ -117,8 +117,9 @@ def evaluate_research_provenance(
             ("EVIDENCE_RUN_ID", evidence.run_id == run.run_id),
             ("EVIDENCE_RUN_FINGERPRINT", evidence.run_fingerprint == run.fingerprint),
             ("EVIDENCE_METRICS", evidence.metrics == receipt.metrics),
-            ("EVIDENCE_RECEIPT_SCHEMA", receipt.receipt_schema_version != 2 or evidence.result.get("receipt_schema_version") == 2),
-            ("EVIDENCE_DATASET_CONTENT_SHA256", "dataset_content_sha256" in evidence.result and evidence.result.get("dataset_content_sha256") == receipt.dataset_content_sha256 if receipt.receipt_schema_version == 2 else True),
+            ("EVIDENCE_RECEIPT_SCHEMA", receipt.receipt_schema_version not in {2, 3} or evidence.result.get("receipt_schema_version") == receipt.receipt_schema_version),
+            ("EVIDENCE_DATASET_CONTENT_SHA256", "dataset_content_sha256" in evidence.result and evidence.result.get("dataset_content_sha256") == receipt.dataset_content_sha256 if receipt.receipt_schema_version in {2, 3} else True),
+            ("EVIDENCE_OUTPUT_ARTIFACT", evidence.result.get("output_artifact") == receipt.output_artifact.as_dict() if receipt.receipt_schema_version == 3 and receipt.output_artifact is not None else receipt.receipt_schema_version != 3),
         )
         reasons.extend(name for name, ok in evidence_checks if not ok)
     except Exception as exc:
