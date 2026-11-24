@@ -120,7 +120,7 @@ class StabilityMatrixAdapter:
                 self.python_executable,
                 str(self.script_path),
                 "--input",
-                str(self.discovery_json_path),
+                str(discovery_path),
                 "--segments",
                 str(self.segments),
             ],
