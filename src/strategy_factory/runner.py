@@ -324,7 +324,16 @@ class ResearchJobRunner:
             )
 
         record = ResearchRecord.from_components(
-            run, evidence, snapshot, audit, provenance
+            run,
+            evidence,
+            snapshot,
+            audit,
+            provenance,
+            receipt=receipt if observed_artifact is not None else None,
+            observed_artifact=observed_artifact if observed_artifact is not None else None,
+            observed_content_sha256=(
+                observed_content_sha256 if observed_artifact is not None else None
+            ),
         )
         record = self.records.record(record)
 
