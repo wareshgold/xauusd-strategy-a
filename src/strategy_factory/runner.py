@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 from pathlib import Path
 
@@ -65,6 +65,33 @@ def _observe_local_dataset(
                 "local dataset byte size does not match the registered artifact"
             )
     return observed_sha256, observed_size
+
+
+def _observe_execution_output_artifact(receipt):
+    """Verify and normalize an adapter-declared local output artifact."""
+    output = getattr(receipt, "output_artifact", None)
+    if output is None:
+        return receipt
+    from .execution import ExecutionArtifact
+    if not isinstance(output, ExecutionArtifact):
+        raise ResearchJobRunnerError("execution output artifact contract is invalid")
+    try:
+        path = Path(output.local_path).expanduser().resolve(strict=True)
+        if not path.is_file():
+            raise OSError("output artifact is not a regular file")
+        digest = hashlib.sha256()
+        byte_size = 0
+        with path.open("rb") as artifact_file:
+            for chunk in iter(lambda: artifact_file.read(1024 * 1024), b""):
+                digest.update(chunk)
+                byte_size += len(chunk)
+    except (OSError, TypeError, ValueError) as exc:
+        raise ResearchJobRunnerError("execution output artifact must be an existing local file") from exc
+    if digest.hexdigest() != output.content_sha256:
+        raise ResearchJobRunnerError("execution output artifact SHA-256 does not match Runner observation")
+    if byte_size != output.byte_size:
+        raise ResearchJobRunnerError("execution output artifact byte size does not match Runner observation")
+    return replace(receipt, output_artifact=replace(output, local_path=str(path)))
 
 
 class ResearchJobRunnerError(ValueError):
@@ -224,6 +251,7 @@ class ResearchJobRunner:
                         raise ResearchJobRunnerError(
                             "local dataset artifact changed during adapter execution"
                         )
+            receipt = _observe_execution_output_artifact(receipt)
             validate_adapter_output(spec=spec, receipt=receipt)
             from .synthetic import SyntheticExecutionAdapter
             if receipt.receipt_schema_version != 2:
@@ -267,6 +295,7 @@ class ResearchJobRunner:
                 "input_fingerprint": receipt.input_fingerprint,
                 "receipt_schema_version": receipt.receipt_schema_version,
                 "dataset_content_sha256": receipt.dataset_content_sha256,
+                "output_artifact": receipt.output_artifact.as_dict() if receipt.output_artifact is not None else None,
                 "execution_semantics": receipt.execution_semantics.value,
                 "metrics": receipt.metrics.as_dict(),
             },
