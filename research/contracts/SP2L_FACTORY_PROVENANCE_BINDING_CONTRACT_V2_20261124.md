@@ -1,6 +1,6 @@
 # SP2L Factory — Provenance Binding Contract v2
 
-**Status:** DESIGN BASELINE — RECORDED, NOT IMPLEMENTED  
+**Status:** DESIGN BASELINE — PARTIALLY IMPLEMENTED (Research Record v2 only)  
 **Date:** 2026-11-24  
 **Repository baseline:** `978f56f74060938b828c08e09d9455cca6be55e0`  
 **Branch:** `research/provenance-binding-v2-contract-20261124`  
@@ -416,7 +416,7 @@ Known constraints preserved from the available project history:
 
 The source review at the baseline identifies the following areas for targeted engineering investigation:
 
-1. Research Record lacks first-class links to observed raw Dataset SHA, DatasetArtifact ID, byte size, and Receipt fingerprint.
+1. **Partially addressed on this branch:** Research Record v2 now carries observed raw Dataset SHA, DatasetArtifact ID, byte size, Receipt fingerprint, and a Dataset Binding fingerprint. Handoff-level enforcement and migration/legacy policy remain open.
 2. Handoff's Dataset SHA and Artifact ID checks are conditional in the shared validator; route-specific factories provide additional checks and must be audited as a whole.
 3. Freeze authority is not represented by a separately verified human-authorized Freeze Record in the inspected Research Record model.
 4. Dataset Registry and Research Record Ledger are in-memory; durability is not established.
@@ -478,4 +478,19 @@ This design record is ready for implementation review only when:
 - No canonical SP2L rule, MT5 state, or Forward Runner behavior changes.
 - Human approval is recorded for any new authority-bearing contract.
 
-**Current status: DESIGN BASELINE RECORDED. NOT IMPLEMENTED. NOT CANONICAL. NOT PRODUCTION AUTHORITY.**
+## 17. Implementation status at branch checkpoint
+
+The first bounded implementation package has been applied on this branch:
+
+- `ResearchRecord` supports a versioned `RESEARCH-RECORD-2` representation.
+- Dataset-backed real executions pass the Runner-observed artifact, content SHA-256, and Receipt into Research Record construction.
+- Record v2 stores the DatasetArtifact ID, observed SHA-256, byte size, Receipt fingerprint, and Dataset Binding fingerprint.
+- The Dataset Binding fingerprint is derived from a versioned payload containing Dataset ID, role, data revision, Dataset fingerprint, Artifact ID, content SHA-256, and byte size.
+- Synthetic infrastructure records without a real observed artifact remain on the legacy Research Record v1 representation; synthetic fixture hashes are not relabeled as real Dataset observations.
+- Focused tests were added for v2 fields, tampering detection, and serialized round-trip.
+
+**Validation state:** remote CI has not yet completed for this implementation checkpoint. No local test execution is claimed.
+
+**Not yet implemented:** Handoff v2 binding, route-policy enforcement, human-authorized Freeze Record, Holdout independence gates, secondary-input observation, and durable ledger storage.
+
+**Current status: PARTIAL IMPLEMENTATION. NOT CANONICAL. NOT PRODUCTION AUTHORITY.**
