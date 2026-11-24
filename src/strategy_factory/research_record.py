@@ -344,6 +344,11 @@ class ResearchRecord:
             dataset_binding_fingerprint = hashlib.sha256(
                 cls._payload(binding_payload)
             ).hexdigest()
+            if input_artifacts:
+                input_binding_payload["dataset_binding_fingerprint"] = dataset_binding_fingerprint
+                input_artifacts_binding_fingerprint = hashlib.sha256(
+                    cls._payload(input_binding_payload)
+                ).hexdigest()
             if output_artifact is not None:
                 output_binding_payload["dataset_binding_fingerprint"] = dataset_binding_fingerprint
                 output_artifact_binding_fingerprint = hashlib.sha256(
