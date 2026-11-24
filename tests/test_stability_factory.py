@@ -133,7 +133,7 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
                     win_rate=1.0, net_r=1.0, profit_factor=None,
                     max_drawdown_r=0.0, gross_profit_r=1.0, gross_loss_r=0.0,
                 ),
-                receipt_schema_version=2,
+                receipt_schema_version=3,
                 dataset_content_sha256=dataset_sha,
                 output_artifact=ExecutionArtifact(
                     artifact_id=f"DISCOVERY-MATRIX-{declared_spec.test_id}-RR2_ACT10_D2",
