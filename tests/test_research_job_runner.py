@@ -12,6 +12,7 @@ from strategy_factory.metrics import ResearchMetrics
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner, ResearchJobRunnerError
 from strategy_factory.snapshot import ReadinessSnapshot
+from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
 from strategy_factory.test_contract import (
     DatasetRole,
     ExecutionSemantics,
@@ -368,4 +369,31 @@ def test_runner_rejects_artifact_path_mismatch():
 
     with pytest.raises(ResearchJobRunnerError, match="must resolve to existing local files"):
         run_job(runner, job, spec, WrongPathAdapter())
+
+def test_runner_rejects_synthetic_adapter_subclass_before_ledger_writes():
+    spec, job = make_spec_and_job()
+    runner = make_runner()
+
+    class UntrustedSyntheticAdapter(SyntheticExecutionAdapter):
+        def __init__(self):
+            fixture = SyntheticExecutionFixture(
+                "UNTRUSTED-SUBCLASS-FIXTURE",
+                ExecutionSemantics.TICK_FEASIBLE,
+                METRICS,
+            )
+            super().__init__(fixture)
+            self.calls = 0
+
+        def execute(self, source_spec):
+            self.calls += 1
+            return super().execute(source_spec)
+
+    adapter = UntrustedSyntheticAdapter()
+
+    with pytest.raises(ResearchJobRunnerError, match="synthetic adapter subclasses are not trusted"):
+        run_job(runner, job, spec, adapter)
+
+    assert adapter.calls == 0
+    assert runner.runs.entries() == ()
+    assert runner.runs.usage_ledger.entries() == ()
 
