@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+from pathlib import Path
 
 from .acceptance import evidence_acceptance_gate
 from .audit import AuditBindingError, ResearchAuditRecord, bind_research_audit
@@ -16,6 +18,53 @@ from .research_record import ResearchRecord, ResearchRecordLedger
 from .runs import ResearchRunError, ResearchRunIdentity, ResearchRunLedger
 from .snapshot import ReadinessSnapshot
 from .test_contract import DatasetRole, HistoricalTestSpec
+
+
+def _observe_local_dataset(
+    adapter, artifact, expected_sha256: str, *, verify_identity: bool = True
+) -> tuple[str, int]:
+    """Independently hash the exact local file bound to a dataset-backed job."""
+    if artifact is None:
+        raise ResearchJobRunnerError(
+            "dataset-backed jobs require a registered local DatasetArtifact"
+        )
+    adapter_path = getattr(adapter, "dataset_artifact_path", None)
+    if adapter_path is None:
+        raise ResearchJobRunnerError(
+            "dataset-backed adapter must expose dataset_artifact_path"
+        )
+    try:
+        path = Path(adapter_path).expanduser().resolve(strict=True)
+        artifact_path = Path(artifact.location).expanduser().resolve(strict=True)
+    except (OSError, TypeError, ValueError) as exc:
+        raise ResearchJobRunnerError(
+            "dataset artifact and adapter path must resolve to existing local files"
+        ) from exc
+    if path != artifact_path or not path.is_file():
+        raise ResearchJobRunnerError(
+            "adapter dataset_artifact_path must identify the registered local artifact"
+        )
+    digest = hashlib.sha256()
+    observed_size = 0
+    with path.open("rb") as dataset_file:
+        for chunk in iter(lambda: dataset_file.read(1024 * 1024), b""):
+            digest.update(chunk)
+            observed_size += len(chunk)
+    observed_sha256 = digest.hexdigest()
+    if verify_identity:
+        if observed_sha256 != expected_sha256:
+            raise ResearchJobRunnerError(
+                "local dataset bytes do not match the runner-declared SHA-256"
+            )
+        if observed_sha256 != artifact.content_sha256:
+            raise ResearchJobRunnerError(
+                "local dataset bytes do not match the registered artifact SHA-256"
+            )
+        if observed_size != artifact.byte_size:
+            raise ResearchJobRunnerError(
+                "local dataset byte size does not match the registered artifact"
+            )
+    return observed_sha256, observed_size
 
 
 class ResearchJobRunnerError(ValueError):
@@ -112,6 +161,26 @@ class ResearchJobRunner:
         except Exception as exc:
             raise ResearchJobRunnerError("readiness snapshot is invalid") from exc
 
+        from .synthetic import SyntheticExecutionAdapter
+        is_synthetic = isinstance(adapter, SyntheticExecutionAdapter)
+        if is_synthetic and type(adapter) is not SyntheticExecutionAdapter:
+            raise ResearchJobRunnerError(
+                "synthetic adapter subclasses are not trusted"
+            )
+        if is_synthetic and (
+            purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
+            or spec.dataset.role is not DatasetRole.DEVELOPMENT
+        ):
+            raise ResearchJobRunnerError(
+                "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
+            )
+
+        pre_execution_observation = None
+        if not is_synthetic:
+            pre_execution_observation = _observe_local_dataset(
+                adapter, observed_artifact, observed_content_sha256
+            )
+
         dataset_provenance = evaluate_dataset_provenance(
             spec,
             self.runs.registry,
@@ -121,15 +190,6 @@ class ResearchJobRunner:
         if dataset_provenance.status is not DatasetProvenanceStatus.PASS:
             raise ResearchJobRunnerError(
                 "dataset provenance gate rejected the research job"
-            )
-
-        from .synthetic import SyntheticExecutionAdapter
-        if type(adapter) is SyntheticExecutionAdapter and (
-            purpose != "SYNTHETIC_INFRASTRUCTURE_TEST"
-            or spec.dataset.role is not DatasetRole.DEVELOPMENT
-        ):
-            raise ResearchJobRunnerError(
-                "synthetic adapter is restricted to SYNTHETIC_INFRASTRUCTURE_TEST on DEVELOPMENT datasets"
             )
 
         try:
@@ -150,19 +210,32 @@ class ResearchJobRunner:
             ) from exc
 
         try:
-            receipt = adapter.execute(spec)
+            try:
+                receipt = adapter.execute(spec)
+            finally:
+                if not is_synthetic:
+                    post_execution_observation = _observe_local_dataset(
+                        adapter,
+                        observed_artifact,
+                        observed_content_sha256,
+                        verify_identity=False,
+                    )
+                    if post_execution_observation != pre_execution_observation:
+                        raise ResearchJobRunnerError(
+                            "local dataset artifact changed during adapter execution"
+                        )
             validate_adapter_output(spec=spec, receipt=receipt)
             from .synthetic import SyntheticExecutionAdapter
             if receipt.receipt_schema_version != 2:
                 raise ResearchJobRunnerError(
                     "LEGACY_UNVERIFIED: schema-v1 receipts cannot be promoted to dataset-verified evidence"
                 )
-            if type(adapter) is SyntheticExecutionAdapter:
+            if is_synthetic:
                 if receipt.dataset_content_sha256 is not None:
                     raise ResearchJobRunnerError(
                         "trusted synthetic adapter must declare dataset_content_sha256 as null"
                     )
-            elif receipt.dataset_content_sha256 != observed_content_sha256:
+            if not is_synthetic and receipt.dataset_content_sha256 != observed_content_sha256:
                 raise ResearchJobRunnerError(
                     "execution receipt dataset_content_sha256 does not match runner-observed dataset bytes"
                 )

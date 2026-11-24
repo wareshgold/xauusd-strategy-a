@@ -44,6 +44,13 @@ class DiscoveryMatrixAdapter:
     engine_revision: str = "SP2L-V3-CONTROLLED-DISCOVERY-20261007"
 
     @property
+    def dataset_artifact_path(self) -> Path:
+        """Expose the exact local M1 file bound to this adapter."""
+        if self.bars_artifact_path is None:
+            raise DiscoveryAdapterError("bars_artifact_path is required for dataset provenance")
+        return Path(self.bars_artifact_path).expanduser().resolve()
+
+    @property
     def observed_dataset_content_sha256(self) -> str:
         """Return the exact SHA-256 of the immutable M1 artifact used by Discovery."""
         if self.bars_artifact_path is None:

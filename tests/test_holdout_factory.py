@@ -61,6 +61,10 @@ class FakeAdapter:
     def __init__(self, artifact_path):
         self.artifact_path = artifact_path
 
+    @property
+    def dataset_artifact_path(self):
+        return self.artifact_path
+
     def execute(self, spec):
         return build_execution_receipt(
             execution_id="HOLDOUT-EXEC",

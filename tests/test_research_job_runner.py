@@ -1,15 +1,17 @@
 import hashlib
+from pathlib import Path
 
 import pytest
 
 from strategy_factory.adapter import build_execution_receipt
-from strategy_factory.datasets import DatasetRegistry, fingerprint_dataset
+from strategy_factory.datasets import DatasetArtifact, DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner, ResearchJobRunnerError
 from strategy_factory.snapshot import ReadinessSnapshot
+from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
 from strategy_factory.test_contract import (
     DatasetRole,
     ExecutionSemantics,
@@ -21,6 +23,21 @@ from strategy_factory.usage import DatasetUsageLedger
 
 DATASET_BYTES = b"controlled dataset bytes for receipt contract tests"
 DATASET_SHA256 = hashlib.sha256(DATASET_BYTES).hexdigest()
+
+
+@pytest.fixture
+def dataset_fixture(tmp_path):
+    dataset_path = tmp_path / "dataset.bin"
+    dataset_path.write_bytes(DATASET_BYTES)
+    artifact = DatasetArtifact(
+        artifact_id="TEST-DATASET-ARTIFACT-1",
+        location=str(dataset_path.resolve()),
+        content_sha256=DATASET_SHA256,
+        byte_size=len(DATASET_BYTES),
+        format="binary",
+    )
+    return dataset_path, artifact
+
 
 METRICS = ResearchMetrics(
     10, 10, 6, 4, 0, 0.6, 2.5, 1.4, 1.2, 6.0, -3.5
@@ -53,10 +70,10 @@ def make_spec_and_job():
     return spec, job
 
 
-def make_runner():
+def make_runner(artifact):
     registry = DatasetRegistry()
     spec, _ = make_spec_and_job()
-    registry.register(spec.dataset, content_fingerprint=DATASET_SHA256)
+    registry.register(spec.dataset, content_fingerprint=DATASET_SHA256, artifact=artifact)
     usage = DatasetUsageLedger(registry)
     runs = ResearchRunLedger(registry, usage)
     evidence = EvidenceLedger(runs)
@@ -88,23 +105,29 @@ def make_snapshot(spec):
     )
 
 
-def run_job(runner, job, spec, adapter):
+def run_job(runner, job, spec, adapter, artifact):
     return runner.run(
         job=job,
         spec=spec,
         adapter=adapter,
         snapshot=make_snapshot(spec),
         observed_content_sha256=DATASET_SHA256,
+        observed_artifact=artifact,
     )
 
 
 class FakeAdapter:
     engine_revision = "ENGINE-1"
 
-    def __init__(self, *, metrics=METRICS, execution_id="EX-1"):
+    def __init__(self, dataset_path, *, metrics=METRICS, execution_id="EX-1"):
+        self.dataset_path = dataset_path
         self.metrics = metrics
         self.execution_id = execution_id
         self.calls = 0
+
+    @property
+    def dataset_artifact_path(self):
+        return self.dataset_path
 
     def execute(self, spec):
         self.calls += 1
@@ -119,12 +142,13 @@ class FakeAdapter:
         )
 
 
-def test_runner_completes_end_to_end():
+def test_runner_completes_end_to_end(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
-    adapter = FakeAdapter()
+    runner = make_runner(artifact)
+    adapter = FakeAdapter(dataset_path)
 
-    result = run_job(runner, job, spec, adapter)
+    result = run_job(runner, job, spec, adapter, artifact)
 
     assert result.accepted
     assert result.run.run_id == "JOB-1"
@@ -143,19 +167,21 @@ def test_runner_completes_end_to_end():
     assert adapter.calls == 1
 
 
-def test_runner_does_not_execute_completed_job_twice():
+def test_runner_does_not_execute_completed_job_twice(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
-    adapter = FakeAdapter()
-    run_job(runner, job, spec, adapter)
+    runner = make_runner(artifact)
+    adapter = FakeAdapter(dataset_path)
+    run_job(runner, job, spec, adapter, artifact)
 
     with pytest.raises(ResearchJobRunnerError):
-        run_job(runner, job, spec, adapter)
+        run_job(runner, job, spec, adapter, artifact)
 
     assert adapter.calls == 1
 
 
-def test_runner_rejects_job_test_mismatch():
+def test_runner_rejects_job_test_mismatch(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
     changed = HistoricalTestSpec(
         spec.test_id,
@@ -166,13 +192,14 @@ def test_runner_rejects_job_test_mismatch():
         spec.parameters,
         spec.objective,
     )
-    runner = make_runner()
+    runner = make_runner(artifact)
 
     with pytest.raises(ResearchJobRunnerError):
-        run_job(runner, job, changed, FakeAdapter())
+        run_job(runner, job, changed, FakeAdapter(dataset_path), artifact)
 
 
-def test_runner_rejects_dataset_fingerprint_mismatch():
+def test_runner_rejects_dataset_fingerprint_mismatch(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
     bad_job = ResearchJobSpec(
         **{
@@ -181,15 +208,16 @@ def test_runner_rejects_dataset_fingerprint_mismatch():
             "execution_semantics": ExecutionSemantics(job.execution_semantics),
         }
     )
-    runner = make_runner()
+    runner = make_runner(artifact)
 
     with pytest.raises(ResearchJobRunnerError):
-        run_job(runner, bad_job, spec, FakeAdapter())
+        run_job(runner, bad_job, spec, FakeAdapter(dataset_path), artifact)
 
 
-def test_runner_rejects_adapter_identity_mismatch():
+def test_runner_rejects_adapter_identity_mismatch(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
+    runner = make_runner(artifact)
 
     class BadAdapter(FakeAdapter):
         def execute(self, source_spec):
@@ -206,12 +234,13 @@ def test_runner_rejects_adapter_identity_mismatch():
             )
 
     with pytest.raises(ResearchJobRunnerError):
-        run_job(runner, job, spec, BadAdapter())
+        run_job(runner, job, spec, BadAdapter(dataset_path), artifact)
 
 
-def test_runner_rejects_incomplete_adapter_execution():
+def test_runner_rejects_incomplete_adapter_execution(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
+    runner = make_runner(artifact)
 
     class IncompleteAdapter(FakeAdapter):
         def execute(self, source_spec):
@@ -225,33 +254,36 @@ def test_runner_rejects_incomplete_adapter_execution():
             )
 
     with pytest.raises(ResearchJobRunnerError):
-        run_job(runner, job, spec, IncompleteAdapter())
+        run_job(runner, job, spec, IncompleteAdapter(dataset_path), artifact)
 
 
-def test_runner_evidence_is_derived_from_receipt():
+def test_runner_evidence_is_derived_from_receipt(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
-    result = run_job(runner, job, spec, FakeAdapter())
+    runner = make_runner(artifact)
+    result = run_job(runner, job, spec, FakeAdapter(dataset_path), artifact)
 
     assert result.evidence.metrics == result.receipt.metrics
     assert result.evidence.result["execution_id"] == result.receipt.execution_id
     assert result.evidence.result["engine_revision"] == result.receipt.engine_revision
 
 
-def test_runner_preserves_declared_execution_semantics():
+def test_runner_preserves_declared_execution_semantics(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
-    result = run_job(runner, job, spec, FakeAdapter())
+    runner = make_runner(artifact)
+    result = run_job(runner, job, spec, FakeAdapter(dataset_path), artifact)
 
     assert result.run.execution_semantics is ExecutionSemantics.TICK_FEASIBLE
     assert result.receipt.execution_semantics is ExecutionSemantics.TICK_FEASIBLE
     assert result.evidence.result["execution_semantics"] == "TICK_FEASIBLE"
 
 
-def test_runner_creates_reproducible_run_identity():
+def test_runner_creates_reproducible_run_identity(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    first = run_job(make_runner(), job, spec, FakeAdapter())
-    second = run_job(make_runner(), job, spec, FakeAdapter())
+    first = run_job(make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact)
+    second = run_job(make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact)
 
     assert first.run.fingerprint == second.run.fingerprint
     assert first.evidence.fingerprint == second.evidence.fingerprint
@@ -260,19 +292,21 @@ def test_runner_creates_reproducible_run_identity():
     assert first.record == second.record
 
 
-def test_runner_never_requires_strategy_geometry():
+def test_runner_never_requires_strategy_geometry(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
-    result = run_job(runner, job, spec, FakeAdapter())
+    runner = make_runner(artifact)
+    result = run_job(runner, job, spec, FakeAdapter(dataset_path), artifact)
 
     assert result.accepted
     assert result.run.strategy_id == "SP2L-A"
     assert result.run.parameters == {"tp_r": 2}
 
 
-def test_runner_rejects_legacy_v1_receipt_as_unverified():
+def test_runner_rejects_legacy_v1_receipt_as_unverified(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
+    runner = make_runner(artifact)
     class LegacyAdapter(FakeAdapter):
         def execute(self, source_spec):
             return build_execution_receipt(
@@ -283,12 +317,13 @@ def test_runner_rejects_legacy_v1_receipt_as_unverified():
                 metrics=self.metrics,
             )
     with pytest.raises(ResearchJobRunnerError, match="LEGACY_UNVERIFIED"):
-        run_job(runner, job, spec, LegacyAdapter())
+        run_job(runner, job, spec, LegacyAdapter(dataset_path), artifact)
 
 
-def test_runner_rejects_dataset_digest_mismatch():
+def test_runner_rejects_dataset_digest_mismatch(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
     spec, job = make_spec_and_job()
-    runner = make_runner()
+    runner = make_runner(artifact)
     class MismatchedAdapter(FakeAdapter):
         def execute(self, source_spec):
             receipt = super().execute(source_spec)
@@ -305,4 +340,103 @@ def test_runner_rejects_dataset_digest_mismatch():
                 dataset_content_sha256="b" * 64,
             )
     with pytest.raises(ResearchJobRunnerError, match="dataset_content_sha256"):
-        run_job(runner, job, spec, MismatchedAdapter())
+        run_job(runner, job, spec, MismatchedAdapter(dataset_path), artifact)
+
+
+def test_runner_rejects_adapter_without_local_dataset_path(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    runner = make_runner(artifact)
+    delegate = FakeAdapter(dataset_path)
+
+    class AdapterWithoutPath:
+        engine_revision = delegate.engine_revision
+
+        def execute(self, source_spec):
+            return delegate.execute(source_spec)
+
+    with pytest.raises(ResearchJobRunnerError, match="must expose dataset_artifact_path"):
+        run_job(runner, job, spec, AdapterWithoutPath(), artifact)
+
+
+def test_runner_rejects_dataset_mutated_during_adapter_execution(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    runner = make_runner(artifact)
+
+    class MutatingAdapter(FakeAdapter):
+        def execute(self, source_spec):
+            receipt = super().execute(source_spec)
+            dataset_path.write_bytes(b"mutated during execution")
+            return receipt
+
+    try:
+        with pytest.raises(ResearchJobRunnerError, match="local dataset artifact changed during adapter execution"):
+            run_job(runner, job, spec, MutatingAdapter(dataset_path), artifact)
+    finally:
+        dataset_path.write_bytes(DATASET_BYTES)
+
+
+
+def test_runner_rejects_dataset_mutated_before_adapter_exception(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    runner = make_runner(artifact)
+
+    class MutatingFailingAdapter(FakeAdapter):
+        def execute(self, source_spec):
+            dataset_path.write_bytes(b"mutated before adapter failure")
+            raise RuntimeError("adapter failed after mutation")
+
+    try:
+        with pytest.raises(
+            ResearchJobRunnerError,
+            match="local dataset artifact changed during adapter execution",
+        ):
+            run_job(runner, job, spec, MutatingFailingAdapter(dataset_path), artifact)
+    finally:
+        dataset_path.write_bytes(DATASET_BYTES)
+
+
+def test_runner_rejects_artifact_path_mismatch(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    runner = make_runner(artifact)
+
+    class WrongPathAdapter(FakeAdapter):
+        @property
+        def dataset_artifact_path(self):
+            return dataset_path.parent / "not-the-registered-dataset.bin"
+
+    with pytest.raises(ResearchJobRunnerError, match="must resolve to existing local files"):
+        run_job(runner, job, spec, WrongPathAdapter(dataset_path), artifact)
+
+
+def test_runner_rejects_synthetic_adapter_subclass_before_ledger_writes(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    runner = make_runner(artifact)
+
+    class UntrustedSyntheticAdapter(SyntheticExecutionAdapter):
+        def __init__(self):
+            fixture = SyntheticExecutionFixture(
+                "UNTRUSTED-SUBCLASS-FIXTURE",
+                ExecutionSemantics.TICK_FEASIBLE,
+                METRICS,
+            )
+            super().__init__(fixture)
+            self.calls = 0
+
+        def execute(self, source_spec):
+            self.calls += 1
+            return super().execute(source_spec)
+
+    adapter = UntrustedSyntheticAdapter()
+
+    with pytest.raises(ResearchJobRunnerError, match="synthetic adapter subclasses are not trusted"):
+        run_job(runner, job, spec, adapter, artifact)
+
+    assert adapter.calls == 0
+    assert runner.runs.entries() == ()
+    assert runner.runs.usage_ledger.entries() == ()
+

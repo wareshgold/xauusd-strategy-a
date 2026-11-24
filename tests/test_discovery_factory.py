@@ -92,6 +92,10 @@ def test_discovery_factory_binds_mt5_artifact_to_runner(tmp_path, monkeypatch):
         def __init__(self, **kwargs):
             self.kwargs = kwargs
 
+        @property
+        def dataset_artifact_path(self):
+            return Path(self.kwargs["bars_artifact_path"])
+
         def execute(self, declared_spec):
             dataset_sha = hashlib.sha256(
                 Path(self.kwargs["bars_artifact_path"]).read_bytes()

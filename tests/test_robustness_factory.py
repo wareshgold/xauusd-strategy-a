@@ -60,6 +60,10 @@ class FakeAdapter:
     def __init__(self, dataset_path):
         self.dataset_path = dataset_path
 
+    @property
+    def dataset_artifact_path(self):
+        return self.dataset_path
+
     def execute(self, spec):
         observed_sha = hashlib.sha256(self.dataset_path.read_bytes()).hexdigest()
         return build_execution_receipt(
