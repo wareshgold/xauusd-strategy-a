@@ -46,6 +46,25 @@ class StabilityMatrixAdapter:
             raise StabilityAdapterError(f"dataset artifact not found: {path}")
         return hashlib.sha256(path.read_bytes()).hexdigest()
 
+    @property
+    def input_artifacts(self) -> tuple[ExecutionArtifact, ...]:
+        """Declare the exact Discovery JSON passed to the Stability subprocess."""
+        if (not self.expected_discovery_artifact_id or
+                not self.expected_discovery_content_sha256 or
+                self.expected_discovery_byte_size is None):
+            raise StabilityAdapterError("handoff-bound Discovery output artifact identity is required")
+        try:
+            path = Path(self.discovery_json_path).expanduser().resolve(strict=True)
+        except (OSError, TypeError, ValueError) as exc:
+            raise StabilityAdapterError("Discovery JSON must be an existing local file") from exc
+        return (ExecutionArtifact(
+            artifact_id=self.expected_discovery_artifact_id,
+            artifact_role="DISCOVERY_MATRIX_JSON",
+            local_path=str(path),
+            content_sha256=self.expected_discovery_content_sha256,
+            byte_size=self.expected_discovery_byte_size,
+        ),)
+
     def _validate_inputs(self) -> tuple[dict, str, str, Path]:
         if not self.script_path.is_file():
             raise StabilityAdapterError(f"stability script not found: {self.script_path}")
@@ -225,4 +244,5 @@ class StabilityMatrixAdapter:
                 content_sha256=result_sha256,
                 byte_size=len(result_raw),
             ),
+            input_artifacts=self.input_artifacts,
         )
