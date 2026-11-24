@@ -23,7 +23,9 @@ class ExecutionArtifact:
     byte_size: int
 
     def validate(self) -> None:
-        if not self.artifact_id or not self.artifact_role or not self.local_path:
+        if not all(isinstance(value, str) and value for value in (
+            self.artifact_id, self.artifact_role, self.local_path
+        )):
             raise ExecutionContractError("execution output artifact identity is incomplete")
         if (not isinstance(self.content_sha256, str) or len(self.content_sha256) != 64 or
                 any(ch not in "0123456789abcdef" for ch in self.content_sha256)):
