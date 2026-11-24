@@ -606,3 +606,95 @@ def test_runner_independently_rejects_output_artifact_digest_mismatch(dataset_fi
 
     with pytest.raises(ResearchJobRunnerError, match="output artifact SHA-256 does not match Runner observation"):
         run_job(make_runner(artifact), job, spec, WrongOutputAdapter(dataset_path), artifact)
+
+
+def test_runner_binds_secondary_input_artifacts_into_research_record(dataset_fixture):
+    from dataclasses import replace
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    input_path = dataset_path.parent / "frozen-entry.csv"
+    input_path.write_bytes(b"entry_id\n1\n")
+    input_raw = input_path.read_bytes()
+    input_sha = hashlib.sha256(input_raw).hexdigest()
+    output_path = dataset_path.parent / "matrix.json"
+    output_path.write_bytes(b'{"research_only":true}')
+
+    class SecondaryInputAdapter(FakeAdapter):
+        @property
+        def input_artifacts(self):
+            return (ExecutionArtifact(
+                artifact_id="FROZEN-ENTRY-1",
+                artifact_role="FROZEN_V3_ENTRY_CSV",
+                local_path=str(input_path.resolve()),
+                content_sha256=input_sha,
+                byte_size=len(input_raw),
+            ),)
+
+        def execute(self, declared_spec):
+            receipt = super().execute(declared_spec)
+            return replace(
+                receipt,
+                receipt_schema_version=3,
+                output_artifact=ExecutionArtifact(
+                    artifact_id="DISCOVERY-OUTPUT-1",
+                    artifact_role="DISCOVERY_MATRIX_JSON",
+                    local_path=str(output_path.resolve()),
+                    content_sha256=hashlib.sha256(output_path.read_bytes()).hexdigest(),
+                    byte_size=output_path.stat().st_size,
+                ),
+                input_artifacts=self.input_artifacts,
+            )
+
+    result = run_job(make_runner(artifact), job, spec, SecondaryInputAdapter(dataset_path), artifact)
+    assert result.record.input_artifacts[0].content_sha256 == input_sha
+    assert result.record.input_artifacts_binding_fingerprint
+    assert result.evidence.result["input_artifacts"][0]["artifact_id"] == "FROZEN-ENTRY-1"
+
+    restored = type(result.record).from_dict(result.record.as_dict())
+    assert restored == result.record
+    with pytest.raises(ResearchRecordError, match="input artifact binding fingerprint mismatch"):
+        replace(result.record, input_artifacts=(
+            replace(result.record.input_artifacts[0], content_sha256="f" * 64),
+        )).validate()
+
+
+def test_runner_rejects_secondary_input_mutation_during_execution(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    input_path = dataset_path.parent / "frozen-entry.csv"
+    input_path.write_bytes(b"entry_id\n1\n")
+    input_raw = input_path.read_bytes()
+    input_sha = hashlib.sha256(input_raw).hexdigest()
+    output_path = dataset_path.parent / "matrix.json"
+    output_path.write_bytes(b'{"research_only":true}')
+
+    class MutatingSecondaryInputAdapter(FakeAdapter):
+        @property
+        def input_artifacts(self):
+            return (ExecutionArtifact(
+                artifact_id="FROZEN-ENTRY-1",
+                artifact_role="FROZEN_V3_ENTRY_CSV",
+                local_path=str(input_path.resolve()),
+                content_sha256=input_sha,
+                byte_size=len(input_raw),
+            ),)
+
+        def execute(self, declared_spec):
+            input_path.write_bytes(input_raw + b" ")
+            receipt = super().execute(declared_spec)
+            return replace(
+                receipt,
+                receipt_schema_version=3,
+                output_artifact=ExecutionArtifact(
+                    artifact_id="DISCOVERY-OUTPUT-1",
+                    artifact_role="DISCOVERY_MATRIX_JSON",
+                    local_path=str(output_path.resolve()),
+                    content_sha256=hashlib.sha256(output_path.read_bytes()).hexdigest(),
+                    byte_size=output_path.stat().st_size,
+                ),
+                input_artifacts=self.input_artifacts,
+            )
+
+    with pytest.raises(ResearchJobRunnerError, match="secondary input artifact SHA-256"):
+        run_job(make_runner(artifact), job, spec, MutatingSecondaryInputAdapter(dataset_path), artifact)
