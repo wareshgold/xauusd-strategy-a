@@ -99,10 +99,10 @@ class DiscoveryMatrixAdapter:
             self.end,
         ]
         if self.bars_artifact_path is not None:
-            command.extend(["--bars-artifact", str(self.bars_artifact_path)])
+            command.extend(["--bars-artifact", str(self.dataset_artifact_path)])
         if self.entry_population_artifact_path is not None:
             command.extend([
-                "--entry-population-artifact", str(self.entry_population_artifact_path),
+                "--entry-population-artifact", str(Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)),
                 "--entry-population-sha256", str(self.entry_population_sha256),
             ])
         if self.output_dir is not None:
@@ -132,7 +132,7 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError("frozen entry artifact path and SHA-256 must be supplied together")
         expected_entry_sha256 = None
         if self.entry_population_artifact_path is not None:
-            entry_path = Path(self.entry_population_artifact_path)
+            entry_path = Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)
             if not entry_path.is_file():
                 raise DiscoveryAdapterError(f"frozen V3 entry artifact not found: {entry_path}")
             expected_entry_sha256 = hashlib.sha256(entry_path.read_bytes()).hexdigest()
@@ -156,7 +156,8 @@ class DiscoveryMatrixAdapter:
         if post_run_sha256 != expected_dataset_sha256:
             raise DiscoveryAdapterError("M1 dataset artifact changed while Discovery was running")
         if self.entry_population_artifact_path is not None:
-            post_entry_sha256 = hashlib.sha256(Path(self.entry_population_artifact_path).read_bytes()).hexdigest()
+            post_entry_path = Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)
+            post_entry_sha256 = hashlib.sha256(post_entry_path.read_bytes()).hexdigest()
             if post_entry_sha256 != expected_entry_sha256:
                 raise DiscoveryAdapterError("frozen V3 entry artifact changed while Discovery was running")
 
