@@ -44,9 +44,13 @@ def _observe_local_dataset(
         raise ResearchJobRunnerError(
             "adapter dataset_artifact_path must identify the registered local artifact"
         )
-    raw = path.read_bytes()
-    observed_sha256 = hashlib.sha256(raw).hexdigest()
-    observed_size = len(raw)
+    digest = hashlib.sha256()
+    observed_size = 0
+    with path.open("rb") as dataset_file:
+        for chunk in iter(lambda: dataset_file.read(1024 * 1024), b""):
+            digest.update(chunk)
+            observed_size += len(chunk)
+    observed_sha256 = digest.hexdigest()
     if verify_identity:
         if observed_sha256 != expected_sha256:
             raise ResearchJobRunnerError(
