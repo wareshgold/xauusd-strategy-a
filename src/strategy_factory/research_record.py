@@ -109,13 +109,18 @@ class ResearchRecord:
             )
             if any(not value for value in required) or self.dataset_byte_size is None:
                 raise ResearchRecordError("research record v2 dataset binding is incomplete")
-            if (len(self.dataset_content_sha256) != 64 or
+            if (not isinstance(self.dataset_content_sha256, str) or
+                    len(self.dataset_content_sha256) != 64 or
                     any(ch not in "0123456789abcdef" for ch in self.dataset_content_sha256)):
                 raise ResearchRecordError("research record v2 dataset SHA-256 is invalid")
-            if self.dataset_byte_size < 0:
+            if not isinstance(self.dataset_artifact_id, str) or not self.dataset_artifact_id:
+                raise ResearchRecordError("research record v2 DatasetArtifact ID is invalid")
+            if (isinstance(self.dataset_byte_size, bool) or
+                    not isinstance(self.dataset_byte_size, int) or self.dataset_byte_size < 0):
                 raise ResearchRecordError("research record v2 dataset byte size is invalid")
             for value in (self.execution_receipt_fingerprint, self.dataset_binding_fingerprint):
-                if len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value):
+                if (not isinstance(value, str) or len(value) != 64 or
+                        any(ch not in "0123456789abcdef" for ch in value)):
                     raise ResearchRecordError("research record v2 binding fingerprint is invalid")
             binding_payload = {
                 "binding_revision": "DATASET-BINDING-1",
