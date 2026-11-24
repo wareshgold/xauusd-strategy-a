@@ -16,7 +16,7 @@ import sys
 from typing import Any
 
 from .adapter import build_execution_receipt
-from .execution import ExecutionReceipt
+from .execution import ExecutionArtifact, ExecutionReceipt
 from .metrics import ResearchMetrics
 from .m1_integrity import same_utc_instant, validate_m1_artifact
 from .test_contract import HistoricalTestSpec
@@ -238,4 +238,11 @@ class DiscoveryMatrixAdapter:
             metrics=metrics,
             receipt_schema_version=2,
             dataset_content_sha256=expected_dataset_sha256,
+            output_artifact=ExecutionArtifact(
+                artifact_id=f"DISCOVERY-MATRIX-{spec.test_id}-{self.variant_name}",
+                artifact_role="DISCOVERY_MATRIX_JSON",
+                local_path=str(json_path.resolve()),
+                content_sha256=observed_matrix_sha256,
+                byte_size=len(matrix_raw),
+            ),
         )
