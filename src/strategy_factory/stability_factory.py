@@ -116,6 +116,10 @@ class StabilityFactory:
             raise StabilityFactoryError("handoff Discovery artifact id does not match upstream Research Record")
         if context.handoff.source_output_artifact_sha256 != context.source_record.output_artifact_sha256:
             raise StabilityFactoryError("handoff Discovery artifact SHA does not match upstream Research Record")
+        if context.handoff.source_output_artifact_role != context.source_record.output_artifact_role:
+            raise StabilityFactoryError("handoff Discovery artifact role does not match upstream Research Record")
+        if context.handoff.source_output_artifact_byte_size != context.source_record.output_artifact_byte_size:
+            raise StabilityFactoryError("handoff Discovery artifact size does not match upstream Research Record")
         try:
             discovery_path = Path(context.discovery_json_path).expanduser().resolve(strict=True)
         except (OSError, TypeError, ValueError) as exc:
