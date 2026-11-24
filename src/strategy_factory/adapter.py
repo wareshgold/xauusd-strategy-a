@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping, Protocol
 
-from .execution import ExecutionContractError, ExecutionReceipt
+from .execution import ExecutionArtifact, ExecutionContractError, ExecutionReceipt
 from .metrics import ResearchMetrics
 from .test_contract import ExecutionSemantics, HistoricalTestSpec
 
@@ -36,6 +36,7 @@ def build_execution_receipt(
     completed: bool = True,
     receipt_schema_version: int = 1,
     dataset_content_sha256: str | None = None,
+    output_artifact: ExecutionArtifact | None = None,
 ) -> ExecutionReceipt:
     """Convert a completed engine result into the canonical Factory receipt."""
     spec.validate()
@@ -50,6 +51,7 @@ def build_execution_receipt(
         metrics=metrics,
         receipt_schema_version=receipt_schema_version,
         dataset_content_sha256=dataset_content_sha256,
+        output_artifact=output_artifact,
     )
     receipt.validate()
     return receipt
