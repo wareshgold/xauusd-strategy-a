@@ -64,6 +64,7 @@ class ExecutionReceipt:
     receipt_schema_version: int = 1
     dataset_content_sha256: str | None = None
     output_artifact: ExecutionArtifact | None = None
+    input_artifacts: tuple[ExecutionArtifact, ...] = ()
 
     def validate(self) -> None:
         required = (
@@ -92,6 +93,16 @@ class ExecutionReceipt:
                 raise ExecutionContractError("receipt schema v3 requires dataset_content_sha256")
             if self.output_artifact is None:
                 raise ExecutionContractError("receipt schema v3 requires output_artifact")
+        if not isinstance(self.input_artifacts, tuple):
+            raise ExecutionContractError("execution input_artifacts must be an immutable tuple")
+        if self.receipt_schema_version == 2 and self.input_artifacts:
+            raise ExecutionContractError("receipt schema v2 cannot carry input_artifacts")
+        for artifact in self.input_artifacts:
+            if not isinstance(artifact, ExecutionArtifact):
+                raise ExecutionContractError("execution input artifact must use the typed artifact contract")
+            artifact.validate()
+        if len({artifact.artifact_id for artifact in self.input_artifacts}) != len(self.input_artifacts):
+            raise ExecutionContractError("execution input artifact IDs must be unique")
         if self.output_artifact is not None:
             if not isinstance(self.output_artifact, ExecutionArtifact):
                 raise ExecutionContractError("execution output artifact must use the typed artifact contract")
@@ -117,6 +128,7 @@ class ExecutionReceipt:
             payload["dataset_content_sha256"] = self.dataset_content_sha256
         if self.receipt_schema_version == 3:
             payload["output_artifact"] = self.output_artifact.as_dict()
+            payload["input_artifacts"] = [artifact.as_dict() for artifact in self.input_artifacts]
         return payload
 
 
