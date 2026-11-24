@@ -431,13 +431,31 @@ Known constraints preserved from the available project history:
 
 ## 13. Source gaps to address in implementation planning
 
+### 13.1 Read-only route-policy audit of current source
+
+The following describes current code behavior only. It is not an approved canonical Dataset transition policy and must not be promoted to one without the historical snapshot reconciliation in Section 12.
+
+| Route | Current source behavior | Open gap / disposition |
+| --- | --- | --- |
+| Discovery → Stability | Stability requires the source Discovery output artifact identity and independently checks the M1 Dataset identity. The Discovery JSON is now a declared secondary input. | Exact time-window/partition relationship between the stages is not established by this route contract. |
+| Stability → Validation | Validation requires role UNTOUCHED_VALIDATION, immutable Dataset, source station stability, and a SHA-256 and Artifact ID different from the Stability handoff. | No interval non-overlap contract or exact purpose enforcement is present. Dataset ID lineage is not explicitly compared in the handoff. |
+| Stability → Robustness | Robustness requires source station stability and exact handoff Dataset SHA-256 and Artifact ID equality with its supplied input. | Robustness does not explicitly require a Dataset role or compare the destination Dataset ID to the source Record Dataset ID. It does not establish whether a Stability output matrix must also be consumed as an input artifact. |
+| Validation → Robustness | The global HANDOFF_ROUTES set declares this route. | RobustnessFactory currently rejects every source station other than stability; this declared route is not executable through that factory. Do not silently remove or enable it before source resolution. |
+| Robustness → Holdout | Holdout requires role FRESH_HOLDOUT, immutable Dataset, source station robustness, and a different SHA-256 and Artifact ID from the Robustness handoff. | strategy_revision_frozen is a caller-supplied Boolean defaulting to true, not a separately verifiable Freeze Record. Exact purpose, prior-use isolation, and temporal independence are not fully enforced. |
+| Holdout → Forward | Forward Gate requires an accepted Holdout result with PASS provenance, binds the result/record/event and a validated event-ledger snapshot, rejects post-Holdout tuning, and requires a different Forward Dataset ID, SHA-256, and Artifact ID. | Freeze status and post-Holdout tuning are still represented by caller assertions; this does not itself establish a production authorization. |
+
+**Purpose enforcement observation:** Factory contexts provide default purpose labels, but callers can override them. The current DatasetUsageLedger only blocks DEVELOPMENT, OPTIMIZATION, and PARAMETER_FIT for UNTOUCHED_VALIDATION and FRESH_HOLDOUT; it does not require the exact stage-specific purpose. This is a code observation, not approval to choose new purpose constants.
+
+**Important:** Handoff currently carries Dataset content SHA and Artifact ID, not the complete source Dataset ID/role/time-window identity. The source Research Record has those fields, but the route-specific factories do not all compare them to the destination spec. This needs explicit policy resolution.
+
+
 The source review at the baseline identifies the following areas for targeted engineering investigation:
 
-1. **Partially addressed on this branch:** Research Record v2 now carries observed raw Dataset SHA, DatasetArtifact ID, byte size, Receipt fingerprint, and a Dataset Binding fingerprint. Handoff-level enforcement and migration/legacy policy remain open.
-2. **Partially addressed on this branch:** for Research Record v2, Handoff construction inherits Dataset SHA and Artifact ID from the immutable Research Record, rejects conflicting caller declarations, and validates equality against the source record. Route-specific destination Dataset policy still requires a full audit.
+1. **Partially addressed on this branch:** Research Record v2 carries observed raw Dataset SHA, DatasetArtifact ID, byte size, Receipt fingerprint, and a Dataset Binding fingerprint. Handoff v2 binds the source produced artifact; migration and legacy-record policy remain open.
+2. **Partially addressed on this branch:** Handoff construction inherits Dataset SHA and Artifact ID from Research Record v2 and rejects conflicts. The read-only route audit above identifies a declared-but-unimplemented Validation → Robustness route and missing exact Dataset ID/role/purpose checks. No route policy has been changed.
 3. Freeze authority is not represented by a separately verified human-authorized Freeze Record in the inspected Research Record model.
 4. Dataset Registry and Research Record Ledger are in-memory; durability is not established.
-5. **Partially addressed on this branch:** Discovery Matrix JSON is now declared as a typed produced artifact, Runner-observed after execution, recorded in Research Record v2, carried through Handoff, and checked before/after Stability. Other secondary inputs and a complete route-wide artifact policy remain open.
+5. **Partially addressed on this branch:** Discovery Matrix JSON and optional frozen V3 entry CSV are bound as produced/secondary artifacts; Stability declares Discovery JSON as a secondary input. Other undeclared or external secondary inputs and route-wide consumption requirements remain open.
 6. Holdout prior-use/role/purpose enforcement and temporal independence require a complete call-path audit before any code change.
 7. Failure and retry semantics for Run/Usage/Lifecycle records require explicit source-level mapping.
 8. Evidence integrity and duplicate/version classification must remain separate from Research Run and Dataset Binding lineage; do not duplicate or override the Evidence Integrity Monitor's responsibility.
@@ -470,7 +488,7 @@ The following are intentionally unresolved:
 - Human Freeze authority, approval workflow, and signing mechanism.
 - Cross-entity canonical serialization and migration policy.
 - Logical Dataset identity versus byte-content identity.
-- Secondary-input provenance contract for Discovery JSON and other Adapter inputs.
+- Coverage and trust boundary for undeclared, indirect, or external Adapter inputs beyond the explicitly declared local artifact list.
 - Exact route-specific Dataset transition policy for every station pair.
 - Temporal overlap, partial reuse, and derived-data independence semantics.
 - Holdout eligibility authority and duplicate-content disposition.
