@@ -417,7 +417,7 @@ Known constraints preserved from the available project history:
 The source review at the baseline identifies the following areas for targeted engineering investigation:
 
 1. **Partially addressed on this branch:** Research Record v2 now carries observed raw Dataset SHA, DatasetArtifact ID, byte size, Receipt fingerprint, and a Dataset Binding fingerprint. Handoff-level enforcement and migration/legacy policy remain open.
-2. Handoff's Dataset SHA and Artifact ID checks are conditional in the shared validator; route-specific factories provide additional checks and must be audited as a whole.
+2. **Partially addressed on this branch:** for Research Record v2, Handoff construction inherits Dataset SHA and Artifact ID from the immutable Research Record, rejects conflicting caller declarations, and validates equality against the source record. Route-specific destination Dataset policy still requires a full audit.
 3. Freeze authority is not represented by a separately verified human-authorized Freeze Record in the inspected Research Record model.
 4. Dataset Registry and Research Record Ledger are in-memory; durability is not established.
 5. Stability consumes a secondary Discovery JSON input that is not covered by the single-artifact observation contract.
@@ -486,10 +486,11 @@ The first bounded implementation package has been applied on this branch:
 - Dataset-backed real executions pass the Runner-observed artifact, content SHA-256, and Receipt into Research Record construction.
 - Record v2 stores the DatasetArtifact ID, observed SHA-256, byte size, Receipt fingerprint, and Dataset Binding fingerprint.
 - The Dataset Binding fingerprint is derived from a versioned payload containing Dataset ID, role, data revision, Dataset fingerprint, Artifact ID, content SHA-256, and byte size.
+- Handoff construction for v2 records inherits the source Dataset SHA and Artifact ID and rejects any conflicting caller-supplied values; the shared validator checks these fields against the source Research Record.
 - Synthetic infrastructure records without a real observed artifact remain on the legacy Research Record v1 representation; synthetic fixture hashes are not relabeled as real Dataset observations.
 - Focused tests were added for v2 fields, tampering detection, and serialized round-trip.
 
-**Validation state:** remote CI has not yet completed for this implementation checkpoint. No local test execution is claimed.
+**Validation state:** Factory Research Tests and SP2L forensic deterministic checks passed on the preceding code checkpoint. The latest field-type hardening commit is undergoing the Full Repository Test Suite. No local test execution is claimed.
 
 **Not yet implemented:** Handoff v2 binding, route-policy enforcement, human-authorized Freeze Record, Holdout independence gates, secondary-input observation, and durable ledger storage.
 
