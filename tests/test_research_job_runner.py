@@ -158,6 +158,12 @@ def test_runner_completes_end_to_end(dataset_fixture):
     assert result.audit.run_fingerprint == result.run.fingerprint
     assert result.provenance.status.value == "PASS"
     assert result.record.run_fingerprint == result.run.fingerprint
+    assert result.record.record_revision == "RESEARCH-RECORD-2"
+    assert result.record.dataset_content_sha256 == DATASET_SHA256
+    assert result.record.dataset_artifact_id == artifact.artifact_id
+    assert result.record.dataset_byte_size == len(DATASET_BYTES)
+    assert len(result.record.execution_receipt_fingerprint) == 64
+    assert len(result.record.dataset_binding_fingerprint) == 64
     assert result.record.fingerprint == result.record.fingerprint
     assert [gate.name for gate in result.gates] == [
         "EXECUTION_CONTRACT",
@@ -440,3 +446,32 @@ def test_runner_rejects_synthetic_adapter_subclass_before_ledger_writes(dataset_
     assert runner.runs.entries() == ()
     assert runner.runs.usage_ledger.entries() == ()
 
+
+
+def test_runner_research_record_v2_rejects_dataset_binding_tampering(dataset_fixture):
+    from dataclasses import replace
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+
+    with pytest.raises(Exception, match="dataset binding fingerprint mismatch"):
+        replace(result.record, dataset_content_sha256="b" * 64).validate()
+
+
+def test_runner_research_record_v2_round_trips_serialized_binding(dataset_fixture):
+    from strategy_factory.research_record import ResearchRecord
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+
+    restored = ResearchRecord.from_dict(result.record.as_dict())
+    assert restored == result.record
+    assert restored.dataset_content_sha256 == DATASET_SHA256
+    assert restored.dataset_artifact_id == artifact.artifact_id
+    assert restored.dataset_byte_size == len(DATASET_BYTES)
