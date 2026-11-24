@@ -14,7 +14,7 @@ class ExecutionContractError(ValueError):
 
 @dataclass(frozen=True)
 class ExecutionArtifact:
-    """A local artifact produced by an execution and independently observed by the Runner."""
+    """A local input or output artifact independently observed by the Runner."""
 
     artifact_id: str
     artifact_role: str
@@ -86,6 +86,8 @@ class ExecutionReceipt:
             digest = self.dataset_content_sha256
             if not isinstance(digest, str) or len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
                 raise ExecutionContractError("dataset_content_sha256 must be a lowercase SHA-256 hex digest or null")
+        if self.receipt_schema_version == 1 and (self.output_artifact is not None or self.input_artifacts):
+            raise ExecutionContractError("receipt schema v1 cannot carry artifact bindings")
         if self.receipt_schema_version == 2 and self.output_artifact is not None:
             raise ExecutionContractError("receipt schema v2 cannot carry output_artifact")
         if self.receipt_schema_version == 3:
