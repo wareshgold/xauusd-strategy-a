@@ -109,6 +109,8 @@ class ExecutionReceipt:
             if not isinstance(self.output_artifact, ExecutionArtifact):
                 raise ExecutionContractError("execution output artifact must use the typed artifact contract")
             self.output_artifact.validate()
+            if self.output_artifact.artifact_id in {item.artifact_id for item in self.input_artifacts}:
+                raise ExecutionContractError("execution input and output artifact IDs must be distinct")
         if not self.completed:
             raise ExecutionContractError("incomplete execution cannot produce accepted evidence")
         self.metrics.validate()
