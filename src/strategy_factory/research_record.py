@@ -229,6 +229,8 @@ class ResearchRecord:
         content_sha256 = None
         output_artifact = None
         output_artifact_binding_fingerprint = None
+        if not all(value is not None for value in binding_values) and evidence.result.get("output_artifact") is not None:
+            raise ResearchRecordError("output artifact requires a complete observed dataset binding")
         if all(value is not None for value in binding_values):
             from .datasets import DatasetArtifact
             from .execution import ExecutionReceipt
