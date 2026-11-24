@@ -86,8 +86,6 @@ class StabilityMatrixAdapter:
             )
         if payload.get("research_only") is not True:
             raise StabilityAdapterError("Discovery JSON is not marked research_only")
-        if self.expected_discovery_artifact_id != f"DISCOVERY-MATRIX-{payload.get('test_id', '')}-{self.variant_name}" and not self.expected_discovery_artifact_id:
-            raise StabilityAdapterError("Discovery output artifact identity is invalid")
         if not self.variant_name:
             raise StabilityAdapterError("variant_name is required")
         if self.segments < 2:
