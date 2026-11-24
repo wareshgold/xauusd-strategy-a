@@ -164,6 +164,9 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
         destination_station="stability", record=upstream_result.record,
         dataset_content_sha256=sha, dataset_artifact_id="MT5-M1-TEST",
     )
+    assert handoff.source_output_artifact_id == upstream_result.record.output_artifact_id
+    assert handoff.source_output_artifact_sha256 == upstream_result.record.output_artifact_sha256
+    assert handoff.source_output_artifact_byte_size == upstream_result.record.output_artifact_byte_size
 
     # The adapter is monkeypatched: no MT5 path or exporter is available here.
     class FakeStabilityAdapter:
