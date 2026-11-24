@@ -37,6 +37,7 @@ def build_execution_receipt(
     receipt_schema_version: int = 1,
     dataset_content_sha256: str | None = None,
     output_artifact: ExecutionArtifact | None = None,
+    input_artifacts: tuple[ExecutionArtifact, ...] = (),
 ) -> ExecutionReceipt:
     """Convert a completed engine result into the canonical Factory receipt."""
     spec.validate()
@@ -52,6 +53,7 @@ def build_execution_receipt(
         receipt_schema_version=receipt_schema_version,
         dataset_content_sha256=dataset_content_sha256,
         output_artifact=output_artifact,
+        input_artifacts=input_artifacts,
     )
     receipt.validate()
     return receipt
