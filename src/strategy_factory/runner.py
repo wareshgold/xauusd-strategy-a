@@ -210,7 +210,20 @@ class ResearchJobRunner:
             ) from exc
 
         try:
-            receipt = adapter.execute(spec)
+            try:
+                receipt = adapter.execute(spec)
+            finally:
+                if not is_synthetic:
+                    post_execution_observation = _observe_local_dataset(
+                        adapter,
+                        observed_artifact,
+                        observed_content_sha256,
+                        verify_identity=False,
+                    )
+                    if post_execution_observation != pre_execution_observation:
+                        raise ResearchJobRunnerError(
+                            "local dataset artifact changed during adapter execution"
+                        )
             validate_adapter_output(spec=spec, receipt=receipt)
             from .synthetic import SyntheticExecutionAdapter
             if receipt.receipt_schema_version != 2:
@@ -221,17 +234,6 @@ class ResearchJobRunner:
                 if receipt.dataset_content_sha256 is not None:
                     raise ResearchJobRunnerError(
                         "trusted synthetic adapter must declare dataset_content_sha256 as null"
-                    )
-            else:
-                post_execution_observation = _observe_local_dataset(
-                    adapter,
-                    observed_artifact,
-                    observed_content_sha256,
-                    verify_identity=False,
-                )
-                if post_execution_observation != pre_execution_observation:
-                    raise ResearchJobRunnerError(
-                        "local dataset artifact changed during adapter execution"
                     )
             if not is_synthetic and receipt.dataset_content_sha256 != observed_content_sha256:
                 raise ResearchJobRunnerError(
