@@ -957,3 +957,76 @@ def test_journal_inspector_hash_and_events_use_same_byte_snapshot(
     assert report["event_count"] == 1
     assert report["sha256"] == hashlib.sha256(snapshot_bytes).hexdigest()
     assert path.read_bytes() != snapshot_bytes
+
+def test_persisted_ledger_rejects_duplicate_completion_without_mutation(tmp_path: Path):
+    path = tmp_path / "events.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    job = make_job("JOB-LIFECYCLE-APPEND-GUARD")
+
+    for event_type in ("QUEUED", "DISPATCHED", "COMPLETED"):
+        ledger.append(
+            event_type=event_type,
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01" if event_type != "QUEUED" else None,
+            station="stability",
+            phase="STABILITY",
+            detail=f"synthetic {event_type.lower()}",
+            output_artifact="SYNTHETIC-ONLY" if event_type == "COMPLETED" else None,
+        )
+
+    before_bytes = path.read_bytes()
+    before_events = ledger.entries()
+
+    with pytest.raises(ValueError, match="invalid factory job lifecycle transition"):
+        ledger.append(
+            event_type="COMPLETED",
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01",
+            station="stability",
+            phase="STABILITY",
+            detail="duplicate synthetic completion",
+            output_artifact="SYNTHETIC-ONLY",
+        )
+
+    assert path.read_bytes() == before_bytes
+    assert ledger.entries() == before_events
+    assert [event.event_type for event in ledger.for_job(job.job_id)] == [
+        "QUEUED", "DISPATCHED", "COMPLETED"
+    ]
+
+
+def test_persisted_ledger_rejects_lifecycle_write_after_terminal_failure(tmp_path: Path):
+    path = tmp_path / "events.jsonl"
+    ledger = FactoryJobEventLedger(path)
+    job = make_job("JOB-LIFECYCLE-FAILED-GUARD")
+
+    for event_type in ("QUEUED", "DISPATCHED", "FAILED"):
+        ledger.append(
+            event_type=event_type,
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01" if event_type != "QUEUED" else None,
+            station="stability",
+            phase="STABILITY",
+            detail=f"synthetic {event_type.lower()}",
+        )
+
+    before_bytes = path.read_bytes()
+    with pytest.raises(ValueError, match="invalid factory job lifecycle transition"):
+        ledger.append(
+            event_type="COMPLETED",
+            job_id=job.job_id,
+            job_fingerprint=job.fingerprint,
+            worker_id="W01",
+            station="stability",
+            phase="STABILITY",
+            detail="contradictory completion",
+        )
+
+    assert path.read_bytes() == before_bytes
+    assert [event.event_type for event in ledger.for_job(job.job_id)] == [
+        "QUEUED", "DISPATCHED", "FAILED"
+    ]
+
