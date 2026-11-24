@@ -344,7 +344,7 @@ def test_runner_rejects_dataset_digest_mismatch(dataset_fixture):
                 receipt.input_fingerprint,
                 receipt.completed,
                 receipt.metrics,
-                receipt_schema_version=2,
+                receipt_schema_version=3,
                 dataset_content_sha256="b" * 64,
             )
     with pytest.raises(ResearchJobRunnerError, match="dataset_content_sha256"):
