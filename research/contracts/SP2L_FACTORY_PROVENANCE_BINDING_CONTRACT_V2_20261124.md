@@ -58,7 +58,7 @@ The existing contract requires every non-synthetic dataset-backed job to have:
 - Adapter path and registered artifact location resolving to the same existing local file.
 - Runner-computed SHA-256 and byte size matching declared dataset identity and registered artifact before execution.
 - The same SHA-256 and byte size after execution.
-- Receipt v2 `dataset_content_sha256` matching the Runner-observed digest.
+- Receipt v2 or v3 `dataset_content_sha256` matching the Runner-observed digest. Receipt v3 additionally binds one typed produced local artifact.
 
 Missing paths, non-files, path mismatches, digest mismatches, byte-size mismatches, and mutation during execution fail closed.
 
@@ -242,7 +242,7 @@ The implemented bounded contract uses a typed execution output artifact containi
 - Content SHA-256.
 - Byte size.
 
-The adapter declares the produced artifact in its Receipt. After execution, the Runner independently resolves and observes the local file and rejects a missing file, digest mismatch, or byte-size mismatch. The normalized observation is carried into Evidence and Research Record v2. The Record fingerprint binds the output artifact identity to the upstream Dataset Binding. Handoff copies and validates the source output artifact ID, role, resolved path, digest, size, and output-artifact binding fingerprint against that Record.
+The adapter declares the produced artifact in Receipt schema v3 (schema v2 remains the dataset-only receipt). After execution, the Runner independently resolves and observes the local file and rejects a missing file, digest mismatch, or byte-size mismatch. The normalized observation is carried into Evidence and Research Record v2. The Record fingerprint binds the output artifact identity to the upstream Dataset Binding. Handoff copies and validates the source output artifact ID, role, resolved path, digest, size, and output-artifact binding fingerprint against that Record.
 
 For Discovery → Stability, the source output is the Discovery Matrix JSON. Stability requires the exact source Record and Handoff, checks the resolved input path and byte identity before execution, and checks the same SHA and byte size again after the Stability subprocess completes. The exact observed Discovery SHA, artifact ID, and size are included in the Stability execution input fingerprint. Stability's own matrix JSON is also declared as a produced artifact for the next station.
 
@@ -504,7 +504,8 @@ The bounded implementation packages applied on this branch are:
 - Record v2 stores the DatasetArtifact ID, observed SHA-256, byte size, Receipt fingerprint, and Dataset Binding fingerprint.
 - The Dataset Binding fingerprint is derived from a versioned payload containing Dataset ID, role, data revision, Dataset fingerprint, Artifact ID, content SHA-256, and byte size.
 - Handoff construction for v2 records inherits the source Dataset SHA and Artifact ID and rejects any conflicting caller-supplied values; the shared validator checks these fields against the source Research Record.
-- Execution Receipts may declare a typed local output artifact. The Runner independently observes its SHA-256 and byte size after execution and normalizes its resolved path before Evidence and Research Record construction.
+- Execution Receipt schema v3 extends dataset-bound schema v2 with one typed local output artifact; schema v2 remains unchanged for dataset-only and synthetic infrastructure receipts.
+- The Runner independently observes the schema-v3 output artifact SHA-256 and byte size after execution and normalizes its resolved path before Evidence and Research Record construction.
 - Research Record v2 binds the produced artifact ID, role, resolved path, SHA-256, and byte size to the Dataset Binding fingerprint. Handoff carries the artifact ID, role, resolved path, SHA-256, byte size, and output-artifact binding fingerprint and validates them against the source Record.
 - Discovery Matrix JSON is now the explicit produced artifact for Discovery. Stability requires that exact path and identity, verifies it before execution and again after subprocess completion, and includes the observed identity in its input fingerprint. Stability Matrix JSON is declared as its own produced artifact.
 - Synthetic infrastructure records without a real observed artifact remain on the legacy Research Record v1 representation; synthetic fixture hashes are not relabeled as real Dataset observations.
