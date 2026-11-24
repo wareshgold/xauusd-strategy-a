@@ -490,8 +490,8 @@ The first bounded implementation package has been applied on this branch:
 - Synthetic infrastructure records without a real observed artifact remain on the legacy Research Record v1 representation; synthetic fixture hashes are not relabeled as real Dataset observations.
 - Focused tests were added for v2 fields, tampering detection, and serialized round-trip.
 
-**Validation state:** Factory Research Tests and SP2L forensic deterministic checks passed on the preceding code checkpoint. The latest field-type hardening commit is undergoing the Full Repository Test Suite. No local test execution is claimed.
+**Validation state at commit `a9aea26dec1a3c6428faf26a95682bc0417df60b`:** all four remote workflows completed successfully: Factory Research Tests; Full Repository Test Suite (`911 passed in 7.24s`); Factory Journal Lock Cross-Platform Tests (Windows and Ubuntu); and SP2L forensic deterministic checks. No local test execution is claimed.
 
-**Not yet implemented:** Handoff v2 binding, route-policy enforcement, human-authorized Freeze Record, Holdout independence gates, secondary-input observation, and durable ledger storage.
+**Not yet implemented:** route-specific Dataset transition policy enforcement beyond current station checks, human-authorized Freeze Record, Holdout independence gates, secondary-input observation, and durable ledger storage.
 
 **Current status: PARTIAL IMPLEMENTATION. NOT CANONICAL. NOT PRODUCTION AUTHORITY.**
