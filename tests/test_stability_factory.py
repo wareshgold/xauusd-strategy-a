@@ -167,6 +167,8 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
     assert handoff.source_output_artifact_id == upstream_result.record.output_artifact_id
     assert handoff.source_output_artifact_sha256 == upstream_result.record.output_artifact_sha256
     assert handoff.source_output_artifact_byte_size == upstream_result.record.output_artifact_byte_size
+    assert handoff.source_output_artifact_path == upstream_result.record.output_artifact_path
+    assert handoff.source_output_artifact_binding_fingerprint == upstream_result.record.output_artifact_binding_fingerprint
     from strategy_factory.research_record import ResearchRecordError
     with pytest.raises(ResearchRecordError, match="output artifact binding fingerprint mismatch"):
         replace(upstream_result.record, output_artifact_sha256="f" * 64).validate()
