@@ -297,6 +297,11 @@ class ResearchRecord:
             dataset_binding_fingerprint = hashlib.sha256(
                 cls._payload(binding_payload)
             ).hexdigest()
+            if output_artifact is not None:
+                output_binding_payload["dataset_binding_fingerprint"] = dataset_binding_fingerprint
+                output_artifact_binding_fingerprint = hashlib.sha256(
+                    cls._payload(output_binding_payload)
+                ).hexdigest()
 
         if dataset_binding_fingerprint and record_revision not in (None, "RESEARCH-RECORD-2"):
             raise ResearchRecordError("dataset-bound records require RESEARCH-RECORD-2")
