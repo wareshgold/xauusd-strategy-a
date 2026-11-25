@@ -10,6 +10,7 @@ from .evidence import EvidenceBundle
 from .research_provenance import ResearchProvenanceResult, ResearchProvenanceStatus
 from .runs import ResearchRunIdentity
 from .snapshot import ReadinessSnapshot
+from .execution import ExecutionArtifact
 
 
 class ResearchRecordError(ValueError):
@@ -38,6 +39,19 @@ class ResearchRecord:
     provenance_status: ResearchProvenanceStatus
     provenance_reasons: tuple[str, ...]
     fingerprint: str
+    dataset_content_sha256: str | None = None
+    dataset_artifact_id: str | None = None
+    dataset_byte_size: int | None = None
+    execution_receipt_fingerprint: str | None = None
+    dataset_binding_fingerprint: str | None = None
+    output_artifact_id: str | None = None
+    output_artifact_role: str | None = None
+    output_artifact_path: str | None = None
+    output_artifact_sha256: str | None = None
+    output_artifact_byte_size: int | None = None
+    output_artifact_binding_fingerprint: str | None = None
+    input_artifacts: tuple[ExecutionArtifact, ...] = ()
+    input_artifacts_binding_fingerprint: str | None = None
 
     @staticmethod
     def _payload(values: dict[str, Any]) -> bytes:
@@ -63,6 +77,26 @@ class ResearchRecord:
             "provenance_status": self.provenance_status.value,
             "provenance_reasons": list(self.provenance_reasons),
         }
+        if self.record_revision == "RESEARCH-RECORD-2":
+            data.update({
+                "dataset_content_sha256": self.dataset_content_sha256,
+                "dataset_artifact_id": self.dataset_artifact_id,
+                "dataset_byte_size": self.dataset_byte_size,
+                "execution_receipt_fingerprint": self.execution_receipt_fingerprint,
+                "dataset_binding_fingerprint": self.dataset_binding_fingerprint,
+            })
+            if self.output_artifact_id is not None:
+                data.update({
+                    "output_artifact_id": self.output_artifact_id,
+                    "output_artifact_role": self.output_artifact_role,
+                    "output_artifact_path": self.output_artifact_path,
+                    "output_artifact_sha256": self.output_artifact_sha256,
+                    "output_artifact_byte_size": self.output_artifact_byte_size,
+                    "output_artifact_binding_fingerprint": self.output_artifact_binding_fingerprint,
+                })
+            if self.input_artifacts:
+                data["input_artifacts"] = [artifact.as_dict() for artifact in self.input_artifacts]
+                data["input_artifacts_binding_fingerprint"] = self.input_artifacts_binding_fingerprint
         if include_fingerprint:
             data["fingerprint"] = self.fingerprint
         return data
@@ -74,6 +108,8 @@ class ResearchRecord:
             data = dict(values)
             data["provenance_status"] = ResearchProvenanceStatus(data["provenance_status"])
             data["provenance_reasons"] = tuple(data["provenance_reasons"])
+            if "input_artifacts" in data:
+                data["input_artifacts"] = tuple(ExecutionArtifact(**item) for item in data["input_artifacts"])
             record = cls(**data)
         except (KeyError, TypeError, ValueError) as exc:
             raise ResearchRecordError("invalid serialized research record") from exc
@@ -87,6 +123,97 @@ class ResearchRecord:
             raise ResearchRecordError("research record provenance status must be explicit")
         if self.provenance_status.value != ResearchProvenanceStatus.PASS.value:
             raise ResearchRecordError("research record requires PASS provenance status")
+        if self.record_revision == "RESEARCH-RECORD-2":
+            required = (
+                self.dataset_content_sha256,
+                self.dataset_artifact_id,
+                self.execution_receipt_fingerprint,
+                self.dataset_binding_fingerprint,
+            )
+            if any(not value for value in required) or self.dataset_byte_size is None:
+                raise ResearchRecordError("research record v2 dataset binding is incomplete")
+            if (not isinstance(self.dataset_content_sha256, str) or
+                    len(self.dataset_content_sha256) != 64 or
+                    any(ch not in "0123456789abcdef" for ch in self.dataset_content_sha256)):
+                raise ResearchRecordError("research record v2 dataset SHA-256 is invalid")
+            if not isinstance(self.dataset_artifact_id, str) or not self.dataset_artifact_id:
+                raise ResearchRecordError("research record v2 DatasetArtifact ID is invalid")
+            if (isinstance(self.dataset_byte_size, bool) or
+                    not isinstance(self.dataset_byte_size, int) or self.dataset_byte_size < 0):
+                raise ResearchRecordError("research record v2 dataset byte size is invalid")
+            for value in (self.execution_receipt_fingerprint, self.dataset_binding_fingerprint):
+                if (not isinstance(value, str) or len(value) != 64 or
+                        any(ch not in "0123456789abcdef" for ch in value)):
+                    raise ResearchRecordError("research record v2 binding fingerprint is invalid")
+            binding_payload = {
+                "binding_revision": "DATASET-BINDING-1",
+                "dataset_id": self.dataset_id,
+                "dataset_role": self.dataset_role,
+                "data_revision": self.data_revision,
+                "dataset_fingerprint": self.dataset_fingerprint,
+                "artifact_id": self.dataset_artifact_id,
+                "content_sha256": self.dataset_content_sha256,
+                "byte_size": self.dataset_byte_size,
+            }
+            expected_binding = hashlib.sha256(self._payload(binding_payload)).hexdigest()
+            if self.dataset_binding_fingerprint != expected_binding:
+                raise ResearchRecordError("dataset binding fingerprint mismatch")
+            output_values = (
+                self.output_artifact_id, self.output_artifact_role, self.output_artifact_path,
+                self.output_artifact_sha256, self.output_artifact_byte_size,
+                self.output_artifact_binding_fingerprint,
+            )
+            if any(value is not None for value in output_values):
+                if any(value is None for value in output_values):
+                    raise ResearchRecordError("research record output artifact binding is incomplete")
+                if not all(isinstance(value, str) and value for value in output_values[:3]):
+                    raise ResearchRecordError("research record output artifact identity is invalid")
+                if (not isinstance(self.output_artifact_sha256, str) or
+                        len(self.output_artifact_sha256) != 64 or
+                        any(ch not in "0123456789abcdef" for ch in self.output_artifact_sha256)):
+                    raise ResearchRecordError("research record output artifact SHA-256 is invalid")
+                if (isinstance(self.output_artifact_byte_size, bool) or
+                        not isinstance(self.output_artifact_byte_size, int) or self.output_artifact_byte_size < 0):
+                    raise ResearchRecordError("research record output artifact byte size is invalid")
+                if (not isinstance(self.output_artifact_binding_fingerprint, str) or
+                        len(self.output_artifact_binding_fingerprint) != 64 or
+                        any(ch not in "0123456789abcdef" for ch in self.output_artifact_binding_fingerprint)):
+                    raise ResearchRecordError("research record output artifact binding fingerprint is invalid")
+                output_payload = {
+                    "binding_revision": "OUTPUT-ARTIFACT-BINDING-1",
+                    "artifact_id": self.output_artifact_id,
+                    "artifact_role": self.output_artifact_role,
+                    "local_path": self.output_artifact_path,
+                    "content_sha256": self.output_artifact_sha256,
+                    "byte_size": self.output_artifact_byte_size,
+                    "dataset_binding_fingerprint": self.dataset_binding_fingerprint,
+                }
+                expected_output_binding = hashlib.sha256(self._payload(output_payload)).hexdigest()
+                if self.output_artifact_binding_fingerprint != expected_output_binding:
+                    raise ResearchRecordError("output artifact binding fingerprint mismatch")
+            if not isinstance(self.input_artifacts, tuple):
+                raise ResearchRecordError("research record input artifacts must be an immutable tuple")
+            if self.input_artifacts:
+                for artifact in self.input_artifacts:
+                    if not isinstance(artifact, ExecutionArtifact):
+                        raise ResearchRecordError("research record input artifact contract is invalid")
+                    artifact.validate()
+                if len({artifact.artifact_id for artifact in self.input_artifacts}) != len(self.input_artifacts):
+                    raise ResearchRecordError("research record input artifact IDs must be unique")
+                if (not isinstance(self.input_artifacts_binding_fingerprint, str) or
+                        len(self.input_artifacts_binding_fingerprint) != 64 or
+                        any(ch not in "0123456789abcdef" for ch in self.input_artifacts_binding_fingerprint)):
+                    raise ResearchRecordError("research record input artifact binding fingerprint is invalid")
+                input_payload = {
+                    "binding_revision": "INPUT-ARTIFACT-BINDING-1",
+                    "dataset_binding_fingerprint": self.dataset_binding_fingerprint,
+                    "input_artifacts": [artifact.as_dict() for artifact in self.input_artifacts],
+                }
+                expected_input_binding = hashlib.sha256(self._payload(input_payload)).hexdigest()
+                if self.input_artifacts_binding_fingerprint != expected_input_binding:
+                    raise ResearchRecordError("input artifact binding fingerprint mismatch")
+            elif self.input_artifacts_binding_fingerprint is not None:
+                raise ResearchRecordError("input artifact binding fingerprint exists without input artifacts")
         expected = hashlib.sha256(self._payload(self.as_dict(include_fingerprint=False))).hexdigest()
         if self.fingerprint != expected:
             raise ResearchRecordError("research record fingerprint mismatch")
@@ -100,7 +227,10 @@ class ResearchRecord:
         audit: ResearchAuditRecord,
         provenance: ResearchProvenanceResult,
         *,
-        record_revision: str = "RESEARCH-RECORD-1",
+        record_revision: str | None = None,
+        receipt=None,
+        observed_artifact=None,
+        observed_content_sha256: str | None = None,
     ) -> "ResearchRecord":
         run.validate()
         evidence.validate()
@@ -117,8 +247,123 @@ class ResearchRecord:
         if audit.evidence_fingerprint != evidence.fingerprint:
             raise ResearchRecordError("audit is not bound to evidence")
 
+        binding_values = (receipt, observed_artifact, observed_content_sha256)
+        if any(value is not None for value in binding_values) and not all(
+            value is not None for value in binding_values
+        ):
+            raise ResearchRecordError("dataset binding requires receipt, observed artifact, and observed SHA")
+
+        dataset_binding_fingerprint = None
+        receipt_fingerprint = None
+        artifact_id = None
+        byte_size = None
+        content_sha256 = None
+        output_artifact = None
+        output_artifact_binding_fingerprint = None
+        input_artifacts = ()
+        input_artifacts_binding_fingerprint = None
+        if not all(value is not None for value in binding_values) and (
+            evidence.result.get("output_artifact") is not None or evidence.result.get("input_artifacts", [])
+        ):
+            raise ResearchRecordError("artifact bindings require a complete observed dataset binding")
+        if all(value is not None for value in binding_values):
+            from .datasets import DatasetArtifact
+            from .execution import ExecutionReceipt
+            if not isinstance(observed_artifact, DatasetArtifact):
+                raise ResearchRecordError("dataset binding requires a registered DatasetArtifact")
+            if not isinstance(receipt, ExecutionReceipt):
+                raise ResearchRecordError("dataset binding requires an ExecutionReceipt")
+            try:
+                observed_artifact.validate()
+                receipt.validate()
+            except Exception as exc:
+                raise ResearchRecordError("dataset binding inputs are invalid") from exc
+            if run.artifact_id != observed_artifact.artifact_id:
+                raise ResearchRecordError("dataset binding artifact does not match research run")
+            if observed_artifact.content_sha256 != observed_content_sha256:
+                raise ResearchRecordError("dataset binding SHA does not match observed artifact")
+            if receipt.receipt_schema_version not in {2, 3} or receipt.dataset_content_sha256 != observed_content_sha256:
+                raise ResearchRecordError("dataset binding receipt does not match observed SHA-256")
+            if (receipt.strategy_revision != run.strategy_revision or
+                    receipt.execution_semantics is not run.execution_semantics):
+                raise ResearchRecordError("dataset binding receipt does not match research run")
+            if evidence.result.get("execution_id") != receipt.execution_id:
+                raise ResearchRecordError("dataset binding receipt does not match research evidence")
+            if evidence.result.get("dataset_content_sha256") != observed_content_sha256:
+                raise ResearchRecordError("dataset binding SHA does not match research evidence")
+            if evidence.result.get("receipt_schema_version") != receipt.receipt_schema_version:
+                raise ResearchRecordError("dataset binding receipt schema does not match research evidence")
+            input_artifacts = receipt.input_artifacts
+            evidence_inputs = evidence.result.get("input_artifacts", [])
+            expected_inputs = [artifact.as_dict() for artifact in input_artifacts]
+            if evidence_inputs != expected_inputs:
+                raise ResearchRecordError("input artifact receipt does not match research evidence")
+            if input_artifacts:
+                input_binding_payload = {
+                    "binding_revision": "INPUT-ARTIFACT-BINDING-1",
+                    "dataset_binding_fingerprint": dataset_binding_fingerprint,
+                    "input_artifacts": expected_inputs,
+                }
+                input_artifacts_binding_fingerprint = hashlib.sha256(
+                    cls._payload(input_binding_payload)
+                ).hexdigest()
+            output_artifact = receipt.output_artifact
+            evidence_output = evidence.result.get("output_artifact")
+            if output_artifact is not None:
+                output_payload = output_artifact.as_dict()
+                if evidence_output != output_payload:
+                    raise ResearchRecordError("output artifact receipt does not match research evidence")
+                output_binding_payload = {
+                    "binding_revision": "OUTPUT-ARTIFACT-BINDING-1",
+                    "artifact_id": output_artifact.artifact_id,
+                    "artifact_role": output_artifact.artifact_role,
+                    "local_path": output_artifact.local_path,
+                    "content_sha256": output_artifact.content_sha256,
+                    "byte_size": output_artifact.byte_size,
+                    "dataset_binding_fingerprint": dataset_binding_fingerprint,
+                }
+                output_artifact_binding_fingerprint = hashlib.sha256(
+                    cls._payload(output_binding_payload)
+                ).hexdigest()
+            elif evidence_output is not None:
+                raise ResearchRecordError("research evidence declares an unreceipted output artifact")
+            artifact_id = observed_artifact.artifact_id
+            byte_size = observed_artifact.byte_size
+            content_sha256 = observed_content_sha256
+            receipt_fingerprint = hashlib.sha256(
+                cls._payload(receipt.as_dict())
+            ).hexdigest()
+            binding_payload = {
+                "binding_revision": "DATASET-BINDING-1",
+                "dataset_id": run.dataset_id,
+                "dataset_role": run.dataset_role,
+                "data_revision": run.data_revision,
+                "dataset_fingerprint": run.dataset_fingerprint,
+                "artifact_id": artifact_id,
+                "content_sha256": content_sha256,
+                "byte_size": byte_size,
+            }
+            dataset_binding_fingerprint = hashlib.sha256(
+                cls._payload(binding_payload)
+            ).hexdigest()
+            if input_artifacts:
+                input_binding_payload["dataset_binding_fingerprint"] = dataset_binding_fingerprint
+                input_artifacts_binding_fingerprint = hashlib.sha256(
+                    cls._payload(input_binding_payload)
+                ).hexdigest()
+            if output_artifact is not None:
+                output_binding_payload["dataset_binding_fingerprint"] = dataset_binding_fingerprint
+                output_artifact_binding_fingerprint = hashlib.sha256(
+                    cls._payload(output_binding_payload)
+                ).hexdigest()
+
+        if dataset_binding_fingerprint and record_revision not in (None, "RESEARCH-RECORD-2"):
+            raise ResearchRecordError("dataset-bound records require RESEARCH-RECORD-2")
+        if not dataset_binding_fingerprint and record_revision == "RESEARCH-RECORD-2":
+            raise ResearchRecordError("RESEARCH-RECORD-2 requires a complete dataset binding")
+
         record = cls(
-            record_revision=record_revision,
+            record_revision=record_revision or ("RESEARCH-RECORD-2" if dataset_binding_fingerprint else "RESEARCH-RECORD-1"),
             run_id=run.run_id,
             run_fingerprint=run.fingerprint,
             evidence_id=evidence.evidence_id,
@@ -136,6 +381,19 @@ class ResearchRecord:
             provenance_status=provenance.status,
             provenance_reasons=provenance.reasons,
             fingerprint="",
+            dataset_content_sha256=content_sha256,
+            dataset_artifact_id=artifact_id,
+            dataset_byte_size=byte_size,
+            execution_receipt_fingerprint=receipt_fingerprint,
+            dataset_binding_fingerprint=dataset_binding_fingerprint,
+            output_artifact_id=output_artifact.artifact_id if output_artifact is not None else None,
+            output_artifact_role=output_artifact.artifact_role if output_artifact is not None else None,
+            output_artifact_path=output_artifact.local_path if output_artifact is not None else None,
+            output_artifact_sha256=output_artifact.content_sha256 if output_artifact is not None else None,
+            output_artifact_byte_size=output_artifact.byte_size if output_artifact is not None else None,
+            output_artifact_binding_fingerprint=output_artifact_binding_fingerprint,
+            input_artifacts=input_artifacts,
+            input_artifacts_binding_fingerprint=input_artifacts_binding_fingerprint,
         )
         fingerprint = hashlib.sha256(record._payload(record.as_dict(include_fingerprint=False))).hexdigest()
         final = replace(record, fingerprint=fingerprint)

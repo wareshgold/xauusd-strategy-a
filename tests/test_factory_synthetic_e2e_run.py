@@ -86,3 +86,22 @@ def test_synthetic_e2e_refuses_live_factory_paths(status_path, journal_path):
             journal_path=journal_path,
             now=datetime(2026, 10, 11, 12, 32, 0, tzinfo=timezone.utc),
         )
+
+@pytest.mark.parametrize("existing_name", ["status", "journal"])
+def test_synthetic_e2e_refuses_to_reuse_existing_output_files(tmp_path, existing_name):
+    status_path = tmp_path / "synthetic_status.json"
+    journal_path = tmp_path / "synthetic_events.jsonl"
+    existing_path = status_path if existing_name == "status" else journal_path
+    sentinel = b"preserve-existing-evidence\\n"
+    existing_path.write_bytes(sentinel)
+
+    with pytest.raises(ValueError, match="refuses to reuse existing output files"):
+        synthetic_run.run_synthetic_e2e(
+            status_path=status_path,
+            journal_path=journal_path,
+            now=datetime(2026, 10, 11, 12, 33, 0, tzinfo=timezone.utc),
+        )
+
+    assert existing_path.read_bytes() == sentinel
+    other_path = journal_path if existing_name == "status" else status_path
+    assert not other_path.exists()

@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 import strategy_factory.stability_factory as module
 from strategy_factory.adapter import build_execution_receipt
+from strategy_factory.execution import ExecutionArtifact
 from strategy_factory.datasets import DatasetArtifact, DatasetRegistry
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.job_events import FactoryJobEventLedger
@@ -132,8 +133,15 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
                     win_rate=1.0, net_r=1.0, profit_factor=None,
                     max_drawdown_r=0.0, gross_profit_r=1.0, gross_loss_r=0.0,
                 ),
-                receipt_schema_version=2,
+                receipt_schema_version=3,
                 dataset_content_sha256=dataset_sha,
+                output_artifact=ExecutionArtifact(
+                    artifact_id=f"DISCOVERY-MATRIX-{declared_spec.test_id}-RR2_ACT10_D2",
+                    artifact_role="DISCOVERY_MATRIX_JSON",
+                    local_path=str(discovery_path.resolve()),
+                    content_sha256=hashlib.sha256(discovery_path.read_bytes()).hexdigest(),
+                    byte_size=discovery_path.stat().st_size,
+                ),
             )
 
     upstream = ResearchJobRunner(runs=runs, evidence=evidence, records=records)
@@ -156,6 +164,28 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
         destination_station="stability", record=upstream_result.record,
         dataset_content_sha256=sha, dataset_artifact_id="MT5-M1-TEST",
     )
+    assert handoff.handoff_revision == "RESEARCH-HANDOFF-2"
+    assert handoff.source_output_artifact_id == upstream_result.record.output_artifact_id
+    assert handoff.source_output_artifact_sha256 == upstream_result.record.output_artifact_sha256
+    assert handoff.source_output_artifact_byte_size == upstream_result.record.output_artifact_byte_size
+    assert handoff.source_output_artifact_path == upstream_result.record.output_artifact_path
+    assert handoff.source_output_artifact_binding_fingerprint == upstream_result.record.output_artifact_binding_fingerprint
+    from strategy_factory.research_record import ResearchRecordError
+    with pytest.raises(ResearchRecordError, match="output artifact binding fingerprint mismatch"):
+        replace(upstream_result.record, output_artifact_sha256="f" * 64).validate()
+
+    from strategy_factory.handoff import ResearchHandoffError, validate_evidence_bound_handoff
+    bad_handoff = replace(handoff, source_output_artifact_sha256="0" * 64, fingerprint="")
+    bad_fingerprint = hashlib.sha256(json.dumps(
+        bad_handoff.as_dict(include_fingerprint=False), sort_keys=True,
+        separators=(",", ":"), ensure_ascii=True,
+    ).encode("utf-8")).hexdigest()
+    bad_handoff = replace(bad_handoff, fingerprint=bad_fingerprint)
+    with pytest.raises(ResearchHandoffError, match="output artifact SHA does not match research record"):
+        validate_evidence_bound_handoff(
+            handoff=bad_handoff, record=upstream_result.record,
+            source_event=events.for_job(job.job_id)[0],
+        )
 
     # The adapter is monkeypatched: no MT5 path or exporter is available here.
     class FakeStabilityAdapter:
@@ -209,6 +239,17 @@ def test_stability_factory_is_dataset_bound_and_does_not_requery_mt5(tmp_path, m
     result = StabilityFactory(stability_runner).prepare_and_run(context)
     assert result.result.accepted is True
     assert result.result.dataset_provenance.status.value == "PASS"
+    assert upstream_result.receipt.receipt_schema_version == 3
+    assert upstream_result.receipt.as_dict()["dataset_content_sha256"] == sha
+    assert upstream_result.receipt.as_dict()["output_artifact"]["artifact_role"] == "DISCOVERY_MATRIX_JSON"
+    assert upstream_result.record.output_artifact_role == "DISCOVERY_MATRIX_JSON"
+    assert upstream_result.record.output_artifact_sha256 == hashlib.sha256(discovery_path.read_bytes()).hexdigest()
+
+    original_discovery = discovery_path.read_bytes()
+    discovery_path.write_bytes(original_discovery + b" ")
+    with pytest.raises(StabilityFactoryError, match="Discovery JSON SHA"):
+        StabilityFactory(stability_runner).prepare_and_run(context)
+    discovery_path.write_bytes(original_discovery)
 
     drifted = replace(
         context,

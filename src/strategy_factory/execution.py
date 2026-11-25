@@ -13,6 +13,38 @@ class ExecutionContractError(ValueError):
 
 
 @dataclass(frozen=True)
+class ExecutionArtifact:
+    """A local input or output artifact independently observed by the Runner."""
+
+    artifact_id: str
+    artifact_role: str
+    local_path: str
+    content_sha256: str
+    byte_size: int
+
+    def validate(self) -> None:
+        if not all(isinstance(value, str) and value for value in (
+            self.artifact_id, self.artifact_role, self.local_path
+        )):
+            raise ExecutionContractError("execution output artifact identity is incomplete")
+        if (not isinstance(self.content_sha256, str) or len(self.content_sha256) != 64 or
+                any(ch not in "0123456789abcdef" for ch in self.content_sha256)):
+            raise ExecutionContractError("execution output artifact SHA-256 is invalid")
+        if isinstance(self.byte_size, bool) or not isinstance(self.byte_size, int) or self.byte_size < 0:
+            raise ExecutionContractError("execution output artifact byte size is invalid")
+
+    def as_dict(self) -> dict[str, Any]:
+        self.validate()
+        return {
+            "artifact_id": self.artifact_id,
+            "artifact_role": self.artifact_role,
+            "local_path": self.local_path,
+            "content_sha256": self.content_sha256,
+            "byte_size": self.byte_size,
+        }
+
+
+@dataclass(frozen=True)
 class ExecutionReceipt:
     """Immutable declaration of how one historical test was actually executed.
 
@@ -31,6 +63,8 @@ class ExecutionReceipt:
     metrics: ResearchMetrics
     receipt_schema_version: int = 1
     dataset_content_sha256: str | None = None
+    output_artifact: ExecutionArtifact | None = None
+    input_artifacts: tuple[ExecutionArtifact, ...] = ()
 
     def validate(self) -> None:
         required = (
@@ -44,14 +78,39 @@ class ExecutionReceipt:
             raise ExecutionContractError("execution receipt identity is incomplete")
         if not isinstance(self.execution_semantics, ExecutionSemantics):
             raise ExecutionContractError("execution_semantics must be explicit")
-        if isinstance(self.receipt_schema_version, bool) or not isinstance(self.receipt_schema_version, int) or self.receipt_schema_version not in {1, 2}:
-            raise ExecutionContractError("receipt_schema_version must be 1 or 2")
+        if isinstance(self.receipt_schema_version, bool) or not isinstance(self.receipt_schema_version, int) or self.receipt_schema_version not in {1, 2, 3}:
+            raise ExecutionContractError("receipt_schema_version must be 1, 2, or 3")
         if self.receipt_schema_version == 1 and self.dataset_content_sha256 is not None:
             raise ExecutionContractError("legacy receipt schema v1 cannot carry dataset_content_sha256")
-        if self.receipt_schema_version == 2 and self.dataset_content_sha256 is not None:
+        if self.receipt_schema_version in {2, 3} and self.dataset_content_sha256 is not None:
             digest = self.dataset_content_sha256
             if not isinstance(digest, str) or len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
                 raise ExecutionContractError("dataset_content_sha256 must be a lowercase SHA-256 hex digest or null")
+        if self.receipt_schema_version == 1 and (self.output_artifact is not None or self.input_artifacts):
+            raise ExecutionContractError("receipt schema v1 cannot carry artifact bindings")
+        if self.receipt_schema_version == 2 and self.output_artifact is not None:
+            raise ExecutionContractError("receipt schema v2 cannot carry output_artifact")
+        if self.receipt_schema_version == 3:
+            if self.dataset_content_sha256 is None:
+                raise ExecutionContractError("receipt schema v3 requires dataset_content_sha256")
+            if self.output_artifact is None:
+                raise ExecutionContractError("receipt schema v3 requires output_artifact")
+        if not isinstance(self.input_artifacts, tuple):
+            raise ExecutionContractError("execution input_artifacts must be an immutable tuple")
+        if self.receipt_schema_version == 2 and self.input_artifacts:
+            raise ExecutionContractError("receipt schema v2 cannot carry input_artifacts")
+        for artifact in self.input_artifacts:
+            if not isinstance(artifact, ExecutionArtifact):
+                raise ExecutionContractError("execution input artifact must use the typed artifact contract")
+            artifact.validate()
+        if len({artifact.artifact_id for artifact in self.input_artifacts}) != len(self.input_artifacts):
+            raise ExecutionContractError("execution input artifact IDs must be unique")
+        if self.output_artifact is not None:
+            if not isinstance(self.output_artifact, ExecutionArtifact):
+                raise ExecutionContractError("execution output artifact must use the typed artifact contract")
+            self.output_artifact.validate()
+            if self.output_artifact.artifact_id in {item.artifact_id for item in self.input_artifacts}:
+                raise ExecutionContractError("execution input and output artifact IDs must be distinct")
         if not self.completed:
             raise ExecutionContractError("incomplete execution cannot produce accepted evidence")
         self.metrics.validate()
@@ -69,8 +128,11 @@ class ExecutionReceipt:
             "metrics": self.metrics.as_dict(),
             "receipt_schema_version": self.receipt_schema_version,
         }
-        if self.receipt_schema_version == 2:
+        if self.receipt_schema_version in {2, 3}:
             payload["dataset_content_sha256"] = self.dataset_content_sha256
+        if self.receipt_schema_version == 3:
+            payload["output_artifact"] = self.output_artifact.as_dict()
+            payload["input_artifacts"] = [artifact.as_dict() for artifact in self.input_artifacts]
         return payload
 
 

@@ -16,7 +16,7 @@ import sys
 from typing import Any
 
 from .adapter import build_execution_receipt
-from .execution import ExecutionReceipt
+from .execution import ExecutionArtifact, ExecutionReceipt
 from .metrics import ResearchMetrics
 from .m1_integrity import same_utc_instant, validate_m1_artifact
 from .test_contract import HistoricalTestSpec
@@ -62,6 +62,29 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError(f"M1 dataset artifact not found: {path}")
         return hashlib.sha256(path.read_bytes()).hexdigest()
 
+    @property
+    def input_artifacts(self) -> tuple[ExecutionArtifact, ...]:
+        """Expose the frozen V3 entry population as an independently observed secondary input."""
+        if self.entry_population_artifact_path is None:
+            return ()
+        if not self.entry_population_sha256:
+            raise DiscoveryAdapterError("frozen entry population SHA-256 is required")
+        try:
+            path = Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)
+            raw = path.read_bytes()
+        except OSError as exc:
+            raise DiscoveryAdapterError("frozen entry population must be an existing local file") from exc
+        digest = hashlib.sha256(raw).hexdigest()
+        if digest != self.entry_population_sha256.lower():
+            raise DiscoveryAdapterError("frozen entry population SHA-256 does not match its declared identity")
+        return (ExecutionArtifact(
+            artifact_id=f"FROZEN-V3-ENTRY-CSV-{digest}",
+            artifact_role="FROZEN_V3_ENTRY_CSV",
+            local_path=str(path),
+            content_sha256=digest,
+            byte_size=len(raw),
+        ),)
+
     def _command(self) -> list[str]:
         command = [
             self.python_executable,
@@ -76,10 +99,10 @@ class DiscoveryMatrixAdapter:
             self.end,
         ]
         if self.bars_artifact_path is not None:
-            command.extend(["--bars-artifact", str(self.bars_artifact_path)])
+            command.extend(["--bars-artifact", str(self.dataset_artifact_path)])
         if self.entry_population_artifact_path is not None:
             command.extend([
-                "--entry-population-artifact", str(self.entry_population_artifact_path),
+                "--entry-population-artifact", str(Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)),
                 "--entry-population-sha256", str(self.entry_population_sha256),
             ])
         if self.output_dir is not None:
@@ -109,7 +132,7 @@ class DiscoveryMatrixAdapter:
             raise DiscoveryAdapterError("frozen entry artifact path and SHA-256 must be supplied together")
         expected_entry_sha256 = None
         if self.entry_population_artifact_path is not None:
-            entry_path = Path(self.entry_population_artifact_path)
+            entry_path = Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)
             if not entry_path.is_file():
                 raise DiscoveryAdapterError(f"frozen V3 entry artifact not found: {entry_path}")
             expected_entry_sha256 = hashlib.sha256(entry_path.read_bytes()).hexdigest()
@@ -133,7 +156,8 @@ class DiscoveryMatrixAdapter:
         if post_run_sha256 != expected_dataset_sha256:
             raise DiscoveryAdapterError("M1 dataset artifact changed while Discovery was running")
         if self.entry_population_artifact_path is not None:
-            post_entry_sha256 = hashlib.sha256(Path(self.entry_population_artifact_path).read_bytes()).hexdigest()
+            post_entry_path = Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)
+            post_entry_sha256 = hashlib.sha256(post_entry_path.read_bytes()).hexdigest()
             if post_entry_sha256 != expected_entry_sha256:
                 raise DiscoveryAdapterError("frozen V3 entry artifact changed while Discovery was running")
 
@@ -236,6 +260,14 @@ class DiscoveryMatrixAdapter:
             engine_revision=self.engine_revision,
             input_fingerprint=input_fingerprint,
             metrics=metrics,
-            receipt_schema_version=2,
+            receipt_schema_version=3,
             dataset_content_sha256=expected_dataset_sha256,
+            output_artifact=ExecutionArtifact(
+                artifact_id=f"DISCOVERY-MATRIX-{spec.test_id}-{self.variant_name}",
+                artifact_role="DISCOVERY_MATRIX_JSON",
+                local_path=str(json_path.resolve()),
+                content_sha256=observed_matrix_sha256,
+                byte_size=len(matrix_raw),
+            ),
+            input_artifacts=self.input_artifacts,
         )

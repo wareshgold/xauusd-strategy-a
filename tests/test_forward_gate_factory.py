@@ -566,8 +566,8 @@ def test_handoff_rejects_duplicate_completed_events_for_source_station(tmp_path)
             source_station="holdout",
             destination_station="forward",
             record=record,
-            dataset_content_sha256="a" * 64,
-            dataset_artifact_id="HOLDOUT-ARTIFACT-SYNTHETIC",
+            dataset_content_sha256=record.dataset_content_sha256,
+            dataset_artifact_id=record.dataset_artifact_id,
         )
 
     assert events.entries() == before

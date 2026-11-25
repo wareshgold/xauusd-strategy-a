@@ -135,7 +135,7 @@ def _context(tmp_path, *, wrong_sha=False):
         detail="done", output_artifact=upstream_result.evidence.evidence_id,
         research_run_fingerprint=upstream_result.run.fingerprint,
     )
-    handoff_sha = ("b" * 64) if wrong_sha else sha
+    handoff_sha = sha
     handoff = build_research_handoff(
         events=events, job_id=job.job_id, source_station="stability",
         destination_station="robustness", record=upstream_result.record,
@@ -155,7 +155,7 @@ def _context(tmp_path, *, wrong_sha=False):
         readiness_snapshot=_snapshot(spec), handoff=handoff,
         source_record=upstream_result.record, source_event=event,
         dataset_artifact_path=path, dataset_artifact_id=artifact_id,
-        dataset_content_sha256=sha, adapter=FakeAdapter(path),
+        dataset_content_sha256=("b" * 64 if wrong_sha else sha), adapter=FakeAdapter(path),
     )
 
 

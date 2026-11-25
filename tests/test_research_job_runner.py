@@ -4,12 +4,14 @@ from pathlib import Path
 import pytest
 
 from strategy_factory.adapter import build_execution_receipt
+from strategy_factory.execution import ExecutionArtifact
 from strategy_factory.datasets import DatasetArtifact, DatasetRegistry, fingerprint_dataset
 from strategy_factory.evidence import EvidenceLedger
 from strategy_factory.jobs import ResearchJobSpec
 from strategy_factory.metrics import ResearchMetrics
 from strategy_factory.runs import ResearchRunLedger
 from strategy_factory.runner import ResearchJobRunner, ResearchJobRunnerError
+from strategy_factory.research_record import ResearchRecordError
 from strategy_factory.snapshot import ReadinessSnapshot
 from strategy_factory.synthetic import SyntheticExecutionAdapter, SyntheticExecutionFixture
 from strategy_factory.test_contract import (
@@ -158,6 +160,12 @@ def test_runner_completes_end_to_end(dataset_fixture):
     assert result.audit.run_fingerprint == result.run.fingerprint
     assert result.provenance.status.value == "PASS"
     assert result.record.run_fingerprint == result.run.fingerprint
+    assert result.record.record_revision == "RESEARCH-RECORD-2"
+    assert result.record.dataset_content_sha256 == DATASET_SHA256
+    assert result.record.dataset_artifact_id == artifact.artifact_id
+    assert result.record.dataset_byte_size == len(DATASET_BYTES)
+    assert len(result.record.execution_receipt_fingerprint) == 64
+    assert len(result.record.dataset_binding_fingerprint) == 64
     assert result.record.fingerprint == result.record.fingerprint
     assert [gate.name for gate in result.gates] == [
         "EXECUTION_CONTRACT",
@@ -440,3 +448,253 @@ def test_runner_rejects_synthetic_adapter_subclass_before_ledger_writes(dataset_
     assert runner.runs.entries() == ()
     assert runner.runs.usage_ledger.entries() == ()
 
+
+
+def test_runner_research_record_v2_rejects_dataset_binding_tampering(dataset_fixture):
+    from dataclasses import replace
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+
+    with pytest.raises(ResearchRecordError, match="dataset binding fingerprint mismatch"):
+        replace(result.record, dataset_content_sha256="b" * 64).validate()
+
+
+def test_runner_research_record_v2_round_trips_serialized_binding(dataset_fixture):
+    from strategy_factory.research_record import ResearchRecord
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+
+    restored = ResearchRecord.from_dict(result.record.as_dict())
+    assert restored == result.record
+    assert restored.dataset_content_sha256 == DATASET_SHA256
+    assert restored.dataset_artifact_id == artifact.artifact_id
+    assert restored.dataset_byte_size == len(DATASET_BYTES)
+
+
+def _completed_event_for_record(result, job):
+    from strategy_factory.job_events import FactoryJobEventLedger
+
+    events = FactoryJobEventLedger(path=None)
+    events.append(
+        event_type="COMPLETED",
+        job_id=result.record.run_id,
+        job_fingerprint=job.fingerprint,
+        station="discovery",
+        phase="DISCOVERY",
+        output_artifact=result.record.evidence_id,
+        research_run_fingerprint=result.record.run_fingerprint,
+    )
+    return events
+
+
+def test_handoff_v2_inherits_dataset_binding_from_research_record(dataset_fixture):
+    from strategy_factory.handoff import build_research_handoff
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+    events = _completed_event_for_record(result, job)
+
+    handoff = build_research_handoff(
+        events=events,
+        job_id=result.record.run_id,
+        source_station="discovery",
+        destination_station="stability",
+        record=result.record,
+    )
+
+    assert handoff.dataset_content_sha256 == result.record.dataset_content_sha256
+    assert handoff.dataset_artifact_id == result.record.dataset_artifact_id
+    handoff.validate()
+
+
+def test_handoff_v2_rejects_dataset_binding_substitution(dataset_fixture):
+    from strategy_factory.handoff import ResearchHandoffError, build_research_handoff
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+    events = _completed_event_for_record(result, job)
+
+    with pytest.raises(ResearchHandoffError, match="conflicts with research record binding"):
+        build_research_handoff(
+            events=events,
+            job_id=result.record.run_id,
+            source_station="discovery",
+            destination_station="stability",
+            record=result.record,
+            dataset_content_sha256="b" * 64,
+        )
+
+
+def test_research_record_v2_rejects_malformed_binding_field_types(dataset_fixture):
+    from dataclasses import replace
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+
+    with pytest.raises(ResearchRecordError, match="byte size is invalid"):
+        replace(result.record, dataset_byte_size=True).validate()
+
+    with pytest.raises(ResearchRecordError, match="SHA-256 is invalid"):
+        replace(result.record, dataset_content_sha256=123).validate()
+
+
+def test_research_record_v2_rejects_receipt_not_bound_to_observed_dataset(dataset_fixture):
+    from dataclasses import replace
+    from strategy_factory.research_record import ResearchRecord
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    result = run_job(
+        make_runner(artifact), job, spec, FakeAdapter(dataset_path), artifact
+    )
+    mismatched_receipt = replace(
+        result.receipt, dataset_content_sha256="b" * 64
+    )
+
+    with pytest.raises(ResearchRecordError, match="receipt does not match observed SHA-256"):
+        ResearchRecord.from_components(
+            result.run,
+            result.evidence,
+            result.snapshot,
+            result.audit,
+            result.provenance,
+            receipt=mismatched_receipt,
+            observed_artifact=artifact,
+            observed_content_sha256=DATASET_SHA256,
+        )
+
+
+def test_runner_independently_rejects_output_artifact_digest_mismatch(dataset_fixture):
+    from dataclasses import replace
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    output_path = dataset_path.parent / "discovery-output.json"
+    output_path.write_bytes(b'{"research_only":true}')
+
+    class WrongOutputAdapter(FakeAdapter):
+        def execute(self, declared_spec):
+            receipt = super().execute(declared_spec)
+            return replace(
+                receipt,
+                receipt_schema_version=3,
+                output_artifact=ExecutionArtifact(
+                    artifact_id="DISCOVERY-OUT-1",
+                    artifact_role="DISCOVERY_MATRIX_JSON",
+                    local_path=str(output_path),
+                    content_sha256="0" * 64,
+                    byte_size=output_path.stat().st_size,
+                ),
+            )
+
+    with pytest.raises(ResearchJobRunnerError, match="output artifact SHA-256 does not match Runner observation"):
+        run_job(make_runner(artifact), job, spec, WrongOutputAdapter(dataset_path), artifact)
+
+
+def test_runner_binds_secondary_input_artifacts_into_research_record(dataset_fixture):
+    from dataclasses import replace
+
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    input_path = dataset_path.parent / "frozen-entry.csv"
+    input_path.write_bytes(b"entry_id\n1\n")
+    input_raw = input_path.read_bytes()
+    input_sha = hashlib.sha256(input_raw).hexdigest()
+    output_path = dataset_path.parent / "matrix.json"
+    output_path.write_bytes(b'{"research_only":true}')
+
+    class SecondaryInputAdapter(FakeAdapter):
+        @property
+        def input_artifacts(self):
+            return (ExecutionArtifact(
+                artifact_id="FROZEN-ENTRY-1",
+                artifact_role="FROZEN_V3_ENTRY_CSV",
+                local_path=str(input_path.resolve()),
+                content_sha256=input_sha,
+                byte_size=len(input_raw),
+            ),)
+
+        def execute(self, declared_spec):
+            receipt = super().execute(declared_spec)
+            return replace(
+                receipt,
+                receipt_schema_version=3,
+                output_artifact=ExecutionArtifact(
+                    artifact_id="DISCOVERY-OUTPUT-1",
+                    artifact_role="DISCOVERY_MATRIX_JSON",
+                    local_path=str(output_path.resolve()),
+                    content_sha256=hashlib.sha256(output_path.read_bytes()).hexdigest(),
+                    byte_size=output_path.stat().st_size,
+                ),
+                input_artifacts=self.input_artifacts,
+            )
+
+    result = run_job(make_runner(artifact), job, spec, SecondaryInputAdapter(dataset_path), artifact)
+    assert result.record.input_artifacts[0].content_sha256 == input_sha
+    assert result.record.input_artifacts_binding_fingerprint
+    assert result.evidence.result["input_artifacts"][0]["artifact_id"] == "FROZEN-ENTRY-1"
+
+    restored = type(result.record).from_dict(result.record.as_dict())
+    assert restored == result.record
+    with pytest.raises(ResearchRecordError, match="input artifact binding fingerprint mismatch"):
+        replace(result.record, input_artifacts=(
+            replace(result.record.input_artifacts[0], content_sha256="f" * 64),
+        )).validate()
+
+
+def test_runner_rejects_secondary_input_mutation_during_execution(dataset_fixture):
+    dataset_path, artifact = dataset_fixture
+    spec, job = make_spec_and_job()
+    input_path = dataset_path.parent / "frozen-entry.csv"
+    input_path.write_bytes(b"entry_id\n1\n")
+    input_raw = input_path.read_bytes()
+    input_sha = hashlib.sha256(input_raw).hexdigest()
+    output_path = dataset_path.parent / "matrix.json"
+    output_path.write_bytes(b'{"research_only":true}')
+
+    class MutatingSecondaryInputAdapter(FakeAdapter):
+        @property
+        def input_artifacts(self):
+            return (ExecutionArtifact(
+                artifact_id="FROZEN-ENTRY-1",
+                artifact_role="FROZEN_V3_ENTRY_CSV",
+                local_path=str(input_path.resolve()),
+                content_sha256=input_sha,
+                byte_size=len(input_raw),
+            ),)
+
+        def execute(self, declared_spec):
+            input_path.write_bytes(input_raw + b" ")
+            receipt = super().execute(declared_spec)
+            return replace(
+                receipt,
+                receipt_schema_version=3,
+                output_artifact=ExecutionArtifact(
+                    artifact_id="DISCOVERY-OUTPUT-1",
+                    artifact_role="DISCOVERY_MATRIX_JSON",
+                    local_path=str(output_path.resolve()),
+                    content_sha256=hashlib.sha256(output_path.read_bytes()).hexdigest(),
+                    byte_size=output_path.stat().st_size,
+                ),
+                input_artifacts=self.input_artifacts,
+            )
+
+    with pytest.raises(ResearchJobRunnerError, match="secondary input artifact SHA-256"):
+        run_job(make_runner(artifact), job, spec, MutatingSecondaryInputAdapter(dataset_path), artifact)
