@@ -3,7 +3,7 @@
 **Audit type:** read-only source inspection and characterization-fixture planning  
 **Inspected ref:** `research/provenance-binding-v2-contract-20261124`  
 **Inspected head (known branch head at audit start):** `8c5d6de2ec93513271a82ff98d63c79ea330efe5`  
-**Status:** four named historical snapshots located and reconciled; route-policy approval remains incomplete  
+**Status:** scoped review of four named historical snapshots completed; full line-by-line reconciliation and formal sign-off remain incomplete; route-policy approval remains incomplete  
 **Authority:** observations below describe current source behavior only. They do not approve or canonicalize route policy.
 
 ## 1. Guardrails
@@ -16,7 +16,7 @@
 
 ## 2. Historical snapshot reconciliation
 
-All four named historical documents were found in the repository tree and read from this inspected branch:
+All four named historical documents were located and read at a scoped level from this inspected branch. The summaries below record the findings relevant to this route-policy review; they do not constitute a complete line-by-line reconciliation or formal sign-off:
 
 | Snapshot | Repository path | Reconciliation result |
 |---|---|---|
@@ -105,7 +105,7 @@ These fixtures characterize current code behavior only. They do not approve rout
 
 ## 6. Blockers before policy enforcement
 
-1. Historical snapshot reconciliation is complete for the four named documents. Preserve this result and revisit it only if newer source evidence appears.
+1. A scoped review of all four named snapshots is recorded above. Full line-by-line reconciliation and formal sign-off remain open; do not treat this route review as policy approval.
 2. Resolve whether Validation → Robustness is an intentional route, a stale declaration, or a missing implementation. Do not enable it by inference.
 3. Approve exact Purpose policy per route/stage.
 4. Define timestamp parsing, timezone, interval inclusivity, overlap, partial-overlap, and derived-dataset rules.
