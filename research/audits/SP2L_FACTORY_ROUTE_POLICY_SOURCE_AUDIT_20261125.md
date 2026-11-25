@@ -3,7 +3,7 @@
 **Audit type:** read-only source inspection and characterization-fixture planning  
 **Inspected ref:** `research/provenance-binding-v2-contract-20261124`  
 **Inspected head (known branch head at audit start):** `8c5d6de2ec93513271a82ff98d63c79ea330efe5`  
-**Status:** scoped review of four named historical snapshots completed; full line-by-line reconciliation and formal sign-off remain incomplete; route-policy approval remains incomplete  
+**Status:** full-text review and scoped line-by-line reconciliation of the four named historical snapshots completed in `SP2L_FACTORY_SNAPSHOT_LINE_RECONCILIATION_20261125.md`; formal sign-off and route-policy approval remain incomplete  
 **Authority:** observations below describe current source behavior only. They do not approve or canonicalize route policy.
 
 ## 1. Guardrails
@@ -16,12 +16,12 @@
 
 ## 2. Historical snapshot reconciliation
 
-All four named historical documents were located and read at a scoped level from this inspected branch. The summaries below record the findings relevant to this route-policy review; they do not constitute a complete line-by-line reconciliation or formal sign-off:
+All four named historical documents have now been read in full and their relevant route, provenance, lifecycle, Holdout, and governance provisions reconciled against Contract v2 and the inspected source. The detailed line references and dispositions are recorded in `research/audits/SP2L_FACTORY_SNAPSHOT_LINE_RECONCILIATION_20261125.md`. This completes the text-review step only; it is not formal policy sign-off.
 
 | Snapshot | Repository path | Reconciliation result |
 |---|---|---|
-| Handoff Snapshot 2026-10-28 | `research/snapshots/SP2L_FACTORY_HANDOFF_SNAPSHOT_20261028.md` | Confirms the source-first workflow, Factory-only scope, unresolved strategy/execution semantics, and preservation of the historical lifecycle Journal. It does not specify every route's Dataset equality rule. |
-| Candidate Lab Snapshot 2026-10-10 | `artifacts/factory/SP2L_FACTORY_CANDIDATE_LAB_SNAPSHOT_20261010.md` | Confirms Holdout/Forward identity separation, frozen Strategy revision, no post-Holdout tuning, and the requirement for a real synthetic E2E run visible in the Dashboard. It records the Fresh Holdout boundary beginning 2026-09-19 as excluded from candidate tuning. It does not settle Validation → Robustness. |
+| Handoff Snapshot 2026-10-28 | `research/snapshots/SP2L_FACTORY_HANDOFF_SNAPSHOT_20261028.md` | Confirms the source-first workflow, Factory-only scope, unresolved strategy/execution semantics, preservation of the historical lifecycle Journal, and Fresh Holdout boundary beginning 2026-09-19 with the preceding raw-tick interval ending at that boundary. It does not specify every route's Dataset equality rule. |
+| Candidate Lab Snapshot 2026-10-10 | `artifacts/factory/SP2L_FACTORY_CANDIDATE_LAB_SNAPSHOT_20261010.md` | Confirms Holdout/Forward identity separation, frozen Strategy revision, no post-Holdout tuning, and the requirement for a real synthetic E2E run visible in the Dashboard. It does not state the exact 2026-09-19 boundary date in the inspected text and does not settle Validation → Robustness. |
 | Independent Holdout Binding Snapshot 2026-10-28 | `research/snapshots/SP2L_FACTORY_FORWARD_GATE_INDEPENDENT_HOLDOUT_BINDING_20261028.md` | Requires an independently supplied completed Holdout result, accepted status, PASS Dataset provenance, record/job/run/dataset/artifact identity comparisons, raw SHA comparison, and source-event binding. It notes the then-existing limitation that the low-level Gate saw one event rather than the complete ledger. |
 | Local Dataset Observation Contract 2026-11-23 | `research/contracts/SP2L_FACTORY_LOCAL_DATASET_OBSERVATION_CONTRACT_20261123.md` | Requires a registered local DatasetArtifact, exact resolved adapter path, independent SHA/byte-size observation before and after execution, and Receipt v2 SHA binding. It explicitly limits the trust boundary and excludes remote/stream readers. |
 
@@ -40,7 +40,7 @@ All four named historical documents were located and read at a scoped level from
 | Stability → Validation | Route is declared. Validation requires role `UNTOUCHED_VALIDATION`, immutable data, and a destination Dataset SHA and Artifact ID different from the upstream Stability Dataset. This matches the previously recorded user decision that Validation uses a different Dataset; the four snapshots reinforce the protected Validation boundary but do not independently spell out this exact route comparison. | CODE-OBSERVED + USER-RECORDED DECISION; no conflicting snapshot found |
 | Stability → Robustness | Route is declared. Robustness requires source station `stability` and exact equality of destination Dataset SHA and Artifact ID with the Stability Handoff. This matches the previously recorded user decision that Robustness reuses the same Dataset; the four snapshots do not independently state this exact comparison. | CODE-OBSERVED + USER-RECORDED DECISION; no conflicting snapshot found |
 | Validation → Robustness | Route is declared in `HANDOFF_ROUTES`, but `RobustnessFactory` rejects any source station other than `stability`. None of the four historical snapshots resolves whether this route is intended. | SOURCE-CODE CONFLICT + HISTORICAL POLICY UNRESOLVED; keep blocked |
-| Robustness → Holdout | Route is declared. Holdout requires role `FRESH_HOLDOUT`, immutable data, a Robustness source handoff, and a destination SHA and Artifact ID different from the Robustness Dataset. The Candidate Lab snapshot protects the Fresh Holdout boundary beginning 2026-09-19 from candidate tuning. Temporal/partial-overlap semantics remain undefined. | SNAPSHOT-BACKED HOLDOUT SEPARATION; independence policy incomplete |
+| Robustness → Holdout | Route is declared. Holdout requires role `FRESH_HOLDOUT`, immutable data, a Robustness source handoff, and a destination SHA and Artifact ID different from the Robustness Dataset. The Handoff snapshot records the Fresh Holdout boundary beginning 2026-09-19 and exclusion from candidate tuning. The Candidate Lab snapshot separately protects Holdout/Forward identity and no-post-Holdout-tuning. Temporal/partial-overlap semantics remain undefined. | SNAPSHOT-BACKED HOLDOUT SEPARATION; independence policy incomplete |
 | Holdout → Forward | The historical Independent Holdout Binding snapshot requires an independently supplied completed Holdout result, accepted status, PASS provenance, identity comparisons, raw SHA comparison, and source-event binding. Current code implements these checks and adds a full ledger snapshot audit plus distinct Forward Dataset ID/SHA/Artifact ID checks. Freeze and post-Holdout tuning remain caller-supplied Boolean assertions. | SNAPSHOT-BACKED AND RE-AUDITED; Freeze authorization remains incomplete |
 
 **Important distinction:** the Handoff's Dataset identity describes the Dataset consumed by the upstream station. The produced output artifact is a separate identity. Neither should be substituted for the destination station's own input Dataset.
@@ -105,7 +105,7 @@ These fixtures characterize current code behavior only. They do not approve rout
 
 ## 6. Blockers before policy enforcement
 
-1. A scoped review of all four named snapshots is recorded above. Full line-by-line reconciliation and formal sign-off remain open; do not treat this route review as policy approval.
+1. Full-text review and scoped line-by-line reconciliation of all four named snapshots are recorded in `SP2L_FACTORY_SNAPSHOT_LINE_RECONCILIATION_20261125.md`. Formal sign-off and route-policy approval remain open; do not treat this review as policy approval.
 2. Resolve whether Validation → Robustness is an intentional route, a stale declaration, or a missing implementation. Do not enable it by inference.
 3. Approve exact Purpose policy per route/stage.
 4. Define timestamp parsing, timezone, interval inclusivity, overlap, partial-overlap, and derived-dataset rules.
