@@ -36,12 +36,12 @@ All four named historical documents were found in the repository tree and read f
 
 | Route | Current source behavior observed | Audit status |
 |---|---|---|
-| Discovery → Stability | `HANDOFF_ROUTES` declares the route. Stability requires the source handoff's Dataset SHA and Artifact ID to equal its declared input. It also binds the Discovery Matrix JSON as a secondary input using the upstream Research Record's output artifact identity. | CODE-OBSERVED; historical policy reconciliation pending |
-| Stability → Validation | Route is declared. Validation requires role `UNTOUCHED_VALIDATION`, immutable data, and a destination Dataset SHA and Artifact ID different from the upstream Stability Dataset. The Handoff itself remains bound to the upstream Stability Research Record's Dataset identity. | CODE-OBSERVED; historical policy reconciliation pending |
-| Stability → Robustness | Route is declared. Robustness requires source station `stability` and exact equality of destination Dataset SHA and Artifact ID with the Stability Handoff. | CODE-OBSERVED; historical policy reconciliation pending |
-| Validation → Robustness | Route is declared in `HANDOFF_ROUTES`, but `RobustnessFactory` rejects any source station other than `stability`. | SOURCE-CODE CONFLICT; keep blocked |
-| Robustness → Holdout | Route is declared. Holdout requires role `FRESH_HOLDOUT`, immutable data, a Robustness source handoff, and a destination SHA and Artifact ID different from the Robustness Dataset. | CODE-OBSERVED; independence policy incomplete |
-| Holdout → Forward | Prior audit indicates a Forward Gate exists and binds accepted Holdout evidence, but Freeze and independence controls still include caller assertions. This route was not re-audited line-by-line in this pass. | PRIOR AUDIT FINDING; fresh source verification pending |
+| Discovery → Stability | `HANDOFF_ROUTES` declares the route. Stability requires the source handoff's Dataset SHA and Artifact ID to equal its declared input. It also binds the Discovery Matrix JSON as a secondary input using the upstream Research Record's output artifact identity. The four snapshots do not independently specify this route's exact Dataset equality rule. | CODE-OBSERVED; route policy not fully specified by snapshots |
+| Stability → Validation | Route is declared. Validation requires role `UNTOUCHED_VALIDATION`, immutable data, and a destination Dataset SHA and Artifact ID different from the upstream Stability Dataset. This matches the previously recorded user decision that Validation uses a different Dataset; the four snapshots reinforce the protected Validation boundary but do not independently spell out this exact route comparison. | CODE-OBSERVED + USER-RECORDED DECISION; no conflicting snapshot found |
+| Stability → Robustness | Route is declared. Robustness requires source station `stability` and exact equality of destination Dataset SHA and Artifact ID with the Stability Handoff. This matches the previously recorded user decision that Robustness reuses the same Dataset; the four snapshots do not independently state this exact comparison. | CODE-OBSERVED + USER-RECORDED DECISION; no conflicting snapshot found |
+| Validation → Robustness | Route is declared in `HANDOFF_ROUTES`, but `RobustnessFactory` rejects any source station other than `stability`. None of the four historical snapshots resolves whether this route is intended. | SOURCE-CODE CONFLICT + HISTORICAL POLICY UNRESOLVED; keep blocked |
+| Robustness → Holdout | Route is declared. Holdout requires role `FRESH_HOLDOUT`, immutable data, a Robustness source handoff, and a destination SHA and Artifact ID different from the Robustness Dataset. The Candidate Lab snapshot protects the Fresh Holdout boundary beginning 2026-09-19 from candidate tuning. Temporal/partial-overlap semantics remain undefined. | SNAPSHOT-BACKED HOLDOUT SEPARATION; independence policy incomplete |
+| Holdout → Forward | The historical Independent Holdout Binding snapshot requires an independently supplied completed Holdout result, accepted status, PASS provenance, identity comparisons, raw SHA comparison, and source-event binding. Current code implements these checks and adds a full ledger snapshot audit plus distinct Forward Dataset ID/SHA/Artifact ID checks. Freeze and post-Holdout tuning remain caller-supplied Boolean assertions. | SNAPSHOT-BACKED AND RE-AUDITED; Freeze authorization remains incomplete |
 
 **Important distinction:** the Handoff's Dataset identity describes the Dataset consumed by the upstream station. The produced output artifact is a separate identity. Neither should be substituted for the destination station's own input Dataset.
 
@@ -105,11 +105,7 @@ These fixtures characterize current code behavior only. They do not approve rout
 
 ## 6. Blockers before policy enforcement
 
-1. Reconcile this matrix against the historical snapshots:
-   - `SP2L_FACTORY_HANDOFF_SNAPSHOT_20261028.md`
-   - `SP2L_FACTORY_CANDIDATE_LAB_SNAPSHOT_20261010.md`
-   - `SP2L_FACTORY_FORWARD_GATE_INDEPENDENT_HOLDOUT_BINDING_20261028.md`
-   - `SP2L_FACTORY_LOCAL_DATASET_OBSERVATION_CONTRACT_20261123.md`
+1. Historical snapshot reconciliation is complete for the four named documents. Preserve this result and revisit it only if newer source evidence appears.
 2. Resolve whether Validation → Robustness is an intentional route, a stale declaration, or a missing implementation. Do not enable it by inference.
 3. Approve exact Purpose policy per route/stage.
 4. Define timestamp parsing, timezone, interval inclusivity, overlap, partial-overlap, and derived-dataset rules.
