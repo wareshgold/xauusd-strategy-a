@@ -350,3 +350,22 @@ def test_station_and_worker_cards_normalize_whitespace_in_state_and_health():
     assert station.count("station-unit active") == 1
     assert '"telemetry_health": "LIVE"' in world
     assert 'w.telemetry_health==="LIVE"' in world
+
+
+def test_telemetry_panels_normalize_whitespace_in_active_and_feed_state_labels():
+    workers = [
+        {
+            "worker_id": "w-padded",
+            "job_id": "JOB-PADDED",
+            "state": " RUNNING ",
+            "progress": 35,
+            "heartbeat_utc": "2026-11-25T08:00:00+00:00",
+            "detail": "Research in progress",
+        }
+    ]
+
+    panels = dashboard.telemetry_panels(workers)
+
+    assert 'class="job-state ok">RUNNING</span>' in panels
+    assert "<span>RUNNING</span>" in panels
+    assert " RUNNING " not in panels
