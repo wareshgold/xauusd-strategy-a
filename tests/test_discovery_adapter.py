@@ -77,14 +77,17 @@ def test_discovery_adapter_consumes_declared_variant_without_defining_geometry(t
         encoding="utf-8",
     )
 
-    def fake_run(*args, **kwargs):
+    def fake_run(command, **kwargs):
+        output_dir = Path(command[command.index("--output-dir") + 1])
+        fresh_matrix_path = output_dir / "discovery.json"
+        fresh_matrix_path.write_bytes(matrix_path.read_bytes())
         return SimpleNamespace(
             returncode=0,
             stdout=json.dumps(
                 {
                     "status": "COMPLETE",
-                    "json": str(matrix_path),
-                    "sha256": hashlib.sha256(matrix_path.read_bytes()).hexdigest(),
+                    "json": str(fresh_matrix_path),
+                    "sha256": hashlib.sha256(fresh_matrix_path.read_bytes()).hexdigest(),
                 }
             ),
             stderr="",
@@ -160,7 +163,7 @@ def test_discovery_adapter_rejects_non_research_output(tmp_path, monkeypatch):
     try:
         adapter.execute(make_spec())
     except Exception as exc:
-        assert "output JSON not found" in str(exc)
+        assert "fresh output directory" in str(exc)
     else:
         raise AssertionError("expected missing M1 dataset artifact to be rejected")
 
@@ -275,12 +278,15 @@ def test_discovery_adapter_binds_frozen_v3_entry_artifact(tmp_path, monkeypatch)
         assert str(entry_artifact) in command
         assert "--entry-population-sha256" in command
         assert entry_sha in command
+        output_dir = Path(command[command.index("--output-dir") + 1])
+        fresh_matrix_path = output_dir / "discovery.json"
+        fresh_matrix_path.write_bytes(matrix_path.read_bytes())
         return SimpleNamespace(
             returncode=0,
             stdout=json.dumps({
                 "status": "COMPLETE",
-                "json": str(matrix_path),
-                "sha256": hashlib.sha256(matrix_path.read_bytes()).hexdigest(),
+                "json": str(fresh_matrix_path),
+                "sha256": hashlib.sha256(fresh_matrix_path.read_bytes()).hexdigest(),
             }),
             stderr="",
         )
@@ -299,3 +305,64 @@ def test_discovery_adapter_binds_frozen_v3_entry_artifact(tmp_path, monkeypatch)
     receipt = adapter.execute(make_spec())
     assert receipt.metrics.trades == 1
     assert receipt.metrics.net_r == 1.0
+
+
+
+def test_discovery_adapter_rejects_output_outside_fresh_execution_directory(tmp_path, monkeypatch):
+    script = tmp_path / "run_sp2l_v3_xauusd_discovery_matrix.py"
+    script.write_text("placeholder\n", encoding="utf-8")
+    bars_artifact = tmp_path / "m1.json"
+    bars_artifact.write_text(
+        json.dumps({
+            "schema_version": 1,
+            "research_only": True,
+            "symbol": "XAUUSD.ecn",
+            "timeframe": "M1",
+            "window_utc": {
+                "start": "2026-10-05T00:00:00Z",
+                "end": "2026-10-07T05:30:00Z",
+            },
+            "bars": [{
+                "time": 1791158400,
+                "open": 1,
+                "high": 1,
+                "low": 1,
+                "close": 1,
+                "tick_volume": 1,
+                "spread": 0,
+                "real_volume": 1,
+            }],
+        }),
+        encoding="utf-8",
+    )
+    stale_output = tmp_path / "stale-discovery.json"
+    stale_bytes = b'{"research_only":true,"stale":true}'
+    stale_output.write_bytes(stale_bytes)
+
+    def fake_run(command, **kwargs):
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({
+                "status": "COMPLETE",
+                "json": str(stale_output),
+                "sha256": hashlib.sha256(stale_bytes).hexdigest(),
+            }),
+            stderr="",
+        )
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    adapter = DiscoveryMatrixAdapter(
+        script_path=script,
+        mt5_path="MT5",
+        variant_name="RR2_ACT10_D2",
+        bars_artifact_path=bars_artifact,
+        output_dir=tmp_path / "discovery-output",
+    )
+    try:
+        adapter.execute(make_spec())
+    except Exception as exc:
+        assert "fresh output directory" in str(exc)
+    else:
+        raise AssertionError("expected a stale/external output path to be rejected")
+
+    assert stale_output.read_bytes() == stale_bytes

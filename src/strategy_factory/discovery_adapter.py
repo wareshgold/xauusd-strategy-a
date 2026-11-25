@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 from typing import Any
 
 from .adapter import build_execution_receipt
@@ -85,7 +86,7 @@ class DiscoveryMatrixAdapter:
             byte_size=len(raw),
         ),)
 
-    def _command(self) -> list[str]:
+    def _command(self, output_dir: Path) -> list[str]:
         command = [
             self.python_executable,
             str(self.script_path),
@@ -105,8 +106,7 @@ class DiscoveryMatrixAdapter:
                 "--entry-population-artifact", str(Path(self.entry_population_artifact_path).expanduser().resolve(strict=True)),
                 "--entry-population-sha256", str(self.entry_population_sha256),
             ])
-        if self.output_dir is not None:
-            command.extend(["--output-dir", str(self.output_dir)])
+        command.extend(["--output-dir", str(output_dir)])
         return command
 
     def execute(self, spec: HistoricalTestSpec) -> ExecutionReceipt:
@@ -139,8 +139,12 @@ class DiscoveryMatrixAdapter:
             if expected_entry_sha256.lower() != self.entry_population_sha256.lower():
                 raise DiscoveryAdapterError("frozen V3 entry artifact SHA-256 mismatch")
 
+        output_parent = Path(self.output_dir).expanduser().resolve() if self.output_dir is not None else self.script_path.parent.resolve()
+        output_parent.mkdir(parents=True, exist_ok=True)
+        run_output_dir = Path(tempfile.mkdtemp(prefix="sp2l-discovery-", dir=str(output_parent))).resolve()
+
         completed = subprocess.run(
-            self._command(),
+            self._command(run_output_dir),
             cwd=str(self.script_path.parent.parent),
             capture_output=True,
             text=True,
@@ -171,9 +175,20 @@ class DiscoveryMatrixAdapter:
         if payload.get("status") != "COMPLETE":
             raise DiscoveryAdapterError("Discovery Matrix did not report COMPLETE")
 
-        json_path = Path(str(payload.get("json", "")))
-        if not json_path.is_file():
-            raise DiscoveryAdapterError(f"Discovery output JSON not found: {json_path}")
+        reported_json_path = Path(str(payload.get("json", "")))
+        if not reported_json_path.is_absolute():
+            reported_json_path = self.script_path.parent.parent / reported_json_path
+        try:
+            json_path = reported_json_path.resolve(strict=True)
+            json_path.relative_to(run_output_dir)
+        except (OSError, ValueError) as exc:
+            raise DiscoveryAdapterError(
+                "Discovery output JSON must be newly created inside this execution's fresh output directory"
+            ) from exc
+        if not json_path.is_file() or reported_json_path.is_symlink():
+            raise DiscoveryAdapterError(
+                "Discovery output JSON must be a regular file created inside this execution's fresh output directory"
+            )
 
         matrix_raw = json_path.read_bytes()
         observed_matrix_sha256 = hashlib.sha256(matrix_raw).hexdigest()
