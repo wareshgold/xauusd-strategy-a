@@ -120,7 +120,7 @@ def worker_state() -> tuple[list[dict], str]:
 
 
 def status_class(value: str) -> str:
-    v = value.upper()
+    v = str(value).strip().upper()
     if v in {"LIVE", "RUNNING", "COMPLETED", "VERIFIED", "VALID", "CONSISTENT", "SEPARATE"}:
         return "ok"
     if v in {"BLOCKED", "OFFLINE", "FAILED", "NOT ELIGIBLE", "REVIEW_REQUIRED"} or v.endswith("_REVIEW_REQUIRED"):
@@ -182,7 +182,7 @@ def worker_card(worker: dict, index: int) -> str:
     except (TypeError, ValueError):
         progress = 0.0
     state = str(worker.get("state") or "UNKNOWN").strip().upper()
-    health = str(worker.get("telemetry_health") or "UNKNOWN")
+    health = str(worker.get("telemetry_health") or "UNKNOWN").strip().upper()
     age = worker.get("heartbeat_age_s")
     beat = "—" if age is None else f"{age:.0f}s"
     activity_label = f"HB {beat}" if state in {"RUNNING", "HEARTBEAT"} else (
@@ -240,7 +240,7 @@ def station_world(workers: list[dict]) -> str:
     """Render a telemetry-backed SP2L station world from the validated adapter."""
     world_state = build_world_state(workers)
     telemetry_by_id = {
-        str(item.get("worker_id") or ""): str(item.get("telemetry_health") or "UNKNOWN").upper()
+        str(item.get("worker_id") or "").strip(): str(item.get("telemetry_health") or "UNKNOWN").strip().upper()
         for item in workers
     }
     payload = json.dumps(
