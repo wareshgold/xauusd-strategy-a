@@ -406,7 +406,7 @@ def test_discovery_adapter_rejects_unsafe_or_missing_reported_output(
     def fake_run(command, **kwargs):
         run_dir = Path(command[command.index("--output-dir") + 1])
         if attack == "path_traversal":
-            reported = Path("..") / tmp_path.name / external_output.name
+            reported = Path(tmp_path.name) / ".." / tmp_path.name / external_output.name
             # The subprocess working directory is script.parent.parent.
             # Place the external file one level above that directory so the
             # reported relative path must traverse outside the fresh run dir.
