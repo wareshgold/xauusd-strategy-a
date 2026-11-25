@@ -414,9 +414,11 @@ def test_discovery_adapter_rejects_unsafe_or_missing_reported_output(
             traversal_target = Path(kwargs["cwd"]) / reported
             traversal_target.write_bytes(external_bytes)
         elif attack == "symlink":
+            target = run_dir / "target-output.json"
+            target.write_bytes(external_bytes)
             reported = run_dir / "linked-output.json"
             try:
-                reported.symlink_to(external_output)
+                reported.symlink_to(target)
             except (OSError, NotImplementedError) as exc:
                 pytest.skip(f"symlink creation is unavailable: {exc}")
         else:
