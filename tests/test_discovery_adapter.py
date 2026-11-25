@@ -1,5 +1,6 @@
 import hashlib
 import json
+import pytest
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -407,12 +408,11 @@ def test_discovery_adapter_rejects_unsafe_or_missing_reported_output(
         run_dir = Path(command[command.index("--output-dir") + 1])
         if attack == "path_traversal":
             reported = Path(tmp_path.name) / ".." / tmp_path.name / external_output.name
-            # The subprocess working directory is script.parent.parent.
-            # Place the external file one level above that directory so the
+            # This relative path contains traversal components but normalizes
+            # to a file outside the fresh per-execution output directory.
             # reported relative path must traverse outside the fresh run dir.
             traversal_target = Path(kwargs["cwd"]) / reported
             traversal_target.write_bytes(external_bytes)
-            reported = Path("..") / external_output.name
         elif attack == "symlink":
             reported = run_dir / "linked-output.json"
             try:
