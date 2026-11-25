@@ -341,9 +341,12 @@ def test_station_and_worker_cards_normalize_whitespace_in_state_and_health():
 
     card = dashboard.worker_card(worker, 1)
     station = dashboard.station_card("discovery", [worker])
+    world = dashboard.station_world([worker])
 
     assert "RUNNING" in card
     assert "HB 8s" in card
     assert "1 running" in station
     assert "station room-active" in station
     assert station.count("station-unit active") == 1
+    assert '"telemetry_health": "LIVE"' in world
+    assert 'w.telemetry_health==="LIVE"' in world
