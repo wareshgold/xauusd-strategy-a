@@ -1,8 +1,9 @@
 import hashlib
 import json
 from pathlib import Path
-import pytest
 from types import SimpleNamespace
+
+import pytest
 
 import strategy_factory.discovery_adapter as module
 from strategy_factory.discovery_adapter import DiscoveryMatrixAdapter
