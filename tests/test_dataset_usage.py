@@ -119,3 +119,19 @@ def test_untouched_validation_is_allowed_as_validation_input_but_not_fitting_inp
     assert entry.registered_fingerprint == identity.fingerprint
     assert entry.observed_fingerprint == identity.fingerprint
     assert ledger.entries() == (entry,)
+
+def test_current_purpose_blocklist_accepts_unknown_nonempty_holdout_label_characterization():
+    # This records the current blocklist's behavior; it is not Purpose approval.
+    registry = DatasetRegistry()
+    d = dataset(role=DatasetRole.FRESH_HOLDOUT, immutable=True)
+    registry.register(d, "CONTENT-ABC")
+    ledger = DatasetUsageLedger(registry)
+
+    entry = ledger.record(
+        spec(d),
+        "CONTENT-ABC",
+        purpose="UNRECOGNIZED_SYNTHETIC_PURPOSE",
+    )
+
+    assert entry.disposition is UsageDisposition.ALLOWED
+    assert entry.purpose == "UNRECOGNIZED_SYNTHETIC_PURPOSE"
