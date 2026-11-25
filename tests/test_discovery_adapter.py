@@ -399,18 +399,18 @@ def test_discovery_adapter_rejects_unsafe_or_missing_reported_output(
         encoding="utf-8",
     )
 
-    external_output = tmp_path.parent.parent / "outside-discovery.json"
+    external_output = tmp_path / "outside-discovery.json"
     external_bytes = b'{"research_only":true,"external":true}'
     external_output.write_bytes(external_bytes)
 
     def fake_run(command, **kwargs):
         run_dir = Path(command[command.index("--output-dir") + 1])
         if attack == "path_traversal":
-            reported = Path("..") / external_output.name
+            reported = Path("..") / tmp_path.name / external_output.name
             # The subprocess working directory is script.parent.parent.
             # Place the external file one level above that directory so the
             # reported relative path must traverse outside the fresh run dir.
-            traversal_target = Path(kwargs["cwd"]).parent / external_output.name
+            traversal_target = Path(kwargs["cwd"]) / reported
             traversal_target.write_bytes(external_bytes)
             reported = Path("..") / external_output.name
         elif attack == "symlink":
