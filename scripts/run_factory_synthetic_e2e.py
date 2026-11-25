@@ -131,6 +131,15 @@ def run_synthetic_e2e(
         )
     if status_path == journal_path:
         raise ValueError("demo status and journal must use separate files")
+    existing_outputs = [
+        path for path in (status_path, journal_path) if path.exists()
+    ]
+    if existing_outputs:
+        paths = ", ".join(str(path) for path in existing_outputs)
+        raise ValueError(
+            "synthetic E2E refuses to reuse existing output files; "
+            f"choose fresh isolated paths: {paths}"
+        )
 
     timestamp = now or datetime.now(timezone.utc)
     if timestamp.tzinfo is None or timestamp.utcoffset() != timezone.utc.utcoffset(timestamp):
