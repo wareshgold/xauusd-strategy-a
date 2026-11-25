@@ -327,3 +327,23 @@ def test_station_world_animation_requires_live_heartbeat():
     assert '"telemetry_health": "LIVE"' in rendered
     assert '"telemetry_health": "STALE"' in rendered
     assert 'w.telemetry_health==="LIVE"' in rendered
+
+
+def test_station_and_worker_cards_normalize_whitespace_in_state_and_health():
+    worker = {
+        "worker_id": "w-padded",
+        "station": "discovery",
+        "state": " RUNNING ",
+        "progress": 25,
+        "telemetry_health": " LIVE ",
+        "heartbeat_age_s": 8,
+    }
+
+    card = dashboard.worker_card(worker, 1)
+    station = dashboard.station_card("discovery", [worker])
+
+    assert "RUNNING" in card
+    assert "HB 8s" in card
+    assert "1 running" in station
+    assert "station room-active" in station
+    assert station.count("station-unit active") == 1
