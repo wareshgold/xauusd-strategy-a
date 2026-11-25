@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 
 from strategy_factory.adapter import build_execution_receipt
@@ -189,3 +190,39 @@ def test_robustness_factory_rejects_readiness_snapshot_drift(tmp_path):
         assert "snapshot fingerprint" in str(exc)
     else:
         raise AssertionError("snapshot drift must be rejected")
+
+def test_robustness_factory_currently_rejects_validation_handoff_characterization(tmp_path):
+    runner, context = _context(tmp_path)
+    events = FactoryJobEventLedger(path=None)
+    event = events.append(
+        event_type="COMPLETED",
+        job_id=context.handoff.job_id,
+        job_fingerprint=context.handoff.job_fingerprint,
+        worker_id="worker",
+        station="validation",
+        phase="VALIDATION",
+        detail="synthetic Validation completion for route characterization",
+        output_artifact=context.handoff.output_artifact,
+        research_run_fingerprint=context.source_record.run_fingerprint,
+    )
+    validation_handoff = build_research_handoff(
+        events=events,
+        job_id=context.handoff.job_id,
+        source_station="validation",
+        destination_station="robustness",
+        record=context.source_record,
+        dataset_content_sha256=context.dataset_content_sha256,
+        dataset_artifact_id=context.dataset_artifact_id,
+    )
+    characterized_context = replace(
+        context,
+        handoff=validation_handoff,
+        source_event=event,
+    )
+
+    # Characterizes today's RobustnessFactory source-station check only.
+    # It does not decide whether Validation -> Robustness should be enabled.
+    import pytest
+
+    with pytest.raises(RobustnessFactoryError, match="must consume a Stability handoff"):
+        RobustnessFactory(runner).prepare_and_run(characterized_context)
