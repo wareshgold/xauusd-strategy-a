@@ -1,7 +1,7 @@
 import hashlib
 import json
-import pytest
 from pathlib import Path
+import pytest
 from types import SimpleNamespace
 
 import strategy_factory.discovery_adapter as module
@@ -374,7 +374,7 @@ def test_discovery_adapter_rejects_unsafe_or_missing_reported_output(
     tmp_path, monkeypatch, attack
 ):
     script = tmp_path / "run_sp2l_v3_xauusd_discovery_matrix.py"
-    script.write_text("placeholder\\n", encoding="utf-8")
+    script.write_text("placeholder\n", encoding="utf-8")
     bars_artifact = tmp_path / "m1.json"
     bars_artifact.write_text(
         json.dumps({
@@ -410,7 +410,6 @@ def test_discovery_adapter_rejects_unsafe_or_missing_reported_output(
             reported = Path(tmp_path.name) / ".." / tmp_path.name / external_output.name
             # This relative path contains traversal components but normalizes
             # to a file outside the fresh per-execution output directory.
-            # reported relative path must traverse outside the fresh run dir.
             traversal_target = Path(kwargs["cwd"]) / reported
             traversal_target.write_bytes(external_bytes)
         elif attack == "symlink":
