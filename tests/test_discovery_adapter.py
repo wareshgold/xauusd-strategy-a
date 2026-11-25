@@ -366,3 +366,82 @@ def test_discovery_adapter_rejects_output_outside_fresh_execution_directory(tmp_
         raise AssertionError("expected a stale/external output path to be rejected")
 
     assert stale_output.read_bytes() == stale_bytes
+
+
+@pytest.mark.parametrize("attack", ["path_traversal", "symlink", "missing_file"])
+def test_discovery_adapter_rejects_unsafe_or_missing_reported_output(
+    tmp_path, monkeypatch, attack
+):
+    script = tmp_path / "run_sp2l_v3_xauusd_discovery_matrix.py"
+    script.write_text("placeholder\\n", encoding="utf-8")
+    bars_artifact = tmp_path / "m1.json"
+    bars_artifact.write_text(
+        json.dumps({
+            "schema_version": 1,
+            "research_only": True,
+            "symbol": "XAUUSD.ecn",
+            "timeframe": "M1",
+            "window_utc": {
+                "start": "2026-10-05T00:00:00Z",
+                "end": "2026-10-07T05:30:00Z",
+            },
+            "bars": [{
+                "time": 1791158400,
+                "open": 1,
+                "high": 1,
+                "low": 1,
+                "close": 1,
+                "tick_volume": 1,
+                "spread": 0,
+                "real_volume": 1,
+            }],
+        }),
+        encoding="utf-8",
+    )
+
+    external_output = tmp_path.parent / "outside-discovery.json"
+    external_bytes = b'{"research_only":true,"external":true}'
+    external_output.write_bytes(external_bytes)
+
+    def fake_run(command, **kwargs):
+        run_dir = Path(command[command.index("--output-dir") + 1])
+        if attack == "path_traversal":
+            reported = Path("..") / external_output.name
+            # The subprocess working directory is script.parent.parent.
+            # Place the external file one level above that directory so the
+            # reported relative path must traverse outside the fresh run dir.
+            traversal_target = Path(kwargs["cwd"]).parent / external_output.name
+            traversal_target.write_bytes(external_bytes)
+            reported = Path("..") / external_output.name
+        elif attack == "symlink":
+            reported = run_dir / "linked-output.json"
+            try:
+                reported.symlink_to(external_output)
+            except (OSError, NotImplementedError) as exc:
+                pytest.skip(f"symlink creation is unavailable: {exc}")
+        else:
+            reported = run_dir / "missing-output.json"
+
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({
+                "status": "COMPLETE",
+                "json": str(reported),
+                "sha256": hashlib.sha256(external_bytes).hexdigest(),
+            }),
+            stderr="",
+        )
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    adapter = DiscoveryMatrixAdapter(
+        script_path=script,
+        mt5_path="MT5",
+        variant_name="RR2_ACT10_D2",
+        bars_artifact_path=bars_artifact,
+        output_dir=tmp_path / "discovery-output",
+    )
+
+    with pytest.raises(module.DiscoveryAdapterError):
+        adapter.execute(make_spec())
+
+    assert external_output.read_bytes() == external_bytes
