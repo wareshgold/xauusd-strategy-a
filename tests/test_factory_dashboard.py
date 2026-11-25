@@ -217,3 +217,113 @@ def test_dashboard_surfaces_unreadable_journal_as_review_required(monkeypatch):
     assert "UNREADABLE_REVIEW_REQUIRED" in page
     assert "JOURNAL_INTEGRITY_REVIEW_REQUIRED" in page
     assert "NO REPAIR / RETRY" in page
+
+
+
+def test_completed_worker_card_does_not_label_last_update_as_heartbeat():
+    worker = {
+        "worker_id": "done-01",
+        "station": "discovery",
+        "state": "COMPLETED",
+        "progress": 100,
+        "telemetry_health": "OFFLINE",
+        "heartbeat_age_s": 4672,
+    }
+
+    card = dashboard.worker_card(worker, 1)
+
+    assert "COMPLETED" in card
+    assert "HB 4672s" not in card
+    assert "LAST UPDATE" not in card
+
+
+def test_running_worker_card_shows_heartbeat_age():
+    worker = {
+        "worker_id": "run-01",
+        "station": "discovery",
+        "state": "RUNNING",
+        "progress": 40,
+        "telemetry_health": "LIVE",
+        "heartbeat_age_s": 12,
+    }
+
+    card = dashboard.worker_card(worker, 1)
+
+    assert "HB 12s" in card
+
+
+def test_git_state_labels_detached_head_and_missing_upstream(monkeypatch):
+    def fake_run(*args):
+        if args == ("git", "branch", "--show-current"):
+            return ""
+        if args == ("git", "rev-parse", "--short", "HEAD"):
+            return "9d3f1ad"
+        if args == ("git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"):
+            return ""
+        return ""
+
+    monkeypatch.setattr(dashboard, "_run", fake_run)
+
+    state = dashboard.git_state()
+
+    assert state["branch"] == "DETACHED"
+    assert state["head"] == "9d3f1ad"
+    assert state["origin"] == "NOT CONFIGURED"
+
+
+def test_station_card_separates_lifecycle_counts_and_only_activates_live_worker():
+    workers = [
+        {"worker_id": "w-run", "station": "discovery", "state": "RUNNING", "telemetry_health": "LIVE"},
+        {"worker_id": "w-stale", "station": "discovery", "state": "HEARTBEAT", "telemetry_health": "STALE"},
+        {"worker_id": "w-queue", "station": "discovery", "state": "QUEUED", "telemetry_health": "LIVE"},
+        {"worker_id": "w-done", "station": "discovery", "state": "COMPLETED", "telemetry_health": "OFFLINE"},
+        {"worker_id": "w-fail", "station": "discovery", "state": "FAILED", "telemetry_health": "OFFLINE"},
+    ]
+
+    card = dashboard.station_card("discovery", workers)
+
+    assert "5 assigned" in card
+    assert "2 running" in card
+    assert "1 queued" in card
+    assert "1 completed" in card
+    assert "1 failed" in card
+    assert "station room-active" in card
+    assert card.count("station-unit active") == 1
+
+
+def test_station_room_stays_idle_without_running_live_heartbeat():
+    workers = [
+        {"worker_id": "w-done", "station": "discovery", "state": "COMPLETED", "telemetry_health": "OFFLINE"},
+        {"worker_id": "w-stale", "station": "discovery", "state": "RUNNING", "telemetry_health": "STALE"},
+    ]
+
+    card = dashboard.station_card("discovery", workers)
+
+    assert "station room-idle" in card
+    assert "2 assigned" in card
+    assert "1 running" in card
+
+
+def test_station_world_animation_requires_live_heartbeat():
+    workers = [
+        {
+            "worker_id": "w-live",
+            "station": "discovery",
+            "state": "RUNNING",
+            "progress": 10,
+            "telemetry_health": "LIVE",
+        },
+        {
+            "worker_id": "w-stale",
+            "station": "stability",
+            "state": "RUNNING",
+            "progress": 20,
+            "telemetry_health": "STALE",
+        },
+    ]
+
+    rendered = dashboard.station_world(workers)
+
+    assert '"telemetry_health": "LIVE"' in rendered
+    assert '"telemetry_health": "STALE"' in rendered
+    assert 'w.telemetry_health==="LIVE"' in rendered
