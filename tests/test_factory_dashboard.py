@@ -275,7 +275,7 @@ def test_detached_git_state_is_explicit_not_unknown(monkeypatch):
             return ""
         if args == ("git", "rev-parse", "--short", "HEAD"):
             return "9d3f1ad"
-        if args == ("git", "rev-parse", "--short", "@{u}"):
+        if args == ("git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"):
             raise AssertionError("upstream must not be queried for detached HEAD")
         return ""
 
