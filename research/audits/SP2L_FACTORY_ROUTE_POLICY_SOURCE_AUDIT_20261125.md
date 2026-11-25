@@ -3,7 +3,7 @@
 **Audit type:** read-only source inspection and characterization-fixture planning  
 **Inspected ref:** `research/provenance-binding-v2-contract-20261124`  
 **Inspected head (known branch head at audit start):** `8c5d6de2ec93513271a82ff98d63c79ea330efe5`  
-**Status:** preliminary; historical snapshot reconciliation is incomplete  
+**Status:** four named historical snapshots located and reconciled; route-policy approval remains incomplete  
 **Authority:** observations below describe current source behavior only. They do not approve or canonicalize route policy.
 
 ## 1. Guardrails
@@ -14,7 +14,25 @@
 - Historical lifecycle records are not modified or repaired.
 - A source-code behavior is not treated as source-confirmed research policy until reconciled with the historical source snapshots and explicit owner approval where required.
 
-## 2. Route matrix — observed source behavior
+## 2. Historical snapshot reconciliation
+
+All four named historical documents were found in the repository tree and read from this inspected branch:
+
+| Snapshot | Repository path | Reconciliation result |
+|---|---|---|
+| Handoff Snapshot 2026-10-28 | `research/snapshots/SP2L_FACTORY_HANDOFF_SNAPSHOT_20261028.md` | Confirms the source-first workflow, Factory-only scope, unresolved strategy/execution semantics, and preservation of the historical lifecycle Journal. It does not specify every route's Dataset equality rule. |
+| Candidate Lab Snapshot 2026-10-10 | `artifacts/factory/SP2L_FACTORY_CANDIDATE_LAB_SNAPSHOT_20261010.md` | Confirms Holdout/Forward identity separation, frozen Strategy revision, no post-Holdout tuning, and the requirement for a real synthetic E2E run visible in the Dashboard. It records the Fresh Holdout boundary beginning 2026-09-19 as excluded from candidate tuning. It does not settle Validation → Robustness. |
+| Independent Holdout Binding Snapshot 2026-10-28 | `research/snapshots/SP2L_FACTORY_FORWARD_GATE_INDEPENDENT_HOLDOUT_BINDING_20261028.md` | Requires an independently supplied completed Holdout result, accepted status, PASS Dataset provenance, record/job/run/dataset/artifact identity comparisons, raw SHA comparison, and source-event binding. It notes the then-existing limitation that the low-level Gate saw one event rather than the complete ledger. |
+| Local Dataset Observation Contract 2026-11-23 | `research/contracts/SP2L_FACTORY_LOCAL_DATASET_OBSERVATION_CONTRACT_20261123.md` | Requires a registered local DatasetArtifact, exact resolved adapter path, independent SHA/byte-size observation before and after execution, and Receipt v2 SHA binding. It explicitly limits the trust boundary and excludes remote/stream readers. |
+
+### Snapshot-to-current-code reconciliation
+
+- The current `ForwardGateFactory` goes beyond the 2026-10-28 Gate snapshot's recorded limitation: it requires an immutable event tuple, validates contiguous event sequence, requires exactly one matching Holdout completion, rejects a competing Holdout failure, and carries byte-level journal evidence. `ForwardPreparation` obtains the persisted journal report and parsed events from the same read snapshot, compares them with the in-memory tuple, and passes SHA/byte-size/source metadata to the Gate.
+- The current Gate also requires the independently supplied `HoldoutFactoryResult`, checks accepted status and PASS provenance, compares the Holdout run/record/provenance/Artifact identities, compares the Handoff raw SHA and Artifact ID to that result, and requires a distinct Forward Dataset ID, SHA, and Artifact ID.
+- The current Gate still represents Freeze and post-Holdout-tuning state with caller-supplied booleans. The snapshots require frozen identity and no post-Holdout tuning, but do not turn those booleans into a human-authorized, independently verifiable Freeze Record. This remains a governance gap.
+- The current Runner implements the local Dataset observation contract. PR #426 additionally introduces schema v3 for declared secondary inputs and output artifacts while preserving schema v2 for dataset-only receipts. This extends artifact lineage; it does not expand the original local-file trust boundary to arbitrary or external inputs.
+- The Candidate Lab snapshot's local validation commands refer to a historical D: checkout. That location is prohibited for this work and was not accessed. No local Factory PC tests or synthetic E2E run are claimed here.
+## 3. Route matrix — observed source behavior
 
 | Route | Current source behavior observed | Audit status |
 |---|---|---|
@@ -27,7 +45,7 @@
 
 **Important distinction:** the Handoff's Dataset identity describes the Dataset consumed by the upstream station. The produced output artifact is a separate identity. Neither should be substituted for the destination station's own input Dataset.
 
-## 3. Additional controls observed
+## 4. Additional controls observed
 
 ### 3.1 Dataset role and immutability
 
@@ -59,7 +77,7 @@
 - The journal audit classifies contradictory terminal histories for manual reconciliation. Historical anomalies must remain preserved and must not be automatically repaired.
 - The historical Journal path/evidence remains outside this audit; no prohibited drive or historical file was accessed.
 
-## 4. Synthetic characterization fixtures
+## 5. Synthetic characterization fixtures
 
 These fixtures characterize current code behavior only. They do not approve route semantics.
 
@@ -85,7 +103,7 @@ These fixtures characterize current code behavior only. They do not approve rout
 | ROUTE-018 | Source lifecycle has both FAILED and COMPLETED | REJECT; manual reconciliation required |
 | ROUTE-019 | More than one COMPLETED event for the same source station | REJECT; manual reconciliation required |
 
-## 5. Blockers before policy enforcement
+## 6. Blockers before policy enforcement
 
 1. Reconcile this matrix against the historical snapshots:
    - `SP2L_FACTORY_HANDOFF_SNAPSHOT_20261028.md`
@@ -99,6 +117,6 @@ These fixtures characterize current code behavior only. They do not approve rout
 6. Establish prior-use/reuse checks and prove they are invoked on every relevant route.
 7. Reconcile the historical lifecycle Journal from an explicitly permitted evidence source; do not rewrite it.
 
-## 6. Next safe engineering step
+## 7. Next safe engineering step
 
 After historical snapshot reconciliation and explicit route-policy approval, implement only the approved route-specific checks and deterministic synthetic fixtures. Run the synthetic test suite in an isolated development environment only after a read-only environment preflight. No real Validation or Fresh Holdout data should be used for these tests.
