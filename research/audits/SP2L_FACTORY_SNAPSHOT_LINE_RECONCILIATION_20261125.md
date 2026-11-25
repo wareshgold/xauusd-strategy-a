@@ -72,7 +72,7 @@ Inspected on the same PR #430 head:
 | `src/strategy_factory/datasets.py` | 136-150, 171-180 | Non-Development datasets must be immutable; helper `assert_no_holdout_reuse` checks same content/fingerprint under another Dataset ID. | CODE-OBSERVED helper. Its existence does not prove every relevant Factory call path invokes it. |
 | `src/strategy_factory/forward_gate_factory.py` | 73-88, 109-167 | Requires Holdout source, FRESH_HOLDOUT record, accepted Holdout result, PASS provenance, and matching Record/Run/Job/Dataset/Artifact/SHA/source-event identities; rejects caller flag false or post-Holdout tuning true. | CODE-OBSERVED. Boolean Freeze/tuning assertions are not independently authorized evidence. |
 | same | 169-227 | Requires event-ledger snapshot and byte-level evidence, validates contiguous sequence, exactly one matching Holdout completion, rejects competing Holdout failure, then validates handoff against independently supplied Holdout result. | CODE-OBSERVED later hardening beyond S3's historical one-event limitation. |
-| same | 229-245 | Requires Forward Dataset ID/artifact/SHA and rejects equality of Forward SHA or Artifact ID with Holdout. | CODE-OBSERVED. |
+| same | 229-250 | Requires Forward Dataset ID/artifact/SHA and rejects equality of Forward Dataset ID, SHA, or Artifact ID with the Fresh Holdout identity. | CODE-OBSERVED. |
 | `src/strategy_factory/forward_preparation.py` | 135-181 | Obtains event tuple, audits persisted journal snapshot when configured, compares parsed journal events to in-memory tuple, and passes SHA/size/source metadata and Holdout result to Gate. | CODE-OBSERVED. No journal repair/write is performed in this section. |
 
 ### Route-by-route disposition
