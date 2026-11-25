@@ -399,7 +399,7 @@ def test_discovery_adapter_rejects_unsafe_or_missing_reported_output(
         encoding="utf-8",
     )
 
-    external_output = tmp_path.parent / "outside-discovery.json"
+    external_output = tmp_path.parent.parent / "outside-discovery.json"
     external_bytes = b'{"research_only":true,"external":true}'
     external_output.write_bytes(external_bytes)
 
