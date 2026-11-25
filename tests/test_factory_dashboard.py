@@ -217,3 +217,99 @@ def test_dashboard_surfaces_unreadable_journal_as_review_required(monkeypatch):
     assert "UNREADABLE_REVIEW_REQUIRED" in page
     assert "JOURNAL_INTEGRITY_REVIEW_REQUIRED" in page
     assert "NO REPAIR / RETRY" in page
+
+
+def test_completed_worker_uses_last_update_not_live_heartbeat_label():
+    worker = {
+        "worker_id": "completed-worker",
+        "station": "discovery",
+        "state": "COMPLETED",
+        "progress": 100,
+        "telemetry_health": "OFFLINE",
+        "heartbeat_age_s": 4672,
+    }
+
+    card = dashboard.worker_card(worker, 1)
+
+    assert "LAST UPDATE 4672s" in card
+    assert "HB 4672s" not in card
+
+
+def test_completed_worker_is_assigned_but_does_not_activate_station():
+    worker = {
+        "worker_id": "completed-worker",
+        "station": "discovery",
+        "state": "COMPLETED",
+        "progress": 100,
+        "telemetry_health": "OFFLINE",
+    }
+
+    card = dashboard.station_card("discovery", [worker])
+
+    assert 'class="station room-idle"' in card
+    assert "1 assigned" in card
+    assert "0 running" in card
+    assert "1 completed" in card
+
+
+def test_running_live_worker_activates_station_and_is_counted():
+    worker = {
+        "worker_id": "running-worker",
+        "station": "discovery",
+        "state": "RUNNING",
+        "progress": 25,
+        "telemetry_health": "LIVE",
+    }
+
+    card = dashboard.station_card("discovery", [worker])
+
+    assert 'class="station room-active"' in card
+    assert "1 assigned" in card
+    assert "1 running" in card
+    assert "0 completed" in card
+
+
+def test_detached_git_state_is_explicit_not_unknown(monkeypatch):
+    def fake_run(*args):
+        if args == ("git", "branch", "--show-current"):
+            return ""
+        if args == ("git", "rev-parse", "--short", "HEAD"):
+            return "9d3f1ad"
+        if args == ("git", "rev-parse", "--short", "@{u}"):
+            raise AssertionError("upstream must not be queried for detached HEAD")
+        return ""
+
+    monkeypatch.setattr(dashboard, "_run", fake_run)
+
+    state = dashboard.git_state()
+
+    assert state["branch"] == "DETACHED"
+    assert state["head"] == "9d3f1ad"
+    assert state["origin"] == "NOT CONFIGURED"
+
+
+def test_completed_worker_heartbeat_does_not_count_as_live(monkeypatch):
+    workers = [{
+        "worker_id": "completed-worker",
+        "job_id": "DONE-01",
+        "station": "discovery",
+        "state": "COMPLETED",
+        "progress": 100,
+        "heartbeat_utc": "2026-11-25T06:32:05+00:00",
+        "telemetry_health": "LIVE",
+        "heartbeat_age_s": 1,
+        "job_type": "SYNTHETIC_FACTORY_E2E_V1",
+        "output_artifact": "SYNTH-EVIDENCE-DONE-01",
+    }]
+    monkeypatch.setattr(dashboard, "DEMO_MODE", True)
+    monkeypatch.setattr(dashboard, "git_state", lambda: {
+        "branch": "DETACHED",
+        "head": "test",
+        "origin": "NOT CONFIGURED",
+        "root": "test-root",
+    })
+    monkeypatch.setattr(dashboard, "worker_state", lambda: (workers, "IDLE"))
+
+    page = dashboard.html_page()
+
+    assert '<b>0</b><small>Live heartbeat</small>' in page
