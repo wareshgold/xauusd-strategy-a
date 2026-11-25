@@ -466,7 +466,7 @@ def telemetry_panels(workers: list[dict]) -> str:
     active_rows = "".join(
         f'<div class="job-row"><span class="mono">{escape(str(w.get("worker_id") or "—"))}</span>'
         f'<span>{escape(str(w.get("job_id") or "NO JOB"))}</span>'
-        f'<span class="job-state {status_class(str(w.get("state") or ""))}">{escape(str(w.get("state") or "UNKNOWN").upper())}</span>'
+        f'<span class="job-state {status_class(str(w.get("state") or ""))}">{escape(str(w.get("state") or "UNKNOWN").strip().upper())}</span>'
         f'<b>{float(w.get("progress") or 0):.0f}%</b></div>'
         for w in active[:8]
     ) or '<div class="empty-row">NO ACTIVE JOB TELEMETRY</div>'
@@ -474,7 +474,7 @@ def telemetry_panels(workers: list[dict]) -> str:
     feed_rows = "".join(
         f'<div class="feed-row"><span class="feed-time">{escape(str(w.get("heartbeat_utc") or "—").replace("T"," ")[:19])}</span>'
         f'<span class="feed-id">{escape(str(w.get("worker_id") or "—"))}</span>'
-        f'<span>{escape(str(w.get("state") or "UNKNOWN").upper())}</span>'
+        f'<span>{escape(str(w.get("state") or "UNKNOWN").strip().upper())}</span>'
         f'<span>{escape(str(w.get("detail") or "No detail"))}</span></div>'
         for w in feed[:10]
     ) or '<div class="empty-row">NO TELEMETRY FEED</div>'
