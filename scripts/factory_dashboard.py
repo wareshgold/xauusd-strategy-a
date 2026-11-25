@@ -63,10 +63,12 @@ def _run(*args: str) -> str:
 
 
 def git_state() -> dict[str, str]:
+    branch = _run("git", "branch", "--show-current")
+    upstream = _run("git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}")
     return {
-        "branch": _run("git", "branch", "--show-current") or "unknown",
+        "branch": branch or "DETACHED",
         "head": _run("git", "rev-parse", "--short", "HEAD") or "unknown",
-        "origin": _run("git", "rev-parse", "--short", "@{u}") or "unknown",
+        "origin": upstream or "NOT CONFIGURED",
         "root": str(ROOT),
     }
 
@@ -118,7 +120,7 @@ def worker_state() -> tuple[list[dict], str]:
 
 
 def status_class(value: str) -> str:
-    v = value.upper()
+    v = str(value).strip().upper()
     if v in {"LIVE", "RUNNING", "COMPLETED", "VERIFIED", "VALID", "CONSISTENT", "SEPARATE"}:
         return "ok"
     if v in {"BLOCKED", "OFFLINE", "FAILED", "NOT ELIGIBLE", "REVIEW_REQUIRED"} or v.endswith("_REVIEW_REQUIRED"):
@@ -145,7 +147,7 @@ def station_for(worker: dict) -> str:
 
 def lifecycle_html(worker: dict) -> str:
     """Render a telemetry-derived Queue → Lab → Evidence → Complete track."""
-    state = str(worker.get("state") or "IDLE").upper()
+    state = str(worker.get("state") or "IDLE").strip().upper()
     artifact = bool(worker.get("output_artifact"))
     if state == "QUEUED":
         active = "queue"
@@ -179,10 +181,13 @@ def worker_card(worker: dict, index: int) -> str:
         progress = max(0.0, min(100.0, float(worker.get("progress") or 0)))
     except (TypeError, ValueError):
         progress = 0.0
-    state = str(worker.get("state") or "UNKNOWN").upper()
-    health = str(worker.get("telemetry_health") or "UNKNOWN")
+    state = str(worker.get("state") or "UNKNOWN").strip().upper()
+    health = str(worker.get("telemetry_health") or "UNKNOWN").strip().upper()
     age = worker.get("heartbeat_age_s")
     beat = "—" if age is None else f"{age:.0f}s"
+    activity_label = f"HB {beat}" if state in {"RUNNING", "HEARTBEAT"} else (
+        "COMPLETED" if state == "COMPLETED" else f"LAST UPDATE {beat}"
+    )
     return f"""
     <article class="worker-card">
       <div class="worker-head"><span class="worker-id">{escape(str(worker.get("worker_id") or f"W-{index:02d}"))}</span><span class="status-dot {status_class(health)}"></span></div>
@@ -191,7 +196,7 @@ def worker_card(worker: dict, index: int) -> str:
         <div class="worker-info"><b>{escape(title)}</b><span>{escape(subtitle)}</span><strong class="{status_class(state)}">{escape(state)}</strong></div>
       </div>
       <div class="meter"><i style="width:{progress:.0f}%"></i></div>
-      <div class="worker-foot"><span>{progress:.0f}%</span><span>HB {beat}</span></div>
+      <div class="worker-foot"><span>{progress:.0f}%</span><span>{escape(activity_label)}</span></div>
       <div class="worker-job">{escape(str(worker.get("job_id") or "NO ACTIVE JOB"))}</div>
     </article>
     """
@@ -199,16 +204,24 @@ def worker_card(worker: dict, index: int) -> str:
 
 def station_card(key: str, workers: list[dict]) -> str:
     title, code, subtitle = STATIONS[key]
-    active = [w for w in workers if station_for(w) == key]
+    assigned = [w for w in workers if station_for(w) == key]
+    running = [w for w in assigned if str(w.get("state") or "").strip().upper() in {"RUNNING", "HEARTBEAT"}]
+    queued = [w for w in assigned if str(w.get("state") or "").strip().upper() == "QUEUED"]
+    completed = [w for w in assigned if str(w.get("state") or "").strip().upper() == "COMPLETED"]
+    failed = [w for w in assigned if str(w.get("state") or "").strip().upper() == "FAILED"]
+    live_running = [
+        w for w in running
+        if str(w.get("telemetry_health") or "").strip().upper() == "LIVE"
+    ]
     units = ""
-    for worker in active[:5]:
-        state = str(worker.get("state") or "UNKNOWN").upper()
-        health = str(worker.get("telemetry_health") or "UNKNOWN")
+    for worker in assigned[:5]:
+        state = str(worker.get("state") or "UNKNOWN").strip().upper()
+        health = str(worker.get("telemetry_health") or "UNKNOWN").strip().upper()
         active_class = " active" if state in {"RUNNING", "HEARTBEAT"} and health == "LIVE" else ""
         units += f'<span class="station-unit{active_class}" title="{escape(str(worker.get("job_id") or "worker"))}"></span>'
     if not units:
         units = '<span class="empty-unit">—</span>'
-    room_class = "room-active" if active else "room-idle"
+    room_class = "room-active" if live_running else "room-idle"
     return f"""
     <section class="station {room_class}">
       <div class="station-sign"><span class="station-code">{code}</span><div><b>{title}</b><small>{subtitle}</small></div><i class="room-lamp"></i></div>
@@ -217,7 +230,7 @@ def station_card(key: str, workers: list[dict]) -> str:
         <div class="conveyor"><span></span><span></span><span></span><span></span><span></span></div>
         <div class="station-units">{units}</div>
       </div>
-      <div class="station-status">{len(active)} assigned <span>• TELEMETRY LINK</span></div>
+      <div class="station-status">{len(assigned)} assigned · {len(running)} running · {len(queued)} queued · {len(completed)} completed · {len(failed)} failed</div>
     </section>
     """
 
@@ -226,6 +239,10 @@ def station_card(key: str, workers: list[dict]) -> str:
 def station_world(workers: list[dict]) -> str:
     """Render a telemetry-backed SP2L station world from the validated adapter."""
     world_state = build_world_state(workers)
+    telemetry_by_id = {
+        str(item.get("worker_id") or "").strip(): str(item.get("telemetry_health") or "UNKNOWN").strip().upper()
+        for item in workers
+    }
     payload = json.dumps(
         [
             {
@@ -234,6 +251,7 @@ def station_world(workers: list[dict]) -> str:
                 "state": worker.state,
                 "station": worker.station,
                 "progress": worker.progress,
+                "telemetry_health": telemetry_by_id.get(worker.worker_id, "UNKNOWN"),
             }
             for worker in world_state.workers
         ],
@@ -365,7 +383,7 @@ def station_world(workers: list[dict]) -> str:
         }
         function agent(w,i,t) {
           const r=rooms[w.station]||rooms.idle;
-          const live=w.state==="RUNNING"||w.state==="HEARTBEAT";
+          const live=(w.state==="RUNNING"||w.state==="HEARTBEAT")&&w.telemetry_health==="LIVE";
           const queued=w.state==="QUEUED", done=w.state==="COMPLETED", fail=w.state==="FAILED";
           const phase=(t/9000+i*0.19)%1;
           const laneX=r.x+42+(i*71)%(Math.max(76,r.w-84));
@@ -433,8 +451,8 @@ def station_world(workers: list[dict]) -> str:
     )
 
 def telemetry_panels(workers: list[dict]) -> str:
-    queued = [w for w in workers if str(w.get("state") or "").upper() == "QUEUED"]
-    active = [w for w in workers if str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"}]
+    queued = [w for w in workers if str(w.get("state") or "").strip().upper() == "QUEUED"]
+    active = [w for w in workers if str(w.get("state") or "").strip().upper() in {"RUNNING", "HEARTBEAT"}]
     artifacts = [w for w in workers if w.get("output_artifact")]
     feed = sorted(workers, key=lambda w: str(w.get("heartbeat_utc") or ""), reverse=True)
 
@@ -448,7 +466,7 @@ def telemetry_panels(workers: list[dict]) -> str:
     active_rows = "".join(
         f'<div class="job-row"><span class="mono">{escape(str(w.get("worker_id") or "—"))}</span>'
         f'<span>{escape(str(w.get("job_id") or "NO JOB"))}</span>'
-        f'<span class="job-state {status_class(str(w.get("state") or ""))}">{escape(str(w.get("state") or "UNKNOWN").upper())}</span>'
+        f'<span class="job-state {status_class(str(w.get("state") or ""))}">{escape(str(w.get("state") or "UNKNOWN").strip().upper())}</span>'
         f'<b>{float(w.get("progress") or 0):.0f}%</b></div>'
         for w in active[:8]
     ) or '<div class="empty-row">NO ACTIVE JOB TELEMETRY</div>'
@@ -456,7 +474,7 @@ def telemetry_panels(workers: list[dict]) -> str:
     feed_rows = "".join(
         f'<div class="feed-row"><span class="feed-time">{escape(str(w.get("heartbeat_utc") or "—").replace("T"," ")[:19])}</span>'
         f'<span class="feed-id">{escape(str(w.get("worker_id") or "—"))}</span>'
-        f'<span>{escape(str(w.get("state") or "UNKNOWN").upper())}</span>'
+        f'<span>{escape(str(w.get("state") or "UNKNOWN").strip().upper())}</span>'
         f'<span>{escape(str(w.get("detail") or "No detail"))}</span></div>'
         for w in feed[:10]
     ) or '<div class="empty-row">NO TELEMETRY FEED</div>'
@@ -530,8 +548,8 @@ def html_page() -> str:
     workers, factory_health = worker_state()
     mode_label = "DEMO TELEMETRY" if DEMO_MODE else "LIVE TELEMETRY"
     live = sum(w["telemetry_health"] == "LIVE" for w in workers)
-    running = sum(str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"} for w in workers)
-    failed = sum(str(w.get("state") or "").upper() == "FAILED" for w in workers)
+    running = sum(str(w.get("state") or "").strip().upper() in {"RUNNING", "HEARTBEAT"} for w in workers)
+    failed = sum(str(w.get("state") or "").strip().upper() == "FAILED" for w in workers)
 
     demo_snapshot_complete = (
         DEMO_MODE
@@ -539,7 +557,7 @@ def html_page() -> str:
         and all(
             str(w.get("job_type") or "")
             in {"TELEMETRY_DEMO_ONLY", "SYNTHETIC_FACTORY_E2E_V1"}
-            and str(w.get("state") or "").upper() == "COMPLETED"
+            and str(w.get("state") or "").strip().upper() == "COMPLETED"
             for w in workers
         )
     )
@@ -654,7 +672,7 @@ h1{{margin:0;font-size:25px;letter-spacing:2.2px;font-weight:800;text-shadow:0 0
       <span>ROOT {escape(git["root"])}</span>
       <span>BRANCH {escape(git["branch"])}</span>
       <span>HEAD {escape(git["head"])}</span>
-      <span>origin {escape(git["origin"])}</span>
+      <span>UPSTREAM {escape(git["origin"])}</span>
       <span class="lock">PRODUCTION LOCKED · NO BUY/SELL GENERATION</span>
     </div>
   </section>
