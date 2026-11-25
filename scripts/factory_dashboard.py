@@ -147,7 +147,7 @@ def station_for(worker: dict) -> str:
 
 def lifecycle_html(worker: dict) -> str:
     """Render a telemetry-derived Queue → Lab → Evidence → Complete track."""
-    state = str(worker.get("state") or "IDLE").upper()
+    state = str(worker.get("state") or "IDLE").strip().upper()
     artifact = bool(worker.get("output_artifact"))
     if state == "QUEUED":
         active = "queue"
@@ -181,7 +181,7 @@ def worker_card(worker: dict, index: int) -> str:
         progress = max(0.0, min(100.0, float(worker.get("progress") or 0)))
     except (TypeError, ValueError):
         progress = 0.0
-    state = str(worker.get("state") or "UNKNOWN").upper()
+    state = str(worker.get("state") or "UNKNOWN").strip().upper()
     health = str(worker.get("telemetry_health") or "UNKNOWN")
     age = worker.get("heartbeat_age_s")
     beat = "—" if age is None else f"{age:.0f}s"
@@ -205,18 +205,18 @@ def worker_card(worker: dict, index: int) -> str:
 def station_card(key: str, workers: list[dict]) -> str:
     title, code, subtitle = STATIONS[key]
     assigned = [w for w in workers if station_for(w) == key]
-    running = [w for w in assigned if str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"}]
-    queued = [w for w in assigned if str(w.get("state") or "").upper() == "QUEUED"]
-    completed = [w for w in assigned if str(w.get("state") or "").upper() == "COMPLETED"]
-    failed = [w for w in assigned if str(w.get("state") or "").upper() == "FAILED"]
+    running = [w for w in assigned if str(w.get("state") or "").strip().upper() in {"RUNNING", "HEARTBEAT"}]
+    queued = [w for w in assigned if str(w.get("state") or "").strip().upper() == "QUEUED"]
+    completed = [w for w in assigned if str(w.get("state") or "").strip().upper() == "COMPLETED"]
+    failed = [w for w in assigned if str(w.get("state") or "").strip().upper() == "FAILED"]
     live_running = [
         w for w in running
-        if str(w.get("telemetry_health") or "").upper() == "LIVE"
+        if str(w.get("telemetry_health") or "").strip().upper() == "LIVE"
     ]
     units = ""
     for worker in assigned[:5]:
-        state = str(worker.get("state") or "UNKNOWN").upper()
-        health = str(worker.get("telemetry_health") or "UNKNOWN").upper()
+        state = str(worker.get("state") or "UNKNOWN").strip().upper()
+        health = str(worker.get("telemetry_health") or "UNKNOWN").strip().upper()
         active_class = " active" if state in {"RUNNING", "HEARTBEAT"} and health == "LIVE" else ""
         units += f'<span class="station-unit{active_class}" title="{escape(str(worker.get("job_id") or "worker"))}"></span>'
     if not units:
@@ -451,8 +451,8 @@ def station_world(workers: list[dict]) -> str:
     )
 
 def telemetry_panels(workers: list[dict]) -> str:
-    queued = [w for w in workers if str(w.get("state") or "").upper() == "QUEUED"]
-    active = [w for w in workers if str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"}]
+    queued = [w for w in workers if str(w.get("state") or "").strip().upper() == "QUEUED"]
+    active = [w for w in workers if str(w.get("state") or "").strip().upper() in {"RUNNING", "HEARTBEAT"}]
     artifacts = [w for w in workers if w.get("output_artifact")]
     feed = sorted(workers, key=lambda w: str(w.get("heartbeat_utc") or ""), reverse=True)
 
@@ -548,8 +548,8 @@ def html_page() -> str:
     workers, factory_health = worker_state()
     mode_label = "DEMO TELEMETRY" if DEMO_MODE else "LIVE TELEMETRY"
     live = sum(w["telemetry_health"] == "LIVE" for w in workers)
-    running = sum(str(w.get("state") or "").upper() in {"RUNNING", "HEARTBEAT"} for w in workers)
-    failed = sum(str(w.get("state") or "").upper() == "FAILED" for w in workers)
+    running = sum(str(w.get("state") or "").strip().upper() in {"RUNNING", "HEARTBEAT"} for w in workers)
+    failed = sum(str(w.get("state") or "").strip().upper() == "FAILED" for w in workers)
 
     demo_snapshot_complete = (
         DEMO_MODE
@@ -557,7 +557,7 @@ def html_page() -> str:
         and all(
             str(w.get("job_type") or "")
             in {"TELEMETRY_DEMO_ONLY", "SYNTHETIC_FACTORY_E2E_V1"}
-            and str(w.get("state") or "").upper() == "COMPLETED"
+            and str(w.get("state") or "").strip().upper() == "COMPLETED"
             for w in workers
         )
     )
