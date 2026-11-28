@@ -206,3 +206,22 @@ New source-level/unit coverage in `tests/test_sp2l_v31_startup_integration_contr
 **Latest implementation commit before this documentation update:** `0972c20236c926b09b844325dbd4b02e8f851aa4`.
 
 **Safety boundary unchanged:** no Runner or MT5 terminal was started, no account identity variables were set, no autostart was configured, no PR was created, and no live configuration or order behavior was changed.
+
+## 12. Independent startup safety alert paths (2026-11-28)
+
+A further source review found that the account-wide/per-symbol startup safety blocker called runner.log_event before attempting Telegram. If the event file could not be written, the exception prevented the operator alert from being attempted. The initial MT5 initialize() failure path also aborted before reaching the account-info alert hook.
+
+Changes on the research branch:
+
+- scripts/sp2l_v31_startup_failure_alert.py now supports explicit event names and alert headings/instructions while keeping event logging and Telegram delivery independent best-effort operations.
+- The V3.1 _block_startup path uses that helper. A failed STARTUP_SAFETY_BLOCKED event write no longer suppresses the Telegram alert attempt; failure of both side effects still leaves the raised startup block intact.
+- The alert-result event is named from the original failure event (for example, STARTUP_SAFETY_BLOCKED_ALERT) so initialization and safety-block diagnostics remain distinguishable.
+- The base runner now alerts through the optional hook when mt5.initialize() raises or returns false, then aborts startup. The generic runner remains unchanged unless a V3.1 startup-failure hook is installed.
+- Added deterministic tests for a failed safety-block event write with successful Telegram delivery, alert-event naming, and MT5 initialization alert-hook ordering.
+
+**Latest remote implementation HEAD:** 24d37a5d8d1ca254eb0fdf9b831224965082d0c5, 13 commits ahead of 42fe5787dd8936551116f50387e35694e7f73523 and 0 behind at the latest GitHub comparison.
+
+**Validation status:** GitHub reports no commit status checks and no workflow runs for this HEAD. The new changes have not yet been executed in the user's local review worktree. Local syntax compilation, the targeted 12-file test set, and git diff --check remain required. No test success is claimed for this revision.
+
+**Safety boundary unchanged:** no Runner/MT5 activation, no account identity configuration, no autostart change, no PR creation, no live configuration change, and no broker operation.
+
