@@ -188,3 +188,21 @@ Coverage added:
 **Latest remote branch HEAD:** `d80d911c297b2ca0635cf6d52da63599ec88a2b0` before this documentation update. The new contract tests have not yet been executed locally. The next local validation should run the existing 11 targeted test files plus `test_sp2l_v31_startup_integration_contract.py`, syntax compilation, and `git diff --check`.
 
 **Local worktree caution:** the user previously reported a local untracked `tests/test_sp2l_v31_startup_recovery.py`. This branch deliberately adds a separate file named `test_sp2l_v31_startup_integration_contract.py`; it does not overwrite that local untracked test.
+
+## 11. Initial MT5 account preflight alert hardening (2026-11-28)
+
+The first `mt5.account_info()` call in the base runner occurs before the V3.1 recovery hook. It is now explicitly guarded:
+
+- A raised `account_info()` exception, `None` result, malformed account object, or non-demo trade mode invokes the optional runner startup-failure hook and then aborts startup.
+- V3.1 wires that hook to `scripts/sp2l_v31_startup_failure_alert.py`.
+- The notification helper attempts event logging and Telegram delivery independently. A logging exception does not suppress the alert attempt; an alert exception does not alter the caller's startup abort.
+- The base runner catches exceptions raised by the optional hook so notification failures cannot mask or replace the original startup failure.
+- The hook is absent in generic runner configurations unless explicitly installed; no strategy, signal, order, trailing, or lifecycle behavior is changed after successful startup.
+
+New source-level/unit coverage in `tests/test_sp2l_v31_startup_integration_contract.py` checks the preflight notification ordering, V3.1 hook wiring, and all four combinations of logging/Telegram success and failure.
+
+**Validation pending:** this change has been committed to the research branch, but no local test run has yet been reported for this revision. The tests are deterministic helper/source-contract tests; they do not initialize MT5 or prove real Telegram delivery.
+
+**Latest implementation commit before this documentation update:** `0972c20236c926b09b844325dbd4b02e8f851aa4`.
+
+**Safety boundary unchanged:** no Runner or MT5 terminal was started, no account identity variables were set, no autostart was configured, no PR was created, and no live configuration or order behavior was changed.
