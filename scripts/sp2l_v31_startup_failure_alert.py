@@ -50,7 +50,7 @@ def report_startup_failure(
 
     try:
         log_event({
-            "event": "STARTUP_INITIALIZATION_ALERT",
+            "event": f"{event_name}_ALERT",
             "version": str(version),
             "success": alert_success,
             "detail": alert_detail,
