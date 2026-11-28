@@ -739,7 +739,7 @@ def _v31_startup_recovery(configs, state):
                 {"query": exc.query_name, "detail": str(exc)},
             )
 
-    account = mt5.account_info()
+    account = _required_inventory_query("account_info", mt5.account_info)
     identity = inspect_account_identity(
         account=account,
         expected_login=os.getenv("SP2L_EXPECTED_ACCOUNT_LOGIN", ""),
