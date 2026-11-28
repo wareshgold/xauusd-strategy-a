@@ -688,19 +688,31 @@ def _v31_startup_recovery(configs, state):
         # empty result. Never collapse those two states.
         active_orders = mt5.orders_get(symbol=symbol)
         active_positions = mt5.positions_get(symbol=symbol)
-        summary = recover_owned_broker_inventory(
-            state,
-            symbol=symbol,
-            magic=magic,
-            orders=active_orders,
-            positions=active_positions,
-            buy_limit_type=mt5.ORDER_TYPE_BUY_LIMIT,
-            sell_limit_type=mt5.ORDER_TYPE_SELL_LIMIT,
-        )
+        try:
+            summary = recover_owned_broker_inventory(
+                state,
+                symbol=symbol,
+                magic=magic,
+                orders=active_orders,
+                positions=active_positions,
+                buy_limit_type=mt5.ORDER_TYPE_BUY_LIMIT,
+                sell_limit_type=mt5.ORDER_TYPE_SELL_LIMIT,
+            )
+        except Exception as exc:
+            _block_startup(
+                "OWNED_INVENTORY_RECOVERY_FAILED",
+                {"symbol": symbol, "detail": f"{type(exc).__name__}: {exc}"},
+            )
         summaries.append(summary)
     # Persist the recovered ownership set before recording recovery success
     # or entering the first management poll. Any write failure aborts startup.
-    runner.save_state(state)
+    try:
+        runner.save_state(state)
+    except Exception as exc:
+        _block_startup(
+            "RECOVERED_STATE_PERSIST_FAILED",
+            {"detail": f"{type(exc).__name__}: {exc}"},
+        )
     runner.log_event({
         "event": "STARTUP_BROKER_RECOVERY",
         "version": cfg.VERSION,
