@@ -94,12 +94,32 @@ A broader `pytest -k v31` collection attempt was not a valid full-suite result: 
 - No live configuration or production BUY/SELL behavior was changed.
 - No claim is made that the implementation is production-ready.
 
-## 6. Open review items — next planned work
+## 6. Post-snapshot lifecycle query diagnostics (2026-11-28)
 
-1. **Finish control-flow audit.** Trace the exact base-runner startup hook call site and prove it runs before the polling/entry loop.
+Three commits were added after the snapshot commit `e44b66c3978dcbca3ca4649cf186b9784ead6b99`:
+
+- `d90aaffe6b14ef350e214f65ad0da81d61e4cd82` — V3.1 lifecycle query failure diagnostics for active orders, order history, and trailing position inventory.
+- `7e35eeb60ff017e07241ae760263aee54eefd486` — base position lifecycle no longer treats a `None` result as an empty list; it logs a rate-limited diagnostic and skips that observer cycle.
+- `5491483951dbe004c71fc9bd6de5c44416792a87` — protect the V3.1 diagnostic path if `mt5.last_error()` itself raises.
+
+The remote branch is now 3 commits ahead of the snapshot commit and 0 behind it. The compared changes touch only the two runner source files: 124 insertions and 6 deletions across both files.
+
+Behavioral boundaries:
+
+- A failed active-order query stops that pending lifecycle/TTL pass; it does not cancel or classify orders as absent.
+- A failed order-history query is logged; active-order observations can still be processed from the successful active snapshot.
+- A failed trailing position query skips trailing changes and stale-extreme cleanup for that pass.
+- The base position lifecycle observer logs and skips when its MT5 query fails; a successful later poll clears the one-shot diagnostic suppression for that symbol.
+- The entry guard remains a separate last-moment check and continues to fail closed on its own query failure.
+
+**Validation status:** the earlier local 75-test result predates these three diagnostic commits. No test result is yet claimed for the new diagnostic changes. The next required step is local syntax + targeted pytest + diff validation in the review worktree. No runner/terminal activation is part of that step.
+
+## 7. Open review items — next planned work
+
+1. **Integration-test startup and lifecycle.** Startup hook order has been source-traced: recovery is called after state load/reconciliation and before START notification and the polling/entry loop. Add integration-level tests to prove this behavior.
 2. **Prove lifecycle continuity.** Verify that recovered owned positions/orders are placed in the state structures required by the existing position, pending-order, and trailing lifecycle handlers. In particular, inspect the recovered `state["positions"]` membership used by the position lifecycle observer.
 3. **Add integration-level tests.** Exercise startup-hook ordering, existing owned position management while entry is blocked, pending-order management while entry is blocked, and no-entry behavior after query failure. Unit tests alone do not prove these cross-module paths.
-4. **Review runtime query-failure semantics.** Inspect lifecycle functions that currently use patterns such as `orders_get(...) or []` / `positions_get(...) or []`; ensure a runtime `None` cannot be silently mistaken for an empty inventory where that would compromise management or safety.
+4. **Finish runtime query-failure audit.** The V3.1 pending lifecycle/TTL and trailing inventory queries now emit rate-limited failure diagnostics and fail closed for that pass. Re-check remaining lifecycle/history paths and verify the new behavior with tests.
 5. **Review alert/logging failure paths.** Confirm a logging failure cannot bypass a safety block and document the expected operator response.
 6. **Resolve branch naming.** The local branch label reported was `review/...`, while the confirmed GitHub branch is `research/...`. Fetch and verify remote/local ancestry before any further local push.
 7. **Re-run targeted tests** after any code changes; keep the local Monitor fixture correction isolated and decide whether to commit it after review.
@@ -109,4 +129,4 @@ A broader `pytest -k v31` collection attempt was not a valid full-suite result: 
 
 This work remains separate from canonical Strategy A research. Follow the project workflow: source resolution → synthetic fixtures → frozen geometry → development → untouched validation → robustness/stability → fresh holdout → production. No unresolved source geometry may be inferred from backtest performance. AI may assist research, engineering, validation, documentation, and analytics, but must not autonomously define canonical rules or generate production BUY/SELL decisions.
 
-**Current stopping point:** implementation exists on the research branch; the targeted 69-test suite passes locally with one uncommitted test-fixture correction; static control-flow and lifecycle integration audit remains incomplete. No activation.
+**Current stopping point:** implementation and lifecycle query diagnostics exist on the research branch. The prior 75-test local result validates the startup recovery work before the latest diagnostics only. The local review worktree still has uncommitted `tests/test_sp2l_v31_monitor.py` and `tests/test_sp2l_v31_startup_recovery.py` changes. New diagnostics still require local test validation. No activation.
