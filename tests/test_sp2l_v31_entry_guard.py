@@ -116,3 +116,33 @@ def test_malformed_owned_inventory_fails_loudly():
             orders=(malformed,),
             positions=(),
         )
+
+
+@pytest.mark.parametrize(
+    "malformed",
+    [
+        SimpleNamespace(ticket=501, magic=MAGIC),
+        SimpleNamespace(ticket=501, magic=MAGIC, symbol=""),
+        SimpleNamespace(ticket=0, magic=MAGIC, symbol=SYMBOL),
+        SimpleNamespace(ticket=-1, magic=MAGIC, symbol=SYMBOL),
+        SimpleNamespace(ticket=501, magic=None, symbol=SYMBOL),
+    ],
+)
+def test_incomplete_or_invalid_inventory_fails_loudly(malformed):
+    with pytest.raises(ValueError):
+        inspect_owned_exposure(
+            symbol=SYMBOL,
+            magic=MAGIC,
+            orders=(malformed,),
+            positions=(),
+        )
+
+
+def test_duplicate_owned_ticket_fails_loudly():
+    with pytest.raises(ValueError, match="duplicate owned orders ticket"):
+        inspect_owned_exposure(
+            symbol=SYMBOL,
+            magic=MAGIC,
+            orders=(broker_item(601), broker_item(601)),
+            positions=(),
+        )
