@@ -41,6 +41,7 @@ os.environ.setdefault("ALLOW_REAL_EXECUTION","true")
 
 import run_sp2l_author_replica_multi_symbol_forward_test as runner
 from sp2l_history_query_failure_log import HistoryQueryFailureLogGate
+from sp2l_v31_startup_failure_alert import report_startup_failure
 
 _HISTORY_QUERY_FAILURE_LOG_GATE = HistoryQueryFailureLogGate()
 _LIFECYCLE_QUERY_FAILURE_GATES = {}
@@ -822,6 +823,20 @@ def _v31_startup_recovery(configs, state):
     })
 
 runner.startup_recovery_hook = _v31_startup_recovery
+
+
+def _v31_initial_startup_failure(reason: str, details: dict) -> None:
+    """Alert on base-runner account preflight failures that occur before recovery."""
+    report_startup_failure(
+        reason=reason,
+        details=details,
+        version=cfg.VERSION,
+        send_alert=runner.gateway.send_telegram_message,
+        log_event=runner.log_event,
+    )
+
+
+runner.startup_failure_hook = _v31_initial_startup_failure
 
 # Execution clock guard: no order may be sent unless the operator has pinned
 # the current broker UTC offset and both tick freshness and MT5's strict offset
