@@ -346,4 +346,3 @@ def test_mt5_initialize_failures_are_alerted_before_startup_aborts():
     assert min(notify_lines) > initialize_line
     assert "MT5_INITIALIZE_EXCEPTION" in source
     assert "MT5_INITIALIZE_FAILED" in source
-
