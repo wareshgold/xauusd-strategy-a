@@ -698,37 +698,19 @@ runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
 def _v31_startup_recovery(configs, state):
     """Validate account identity and account-wide inventory before recovery."""
     def _block_startup(reason, details=None):
-        payload = {
-            "event": "STARTUP_SAFETY_BLOCKED",
-            "version": cfg.VERSION,
-            "reason": str(reason),
-            "details": details or {},
-            "canonical": False,
-        }
-        runner.log_event(payload)
-        # Best-effort operator alert. A missing Telegram route must never
-        # convert a failed safety check into permission to continue.
-        try:
-            alert = runner.gateway.send_telegram_message(
-                "⛔ SP2L V3.1 STARTUP BLOCKED\n"
-                f"Reason: {reason}\n"
-                "No new orders will be submitted. Inspect the MT5 account inventory."
-            )
-            runner.log_event({
-                "event": "STARTUP_SAFETY_ALERT",
-                "version": cfg.VERSION,
-                "success": bool(getattr(alert, "success", False)),
-                "detail": getattr(alert, "detail", None),
-                "canonical": False,
-            })
-        except Exception as exc:
-            runner.log_event({
-                "event": "STARTUP_SAFETY_ALERT",
-                "version": cfg.VERSION,
-                "success": False,
-                "detail": f"{type(exc).__name__}: {exc}",
-                "canonical": False,
-            })
+        # Logging and Telegram are independent best-effort side effects. A
+        # logging failure must never suppress the operator alert, and neither
+        # side effect can weaken this fail-closed startup block.
+        report_startup_failure(
+            reason=str(reason),
+            details=dict(details or {}),
+            version=cfg.VERSION,
+            send_alert=runner.gateway.send_telegram_message,
+            log_event=runner.log_event,
+            event_name="STARTUP_SAFETY_BLOCKED",
+            alert_heading="STARTUP BLOCKED",
+            alert_instruction="No new orders will be submitted. Inspect the MT5 account inventory.",
+        )
         raise RuntimeError(f"V3.1 startup safety block: {reason}")
 
     def _required_inventory_query(query_name, query):
