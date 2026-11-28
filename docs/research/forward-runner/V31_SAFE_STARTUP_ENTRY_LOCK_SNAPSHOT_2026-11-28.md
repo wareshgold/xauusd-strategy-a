@@ -224,4 +224,3 @@ Changes on the research branch:
 **Validation status:** GitHub reports no commit status checks and no workflow runs for this HEAD. The existing push-triggered forensic workflow is scoped to branches named research/sp2l-f13-forensic-repro-*; this review branch does not match that filter, and no PR exists to trigger its pull_request path. The new changes have not yet been executed in the user's local review worktree. Local syntax compilation, the targeted 12-file test set, and git diff --check remain required. No test success is claimed for this revision.
 
 **Safety boundary unchanged:** no Runner/MT5 activation, no account identity configuration, no autostart change, no PR creation, no live configuration change, and no broker operation.
-
