@@ -346,3 +346,36 @@ def test_mt5_initialize_failures_are_alerted_before_startup_aborts():
     assert min(notify_lines) > initialize_line
     assert "MT5_INITIALIZE_EXCEPTION" in source
     assert "MT5_INITIALIZE_FAILED" in source
+
+
+def test_v31_trailing_state_recovery_failure_alerts_and_aborts_before_base_startup():
+    source = V31_RUNNER.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    main = _function(tree, "_v3_main")
+    recovery_try = next(
+        node for node in ast.walk(main)
+        if isinstance(node, ast.Try)
+        and any(
+            isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Name)
+            and call.func.id == "load_trailing_state"
+            for child in ast.walk(node)
+            for call in [child]
+        )
+    )
+    handler = recovery_try.handlers[0]
+    handler_calls = {
+        node.func.id
+        for node in ast.walk(handler)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+    assert "report_startup_failure" in handler_calls
+    assert "RuntimeError" in handler_calls
+    assert 'STARTUP_TRAILING_STATE_FAILED' in ast.unparse(handler)
+    original_main_line = min(
+        node.lineno for node in ast.walk(main)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "_original_main"
+    )
+    assert recovery_try.lineno < original_main_line
