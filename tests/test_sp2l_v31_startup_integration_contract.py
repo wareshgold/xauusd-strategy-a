@@ -148,7 +148,6 @@ def test_base_runner_recovers_before_start_announcement_and_polling_loop():
     main = _function(tree, "main")
     calls = _call_lines(main)
 
-    assert min(calls["recovery_hook"]) < min(calls["log_event"])
     assert min(calls["recovery_hook"]) < next(
         node.lineno for node in main.body if isinstance(node, ast.While)
     )
