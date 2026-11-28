@@ -301,3 +301,36 @@ def test_base_position_observer_accepts_recovered_ticket_even_if_magic_metadata_
     rendered = ast.unparse(condition.test)
     assert "position_magic != magic" in rendered
     assert "position_id not in state['positions']" in rendered
+
+def test_startup_safety_block_uses_independent_alert_channel_and_specific_event():
+    events = []
+    alerts = []
+
+    def log_event(event):
+        if event.get("event") == "STARTUP_SAFETY_BLOCKED":
+            raise OSError("event disk unavailable")
+        events.append(event)
+
+    def send_alert(message):
+        alerts.append(message)
+        return SimpleNamespace(success=True, detail="sent")
+
+    result = report_startup_failure(
+        reason="UNRECOGNIZED_ACCOUNT_INVENTORY",
+        details={"inventory": "foreign"},
+        version="TEST",
+        send_alert=send_alert,
+        log_event=log_event,
+        event_name="STARTUP_SAFETY_BLOCKED",
+        alert_heading="STARTUP BLOCKED",
+        alert_instruction="No new orders will be submitted. Inspect the MT5 account inventory.",
+    )
+
+    assert result["logged"] is False
+    assert result["alerted"] is True
+    assert len(alerts) == 1
+    assert "STARTUP BLOCKED" in alerts[0]
+    assert "UNRECOGNIZED_ACCOUNT_INVENTORY" in alerts[0]
+    assert "No new orders will be submitted" in alerts[0]
+    assert events[0]["event"] == "STARTUP_INITIALIZATION_ALERT"
+
