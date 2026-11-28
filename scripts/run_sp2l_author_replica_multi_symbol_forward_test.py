@@ -873,10 +873,41 @@ def enforce_pending_order_expiry(cfg: dict, state: dict) -> None:
         _cancel_pending_order(order, state)
 
 
+_POSITION_QUERY_FAILURE_REPORTED: set[str] = set()
+
+
 def monitor_position_lifecycle(cfg: dict, state: dict) -> None:
     """Record broker-side position SL/TP directly after pending-order fills."""
     symbol, magic = cfg["symbol"], cfg["magic"]
-    positions = mt5.positions_get(symbol=symbol) or []
+    try:
+        positions = mt5.positions_get(symbol=symbol)
+    except Exception as exc:
+        if symbol not in _POSITION_QUERY_FAILURE_REPORTED:
+            log_event({
+                "event": "MT5_POSITION_LIFECYCLE_QUERY_FAILED",
+                "symbol": symbol,
+                "query": "positions_get",
+                "detail": f"{type(exc).__name__}: {exc}",
+                "canonical": False,
+            })
+            _POSITION_QUERY_FAILURE_REPORTED.add(symbol)
+        return
+    if positions is None:
+        if symbol not in _POSITION_QUERY_FAILURE_REPORTED:
+            try:
+                last_error = mt5.last_error()
+            except Exception as exc:
+                last_error = f"{type(exc).__name__}: {exc}"
+            log_event({
+                "event": "MT5_POSITION_LIFECYCLE_QUERY_FAILED",
+                "symbol": symbol,
+                "query": "positions_get",
+                "detail": f"MT5 returned None; last_error={last_error!r}",
+                "canonical": False,
+            })
+            _POSITION_QUERY_FAILURE_REPORTED.add(symbol)
+        return
+    _POSITION_QUERY_FAILURE_REPORTED.discard(symbol)
     for position in positions:
         position_id = int(getattr(position, "ticket", 0) or 0)
         if not position_id:
