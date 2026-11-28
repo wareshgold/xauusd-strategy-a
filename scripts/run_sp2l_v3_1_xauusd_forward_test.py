@@ -504,24 +504,20 @@ def _run_scoped_pending_lifecycle(cfg_runtime, state):
                 and int(getattr(active, "type", -1)) in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT)):
             state["orders"].add(ticket)
             tracked.add(ticket)
-    try:
-        history_snapshot = mt5.history_orders_get(
+    from sp2l_lifecycle_query_diagnostics import query_snapshot_with_diagnostics
+    history_snapshot = query_snapshot_with_diagnostics(
+        operation=lambda: mt5.history_orders_get(
             _RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol
-        )
-    except Exception as exc:
-        _log_lifecycle_query_failure(
-            "history_orders_get_for_pending_lifecycle", symbol,
-            f"{type(exc).__name__}: {exc}",
-        )
-        history_snapshot = None
+        ),
+        query="history_orders_get_for_pending_lifecycle",
+        symbol=symbol,
+        log_failure=_log_lifecycle_query_failure,
+        mark_success=_mark_lifecycle_query_success,
+        last_error=_safe_mt5_last_error,
+    )
     if history_snapshot is None:
-        _log_lifecycle_query_failure(
-            "history_orders_get_for_pending_lifecycle", symbol,
-            f"MT5 returned None; last_error={_safe_mt5_last_error()}",
-        )
         orders = list(active_orders)
     else:
-        _mark_lifecycle_query_success("history_orders_get_for_pending_lifecycle")
         orders = list(history_snapshot)
     orders.extend(active_orders)
     for order in orders:
