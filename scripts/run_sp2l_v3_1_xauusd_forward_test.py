@@ -290,6 +290,7 @@ runner.monitor_position_lifecycle=trail_positions
 from datetime import datetime, timezone
 from sp2l_deal_lifecycle_dedupe import claim_deal_lifecycle_event
 from sp2l_v31_startup_recovery import recover_owned_broker_inventory
+from sp2l_v31_entry_guard import inspect_owned_exposure
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
 
@@ -677,7 +678,69 @@ def _validate_execution_clock(symbol: str) -> None:
         raise RuntimeError(f"ORDER_BLOCKED: pinned broker offset {expected} != observed {observed}")
 
 def _guarded_execute_candidate(candidate: dict, magic: int) -> dict:
-    _validate_execution_clock(str(candidate.get("symbol", "")))
+    """Keep managing existing inventory, but fail closed on duplicate entry."""
+    symbol = str(candidate.get("symbol", ""))
+    try:
+        active_orders = mt5.orders_get(symbol=symbol)
+        active_positions = mt5.positions_get(symbol=symbol)
+        exposure = inspect_owned_exposure(
+            symbol=symbol,
+            magic=int(magic),
+            orders=active_orders,
+            positions=active_positions,
+        )
+    except Exception as exc:
+        detail = f"{type(exc).__name__}: {exc}"
+        runner.log_event({
+            "event": "ENTRY_BLOCKED_INVENTORY_QUERY",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "magic": int(magic),
+            "reason": "BROKER_INVENTORY_UNAVAILABLE",
+            "detail": detail,
+            "canonical": False,
+        })
+        return {
+            "ok": False,
+            "reason": "BROKER_INVENTORY_UNAVAILABLE",
+            "detail": detail,
+        }
+
+    if not exposure["ok"]:
+        runner.log_event({
+            "event": "ENTRY_BLOCKED_INVENTORY_QUERY",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "magic": int(magic),
+            "reason": exposure["reason"],
+            "failed_queries": exposure["failed_queries"],
+            "canonical": False,
+        })
+        return {
+            "ok": False,
+            "reason": exposure["reason"],
+            "failed_queries": exposure["failed_queries"],
+        }
+
+    if exposure["active"]:
+        runner.log_event({
+            "event": "ENTRY_BLOCKED_ACTIVE_OWN_EXPOSURE",
+            "version": cfg.VERSION,
+            "symbol": symbol,
+            "magic": int(magic),
+            "reason": exposure["reason"],
+            "order_tickets": exposure["order_tickets"],
+            "position_tickets": exposure["position_tickets"],
+            "canonical": False,
+        })
+        return {
+            "ok": False,
+            "reason": exposure["reason"],
+            "order_tickets": exposure["order_tickets"],
+            "position_tickets": exposure["position_tickets"],
+        }
+
+    _validate_execution_clock(symbol)
     return _original_execute_candidate(candidate, magic)
 
 runner.execute_candidate = _guarded_execute_candidate
