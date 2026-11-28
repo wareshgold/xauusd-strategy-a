@@ -122,3 +122,22 @@ def test_duplicate_account_inventory_ticket_fails_loudly():
             positions=(),
             owned_pairs={("XAUUSD.ecn", 26092301)},
         )
+
+
+def test_inventory_query_exception_is_tagged_with_query_name():
+    from scripts.sp2l_v31_startup_safety import BrokerInventoryQueryError, query_inventory_snapshot
+
+    def broken_query():
+        raise OSError("terminal IPC unavailable")
+
+    with pytest.raises(BrokerInventoryQueryError) as caught:
+        query_inventory_snapshot(query_name="account_orders_get", query=broken_query)
+
+    assert caught.value.query_name == "account_orders_get"
+    assert "OSError: terminal IPC unavailable" in str(caught.value)
+
+
+def test_inventory_query_none_is_preserved_for_fail_closed_classifier():
+    from scripts.sp2l_v31_startup_safety import query_inventory_snapshot
+
+    assert query_inventory_snapshot(query_name="account_positions_get", query=lambda: None) is None
