@@ -333,7 +333,12 @@ from datetime import datetime, timezone
 from sp2l_deal_lifecycle_dedupe import claim_deal_lifecycle_event
 from sp2l_v31_startup_recovery import recover_owned_broker_inventory
 from sp2l_v31_entry_guard import inspect_owned_exposure
-from sp2l_v31_startup_safety import inspect_account_identity, inspect_account_inventory
+from sp2l_v31_startup_safety import (
+    BrokerInventoryQueryError,
+    inspect_account_identity,
+    inspect_account_inventory,
+    query_inventory_snapshot,
+)
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
 
@@ -412,7 +417,7 @@ def _run_scoped_pending(cfg_runtime, state):
         return
     symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
     try:
-        active_orders = mt5.orders_get(symbol=symbol)
+        active_orders = _required_inventory_query("symbol_orders_get", lambda: mt5.orders_get(symbol=symbol))
     except Exception as exc:
         _log_lifecycle_query_failure(
             "orders_get_for_pending_ttl", symbol,
@@ -725,6 +730,15 @@ def _v31_startup_recovery(configs, state):
             })
         raise RuntimeError(f"V3.1 startup safety block: {reason}")
 
+    def _required_inventory_query(query_name, query):
+        try:
+            return query_inventory_snapshot(query_name=query_name, query=query)
+        except BrokerInventoryQueryError as exc:
+            _block_startup(
+                "BROKER_INVENTORY_QUERY_EXCEPTION",
+                {"query": exc.query_name, "detail": str(exc)},
+            )
+
     account = mt5.account_info()
     identity = inspect_account_identity(
         account=account,
@@ -740,8 +754,8 @@ def _v31_startup_recovery(configs, state):
     }
     # Account-wide snapshot is required to distinguish this runner's objects
     # from manual/foreign exposure. None is a query failure, never an empty set.
-    account_orders = mt5.orders_get()
-    account_positions = mt5.positions_get()
+    account_orders = _required_inventory_query("account_orders_get", mt5.orders_get)
+    account_positions = _required_inventory_query("account_positions_get", mt5.positions_get)
     try:
         inventory = inspect_account_inventory(
             orders=account_orders,
@@ -770,7 +784,7 @@ def _v31_startup_recovery(configs, state):
         # MT5 returns None on query failure and an empty tuple on a valid
         # empty result. Never collapse those two states.
         active_orders = mt5.orders_get(symbol=symbol)
-        active_positions = mt5.positions_get(symbol=symbol)
+        active_positions = _required_inventory_query("symbol_positions_get", lambda: mt5.positions_get(symbol=symbol))
         try:
             summary = recover_owned_broker_inventory(
                 state,
