@@ -140,3 +140,31 @@ Behavioral boundaries:
 This work remains separate from canonical Strategy A research. Follow the project workflow: source resolution → synthetic fixtures → frozen geometry → development → untouched validation → robustness/stability → fresh holdout → production. No unresolved source geometry may be inferred from backtest performance. AI may assist research, engineering, validation, documentation, and analytics, but must not autonomously define canonical rules or generate production BUY/SELL decisions.
 
 **Current stopping point:** implementation and lifecycle query diagnostics exist on the research branch at `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`. Local syntax compilation, the 11-file targeted test command, and diff checks passed. The local review worktree still has uncommitted `tests/test_sp2l_v31_monitor.py` and `tests/test_sp2l_v31_startup_recovery.py` changes. No PR, live integration run, Runner/MT5 activation, account identity configuration, or autostart activation has occurred.
+
+
+## 9. Startup inventory exception hardening (2026-11-28)
+
+After the prior snapshot, code review found that MT5 inventory APIs can fail in two distinct ways: return `None`, or raise an exception. The existing startup classifier already rejected `None`, but raised exceptions in account-wide/per-symbol inventory queries could abort startup before the safety-block alert path ran.
+
+Changes added on the research branch:
+
+- `scripts/sp2l_v31_startup_safety.py` now exposes `query_inventory_snapshot`, which preserves `None` for the existing fail-closed classifier and wraps raised exceptions in `BrokerInventoryQueryError` with the exact query name.
+- `tests/test_sp2l_v31_startup_safety.py` now tests both exception tagging and preservation of `None`.
+- The V3.1 startup hook routes account info, account-wide orders/positions, and per-symbol orders/positions through a required-query wrapper. Raised exceptions trigger `STARTUP_SAFETY_BLOCKED`, a best-effort Telegram alert, and startup abort.
+- The per-symbol order/position wrappers are scoped only to `_v31_startup_recovery`. A diff review caught and corrected an intermediate accidental replacement in the pending-TTL path before local validation was requested; the final diff confirms the TTL path retains its original direct query and diagnostic handling.
+
+Commits after implementation HEAD `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`:
+
+- `ed394cc669cdee78b26c64c7049e521ed2400c81` — add tagged startup inventory query exceptions.
+- `ae8c4829367ae6374d903877e55d261cca300220` — add focused exception/None tests.
+- `c64e98c2da8f4899175618ff0c9031d0f26e1fcf` — route startup inventory queries through the alerting wrapper.
+- `cf8a89bdffdefc559d764c8d2b00f08b37b2996e` — correct wrapper scope; preserve the pending-TTL query path.
+- `f458e668efa0a32ca954c66587a8c3cb168fd38a` — apply the same exception handling to the startup hook's account-info query.
+
+**Current remote branch HEAD:** `f458e668efa0a32ca954c66587a8c3cb168fd38a` (6 commits ahead of `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`, 0 behind). The latest local validation has not yet been run; local syntax compilation, targeted tests, and `git diff --check` are pending after the next fast-forward.
+
+**Remaining qualification:** the base runner's first `mt5.account_info()` call occurs before the V3.1 startup-recovery hook. If that first call itself raises, the base runner aborts before the V3.1 hook's alert wrapper can run. This remains an alert-path review item; it still fails closed and cannot proceed into the polling/entry loop.
+
+**Current local state last reported by the user:** review worktree HEAD `ae511254c15de3e7559608811212ccb107654adc`; preserved local changes remain `M tests/test_sp2l_v31_monitor.py` and `?? tests/test_sp2l_v31_startup_recovery.py`. No local commit or push was performed.
+
+**Safety boundary unchanged:** no Runner/MT5 activation, no Task Scheduler/autostart change, no account identity environment configuration, no live configuration change, and no PR creation.
