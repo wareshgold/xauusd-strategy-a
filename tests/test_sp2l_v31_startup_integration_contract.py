@@ -14,6 +14,7 @@ import pytest
 from scripts.sp2l_v31_entry_guard import inspect_owned_exposure
 from scripts.sp2l_v31_startup_recovery import recover_owned_broker_inventory
 from scripts.sp2l_v31_startup_safety import inspect_account_inventory
+from scripts.sp2l_v31_startup_failure_alert import report_startup_failure
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -140,6 +141,75 @@ def _call_lines(function):
             continue
         found.setdefault(name, []).append(node.lineno)
     return found
+
+
+def test_initial_account_preflight_failure_hook_runs_before_start_and_polling():
+    source = BASE_RUNNER.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    main = _function(tree, "main")
+    calls = _call_lines(main)
+
+    account_query_line = min(calls["account_info"])
+    notify_lines = calls["_notify_startup_failure"]
+    start_event_line = next(
+        node.lineno
+        for node in ast.walk(main)
+        if isinstance(node, ast.Dict)
+        and any(
+            isinstance(key, ast.Constant)
+            and key.value == "event"
+            and isinstance(value, ast.Constant)
+            and value.value == "START"
+            for key, value in zip(node.keys, node.values)
+        )
+    )
+    polling_loop_line = next(
+        node.lineno for node in ast.walk(main) if isinstance(node, ast.While)
+    )
+    assert notify_lines
+    assert min(notify_lines) > account_query_line
+    assert max(notify_lines) < start_event_line < polling_loop_line
+    assert "startup_failure_hook" in source
+
+
+@pytest.mark.parametrize(
+    ("log_raises", "alert_raises", "expected_logged", "expected_alerted"),
+    [
+        (False, False, True, True),
+        (True, False, False, True),
+        (False, True, True, False),
+        (True, True, False, False),
+    ],
+)
+def test_startup_failure_notification_attempts_log_and_alert_independently(
+    log_raises, alert_raises, expected_logged, expected_alerted
+):
+    events = []
+    alerts = []
+
+    def log_event(event):
+        if log_raises:
+            raise OSError("disk unavailable")
+        events.append(event)
+
+    def send_alert(message):
+        if alert_raises:
+            raise RuntimeError("telegram unavailable")
+        alerts.append(message)
+        return SimpleNamespace(success=True, detail="sent")
+
+    result = report_startup_failure(
+        reason="INITIAL_ACCOUNT_INFO_EXCEPTION",
+        details={"query": "account_info"},
+        version="TEST",
+        send_alert=send_alert,
+        log_event=log_event,
+    )
+    assert result["logged"] is expected_logged
+    assert result["alerted"] is expected_alerted
+    assert bool(alerts) is expected_alerted
+    if expected_logged:
+        assert events[0]["event"] == "STARTUP_INITIALIZATION_FAILED"
 
 
 def test_base_runner_recovers_before_start_announcement_and_polling_loop():
