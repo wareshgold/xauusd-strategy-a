@@ -97,3 +97,24 @@ def inspect_account_inventory(*, orders, positions, owned_pairs) -> dict:
         "foreign_orders": foreign_orders,
         "foreign_positions": foreign_positions,
     }
+
+
+class BrokerInventoryQueryError(RuntimeError):
+    """Raised when an MT5 inventory query throws instead of returning a snapshot."""
+
+    def __init__(self, query_name: str, cause: Exception):
+        self.query_name = str(query_name)
+        self.cause = cause
+        super().__init__(f"{self.query_name} raised {type(cause).__name__}: {cause}")
+
+
+def query_inventory_snapshot(*, query_name: str, query):
+    """Run a required MT5 query without masking exceptions.
+
+    A returned None is preserved for the inventory classifier to reject;
+    a raised exception is tagged with the exact query name for startup alerting.
+    """
+    try:
+        return query()
+    except Exception as exc:
+        raise BrokerInventoryQueryError(query_name, exc) from exc
