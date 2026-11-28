@@ -1175,6 +1175,21 @@ def run_banner_only() -> int:
         mt5.shutdown()
 
 
+def _notify_startup_failure(reason: str, details: dict) -> None:
+    """Invoke an optional runner-specific startup alert without weakening fail-closed behavior."""
+    hook = globals().get("startup_failure_hook")
+    if not callable(hook):
+        return
+    try:
+        hook(str(reason), dict(details or {}))
+    except Exception as exc:
+        # A failed notification hook must never mask the original startup failure.
+        print(
+            f"[startup-failure-hook] {type(exc).__name__}: {exc}",
+            file=sys.stderr,
+        )
+
+
 def main() -> None:
     if "--banner-only" in sys.argv:
         raise SystemExit(run_banner_only())
@@ -1185,8 +1200,36 @@ def main() -> None:
 
     lock_acquired = False
     try:
-        account = mt5.account_info()
-        if account is None or int(account.trade_mode) != 0:
+        try:
+            account = mt5.account_info()
+        except Exception as exc:
+            _notify_startup_failure(
+                "INITIAL_ACCOUNT_INFO_EXCEPTION",
+                {"query": "account_info", "detail": f"{type(exc).__name__}: {exc}"},
+            )
+            raise RuntimeError("MT5 account_info query failed during startup") from exc
+
+        if account is None:
+            _notify_startup_failure(
+                "INITIAL_ACCOUNT_INFO_UNAVAILABLE",
+                {"query": "account_info", "detail": "MT5 returned None"},
+            )
+            raise RuntimeError("MT5 account_info returned None during startup")
+
+        try:
+            account_trade_mode = int(account.trade_mode)
+        except Exception as exc:
+            _notify_startup_failure(
+                "INITIAL_ACCOUNT_INFO_MALFORMED",
+                {"query": "account_info", "detail": f"{type(exc).__name__}: {exc}"},
+            )
+            raise RuntimeError("MT5 account_info returned malformed account data") from exc
+
+        if account_trade_mode != 0:
+            _notify_startup_failure(
+                "INITIAL_ACCOUNT_NOT_DEMO",
+                {"query": "account_info", "detail": "DEMO-ONLY guard rejected account trade_mode"},
+            )
             raise RuntimeError("DEMO-ONLY GUARD: a DEMO MT5 account is required")
 
         configs = []
