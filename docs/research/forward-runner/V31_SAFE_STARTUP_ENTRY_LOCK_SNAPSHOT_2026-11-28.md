@@ -168,3 +168,23 @@ Commits after implementation HEAD `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`:
 **Current local state last reported by the user:** review worktree HEAD `ae511254c15de3e7559608811212ccb107654adc`; preserved local changes remain `M tests/test_sp2l_v31_monitor.py` and `?? tests/test_sp2l_v31_startup_recovery.py`. No local commit or push was performed.
 
 **Safety boundary unchanged:** no Runner/MT5 activation, no Task Scheduler/autostart change, no account identity environment configuration, no live configuration change, and no PR creation.
+
+## 10. Cross-module startup/recovery/lifecycle contract coverage (2026-11-28)
+
+Added `tests/test_sp2l_v31_startup_integration_contract.py` on the research branch. The tests combine the pure startup-recovery and owned-exposure classifiers and assert the runner's source-level control-flow wiring without importing or initializing MT5.
+
+Coverage added:
+
+- Recovery and entry-guard classifiers agree for owned pending-order-only, position-only, combined, and empty broker snapshots.
+- The guard remains blocked while either owned inventory category is present and reports no exposure only for a valid empty snapshot.
+- Account-wide foreign inventory is rejected rather than being treated as owned V3.1 inventory.
+- The base runner invokes its recovery hook before the `START` event and before entering the polling loop.
+- The base polling loop calls pending expiry/lifecycle, position lifecycle, and symbol lifecycle before candidate discovery and candidate execution.
+- V3.1 wires the startup recovery hook, guarded executor, and trailing position manager into the base runner.
+- The base position observer accepts a recovered position ticket through `state['positions']` even if its magic metadata does not match the normal magic check.
+
+**Important test classification:** these are cross-module contract/source-control-flow tests, not a live MT5 integration test. They do not prove broker IPC, order modification/cancellation, trailing placement, or Telegram delivery. The actual broker interaction remains untested and no terminal was initialized.
+
+**Latest remote branch HEAD:** `d80d911c297b2ca0635cf6d52da63599ec88a2b0` before this documentation update. The new contract tests have not yet been executed locally. The next local validation should run the existing 11 targeted test files plus `test_sp2l_v31_startup_integration_contract.py`, syntax compilation, and `git diff --check`.
+
+**Local worktree caution:** the user previously reported a local untracked `tests/test_sp2l_v31_startup_recovery.py`. This branch deliberately adds a separate file named `test_sp2l_v31_startup_integration_contract.py`; it does not overwrite that local untracked test.
