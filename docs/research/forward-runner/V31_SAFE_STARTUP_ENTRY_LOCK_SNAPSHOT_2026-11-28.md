@@ -221,7 +221,7 @@ Changes on the research branch:
 
 **Latest remote implementation HEAD:** 24d37a5d8d1ca254eb0fdf9b831224965082d0c5, 13 commits ahead of 42fe5787dd8936551116f50387e35694e7f73523 and 0 behind at the latest GitHub comparison.
 
-**Validation status:** GitHub reports no commit status checks and no workflow runs for this HEAD. The new changes have not yet been executed in the user's local review worktree. Local syntax compilation, the targeted 12-file test set, and git diff --check remain required. No test success is claimed for this revision.
+**Validation status:** GitHub reports no commit status checks and no workflow runs for this HEAD. The existing push-triggered forensic workflow is scoped to branches named research/sp2l-f13-forensic-repro-*; this review branch does not match that filter, and no PR exists to trigger its pull_request path. The new changes have not yet been executed in the user's local review worktree. Local syntax compilation, the targeted 12-file test set, and git diff --check remain required. No test success is claimed for this revision.
 
 **Safety boundary unchanged:** no Runner/MT5 activation, no account identity configuration, no autostart change, no PR creation, no live configuration change, and no broker operation.
 
