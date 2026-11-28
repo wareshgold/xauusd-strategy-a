@@ -291,6 +291,7 @@ from datetime import datetime, timezone
 from sp2l_deal_lifecycle_dedupe import claim_deal_lifecycle_event
 from sp2l_v31_startup_recovery import recover_owned_broker_inventory
 from sp2l_v31_entry_guard import inspect_owned_exposure
+from sp2l_v31_startup_safety import inspect_account_identity, inspect_account_inventory
 _RUN_STARTED_UTC = datetime.now(timezone.utc)
 _original_main = runner.main
 
@@ -606,11 +607,79 @@ runner.monitor_symbol_lifecycle=_run_scoped_symbol_lifecycle
 
 
 def _v31_startup_recovery(configs, state):
-    """Reconcile live broker-owned objects before entering the V3.1 poll loop.
+    """Validate account identity and account-wide inventory before recovery."""
+    def _block_startup(reason, details=None):
+        payload = {
+            "event": "STARTUP_SAFETY_BLOCKED",
+            "version": cfg.VERSION,
+            "reason": str(reason),
+            "details": details or {},
+            "canonical": False,
+        }
+        runner.log_event(payload)
+        # Best-effort operator alert. A missing Telegram route must never
+        # convert a failed safety check into permission to continue.
+        try:
+            alert = runner.gateway.send_telegram_message(
+                "⛔ SP2L V3.1 STARTUP BLOCKED\n"
+                f"Reason: {reason}\n"
+                "No new orders will be submitted. Inspect the MT5 account inventory."
+            )
+            runner.log_event({
+                "event": "STARTUP_SAFETY_ALERT",
+                "version": cfg.VERSION,
+                "success": bool(getattr(alert, "success", False)),
+                "detail": getattr(alert, "detail", None),
+                "canonical": False,
+            })
+        except Exception as exc:
+            runner.log_event({
+                "event": "STARTUP_SAFETY_ALERT",
+                "version": cfg.VERSION,
+                "success": False,
+                "detail": f"{type(exc).__name__}: {exc}",
+                "canonical": False,
+            })
+        raise RuntimeError(f"V3.1 startup safety block: {reason}")
 
-    This is read-only at the broker boundary. Unknown/incomplete inventory
-    aborts startup; no signal history or old deal notifications are replayed.
-    """
+    account = mt5.account_info()
+    identity = inspect_account_identity(
+        account=account,
+        expected_login=os.getenv("SP2L_EXPECTED_ACCOUNT_LOGIN", ""),
+        expected_server=os.getenv("SP2L_EXPECTED_ACCOUNT_SERVER", ""),
+    )
+    if not identity["ok"]:
+        _block_startup(identity["reason"])
+
+    owned_pairs = {
+        (str(item["symbol"]), int(item["magic"]))
+        for item in configs
+    }
+    # Account-wide snapshot is required to distinguish this runner's objects
+    # from manual/foreign exposure. None is a query failure, never an empty set.
+    account_orders = mt5.orders_get()
+    account_positions = mt5.positions_get()
+    try:
+        inventory = inspect_account_inventory(
+            orders=account_orders,
+            positions=account_positions,
+            owned_pairs=owned_pairs,
+        )
+    except Exception as exc:
+        _block_startup(
+            "ACCOUNT_INVENTORY_AMBIGUOUS",
+            {"detail": f"{type(exc).__name__}: {exc}"},
+        )
+    if not inventory["ok"]:
+        _block_startup(
+            inventory["reason"],
+            {
+                "failed_queries": inventory["failed_queries"],
+                "foreign_orders": inventory["foreign_orders"],
+                "foreign_positions": inventory["foreign_positions"],
+            },
+        )
+
     summaries = []
     for cfg_runtime in configs:
         symbol = str(cfg_runtime["symbol"])
@@ -638,9 +707,10 @@ def _v31_startup_recovery(configs, state):
         "symbol": ",".join(str(item["symbol"]) for item in summaries),
         "orders_recovered": sum(item["orders_recovered"] for item in summaries),
         "positions_recovered": sum(item["positions_recovered"] for item in summaries),
+        "account_inventory": inventory["reason"],
+        "account_identity": identity["reason"],
         "canonical": False,
     })
-
 
 runner.startup_recovery_hook = _v31_startup_recovery
 
