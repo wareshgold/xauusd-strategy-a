@@ -66,6 +66,13 @@ def _mark_lifecycle_query_success(query):
     if gate is not None:
         gate.mark_success()
 
+
+def _safe_mt5_last_error():
+    try:
+        return repr(mt5.last_error())
+    except Exception as exc:
+        return f"{type(exc).__name__}: {exc}"
+
 # RR4/ACT40 Telegram display convention only: one pip = $0.10 price.
 # Do not alter the generic runner's pip_size or execution configuration.
 _original_send_signal = runner.send_signal
@@ -116,7 +123,7 @@ def trail_positions(cfg_runtime,state):
     if positions is None:
         _log_lifecycle_query_failure(
             "positions_get_for_trailing", symbol,
-            f"MT5 returned None; last_error={mt5.last_error()!r}",
+            f"MT5 returned None; last_error={_safe_mt5_last_error()}",
         )
         return
     _mark_lifecycle_query_success("positions_get_for_trailing")
@@ -415,7 +422,7 @@ def _run_scoped_pending(cfg_runtime, state):
     if active_orders is None:
         _log_lifecycle_query_failure(
             "orders_get_for_pending_ttl", symbol,
-            f"MT5 returned None; last_error={mt5.last_error()!r}",
+            f"MT5 returned None; last_error={_safe_mt5_last_error()}",
         )
         return
     _mark_lifecycle_query_success("orders_get_for_pending_ttl")
@@ -481,7 +488,7 @@ def _run_scoped_pending_lifecycle(cfg_runtime, state):
     if active_snapshot is None:
         _log_lifecycle_query_failure(
             "orders_get_for_pending_lifecycle", symbol,
-            f"MT5 returned None; last_error={mt5.last_error()!r}",
+            f"MT5 returned None; last_error={_safe_mt5_last_error()}",
         )
         return
     _mark_lifecycle_query_success("orders_get_for_pending_lifecycle")
@@ -510,7 +517,7 @@ def _run_scoped_pending_lifecycle(cfg_runtime, state):
     if history_snapshot is None:
         _log_lifecycle_query_failure(
             "history_orders_get_for_pending_lifecycle", symbol,
-            f"MT5 returned None; last_error={mt5.last_error()!r}",
+            f"MT5 returned None; last_error={_safe_mt5_last_error()}",
         )
         orders = list(active_orders)
     else:
