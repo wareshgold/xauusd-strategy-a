@@ -275,6 +275,9 @@ def test_v31_wires_recovery_entry_guard_and_trailing_manager_into_base_runner():
             assignments[target.attr] = node.value
 
     assert "startup_recovery_hook" in assignments
+    assert "startup_failure_hook" in assignments
+    assert isinstance(assignments["startup_failure_hook"], ast.Name)
+    assert assignments["startup_failure_hook"].id == "_v31_initial_startup_failure"
     assert "execute_candidate" in assignments
     assert "monitor_position_lifecycle" in assignments
     assert isinstance(assignments["startup_recovery_hook"], ast.Name)
