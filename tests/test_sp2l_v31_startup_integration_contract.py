@@ -332,5 +332,5 @@ def test_startup_safety_block_uses_independent_alert_channel_and_specific_event(
     assert "STARTUP BLOCKED" in alerts[0]
     assert "UNRECOGNIZED_ACCOUNT_INVENTORY" in alerts[0]
     assert "No new orders will be submitted" in alerts[0]
-    assert events[0]["event"] == "STARTUP_INITIALIZATION_ALERT"
+    assert events[0]["event"] == "STARTUP_SAFETY_BLOCKED_ALERT"
 
