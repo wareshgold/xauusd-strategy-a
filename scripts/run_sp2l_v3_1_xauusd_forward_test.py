@@ -43,6 +43,28 @@ import run_sp2l_author_replica_multi_symbol_forward_test as runner
 from sp2l_history_query_failure_log import HistoryQueryFailureLogGate
 
 _HISTORY_QUERY_FAILURE_LOG_GATE = HistoryQueryFailureLogGate()
+_LIFECYCLE_QUERY_FAILURE_GATES = {}
+
+
+def _log_lifecycle_query_failure(query, symbol, detail):
+    gate = _LIFECYCLE_QUERY_FAILURE_GATES.setdefault(
+        str(query), HistoryQueryFailureLogGate()
+    )
+    if gate.should_log(str(query), 0, f"{symbol}: {detail}"):
+        runner.log_event({
+            "event": "MT5_LIFECYCLE_QUERY_FAILED",
+            "version": cfg.VERSION,
+            "symbol": str(symbol),
+            "query": str(query),
+            "detail": str(detail),
+            "canonical": False,
+        })
+
+
+def _mark_lifecycle_query_success(query):
+    gate = _LIFECYCLE_QUERY_FAILURE_GATES.get(str(query))
+    if gate is not None:
+        gate.mark_success()
 
 # RR4/ACT40 Telegram display convention only: one pip = $0.10 price.
 # Do not alter the generic runner's pip_size or execution configuration.
@@ -83,8 +105,21 @@ def trail_positions(cfg_runtime,state):
     b=bars[0]
     completed_bar_time=int(b["time"])
     high=float(b["high"]); low=float(b["low"])
-    positions=mt5.positions_get(symbol=symbol)
-    if positions is None: return
+    try:
+        positions=mt5.positions_get(symbol=symbol)
+    except Exception as exc:
+        _log_lifecycle_query_failure(
+            "positions_get_for_trailing", symbol,
+            f"{type(exc).__name__}: {exc}",
+        )
+        return
+    if positions is None:
+        _log_lifecycle_query_failure(
+            "positions_get_for_trailing", symbol,
+            f"MT5 returned None; last_error={mt5.last_error()!r}",
+        )
+        return
+    _mark_lifecycle_query_success("positions_get_for_trailing")
     if _TRAIL_STATE_DIRTY:
         try:
             save_trailing_state(_TRAIL_STATE_FILE,_TRAIL_FAVORABLE_EXTREMES)
@@ -369,9 +404,21 @@ def _run_scoped_pending(cfg_runtime, state):
     if ttl_minutes <= 0:
         return
     symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
-    active_orders = mt5.orders_get(symbol=symbol)
-    if active_orders is None:
+    try:
+        active_orders = mt5.orders_get(symbol=symbol)
+    except Exception as exc:
+        _log_lifecycle_query_failure(
+            "orders_get_for_pending_ttl", symbol,
+            f"{type(exc).__name__}: {exc}",
+        )
         return
+    if active_orders is None:
+        _log_lifecycle_query_failure(
+            "orders_get_for_pending_ttl", symbol,
+            f"MT5 returned None; last_error={mt5.last_error()!r}",
+        )
+        return
+    _mark_lifecycle_query_success("orders_get_for_pending_ttl")
     eligible = []
     for order in active_orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
@@ -423,7 +470,22 @@ def _run_scoped_pending(cfg_runtime, state):
 def _run_scoped_pending_lifecycle(cfg_runtime, state):
     symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
     tracked = set(state["orders"])
-    active_orders = list(mt5.orders_get(symbol=symbol) or [])
+    try:
+        active_snapshot = mt5.orders_get(symbol=symbol)
+    except Exception as exc:
+        _log_lifecycle_query_failure(
+            "orders_get_for_pending_lifecycle", symbol,
+            f"{type(exc).__name__}: {exc}",
+        )
+        return
+    if active_snapshot is None:
+        _log_lifecycle_query_failure(
+            "orders_get_for_pending_lifecycle", symbol,
+            f"MT5 returned None; last_error={mt5.last_error()!r}",
+        )
+        return
+    _mark_lifecycle_query_success("orders_get_for_pending_lifecycle")
+    active_orders = list(active_snapshot)
     # Reconcile only currently active limit orders carrying this runner's
     # symbol + magic. This restores lifecycle ownership after a restart without
     # replaying old signals, candidates, positions, or historical deals.
@@ -435,7 +497,25 @@ def _run_scoped_pending_lifecycle(cfg_runtime, state):
                 and int(getattr(active, "type", -1)) in (mt5.ORDER_TYPE_BUY_LIMIT, mt5.ORDER_TYPE_SELL_LIMIT)):
             state["orders"].add(ticket)
             tracked.add(ticket)
-    orders = list(mt5.history_orders_get(_RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol) or [])
+    try:
+        history_snapshot = mt5.history_orders_get(
+            _RUN_STARTED_UTC, datetime.now(timezone.utc), group=symbol
+        )
+    except Exception as exc:
+        _log_lifecycle_query_failure(
+            "history_orders_get_for_pending_lifecycle", symbol,
+            f"{type(exc).__name__}: {exc}",
+        )
+        history_snapshot = None
+    if history_snapshot is None:
+        _log_lifecycle_query_failure(
+            "history_orders_get_for_pending_lifecycle", symbol,
+            f"MT5 returned None; last_error={mt5.last_error()!r}",
+        )
+        orders = list(active_orders)
+    else:
+        _mark_lifecycle_query_success("history_orders_get_for_pending_lifecycle")
+        orders = list(history_snapshot)
     orders.extend(active_orders)
     for order in orders:
         ticket = int(getattr(order, "ticket", 0) or 0)
