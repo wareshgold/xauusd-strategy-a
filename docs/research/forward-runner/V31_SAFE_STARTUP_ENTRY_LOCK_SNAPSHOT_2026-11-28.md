@@ -4,9 +4,9 @@
 **Repository:** `wareshgold/xauusd-strategy-a`  
 **Remote working branch:** `research/v31-owned-trade-entry-lock-20261128`  
 **Implementation base:** `a007f9264b76c5917197b0a6f62db077f2f5309a`  
-**Implementation HEAD before this snapshot commit:** `8f9e7d2e31038a13fb12d7d8bf6ecc8d579ff3f4`  
-**Local worktree branch label reported during review:** `review/v31-owned-trade-entry-lock-20261128`  
-**Remote branch comparison:** 9 commits ahead of base, 0 behind. The remote branch name is `research/...`; the local branch label is `review/...`. Confirm/refetch branch mapping before any future push from the local worktree.
+**Implementation HEAD before this snapshot refresh:** `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`  
+**Local review worktree:** `F:\\Mirzaei\\Private\\1\\xauusd-strategy-a-v31-entry-lock-review-20261128`  
+**Remote branch:** `research/v31-owned-trade-entry-lock-20261128`. The local worktree was fast-forwarded and verified at `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`; no local push was performed.
 
 ## 1. Why this work started
 
@@ -63,7 +63,7 @@ No account login value is embedded in code or this snapshot.
 
 ### Targeted test suite
 
-The 9 relevant files were collected and then executed together:
+The original targeted suite was expanded to 11 files and executed locally after fast-forwarding the lifecycle-diagnostic commits:
 
 - `test_reconcile_sp2l_forward_backtest.py`
 - `test_sp2l_forward_audit.py`
@@ -74,8 +74,15 @@ The 9 relevant files were collected and then executed together:
 - `test_sp2l_v31_entry_guard.py`
 - `test_sp2l_v31_monitor.py`
 - `test_sp2l_v31_startup_safety.py`
+- `test_sp2l_v31_startup_recovery.py`
+- `test_sp2l_lifecycle_query_diagnostics.py`
 
-**Latest local result before the lifecycle-diagnostic commits:** 75 passed in 0.55s; `PYTEST_EXIT=0`. This run included the local startup-recovery tests and the local Monitor fixture correction. It does **not** validate the three later lifecycle-diagnostic commits.  
+**Latest local validation at HEAD `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`:** all 11 targeted test files completed with `PYTEST_EXIT=0`; the command reported `VALIDATION=PASS`. The three runner/helper files compiled with `PY_COMPILE_EXIT=0`; `git diff --check` completed with `DIFF_CHECK_EXIT=0`. The user supplied exit-code summary did not include pytest's collected/passed test count, so no exact count is claimed here.
+
+The lifecycle diagnostics helper has three focused tests covering: (1) operation raises an exception and exactly one failure is reported, (2) MT5 returns `None` and the last-error detail is reported exactly once, and (3) a successful snapshot clears the failure state via the success callback.
+
+The local Monitor fixture correction and startup-recovery test file remain uncommitted local changes; they were present before the latest fast-forward and remained present after it. The fixture correction adds `trade_mode=0` to the fake account info; production monitor code was not changed by that local fixture correction.
+
 **Diff check:** clean.
 
 Important qualification: the successful local run included a one-line, uncommitted test-fixture correction in `tests/test_sp2l_v31_monitor.py` adding `trade_mode=0` to the fake `account_info()` object. The production monitor was not changed. The fixture correction is local-only at this snapshot and is not included in the remote implementation commits.
@@ -96,13 +103,16 @@ A broader `pytest -k v31` collection attempt was not a valid full-suite result: 
 
 ## 6. Post-snapshot lifecycle query diagnostics (2026-11-28)
 
-Three commits were added after the snapshot commit `e44b66c3978dcbca3ca4649cf186b9784ead6b99`:
+Six commits were added after the snapshot commit `e44b66c3978dcbca3ca4649cf186b9784ead6b99`. The first three introduced V3.1/base lifecycle query failure logging; the next three added a testable query wrapper, focused tests, and fixed duplicate exception reporting:
 
 - `d90aaffe6b14ef350e214f65ad0da81d61e4cd82` — V3.1 lifecycle query failure diagnostics for active orders, order history, and trailing position inventory.
 - `7e35eeb60ff017e07241ae760263aee54eefd486` — base position lifecycle no longer treats a `None` result as an empty list; it logs a rate-limited diagnostic and skips that observer cycle.
 - `5491483951dbe004c71fc9bd6de5c44416792a87` — protect the V3.1 diagnostic path if `mt5.last_error()` itself raises.
+- `ad35f45c268e8989dc055d7d5bdfd52735586489` — add `scripts/sp2l_lifecycle_query_diagnostics.py`, a small testable wrapper distinguishing raised query exceptions from MT5 `None` results.
+- `f752cd582da9474a50eeef208d1ce01be43ea913` — add three focused tests for exception, `None`, and successful query outcomes.
+- `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2` — route the pending-history lifecycle query through the helper, preventing an exception from being logged a second time as an MT5 `None` result.
 
-The remote branch is now 3 commits ahead of the snapshot commit and 0 behind it. The compared changes touch only the two runner source files: 124 insertions and 6 deletions across both files.
+The remote branch was verified as 6 commits ahead of the snapshot commit and 0 behind at implementation HEAD `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`. The last three commits add the helper and tests and modify the V3.1 runner.
 
 Behavioral boundaries:
 
@@ -112,14 +122,14 @@ Behavioral boundaries:
 - The base position lifecycle observer logs and skips when its MT5 query fails; a successful later poll clears the one-shot diagnostic suppression for that symbol.
 - The entry guard remains a separate last-moment check and continues to fail closed on its own query failure.
 
-**Validation status:** the earlier local 75-test result predates these three diagnostic commits. No test result is yet claimed for the new diagnostic changes. The next required step is local syntax + targeted pytest + diff validation in the review worktree. No runner/terminal activation is part of that step.
+**Validation status:** local syntax compilation, all 11 targeted test files, and diff checks passed after all six post-snapshot commits were fetched. This is local automated test evidence only; it is not a live MT5 integration test, broker execution test, or forward-performance validation. No runner/terminal activation was performed.
 
 ## 7. Open review items — next planned work
 
 1. **Integration-test startup and lifecycle.** Startup hook order has been source-traced: recovery is called after state load/reconciliation and before START notification and the polling/entry loop. Add integration-level tests to prove this behavior.
 2. **Prove lifecycle continuity.** Verify that recovered owned positions/orders are placed in the state structures required by the existing position, pending-order, and trailing lifecycle handlers. In particular, inspect the recovered `state["positions"]` membership used by the position lifecycle observer.
 3. **Add integration-level tests.** Exercise startup-hook ordering, existing owned position management while entry is blocked, pending-order management while entry is blocked, and no-entry behavior after query failure. Unit tests alone do not prove these cross-module paths.
-4. **Finish runtime query-failure audit.** The V3.1 pending lifecycle/TTL and trailing inventory queries now emit rate-limited failure diagnostics and fail closed for that pass. Re-check remaining lifecycle/history paths and verify the new behavior with tests.
+4. **Finish runtime query-failure audit.** The V3.1 pending lifecycle/TTL and trailing inventory queries emit rate-limited failure diagnostics and fail closed for that pass. The pending-history query now uses a tested wrapper to avoid duplicate exception/None reporting. Re-check remaining lifecycle/history paths, including whether every query has appropriate rate limiting and whether a logging failure can interrupt a safety path.
 5. **Review alert/logging failure paths.** Confirm a logging failure cannot bypass a safety block and document the expected operator response.
 6. **Resolve branch naming.** The local branch label reported was `review/...`, while the confirmed GitHub branch is `research/...`. Fetch and verify remote/local ancestry before any further local push.
 7. **Re-run targeted tests** after any code changes; keep the local Monitor fixture correction isolated and decide whether to commit it after review.
@@ -129,4 +139,4 @@ Behavioral boundaries:
 
 This work remains separate from canonical Strategy A research. Follow the project workflow: source resolution → synthetic fixtures → frozen geometry → development → untouched validation → robustness/stability → fresh holdout → production. No unresolved source geometry may be inferred from backtest performance. AI may assist research, engineering, validation, documentation, and analytics, but must not autonomously define canonical rules or generate production BUY/SELL decisions.
 
-**Current stopping point:** implementation and lifecycle query diagnostics exist on the research branch. The prior 75-test local result validates the startup recovery work before the latest diagnostics only. The local review worktree still has uncommitted `tests/test_sp2l_v31_monitor.py` and `tests/test_sp2l_v31_startup_recovery.py` changes. New diagnostics still require local test validation. No activation.
+**Current stopping point:** implementation and lifecycle query diagnostics exist on the research branch at `b0cfcf4b51c7592963a7b7c695ffa8cbc28660b2`. Local syntax compilation, the 11-file targeted test command, and diff checks passed. The local review worktree still has uncommitted `tests/test_sp2l_v31_monitor.py` and `tests/test_sp2l_v31_startup_recovery.py` changes. No PR, live integration run, Runner/MT5 activation, account identity configuration, or autostart activation has occurred.
