@@ -14,10 +14,13 @@ def report_startup_failure(
     version: str,
     send_alert,
     log_event,
+    event_name: str = "STARTUP_INITIALIZATION_FAILED",
+    alert_heading: str = "STARTUP FAILED",
+    alert_instruction: str = "The runner will abort startup; no new orders will be submitted.",
 ) -> dict:
     """Attempt durable event logging and Telegram alert independently."""
     payload = {
-        "event": "STARTUP_INITIALIZATION_FAILED",
+        "event": str(event_name),
         "version": str(version),
         "reason": str(reason),
         "details": dict(details or {}),
@@ -34,9 +37,9 @@ def report_startup_failure(
     alert_success = False
     alert_detail = None
     message = (
-        "⛔ SP2L V3.1 STARTUP FAILED\n"
+        f"⛔ SP2L V3.1 {alert_heading}\n"
         f"Reason: {reason}\n"
-        "The runner will abort startup; no new orders will be submitted."
+        f"{alert_instruction}"
     )
     try:
         result = send_alert(message)
