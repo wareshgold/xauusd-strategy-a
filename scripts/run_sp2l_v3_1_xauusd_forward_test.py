@@ -417,7 +417,7 @@ def _run_scoped_pending(cfg_runtime, state):
         return
     symbol, magic = cfg_runtime["symbol"], int(cfg_runtime["magic"])
     try:
-        active_orders = _required_inventory_query("symbol_orders_get", lambda: mt5.orders_get(symbol=symbol))
+        active_orders = mt5.orders_get(symbol=symbol)
     except Exception as exc:
         _log_lifecycle_query_failure(
             "orders_get_for_pending_ttl", symbol,
@@ -783,7 +783,7 @@ def _v31_startup_recovery(configs, state):
         magic = int(cfg_runtime["magic"])
         # MT5 returns None on query failure and an empty tuple on a valid
         # empty result. Never collapse those two states.
-        active_orders = mt5.orders_get(symbol=symbol)
+        active_orders = _required_inventory_query("symbol_orders_get", lambda: mt5.orders_get(symbol=symbol))
         active_positions = _required_inventory_query("symbol_positions_get", lambda: mt5.positions_get(symbol=symbol))
         try:
             summary = recover_owned_broker_inventory(
