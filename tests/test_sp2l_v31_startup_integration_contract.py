@@ -334,3 +334,16 @@ def test_startup_safety_block_uses_independent_alert_channel_and_specific_event(
     assert "No new orders will be submitted" in alerts[0]
     assert events[0]["event"] == "STARTUP_SAFETY_BLOCKED_ALERT"
 
+def test_mt5_initialize_failures_are_alerted_before_startup_aborts():
+    source = BASE_RUNNER.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    main = _function(tree, "main")
+    calls = _call_lines(main)
+
+    initialize_line = min(calls["initialize"])
+    notify_lines = calls["_notify_startup_failure"]
+    assert notify_lines
+    assert min(notify_lines) > initialize_line
+    assert "MT5_INITIALIZE_EXCEPTION" in source
+    assert "MT5_INITIALIZE_FAILED" in source
+
