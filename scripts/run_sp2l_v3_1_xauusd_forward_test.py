@@ -927,7 +927,22 @@ def _v3_main():
     # A corrupt/unreadable trailing recovery file must stop startup rather
     # than silently resetting a position's previously observed excursion.
     if not _TRAIL_STATE_LOADED:
-        _TRAIL_FAVORABLE_EXTREMES = load_trailing_state(_TRAIL_STATE_FILE)
+        try:
+            _TRAIL_FAVORABLE_EXTREMES = load_trailing_state(_TRAIL_STATE_FILE)
+        except Exception as exc:
+            report_startup_failure(
+                reason="TRAILING_STATE_RECOVERY_FAILED",
+                details={"detail": f"{type(exc).__name__}: {exc}"},
+                version=cfg.VERSION,
+                send_alert=runner.gateway.send_telegram_message,
+                log_event=runner.log_event,
+                event_name="STARTUP_TRAILING_STATE_FAILED",
+                alert_heading="STARTUP BLOCKED",
+                alert_instruction="Trailing recovery state is unavailable or invalid. Startup is aborted; inspect the state file before retrying.",
+            )
+            raise RuntimeError(
+                "V3.1 trailing state recovery failed; startup aborted"
+            ) from exc
         _TRAIL_STATE_LOADED = True
 
     # V3 forward-session boundary: only newly formed triggers after startup
