@@ -75,7 +75,7 @@ The 9 relevant files were collected and then executed together:
 - `test_sp2l_v31_monitor.py`
 - `test_sp2l_v31_startup_safety.py`
 
-**Latest local result:** 69 passed in 0.54s; `PYTEST_EXIT=0`.  
+**Latest local result before the lifecycle-diagnostic commits:** 75 passed in 0.55s; `PYTEST_EXIT=0`. This run included the local startup-recovery tests and the local Monitor fixture correction. It does **not** validate the three later lifecycle-diagnostic commits.  
 **Diff check:** clean.
 
 Important qualification: the successful local run included a one-line, uncommitted test-fixture correction in `tests/test_sp2l_v31_monitor.py` adding `trade_mode=0` to the fake `account_info()` object. The production monitor was not changed. The fixture correction is local-only at this snapshot and is not included in the remote implementation commits.
@@ -125,7 +125,7 @@ Behavioral boundaries:
 7. **Re-run targeted tests** after any code changes; keep the local Monitor fixture correction isolated and decide whether to commit it after review.
 8. **Only after code review and explicit user approval:** configure the expected account identity locally, perform a controlled non-trading/preflight validation, and separately discuss a safe Windows startup mechanism. Do not activate Task Scheduler or start the Runner/MT5 without explicit authorization.
 
-## 7. Workflow guardrails
+## 8. Workflow guardrails
 
 This work remains separate from canonical Strategy A research. Follow the project workflow: source resolution → synthetic fixtures → frozen geometry → development → untouched validation → robustness/stability → fresh holdout → production. No unresolved source geometry may be inferred from backtest performance. AI may assist research, engineering, validation, documentation, and analytics, but must not autonomously define canonical rules or generate production BUY/SELL decisions.
 
