@@ -148,9 +148,11 @@ def test_base_runner_recovers_before_start_announcement_and_polling_loop():
     main = _function(tree, "main")
     calls = _call_lines(main)
 
-    assert min(calls["recovery_hook"]) < next(
-        node.lineno for node in main.body if isinstance(node, ast.While)
+    recovery_call_line = min(calls["recovery_hook"])
+    polling_loop_line = next(
+        node.lineno for node in ast.walk(main) if isinstance(node, ast.While)
     )
+    assert recovery_call_line < polling_loop_line
 
     start_event_line = next(
         node.lineno
@@ -164,7 +166,7 @@ def test_base_runner_recovers_before_start_announcement_and_polling_loop():
             for key, value in zip(node.keys, node.values)
         )
     )
-    assert min(calls["recovery_hook"]) < start_event_line
+    assert recovery_call_line < start_event_line
 
 
 def test_base_poll_manages_existing_inventory_before_candidate_entry_path():
@@ -190,15 +192,17 @@ def test_base_poll_manages_existing_inventory_before_candidate_entry_path():
 def test_v31_wires_recovery_entry_guard_and_trailing_manager_into_base_runner():
     source = V31_RUNNER.read_text(encoding="utf-8")
     tree = ast.parse(source)
-    assignments = {
-        node.targets[0].id: node.value
-        for node in tree.body
-        if isinstance(node, ast.Assign)
-        and len(node.targets) == 1
-        and isinstance(node.targets[0], ast.Attribute)
-        and isinstance(node.targets[0].value, ast.Name)
-        and node.targets[0].value.id == "runner"
-    }
+    assignments = {}
+    for node in tree.body:
+        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+            continue
+        target = node.targets[0]
+        if (
+            isinstance(target, ast.Attribute)
+            and isinstance(target.value, ast.Name)
+            and target.value.id == "runner"
+        ):
+            assignments[target.attr] = node.value
 
     assert "startup_recovery_hook" in assignments
     assert "execute_candidate" in assignments
