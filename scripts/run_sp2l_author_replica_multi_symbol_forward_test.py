@@ -1194,9 +1194,24 @@ def main() -> None:
     if "--banner-only" in sys.argv:
         raise SystemExit(run_banner_only())
     mt5_path = _resolve_terminal_path()
-    initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
+    try:
+        initialized = mt5.initialize(path=mt5_path) if mt5_path else mt5.initialize()
+    except Exception as exc:
+        _notify_startup_failure(
+            "MT5_INITIALIZE_EXCEPTION",
+            {"query": "initialize", "detail": f"{type(exc).__name__}: {exc}"},
+        )
+        raise RuntimeError("MT5 initialize raised during startup") from exc
     if not initialized:
-        raise RuntimeError(f"MT5 initialize failed: {mt5.last_error()}")
+        try:
+            last_error = repr(mt5.last_error())
+        except Exception as exc:
+            last_error = f"{type(exc).__name__}: {exc}"
+        _notify_startup_failure(
+            "MT5_INITIALIZE_FAILED",
+            {"query": "initialize", "detail": last_error},
+        )
+        raise RuntimeError(f"MT5 initialize failed: {last_error}")
 
     lock_acquired = False
     try:
